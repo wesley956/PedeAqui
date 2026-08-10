@@ -33,6 +33,7 @@ Exemplo:
 - `CATALOG_STATUS.md` — status do catálogo #017–#024 na branch/PR de catálogo.
 - `MENU_STATUS.md` — status #025–#032 na branch/PR de cardápio e clientes.
 - `DELIVERY_STATUS.md` — status #033–#035 na branch/PR de endereços e entrega.
+- `CART_STATUS.md` — status #036–#040 na branch/PR de carrinho e pricing.
 
 ## Ordem macro
 
@@ -77,8 +78,10 @@ Antes de criar um novo módulo, responder:
 - Catálogo #017–#024: implementado no draft PR #26; CI verde e schema aplicado no Supabase oficial.
 - Cardápio/Clientes #025–#032: implementado no draft PR #35; CI verde e migrations aplicadas.
 - Endereços/Entrega #033–#035: implementado no draft PR #39; CI verde e migrations aplicadas.
-- Cardápio público já recebe resumo de entrega (taxa inicial, ETA e frete grátis) sem liberar tabelas internas.
-- Cotação por bairro preparada em `DeliveryService.quoteByNeighborhood()` para integração com checkout.
+- Carrinho/Pricing #036–#040: implementado no draft PR #47; CI verde antes da atualização final de documentação e migrations aplicadas.
+- Carrinho público usa token opaco HttpOnly e somente SHA-256 no banco; tabelas e RPCs internas não são acessíveis por `anon`/`authenticated`.
+- `PricingService` é a fonte autoritativa de preço para produto, promoção, adicionais e quantidade; navegador nunca define o total final.
+- Repricing detecta preço alterado, item indisponível e adicionais inválidos sem apagar silenciosamente a seleção do cliente.
 - Supabase `zsbsczjhiujnhdznrzck`: dedicado ao PedeAqui; Security Advisor com zero alertas após as migrations atuais.
 - Arte original da logo PedeAqui localizada na File Library; binário ainda não exportável pelo conector atual. Tokens e identidade oficial registrados em `BRAND_IDENTITY.md`.
-- Próximo bloco lógico: #036–#040 — carrinho, itens, adicionais e PricingService.
+- Próximo bloco lógico: #041–#046 — checkout (identificação, entrega/retirada, endereço, pagamento, dinheiro/troco e revisão final).
