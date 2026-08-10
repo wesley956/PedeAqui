@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { signInAction } from "@/features/auth/actions";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; status?: string }> }) {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; status?: string; next?: string }>;
+}) {
   const params = await searchParams;
 
   return (
@@ -12,6 +16,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       {params.error ? <p role="alert" style={{ margin: 0, color: "#ff8a93" }}>Não foi possível entrar. Verifique os dados.</p> : null}
       {params.status === "check_email" ? <p style={{ margin: 0, color: "var(--success)" }}>Confira seu e-mail para concluir o cadastro.</p> : null}
       <form action={signInAction} style={{ display: "grid", gap: 14 }}>
+        <input type="hidden" name="next" value={params.next ?? ""} />
         <Input label="E-mail" name="email" type="email" autoComplete="email" required />
         <Input label="Senha" name="password" type="password" autoComplete="current-password" required minLength={8} />
         <Button type="submit">Entrar</Button>
