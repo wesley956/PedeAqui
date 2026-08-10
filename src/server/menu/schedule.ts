@@ -1,4 +1,4 @@
-import type { StoreHourInput, PublicHourSchema } from "@/server/menu/schemas";
+import type { StoreHourInput } from "@/server/menu/schemas";
 
 export type SchedulePeriod = Pick<StoreHourInput, "weekday" | "opensAt" | "closesAt" | "closesNextDay">;
 export type PublicHour = {
@@ -16,18 +16,14 @@ function minutes(clock: string) {
 function toInterval(period: SchedulePeriod) {
   const start = period.weekday * 1440 + minutes(period.opensAt);
   let end = period.weekday * 1440 + minutes(period.closesAt);
-  if (period.closesNextDay || end <= start) end += 1440;
+  if (period.closesNextDay) end += 1440;
   return { start, end };
 }
 
 export function assertNoScheduleOverlap(periods: SchedulePeriod[]) {
   const week = 7 * 1440;
-  const intervals = periods.flatMap((period) => {
-    const interval = toInterval(period);
-    return [interval, { start: interval.start + week, end: interval.end + week }];
-  });
-
   const originals = periods.map(toInterval);
+
   for (let i = 0; i < originals.length; i += 1) {
     const a = originals[i];
     for (let j = i + 1; j < originals.length; j += 1) {
@@ -38,8 +34,6 @@ export function assertNoScheduleOverlap(periods: SchedulePeriod[]) {
       }
     }
   }
-
-  return intervals;
 }
 
 const weekdayMap: Record<string, number> = {
