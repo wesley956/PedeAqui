@@ -95,22 +95,18 @@ export class StoreMenuService {
       .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (readError) throw readError;
 
-    const patch = accepting ? {
+    const now = new Date().toISOString();
+    const pauseReason: string | null = accepting ? null : (reason?.trim().slice(0, 240) || "Pausa operacional");
+    const pausedAt: string | null = accepting ? null : now;
+    const pausedBy: string | null = accepting ? null : context.userId;
+    const patch = {
       organization_id: context.organizationId,
       store_id: storeId,
-      accepting_orders: true,
-      pause_reason: null,
-      paused_at: null,
-      paused_by: null,
-      updated_at: new Date().toISOString(),
-    } : {
-      organization_id: context.organizationId,
-      store_id: storeId,
-      accepting_orders: false,
-      pause_reason: reason?.trim().slice(0, 240) || "Pausa operacional",
-      paused_at: new Date().toISOString(),
-      paused_by: context.userId,
-      updated_at: new Date().toISOString(),
+      accepting_orders: accepting,
+      pause_reason: pauseReason,
+      paused_at: pausedAt,
+      paused_by: pausedBy,
+      updated_at: now,
     };
 
     const { data, error } = await admin.from("store_menu_settings")
