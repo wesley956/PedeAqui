@@ -31,6 +31,12 @@ Defesa em profundidade:
 4. queries sempre tenant-scoped;
 5. testes explícitos Empresa A x Empresa B.
 
+Escopos de role:
+- `organization_members.role_id`: role global da organização, usada apenas quando o usuário realmente possui autoridade em todas as unidades;
+- `user_store_roles`: roles limitadas às unidades explicitamente atribuídas;
+- convites padrão criam membership sem role global e aplicam a função somente via `user_store_roles`;
+- `owner` não pode ser concedido por convite padrão.
+
 ## ADR-004 — Identidade e perfis
 
 `auth.users` contém a identidade de autenticação. A aplicação mantém `profiles` 1:1. Membership e autorização ficam em tabelas próprias (`organization_members`, `roles`, `permissions`, `user_store_roles`) — nunca em metadata editável pelo usuário.
@@ -63,7 +69,7 @@ Impressão é subsistema de primeira classe e baseado em fila persistente. O nav
 
 Dependências de runtime devem ser fixadas em versões estáveis verificadas e lockfile deve ser versionado assim que a instalação puder ser executada em ambiente com registry disponível. Evitar canary/preview no núcleo.
 
-Versões-base verificadas no início da fundação (agosto/2026): Next.js estável 16.2.9, React 19.2.6, Supabase JS 2.111.0, `@supabase/ssr` 0.12.4, TypeScript 6.0.3, Zod 4.4.3, ESLint 10.4.0 e Vitest 4.1.7.
+Versões-base verificadas no início da fundação (agosto/2026): Next.js estável 16.2.9, React/React DOM 19.2.8, Supabase JS 2.111.0, `@supabase/ssr` 0.12.4, TypeScript 6.0.3, Zod 4.4.3, ESLint 10.4.0 e Vitest 4.1.10.
 
 ## ADR-012 — Estrutura
 
