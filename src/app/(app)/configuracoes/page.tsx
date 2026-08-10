@@ -4,6 +4,7 @@ const items = [
   ["Cardápio digital", "Identidade, publicação, entrega/retirada e pedido mínimo.", "/configuracoes/cardapio"],
   ["Horários", "Períodos de funcionamento, inclusive após meia-noite.", "/configuracoes/horarios"],
   ["Entrega", "Prazo, taxa padrão, frete grátis e bairros atendidos.", "/configuracoes/entrega"],
+  ["Pagamentos", "Pix, cartões e dinheiro disponíveis no checkout.", "/configuracoes/pagamentos"],
 ] as const;
 
 export default function SettingsPage() {
