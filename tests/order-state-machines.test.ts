@@ -30,6 +30,10 @@ describe("order state machines", () => {
     expect(canTransition("payment", "failed", "pending")).toBe(true);
   });
 
+  it("allows an in-flight delivery to be canceled operationally", () => {
+    expect(canTransition("fulfillment", "out_for_delivery", "canceled")).toBe(true);
+  });
+
   it("knows which fulfillment states are terminally complete", () => {
     expect(fulfillmentIsComplete("delivered")).toBe(true);
     expect(fulfillmentIsComplete("picked_up_by_customer")).toBe(true);
