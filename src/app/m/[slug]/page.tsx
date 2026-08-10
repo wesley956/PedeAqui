@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MenuBrowser } from "@/features/menu/menu-browser";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
@@ -38,6 +39,7 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
             <p style={{ color: "#716b64", margin: "5px 0 0" }}>{detail}{menu.settings.pause_reason && menu.operational.label === "paused" ? ` — ${menu.settings.pause_reason}` : ""}</p>
             {(menu.store.city || menu.store.state) ? <p style={{ color: "#8a837b", margin: "4px 0 0", fontSize: 12 }}>{[menu.store.city, menu.store.state].filter(Boolean).join(" - ")}</p> : null}
           </div>
+          <Link href={`/m/${menu.store.slug}/carrinho`} style={{ flexShrink: 0, background: "#171717", color: "#fffdf9", borderRadius: 13, padding: "10px 13px", fontWeight: 900, fontSize: 13 }}>Carrinho</Link>
         </header>
 
         <div style={{ display: "grid", gap: 18, marginTop: 20 }}>
