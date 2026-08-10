@@ -9,7 +9,10 @@ export type PublicHour = {
 };
 
 function minutes(clock: string) {
-  const [hour, minute] = clock.split(":").map(Number);
+  const match = /^(\d{2}):(\d{2})$/.exec(clock);
+  if (!match) throw new Error("Invalid clock value");
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
   return hour * 60 + minute;
 }
 
@@ -26,9 +29,15 @@ export function assertNoScheduleOverlap(periods: SchedulePeriod[]) {
 
   for (let i = 0; i < originals.length; i += 1) {
     const a = originals[i];
+    if (!a) continue;
     for (let j = i + 1; j < originals.length; j += 1) {
       const b = originals[j];
-      const candidates = [b, { start: b.start + week, end: b.end + week }, { start: b.start - week, end: b.end - week }];
+      if (!b) continue;
+      const candidates = [
+        b,
+        { start: b.start + week, end: b.end + week },
+        { start: b.start - week, end: b.end - week },
+      ];
       if (candidates.some((candidate) => a.start < candidate.end && candidate.start < a.end)) {
         throw new Error("Store hours overlap");
       }
@@ -54,10 +63,13 @@ export function localClock(timeZone: string, now = new Date()) {
     minute: "2-digit",
     hourCycle: "h23",
   });
-  const parts = Object.fromEntries(formatter.formatToParts(now).map((part) => [part.type, part.value]));
+  const parts = Object.fromEntries(formatter.formatToParts(now).map((part) => [part.type, part.value])) as Record<string, string>;
+  const weekday = parts.weekday ?? "Sun";
+  const hour = Number(parts.hour ?? "0");
+  const minute = Number(parts.minute ?? "0");
   return {
-    weekday: weekdayMap[parts.weekday] ?? 0,
-    minuteOfDay: Number(parts.hour) * 60 + Number(parts.minute),
+    weekday: weekdayMap[weekday] ?? 0,
+    minuteOfDay: hour * 60 + minute,
   };
 }
 
