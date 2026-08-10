@@ -18,9 +18,9 @@ export function AppShell({ children, email }: { children: ReactNode; email: stri
   return (
     <div className="app-shell">
       <aside className="app-sidebar">
-        <div className="brand-row">
-          <div className="brand-mark" aria-hidden />
-          <strong>Cruz</strong>
+        <div className="brand-row" aria-label="PedeAqui">
+          <div className="brand-mark" aria-hidden>P</div>
+          <strong className="brand-wordmark"><span>Pede</span><span>Aqui</span></strong>
         </div>
         <nav className="app-nav" aria-label="Navegação principal">
           {navigation.map(([label, href]) => (
@@ -32,7 +32,7 @@ export function AppShell({ children, email }: { children: ReactNode; email: stri
         <header className="app-topbar">
           <div>
             <strong>Operação</strong>
-            <div className="muted" style={{ fontSize: 12 }}>Unidade será resolvida pelo contexto seguro</div>
+            <div className="muted" style={{ fontSize: 12 }}>Unidade atual protegida pelo contexto multiempresa</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             {email ? <span className="muted app-user-email">{email}</span> : null}
