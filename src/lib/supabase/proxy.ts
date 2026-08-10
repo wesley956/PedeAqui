@@ -3,6 +3,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = ["/dashboard", "/pedidos", "/pdv", "/producao", "/cardapio", "/clientes", "/equipe", "/configuracoes"];
 
+function getSafeReturnPath(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  return value;
+}
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -31,15 +36,14 @@ export async function updateSession(request: NextRequest) {
   if (!isAuthenticated && isProtected) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("next", pathname);
+    loginUrl.search = "";
+    loginUrl.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(loginUrl);
   }
 
   if (isAuthenticated && pathname === "/login") {
-    const dashboardUrl = request.nextUrl.clone();
-    dashboardUrl.pathname = "/dashboard";
-    dashboardUrl.search = "";
-    return NextResponse.redirect(dashboardUrl);
+    const returnPath = getSafeReturnPath(request.nextUrl.searchParams.get("next"));
+    return NextResponse.redirect(new URL(returnPath, request.url));
   }
 
   return response;
