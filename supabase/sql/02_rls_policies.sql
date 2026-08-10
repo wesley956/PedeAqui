@@ -23,6 +23,39 @@ $$;
 revoke all on function private.is_org_member(uuid) from public;
 grant execute on function private.is_org_member(uuid) to authenticated;
 
+create or replace function private.can_access_store(
+  target_organization_id uuid,
+  target_store_id uuid
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select (select auth.uid()) is not null
+    and exists (
+      select 1
+      from public.organization_members m
+      where m.organization_id = target_organization_id
+        and m.user_id = (select auth.uid())
+        and m.status = 'active'
+        and (
+          m.role_id is not null
+          or exists (
+            select 1
+            from public.user_store_roles usr
+            where usr.organization_id = target_organization_id
+              and usr.store_id = target_store_id
+              and usr.user_id = (select auth.uid())
+          )
+        )
+    );
+$$;
+
+revoke all on function private.can_access_store(uuid, uuid) from public;
+grant execute on function private.can_access_store(uuid, uuid) to authenticated;
+
 create or replace function private.has_permission(
   target_organization_id uuid,
   target_store_id uuid,
@@ -109,9 +142,9 @@ for update to authenticated
 using (private.has_permission(id, null, 'organization.manage'))
 with check (private.has_permission(id, null, 'organization.manage'));
 
-create policy "stores_select_member" on public.stores
+create policy "stores_select_authorized" on public.stores
 for select to authenticated
-using (private.is_org_member(organization_id));
+using (private.can_access_store(organization_id, id));
 
 create policy "stores_insert_manager" on public.stores
 for insert to authenticated
@@ -119,12 +152,21 @@ with check (private.has_permission(organization_id, null, 'stores.manage'));
 
 create policy "stores_update_manager" on public.stores
 for update to authenticated
-using (private.has_permission(organization_id, id, 'stores.manage'))
-with check (private.has_permission(organization_id, id, 'stores.manage'));
+using (
+  private.can_access_store(organization_id, id)
+  and private.has_permission(organization_id, id, 'stores.manage')
+)
+with check (
+  private.can_access_store(organization_id, id)
+  and private.has_permission(organization_id, id, 'stores.manage')
+);
 
 create policy "stores_delete_manager" on public.stores
 for delete to authenticated
-using (private.has_permission(organization_id, id, 'stores.manage'));
+using (
+  private.can_access_store(organization_id, id)
+  and private.has_permission(organization_id, id, 'stores.manage')
+);
 
 create policy "permissions_select_authenticated" on public.permissions
 for select to authenticated
@@ -179,13 +221,22 @@ create policy "store_roles_select_self_or_team" on public.user_store_roles
 for select to authenticated
 using (
   user_id = (select auth.uid())
-  or private.has_permission(organization_id, store_id, 'team.view')
+  or (
+    private.can_access_store(organization_id, store_id)
+    and private.has_permission(organization_id, store_id, 'team.view')
+  )
 );
 
 create policy "store_roles_manage_team" on public.user_store_roles
 for all to authenticated
-using (private.has_permission(organization_id, store_id, 'team.manage'))
-with check (private.has_permission(organization_id, store_id, 'team.manage'));
+using (
+  private.can_access_store(organization_id, store_id)
+  and private.has_permission(organization_id, store_id, 'team.manage')
+)
+with check (
+  private.can_access_store(organization_id, store_id)
+  and private.has_permission(organization_id, store_id, 'team.manage')
+);
 
 create policy "invitations_select_team" on public.invitations
 for select to authenticated
@@ -198,7 +249,14 @@ with check (private.has_permission(organization_id, null, 'team.manage'));
 
 create policy "audit_select_authorized" on public.audit_logs
 for select to authenticated
-using (private.has_permission(organization_id, store_id, 'audit.view'));
+using (
+  (store_id is null and private.has_permission(organization_id, null, 'audit.view'))
+  or (
+    store_id is not null
+    and private.can_access_store(organization_id, store_id)
+    and private.has_permission(organization_id, store_id, 'audit.view')
+  )
+);
 
 -- No authenticated INSERT/UPDATE/DELETE policies for audit_logs, domain_events or
 -- idempotency_keys. Trusted server services use the server-only admin client after
