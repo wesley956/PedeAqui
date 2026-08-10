@@ -34,6 +34,7 @@ Exemplo:
 - `MENU_STATUS.md` — status #025–#032 na branch/PR de cardápio e clientes.
 - `DELIVERY_STATUS.md` — status #033–#035 na branch/PR de endereços e entrega.
 - `CART_STATUS.md` — status #036–#040 na branch/PR de carrinho e pricing.
+- `CHECKOUT_STATUS.md` — status #041–#046 na branch/PR de checkout.
 
 ## Ordem macro
 
@@ -78,10 +79,13 @@ Antes de criar um novo módulo, responder:
 - Catálogo #017–#024: implementado no draft PR #26; CI verde e schema aplicado no Supabase oficial.
 - Cardápio/Clientes #025–#032: implementado no draft PR #35; CI verde e migrations aplicadas.
 - Endereços/Entrega #033–#035: implementado no draft PR #39; CI verde e migrations aplicadas.
-- Carrinho/Pricing #036–#040: implementado no draft PR #47; CI verde antes da atualização final de documentação e migrations aplicadas.
-- Carrinho público usa token opaco HttpOnly e somente SHA-256 no banco; tabelas e RPCs internas não são acessíveis por `anon`/`authenticated`.
-- `PricingService` é a fonte autoritativa de preço para produto, promoção, adicionais e quantidade; navegador nunca define o total final.
-- Repricing detecta preço alterado, item indisponível e adicionais inválidos sem apagar silenciosamente a seleção do cliente.
+- Carrinho/Pricing #036–#040: implementado no draft PR #47; CI verde e migrations aplicadas.
+- Checkout #041–#046: implementado no draft PR #54; CI verde no run #25 e migration aplicada.
+- Checkout usa `checkout_sessions` 1:1 com carrinho, identidade privada, entrega/retirada, endereço snapshotado, cotação de frete, pagamento e revisão final server-side.
+- Formas de pagamento são configuráveis por unidade em `/configuracoes/pagamentos`.
+- Cliente existente pode ser reconhecido internamente por telefone normalizado sem expor endereços salvos; cliente novo só será persistido junto com a criação efetiva do pedido para evitar registros de checkout abandonado.
+- O carrinho e o checkout continuam server-only nas operações sensíveis; `anon`/`authenticated` não executam RPCs internas.
+- `PricingService` continua sendo a fonte autoritativa de preço; revisão final revalida carrinho, operação, entrega e pagamento com estado atual do servidor.
 - Supabase `zsbsczjhiujnhdznrzck`: dedicado ao PedeAqui; Security Advisor com zero alertas após as migrations atuais.
 - Arte original da logo PedeAqui localizada na File Library; binário ainda não exportável pelo conector atual. Tokens e identidade oficial registrados em `BRAND_IDENTITY.md`.
-- Próximo bloco lógico: #041–#046 — checkout (identificação, entrega/retirada, endereço, pagamento, dinheiro/troco e revisão final).
+- Próximo bloco lógico: #047–#057 — Motor de Pedidos (`orders`, snapshots, número amigável, state machines separadas, histórico, OrderService, checkout→pedido, cancelamento, eventos e realtime).
