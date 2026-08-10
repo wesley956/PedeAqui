@@ -16,6 +16,10 @@ function getCredentials(formData: FormData) {
   });
 }
 
+function getAppUrl() {
+  return process.env.APP_URL ?? "http://localhost:3000";
+}
+
 export async function signInAction(formData: FormData) {
   const parsed = getCredentials(formData);
   if (!parsed.success) redirect("/login?error=invalid_input");
@@ -32,7 +36,12 @@ export async function signUpAction(formData: FormData) {
   if (!parsed.success) redirect("/cadastro?error=invalid_input");
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp(parsed.data);
+  const { error } = await supabase.auth.signUp({
+    ...parsed.data,
+    options: {
+      emailRedirectTo: `${getAppUrl()}/auth/callback?next=/onboarding`,
+    },
+  });
   if (error) redirect("/cadastro?error=signup_failed");
 
   redirect("/login?status=check_email");
@@ -43,12 +52,11 @@ export async function requestPasswordResetAction(formData: FormData) {
   if (!email.success) redirect("/recuperar-senha?error=invalid_email");
 
   const supabase = await createClient();
-  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
   await supabase.auth.resetPasswordForEmail(email.data, {
-    redirectTo: `${appUrl}/nova-senha`,
+    redirectTo: `${getAppUrl()}/auth/callback?next=/nova-senha`,
   });
 
-  // Always return the same result to avoid account enumeration.
+  // Same result regardless of account existence to reduce enumeration.
   redirect("/recuperar-senha?status=sent");
 }
 
