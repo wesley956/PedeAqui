@@ -6,6 +6,7 @@ import { authorizeOrganization } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { EventService } from "@/server/events/event-service";
+import { normalizePhone } from "@/server/customers/phone";
 
 const customerInputSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -15,13 +16,6 @@ const customerInputSchema = z.object({
 });
 
 export type CustomerInput = z.infer<typeof customerInputSchema>;
-
-export function normalizePhone(phone?: string | null) {
-  if (!phone) return null;
-  const digits = phone.replace(/\D/g, "");
-  if (digits.length < 10 || digits.length > 15) throw new Error("Invalid phone number");
-  return digits;
-}
 
 export class CustomerService {
   static async list(search?: string) {
