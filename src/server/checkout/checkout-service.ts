@@ -41,23 +41,14 @@ export class CheckoutError extends Error {
 }
 
 export class CheckoutService {
-  private static async resolveStore(admin: AdminClient, slug: string): Promise<StoreRef> {
-    const { data, error } = await admin.from("stores")
-      .select("id, organization_id, slug, name, status")
-      .ilike("slug", slug)
-      .in("status", ["active", "temporarily_closed"])
-      .maybeSingle();
-    if (error) throw error;
-    if (!data) throw new CheckoutError("store_not_found", "Loja não encontrada");
-    return { id: data.id, organization_id: data.organization_id, slug: data.slug, name: data.name };
-  }
-
   private static async requireCart(storeSlug: string, token: string) {
     const result = await CartService.getCart(storeSlug, token);
-    if (!result.cart || result.cart.items.length === 0 || !result.store) {
+    const cart = result.cart;
+    const store = result.store;
+    if (!cart || cart.items.length === 0 || !store) {
       throw new CheckoutError("cart_empty", "Seu carrinho está vazio");
     }
-    return { ...result, store: result.store };
+    return { cart, store, changes: result.changes };
   }
 
   private static async getSession(admin: AdminClient, cartId: string) {
@@ -116,10 +107,12 @@ export class CheckoutService {
       customer_phone_normalized: phoneNormalized,
       customer_email: values.email ?? null,
     });
-    await admin.from("carts").update({ customer_id: existing?.id ?? null, updated_at: new Date().toISOString() })
+    const { error: cartUpdateError } = await admin.from("carts")
+      .update({ customer_id: existing?.id ?? null, updated_at: new Date().toISOString() })
       .eq("id", cartResult.cart.id)
       .eq("organization_id", cartResult.store.organization_id)
       .eq("store_id", cartResult.store.id);
+    if (cartUpdateError) throw cartUpdateError;
   }
 
   static async saveFulfillment(storeSlug: string, token: string, fulfillment: FulfillmentType) {
@@ -298,10 +291,11 @@ export class CheckoutService {
     });
 
     if (result.ready && session) {
-      const { error } = await admin.from("checkout_sessions").update({ reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      const reviewedAt = new Date().toISOString();
+      const { error } = await admin.from("checkout_sessions").update({ reviewed_at: reviewedAt, updated_at: reviewedAt })
         .eq("id", session.id).eq("cart_id", loaded.cart.id);
       if (error) throw error;
-      session = { ...session, reviewed_at: new Date().toISOString() };
+      session = { ...session, reviewed_at: reviewedAt };
     }
 
     return { ...loaded, session, review: result };
