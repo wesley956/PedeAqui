@@ -167,11 +167,28 @@ export class OrderService {
     };
     assertTransition(domain, currentByDomain[domain] as StateByDomain[K], to);
 
-    if (domain === "order" && to === "completed" && !fulfillmentIsComplete(order.fulfillment_status as FulfillmentStatus)) {
-      throw new Error("Fulfillment must be complete before the order can be completed");
+    if (domain === "order" && to === "completed") {
+      if (!fulfillmentIsComplete(order.fulfillment_status as FulfillmentStatus)) {
+        throw new Error("Fulfillment must be complete before the order can be completed");
+      }
+      if (order.payment_status !== "paid") throw new Error("Payment must be paid before the order can be completed");
     }
-    if (domain === "order" && to === "canceled" && (!reason || reason.trim().length < 3)) {
-      throw new Error("Cancellation reason is required");
+    if (domain === "order" && to === "canceled") {
+      if (!reason || reason.trim().length < 3) throw new Error("Cancellation reason is required");
+      if (fulfillmentIsComplete(order.fulfillment_status as FulfillmentStatus)) throw new Error("Fulfilled order cannot be canceled");
+    }
+    if (domain === "production" && to === "queued" && order.order_status !== "confirmed") {
+      throw new Error("Order must be confirmed before entering production");
+    }
+    if (domain === "fulfillment") {
+      const status = to as FulfillmentStatus;
+      if (["awaiting_assignment", "awaiting_pickup", "served"].includes(status) && order.order_status !== "confirmed") {
+        throw new Error("Order must be confirmed before fulfillment starts");
+      }
+      if (["awaiting_pickup", "picked_up", "out_for_delivery", "served"].includes(status)
+        && order.production_status !== "ready" && order.production_status !== "not_required") {
+        throw new Error("Production must be ready before this fulfillment transition");
+      }
     }
 
     const { data, error } = await admin.rpc("order_transition_internal", {
