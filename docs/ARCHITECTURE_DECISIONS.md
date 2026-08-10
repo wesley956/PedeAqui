@@ -69,7 +69,9 @@ Impressão é subsistema de primeira classe e baseado em fila persistente. O nav
 
 Dependências de runtime devem ser fixadas em versões estáveis verificadas e lockfile deve ser versionado assim que a instalação puder ser executada em ambiente com registry disponível. Evitar canary/preview no núcleo.
 
-Versões-base verificadas no início da fundação (agosto/2026): Next.js estável 16.2.9, React/React DOM 19.2.8, Supabase JS 2.111.0, `@supabase/ssr` 0.12.4, TypeScript 6.0.3, Zod 4.4.3, ESLint 10.4.0 e Vitest 4.1.10.
+Toolchain validado pelo CI da fundação (agosto/2026): Next.js/eslint-config-next 16.2.12, React/React DOM 19.2.8, Supabase JS 2.111.0, `@supabase/ssr` 0.12.4, TypeScript 6.0.3, Zod 4.4.3, ESLint 9.39.5 e Vitest 4.1.10.
+
+Nota: ESLint 10 foi inicialmente avaliado, mas apresentou incompatibilidade em runtime com o `eslint-plugin-react` carregado pelo `eslint-config-next`; a linha de manutenção 9.39.5 foi adotada e validada por lint + typecheck + testes + build no GitHub Actions.
 
 ## ADR-012 — Estrutura
 
