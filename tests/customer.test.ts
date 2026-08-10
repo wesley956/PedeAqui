@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizePhone } from "@/server/customers/customer-service";
+import { normalizePhone } from "@/server/customers/phone";
 
 describe("customer phone normalization", () => {
   it("normalizes a Brazilian formatted phone", () => {
