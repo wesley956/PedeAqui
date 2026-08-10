@@ -2,7 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { authorize } from "@/server/access/authorize";
+import { authorizeOrganization } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { EventService } from "@/server/events/event-service";
@@ -18,7 +18,7 @@ const updateOrganizationSchema = z.object({
 export class OrganizationService {
   static async update(input: z.input<typeof updateOrganizationSchema>) {
     const values = updateOrganizationSchema.parse(input);
-    const context = await authorize(PERMISSIONS.ORGANIZATION_MANAGE);
+    const context = await authorizeOrganization(PERMISSIONS.ORGANIZATION_MANAGE);
     const admin = createAdminClient();
 
     const { data: before, error: beforeError } = await admin
