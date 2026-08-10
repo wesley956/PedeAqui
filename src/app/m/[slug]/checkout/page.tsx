@@ -40,12 +40,10 @@ export default async function CheckoutPage({
   const token = (await cookies()).get(cartCookieName(slug))?.value;
   if (!token) redirect(`/m/${slug}/carrinho`);
 
-  const data = query.revisar === "1"
-    ? await CheckoutService.review(slug, token)
-    : await CheckoutService.load(slug, token);
-
+  const reviewed = query.revisar === "1" ? await CheckoutService.review(slug, token) : null;
+  const data = reviewed ?? await CheckoutService.load(slug, token);
   const { cart, session, menu } = data;
-  const review = "review" in data ? data.review : null;
+  const review = reviewed?.review ?? null;
   const enabledMethods = data.paymentMethods.filter((item) => item.enabled);
   const selectedPayment = session?.payment_method ?? null;
 
