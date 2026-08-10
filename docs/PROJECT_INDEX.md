@@ -32,6 +32,7 @@ Exemplo:
 - `FOUNDATION_STATUS.md` — status da implementação #001–#016 na branch/PR de fundação.
 - `CATALOG_STATUS.md` — status do catálogo #017–#024 na branch/PR de catálogo.
 - `MENU_STATUS.md` — status #025–#032 na branch/PR de cardápio e clientes.
+- `DELIVERY_STATUS.md` — status #033–#035 na branch/PR de endereços e entrega.
 
 ## Ordem macro
 
@@ -75,7 +76,9 @@ Antes de criar um novo módulo, responder:
 - Fundação #001–#016: implementada no draft PR #17; schema aplicado no Supabase oficial.
 - Catálogo #017–#024: implementado no draft PR #26; CI verde e schema aplicado no Supabase oficial.
 - Cardápio/Clientes #025–#032: implementado no draft PR #35; CI verde e migrations aplicadas.
-- Cardápio público disponível em arquitetura via `/m/:slug` e produto via `/m/:slug/produto/:id`.
+- Endereços/Entrega #033–#035: implementado no draft PR #39; CI verde e migrations aplicadas.
+- Cardápio público já recebe resumo de entrega (taxa inicial, ETA e frete grátis) sem liberar tabelas internas.
+- Cotação por bairro preparada em `DeliveryService.quoteByNeighborhood()` para integração com checkout.
 - Supabase `zsbsczjhiujnhdznrzck`: dedicado ao PedeAqui; Security Advisor com zero alertas após as migrations atuais.
 - Arte original da logo PedeAqui localizada na File Library; binário ainda não exportável pelo conector atual. Tokens e identidade oficial registrados em `BRAND_IDENTITY.md`.
-- Próximo bloco lógico: #033–#035 — endereços e configuração inicial de entrega; depois #036–#040 — carrinho e PricingService.
+- Próximo bloco lógico: #036–#040 — carrinho, itens, adicionais e PricingService.
