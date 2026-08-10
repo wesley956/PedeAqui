@@ -4,14 +4,33 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cartCookieName } from "@/server/cart/cart-token";
+import { orderCookieName } from "@/server/orders/order-token";
 import { OrderService } from "@/server/orders/order-service";
 import type { FulfillmentStatus, PaymentStatus, ProductionStatus } from "@/server/orders/state-machines";
 
 export async function createOrderFromCheckoutAction(formData: FormData) {
   const storeSlug = String(formData.get("storeSlug") ?? "");
-  const token = (await cookies()).get(cartCookieName(storeSlug))?.value;
+  const cookieStore = await cookies();
+  const cartCookie = cartCookieName(storeSlug);
+  const token = cookieStore.get(cartCookie)?.value;
   if (!token) redirect(`/m/${storeSlug}/carrinho`);
+
   const result = await OrderService.createFromCheckout(storeSlug, token);
+  cookieStore.set(orderCookieName(storeSlug, result.order_id), result.accessToken, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: `/m/${storeSlug}/pedido/${result.order_id}`,
+    maxAge: 30 * 24 * 60 * 60,
+  });
+  cookieStore.set(cartCookie, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: `/m/${storeSlug}`,
+    maxAge: 0,
+  });
+
   redirect(`/m/${storeSlug}/pedido/${result.order_id}`);
 }
 
