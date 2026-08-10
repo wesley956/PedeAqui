@@ -1,7 +1,7 @@
 import type { FulfillmentType, PaymentMethod } from "@/server/checkout/schemas";
 
 export type CheckoutReviewInput = {
-  cartItemStatuses: Array<"valid" | "unavailable" | "invalid_modifiers">;
+  cartItemStatuses: ReadonlyArray<"valid" | "unavailable" | "invalid_modifiers">;
   subtotalCents: number;
   totalCents: number;
   minimumOrderCents: number;
@@ -10,7 +10,7 @@ export type CheckoutReviewInput = {
   fulfillmentType: FulfillmentType | null;
   deliveryQuoteStatus: "not_required" | "required" | "valid" | "unserviceable";
   paymentMethod: PaymentMethod | null;
-  enabledPaymentMethods: PaymentMethod[];
+  enabledPaymentMethods: ReadonlyArray<PaymentMethod>;
   cashChangeForCents: number | null;
 };
 
