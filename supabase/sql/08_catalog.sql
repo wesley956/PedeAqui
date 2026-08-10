@@ -44,7 +44,7 @@ create table if not exists public.products (
   constraint products_store_same_org_fk foreign key (organization_id, store_id)
     references public.stores (organization_id, id) on delete cascade,
   constraint products_category_same_store_fk foreign key (organization_id, store_id, category_id)
-    references public.categories (organization_id, store_id, id) on delete set null,
+    references public.categories (organization_id, store_id, id) on delete restrict,
   constraint products_org_store_id_unique unique (organization_id, store_id, id),
   constraint products_promo_not_above_regular check (promotional_price_cents is null or promotional_price_cents <= price_cents)
 );
