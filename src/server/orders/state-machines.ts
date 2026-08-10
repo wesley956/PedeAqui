@@ -47,7 +47,7 @@ const transitions: { [K in OrderStateDomain]: Record<StateByDomain[K], readonly 
     awaiting_assignment: ["assigned", "canceled"],
     assigned: ["picked_up", "canceled"],
     picked_up: ["out_for_delivery", "canceled"],
-    out_for_delivery: ["delivered"],
+    out_for_delivery: ["delivered", "canceled"],
     delivered: [],
     awaiting_pickup: ["picked_up_by_customer", "canceled"],
     picked_up_by_customer: [],
