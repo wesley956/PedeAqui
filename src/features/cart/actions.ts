@@ -4,7 +4,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { CartService } from "@/server/cart/cart-service";
 import { cartCookieName } from "@/server/cart/cart-token";
-import { cartItemQuantitySchema, removeCartItemSchema } from "@/server/cart/schemas";
+import { addCartItemSchema, cartItemQuantitySchema, removeCartItemSchema } from "@/server/cart/schemas";
+import { PricingError } from "@/server/pricing/pricing-service";
 
 function selectedModifierIds(formData: FormData) {
   const ids: string[] = [];
@@ -20,18 +21,26 @@ function safeInteger(value: FormDataEntryValue | null) {
 }
 
 export async function addToCartAction(formData: FormData) {
-  const storeSlug = String(formData.get("storeSlug") ?? "");
-  const cookieName = cartCookieName(storeSlug);
-  const cookieStore = await cookies();
-  const existingToken = cookieStore.get(cookieName)?.value ?? null;
-
-  const result = await CartService.addItem({
-    storeSlug,
+  const values = addCartItemSchema.parse({
+    storeSlug: String(formData.get("storeSlug") ?? ""),
     productId: String(formData.get("productId") ?? ""),
     quantity: safeInteger(formData.get("quantity")),
     note: typeof formData.get("note") === "string" ? String(formData.get("note")) : null,
     modifierIds: selectedModifierIds(formData),
-  }, existingToken);
+  });
+  const cookieName = cartCookieName(values.storeSlug);
+  const cookieStore = await cookies();
+  const existingToken = cookieStore.get(cookieName)?.value ?? null;
+
+  let result: Awaited<ReturnType<typeof CartService.addItem>>;
+  try {
+    result = await CartService.addItem(values, existingToken);
+  } catch (error) {
+    if (error instanceof PricingError) {
+      redirect(`/m/${values.storeSlug}/produto/${values.productId}?erro=${error.code}`);
+    }
+    throw error;
+  }
 
   if (!existingToken) {
     cookieStore.set(cookieName, result.token, {
