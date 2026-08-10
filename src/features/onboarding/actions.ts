@@ -23,7 +23,7 @@ function slugify(value: string) {
 }
 
 export async function bootstrapOrganizationAction(formData: FormData) {
-  await requireAuthenticatedUser();
+  const user = await requireAuthenticatedUser();
 
   const parsed = onboardingSchema.safeParse({
     organizationName: formData.get("organizationName"),
@@ -33,6 +33,17 @@ export async function bootstrapOrganizationAction(formData: FormData) {
   if (!parsed.success) redirect("/onboarding?error=invalid_input");
 
   const supabase = await createClient();
+
+  const { error: profileError } = await supabase.from("profiles").upsert(
+    {
+      id: user.id,
+      status: "active",
+    },
+    { onConflict: "id" },
+  );
+
+  if (profileError) redirect("/onboarding?error=profile_failed");
+
   const storeSlug = slugify(parsed.data.storeName);
   const { data, error } = await supabase.rpc("bootstrap_organization", {
     organization_name: parsed.data.organizationName,
@@ -50,8 +61,9 @@ export async function bootstrapOrganizationAction(formData: FormData) {
   }
 
   const cookieStore = await cookies();
-  cookieStore.set(ORG_COOKIE, result.organization_id, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/" });
-  cookieStore.set(STORE_COOKIE, result.store_id, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/" });
+  const secure = process.env.NODE_ENV === "production";
+  cookieStore.set(ORG_COOKIE, result.organization_id, { httpOnly: true, sameSite: "lax", secure, path: "/" });
+  cookieStore.set(STORE_COOKIE, result.store_id, { httpOnly: true, sameSite: "lax", secure, path: "/" });
 
   redirect("/dashboard");
 }
