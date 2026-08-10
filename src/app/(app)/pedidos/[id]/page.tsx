@@ -55,16 +55,16 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <h2 style={{ margin: 0, fontSize: 18 }}>Ações de estado</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {order.order_status === "pending_confirmation" ? <ActionForm action={confirmOrderAction} orderId={order.id} label="Confirmar pedido" /> : null}
-          {order.production_status === "pending_confirmation" ? <ActionForm action={transitionProductionAction} orderId={order.id} field="status" value="queued" label="Liberar para produção" /> : null}
+          {order.order_status === "confirmed" && order.production_status === "pending_confirmation" ? <ActionForm action={transitionProductionAction} orderId={order.id} field="status" value="queued" label="Liberar para produção" /> : null}
           {order.production_status === "queued" ? <ActionForm action={transitionProductionAction} orderId={order.id} field="status" value="preparing" label="Iniciar preparo" /> : null}
           {order.production_status === "preparing" ? <ActionForm action={transitionProductionAction} orderId={order.id} field="status" value="ready" label="Marcar pronto" /> : null}
           {order.payment_status === "pending" ? <ActionForm action={transitionPaymentAction} orderId={order.id} field="status" value="paid" label="Marcar pago" /> : null}
-          {order.fulfillment_type === "delivery" && order.fulfillment_status === "pending" ? <ActionForm action={transitionFulfillmentAction} orderId={order.id} field="status" value="awaiting_assignment" label="Aguardar entregador" /> : null}
-          {order.fulfillment_type === "pickup" && order.fulfillment_status === "pending" ? <ActionForm action={transitionFulfillmentAction} orderId={order.id} field="status" value="awaiting_pickup" label="Liberar retirada" /> : null}
+          {order.order_status === "confirmed" && order.fulfillment_type === "delivery" && order.fulfillment_status === "pending" ? <ActionForm action={transitionFulfillmentAction} orderId={order.id} field="status" value="awaiting_assignment" label="Aguardar entregador" /> : null}
+          {order.order_status === "confirmed" && order.production_status === "ready" && order.fulfillment_type === "pickup" && order.fulfillment_status === "pending" ? <ActionForm action={transitionFulfillmentAction} orderId={order.id} field="status" value="awaiting_pickup" label="Liberar retirada" /> : null}
           {order.fulfillment_status === "awaiting_pickup" ? <ActionForm action={transitionFulfillmentAction} orderId={order.id} field="status" value="picked_up_by_customer" label="Cliente retirou" /> : null}
           {order.fulfillment_status === "out_for_delivery" ? <ActionForm action={transitionFulfillmentAction} orderId={order.id} field="status" value="delivered" label="Marcar entregue" /> : null}
         </div>
-        {order.order_status !== "completed" && order.order_status !== "canceled" && order.order_status !== "rejected" ? (
+        {order.order_status !== "completed" && order.order_status !== "canceled" && order.order_status !== "rejected" && !["delivered", "picked_up_by_customer", "served"].includes(order.fulfillment_status) ? (
           <form action={cancelOrderAction} style={{ display: "flex", gap: 8, alignItems: "end", flexWrap: "wrap", paddingTop: 8, borderTop: "1px solid var(--border)" }}>
             <input type="hidden" name="orderId" value={order.id} />
             <label style={{ display: "grid", gap: 5, flex: "1 1 280px" }}><strong style={{ fontSize: 13 }}>Motivo do cancelamento</strong><input name="reason" required minLength={3} maxLength={240} style={inputStyle} /></label>
