@@ -1,6 +1,7 @@
 # Status — [036] a [040]
 
-Branch: `agent/cart-036-040`
+Branch: `agent/cart-036-040`  
+PR: #47
 
 ## Escopo
 
@@ -29,7 +30,8 @@ Validação direta no Supabase oficial:
 - `anon_can_add = false` ✅
 - `authenticated_can_add = false` ✅
 - `service_role_can_add = true` ✅
-- Security Advisor após migration: 0 alertas ✅
+- Security Advisor após migrations: 0 alertas ✅
+- FKs das tabelas de carrinho possuem índices de cobertura ✅
 
 ## PricingService
 
@@ -68,7 +70,7 @@ A reaplicação de snapshots/status/totais ocorre na RPC `cart_apply_reprice_int
 
 ## UI
 
-- `/m/[slug]/produto/[id]` agora permite quantidade, observação e adicionais;
+- `/m/[slug]/produto/[id]` permite quantidade, observação e adicionais;
 - `/m/[slug]/carrinho` mostra itens, adicionais, quantidades, remoção e totais;
 - o cardápio público possui acesso direto ao carrinho;
 - carrinho avisa alterações de preço/disponibilidade.
@@ -79,7 +81,7 @@ Este bloco ainda não identifica cliente, endereço, modalidade ou pagamento. Es
 
 A loja pode permitir montagem de carrinho mesmo quando está fora do horário/pausada; o checkout será responsável por bloquear confirmação quando a operação não puder receber pedido.
 
-## Testes
+## Testes e CI
 
 Cobertura adicionada para:
 
@@ -90,3 +92,11 @@ Cobertura adicionada para:
 - produto indisponível;
 - soma de carrinho sem float;
 - geração/hash do token opaco.
+
+GitHub Actions run #20:
+
+- instalação ✅
+- lint ✅
+- TypeScript ✅
+- testes ✅
+- build de produção ✅
