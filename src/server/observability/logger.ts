@@ -24,11 +24,12 @@ function configuredLevel(): LogLevel {
 function write(level: LogLevel, message: string, context: LogContext = {}) {
   if (rank[level] < rank[configuredLevel()]) return;
 
+  const safeContext = redactSensitive(context) as Record<string, unknown>;
   const record = {
     timestamp: new Date().toISOString(),
     level,
     message,
-    ...redactSensitive(context) as Record<string, unknown>,
+    ...safeContext,
   };
 
   const line = JSON.stringify(record);
