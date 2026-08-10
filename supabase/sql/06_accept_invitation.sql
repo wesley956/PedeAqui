@@ -1,4 +1,5 @@
 -- Accept an invitation without exposing invitation rows to the invited user.
+-- Standard invitations create organization membership but keep the role store-scoped.
 
 create or replace function private.accept_invitation(raw_token text)
 returns jsonb
@@ -43,14 +44,25 @@ begin
     raise exception 'invitation role is unavailable';
   end if;
 
+  if exists (
+    select 1 from public.roles r
+    where r.id = invite.role_id
+      and r.organization_id = invite.organization_id
+      and r.key = 'owner'
+  ) then
+    raise exception 'owner role cannot be granted by standard invitation';
+  end if;
+
   insert into public.profiles (id, status)
   values (actor_id, 'active')
   on conflict (id) do update set status = 'active', updated_at = now();
 
+  -- Membership establishes tenant membership only. Standard invitation roles live in
+  -- user_store_roles, preventing accidental organization-wide privilege escalation.
   insert into public.organization_members (organization_id, user_id, role_id, status)
-  values (invite.organization_id, actor_id, invite.role_id, 'active')
+  values (invite.organization_id, actor_id, null, 'active')
   on conflict (organization_id, user_id)
-  do update set role_id = excluded.role_id, status = 'active', updated_at = now();
+  do update set status = 'active', updated_at = now();
 
   foreach target_store_id in array invite.store_ids loop
     if exists (
@@ -85,7 +97,7 @@ begin
     'team.invitation_accepted',
     'invitation',
     invite.id,
-    jsonb_build_object('role_id', invite.role_id)
+    jsonb_build_object('role_id', invite.role_id, 'store_ids', invite.store_ids)
   );
 
   insert into public.domain_events (
