@@ -15,64 +15,33 @@ Base: `agent/foundation-001-016`
 - [023] Duplicação: novo produto com novos IDs e cópia dos vínculos de adicionais.
 - [024] Disponibilidade: `available`, `sold_out` e `inactive`, independente de exclusão.
 
-## Banco real — aplicado em 10/08/2026
+## Banco real
 
-O projeto Supabase `zsbsczjhiujnhdznrzck`, anteriormente ocupado por outro produto, foi resetado por autorização explícita e passou a ser o backend oficial do PedeAqui.
+Supabase oficial: `zsbsczjhiujnhdznrzck`.
 
-Aplicado:
-
-- fundação multi-tenant;
-- RLS/RBAC;
-- onboarding e convites;
-- auditoria/eventos/idempotência;
-- `categories`;
-- `products`;
-- `modifier_groups`;
-- `modifiers`;
-- `product_modifier_groups`.
-
-Após hardening, o **Security Advisor retornou zero alertas**.
-
-O Performance Advisor apresenta principalmente recomendações informativas de índices de foreign keys e índices ainda não utilizados. Como o banco acabou de ser recriado e está vazio, essas recomendações serão avaliadas contra o workload real, evitando indexação indiscriminada.
+Em 10/08/2026 o banco legado foi resetado com autorização explícita e a fundação + catálogo do PedeAqui foram aplicados como migrations reais. Após hardening, o **Security Advisor retornou zero alertas**.
 
 ## Storage
 
-O Storage antigo possui zero objetos. Dois buckets vazios legados ainda existem porque o conector utilizado não expõe exclusão via Storage API.
-
-O bucket futuro `catalog-media` deve ser criado pela Storage API/CLI com:
-
-- público;
-- limite de 5 MiB;
-- JPEG/PNG/WebP;
-- mutação apenas server-side na primeira versão.
-
-`supabase/sql/09_catalog_storage.sql` agora é somente um contrato documentado e não modifica diretamente o schema gerenciado `storage`.
+O Storage antigo contém zero objetos. Dois buckets vazios legados permanecem temporariamente porque o conector não expõe remoção via Storage API. O contrato do futuro `catalog-media` está documentado em `supabase/sql/09_catalog_storage.sql` sem mutação direta do schema gerenciado.
 
 ## CI
 
-Último CI de código do catálogo antes da ativação do banco: sucesso em install, lint, typecheck, tests e production build. A branch recebeu depois apenas alterações de identidade/documentação/storage contract e deve ser revalidada pelo PR.
+O catálogo passou em install, lint, typecheck, testes e build. Alterações posteriores de branding PedeAqui e documentação serão novamente validadas no PR.
 
 ## Identidade
 
-O produto oficial é **PedeAqui**, com laranja + grafite. A UI provisória vermelha foi substituída pelos tokens oficiais:
-
-- `#FF6B00`
-- `#E65300`
-- `#171717`
-- `#242424`
-- `#FFFDF9`
-
-A arte original foi localizada na File Library, mas o conector não expôs o binário para versionamento; ver `docs/BRAND_IDENTITY.md` no `main`.
+Produto oficial: **PedeAqui**. Paleta: laranja + grafite. A arte original foi localizada na File Library, mas o binário não pôde ser exportado pelo conector; `docs/BRAND_IDENTITY.md` registra a fonte oficial e evita redesenho silencioso.
 
 ## Decisões relevantes
 
 - valores monetários usam centavos inteiros (`*_cents`), nunca float;
-- `sold_out` não exclui/desativa o produto permanentemente;
+- `sold_out` não exclui o produto;
 - soft delete preserva histórico;
-- categoria/produto/adicional sempre carregam `organization_id` + `store_id`;
+- catálogo sempre carrega `organization_id` + `store_id`;
 - vínculos possuem integridade cross-tenant/cross-store;
 - upload de imagem é server-only na primeira implementação.
 
 ## Próximo bloco
 
-[025] Configuração do cardápio → [032] Clientes, conforme `IMPLEMENTATION_BACKLOG.md`.
+[025] Configuração do cardápio → [032] Clientes.
