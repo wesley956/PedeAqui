@@ -1,19 +1,15 @@
--- Catalog media bucket specification. Apply only in the future Supabase project for this restaurant platform.
--- Uploads are server-only through the service role after app-level authorization.
-
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values (
-  'catalog-media',
-  'catalog-media',
-  true,
-  5242880,
-  array['image/jpeg', 'image/png', 'image/webp']
-)
-on conflict (id) do update set
-  public = excluded.public,
-  file_size_limit = excluded.file_size_limit,
-  allowed_mime_types = excluded.allowed_mime_types;
-
--- Intentionally no authenticated INSERT/UPDATE/DELETE policy on storage.objects.
--- Browser clients must not upload directly in the first implementation.
--- Public read is provided by the public bucket URL; mutation remains server-only.
+-- PedeAqui catalog Storage contract.
+-- Bucket lifecycle MUST be managed through the Supabase Storage API/CLI, not by
+-- directly mutating storage.buckets or storage.objects from SQL.
+--
+-- Desired bucket:
+--   id/name: catalog-media
+--   public: true
+--   file_size_limit: 5 MiB (5242880)
+--   allowed MIME types: image/jpeg, image/png, image/webp
+--
+-- Uploads in the first implementation are server-only after app-level
+-- authorization. Browser clients do not receive privileged Storage credentials.
+--
+-- This file intentionally contains no DDL/DML against the managed `storage`
+-- schema. See docs/INFRASTRUCTURE.md and src/server/catalog/catalog-image-service.ts.
