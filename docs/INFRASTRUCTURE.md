@@ -1,47 +1,76 @@
-# Cruz — Infraestrutura e Ambientes
+# PedeAqui — Infraestrutura e Ambientes
 
 ## GitHub
 
-Repositório oficial deste novo sistema: `wesley956/cruz`.
+Repositório técnico oficial: `wesley956/cruz`.
 
-A documentação de produto vive em `docs/` e a primeira fundação está sendo implementada no PR #17.
+A documentação de produto vive em `docs/`. O nome comercial e identidade visual oficiais do sistema são **PedeAqui**.
 
-## Supabase — atenção
+## Supabase oficial
 
-Em 10/08/2026 foi inspecionado o projeto Supabase existente chamado **Cruz**.
+Projeto reaproveitado: **Cruz**  
+Project ref: `zsbsczjhiujnhdznrzck`  
+Região: `sa-east-1`
 
-Ele **não está vazio** e já possui um sistema anterior de agenda/serviços, com migrations próprias e tabelas como:
+### Reset realizado em 10/08/2026
 
-- `appointments`
-- `appointment_events`
-- `availability_blocks`
-- `businesses`
-- `business_members`
-- `clients`
-- `professionals`
-- `services`
-- `reviews`
-- `weekly_availability`
-- tabelas de billing/admin relacionadas.
+Por autorização explícita do proprietário, o projeto Supabase antigo foi reaproveitado para o PedeAqui.
 
-### Decisão atual
+Antes do reset havia outro sistema no projeto. A limpeza removeu:
 
-**Não aplicar a fundação do novo sistema de restaurantes/delivery nesse banco sem uma decisão explícita de arquitetura.**
+- todas as tabelas, views e rotinas de aplicação no schema `public`;
+- usuários antigos do Supabase Auth;
+- cron jobs antigos;
+- histórico de migrations do produto anterior;
+- extensão `pg_net` legada após a nova fundação estar instalada.
 
-A fundação nova usa entidades genéricas como `organizations`, `stores`, `profiles`, `roles`, `permissions`, `audit_logs` e outras. Misturar os dois produtos no mesmo schema público aumentaria risco de colisão, acoplamento e migrações perigosas.
+O Storage estava sem objetos. Permaneceram apenas dois buckets vazios (`evidence` e `logos`) porque operações de remoção de buckets devem ser feitas pela Storage API e o conector usado nesta manutenção não expõe essa ação. Eles não contêm arquivos nem dados do produto antigo.
 
-### Caminho recomendado
+As Edge Functions antigas não possuem ação de exclusão disponível no conector atual. Todas foram substituídas por stubs HTTP 410 (`legacy_function_retired`) e configuradas com `verify_jwt=true`, neutralizando a lógica anterior até que possam ser excluídas pela API/CLI.
 
-Usar um projeto Supabase separado para o novo sistema, mantendo:
+## Schema PedeAqui instalado
 
-- Auth independente;
-- migrations independentes;
-- RLS independente;
-- backups independentes;
-- staging/produção independentes.
+O mesmo projeto agora contém a fundação e o catálogo do PedeAqui:
 
-Criar um novo projeto Supabase pode envolver custo; portanto a criação deve ser confirmada antes de ser executada.
+- `profiles`
+- `organizations`
+- `roles`
+- `permissions`
+- `role_permissions`
+- `organization_members`
+- `stores`
+- `user_store_roles`
+- `invitations`
+- `audit_logs`
+- `domain_events`
+- `idempotency_keys`
+- `categories`
+- `products`
+- `modifier_groups`
+- `modifiers`
+- `product_modifier_groups`
 
-## Status da issue Database (#2)
+Também estão instalados:
 
-O SQL canônico da fundação está versionado em `supabase/sql/`, mas **não foi aplicado no Supabase existente**. A issue só deve ser fechada quando um ambiente apropriado for definido, migration criada/aplicada e RLS validado.
+- RLS multi-tenant;
+- `private.is_org_member`;
+- `private.can_access_store`;
+- `private.has_permission`;
+- RPC de bootstrap de organização/primeira loja;
+- RPC de aceite seguro de convite;
+- permissões iniciais;
+- políticas explícitas de bloqueio para tabelas server-only.
+
+## Validação
+
+Após o hardening, o **Supabase Security Advisor retornou zero alertas**.
+
+O Performance Advisor ainda pode listar índices não utilizados porque o banco acabou de ser recriado e está vazio, além de sugerir índices de algumas foreign keys. Essas sugestões devem ser avaliadas conforme o workload real, evitando criar índices indiscriminadamente antes de uso.
+
+## Storage
+
+O catálogo prevê um bucket `catalog-media` com JPEG/PNG/WebP e limite de 5 MB. A criação/remoção de buckets deve ser feita via Storage API. Não modificar `storage.objects` diretamente por SQL.
+
+## Regra
+
+A partir deste reset, `zsbsczjhiujnhdznrzck` é o backend oficial do **PedeAqui**. Não reutilizar nele migrations ou funções do produto antigo.
