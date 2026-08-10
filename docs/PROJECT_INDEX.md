@@ -31,6 +31,7 @@ Exemplo:
 - `BRAND_IDENTITY.md` — nome, cores, tagline e regras de identidade.
 - `FOUNDATION_STATUS.md` — status da implementação #001–#016 na branch/PR de fundação.
 - `CATALOG_STATUS.md` — status do catálogo #017–#024 na branch/PR de catálogo.
+- `MENU_STATUS.md` — status #025–#032 na branch/PR de cardápio e clientes.
 
 ## Ordem macro
 
@@ -71,7 +72,10 @@ Antes de criar um novo módulo, responder:
 - Blueprint: definido.
 - Identidade: PedeAqui, laranja + grafite.
 - Impressão: subsistema estrutural.
-- Fundação #001–#016: implementada no draft PR #17; código com CI verde e schema aplicado no Supabase oficial.
-- Catálogo #017–#024: implementado no draft PR #26; código com CI verde e schema aplicado no Supabase oficial.
-- Supabase `zsbsczjhiujnhdznrzck`: resetado e dedicado ao PedeAqui; Security Advisor sem alertas após hardening.
-- Próximo bloco: #025–#032 — configuração/cardápio público + início de clientes.
+- Fundação #001–#016: implementada no draft PR #17; schema aplicado no Supabase oficial.
+- Catálogo #017–#024: implementado no draft PR #26; CI verde e schema aplicado no Supabase oficial.
+- Cardápio/Clientes #025–#032: implementado no draft PR #35; CI verde e migrations aplicadas.
+- Cardápio público disponível em arquitetura via `/m/:slug` e produto via `/m/:slug/produto/:id`.
+- Supabase `zsbsczjhiujnhdznrzck`: dedicado ao PedeAqui; Security Advisor com zero alertas após as migrations atuais.
+- Arte original da logo PedeAqui localizada na File Library; binário ainda não exportável pelo conector atual. Tokens e identidade oficial registrados em `BRAND_IDENTITY.md`.
+- Próximo bloco lógico: #033–#035 — endereços e configuração inicial de entrega; depois #036–#040 — carrinho e PricingService.
