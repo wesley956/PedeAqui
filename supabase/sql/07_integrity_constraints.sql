@@ -11,7 +11,7 @@ alter table public.organization_members
   add constraint organization_members_role_same_org_fk
   foreign key (organization_id, role_id)
   references public.roles (organization_id, id)
-  on delete set null;
+  on delete restrict;
 
 alter table public.user_store_roles
   add constraint user_store_roles_store_same_org_fk
