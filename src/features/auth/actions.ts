@@ -20,15 +20,22 @@ function getAppUrl() {
   return process.env.APP_URL ?? "http://localhost:3000";
 }
 
+function getSafeReturnPath(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") return "/dashboard";
+  if (!value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  return value;
+}
+
 export async function signInAction(formData: FormData) {
   const parsed = getCredentials(formData);
-  if (!parsed.success) redirect("/login?error=invalid_input");
+  const returnPath = getSafeReturnPath(formData.get("next"));
+  if (!parsed.success) redirect(`/login?error=invalid_input&next=${encodeURIComponent(returnPath)}`);
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) redirect("/login?error=invalid_credentials");
+  if (error) redirect(`/login?error=invalid_credentials&next=${encodeURIComponent(returnPath)}`);
 
-  redirect("/dashboard");
+  redirect(returnPath);
 }
 
 export async function signUpAction(formData: FormData) {
