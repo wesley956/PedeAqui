@@ -3,7 +3,7 @@ import "server-only";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { authorize } from "@/server/access/authorize";
+import { authorize, authorizeOrganization } from "@/server/access/authorize";
 import { getAccessContext } from "@/server/access/context";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
@@ -40,7 +40,7 @@ export class StoreService {
 
   static async create(input: z.input<typeof storeInputSchema>) {
     const values = storeInputSchema.parse(input);
-    const context = await authorize(PERMISSIONS.STORES_MANAGE);
+    const context = await authorizeOrganization(PERMISSIONS.STORES_MANAGE);
     const admin = createAdminClient();
 
     const { data, error } = await admin
