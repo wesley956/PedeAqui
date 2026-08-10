@@ -3,7 +3,7 @@ import "server-only";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { authorize } from "@/server/access/authorize";
+import { authorize, authorizeOrganization } from "@/server/access/authorize";
 import { getAccessContext } from "@/server/access/context";
 import { PERMISSIONS, type PermissionKey } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
@@ -31,7 +31,7 @@ export class RoleService {
 
   static async createCustom(input: z.input<typeof customRoleSchema>) {
     const values = customRoleSchema.parse(input);
-    const context = await authorize(PERMISSIONS.TEAM_MANAGE);
+    const context = await authorizeOrganization(PERMISSIONS.TEAM_MANAGE);
     const admin = createAdminClient();
 
     const uniquePermissionKeys = [...new Set(values.permissions)];
