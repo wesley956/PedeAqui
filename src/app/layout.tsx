@@ -3,7 +3,10 @@ import "./globals.css";
 import "./shell.css";
 
 export const metadata: Metadata = {
-  title: "Cruz",
+  title: {
+    default: "PedeAqui",
+    template: "%s | PedeAqui",
+  },
   description: "Gestão, pedidos e operação para estabelecimentos alimentícios.",
 };
 
