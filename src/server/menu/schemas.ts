@@ -28,8 +28,10 @@ export const storeHourInputSchema = z.object({
   closesNextDay: z.boolean().default(false),
   sortOrder: z.number().int().nonnegative().default(0),
   active: z.boolean().default(true),
-}).refine((value) => value.opensAt !== value.closesAt, {
-  message: "Opening and closing times must differ",
+}).refine((value) => (
+  value.closesNextDay ? value.closesAt < value.opensAt : value.opensAt < value.closesAt
+), {
+  message: "Invalid opening interval",
 });
 
 export type StoreHourInput = z.infer<typeof storeHourInputSchema>;
