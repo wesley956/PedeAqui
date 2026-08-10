@@ -1,6 +1,6 @@
-# Cruz — Índice Mestre do Projeto
+# PedeAqui — Índice Mestre do Projeto
 
-Este diretório é a fonte oficial de decisões, arquitetura, escopo e backlog do projeto Cruz.
+Este diretório é a fonte oficial de decisões, arquitetura, escopo e backlog do produto **PedeAqui**. O repositório técnico continua se chamando `cruz`.
 
 ## Objetivo do produto
 
@@ -14,14 +14,23 @@ Exemplo:
 
 `order.completed` → estoque → financeiro → CRM → fidelidade → analytics/notificações.
 
+## Identidade oficial
+
+- Nome: **PedeAqui**
+- Tagline: **Seu pedido começa aqui.**
+- Paleta-base: laranja + grafite
+- Especificação: `BRAND_IDENTITY.md`
+
 ## Documentos
 
 - `BLUEPRINT_MASTER.md` — visão completa do produto, módulos, entidades, fluxos e fases.
 - `IMPLEMENTATION_BACKLOG.md` — backlog técnico Fase 0 + Fase 1 e sequência executável.
 - `PRINTING_SYSTEM.md` — arquitetura profissional de impressão, filas, estações, roteamento e contingência.
 - `ARCHITECTURE_DECISIONS.md` — decisões técnicas e regras que não podem ser quebradas sem ADR explícita.
-- `INFRASTRUCTURE.md` — ambientes e limites de infraestrutura, inclusive banco que não deve receber esta fundação.
-- `FOUNDATION_STATUS.md` — status da implementação #001–#016 (presente na branch/PR de fundação enquanto não for mesclada).
+- `INFRASTRUCTURE.md` — backend oficial e histórico de reset do Supabase.
+- `BRAND_IDENTITY.md` — nome, cores, tagline e regras de identidade.
+- `FOUNDATION_STATUS.md` — status da implementação #001–#016 na branch/PR de fundação.
+- `CATALOG_STATUS.md` — status do catálogo #017–#024 na branch/PR de catálogo.
 
 ## Ordem macro
 
@@ -57,11 +66,12 @@ Antes de criar um novo módulo, responder:
 5. Quais dados pertencem à organização e à unidade?
 6. Quais ações precisam de auditoria?
 
-## Estado atual
+## Estado atual — 10/08/2026
 
 - Blueprint: definido.
-- Fase 0 + Fase 1: definida.
-- Impressão: promovida a subsistema estrutural.
-- Issues #001–#016: criadas no GitHub.
-- Fundação: implementada no draft PR #17, com CI de código verde; validação de banco real permanece pendente.
-- Banco: o projeto Supabase existente chamado Cruz pertence a outro sistema de agenda e não deve receber automaticamente esta fundação; ver `INFRASTRUCTURE.md`.
+- Identidade: PedeAqui, laranja + grafite.
+- Impressão: subsistema estrutural.
+- Fundação #001–#016: implementada no draft PR #17; código com CI verde e schema aplicado no Supabase oficial.
+- Catálogo #017–#024: implementado no draft PR #26; código com CI verde e schema aplicado no Supabase oficial.
+- Supabase `zsbsczjhiujnhdznrzck`: resetado e dedicado ao PedeAqui; Security Advisor sem alertas após hardening.
+- Próximo bloco: #025–#032 — configuração/cardápio público + início de clientes.
