@@ -1,0 +1,25 @@
+export const PERMISSIONS = {
+  ORGANIZATION_MANAGE: "organization.manage",
+  STORES_VIEW: "stores.view",
+  STORES_MANAGE: "stores.manage",
+  TEAM_VIEW: "team.view",
+  TEAM_MANAGE: "team.manage",
+  AUDIT_VIEW: "audit.view",
+  DASHBOARD_VIEW: "dashboard.view",
+  PRODUCTS_VIEW: "products.view",
+  PRODUCTS_CREATE: "products.create",
+  PRODUCTS_EDIT: "products.edit",
+  PRODUCTS_DELETE: "products.delete",
+  ORDERS_VIEW: "orders.view",
+  ORDERS_CREATE: "orders.create",
+  ORDERS_EDIT: "orders.edit",
+  ORDERS_CANCEL: "orders.cancel",
+  CASH_OPEN: "cash.open",
+  CASH_WITHDRAW: "cash.withdraw",
+  CASH_CLOSE: "cash.close",
+  CUSTOMERS_VIEW: "customers.view",
+  CUSTOMERS_MANAGE: "customers.manage",
+  REPORTS_VIEW: "reports.view",
+} as const;
+
+export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
