@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { cartCookieName } from "@/server/cart/cart-token";
+import { orderCookieName } from "@/server/orders/order-token";
 import { PublicOrderService } from "@/server/orders/public-order-service";
 import { orderStatusLabels, productionStatusLabels } from "@/server/orders/state-machines";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
@@ -36,9 +36,9 @@ const fulfillmentLabels: Record<string, string> = {
 
 export default async function PublicOrderPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
-  const token = (await cookies()).get(cartCookieName(slug))?.value;
-  if (!token) notFound();
-  const data = await PublicOrderService.get(slug, id, token);
+  const accessToken = (await cookies()).get(orderCookieName(slug, id))?.value;
+  if (!accessToken) notFound();
+  const data = await PublicOrderService.get(slug, id, accessToken);
   if (!data) notFound();
 
   const { order, items, store } = data;
