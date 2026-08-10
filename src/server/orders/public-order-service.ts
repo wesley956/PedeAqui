@@ -2,12 +2,12 @@ import "server-only";
 
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { hashCartToken } from "@/server/cart/cart-token";
+import { hashOrderAccessToken } from "@/server/orders/order-token";
 
 const uuidSchema = z.string().uuid();
 
 export class PublicOrderService {
-  static async get(storeSlug: string, orderId: string, token: string) {
+  static async get(storeSlug: string, orderId: string, accessToken: string) {
     const id = uuidSchema.parse(orderId);
     const admin = createAdminClient();
     const { data: store, error: storeError } = await admin.from("stores")
@@ -21,7 +21,7 @@ export class PublicOrderService {
       .eq("id", id)
       .eq("organization_id", store.organization_id)
       .eq("store_id", store.id)
-      .eq("public_access_token_hash", hashCartToken(token))
+      .eq("public_access_token_hash", hashOrderAccessToken(accessToken))
       .maybeSingle();
     if (error) throw error;
     if (!order) return null;
