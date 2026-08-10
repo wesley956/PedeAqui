@@ -20,6 +20,8 @@ Exemplo:
 - `IMPLEMENTATION_BACKLOG.md` — backlog técnico Fase 0 + Fase 1 e sequência executável.
 - `PRINTING_SYSTEM.md` — arquitetura profissional de impressão, filas, estações, roteamento e contingência.
 - `ARCHITECTURE_DECISIONS.md` — decisões técnicas e regras que não podem ser quebradas sem ADR explícita.
+- `INFRASTRUCTURE.md` — ambientes e limites de infraestrutura, inclusive banco que não deve receber esta fundação.
+- `FOUNDATION_STATUS.md` — status da implementação #001–#016 (presente na branch/PR de fundação enquanto não for mesclada).
 
 ## Ordem macro
 
@@ -60,4 +62,6 @@ Antes de criar um novo módulo, responder:
 - Blueprint: definido.
 - Fase 0 + Fase 1: definida.
 - Impressão: promovida a subsistema estrutural.
-- Execução: fundação #001–#016 é o primeiro bloco de implementação.
+- Issues #001–#016: criadas no GitHub.
+- Fundação: implementada no draft PR #17, com CI de código verde; validação de banco real permanece pendente.
+- Banco: o projeto Supabase existente chamado Cruz pertence a outro sistema de agenda e não deve receber automaticamente esta fundação; ver `INFRASTRUCTURE.md`.
