@@ -35,6 +35,7 @@ Exemplo:
 - `DELIVERY_STATUS.md` — status #033–#035 na branch/PR de endereços e entrega.
 - `CART_STATUS.md` — status #036–#040 na branch/PR de carrinho e pricing.
 - `CHECKOUT_STATUS.md` — status #041–#046 na branch/PR de checkout.
+- `ORDER_ENGINE_STATUS.md` — status #047–#057 na branch/PR do motor de pedidos.
 
 ## Ordem macro
 
@@ -74,18 +75,19 @@ Antes de criar um novo módulo, responder:
 
 - Blueprint: definido.
 - Identidade: PedeAqui, laranja + grafite.
-- Impressão: subsistema estrutural.
+- Impressão: subsistema estrutural e próximo bloco lógico.
 - Fundação #001–#016: implementada no draft PR #17; schema aplicado no Supabase oficial.
 - Catálogo #017–#024: implementado no draft PR #26; CI verde e schema aplicado no Supabase oficial.
 - Cardápio/Clientes #025–#032: implementado no draft PR #35; CI verde e migrations aplicadas.
 - Endereços/Entrega #033–#035: implementado no draft PR #39; CI verde e migrations aplicadas.
 - Carrinho/Pricing #036–#040: implementado no draft PR #47; CI verde e migrations aplicadas.
-- Checkout #041–#046: implementado no draft PR #54; CI verde no run #25 e migration aplicada.
-- Checkout usa `checkout_sessions` 1:1 com carrinho, identidade privada, entrega/retirada, endereço snapshotado, cotação de frete, pagamento e revisão final server-side.
-- Formas de pagamento são configuráveis por unidade em `/configuracoes/pagamentos`.
-- Cliente existente pode ser reconhecido internamente por telefone normalizado sem expor endereços salvos; cliente novo só será persistido junto com a criação efetiva do pedido para evitar registros de checkout abandonado.
-- O carrinho e o checkout continuam server-only nas operações sensíveis; `anon`/`authenticated` não executam RPCs internas.
-- `PricingService` continua sendo a fonte autoritativa de preço; revisão final revalida carrinho, operação, entrega e pagamento com estado atual do servidor.
-- Supabase `zsbsczjhiujnhdznrzck`: dedicado ao PedeAqui; Security Advisor com zero alertas após as migrations atuais.
+- Checkout #041–#046: implementado no draft PR #54; CI verde e migrations aplicadas.
+- Motor de Pedidos #047–#057: implementado no draft PR #66; CI verde no run #27 e migrations aplicadas no Supabase oficial.
+- Pedidos usam quatro ciclos independentes: `order_status`, `payment_status`, `production_status` e `fulfillment_status`; produção inicia em `pending_confirmation` e só pode entrar na fila depois da confirmação.
+- Checkout → pedido é transacional e idempotente por carrinho, com número amigável atômico por unidade, criação/reaproveitamento de cliente, snapshots de itens/adicionais/endereço/pagamento, histórico inicial e `order.created` no outbox.
+- Cancelamento/recusa encerra produção e fulfillment na mesma transação; pagamento continua independente para permitir refund explícito.
+- Acompanhamento público usa token dedicado por pedido em cookie HttpOnly; o cookie de carrinho é encerrado após a conversão para que um novo carrinho possa começar sem perder acesso ao pedido anterior.
+- `/pedidos` e `/pedidos/[id]` possuem atualização interna em realtime sujeita a sessão autenticada, `orders.view` e RLS; o cliente público não recebe SELECT anônimo em `orders`.
+- Supabase `zsbsczjhiujnhdznrzck`: dedicado ao PedeAqui; Security Advisor com zero alertas após as migrations do motor de pedidos.
 - Arte original da logo PedeAqui localizada na File Library; binário ainda não exportável pelo conector atual. Tokens e identidade oficial registrados em `BRAND_IDENTITY.md`.
-- Próximo bloco lógico: #047–#057 — Motor de Pedidos (`orders`, snapshots, número amigável, state machines separadas, histórico, OrderService, checkout→pedido, cancelamento, eventos e realtime).
+- Próximo bloco lógico: #058–#082 — Central Profissional de Impressão (impressoras, estações, roteamento, fila durável, retry, templates, reimpressão, fallback, Print Agent, heartbeat e ESC/POS).
