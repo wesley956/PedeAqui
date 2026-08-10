@@ -6,6 +6,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { hashCartToken } from "@/server/cart/cart-token";
 import { CheckoutError, CheckoutService } from "@/server/checkout/checkout-service";
+import { deriveOrderAccessToken, hashOrderAccessToken } from "@/server/orders/order-token";
 import {
   assertTransition,
   fulfillmentIsComplete,
@@ -18,7 +19,7 @@ import {
 } from "@/server/orders/state-machines";
 
 const uuidSchema = z.string().uuid();
-const createResultSchema = z.object({ order_id: z.string().uuid(), display_number: z.number(), created: z.boolean() });
+const createResultSchema = z.object({ order_id: z.string().uuid(), display_number: z.coerce.number(), created: z.boolean() });
 const transitionResultSchema = z.object({
   order_id: z.string().uuid(),
   domain: z.enum(["order", "payment", "production", "fulfillment"]),
@@ -33,7 +34,40 @@ function requireStoreId(storeId: string | null) {
 }
 
 export class OrderService {
+  private static async findExistingByCartToken(storeSlug: string, token: string) {
+    const admin = createAdminClient();
+    const { data: store, error: storeError } = await admin.from("stores")
+      .select("id, organization_id")
+      .ilike("slug", storeSlug)
+      .maybeSingle();
+    if (storeError) throw storeError;
+    if (!store) return null;
+
+    const { data: cart, error: cartError } = await admin.from("carts")
+      .select("id")
+      .eq("organization_id", store.organization_id)
+      .eq("store_id", store.id)
+      .eq("token_hash", hashCartToken(token))
+      .maybeSingle();
+    if (cartError) throw cartError;
+    if (!cart) return null;
+
+    const { data: order, error: orderError } = await admin.from("orders")
+      .select("id, display_number")
+      .eq("organization_id", store.organization_id)
+      .eq("store_id", store.id)
+      .eq("source_cart_id", cart.id)
+      .maybeSingle();
+    if (orderError) throw orderError;
+    if (!order) return null;
+    return { order_id: order.id, display_number: Number(order.display_number), created: false };
+  }
+
   static async createFromCheckout(storeSlug: string, token: string) {
+    const accessToken = deriveOrderAccessToken(token);
+    const existing = await this.findExistingByCartToken(storeSlug, token);
+    if (existing) return { ...existing, accessToken };
+
     const reviewed = await CheckoutService.review(storeSlug, token);
     if (!reviewed.review.ready) {
       throw new CheckoutError("checkout_not_ready", reviewed.review.blockers.map((item) => item.message).join(" "));
@@ -43,9 +77,10 @@ export class OrderService {
     const { data, error } = await admin.rpc("create_order_from_checkout_internal", {
       p_store_id: reviewed.store.id,
       p_token_hash: hashCartToken(token),
+      p_order_access_token_hash: hashOrderAccessToken(accessToken),
     });
     if (error) throw error;
-    return createResultSchema.parse(data);
+    return { ...createResultSchema.parse(data), accessToken };
   }
 
   static async list(limit = 100) {
