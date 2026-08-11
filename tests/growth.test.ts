@@ -9,6 +9,7 @@ const operations = sql("39_growth_operations.sql");
 const pdv = sql("40_growth_pdv.sql");
 const campaigns = sql("41_growth_campaigns_automations.sql");
 const cartRefresh = sql("42_growth_cart_refresh.sql");
+const privateGrants = sql("43_growth_private_execution_grants.sql");
 
 describe("growth database contracts", () => {
   it("defines explicit growth permissions", () => {
@@ -54,8 +55,8 @@ describe("growth database contracts", () => {
     expect(operations).toContain("coupon_discount_cents");
     expect(operations).toContain("cashback_discount_cents");
     expect(operations).toContain("loyalty_redeemed_points");
-    expect(operations).toContain("case when v_total=0 then 'paid' else 'pending' end");
-    expect(operations).toContain("if new.total_cents=0");
+    expect(operations).toMatch(/case\s+when\s+v_total\s*=\s*0\s+then\s+'paid'\s+else\s+'pending'\s+end/);
+    expect(operations).toMatch(/if\s+new\.total_cents\s*=\s*0/);
   });
 
   it("uses compensating transactions when a discounted order is rejected or canceled", () => {
@@ -96,10 +97,18 @@ describe("growth database contracts", () => {
   });
 
   it("does not grant browser roles direct mutation of growth tables or internal RPCs", () => {
-    const all = [core, operations, pdv, campaigns, cartRefresh].join("\n");
+    const all = [core, operations, pdv, campaigns, cartRefresh, privateGrants].join("\n");
     expect(all).not.toMatch(/grant\s+(insert|update|delete)[^;]*to\s+authenticated/);
     expect(all).not.toMatch(/grant\s+execute[^;]*to\s+(anon|authenticated)/);
     expect(all).toContain("security invoker");
+  });
+
+  it("grants only the backend the private helper chain required by SECURITY INVOKER RPCs", () => {
+    expect(privateGrants).toContain("grant usage on schema private to service_role");
+    expect(privateGrants).toMatch(/grant\s+execute\s+on\s+function\s+private\.resolve_growth_benefits[\s\S]*to\s+service_role/);
+    expect(privateGrants).toMatch(/grant\s+execute\s+on\s+function\s+private\.post_cashback_transaction[\s\S]*to\s+service_role/);
+    expect(privateGrants).toMatch(/grant\s+execute\s+on\s+function\s+private\.execute_growth_automation[\s\S]*to\s+service_role/);
+    expect(privateGrants).toContain("from anon,authenticated");
   });
 });
 
