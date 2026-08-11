@@ -80,23 +80,23 @@ Antes de criar um novo módulo, responder:
 
 ### Consolidado em `main`
 
-O `main` está consolidado oficialmente até **[139]**. A cadeia que estava empilhada foi mesclada sequencialmente preservando ancestralidade:
+O `main` está consolidado oficialmente até **[151]**. A cadeia foi mesclada preservando ancestralidade e fechando cada milestone concluído:
 
 - Pagamentos #096–#101 — PR #114.
 - PDV #102–#110 — PR #124.
 - Clientes/Dashboard #111–#115 — PR #130.
 - Qualidade/Hardening #116–#126 — PR #142.
-- Salão #127–#139 — PR #156, merge final `90e0807aa08560f48012bee22631adee7d1396ff`.
+- Salão #127–#139 — PR #156, merge `90e0807aa08560f48012bee22631adee7d1396ff`.
+- CRM e Crescimento #140–#151 — PR #169, merge `e01a15b5d5f8cac1c846de3f70da088805e893e6`.
 
-Todo o núcleo #001–#139 está, portanto, no `main`. As migrations correspondentes permanecem aplicadas no Supabase oficial.
+Todo o núcleo #001–#151 está, portanto, no `main`. As migrations correspondentes permanecem aplicadas no Supabase oficial.
 
 ### Milestone 15 — CRM e Crescimento #140–#151
 
-Implementação atual:
+Status: **concluído e mesclado em `main`**.
 
-- branch `agent/crm-growth-140-151`;
-- draft PR #169, base `main`;
-- issues oficiais #157–#168;
+- PR #169 mesclado com merge commit `e01a15b5d5f8cac1c846de3f70da088805e893e6`;
+- issues oficiais #157–#168 encerradas como `completed`;
 - permissões `growth.view`, `growth.manage`, `growth.campaigns`;
 - cupons e elegibilidade;
 - ledgers de cashback e pontos;
@@ -121,7 +121,7 @@ Migrations Growth aplicadas no Supabase oficial:
 - `growth_cart_refresh_140_151` — 42.
 - `growth_private_execution_grants_140_151` — 43.
 
-E2Es PostgreSQL com rollback já validaram:
+E2Es PostgreSQL com rollback validaram:
 
 - checkout com cupom + cashback + pontos + geração posterior de recompensas;
 - rejeição com devolução dos benefícios;
@@ -132,10 +132,17 @@ E2Es PostgreSQL com rollback já validaram:
 - automações `order.completed` de cashback/pontos/campanha;
 - rotinas de aniversário/inatividade idempotentes por data.
 
-A auditoria de grants detectou e corrigiu uma cadeia de privilege necessária para RPCs `SECURITY INVOKER`: `service_role` recebeu USAGE no schema `private` e EXECUTE apenas nos helpers Growth indispensáveis; `anon`/`authenticated` continuam sem EXECUTE nesses helpers.
+Segurança final:
+
+- Security Advisor: 0 alertas;
+- 12/12 tabelas Growth com RLS;
+- 0 privilégios diretos de `anon` nas tabelas Growth;
+- 0 privilégios de mutação de `authenticated`;
+- RPCs Growth e helpers privados executáveis somente por `service_role`;
+- 0 fixtures/resíduos após E2Es.
 
 Detalhes, regras e evidências: `CRM_GROWTH_STATUS.md`.
 
 ### Próxima expansão macro
 
-Após concluir e mesclar #169, o blueprint segue para **Conversas / WhatsApp / IA**, reutilizando campaigns/recipients e mantendo provedores externos desacoplados do domínio de pedidos.
+O blueprint segue para **Conversas / WhatsApp / IA**, reutilizando campaigns/recipients e mantendo provedores externos desacoplados do domínio de pedidos.
