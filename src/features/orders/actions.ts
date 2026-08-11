@@ -98,8 +98,6 @@ export type OrderManagerActionState = {
   error: string | null;
 };
 
-export const initialOrderManagerActionState: OrderManagerActionState = { ok: false, message: null, error: null };
-
 export async function orderManagerAction(
   _previousState: OrderManagerActionState,
   formData: FormData,
