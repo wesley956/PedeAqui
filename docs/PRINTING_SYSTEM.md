@@ -1,259 +1,103 @@
-# Cruz — Subsistema Profissional de Impressão
+# Arquitetura Profissional de Impressão — PedeAqui
 
-A impressão é parte estrutural da operação. O sistema deve funcionar em estabelecimentos que utilizam somente impressão, somente KDS ou KDS + impressão simultaneamente.
+A impressão é um subsistema estrutural. O pedido nunca fala diretamente com uma impressora.
 
-## 1. Arquitetura
+## Fluxo canônico
 
-`Pedido/Eventos → PrintService → PrintRoutingService → print_jobs → Print Agent/driver → Impressora`
+```text
+order.confirmed
+      ↓
+trigger transacional
+      ↓
+PrintRoutingService / regras de estação
+      ↓
+print_jobs (fila durável)
+      ↓
+claim com lease
+      ↓
+Print Agent local
+      ↓
+ESC/POS / driver físico
+      ↓
+ACK ou fail/retry/fallback
+```
 
-Não usar `window.print()` como solução operacional principal.
+## Princípios
 
-## 2. Tipos de documentos
+1. `print_jobs` é a fonte de verdade da intenção de impressão.
+2. Realtime é sinalização opcional, nunca substituto da fila persistente.
+3. Falha de rede/agente/impressora não apaga o job.
+4. O pedido não conhece TCP, USB, Bluetooth ou ESC/POS.
+5. Reimpressão cria nova via auditada; nunca altera o job original.
+6. `service_role` fica somente no backend PedeAqui; Print Agent usa credencial própria.
+7. Integridade organização/unidade é garantida também por FKs compostas.
 
-### Produção
-- cozinha;
-- chapa;
-- fritura;
-- pizzaria;
-- bar;
-- sobremesas;
-- expedição.
+## Entidades
 
-### Atendimento/caixa
-- pedido;
-- pré-conta;
-- comanda;
-- balcão;
-- comprovante;
-- fechamento;
-- sangria;
-- suprimento.
+- `production_stations`: cozinha/chapa/fritura/bar/expedição/balcão.
+- `printers`: conexão, papel 58/80 mm, cópias, agente, saúde e fallback.
+- `station_printers`: estação → uma ou mais impressoras, prioridade e cópias.
+- `product_production_stations`: produto → estação de produção.
+- `print_agents`: computadores locais autorizados; só o hash do token é persistido.
+- `print_jobs`: pedido/estação/impressora/documento/payload/template/status/tentativas/lease/cópias/erro/idempotência/reimpressão.
 
-### Evoluções
-- NFC-e/DANFE;
-- etiquetas;
-- QR Code;
-- etiquetas de embalagem/entrega.
+## Estados e concorrência
 
-## 3. Entidades
+Estados: `pending`, `processing`, `printed`, `failed`, `cancelled`.
 
-### `printers`
-Campos principais:
-- `id`
-- `organization_id`
-- `store_id`
-- `name`
-- `connection_type`
-- `address`
-- `port`
-- `paper_width`
-- `status`
-- `active`
-- `copies`
-- `fallback_printer_id`
-- timestamps.
+`processing` possui lease. Claim usa `FOR UPDATE SKIP LOCKED`: dois agentes concorrentes não recebem o mesmo job simultaneamente. ACK/fail só é aceito do agente que possui o job.
 
-Tipos previstos: `network`, `usb`, `bluetooth`, `system`, `cloud_agent`.
+## Retry e fallback
 
-Prioridade inicial: rede + agente local.
+Falhas recebem backoff exponencial limitado. Ao atingir `max_attempts`, usa `fallback_printer_id` quando configurado. Sem fallback, permanece `failed`; nunca é descartado.
 
-### `production_stations`
-Exemplos: cozinha, chapa, fritura, bar, sobremesas, expedição.
+## Idempotência
 
-### `station_printers`
-Relaciona estação a uma ou mais impressoras.
+Confirmação automática usa chave única por `order + confirmed + estação + impressora + documento`. Reexecutar roteamento não duplica a intenção lógica.
 
-### `product_production_stations`
-Roteia produtos/itens para estações.
+## Templates
 
-### `print_jobs`
-Campos:
-- `id`
-- `organization_id`
-- `store_id`
-- `printer_id`
-- `station_id`
-- `order_id`
-- `document_type`
-- `payload`
-- `rendered_content`
-- `status`
-- `attempts`
-- `idempotency_key`
-- `created_at`
-- `processing_at`
-- `printed_at`
-- `failed_at`
-- `error_message`.
+- `kitchen`: número/horário/canal/estação/itens/adicionais/observações; sem dados financeiros desnecessários.
+- `expedition`: pedido completo, cliente/endereço, itens, pagamento, total e troco.
+- `counter`: pedido completo adequado ao balcão/retirada.
 
-Status: `pending`, `processing`, `printed`, `failed`, `cancelled`.
+Conteúdo é renderizado server-side e codificado ESC/POS pelo agente.
 
-## 4. Roteamento
+## Reimpressão
 
-Pedido:
-- 2 X-Bacon → chapa;
-- 1 batata → fritura;
-- 2 Coca → bar;
-- ticket completo → expedição.
+Sempre cria um novo `print_job` com `original_job_id`, motivo obrigatório, usuário solicitante, evento, auditoria e marca `*** REIMPRESSAO ***`.
 
-Cada estação recebe apenas o conteúdo necessário. O ticket de cozinha não deve expor lucro ou informação financeira desnecessária.
+## Print Agent
 
-## 5. Gatilhos configuráveis
+MVP em `print-agent/`:
 
-Estabelecimento poderá configurar impressão automática em:
-- recebimento;
-- confirmação;
-- pagamento;
-- pronto/expedição.
-
-Configuração padrão inicial recomendada: produção em `order.confirmed`.
-
-## 6. Idempotência
-
-Um mesmo evento não pode criar duas produções acidentais.
-
-Exemplo: duas entregas de `order.confirmed` com mesma chave lógica → um único conjunto de `print_jobs`.
-
-## 7. Retentativa e contingência
-
-Falha:
-
-`pending → processing → failed → retry → ...`
-
-Se exceder tentativas:
-- manter job persistido;
-- alertar operação;
-- permitir retry manual;
-- usar fallback se configurado.
-
-Nunca descartar silenciosamente job de impressão.
-
-## 8. Reimpressão
-
-Todo pedido poderá ser reimpresso por usuário autorizado.
-
-A via deve destacar:
-
-`*** REIMPRESSÃO ***`
-
-Registrar em auditoria:
-- usuário;
-- data/hora;
-- motivo;
-- pedido;
-- impressora;
-- job original.
-
-## 9. Troco
-
-Checkout em dinheiro poderá registrar:
-- `needs_change`;
-- `change_for`.
-
-Expedição pode imprimir total, valor informado para troco e troco calculado.
-
-## 10. Templates
-
-### Produção
-Deve priorizar legibilidade:
-- pedido em fonte grande;
-- horário;
-- canal/tipo;
-- itens e quantidades;
-- adicionais e remoções;
-- observação do item;
-- observação operacional.
-
-### Expedição
-Pode conter:
-- pedido;
-- cliente;
-- telefone conforme permissão/política;
-- endereço;
-- referência;
-- forma de pagamento;
-- total/troco;
-- lista completa dos itens.
-
-Templates devem ser desacoplados de transporte/driver.
-
-## 11. Print Agent
-
-Agente local será responsável por consumir jobs autorizados e imprimir em dispositivos que a nuvem não alcança diretamente.
-
-Arquitetura:
-
-`Cloud queue → Agent autenticado → spool local → rede/USB → térmica`
-
-Requisitos:
-- autenticação do dispositivo;
-- escopo por organização/loja;
+- Node.js 22+;
+- polling/claim seguro;
+- spool local;
+- ACK/fail;
 - heartbeat;
-- atualização segura;
-- spool/retry local;
-- confirmação de job;
-- não armazenar secrets desnecessários.
+- TCP ESC/POS;
+- CP850 básico pt-BR;
+- 58/80 mm.
 
-## 12. Saúde
+USB, Bluetooth e spool do sistema são adapters futuros sem mudança do domínio.
 
-Heartbeat do agente/impressora mantém:
-- `online/offline`;
-- `last_seen_at`;
-- versão do agente;
-- erro recente.
+## Limite físico de exactly-once
 
-Painel mostra saúde das impressoras e alerta indisponibilidade.
+A criação do job é idempotente. A impressão física é **at-least-once** porque impressoras térmicas comuns não participam de transações do banco. Se o processo cair após a impressora aceitar bytes e antes do registro local de sucesso, uma tentativa posterior pode gerar via duplicada. O spool reduz a janela e evita reimprimir `printed_unacked`, mas não inventa garantia que o hardware não oferece.
 
-## 13. Central de impressão
+## Segurança
 
-Rota prevista: `/configuracoes/impressoes`.
+- RLS em todas as tabelas do subsistema.
+- `anon` sem acesso.
+- `authenticated` somente leitura autorizada por `printing.view`.
+- `print_agents.token_hash` server-only.
+- mutações administrativas passam por `authorize()`.
+- RPCs internas de agente/reimpressão são `service_role` only.
+- `service_role` nunca vai para o computador da loja.
 
-Seções:
-- Impressoras;
-- Estações;
-- Roteamento;
-- Templates;
-- Fila;
-- Histórico.
+## Operação
 
-Monitor de fila mostra pedido, estação, impressora, status, tentativas e erro.
+Painel: `/configuracoes/impressoes`.
 
-Ações autorizadas:
-- tentar novamente;
-- reimprimir;
-- cancelar;
-- ver erro.
-
-## 14. Serviços
-
-- `PrintService`
-- `PrintRoutingService`
-- `PrintQueueService`
-- `PrintTemplateService`
-- `PrinterHealthService`
-
-## 15. Eventos
-
-- `print.job_created`
-- `print.processing`
-- `print.completed`
-- `print.failed`
-- `printer.online`
-- `printer.offline`
-
-## 16. Testes obrigatórios
-
-### Roteamento
-Um pedido com itens de três estações produz três tickets segmentados + expedição completa.
-
-### Falha
-Impressora offline mantém job, tenta novamente, alerta e usa fallback se configurado.
-
-### Duplicidade
-Dois cliques/eventos de confirmação geram uma transição e um conjunto lógico de impressões.
-
-### Reimpressão
-Gera nova via marcada e auditada sem confundir com a impressão original.
-
-### Compatibilidade
-Testar ESC/POS e larguras térmicas comuns; detalhes de drivers devem ficar encapsulados no agente.
+O monitor exibe status, tentativas, pedido, estação, impressora, cópias e erro, com retry/cancelamento/reimpressão conforme regras de segurança.
