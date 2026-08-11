@@ -7,6 +7,8 @@ const sql = [
   "supabase/sql/33_dining_core.sql",
   "supabase/sql/34_dining_operations.sql",
   "supabase/sql/35_dining_rounds_settlement_public.sql",
+  "supabase/sql/36_dining_allocation_scope.sql",
+  "supabase/sql/37_dining_security_hardening.sql",
 ].map((path) => readFileSync(join(process.cwd(), path), "utf8")).join("\n").toLowerCase();
 
 describe("dining domain", () => {
@@ -46,6 +48,15 @@ describe("dining database contracts", () => {
     expect(sql).toContain("payment method disabled");
     expect(sql).toContain("payment exceeds tab member balance");
     expect(sql).toContain("metadata->>'tab_member_id'");
+  });
+  it("scopes item allocation to the authorized tab", () => {
+    expect(sql).toContain("item is not part of authorized tab");
+    expect(sql).toContain("member is not part of authorized tab");
+  });
+  it("makes the internal tab sequence inaccessible to browser roles", () => {
+    expect(sql).toContain("tab_sequences_deny_direct");
+    expect(sql).toContain("using (false)");
+    expect(sql).toContain("with check (false)");
   });
   it("does not expose internal UUIDs in the anonymous table projection", () => {
     const start = sql.indexOf("create or replace function private.get_public_table");
