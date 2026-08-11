@@ -2,59 +2,154 @@
 
 ## Objetivo
 
-Implementar a Fase 4 do blueprint sem acoplar benefícios, campanhas ou automações ao endpoint de pedido. O motor de crescimento consome clientes, pedidos concluídos e eventos existentes, mantendo ledgers próprios para cashback/pontos e deixando provedores de comunicação para o milestone WhatsApp/IA.
+Implementar a Fase 4 do blueprint sem acoplar fidelidade, campanhas ou automações ao endpoint de pedido. O motor de crescimento reutiliza clientes, carrinho, pedidos e eventos existentes, mantém ledgers próprios para cashback/pontos e deixa provedores de WhatsApp/e-mail para o próximo milestone.
 
 ## Escopo oficial
 
-- [140] Cupons e elegibilidade — issue #157.
-- [141] Cupom no pricing autoritativo — issue #158.
-- [142] Cashback accounts/transactions — issue #159.
-- [143] Acúmulo e resgate de cashback — issue #160.
-- [144] Loyalty accounts/transactions — issue #161.
-- [145] Regras de pontos — issue #162.
-- [146] Segmentação dinâmica — issue #163.
-- [147] Campaigns — issue #164.
-- [148] Campaign recipients — issue #165.
-- [149] Automation rules/runs — issue #166.
-- [150] Painel CRM/crescimento — issue #167.
-- [151] Consumidor idempotente de `order.completed` — issue #168.
+- [140] Cupons e elegibilidade — #157.
+- [141] Cupom no pricing autoritativo — #158.
+- [142] Cashback accounts/transactions — #159.
+- [143] Acúmulo e resgate de cashback — #160.
+- [144] Loyalty accounts/transactions — #161.
+- [145] Regras de pontos — #162.
+- [146] Segmentação dinâmica — #163.
+- [147] Campaigns — #164.
+- [148] Campaign recipients — #165.
+- [149] Automation rules/runs — #166.
+- [150] Painel CRM/crescimento — #167.
+- [151] Consumidor idempotente de `order.completed` — #168.
 
-## Decisões iniciais
+Branch: `agent/crm-growth-140-151`. Draft PR: #169.
 
-1. Cashback e pontos usam ledger imutável + saldo projetado na conta, atualizados na mesma transação.
-2. Nenhum valor de benefício vindo do navegador é autoridade.
-3. Cupons são revalidados no momento de criar/converter o pedido.
-4. Campanhas modelam público e execução; integração com WhatsApp/e-mail fica desacoplada.
-5. `order.completed` será consumido idempotentemente pelo motor de crescimento; OrderService não conhece regras de fidelidade.
-6. Reversões futuras geram transações compensatórias; ledgers não são apagados.
-7. Dados permanecem isolados por `organization_id` e `store_id`, com RLS e RBAC server-side.
+## Banco de dados
 
-## Implementação iniciada
+Migrations aplicadas no Supabase oficial:
 
-Branch: `agent/crm-growth-140-151`.
+- `growth_core_140_151` → `38_growth_core.sql`.
+- `growth_operations_140_151` → `39_growth_operations.sql`.
+- `growth_pdv_140_151` → `40_growth_pdv.sql`.
+- `growth_campaigns_automations_140_151` → `41_growth_campaigns_automations.sql`.
+- `growth_cart_refresh_140_151` → `42_growth_cart_refresh.sql`.
+- `growth_private_execution_grants_140_151` → `43_growth_private_execution_grants.sql`.
 
-Primeiro pacote:
-- permissões TypeScript `growth.view`, `growth.manage`, `growth.campaigns`;
-- `supabase/sql/38_growth_core.sql`;
-- `store_growth_settings`;
-- `coupons`;
-- `cashback_accounts` / `cashback_transactions`;
-- `loyalty_accounts` / `loyalty_transactions`;
-- índices para lookup por cliente/conta e cupom ativo;
-- grants explícitos e RLS de leitura por `growth.view`;
-- mutações de ledger reservadas ao backend/service role.
+Entidades novas:
 
-## Validação inicial
+- `store_growth_settings`.
+- `coupons` / `coupon_redemptions`.
+- `cashback_accounts` / `cashback_transactions`.
+- `loyalty_accounts` / `loyalty_transactions`.
+- `customer_segments`.
+- `campaigns` / `campaign_recipients`.
+- `automation_rules` / `automation_runs`.
 
-O conteúdo de `38_growth_core.sql` foi executado no Supabase oficial dentro de `BEGIN ... ROLLBACK`.
+## Regras de domínio
 
-Resultado dentro da transação:
-- 6 tabelas criadas;
-- 3 permissões criadas;
-- RLS ativa nas 6 tabelas.
+1. Cashback e pontos usam ledger auditável + saldo projetado na conta, atualizados na mesma transação.
+2. Débitos usam `FOR UPDATE`; saldo nunca pode ficar negativo.
+3. Idempotency keys impedem ganho/resgate duplicado.
+4. Cupom é bloqueado e revalidado no momento de converter/criar o pedido.
+5. `discount_cents = cupom + cashback + pontos`; benefício nunca reduz taxa de entrega.
+6. Carrinho repriced revalida os benefícios; se ficaram inválidos, eles são limpos e o total normal é restaurado.
+7. Rejeição/cancelamento libera cupom e gera transações compensatórias para cashback/pontos.
+8. `order.completed` gera cashback/pontos somente uma vez e sem acoplar `OrderService` às regras de fidelidade.
+9. Pedido coberto 100% por benefício pode ter total zero, `payment_status=paid` e nenhuma linha monetária de pagamento.
+10. PDV antigo permanece compatível; a RPC antiga é wrapper da RPC Growth-aware sem benefício.
+11. Segmentos são dinâmicos; campanhas congelam um snapshot de recipients.
+12. Automações criam `automation_run` idempotente antes de executar bônus/campanha.
+13. Provedores WhatsApp/e-mail não fazem parte deste módulo; `campaign.channel` só prepara a arquitetura/adaptadores futuros.
 
-Após rollback:
-- 0 tabelas Growth persistidas;
-- 0 permissões Growth persistidas.
+## Integração de canais
 
-A migration ainda **não foi aplicada oficialmente**. O próximo passo do bloco é implementar e testar RPCs atômicas para ledger/benefícios e só então aplicar o conjunto no backend oficial.
+### Checkout público
+
+- cupom, cashback e pontos aparecem antes da revisão final;
+- cashback/pontos só ficam disponíveis quando o carrinho já está ligado a cliente conhecido;
+- o servidor revalida tudo novamente na criação do pedido;
+- se benefício/preço mudou, exige nova revisão.
+
+### PDV
+
+- caixa vê cupons ativos, cashback e pontos do cliente;
+- cálculo visual serve apenas para montar a venda/parcela;
+- PostgreSQL recalcula produto, adicionais e benefícios na transação;
+- vendas com desconto total zero são suportadas sem criar payment de R$0.
+
+### Painel autenticado `/crescimento`
+
+- configurações de cashback/pontos;
+- criação/lista de cupons;
+- saldos de clientes;
+- segmentos;
+- campanhas e preparação de público;
+- regras de automação e execuções recentes;
+- execução manual da rotina diária de aniversário/inatividade.
+
+## E2E PostgreSQL real com rollback
+
+### Checkout + benefícios
+
+Subtotal R$ 100,00:
+- cupom: R$ 20,00;
+- cashback: R$ 10,00;
+- 100 pontos × R$ 0,10: R$ 10,00;
+- desconto total: R$ 40,00;
+- total final: R$ 60,00.
+
+Após conclusão:
+- pedido `completed` e pagamento `paid`;
+- cupom `consumed`;
+- cashback inicial R$ 30,00 → R$ 20,00 após resgate → R$ 26,00 após ganhar R$ 6,00;
+- pontos 500 → 400 após resgate → 460 após ganhar 60.
+
+### Compensação e zero-total
+
+- pedido rejeitado devolveu integralmente cashback e pontos usados e liberou o cupom;
+- cupom de 100% criou pedido total R$ 0,00, `paid`, sem payment row.
+
+### PDV Growth
+
+- subtotal R$ 100,00 → cupom R$ 20,00 + cashback R$ 10,00 + 50 pontos/R$ 5,00 → total R$ 65,00;
+- idempotency retry devolveu o mesmo pedido sem novo débito;
+- cupom anônimo funcionou com `customer_id` nulo quando não havia limite por cliente;
+- cupom de 100% criou venda PDV total zero sem payment row, já confirmada e em produção.
+
+### Segmentação/campanhas/automações
+
+- segmento por `orders_count >= 1` e gasto mínimo retornou somente o comprador elegível;
+- campanha congelou exatamente 1 recipient do segmento;
+- 3 automações `order.completed` (cashback, pontos e campanha) terminaram `completed`;
+- rotina agendada de aniversário/inatividade processou 2 clientes na primeira chamada e 0 na repetição da mesma data;
+- idempotência diária e por pedido confirmada.
+
+Todos os cenários foram revertidos por rollback e não deixaram fixtures.
+
+## Segurança
+
+- RLS habilitada em todas as tabelas Growth.
+- `anon` não possui mutação nem EXECUTE em RPCs internas.
+- `authenticated` tem somente leituras protegidas por `growth.view` onde necessário; mutações administrativas são server-side.
+- RPCs públicas internas são `SECURITY INVOKER`, `service_role` only.
+- Uma auditoria específica detectou que as RPCs Growth não conseguiam chamar helpers privados sob `service_role`; `43_growth_private_execution_grants.sql` corrigiu com `USAGE`/`EXECUTE` mínimos apenas para o backend.
+- `anon` e `authenticated` continuam sem EXECUTE nesses helpers privados.
+- Security Advisor estava em 0 após as migrations 38/39; nova auditoria final deve ser executada no head final do bloco.
+
+## Testes automatizados
+
+`tests/growth.test.ts` cobre:
+
+- RLS/ACL;
+- ledgers assinados e idempotentes;
+- locks de cupom/contas;
+- checkout e total zero;
+- transações compensatórias;
+- consumidor `order.completed`;
+- compatibilidade PDV;
+- campanhas/automações;
+- refresh do carrinho;
+- projeção de cupom + cashback + pontos no PDV.
+
+## Limites conscientes
+
+- Campanhas `whatsapp` e `email` ainda não enviam para provedores externos; isso pertence ao próximo milestone de Conversas/WhatsApp/IA.
+- Expiração de cashback/pontos possui campo de validade no ledger, mas um executor periódico de expiração física pode ser refinado junto da infraestrutura de jobs.
+- Reembolso pós-conclusão ainda exigirá evento/compensação explícita quando o módulo de refund/fiscal for expandido; nunca deve apagar ledger histórico.
