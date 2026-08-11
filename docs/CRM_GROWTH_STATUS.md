@@ -19,7 +19,7 @@ Implementar a Fase 4 do blueprint sem acoplar fidelidade, campanhas ou automaç�
 - [150] Painel CRM/crescimento — #167.
 - [151] Consumidor idempotente de `order.completed` — #168.
 
-Branch: `agent/crm-growth-140-151`. Draft PR: #169.
+Branch: `agent/crm-growth-140-151`. PR: #169.
 
 ## Banco de dados
 
@@ -123,15 +123,16 @@ Após conclusão:
 
 Todos os cenários foram revertidos por rollback e não deixaram fixtures.
 
-## Segurança
+## Segurança final
 
-- RLS habilitada em todas as tabelas Growth.
-- `anon` não possui mutação nem EXECUTE em RPCs internas.
-- `authenticated` tem somente leituras protegidas por `growth.view` onde necessário; mutações administrativas são server-side.
-- RPCs públicas internas são `SECURITY INVOKER`, `service_role` only.
-- Uma auditoria específica detectou que as RPCs Growth não conseguiam chamar helpers privados sob `service_role`; `43_growth_private_execution_grants.sql` corrigiu com `USAGE`/`EXECUTE` mínimos apenas para o backend.
-- `anon` e `authenticated` continuam sem EXECUTE nesses helpers privados.
-- Security Advisor estava em 0 após as migrations 38/39; nova auditoria final deve ser executada no head final do bloco.
+- Security Advisor: **0 alertas** após as migrations 38–43.
+- 12/12 tabelas Growth com RLS habilitada.
+- `anon`: 0 privilégios diretos nas tabelas Growth.
+- `authenticated`: 0 privilégios de mutação nas tabelas Growth.
+- Todas as RPCs públicas internas Growth auditadas: `service_role=true`, `authenticated=false`, `anon=false` para EXECUTE.
+- Todos os helpers privados necessários auditados: `service_role=true`, `authenticated=false`, `anon=false` para EXECUTE.
+- `service_role` possui `USAGE` explícito no schema `private` apenas para viabilizar a cadeia `SECURITY INVOKER`; migration 43 documenta os grants mínimos.
+- Auditoria de resíduos após todos os E2Es: 0 usuários, organizações, lojas, clientes, pedidos, cupons, campanhas, automation runs e transações de recompensa de teste.
 
 ## Testes automatizados
 
@@ -146,7 +147,10 @@ Todos os cenários foram revertidos por rollback e não deixaram fixtures.
 - compatibilidade PDV;
 - campanhas/automações;
 - refresh do carrinho;
+- privilege chain dos helpers privados;
 - projeção de cupom + cashback + pontos no PDV.
+
+CI final validado no run #107: lint, TypeScript, testes, validação do Print Agent e build de produção verdes.
 
 ## Limites conscientes
 
