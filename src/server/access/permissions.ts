@@ -14,6 +14,8 @@ export const PERMISSIONS = {
   ORDERS_CREATE: "orders.create",
   ORDERS_EDIT: "orders.edit",
   ORDERS_CANCEL: "orders.cancel",
+  PAYMENTS_VIEW: "payments.view",
+  PAYMENTS_MANAGE: "payments.manage",
   PRINTING_VIEW: "printing.view",
   PRINTING_MANAGE: "printing.manage",
   PRINTING_REPRINT: "printing.reprint",
