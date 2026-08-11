@@ -72,7 +72,6 @@ declare
   v_item jsonb;
   v_product public.products%rowtype;
   v_group public.modifier_groups%rowtype;
-  v_modifier record;
   v_modifier_ids jsonb;
   v_requested_modifiers integer;
   v_distinct_modifiers integer;
@@ -191,10 +190,7 @@ begin
           email = coalesce(excluded.email, public.customers.email),
           updated_by = excluded.updated_by,
           updated_at = now()
-        returning id, organization_id, name, phone, phone_normalized, email,
-          birth_date, notes, orders_count, total_spent_cents, average_ticket_cents,
-          last_order_at, created_by, updated_by, created_at, updated_at, deleted_at
-        into v_customer_row;
+        returning * into v_customer_row;
         v_customer_id := v_customer_row.id;
         v_customer_name := v_customer_row.name;
         v_customer_phone := coalesce(v_customer_row.phone,'');
