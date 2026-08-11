@@ -1,6 +1,6 @@
-# Cruz — Índice Mestre do Projeto
+# PedeAqui — Índice Mestre do Projeto
 
-Este diretório é a fonte oficial de decisões, arquitetura, escopo e backlog do projeto Cruz.
+Este diretório é a fonte oficial de decisões, arquitetura, escopo e backlog do produto **PedeAqui**. O repositório técnico continua se chamando `cruz`.
 
 ## Objetivo do produto
 
@@ -14,12 +14,29 @@ Exemplo:
 
 `order.completed` → estoque → financeiro → CRM → fidelidade → analytics/notificações.
 
+## Identidade oficial
+
+- Nome: **PedeAqui**
+- Tagline: **Seu pedido começa aqui.**
+- Paleta-base: laranja + grafite
+- Especificação: `BRAND_IDENTITY.md`
+
 ## Documentos
 
 - `BLUEPRINT_MASTER.md` — visão completa do produto, módulos, entidades, fluxos e fases.
 - `IMPLEMENTATION_BACKLOG.md` — backlog técnico Fase 0 + Fase 1 e sequência executável.
 - `PRINTING_SYSTEM.md` — arquitetura profissional de impressão, filas, estações, roteamento e contingência.
 - `ARCHITECTURE_DECISIONS.md` — decisões técnicas e regras que não podem ser quebradas sem ADR explícita.
+- `INFRASTRUCTURE.md` — backend oficial e histórico de reset do Supabase.
+- `BRAND_IDENTITY.md` — nome, cores, tagline e regras de identidade.
+- `FOUNDATION_STATUS.md` — status #001–#016.
+- `CATALOG_STATUS.md` — status #017–#024.
+- `MENU_STATUS.md` — status #025–#032.
+- `DELIVERY_STATUS.md` — status #033–#035.
+- `CART_STATUS.md` — status #036–#040.
+- `CHECKOUT_STATUS.md` — status #041–#046.
+- `ORDER_ENGINE_STATUS.md` — status #047–#057.
+- `PRINTING_STATUS.md` — status #058–#082.
 
 ## Ordem macro
 
@@ -55,9 +72,27 @@ Antes de criar um novo módulo, responder:
 5. Quais dados pertencem à organização e à unidade?
 6. Quais ações precisam de auditoria?
 
-## Estado atual
+## Estado atual — 10/08/2026
 
 - Blueprint: definido.
-- Fase 0 + Fase 1: definida.
-- Impressão: promovida a subsistema estrutural.
-- Execução: fundação #001–#016 é o primeiro bloco de implementação.
+- Identidade: PedeAqui, laranja + grafite.
+- Fundação #001–#016: implementada no draft PR #17; schema aplicado no Supabase oficial.
+- Catálogo #017–#024: implementado no draft PR #26; CI verde e schema aplicado.
+- Cardápio/Clientes #025–#032: implementado no draft PR #35; CI verde e migrations aplicadas.
+- Endereços/Entrega #033–#035: implementado no draft PR #39; CI verde e migrations aplicadas.
+- Carrinho/Pricing #036–#040: implementado no draft PR #47; CI verde e migrations aplicadas.
+- Checkout #041–#046: implementado no draft PR #54; CI verde e migrations aplicadas.
+- Motor de Pedidos #047–#057: implementado no draft PR #66; CI verde no run #27 e migrations aplicadas.
+- Central Profissional de Impressão #058–#082: implementada no draft PR #92; CI verde no run #39 e migrations aplicadas no Supabase oficial.
+- Impressão usa `production_stations`, `printers`, `station_printers`, `product_production_stations`, `print_agents` e `print_jobs` com RLS e integridade multiempresa.
+- `order.confirmed` gera jobs por trigger na mesma transação da confirmação; roteamento de produção é por produto→estação e expedição/balcão usam o pedido completo.
+- A fila usa claim concorrente com lease e `SKIP LOCKED`, retry com backoff, fallback, cópias, idempotência lógica e jobs falhos persistentes.
+- Cada Print Agent só reivindica jobs de impressoras explicitamente vinculadas a ele; impressoras sem agente permanecem pendentes para correção operacional.
+- Reimpressão sempre cria novo job marcado, exige motivo e grava auditoria/evento transacionalmente.
+- Print Agent possui credencial própria com apenas o hash armazenado no banco; `service_role` nunca vai para o computador da loja.
+- MVP do agente usa Node.js, spool local e ESC/POS TCP para 58/80 mm, consulta sua configuração e testa em paralelo a conectividade das impressoras atribuídas mesmo com fila vazia.
+- Eventos `print.printer_offline`, `print.printer_recovered`, `print.fallback_activated` e `print.job_failed` são persistidos somente nas transições relevantes.
+- A entrega física é tratada como at-least-once; exatamente-uma-vez é garantido apenas para a intenção/job lógico, pois impressoras comuns não participam da transação do banco.
+- Supabase `zsbsczjhiujnhdznrzck`: Security Advisor com zero alertas após as migrations de impressão.
+- Banco oficial ainda sem organização/usuário/pedido real; primeiro teste ponta a ponta e teste de hardware permanecem para ambiente operacional.
+- Próximo bloco lógico: #083–#092 — Gestor de Pedidos.
