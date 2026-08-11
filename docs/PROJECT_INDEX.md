@@ -41,6 +41,7 @@ Exemplo:
 - `KITCHEN_STATUS.md` — status #092–#095.
 - `PAYMENTS_STATUS.md` — status #096–#101.
 - `PDV_STATUS.md` — status #102–#110.
+- `CUSTOMERS_DASHBOARD_STATUS.md` — status #111–#115.
 
 ## Ordem macro
 
@@ -91,11 +92,15 @@ Antes de criar um novo módulo, responder:
 - Gestor de Pedidos #083–#091: consolidado no `main` pelo PR #102; CI final run #52 verde.
 - Produção/KDS #092–#095: consolidada no `main` pelo PR #107; CI final run #56 verde.
 - Pagamentos #096–#101: implementado na branch `agent/payments-096-101`, draft PR #114, CI run #60 verde; migrations `payments_096_101` e `payment_paid_guard` aplicadas no Supabase oficial. Ainda não mesclado.
-- PDV #102–#110: implementado de forma empilhada na branch `agent/pdv-102-110`, issues #115–#123; migration `pdv_102_110` aplicada no Supabase oficial.
-- `/pdv` é um canal presencial autenticado que reutiliza catálogo, pedidos, ledger de pagamentos, produção e Central de Impressão; não existe segundo motor de pedidos.
-- O PDV envia apenas IDs/quantidades/adicionais e distribuição dos pagamentos. Produtos, vínculos, disponibilidade e preços são recalculados no PostgreSQL antes da gravação.
-- Pedidos `digital_menu` continuam obrigados a ter `source_cart_id`, `checkout_session_id` e `public_access_token_hash`; canais internos podem nascer sem carrinho/checkout público falso.
-- A venda PDV é idempotente e transacional: snapshots → pagamentos → confirmação → impressão → produção → auditoria/eventos.
-- Teste E2E de banco com rollback confirmou R$ 15,90 pagos em dinheiro com R$ 20,00, troco R$ 4,10, pedido confirmado/pago/em preparação, cliente vinculado e zero resíduos após rollback.
+- PDV #102–#110: implementado de forma empilhada na branch `agent/pdv-102-110`, draft PR #124, CI final run #64 verde; migration `pdv_102_110` aplicada no Supabase oficial. Ainda não mesclado.
+- Clientes e Dashboard #111–#115: implementados de forma empilhada na branch `agent/customers-dashboard-111-115`, issues #125–#129; migration `customers_dashboard_111_115` aplicada no Supabase oficial.
+- `/clientes` agora busca nome/telefone/e-mail, ordena por atividade/gasto/pedidos/nome e mostra métricas derivadas de pedidos concluídos.
+- `/clientes/[id]` consolida dados, métricas, endereços e até 20 pedidos recentes; o histórico usa o cliente autenticado do Supabase para manter a RLS de `orders` como autoridade de visibilidade por unidade.
+- `orders_customer_metrics_after_completion` atualiza contagem, total gasto, ticket médio e última compra na mesma transação em que o pedido entra em `completed`; a migration também executou backfill determinístico.
+- `/dashboard` agora usa dados reais da unidade ativa: vendas/pedidos concluídos, ticket médio, pedidos abertos, clientes identificados, comparação com ontem, série de 24 horas e top 8 produtos.
+- Dia e hora do Dashboard são calculados no PostgreSQL usando `stores.timezone`; o navegador não decide o período contábil operacional.
+- `dashboard_snapshot_internal` é `SECURITY INVOKER`, revogada de `PUBLIC`/`anon`/`authenticated` e executável apenas pelo `service_role` depois de `dashboard.view` ser autorizado no servidor.
+- Teste transacional com rollback confirmou cliente 1 pedido/R$ 10,00/ticket R$ 10,00, Dashboard com 1 venda/1 pedido aberto/1 cliente, agrupamento em 00h de São Paulo e top produto 2× X-Burger; zero resíduos após rollback.
+- Security Advisor segue zerado após a migration.
 - Banco oficial continua sem organização/usuário real; hardware de impressão e E2E visual autenticado dependem do primeiro ambiente operacional real.
-- Próximo bloco lógico após o PDV: #111–#115 — Clientes e Dashboard.
+- Próximo bloco lógico: #116–#126 — Qualidade e hardening.

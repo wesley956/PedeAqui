@@ -4,21 +4,37 @@ import { Input } from "@/components/ui/input";
 import { createCustomerAction } from "@/features/customers/actions";
 import { CustomerService } from "@/server/customers/customer-service";
 import { formatCents } from "@/server/catalog/money";
+import styles from "./customers.module.css";
 
-export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+function dateLabel(value: string | null) {
+  if (!value) return "Sem compras";
+  return new Date(value).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
+}
+
+export default async function CustomersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; sort?: string }>;
+}) {
   const params = await searchParams;
-  const customers = await CustomerService.list(params.q);
+  const { customers, search, sort } = await CustomerService.list(params.q, params.sort);
 
   return (
-    <section style={{ display: "grid", gap: 20 }}>
-      <header>
-        <h1 style={{ margin: 0 }}>Clientes</h1>
-        <p className="muted">Base única da organização para delivery, PDV e futuro CRM.</p>
+    <section className={styles.page}>
+      <header className={styles.header}>
+        <div>
+          <h1>Clientes</h1>
+          <p className="muted">Base única da organização para cardápio, PDV e relacionamento.</p>
+        </div>
+        <div className={styles.countBadge}>{customers.length} cliente(s) nesta visualização</div>
       </header>
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 380px) minmax(0, 1fr)", gap: 18, alignItems: "start" }}>
-        <form action={createCustomerAction} className="card" style={{ padding: 18, display: "grid", gap: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Novo cliente</h2>
+      <div className={styles.layout}>
+        <form action={createCustomerAction} className={`card ${styles.createCard}`}>
+          <div>
+            <h2>Novo cliente</h2>
+            <p className="muted">Cadastre manualmente sem duplicar a base usada pelos pedidos.</p>
+          </div>
           <Input label="Nome" name="name" required minLength={2} />
           <Input label="Telefone" name="phone" type="tel" placeholder="(19) 99999-9999" />
           <Input label="E-mail" name="email" type="email" />
@@ -26,25 +42,55 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           <Button type="submit">Cadastrar cliente</Button>
         </form>
 
-        <div style={{ display: "grid", gap: 12 }}>
-          <form method="get" className="card" style={{ padding: 14, display: "flex", gap: 8, alignItems: "end" }}>
-            <div style={{ flex: 1 }}><Input label="Buscar cliente" name="q" defaultValue={params.q ?? ""} placeholder="Nome" /></div>
-            <Button tone="secondary" type="submit">Buscar</Button>
+        <div className={styles.listArea}>
+          <form method="get" className={`card ${styles.filters}`}>
+            <Input
+              label="Buscar cliente"
+              name="q"
+              defaultValue={search}
+              placeholder="Nome, telefone ou e-mail"
+            />
+            <label style={{ display: "grid", gap: 5 }}>
+              <strong style={{ fontSize: 13 }}>Ordenar por</strong>
+              <select name="sort" defaultValue={sort} style={{ minHeight: 42, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "9px 11px" }}>
+                <option value="recent">Mais recentes</option>
+                <option value="spent">Maior valor gasto</option>
+                <option value="orders">Mais pedidos</option>
+                <option value="name">Nome A–Z</option>
+              </select>
+            </label>
+            <Button tone="secondary" type="submit">Aplicar</Button>
           </form>
 
-          <div className="card" style={{ overflow: "hidden" }}>
+          <div className={`card ${styles.customerList}`}>
             {customers.length === 0 ? (
-              <div style={{ padding: 24 }}><strong>Nenhum cliente encontrado</strong><p className="muted" style={{ marginBottom: 0 }}>Os clientes criados aqui serão compartilhados entre as unidades da mesma organização.</p></div>
+              <div className={styles.empty}>
+                <strong>Nenhum cliente encontrado</strong>
+                {search ? "Tente outro nome, telefone ou e-mail." : "Os clientes identificados em pedidos aparecerão aqui."}
+              </div>
             ) : customers.map((customer) => (
-              <Link href={`/clientes/${customer.id}`} key={customer.id} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) repeat(3, auto)", gap: 18, alignItems: "center", padding: 15, borderBottom: "1px solid var(--border)" }}>
-                <div style={{ minWidth: 0 }}>
-                  <strong>{customer.name}</strong>
-                  <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{customer.phone || customer.email || "Sem contato informado"}</div>
-                  <div style={{ color: "var(--accent)", fontSize: 11, fontWeight: 800, marginTop: 5 }}>GERENCIAR ENDEREÇOS →</div>
+              <Link href={`/clientes/${customer.id}`} key={customer.id} className={styles.customerRow}>
+                <div className={styles.customerIdentity}>
+                  <strong className={styles.customerName}>{customer.name}</strong>
+                  <div className={styles.contact}>{customer.phone || customer.email || "Sem contato informado"}</div>
+                  <div className={styles.openHint}>ABRIR PERFIL →</div>
                 </div>
-                <div style={{ textAlign: "right" }}><span className="muted" style={{ fontSize: 11 }}>PEDIDOS</span><div>{customer.orders_count}</div></div>
-                <div style={{ textAlign: "right" }}><span className="muted" style={{ fontSize: 11 }}>TOTAL</span><div>{formatCents(Number(customer.total_spent_cents))}</div></div>
-                <div style={{ textAlign: "right" }}><span className="muted" style={{ fontSize: 11 }}>TICKET</span><div>{formatCents(customer.average_ticket_cents)}</div></div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>PEDIDOS</span>
+                  <span className={styles.statValue}>{customer.orders_count}</span>
+                </div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>TOTAL GASTO</span>
+                  <span className={styles.statValue}>{formatCents(Number(customer.total_spent_cents))}</span>
+                </div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>TICKET MÉDIO</span>
+                  <span className={styles.statValue}>{formatCents(customer.average_ticket_cents)}</span>
+                </div>
+                <div className={styles.stat}>
+                  <span className={styles.statLabel}>ÚLTIMA COMPRA</span>
+                  <span className={styles.statValue}>{dateLabel(customer.last_order_at)}</span>
+                </div>
               </Link>
             ))}
           </div>
