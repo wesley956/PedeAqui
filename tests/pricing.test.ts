@@ -89,9 +89,12 @@ describe("PricingService", () => {
 
   it("rejects negative base or modifier cents", () => {
     expectPricingError(() => PricingService.priceItem({ ...product, promotionalPriceCents: -1 }, [cheddarId], 1), "unsafe_total");
+    const [firstGroup] = product.modifierGroups;
+    const [firstModifier] = firstGroup?.modifiers ?? [];
+    if (!firstGroup || !firstModifier) throw new Error("Pricing fixture is incomplete");
     const unsafeModifierProduct: PricingProduct = {
       ...product,
-      modifierGroups: [{ ...product.modifierGroups[0], modifiers: [{ ...product.modifierGroups[0].modifiers[0], priceCents: -1 }] }],
+      modifierGroups: [{ ...firstGroup, modifiers: [{ ...firstModifier, priceCents: -1 }] }],
     };
     expectPricingError(() => PricingService.priceItem(unsafeModifierProduct, [cheddarId], 1), "unsafe_total");
   });
