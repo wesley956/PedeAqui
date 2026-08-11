@@ -23,6 +23,16 @@ const uuidSchema = z.string().uuid();
 const idemSchema = z.string().trim().min(8).max(180);
 const tableStatusSchema = z.enum(["available", "reserved", "cleaning", "disabled"]);
 
+type DiningOrderItemRow = {
+  id: string;
+  order_id: string;
+  product_name_snapshot: string;
+  quantity: number;
+  note: string | null;
+  unit_total_price_cents: number;
+  line_total_cents: number;
+};
+
 function requireStoreId(storeId: string | null) {
   if (!storeId) throw new Error("Uma unidade ativa é necessária para operar o salão");
   return storeId;
@@ -48,6 +58,12 @@ async function requireScopedTab(permission: typeof PERMISSIONS.DINING_VIEW | typ
   if (error) throw error;
   if (!data) throw new Error("Comanda não encontrada");
   return { context, storeId, tab: data, admin };
+}
+
+function paymentMemberId(metadata: unknown) {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return null;
+  const value = (metadata as Record<string, unknown>).tab_member_id;
+  return typeof value === "string" ? value : null;
 }
 
 export class DiningService {
@@ -130,7 +146,8 @@ export class DiningService {
         .eq("organization_id", context.organizationId).eq("store_id", storeId).in("order_id", orderIds).order("created_at")
       : { data: [], error: null };
     if (itemsError) throw itemsError;
-    const itemIds = (items ?? []).map((item) => item.id);
+    const itemRows = (items ?? []) as DiningOrderItemRow[];
+    const itemIds = itemRows.map((item) => item.id);
     const [allocResult, paymentsResult] = await Promise.all([
       itemIds.length ? admin.from("tab_item_allocations").select("order_item_id, tab_member_id, quantity")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("tab_id", tab.id).in("order_item_id", itemIds) : Promise.resolve({ data: [], error: null }),
@@ -144,16 +161,16 @@ export class DiningService {
     const totalCents = orders.filter((order) => validOrderIds.has(order.id)).reduce((sum, order) => sum + Number(order.total_cents), 0);
     const paidCents = (paymentsResult.data ?? []).filter((payment) => validOrderIds.has(payment.order_id)).reduce((sum, payment) => sum + Number(payment.amount_cents), 0);
     const allocations = allocResult.data ?? [];
-    const itemById = new Map((items ?? []).map((item) => [item.id, item]));
+    const itemById = new Map(itemRows.map((item) => [item.id, item]));
     const memberAccounts = (membersResult.data ?? []).map((member) => {
       const allocated = allocations.filter((allocation) => allocation.tab_member_id === member.id)
         .reduce((sum, allocation) => sum + Number(allocation.quantity) * Number(itemById.get(allocation.order_item_id)?.unit_total_price_cents ?? 0), 0);
-      const paid = (paymentsResult.data ?? []).filter((payment) => payment.metadata?.tab_member_id === member.id)
+      const paid = (paymentsResult.data ?? []).filter((payment) => paymentMemberId(payment.metadata) === member.id)
         .reduce((sum, payment) => sum + Number(payment.amount_cents), 0);
       return { ...member, allocated_cents: allocated, paid_cents: paid, due_cents: Math.max(0, allocated - paid) };
     });
-    const itemsByOrder = new Map<string, NonNullable<typeof items>>();
-    for (const item of items ?? []) {
+    const itemsByOrder = new Map<string, DiningOrderItemRow[]>();
+    for (const item of itemRows) {
       const list = itemsByOrder.get(item.order_id) ?? [];
       list.push(item);
       itemsByOrder.set(item.order_id, list);
@@ -247,7 +264,7 @@ export class DiningService {
     return data;
   }
 
-  static async payTab(tabId: string, input: DiningPaymentInput, idempotencyKey = randomUUID()) {
+  static async payTab(tabId: string, input: DiningPaymentInput, idempotencyKey: string = randomUUID()) {
     const values = diningPaymentInputSchema.parse(input);
     const { context, tab, admin } = await requireScopedTab(PERMISSIONS.DINING_SETTLE, tabId);
     const { data, error } = await admin.rpc("dining_pay_tab_internal", {
