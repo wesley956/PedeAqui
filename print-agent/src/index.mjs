@@ -7,6 +7,7 @@ const pollMs = Math.max(1000, Number(process.env.PEDEAQUI_PRINT_POLL_MS || 2000)
 const heartbeatMs = Math.max(5000, Number(process.env.PEDEAQUI_PRINT_HEARTBEAT_MS || 15000));
 const version = "0.1.0";
 const printers = new Map();
+let heartbeatRunning = false;
 
 if (!apiUrl || !token) {
   console.error("PEDEAQUI_URL and PEDEAQUI_PRINT_AGENT_TOKEN are required");
@@ -64,12 +65,11 @@ async function deliver(job) {
 
 async function refreshPrinterHealth() {
   const { printers: configured = [] } = await post("/api/print-agent/config");
-  const configuredIds = new Set();
-  for (const printer of configured) {
-    configuredIds.add(printer.id);
+  const configuredIds = new Set(configured.map((printer) => printer.id));
+  await Promise.all(configured.map(async (printer) => {
     if (printer.connectionType !== "network") {
       printers.set(printer.id, { id: printer.id, status: "unknown", error: null });
-      continue;
+      return;
     }
     try {
       await probeNetwork({ address: printer.address, port: printer.port });
@@ -78,13 +78,15 @@ async function refreshPrinterHealth() {
       const message = error instanceof Error ? error.message : String(error);
       printers.set(printer.id, { id: printer.id, status: "offline", error: message.slice(0, 2000) });
     }
-  }
+  }));
   for (const id of printers.keys()) {
     if (!configuredIds.has(id)) printers.delete(id);
   }
 }
 
 async function heartbeat() {
+  if (heartbeatRunning) return;
+  heartbeatRunning = true;
   try {
     await refreshPrinterHealth();
     await post("/api/print-agent/heartbeat", {
@@ -92,7 +94,11 @@ async function heartbeat() {
       capabilities: { networkEscPos: true, spool: true, healthProbe: true, paperWidthsMm: [58, 80] },
       printers: [...printers.values()],
     });
-  } catch (error) { console.error("heartbeat failed", error); }
+  } catch (error) {
+    console.error("heartbeat failed", error);
+  } finally {
+    heartbeatRunning = false;
+  }
 }
 
 async function loop() {
