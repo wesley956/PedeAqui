@@ -78,10 +78,7 @@ export default async function PublicCartPage({ params }: { params: Promise<{ slu
                     <form action={updateCartQuantityAction} style={{ display: "flex", gap: 8, alignItems: "end" }}>
                       <input type="hidden" name="storeSlug" value={slug} />
                       <input type="hidden" name="itemId" value={item.id} />
-                      <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
-                        Quantidade
-                        <input type="number" name="quantity" min={1} max={99} defaultValue={item.quantity} style={{ width: 76, minHeight: 38, borderRadius: 10, border: "1px solid #e5ded6", padding: "7px 9px", background: "#fff", color: "#181818" }} />
-                      </label>
+                      <label style={{ display: "grid", gap: 4, fontSize: 12 }}>Quantidade<input type="number" name="quantity" min={1} max={99} defaultValue={item.quantity} style={{ width: 76, minHeight: 38, borderRadius: 10, border: "1px solid #e5ded6", padding: "7px 9px", background: "#fff", color: "#181818" }} /></label>
                       <button type="submit" style={{ minHeight: 38, border: "1px solid #e5ded6", background: "#fff", color: "#514b45", borderRadius: 10, padding: "7px 10px", fontWeight: 800 }}>Atualizar</button>
                     </form>
                     <form action={removeCartItemAction}>
@@ -98,12 +95,13 @@ export default async function PublicCartPage({ params }: { params: Promise<{ slu
 
         <section style={{ padding: 18, background: "#171717", color: "#fffdf9", borderRadius: 20, display: "grid", gap: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 16 }}><span>Subtotal válido</span><strong>{money(Number(cart.subtotal_cents))}</strong></div>
+          {Number(cart.delivery_fee_cents) > 0 ? <div style={{ display: "flex", justifyContent: "space-between", gap: 16 }}><span>Entrega</span><strong>{money(Number(cart.delivery_fee_cents))}</strong></div> : null}
           <div style={{ height: 1, background: "#353535" }} />
           <div style={{ display: "flex", justifyContent: "space-between", gap: 16, fontSize: 20 }}><strong>Total atual</strong><strong style={{ color: "#FF6B00" }}>{money(Number(cart.total_cents))}</strong></div>
           {invalidCount > 0 ? (
             <div style={{ padding: 12, borderRadius: 12, background: "#35211c", color: "#ffcfbf", fontSize: 13 }}>Remova ou refaça {invalidCount} item(ns) inválido(s) antes de continuar.</div>
           ) : (
-            <div style={{ padding: 12, borderRadius: 12, background: "#242424", color: "#d8d2cb", fontSize: 13 }}>Checkout, identificação e endereço entram no próximo bloco [041]–[046]. O total será recalculado novamente antes da criação do pedido.</div>
+            <Link href={`/m/${slug}/checkout`} style={{ display: "block", textAlign: "center", minHeight: 50, lineHeight: "50px", borderRadius: 14, background: "#FF6B00", color: "#fff", fontWeight: 950, fontSize: 16 }}>Ir para o checkout</Link>
           )}
         </section>
       </div>
