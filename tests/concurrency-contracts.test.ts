@@ -31,7 +31,7 @@ describe("database concurrency and idempotency contracts", () => {
 
   it("claims print jobs with skip-locked leasing", () => {
     const printing = sql("supabase/sql/23_printing.sql") + sql("supabase/sql/26_print_agent_strict_assignment.sql");
-    expect(printing).toContain("for update skip locked");
+    expect(printing).toContain("for update of j skip locked");
     expect(printing).toContain("lease_expires_at");
     expect(printing).toContain("claimed_by_agent_id");
   });
