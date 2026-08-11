@@ -1,4 +1,4 @@
-import { printNetwork } from "./escpos.mjs";
+import { printNetwork, probeNetwork } from "./escpos.mjs";
 import { listSpool, removeSpool, saveSpool } from "./spool.mjs";
 
 const apiUrl = (process.env.PEDEAQUI_URL || "").replace(/\/$/, "");
@@ -62,11 +62,34 @@ async function deliver(job) {
   }
 }
 
+async function refreshPrinterHealth() {
+  const { printers: configured = [] } = await post("/api/print-agent/config");
+  const configuredIds = new Set();
+  for (const printer of configured) {
+    configuredIds.add(printer.id);
+    if (printer.connectionType !== "network") {
+      printers.set(printer.id, { id: printer.id, status: "unknown", error: null });
+      continue;
+    }
+    try {
+      await probeNetwork({ address: printer.address, port: printer.port });
+      printers.set(printer.id, { id: printer.id, status: "online", error: null });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      printers.set(printer.id, { id: printer.id, status: "offline", error: message.slice(0, 2000) });
+    }
+  }
+  for (const id of printers.keys()) {
+    if (!configuredIds.has(id)) printers.delete(id);
+  }
+}
+
 async function heartbeat() {
   try {
+    await refreshPrinterHealth();
     await post("/api/print-agent/heartbeat", {
       version,
-      capabilities: { networkEscPos: true, spool: true, paperWidthsMm: [58, 80] },
+      capabilities: { networkEscPos: true, spool: true, healthProbe: true, paperWidthsMm: [58, 80] },
       printers: [...printers.values()],
     });
   } catch (error) { console.error("heartbeat failed", error); }
