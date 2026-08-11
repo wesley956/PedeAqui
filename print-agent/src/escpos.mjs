@@ -23,6 +23,16 @@ export function escposDocument(text) {
   ]);
 }
 
+export async function probeNetwork({ address, port }, timeoutMs = 2500) {
+  if (!address || !port) throw new Error("network printer requires address and port");
+  await new Promise((resolve, reject) => {
+    const socket = net.createConnection({ host: address, port: Number(port) });
+    const timer = setTimeout(() => socket.destroy(new Error("printer probe timeout")), timeoutMs);
+    socket.once("error", (error) => { clearTimeout(timer); reject(error); });
+    socket.once("connect", () => { clearTimeout(timer); socket.end(); resolve(); });
+  });
+}
+
 export async function printNetwork({ address, port }, text, copies = 1) {
   if (!address || !port) throw new Error("network printer requires address and port");
   const payload = escposDocument(text);
