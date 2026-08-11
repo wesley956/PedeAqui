@@ -150,7 +150,7 @@ Todos os cenários foram revertidos por rollback e não deixaram fixtures.
 - privilege chain dos helpers privados;
 - projeção de cupom + cashback + pontos no PDV.
 
-CI final validado no run #107: lint, TypeScript, testes, validação do Print Agent e build de produção verdes.
+CI final validado no run #108: lint, TypeScript, testes, validação do Print Agent e build de produção verdes.
 
 ## Limites conscientes
 
