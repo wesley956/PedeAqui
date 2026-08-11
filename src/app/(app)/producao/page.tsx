@@ -2,7 +2,7 @@ import { KitchenBoard } from "@/features/kitchen/kitchen-board";
 import { KitchenService } from "@/server/kitchen/kitchen-service";
 
 export default async function ProductionPage() {
-  const { storeId, stations, orders } = await KitchenService.snapshot();
+  const { storeId, stations, orders, snapshotAt } = await KitchenService.snapshot();
 
   return (
     <section style={{ display: "grid", gap: 18 }}>
@@ -17,7 +17,7 @@ export default async function ProductionPage() {
         <div className="muted" style={{ fontSize: 12 }}>{stations.length} estação(ões) ativa(s)</div>
       </header>
 
-      <KitchenBoard storeId={storeId} stations={stations} orders={orders} initialNow={Date.now()} />
+      <KitchenBoard storeId={storeId} stations={stations} orders={orders} initialNow={snapshotAt} />
     </section>
   );
 }
