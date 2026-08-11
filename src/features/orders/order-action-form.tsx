@@ -2,9 +2,15 @@
 
 import { useActionState } from "react";
 import {
-  initialOrderManagerActionState,
   orderManagerAction,
+  type OrderManagerActionState,
 } from "@/features/orders/actions";
+
+const initialOrderManagerActionState: OrderManagerActionState = {
+  ok: false,
+  message: null,
+  error: null,
+};
 
 export type ManagerIntent =
   | "accept"
