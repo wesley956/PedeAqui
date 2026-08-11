@@ -38,6 +38,7 @@ Exemplo:
 - `ORDER_ENGINE_STATUS.md` — status #047–#057.
 - `PRINTING_STATUS.md` — status #058–#082.
 - `ORDER_MANAGER_STATUS.md` — status #083–#091.
+- `KITCHEN_STATUS.md` — status #092–#095.
 
 ## Ordem macro
 
@@ -85,11 +86,13 @@ Antes de criar um novo módulo, responder:
 - Checkout #041–#046: consolidado no `main`; migrations aplicadas.
 - Motor de Pedidos #047–#057: consolidado no `main`; migrations aplicadas.
 - Central Profissional de Impressão #058–#082: consolidada no `main`; CI verde e migrations aplicadas.
-- Gestor de Pedidos #083–#091: em implementação na branch `agent/order-manager-083-091`; migration do workflow operacional aplicada e Security Advisor zerado.
-- `/pedidos` evoluiu para Kanban realtime derivado dos quatro ciclos independentes — não existe mega-status persistido para as colunas.
-- Novo pedido possui alerta visual e som opt-in; ações operacionais continuam server-side via State Machine.
-- `order_start_production_internal` preserva `pending_confirmation → queued → preparing` de forma atômica e auditável pelo histórico existente.
+- Gestor de Pedidos #083–#091: consolidado no `main` pelo PR #102; CI final run #52 verde e workflow operacional aplicado no Supabase.
+- Produção/KDS #092–#095: em implementação na branch `agent/kds-092-095`; issues GitHub #103–#106.
+- `/pedidos` é o Kanban operacional realtime derivado dos quatro ciclos independentes — não existe mega-status persistido para as colunas.
 - `/pedidos/[id]` integra itens, cliente/endereço, quatro estados, histórico, fulfillment e vias da Central Profissional de Impressão com reimpressão auditada.
-- Supabase `zsbsczjhiujnhdznrzck`: Security Advisor com zero alertas após a migration do Gestor.
+- `/producao` projeta pedidos confirmados e itens por `production_stations`/`product_production_stations`, com filtro por estação, tempo decorrido e destaque de atraso.
+- O KDS não cria estado paralelo. `production_status` continua global ao pedido; por segurança, o bloco #092–#095 não simula conclusão independente por estação.
+- Limiares iniciais do KDS: atenção aos 12 min e atraso aos 20 min, derivados no cliente a partir de `confirmed_at`/`created_at`, sem escrita periódica no banco.
+- Supabase `zsbsczjhiujnhdznrzck`: nenhuma nova tabela/RPC/policy foi necessária para o KDS; ele reutiliza RLS/RBAC e Realtime já existentes.
 - Banco oficial ainda sem organização/usuário/pedido real; testes ponta a ponta e hardware permanecem para o primeiro ambiente operacional real.
-- Próximo bloco lógico após o Gestor: #092–#095 — Produção/KDS.
+- Próximo bloco lógico após o KDS: #096–#101 — Pagamentos.
