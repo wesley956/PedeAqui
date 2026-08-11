@@ -60,9 +60,12 @@ export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders
   const soundEnabledRef = useRef(false);
 
   useEffect(() => {
-    const enabled = window.localStorage.getItem(`pedeaqui:orders:sound:${storeId}`) === "on";
-    setSoundEnabled(enabled);
-    soundEnabledRef.current = enabled;
+    const timer = window.setTimeout(() => {
+      const enabled = window.localStorage.getItem(`pedeaqui:orders:sound:${storeId}`) === "on";
+      setSoundEnabled(enabled);
+      soundEnabledRef.current = enabled;
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [storeId]);
 
   useEffect(() => {
