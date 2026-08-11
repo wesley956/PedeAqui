@@ -8,6 +8,7 @@ import {
   saveCheckoutIdentityAction,
   saveCheckoutPaymentAction,
 } from "@/features/checkout/actions";
+import { createOrderFromCheckoutAction } from "@/features/orders/actions";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { CheckoutService } from "@/server/checkout/checkout-service";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
@@ -26,6 +27,7 @@ const errorMessages: Record<string, string> = {
   neighborhood_not_served: "Este bairro ainda não é atendido pela loja.",
   payment_unavailable: "A forma de pagamento selecionada não está disponível.",
   invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.",
+  checkout_not_ready: "O checkout precisa ser revisado novamente antes de criar o pedido.",
 };
 
 export default async function CheckoutPage({
@@ -157,7 +159,7 @@ export default async function CheckoutPage({
             review.ready ? (
               <div style={{ padding: 14, borderRadius: 14, background: "#15351f", color: "#bdf4ca" }}>
                 <strong>Checkout validado.</strong>
-                <div style={{ marginTop: 4, fontSize: 13 }}>Carrinho, operação, entrega e pagamento estão consistentes. Este snapshot já está pronto para o OrderService do próximo bloco.</div>
+                <div style={{ marginTop: 4, fontSize: 13 }}>Os dados foram revalidados. Você já pode confirmar e enviar o pedido ao estabelecimento.</div>
               </div>
             ) : (
               <div style={{ padding: 14, borderRadius: 14, background: "#3a211b", color: "#ffd0c4", display: "grid", gap: 6 }}>
@@ -167,10 +169,17 @@ export default async function CheckoutPage({
             )
           ) : null}
 
-          <form action={reviewCheckoutAction}>
-            <input type="hidden" name="storeSlug" value={slug} />
-            <button type="submit" style={{ width: "100%", minHeight: 50, border: 0, borderRadius: 14, background: "#FF6B00", color: "#fff", fontWeight: 950, fontSize: 16 }}>Revisar pedido</button>
-          </form>
+          {review?.ready ? (
+            <form action={createOrderFromCheckoutAction}>
+              <input type="hidden" name="storeSlug" value={slug} />
+              <button type="submit" style={{ width: "100%", minHeight: 52, border: 0, borderRadius: 14, background: "#FF6B00", color: "#fff", fontWeight: 950, fontSize: 16 }}>Confirmar pedido</button>
+            </form>
+          ) : (
+            <form action={reviewCheckoutAction}>
+              <input type="hidden" name="storeSlug" value={slug} />
+              <button type="submit" style={{ width: "100%", minHeight: 50, border: 0, borderRadius: 14, background: "#FF6B00", color: "#fff", fontWeight: 950, fontSize: 16 }}>Revisar pedido</button>
+            </form>
+          )}
         </section>
       </div>
     </main>
