@@ -1,0 +1,23 @@
+insert into public.permissions (key, description) values
+  ('organization.manage', 'Gerenciar dados e configurações da organização'),
+  ('stores.view', 'Visualizar unidades'),
+  ('stores.manage', 'Criar e alterar unidades'),
+  ('team.view', 'Visualizar equipe, funções e convites'),
+  ('team.manage', 'Gerenciar equipe, funções e convites'),
+  ('audit.view', 'Visualizar trilha de auditoria'),
+  ('dashboard.view', 'Visualizar dashboard'),
+  ('products.view', 'Visualizar catálogo'),
+  ('products.create', 'Criar produtos'),
+  ('products.edit', 'Editar produtos'),
+  ('products.delete', 'Excluir/desativar produtos'),
+  ('orders.view', 'Visualizar pedidos'),
+  ('orders.create', 'Criar pedidos'),
+  ('orders.edit', 'Alterar pedidos permitidos'),
+  ('orders.cancel', 'Cancelar pedidos'),
+  ('cash.open', 'Abrir caixa'),
+  ('cash.withdraw', 'Realizar sangria'),
+  ('cash.close', 'Fechar caixa'),
+  ('customers.view', 'Visualizar clientes'),
+  ('customers.manage', 'Gerenciar clientes'),
+  ('reports.view', 'Visualizar relatórios')
+on conflict (key) do update set description = excluded.description;
