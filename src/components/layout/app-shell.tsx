@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 export const navigation = [
   ["Dashboard", "/dashboard"],
   ["Pedidos", "/pedidos"],
+  ["Salão", "/salao"],
   ["Cardápio", "/cardapio/produtos"],
   ["PDV", "/pdv"],
   ["Produção", "/producao"],
@@ -23,29 +24,17 @@ export function AppShell({ children, email }: { children: ReactNode; email: stri
           <strong className="brand-wordmark"><span>Pede</span><span>Aqui</span></strong>
         </div>
         <nav className="app-nav" aria-label="Navegação principal">
-          {navigation.map(([label, href]) => (
-            <Link key={href} href={href} className="app-nav-link">{label}</Link>
-          ))}
+          {navigation.map(([label, href]) => <Link key={href} href={href} className="app-nav-link">{label}</Link>)}
         </nav>
       </aside>
       <div className="app-main">
         <header className="app-topbar">
-          <div>
-            <strong>Operação</strong>
-            <div className="muted" style={{ fontSize: 12 }}>Unidade atual protegida pelo contexto multiempresa</div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {email ? <span className="muted app-user-email">{email}</span> : null}
-            <form action={signOutAction}><Button tone="secondary" type="submit">Sair</Button></form>
-          </div>
+          <div><strong>Operação</strong><div className="muted" style={{ fontSize: 12 }}>Unidade atual protegida pelo contexto multiempresa</div></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>{email ? <span className="muted app-user-email">{email}</span> : null}<form action={signOutAction}><Button tone="secondary" type="submit">Sair</Button></form></div>
         </header>
         <main className="app-content">{children}</main>
       </div>
-      <nav className="mobile-nav" aria-label="Navegação mobile">
-        {navigation.map(([label, href]) => (
-          <Link key={href} href={href}>{label}</Link>
-        ))}
-      </nav>
+      <nav className="mobile-nav" aria-label="Navegação mobile">{navigation.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
     </div>
   );
 }
