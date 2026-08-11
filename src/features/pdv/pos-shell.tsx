@@ -334,7 +334,8 @@ export function PosShell({
   function removePayment(id: string) {
     setPayments((current) => {
       const remaining = current.filter((payment) => payment.id !== id);
-      if (remaining.length === 1) return [{ ...remaining[0], amountText: "" }];
+      const [onlyPayment] = remaining;
+      if (remaining.length === 1 && onlyPayment) return [{ ...onlyPayment, amountText: "" }];
       return remaining;
     });
     touchSale();
