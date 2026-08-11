@@ -39,5 +39,11 @@ jobs:
       - name: Test
         run: npm run test
 
+      - name: Validate Print Agent
+        run: |
+          node --check print-agent/src/index.mjs
+          node --check print-agent/src/spool.mjs
+          node --check print-agent/src/escpos.mjs
+
       - name: Build
         run: npm run build
