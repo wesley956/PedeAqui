@@ -20,7 +20,7 @@ export const diningRoundInputSchema = z.object({
 export const diningMemberInputSchema = z.object({
   name: z.string().trim().min(1).max(80),
   customerId: z.string().uuid().nullable().optional(),
-  seatNumber: z.number().int().min(1).max(999).nullable().optional(),
+  seatNumber: z.number().int().min(1).max(100).nullable().optional(),
 });
 
 export const diningPaymentInputSchema = z.object({
