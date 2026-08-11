@@ -83,13 +83,15 @@ Antes de criar um novo módulo, responder:
 - Carrinho/Pricing #036–#040: implementado no draft PR #47; CI verde e migrations aplicadas.
 - Checkout #041–#046: implementado no draft PR #54; CI verde e migrations aplicadas.
 - Motor de Pedidos #047–#057: implementado no draft PR #66; CI verde no run #27 e migrations aplicadas.
-- Central Profissional de Impressão #058–#082: implementada na branch `agent/printing-058-082`; schema/fila/roteamento/Print Agent aplicados no Supabase oficial e validação de CI pendente neste head.
+- Central Profissional de Impressão #058–#082: implementada no draft PR #92; CI verde no run #39 e migrations aplicadas no Supabase oficial.
 - Impressão usa `production_stations`, `printers`, `station_printers`, `product_production_stations`, `print_agents` e `print_jobs` com RLS e integridade multiempresa.
 - `order.confirmed` gera jobs por trigger na mesma transação da confirmação; roteamento de produção é por produto→estação e expedição/balcão usam o pedido completo.
 - A fila usa claim concorrente com lease e `SKIP LOCKED`, retry com backoff, fallback, cópias, idempotência lógica e jobs falhos persistentes.
+- Cada Print Agent só reivindica jobs de impressoras explicitamente vinculadas a ele; impressoras sem agente permanecem pendentes para correção operacional.
 - Reimpressão sempre cria novo job marcado, exige motivo e grava auditoria/evento transacionalmente.
 - Print Agent possui credencial própria com apenas o hash armazenado no banco; `service_role` nunca vai para o computador da loja.
-- MVP do agente usa Node.js, spool local e ESC/POS TCP para 58/80 mm; USB/Bluetooth/spool de sistema ficam atrás do mesmo contrato.
+- MVP do agente usa Node.js, spool local e ESC/POS TCP para 58/80 mm, consulta sua configuração e testa em paralelo a conectividade das impressoras atribuídas mesmo com fila vazia.
+- Eventos `print.printer_offline`, `print.printer_recovered`, `print.fallback_activated` e `print.job_failed` são persistidos somente nas transições relevantes.
 - A entrega física é tratada como at-least-once; exatamente-uma-vez é garantido apenas para a intenção/job lógico, pois impressoras comuns não participam da transação do banco.
 - Supabase `zsbsczjhiujnhdznrzck`: Security Advisor com zero alertas após as migrations de impressão.
 - Banco oficial ainda sem organização/usuário/pedido real; primeiro teste ponta a ponta e teste de hardware permanecem para ambiente operacional.
