@@ -28,6 +28,16 @@ export const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  ...(isDevelopment
+    ? {
+        allowedDevOrigins: ["*.app.github.dev"],
+        experimental: {
+          serverActions: {
+            allowedOrigins: ["*.app.github.dev"],
+          },
+        },
+      }
+    : {}),
   async headers() {
     return [
       {
