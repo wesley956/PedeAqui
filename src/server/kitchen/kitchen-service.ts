@@ -16,6 +16,7 @@ function requireStoreId(storeId: string | null) {
 
 export class KitchenService {
   static async snapshot(limit = 120) {
+    const snapshotAt = Date.now();
     const context = await authorize(PERMISSIONS.ORDERS_VIEW);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
@@ -52,7 +53,7 @@ export class KitchenService {
     }));
 
     if (orderIds.length === 0) {
-      return { context, storeId, stations, orders: [] as KitchenOrder[] };
+      return { context, storeId, stations, orders: [] as KitchenOrder[], snapshotAt };
     }
 
     const { data: items, error: itemsError } = await admin.from("order_items")
@@ -128,6 +129,6 @@ export class KitchenService {
       items: itemsByOrder.get(order.id) ?? [],
     }));
 
-    return { context, storeId, stations, orders: kitchenOrders };
+    return { context, storeId, stations, orders: kitchenOrders, snapshotAt };
   }
 }
