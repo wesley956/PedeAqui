@@ -33,6 +33,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const canComplete = order.order_status === "confirmed" && order.payment_status === "paid" && fulfillmentComplete;
   const canCancel = !["completed", "canceled", "rejected"].includes(order.order_status)
     && !["delivered", "picked_up_by_customer", "served"].includes(order.fulfillment_status);
+  const fulfillmentTypeLabel = order.fulfillment_type === "delivery"
+    ? "Entrega"
+    : order.fulfillment_type === "counter"
+      ? "Balcão"
+      : "Retirada";
 
   return (
     <section style={{ display: "grid", gap: 18, maxWidth: 1180 }}>
@@ -43,7 +48,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <div>
           <p className="muted" style={{ margin: 0 }}>Pedido · {order.channel}</p>
           <h1 style={{ margin: "3px 0" }}>#{order.display_number}</h1>
-          <p className="muted" style={{ margin: 0 }}>{order.customer_name_snapshot} · {order.fulfillment_type === "delivery" ? "Entrega" : "Retirada"} · {new Date(order.created_at).toLocaleString("pt-BR")}</p>
+          <p className="muted" style={{ margin: 0 }}>{order.customer_name_snapshot} · {fulfillmentTypeLabel} · {new Date(order.created_at).toLocaleString("pt-BR")}</p>
         </div>
         <strong style={{ fontSize: 26, color: "var(--accent)" }}>{money(order.total_cents)}</strong>
       </header>
@@ -75,6 +80,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {order.fulfillment_status === "picked_up" ? <OrderActionForm orderId={order.id} intent="out_for_delivery" label="Saiu para entrega" /> : null}
           {order.fulfillment_status === "out_for_delivery" ? <OrderActionForm orderId={order.id} intent="delivered" label="Marcar entregue" /> : null}
 
+          {order.production_status === "ready" && order.fulfillment_type === "counter" && order.fulfillment_status === "pending" ? <OrderActionForm orderId={order.id} intent="served" label="Marcar servido" /> : null}
           {canComplete ? <OrderActionForm orderId={order.id} intent="complete" label="Concluir pedido" /> : null}
         </div>
 
@@ -142,7 +148,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <h2 style={{ margin: 0, fontSize: 18 }}>Cliente e atendimento</h2>
             <Info label="Cliente" value={order.customer_name_snapshot} />
             <Info label="Telefone" value={order.customer_phone_snapshot ?? "Não informado"} />
-            <Info label="Modalidade" value={order.fulfillment_type === "delivery" ? "Entrega" : "Retirada"} />
+            <Info label="Modalidade" value={fulfillmentTypeLabel} />
             {order.fulfillment_type === "delivery" ? (
               <>
                 <Info label="Endereço" value={[order.address_street_snapshot, order.address_number_snapshot].filter(Boolean).join(", ") || "Não informado"} />
