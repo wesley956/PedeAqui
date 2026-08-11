@@ -1,0 +1,15 @@
+-- PedeAqui catalog Storage contract.
+-- Bucket lifecycle MUST be managed through the Supabase Storage API/CLI, not by
+-- directly mutating storage.buckets or storage.objects from SQL.
+--
+-- Desired bucket:
+--   id/name: catalog-media
+--   public: true
+--   file_size_limit: 5 MiB (5242880)
+--   allowed MIME types: image/jpeg, image/png, image/webp
+--
+-- Uploads in the first implementation are server-only after app-level
+-- authorization. Browser clients do not receive privileged Storage credentials.
+--
+-- This file intentionally contains no DDL/DML against the managed `storage`
+-- schema. See docs/INFRASTRUCTURE.md and src/server/catalog/catalog-image-service.ts.
