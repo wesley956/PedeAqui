@@ -39,6 +39,7 @@ Exemplo:
 - `PRINTING_STATUS.md` — status #058–#082.
 - `ORDER_MANAGER_STATUS.md` — status #083–#091.
 - `KITCHEN_STATUS.md` — status #092–#095.
+- `PAYMENTS_STATUS.md` — status #096–#101.
 
 ## Ordem macro
 
@@ -74,7 +75,7 @@ Antes de criar um novo módulo, responder:
 5. Quais dados pertencem à organização e à unidade?
 6. Quais ações precisam de auditoria?
 
-## Estado atual — 10/08/2026
+## Estado atual — 11/08/2026
 
 - Blueprint: definido.
 - Identidade: PedeAqui, laranja + grafite.
@@ -86,13 +87,16 @@ Antes de criar um novo módulo, responder:
 - Checkout #041–#046: consolidado no `main`; migrations aplicadas.
 - Motor de Pedidos #047–#057: consolidado no `main`; migrations aplicadas.
 - Central Profissional de Impressão #058–#082: consolidada no `main`; CI verde e migrations aplicadas.
-- Gestor de Pedidos #083–#091: consolidado no `main` pelo PR #102; CI final run #52 verde e workflow operacional aplicado no Supabase.
-- Produção/KDS #092–#095: em implementação na branch `agent/kds-092-095`; issues GitHub #103–#106.
-- `/pedidos` é o Kanban operacional realtime derivado dos quatro ciclos independentes — não existe mega-status persistido para as colunas.
-- `/pedidos/[id]` integra itens, cliente/endereço, quatro estados, histórico, fulfillment e vias da Central Profissional de Impressão com reimpressão auditada.
-- `/producao` projeta pedidos confirmados e itens por `production_stations`/`product_production_stations`, com filtro por estação, tempo decorrido e destaque de atraso.
-- O KDS não cria estado paralelo. `production_status` continua global ao pedido; por segurança, o bloco #092–#095 não simula conclusão independente por estação.
-- Limiares iniciais do KDS: atenção aos 12 min e atraso aos 20 min, derivados no cliente a partir de `confirmed_at`/`created_at`, sem escrita periódica no banco.
-- Supabase `zsbsczjhiujnhdznrzck`: nenhuma nova tabela/RPC/policy foi necessária para o KDS; ele reutiliza RLS/RBAC e Realtime já existentes.
-- Banco oficial ainda sem organização/usuário/pedido real; testes ponta a ponta e hardware permanecem para o primeiro ambiente operacional real.
-- Próximo bloco lógico após o KDS: #096–#101 — Pagamentos.
+- Gestor de Pedidos #083–#091: consolidado no `main` pelo PR #102; CI final run #52 verde.
+- Produção/KDS #092–#095: consolidada no `main` pelo PR #107; CI final run #56 verde.
+- Pagamentos #096–#101: em implementação na branch `agent/payments-096-101`; issues GitHub #108–#113 e migration `payments_096_101` aplicada no Supabase oficial.
+- `/pedidos` é o Kanban operacional realtime derivado dos quatro ciclos independentes.
+- `/producao` projeta pedidos confirmados e itens por estação, sem criar status paralelo.
+- `payments` é o ledger financeiro persistente. `orders.payment_status` permanece como resumo da State Machine e só vira `paid` quando a soma de linhas pagas cobre exatamente o total do pedido.
+- Pedidos novos recebem uma intenção de pagamento automaticamente via `orders_seed_payment_intent`.
+- Dinheiro calcula troco server-side; Pix e cartão presencial usam confirmação manual e referência opcional; nenhum PAN/CVV é armazenado.
+- O schema já permite múltiplas linhas de pagamento por pedido e impede que intenções ativas excedam o total, preparando pagamento dividido para o PDV.
+- Usuários sem `payments.view` continuam acessando pedidos sem exposição do ledger financeiro.
+- Supabase `zsbsczjhiujnhdznrzck`: RLS ativo em `payments`, RPCs financeiras service-role only e Security Advisor zerado após a migration.
+- Banco oficial ainda sem organização/usuário/pedido real; E2E real permanece para o primeiro ambiente operacional.
+- Próximo bloco lógico após Pagamentos: #102–#110 — PDV.
