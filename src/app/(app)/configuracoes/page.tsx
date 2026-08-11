@@ -5,6 +5,7 @@ const items = [
   ["Horários", "Períodos de funcionamento, inclusive após meia-noite.", "/configuracoes/horarios"],
   ["Entrega", "Prazo, taxa padrão, frete grátis e bairros atendidos.", "/configuracoes/entrega"],
   ["Pagamentos", "Pix, cartões e dinheiro disponíveis no checkout.", "/configuracoes/pagamentos"],
+  ["Impressões", "Estações, impressoras, Print Agents, roteamento e fila persistente.", "/configuracoes/impressoes"],
 ] as const;
 
 export default function SettingsPage() {
