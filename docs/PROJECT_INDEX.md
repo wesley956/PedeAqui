@@ -40,6 +40,7 @@ Exemplo:
 - `ORDER_MANAGER_STATUS.md` — status #083–#091.
 - `KITCHEN_STATUS.md` — status #092–#095.
 - `PAYMENTS_STATUS.md` — status #096–#101.
+- `PDV_STATUS.md` — status #102–#110.
 
 ## Ordem macro
 
@@ -89,14 +90,12 @@ Antes de criar um novo módulo, responder:
 - Central Profissional de Impressão #058–#082: consolidada no `main`; CI verde e migrations aplicadas.
 - Gestor de Pedidos #083–#091: consolidado no `main` pelo PR #102; CI final run #52 verde.
 - Produção/KDS #092–#095: consolidada no `main` pelo PR #107; CI final run #56 verde.
-- Pagamentos #096–#101: em implementação na branch `agent/payments-096-101`; issues GitHub #108–#113 e migration `payments_096_101` aplicada no Supabase oficial.
-- `/pedidos` é o Kanban operacional realtime derivado dos quatro ciclos independentes.
-- `/producao` projeta pedidos confirmados e itens por estação, sem criar status paralelo.
-- `payments` é o ledger financeiro persistente. `orders.payment_status` permanece como resumo da State Machine e só vira `paid` quando a soma de linhas pagas cobre exatamente o total do pedido.
-- Pedidos novos recebem uma intenção de pagamento automaticamente via `orders_seed_payment_intent`.
-- Dinheiro calcula troco server-side; Pix e cartão presencial usam confirmação manual e referência opcional; nenhum PAN/CVV é armazenado.
-- O schema já permite múltiplas linhas de pagamento por pedido e impede que intenções ativas excedam o total, preparando pagamento dividido para o PDV.
-- Usuários sem `payments.view` continuam acessando pedidos sem exposição do ledger financeiro.
-- Supabase `zsbsczjhiujnhdznrzck`: RLS ativo em `payments`, RPCs financeiras service-role only e Security Advisor zerado após a migration.
-- Banco oficial ainda sem organização/usuário/pedido real; E2E real permanece para o primeiro ambiente operacional.
-- Próximo bloco lógico após Pagamentos: #102–#110 — PDV.
+- Pagamentos #096–#101: implementado na branch `agent/payments-096-101`, draft PR #114, CI run #60 verde; migrations `payments_096_101` e `payment_paid_guard` aplicadas no Supabase oficial. Ainda não mesclado.
+- PDV #102–#110: implementado de forma empilhada na branch `agent/pdv-102-110`, issues #115–#123; migration `pdv_102_110` aplicada no Supabase oficial.
+- `/pdv` é um canal presencial autenticado que reutiliza catálogo, pedidos, ledger de pagamentos, produção e Central de Impressão; não existe segundo motor de pedidos.
+- O PDV envia apenas IDs/quantidades/adicionais e distribuição dos pagamentos. Produtos, vínculos, disponibilidade e preços são recalculados no PostgreSQL antes da gravação.
+- Pedidos `digital_menu` continuam obrigados a ter `source_cart_id`, `checkout_session_id` e `public_access_token_hash`; canais internos podem nascer sem carrinho/checkout público falso.
+- A venda PDV é idempotente e transacional: snapshots → pagamentos → confirmação → impressão → produção → auditoria/eventos.
+- Teste E2E de banco com rollback confirmou R$ 15,90 pagos em dinheiro com R$ 20,00, troco R$ 4,10, pedido confirmado/pago/em preparação, cliente vinculado e zero resíduos após rollback.
+- Banco oficial continua sem organização/usuário real; hardware de impressão e E2E visual autenticado dependem do primeiro ambiente operacional real.
+- Próximo bloco lógico após o PDV: #111–#115 — Clientes e Dashboard.
