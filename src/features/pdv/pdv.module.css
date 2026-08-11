@@ -60,7 +60,7 @@
 .categoryButton,
 .categoryActive {
   flex: 0 0 auto;
-  min-height: 38px;
+  min-height: 40px;
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 7px 13px;
@@ -171,7 +171,7 @@
 .secondaryButton,
 .primaryButton {
   border-radius: 9px;
-  min-height: 36px;
+  min-height: 38px;
   padding: 7px 10px;
   font-weight: 800;
   cursor: pointer;
@@ -218,7 +218,7 @@
 .field,
 .select {
   width: 100%;
-  min-height: 40px;
+  min-height: 42px;
   border: 1px solid var(--border);
   border-radius: 9px;
   background: var(--surface-2);
@@ -382,6 +382,19 @@
   .productCard {
     min-height: 128px;
     padding: 12px;
+  }
+
+  .categoryButton,
+  .categoryActive,
+  .smallButton,
+  .removeButton,
+  .secondaryButton,
+  .primaryButton,
+  .field,
+  .select,
+  .customerButton,
+  .customerSelected {
+    min-height: 44px;
   }
 
   .twoColumns {
