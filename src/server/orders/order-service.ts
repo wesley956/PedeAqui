@@ -28,9 +28,26 @@ const transitionResultSchema = z.object({
   changed: z.boolean(),
 });
 
+type OrderModifierRow = {
+  order_item_id: string;
+  group_name_snapshot: string;
+  modifier_name_snapshot: string;
+  unit_price_cents: number;
+};
+
 function requireStoreId(storeId: string | null) {
   if (!storeId) throw new Error("An active store is required");
   return storeId;
+}
+
+export function groupOrderModifiers(rows: OrderModifierRow[]) {
+  const grouped = new Map<string, OrderModifierRow[]>();
+  for (const row of rows) {
+    const current = grouped.get(row.order_item_id) ?? [];
+    current.push(row);
+    grouped.set(row.order_item_id, current);
+  }
+  return grouped;
 }
 
 export class OrderService {
@@ -123,6 +140,7 @@ export class OrderService {
         .in("order_item_id", itemIds).order("created_at")
       : { data: [], error: null };
     if (modifiersResult.error) throw modifiersResult.error;
+    const modifiersByItem = groupOrderModifiers((modifiersResult.data ?? []) as OrderModifierRow[]);
 
     const { data: history, error: historyError } = await admin.from("order_state_history")
       .select("id, state_domain, from_state, to_state, reason, source, actor_user_id, created_at")
@@ -156,7 +174,7 @@ export class OrderService {
       order,
       items: (items ?? []).map((item) => ({
         ...item,
-        modifiers: (modifiersResult.data ?? []).filter((modifier) => modifier.order_item_id === item.id),
+        modifiers: modifiersByItem.get(item.id) ?? [],
       })),
       history: history ?? [],
       printJobs: (printJobs ?? []).map((job) => ({
