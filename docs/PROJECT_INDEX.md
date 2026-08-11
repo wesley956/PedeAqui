@@ -42,6 +42,7 @@ Exemplo:
 - `PAYMENTS_STATUS.md` — status #096–#101.
 - `PDV_STATUS.md` — status #102–#110.
 - `CUSTOMERS_DASHBOARD_STATUS.md` — status #111–#115.
+- `QUALITY_HARDENING_STATUS.md` — status #116–#126 e evidências de teste/hardening.
 
 ## Ordem macro
 
@@ -93,14 +94,15 @@ Antes de criar um novo módulo, responder:
 - Produção/KDS #092–#095: consolidada no `main` pelo PR #107; CI final run #56 verde.
 - Pagamentos #096–#101: implementado na branch `agent/payments-096-101`, draft PR #114, CI run #60 verde; migrations `payments_096_101` e `payment_paid_guard` aplicadas no Supabase oficial. Ainda não mesclado.
 - PDV #102–#110: implementado de forma empilhada na branch `agent/pdv-102-110`, draft PR #124, CI final run #64 verde; migration `pdv_102_110` aplicada no Supabase oficial. Ainda não mesclado.
-- Clientes e Dashboard #111–#115: implementados de forma empilhada na branch `agent/customers-dashboard-111-115`, issues #125–#129; migration `customers_dashboard_111_115` aplicada no Supabase oficial.
-- `/clientes` agora busca nome/telefone/e-mail, ordena por atividade/gasto/pedidos/nome e mostra métricas derivadas de pedidos concluídos.
-- `/clientes/[id]` consolida dados, métricas, endereços e até 20 pedidos recentes; o histórico usa o cliente autenticado do Supabase para manter a RLS de `orders` como autoridade de visibilidade por unidade.
-- `orders_customer_metrics_after_completion` atualiza contagem, total gasto, ticket médio e última compra na mesma transação em que o pedido entra em `completed`; a migration também executou backfill determinístico.
-- `/dashboard` agora usa dados reais da unidade ativa: vendas/pedidos concluídos, ticket médio, pedidos abertos, clientes identificados, comparação com ontem, série de 24 horas e top 8 produtos.
-- Dia e hora do Dashboard são calculados no PostgreSQL usando `stores.timezone`; o navegador não decide o período contábil operacional.
-- `dashboard_snapshot_internal` é `SECURITY INVOKER`, revogada de `PUBLIC`/`anon`/`authenticated` e executável apenas pelo `service_role` depois de `dashboard.view` ser autorizado no servidor.
-- Teste transacional com rollback confirmou cliente 1 pedido/R$ 10,00/ticket R$ 10,00, Dashboard com 1 venda/1 pedido aberto/1 cliente, agrupamento em 00h de São Paulo e top produto 2× X-Burger; zero resíduos após rollback.
-- Security Advisor segue zerado após a migration.
-- Banco oficial continua sem organização/usuário real; hardware de impressão e E2E visual autenticado dependem do primeiro ambiente operacional real.
-- Próximo bloco lógico: #116–#126 — Qualidade e hardening.
+- Clientes e Dashboard #111–#115: implementados na branch `agent/customers-dashboard-111-115`, draft PR #130, CI run #65 verde; migration `customers_dashboard_111_115` aplicada. Ainda não mesclado.
+- Qualidade e Hardening #116–#126: implementados na branch `agent/quality-hardening-116-126`, issues #131–#141; detalhes em `QUALITY_HARDENING_STATUS.md`.
+- PricingService e as quatro State Machines possuem cobertura ampliada/matricial.
+- Testes PostgreSQL com rollback validaram isolamento multiempresa, checkout duplicado, Cardápio → Cozinha, PDV → Cozinha e retry/fallback da impressão; todas as fixtures terminaram com zero resíduos.
+- Concorrência está protegida por `FOR UPDATE`, uniques, sequência atômica, lock de idempotência e `FOR UPDATE SKIP LOCKED`; o conector atual não fornece segunda credencial SQL para teste simultâneo multi-sessão, e essa limitação está documentada sem alegar uma prova que não ocorreu.
+- Migration `quality_hardening_116_126` removeu todos os privilégios diretos de tabelas públicas de `anon`; `bootstrap_organization`, `accept_invitation` e `has_permission` também deixaram de ser anon-executáveis.
+- Anon mantém apenas as projeções públicas `get_public_menu` e `get_public_product`; todas as tabelas públicas permanecem com RLS.
+- Security Advisor após hardening: 0 alertas.
+- Next.js aplica CSP, anti-framing, nosniff, Referrer-Policy, Permissions-Policy e COOP.
+- O detalhe de pedido indexa adicionais uma única vez em `Map`, evitando filtro O(itens × adicionais).
+- Mobile autenticado mantém todos os módulos acessíveis após esconder a sidebar; PDV usa alvos de toque mínimos de 44px em telas pequenas.
+- O backlog técnico Fase 0 + Fase 1 documentado em `IMPLEMENTATION_BACKLOG.md` termina no item #126. A próxima expansão macro é Salão; novo milestone deve receber numeração/escopo antes da implementação.

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { signOutAction } from "@/features/auth/actions";
 import { Button } from "@/components/ui/button";
 
-const navigation = [
+export const navigation = [
   ["Dashboard", "/dashboard"],
   ["Pedidos", "/pedidos"],
   ["Cardápio", "/cardapio/produtos"],
@@ -42,7 +42,7 @@ export function AppShell({ children, email }: { children: ReactNode; email: stri
         <main className="app-content">{children}</main>
       </div>
       <nav className="mobile-nav" aria-label="Navegação mobile">
-        {navigation.slice(0, 5).map(([label, href]) => (
+        {navigation.map(([label, href]) => (
           <Link key={href} href={href}>{label}</Link>
         ))}
       </nav>
