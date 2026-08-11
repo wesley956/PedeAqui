@@ -83,7 +83,7 @@ export class OrderService {
     return { ...createResultSchema.parse(data), accessToken };
   }
 
-  static async list(limit = 100) {
+  static async list(limit = 150) {
     const context = await authorize(PERMISSIONS.ORDERS_VIEW);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
@@ -130,6 +130,27 @@ export class OrderService {
       .order("created_at");
     if (historyError) throw historyError;
 
+    const { data: printJobs, error: printError } = await admin.from("print_jobs")
+      .select("id, document_type, status, printer_id, station_id, attempts, max_attempts, copies, is_reprint, reprint_reason, created_at, printed_at, last_error")
+      .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("order_id", id)
+      .order("created_at", { ascending: false });
+    if (printError) throw printError;
+
+    const printerIds = [...new Set((printJobs ?? []).map((job) => job.printer_id))];
+    const stationIds = [...new Set((printJobs ?? []).map((job) => job.station_id).filter((value): value is string => Boolean(value)))];
+    const [printersResult, stationsResult] = await Promise.all([
+      printerIds.length
+        ? admin.from("printers").select("id, name").eq("organization_id", context.organizationId).eq("store_id", storeId).in("id", printerIds)
+        : Promise.resolve({ data: [], error: null }),
+      stationIds.length
+        ? admin.from("production_stations").select("id, name").eq("organization_id", context.organizationId).eq("store_id", storeId).in("id", stationIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+    if (printersResult.error) throw printersResult.error;
+    if (stationsResult.error) throw stationsResult.error;
+    const printerNames = new Map((printersResult.data ?? []).map((printer) => [printer.id, printer.name]));
+    const stationNames = new Map((stationsResult.data ?? []).map((station) => [station.id, station.name]));
+
     return {
       context,
       order,
@@ -138,6 +159,11 @@ export class OrderService {
         modifiers: (modifiersResult.data ?? []).filter((modifier) => modifier.order_item_id === item.id),
       })),
       history: history ?? [],
+      printJobs: (printJobs ?? []).map((job) => ({
+        ...job,
+        printer_name: printerNames.get(job.printer_id) ?? "Impressora",
+        station_name: job.station_id ? stationNames.get(job.station_id) ?? "Estação" : "Sem estação",
+      })),
     };
   }
 
@@ -148,7 +174,9 @@ export class OrderService {
     reason?: string | null,
   ) {
     const id = uuidSchema.parse(orderId);
-    const permission = domain === "order" && to === "canceled" ? PERMISSIONS.ORDERS_CANCEL : PERMISSIONS.ORDERS_EDIT;
+    const permission = domain === "order" && (to === "canceled" || to === "rejected")
+      ? PERMISSIONS.ORDERS_CANCEL
+      : PERMISSIONS.ORDERS_EDIT;
     const context = await authorize(permission);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
@@ -173,9 +201,9 @@ export class OrderService {
       }
       if (order.payment_status !== "paid") throw new Error("Payment must be paid before the order can be completed");
     }
-    if (domain === "order" && to === "canceled") {
-      if (!reason || reason.trim().length < 3) throw new Error("Cancellation reason is required");
-      if (fulfillmentIsComplete(order.fulfillment_status as FulfillmentStatus)) throw new Error("Fulfilled order cannot be canceled");
+    if (domain === "order" && (to === "canceled" || to === "rejected")) {
+      if (!reason || reason.trim().length < 3) throw new Error("Reason is required");
+      if (fulfillmentIsComplete(order.fulfillment_status as FulfillmentStatus)) throw new Error("Fulfilled order cannot be canceled or rejected");
     }
     if (domain === "production" && to === "queued" && order.order_status !== "confirmed") {
       throw new Error("Order must be confirmed before entering production");
@@ -207,8 +235,37 @@ export class OrderService {
     return this.transition(orderId, "order", "confirmed" as OrderStatus);
   }
 
+  static reject(orderId: string, reason: string) {
+    return this.transition(orderId, "order", "rejected" as OrderStatus, reason);
+  }
+
   static cancel(orderId: string, reason: string) {
     return this.transition(orderId, "order", "canceled" as OrderStatus, reason);
+  }
+
+  static complete(orderId: string) {
+    return this.transition(orderId, "order", "completed" as OrderStatus);
+  }
+
+  static async startProduction(orderId: string) {
+    const id = uuidSchema.parse(orderId);
+    const context = await authorize(PERMISSIONS.ORDERS_EDIT);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const { data: scoped, error: readError } = await admin.from("orders")
+      .select("id, order_status, production_status")
+      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
+    if (readError) throw readError;
+    if (!scoped) throw new Error("Order not found");
+    if (scoped.order_status !== "confirmed") throw new Error("Order must be confirmed before production starts");
+
+    const { data, error } = await admin.rpc("order_start_production_internal", {
+      p_order_id: id,
+      p_actor_user_id: context.userId,
+      p_source: "panel",
+    });
+    if (error) throw error;
+    return transitionResultSchema.parse(data);
   }
 
   static setPayment(orderId: string, status: PaymentStatus, reason?: string | null) {

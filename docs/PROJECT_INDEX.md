@@ -37,6 +37,7 @@ Exemplo:
 - `CHECKOUT_STATUS.md` — status #041–#046.
 - `ORDER_ENGINE_STATUS.md` — status #047–#057.
 - `PRINTING_STATUS.md` — status #058–#082.
+- `ORDER_MANAGER_STATUS.md` — status #083–#091.
 
 ## Ordem macro
 
@@ -76,23 +77,19 @@ Antes de criar um novo módulo, responder:
 
 - Blueprint: definido.
 - Identidade: PedeAqui, laranja + grafite.
-- Fundação #001–#016: implementada no draft PR #17; schema aplicado no Supabase oficial.
-- Catálogo #017–#024: implementado no draft PR #26; CI verde e schema aplicado.
-- Cardápio/Clientes #025–#032: implementado no draft PR #35; CI verde e migrations aplicadas.
-- Endereços/Entrega #033–#035: implementado no draft PR #39; CI verde e migrations aplicadas.
-- Carrinho/Pricing #036–#040: implementado no draft PR #47; CI verde e migrations aplicadas.
-- Checkout #041–#046: implementado no draft PR #54; CI verde e migrations aplicadas.
-- Motor de Pedidos #047–#057: implementado no draft PR #66; CI verde no run #27 e migrations aplicadas.
-- Central Profissional de Impressão #058–#082: implementada no draft PR #92; CI verde no run #39 e migrations aplicadas no Supabase oficial.
-- Impressão usa `production_stations`, `printers`, `station_printers`, `product_production_stations`, `print_agents` e `print_jobs` com RLS e integridade multiempresa.
-- `order.confirmed` gera jobs por trigger na mesma transação da confirmação; roteamento de produção é por produto→estação e expedição/balcão usam o pedido completo.
-- A fila usa claim concorrente com lease e `SKIP LOCKED`, retry com backoff, fallback, cópias, idempotência lógica e jobs falhos persistentes.
-- Cada Print Agent só reivindica jobs de impressoras explicitamente vinculadas a ele; impressoras sem agente permanecem pendentes para correção operacional.
-- Reimpressão sempre cria novo job marcado, exige motivo e grava auditoria/evento transacionalmente.
-- Print Agent possui credencial própria com apenas o hash armazenado no banco; `service_role` nunca vai para o computador da loja.
-- MVP do agente usa Node.js, spool local e ESC/POS TCP para 58/80 mm, consulta sua configuração e testa em paralelo a conectividade das impressoras atribuídas mesmo com fila vazia.
-- Eventos `print.printer_offline`, `print.printer_recovered`, `print.fallback_activated` e `print.job_failed` são persistidos somente nas transições relevantes.
-- A entrega física é tratada como at-least-once; exatamente-uma-vez é garantido apenas para a intenção/job lógico, pois impressoras comuns não participam da transação do banco.
-- Supabase `zsbsczjhiujnhdznrzck`: Security Advisor com zero alertas após as migrations de impressão.
-- Banco oficial ainda sem organização/usuário/pedido real; primeiro teste ponta a ponta e teste de hardware permanecem para ambiente operacional.
-- Próximo bloco lógico: #083–#092 — Gestor de Pedidos.
+- Fundação #001–#016: consolidada no `main`.
+- Catálogo #017–#024: consolidado no `main`; schema aplicado no Supabase oficial.
+- Cardápio/Clientes #025–#032: consolidado no `main`; migrations aplicadas.
+- Endereços/Entrega #033–#035: consolidado no `main`; migrations aplicadas.
+- Carrinho/Pricing #036–#040: consolidado no `main`; migrations aplicadas.
+- Checkout #041–#046: consolidado no `main`; migrations aplicadas.
+- Motor de Pedidos #047–#057: consolidado no `main`; migrations aplicadas.
+- Central Profissional de Impressão #058–#082: consolidada no `main`; CI verde e migrations aplicadas.
+- Gestor de Pedidos #083–#091: em implementação na branch `agent/order-manager-083-091`; migration do workflow operacional aplicada e Security Advisor zerado.
+- `/pedidos` evoluiu para Kanban realtime derivado dos quatro ciclos independentes — não existe mega-status persistido para as colunas.
+- Novo pedido possui alerta visual e som opt-in; ações operacionais continuam server-side via State Machine.
+- `order_start_production_internal` preserva `pending_confirmation → queued → preparing` de forma atômica e auditável pelo histórico existente.
+- `/pedidos/[id]` integra itens, cliente/endereço, quatro estados, histórico, fulfillment e vias da Central Profissional de Impressão com reimpressão auditada.
+- Supabase `zsbsczjhiujnhdznrzck`: Security Advisor com zero alertas após a migration do Gestor.
+- Banco oficial ainda sem organização/usuário/pedido real; testes ponta a ponta e hardware permanecem para o primeiro ambiente operacional real.
+- Próximo bloco lógico após o Gestor: #092–#095 — Produção/KDS.
