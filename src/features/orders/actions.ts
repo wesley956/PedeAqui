@@ -90,6 +90,7 @@ const managerIntentSchema = z.enum([
   "courier_picked_up",
   "out_for_delivery",
   "delivered",
+  "served",
   "complete",
   "reprint",
 ]);
@@ -146,6 +147,9 @@ export async function orderManagerAction(
       case "delivered":
         await OrderService.setFulfillment(orderId, "delivered");
         break;
+      case "served":
+        await OrderService.setFulfillment(orderId, "served");
+        break;
       case "complete":
         await OrderService.complete(orderId);
         break;
@@ -170,6 +174,7 @@ export async function orderManagerAction(
       courier_picked_up: "Pedido retirado pelo entregador.",
       out_for_delivery: "Pedido saiu para entrega.",
       delivered: "Entrega confirmada.",
+      served: "Atendimento de balcão concluído.",
       complete: "Pedido concluído.",
       reprint: "Reimpressão enviada para a fila.",
     };
