@@ -26,7 +26,7 @@ Branch: `agent/printing-058-082`
 - [077] contrato autenticado do Print Agent
 - [078] MVP Node.js do Print Agent
 - [079] heartbeat do agente
-- [080] estado offline derivado por heartbeat expirado
+- [080] detecção/alerta de impressora offline
 - [081] encoder ESC/POS 58/80 mm + CP850 básico
 - [082] geração automática de jobs na confirmação do pedido
 
@@ -61,7 +61,17 @@ O trigger `orders_enqueue_print_on_confirm` executa na mesma transação que mud
 - `idempotency_key` única;
 - jobs falhos não são apagados;
 - retry manual é auditado;
-- job em `processing` não pode ser cancelado pelo painel porque o hardware pode já estar imprimindo.
+- job em `processing` não pode ser cancelado pelo painel porque o hardware pode já estar imprimindo;
+- um agente só pode claimar jobs de impressoras explicitamente vinculadas ao seu `agent_id`.
+
+### Eventos operacionais
+
+Eventos persistidos somente nas transições relevantes, sem spam de heartbeat:
+
+- `print.printer_offline`;
+- `print.printer_recovered`;
+- `print.fallback_activated`;
+- `print.job_failed`.
 
 ## Reimpressão
 
@@ -85,6 +95,7 @@ O agente recebe uma credencial própria criada no painel. O valor bruto aparece 
 
 Endpoints server-side:
 
+- `POST /api/print-agent/config`
 - `POST /api/print-agent/claim`
 - `POST /api/print-agent/ack`
 - `POST /api/print-agent/fail`
@@ -96,7 +107,9 @@ MVP físico:
 - spool local;
 - ESC/POS por TCP/rede;
 - 58 e 80 mm;
-- heartbeat;
+- consulta das impressoras atribuídas;
+- probe TCP periódico mesmo com fila vazia;
+- heartbeat de saúde;
 - recuperação de `printed_unacked` sem reimpressão.
 
 USB, Bluetooth e spool do sistema permanecem atrás do mesmo contrato para drivers posteriores.
@@ -107,7 +120,7 @@ A geração lógica de jobs é idempotente. A impressão física, porém, não p
 
 ## Segurança Supabase
 
-Após as migrations `printing_058_082` e `printing_hardening`:
+Após as migrations `printing_058_082`, `printing_hardening`, `printing_operational_events` e `print_agent_strict_assignment`:
 
 - RLS ativo nas seis tabelas do subsistema;
 - `anon` sem leitura direta;
@@ -122,6 +135,8 @@ Após as migrations `printing_058_082` e `printing_hardening`:
 ## Validação
 
 O banco oficial ainda não possui organização, usuário, produto ou pedido. Por isso não foi criado usuário artificial de Auth para simular uma venda. A integração foi validada por schema, grants, trigger/RPCs, advisors e testes automatizados. O primeiro teste ponta a ponta com pedido real deverá validar também impressora física.
+
+O CI também valida explicitamente a sintaxe dos arquivos `.mjs` do Print Agent, além de lint, TypeScript, testes e build do app.
 
 ## Próximo bloco após aprovação
 
