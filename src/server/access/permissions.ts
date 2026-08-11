@@ -19,6 +19,8 @@ export const PERMISSIONS = {
   CASH_CLOSE: "cash.close",
   CUSTOMERS_VIEW: "customers.view",
   CUSTOMERS_MANAGE: "customers.manage",
+  DELIVERY_VIEW: "delivery.view",
+  DELIVERY_MANAGE: "delivery.manage",
   REPORTS_VIEW: "reports.view",
 } as const;
 

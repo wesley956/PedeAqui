@@ -8,12 +8,17 @@ const statusCopy = {
   paused: ["Pausado", "Novos pedidos estão temporariamente pausados"],
 } as const;
 
+function money(cents: number) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
+}
+
 export default async function PublicMenuPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const menu = await PublicMenuService.getMenu(slug);
   if (!menu) notFound();
 
   const [status, detail] = statusCopy[menu.operational.label];
+  const deliveryAvailable = menu.settings.allow_delivery && menu.delivery.enabled;
 
   return (
     <main style={{ minHeight: "100vh", background: "#fffdf9", color: "#181818" }}>
@@ -37,9 +42,11 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
 
         <div style={{ display: "grid", gap: 18, marginTop: 20 }}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", fontSize: 13 }}>
-            {menu.settings.allow_delivery ? <span style={modePill}>Entrega</span> : null}
+            {deliveryAvailable ? <span style={modePill}>Entrega · a partir de {money(menu.delivery.starting_fee_cents)}</span> : null}
+            {deliveryAvailable ? <span style={modePill}>{menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span> : null}
             {menu.settings.allow_pickup ? <span style={modePill}>Retirada</span> : null}
-            {menu.settings.minimum_order_cents > 0 ? <span style={modePill}>Mínimo {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(menu.settings.minimum_order_cents / 100)}</span> : null}
+            {menu.settings.minimum_order_cents > 0 ? <span style={modePill}>Mínimo {money(menu.settings.minimum_order_cents)}</span> : null}
+            {deliveryAvailable && menu.delivery.free_delivery_over_cents !== null ? <span style={modePill}>Frete grátis acima de {money(menu.delivery.free_delivery_over_cents)}</span> : null}
           </div>
           <MenuBrowser menu={menu} />
         </div>

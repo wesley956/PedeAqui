@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { publicDeliverySummarySchema } from "@/server/delivery/schemas";
 
 export const hexColorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
 
@@ -104,6 +105,7 @@ export const publicMenuSchema = z.object({
     accepting_orders: z.boolean(),
     pause_reason: z.string().nullable(),
   }),
+  delivery: publicDeliverySummarySchema,
   hours: z.array(publicHourSchema),
   categories: z.array(publicCategorySchema),
 });

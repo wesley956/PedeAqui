@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createCustomerAction } from "@/features/customers/actions";
@@ -35,15 +36,16 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
             {customers.length === 0 ? (
               <div style={{ padding: 24 }}><strong>Nenhum cliente encontrado</strong><p className="muted" style={{ marginBottom: 0 }}>Os clientes criados aqui serão compartilhados entre as unidades da mesma organização.</p></div>
             ) : customers.map((customer) => (
-              <div key={customer.id} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) repeat(3, auto)", gap: 18, alignItems: "center", padding: 15, borderBottom: "1px solid var(--border)" }}>
+              <Link href={`/clientes/${customer.id}`} key={customer.id} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) repeat(3, auto)", gap: 18, alignItems: "center", padding: 15, borderBottom: "1px solid var(--border)" }}>
                 <div style={{ minWidth: 0 }}>
                   <strong>{customer.name}</strong>
                   <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{customer.phone || customer.email || "Sem contato informado"}</div>
+                  <div style={{ color: "var(--accent)", fontSize: 11, fontWeight: 800, marginTop: 5 }}>GERENCIAR ENDEREÇOS →</div>
                 </div>
                 <div style={{ textAlign: "right" }}><span className="muted" style={{ fontSize: 11 }}>PEDIDOS</span><div>{customer.orders_count}</div></div>
                 <div style={{ textAlign: "right" }}><span className="muted" style={{ fontSize: 11 }}>TOTAL</span><div>{formatCents(Number(customer.total_spent_cents))}</div></div>
                 <div style={{ textAlign: "right" }}><span className="muted" style={{ fontSize: 11 }}>TICKET</span><div>{formatCents(customer.average_ticket_cents)}</div></div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
