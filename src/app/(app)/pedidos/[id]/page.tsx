@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cancelOrderAction } from "@/features/orders/actions";
 import { OrderActionForm } from "@/features/orders/order-action-form";
 import { OrderRealtime } from "@/features/orders/order-realtime";
+import { PaymentPanel } from "@/features/payments/payment-panel";
 import { OrderService } from "@/server/orders/order-service";
 import { orderStatusLabels, productionStatusLabels } from "@/server/orders/state-machines";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
@@ -64,7 +65,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {order.order_status === "pending_confirmation" ? <OrderActionForm orderId={order.id} intent="reject" label="Recusar pedido" tone="danger" reasonLabel="Motivo da recusa" reasonPlaceholder="Ex.: item indisponível" /> : null}
           {order.order_status === "confirmed" && ["pending_confirmation", "queued"].includes(order.production_status) ? <OrderActionForm orderId={order.id} intent="start_production" label="Iniciar produção" /> : null}
           {order.production_status === "preparing" ? <OrderActionForm orderId={order.id} intent="mark_ready" label="Marcar pronto" /> : null}
-          {order.payment_status === "pending" ? <OrderActionForm orderId={order.id} intent="mark_paid" label="Marcar pagamento como pago" tone="secondary" /> : null}
 
           {order.production_status === "ready" && order.fulfillment_type === "pickup" && order.fulfillment_status === "pending" ? <OrderActionForm orderId={order.id} intent="await_pickup" label="Liberar retirada" /> : null}
           {order.fulfillment_status === "awaiting_pickup" ? <OrderActionForm orderId={order.id} intent="customer_picked_up" label="Cliente retirou" /> : null}
@@ -116,6 +116,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               {order.cash_change_for_cents ? <Summary label="Troco para" value={money(order.cash_change_for_cents)} /> : null}
             </div>
           </article>
+
+          <PaymentPanel orderId={order.id} />
 
           <article className="card" style={{ padding: 18, display: "grid", gap: 10 }}>
             <h2 style={{ margin: 0, fontSize: 18 }}>Impressões</h2>
