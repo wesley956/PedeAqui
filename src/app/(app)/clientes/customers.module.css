@@ -1,0 +1,153 @@
+.page {
+  display: grid;
+  gap: 20px;
+  max-width: 1320px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.header h1 { margin: 0; }
+.header p { margin: 5px 0 0; }
+
+.countBadge {
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 350px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.createCard {
+  padding: 17px;
+  display: grid;
+  gap: 12px;
+  position: sticky;
+  top: 16px;
+}
+.createCard h2 { margin: 0; font-size: 18px; }
+.createCard p { margin: -4px 0 2px; font-size: 12px; }
+
+.listArea { display: grid; gap: 12px; min-width: 0; }
+.filters {
+  padding: 13px;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 190px auto;
+  gap: 9px;
+  align-items: end;
+}
+
+.customerList { overflow: hidden; }
+.customerRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.3fr) repeat(4, minmax(90px, .55fr));
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background .16s ease;
+}
+.customerRow:hover { background: var(--surface-2); }
+.customerIdentity { min-width: 0; }
+.customerName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.contact { color: var(--muted); font-size: 12px; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.openHint { color: var(--accent); font-size: 10px; font-weight: 900; margin-top: 5px; letter-spacing: .03em; }
+.stat { text-align: right; min-width: 0; }
+.statLabel { display: block; color: var(--muted); font-size: 9px; font-weight: 850; letter-spacing: .05em; }
+.statValue { display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.empty {
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--muted);
+}
+.empty strong { display: block; color: var(--text); margin-bottom: 5px; }
+
+.profileHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: end;
+}
+.profileHeader h1 { margin: 8px 0 4px; }
+.profileContact { color: var(--muted); margin: 0; }
+
+.profileMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 10px;
+}
+.metric { padding: 14px; }
+.metric span { display: block; color: var(--muted); font-size: 10px; font-weight: 850; letter-spacing: .05em; }
+.metric strong { display: block; margin-top: 5px; font-size: 20px; }
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: minmax(310px, .8fr) minmax(0, 1.2fr);
+  gap: 16px;
+  align-items: start;
+}
+.sectionCard { padding: 17px; display: grid; gap: 12px; }
+.sectionCard h2 { margin: 0; font-size: 18px; }
+.sectionHeader { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.sectionSub { color: var(--muted); font-size: 11px; margin-top: 3px; }
+
+.addressList, .orderList { display: grid; }
+.address, .orderRow { padding: 12px 0; border-top: 1px solid var(--border); display: grid; gap: 7px; }
+.addressTop, .orderTop { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.addressMeta, .orderMeta { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.badgeAccent { color: var(--accent); }
+.orderValue { font-weight: 850; white-space: nowrap; }
+.orderLink { color: var(--accent); font-size: 11px; font-weight: 850; }
+
+.formGrid { display: grid; gap: 10px; }
+.twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.restricted { padding: 12px; border-radius: 10px; background: var(--surface-2); color: var(--muted); font-size: 12px; }
+
+@media (max-width: 1050px) {
+  .layout, .profileGrid { grid-template-columns: 1fr; }
+  .createCard { position: static; }
+  .customerRow { grid-template-columns: minmax(170px, 1fr) repeat(3, minmax(90px, .5fr)); }
+  .customerRow .stat:last-child { display: none; }
+}
+
+@media (max-width: 760px) {
+  .filters { grid-template-columns: 1fr; }
+  .customerRow { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+  .customerRow .stat { display: none; }
+  .customerRow .stat:nth-of-type(2) { display: block; }
+  .profileHeader { grid-template-columns: 1fr; }
+  .profileMetrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .twoColumns { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 430px) {
+  .profileMetrics { grid-template-columns: 1fr; }
+}
