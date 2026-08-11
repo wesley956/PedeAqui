@@ -40,6 +40,7 @@ Os módulos compartilham entidades e regras de domínio. Exemplo: `order.complet
 - `CUSTOMERS_DASHBOARD_STATUS.md` — #111–#115.
 - `QUALITY_HARDENING_STATUS.md` — #116–#126.
 - `DINING_STATUS.md` — #127–#139.
+- `CRM_GROWTH_STATUS.md` — #140–#151.
 
 ## Ordem macro
 
@@ -77,18 +78,64 @@ Antes de criar um novo módulo, responder:
 
 ## Estado atual — 11/08/2026
 
-- Fundação #001–#016, Catálogo #017–#024, Cardápio/Clientes #025–#032, Entrega #033–#035, Carrinho #036–#040, Checkout #041–#046, Pedidos #047–#057, Impressão #058–#082, Gestor #083–#091 e Produção #092–#095 estão consolidados no `main`.
-- Pagamentos #096–#101: branch `agent/payments-096-101`, draft PR #114, CI #60 verde e migrations aplicadas; não mesclado.
-- PDV #102–#110: branch `agent/pdv-102-110`, draft PR #124, CI #64 verde e migration aplicada; não mesclado.
-- Clientes/Dashboard #111–#115: branch `agent/customers-dashboard-111-115`, draft PR #130, CI #65 verde e migration aplicada; não mesclado.
-- Qualidade #116–#126: branch `agent/quality-hardening-116-126`, draft PR #142, CI #68 verde com 111/111 testes; migration aplicada; não mesclado.
-- Salão #127–#139: branch `agent/dining-127-139`, draft PR #156, issues #143–#155; migrations 33–37 aplicadas; não mesclado.
-- Salão usa o mesmo `orders`: cada rodada tem `tab_id`, `tab_round_number`, canal `waiter` ou `table_qr` e fulfillment `table`.
-- Há somente uma comanda ativa por mesa; transferência é atômica; participantes podem receber itens para divisão da conta.
-- Rodadas usam preço autoritativo, entram no mesmo fluxo de produção e impressão e têm idempotência.
-- Pagamentos da comanda reutilizam `payments`, respeitam formas habilitadas e suportam conta geral ou participante.
-- Fechamento exige conta quitada e produção pronta; pedidos são servidos/concluídos e a mesa entra em limpeza.
-- `/salao` é o board operacional; `/salao/[tableId]` concentra a comanda; `/mesa/[code]` é o fluxo público de QR sem UUID interno.
-- E2E PostgreSQL com rollback validou abertura repetida, transferência, participantes, rodada do garçom, rodada QR, 2 pedidos, 2 impressões, divisão, pagamentos e fechamento; rollback deixou zero fixtures.
-- Validação de banco após Salão: advisor de segurança sem alertas, tabelas do módulo com RLS e operações internas restritas ao servidor.
-- Próxima expansão macro: **CRM/marketing**.
+### Consolidado em `main`
+
+O `main` está consolidado oficialmente até **[139]**. A cadeia que estava empilhada foi mesclada sequencialmente preservando ancestralidade:
+
+- Pagamentos #096–#101 — PR #114.
+- PDV #102–#110 — PR #124.
+- Clientes/Dashboard #111–#115 — PR #130.
+- Qualidade/Hardening #116–#126 — PR #142.
+- Salão #127–#139 — PR #156, merge final `90e0807aa08560f48012bee22631adee7d1396ff`.
+
+Todo o núcleo #001–#139 está, portanto, no `main`. As migrations correspondentes permanecem aplicadas no Supabase oficial.
+
+### Milestone 15 — CRM e Crescimento #140–#151
+
+Implementação atual:
+
+- branch `agent/crm-growth-140-151`;
+- draft PR #169, base `main`;
+- issues oficiais #157–#168;
+- permissões `growth.view`, `growth.manage`, `growth.campaigns`;
+- cupons e elegibilidade;
+- ledgers de cashback e pontos;
+- resgate/acúmulo idempotentes e transações compensatórias;
+- integração autoritativa com checkout e PDV;
+- pedido total zero sem payment row monetária;
+- revalidação automática de benefícios após repricing do carrinho;
+- segmentos dinâmicos;
+- campaigns + recipients congelados;
+- automation rules/runs;
+- `order.completed` concede recompensas e executa automações idempotentes;
+- `/crescimento` para operação administrativa;
+- checkout público e PDV com cupom/cashback/pontos;
+- navegação desktop/mobile inclui Crescimento.
+
+Migrations Growth aplicadas no Supabase oficial:
+
+- `growth_core_140_151` — 38.
+- `growth_operations_140_151` — 39.
+- `growth_pdv_140_151` — 40.
+- `growth_campaigns_automations_140_151` — 41.
+- `growth_cart_refresh_140_151` — 42.
+- `growth_private_execution_grants_140_151` — 43.
+
+E2Es PostgreSQL com rollback já validaram:
+
+- checkout com cupom + cashback + pontos + geração posterior de recompensas;
+- rejeição com devolução dos benefícios;
+- pedido 100% coberto por cupom e sem payment row;
+- PDV com benefícios, idempotency retry, cupom anônimo e venda total zero;
+- segmento dinâmico;
+- snapshot de campanha;
+- automações `order.completed` de cashback/pontos/campanha;
+- rotinas de aniversário/inatividade idempotentes por data.
+
+A auditoria de grants detectou e corrigiu uma cadeia de privilege necessária para RPCs `SECURITY INVOKER`: `service_role` recebeu USAGE no schema `private` e EXECUTE apenas nos helpers Growth indispensáveis; `anon`/`authenticated` continuam sem EXECUTE nesses helpers.
+
+Detalhes, regras e evidências: `CRM_GROWTH_STATUS.md`.
+
+### Próxima expansão macro
+
+Após concluir e mesclar #169, o blueprint segue para **Conversas / WhatsApp / IA**, reutilizando campaigns/recipients e mantendo provedores externos desacoplados do domínio de pedidos.

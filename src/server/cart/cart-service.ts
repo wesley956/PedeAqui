@@ -152,7 +152,7 @@ export class CartService {
 
   private static async fetchCart(admin: AdminClient, store: StoreRef, tokenHash: string) {
     const { data: cart, error } = await admin.from("carts")
-      .select("id, subtotal_cents, discount_cents, delivery_fee_cents, total_cents, expires_at, updated_at")
+      .select("id, customer_id, subtotal_cents, discount_cents, delivery_fee_cents, total_cents, expires_at, updated_at, coupon_id, coupon_code_snapshot, coupon_discount_cents, cashback_redeem_requested_cents, cashback_discount_cents, loyalty_redeem_requested_points, loyalty_discount_cents")
       .eq("organization_id", store.organization_id)
       .eq("store_id", store.id)
       .eq("token_hash", tokenHash)
@@ -253,7 +253,13 @@ export class CartService {
       if (error) throw error;
     }
 
-    return { cart: await this.fetchCart(admin, store, tokenHash), changes, store };
+    const { data: benefitRefresh, error: benefitError } = await admin.rpc("growth_refresh_cart_benefits_internal", {
+      p_store_id: store.id,
+      p_token_hash: tokenHash,
+    });
+    if (benefitError) throw benefitError;
+
+    return { cart: await this.fetchCart(admin, store, tokenHash), changes, store, benefitRefresh };
   }
 
   static async updateQuantity(storeSlug: string, token: string, itemId: string, quantity: number) {

@@ -1,6 +1,6 @@
 # Cruz — Backlog Técnico Mestre
 
-Versão 1.2 — Fase 0 + Fase 1, incluindo impressão profissional e operação de salão.
+Versão 1.3 — Fase 0 + crescimento, incluindo impressão profissional, operação de salão e CRM/fidelidade.
 
 ## Definition of Done
 
@@ -199,6 +199,21 @@ Uma feature precisa validar happy path, erros, permissões, mobile, desktop, aud
 138. [DINING] Dividir conta e integrar pagamentos — P0.
 139. [DINING] QR público da mesa — P1.
 
+# Milestone 15 — CRM e Crescimento
+
+140. [CRM] Criar cupons e regras de elegibilidade — P1.
+141. [PRICING] Integrar cupons ao preço autoritativo — P0.
+142. [CRM] Criar contas e ledger de cashback — P0.
+143. [CRM] Implementar acúmulo e resgate de cashback — P0.
+144. [LOYALTY] Criar contas e ledger de pontos — P0.
+145. [LOYALTY] Implementar regras de acúmulo e resgate de pontos — P1.
+146. [CRM] Criar segmentação dinâmica de clientes — P1.
+147. [MARKETING] Criar campaigns — P1.
+148. [MARKETING] Criar campaign_recipients e snapshots de público — P1.
+149. [AUTOMATION] Criar automation_rules e automation_runs — P1.
+150. [CRM UI] Criar painel de crescimento e fidelidade — P1.
+151. [CRM] Consumir order.completed no motor de crescimento — P0.
+
 ## Jornada crítica 1 — Cardápio
 
 Proprietário cria conta/loja → cadastra categoria/produto/adicional → publica → cliente abre no celular → monta pedido → informa endereço → taxa → pagamento → restaurante recebe → aceita → imprime → produção → pronto → entrega/retirada → concluído → cliente e dashboard atualizam.
@@ -222,3 +237,7 @@ Preço muda entre carrinho e checkout → servidor recalcula → cliente recebe 
 ## Jornada crítica 6 — Salão
 
 Garçom abre mesa → comanda nasce → participantes podem ser identificados → rodada waiter/QR vira pedido normal → confirmação imprime e envia à cozinha → novas rodadas acumulam na mesma comanda → conta é dividida por pessoa ou valor → pagamentos reutilizam o motor financeiro de pedidos → saldo zera → pedidos são servidos/concluídos → mesa entra em limpeza e volta a ficar disponível.
+
+## Jornada crítica 7 — Crescimento
+
+Cliente identificado recebe/usa benefício → servidor revalida cupom/saldo/pontos → pedido grava snapshots e ledgers → cancelamento/rejeição gera compensação → `order.completed` concede recompensas idempotentes → segmento dinâmico seleciona público → campanha congela recipients → automação cria execução única por evento/data sem acoplar provedor externo ao motor de pedidos.

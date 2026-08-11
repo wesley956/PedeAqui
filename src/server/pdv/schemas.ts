@@ -13,11 +13,11 @@ export const posSaleItemSchema = z.object({
 
 export const posPaymentLineSchema = z.object({
   method: posPaymentMethodSchema,
-  amountCents: z.number().int().positive(),
-  cashReceivedCents: z.number().int().positive().nullable().optional(),
+  amountCents: z.number().int().nonnegative(),
+  cashReceivedCents: z.number().int().nonnegative().nullable().optional(),
   reference: z.string().trim().max(200).nullable().optional(),
 }).superRefine((line, ctx) => {
-  if (line.method === "cash" && line.cashReceivedCents !== null && line.cashReceivedCents !== undefined && line.cashReceivedCents < line.amountCents) {
+  if (line.method === "cash" && line.amountCents > 0 && line.cashReceivedCents !== null && line.cashReceivedCents !== undefined && line.cashReceivedCents < line.amountCents) {
     ctx.addIssue({ code: "custom", path: ["cashReceivedCents"], message: "Valor recebido deve cobrir a parcela em dinheiro" });
   }
   if (line.method !== "cash" && line.cashReceivedCents !== null && line.cashReceivedCents !== undefined) {
@@ -36,10 +36,17 @@ export const posCustomerSchema = z.object({
   }
 });
 
+export const posGrowthSchema = z.object({
+  couponCode: z.string().trim().max(40).nullable().optional(),
+  cashbackRedeemCents: z.number().int().nonnegative().default(0),
+  loyaltyRedeemPoints: z.number().int().nonnegative().default(0),
+}).default({ cashbackRedeemCents: 0, loyaltyRedeemPoints: 0 });
+
 export const posSaleSchema = z.object({
   items: z.array(posSaleItemSchema).min(1).max(100),
   payments: z.array(posPaymentLineSchema).min(1).max(10),
   customer: posCustomerSchema.nullable().optional(),
+  growth: posGrowthSchema,
 });
 
 export type PosSaleInput = z.infer<typeof posSaleSchema>;

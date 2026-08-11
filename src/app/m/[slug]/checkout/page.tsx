@@ -8,10 +8,12 @@ import {
   saveCheckoutIdentityAction,
   saveCheckoutPaymentAction,
 } from "@/features/checkout/actions";
+import { applyCheckoutBenefitsAction, clearCheckoutBenefitsAction } from "@/features/growth/actions";
 import { createOrderFromCheckoutAction } from "@/features/orders/actions";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { CheckoutService } from "@/server/checkout/checkout-service";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
+import { GrowthService } from "@/server/growth/growth-service";
 
 function money(cents: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
@@ -28,6 +30,7 @@ const errorMessages: Record<string, string> = {
   payment_unavailable: "A forma de pagamento selecionada não está disponível.",
   invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.",
   checkout_not_ready: "O checkout precisa ser revisado novamente antes de criar o pedido.",
+  benefit_invalid: "Não foi possível aplicar esses benefícios. Confira o cupom, o saldo disponível e a identificação do cliente.",
 };
 
 export default async function CheckoutPage({
@@ -44,10 +47,12 @@ export default async function CheckoutPage({
 
   const reviewed = query.revisar === "1" ? await CheckoutService.review(slug, token) : null;
   const data = reviewed ?? await CheckoutService.load(slug, token);
+  const benefits = await GrowthService.loadCheckoutBenefits(slug, token);
   const { cart, session, menu } = data;
   const review = reviewed?.review ?? null;
   const enabledMethods = data.paymentMethods.filter((item) => item.enabled);
   const selectedPayment = session?.payment_method ?? null;
+  const totalDiscount = Number(cart.discount_cents);
 
   return (
     <main style={{ minHeight: "100vh", background: "#fffdf9", color: "#181818", padding: "18px 12px 64px" }}>
@@ -126,6 +131,24 @@ export default async function CheckoutPage({
           </section>
         ) : null}
 
+        <section style={{ ...sectionStyle, borderColor: totalDiscount > 0 ? "#FF6B00" : "#eee7df" }}>
+          <div>
+            <p style={{ color: "#8a837b", margin: 0, fontSize: 12, fontWeight: 800 }}>BENEFÍCIOS</p>
+            <h2 style={{ margin: "4px 0" }}>Cupom, cashback e pontos</h2>
+            <p style={{ color: "#716b64", margin: 0, fontSize: 13 }}>O desconto é recalculado no servidor. Cashback e pontos exigem um cliente já cadastrado e identificado.</p>
+          </div>
+          <form action={applyCheckoutBenefitsAction} style={{ display: "grid", gap: 10 }}>
+            <input type="hidden" name="storeSlug" value={slug} />
+            <div style={twoColumns}>
+              <Field label="Cupom" name="couponCode" defaultValue={benefits.current.couponCode ?? ""} placeholder="Ex.: VOLTA20" />
+              <Field label={`Cashback para usar${benefits.customerIdentified ? ` · saldo ${money(benefits.cashbackBalanceCents)}` : ""}`} name="cashbackAmount" inputMode="decimal" defaultValue={benefits.current.cashbackRedeemCents ? (benefits.current.cashbackRedeemCents / 100).toFixed(2).replace(".", ",") : ""} disabled={!benefits.cashbackEnabled || !benefits.customerIdentified} />
+              <Field label={`Pontos para usar${benefits.customerIdentified ? ` · saldo ${benefits.loyaltyBalancePoints}` : ""}`} name="loyaltyPoints" type="number" min={0} defaultValue={benefits.current.loyaltyRedeemPoints || ""} disabled={!benefits.loyaltyEnabled || !benefits.customerIdentified} />
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}><ActionButton>Aplicar benefícios</ActionButton>{totalDiscount > 0 ? <button formAction={clearCheckoutBenefitsAction} type="submit" style={{ minHeight: 42, border: "1px solid #ddd6ce", borderRadius: 11, padding: "9px 14px", background: "#fff", color: "#181818", fontWeight: 900 }}>Remover benefícios</button> : null}</div>
+          </form>
+          {totalDiscount > 0 ? <div style={{ padding: 12, borderRadius: 12, background: "#fff4eb", display: "grid", gap: 5, fontSize: 13 }}><strong>Economia total: {money(totalDiscount)}</strong>{benefits.current.couponDiscountCents > 0 ? <span>Cupom: − {money(benefits.current.couponDiscountCents)}</span> : null}{benefits.current.cashbackDiscountCents > 0 ? <span>Cashback: − {money(benefits.current.cashbackDiscountCents)}</span> : null}{benefits.current.loyaltyDiscountCents > 0 ? <span>Pontos: − {money(benefits.current.loyaltyDiscountCents)}</span> : null}</div> : null}
+        </section>
+
         <section style={sectionStyle}>
           <StepTitle number={session?.fulfillment_type === "delivery" ? "4" : "3"} title="Forma de pagamento" complete={Boolean(selectedPayment)} />
           <form action={saveCheckoutPaymentAction} style={{ display: "grid", gap: 10 }}>
@@ -133,16 +156,11 @@ export default async function CheckoutPage({
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8 }}>
               {enabledMethods.map((item) => (
                 <label key={item.method} style={choiceStyle(selectedPayment === item.method)}>
-                  <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <input type="radio" name="paymentMethod" value={item.method} defaultChecked={selectedPayment === item.method} required />
-                    <strong>{paymentMethodLabels[item.method]}</strong>
-                  </span>
+                  <span style={{ display: "flex", gap: 8, alignItems: "center" }}><input type="radio" name="paymentMethod" value={item.method} defaultChecked={selectedPayment === item.method} required /><strong>{paymentMethodLabels[item.method]}</strong></span>
                 </label>
               ))}
             </div>
-            {selectedPayment === "cash" ? (
-              <Field label="Troco para (opcional)" name="changeFor" inputMode="decimal" defaultValue={session?.cash_change_for_cents ? (Number(session.cash_change_for_cents) / 100).toFixed(2).replace(".", ",") : ""} placeholder="Ex.: 100,00" />
-            ) : null}
+            {selectedPayment === "cash" ? <Field label="Troco para (opcional)" name="changeFor" inputMode="decimal" defaultValue={session?.cash_change_for_cents ? (Number(session.cash_change_for_cents) / 100).toFixed(2).replace(".", ",") : ""} placeholder="Ex.: 100,00" /> : null}
             <div><ActionButton>Salvar pagamento</ActionButton></div>
           </form>
         </section>
@@ -150,36 +168,15 @@ export default async function CheckoutPage({
         <section style={{ ...sectionStyle, background: "#171717", color: "#fffdf9", borderColor: "#353535" }}>
           <div style={{ display: "grid", gap: 8 }}>
             <SummaryLine label="Subtotal" value={money(Number(cart.subtotal_cents))} />
+            {totalDiscount > 0 ? <SummaryLine label="Benefícios" value={`− ${money(totalDiscount)}`} /> : null}
             <SummaryLine label="Entrega" value={Number(cart.delivery_fee_cents) > 0 ? money(Number(cart.delivery_fee_cents)) : "Grátis / não aplicável"} />
             <div style={{ height: 1, background: "#353535" }} />
             <SummaryLine label="Total" value={money(Number(cart.total_cents))} strong />
           </div>
 
-          {review ? (
-            review.ready ? (
-              <div style={{ padding: 14, borderRadius: 14, background: "#15351f", color: "#bdf4ca" }}>
-                <strong>Checkout validado.</strong>
-                <div style={{ marginTop: 4, fontSize: 13 }}>Os dados foram revalidados. Você já pode confirmar e enviar o pedido ao estabelecimento.</div>
-              </div>
-            ) : (
-              <div style={{ padding: 14, borderRadius: 14, background: "#3a211b", color: "#ffd0c4", display: "grid", gap: 6 }}>
-                <strong>Antes de criar o pedido:</strong>
-                {review.blockers.map((blocker) => <div key={blocker.code} style={{ fontSize: 13 }}>• {blocker.message}</div>)}
-              </div>
-            )
-          ) : null}
+          {review ? (review.ready ? <div style={{ padding: 14, borderRadius: 14, background: "#15351f", color: "#bdf4ca" }}><strong>Checkout validado.</strong><div style={{ marginTop: 4, fontSize: 13 }}>Os dados e benefícios foram revalidados. Você já pode confirmar o pedido.</div></div> : <div style={{ padding: 14, borderRadius: 14, background: "#3a211b", color: "#ffd0c4", display: "grid", gap: 6 }}><strong>Antes de criar o pedido:</strong>{review.blockers.map((blocker) => <div key={blocker.code} style={{ fontSize: 13 }}>• {blocker.message}</div>)}</div>) : null}
 
-          {review?.ready ? (
-            <form action={createOrderFromCheckoutAction}>
-              <input type="hidden" name="storeSlug" value={slug} />
-              <button type="submit" style={{ width: "100%", minHeight: 52, border: 0, borderRadius: 14, background: "#FF6B00", color: "#fff", fontWeight: 950, fontSize: 16 }}>Confirmar pedido</button>
-            </form>
-          ) : (
-            <form action={reviewCheckoutAction}>
-              <input type="hidden" name="storeSlug" value={slug} />
-              <button type="submit" style={{ width: "100%", minHeight: 50, border: 0, borderRadius: 14, background: "#FF6B00", color: "#fff", fontWeight: 950, fontSize: 16 }}>Revisar pedido</button>
-            </form>
-          )}
+          {review?.ready ? <form action={createOrderFromCheckoutAction}><input type="hidden" name="storeSlug" value={slug} /><button type="submit" style={{ width: "100%", minHeight: 52, border: 0, borderRadius: 14, background: "#FF6B00", color: "#fff", fontWeight: 950, fontSize: 16 }}>Confirmar pedido</button></form> : <form action={reviewCheckoutAction}><input type="hidden" name="storeSlug" value={slug} /><button type="submit" style={{ width: "100%", minHeight: 50, border: 0, borderRadius: 14, background: "#FF6B00", color: "#fff", fontWeight: 950, fontSize: 16 }}>Revisar pedido</button></form>}
         </section>
       </div>
     </main>
@@ -189,23 +186,10 @@ export default async function CheckoutPage({
 function StepTitle({ number, title, complete }: { number: string; title: string; complete: boolean }) {
   return <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ width: 30, height: 30, borderRadius: 10, display: "grid", placeItems: "center", background: complete ? "#dcfce7" : "#fff0e3", color: complete ? "#166534" : "#FF6B00", fontWeight: 950 }}>{complete ? "✓" : number}</span><h2 style={{ margin: 0, fontSize: 18 }}>{title}</h2></div>;
 }
-
-function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
-  const { label, ...inputProps } = props;
-  return <label style={{ display: "grid", gap: 5 }}><span style={{ fontSize: 13, fontWeight: 800 }}>{label}</span><input {...inputProps} style={{ minHeight: 44, border: "1px solid #e5ded6", borderRadius: 11, padding: "10px 12px", background: "#fff", color: "#181818" }} /></label>;
-}
-
-function ActionButton({ children }: { children: React.ReactNode }) {
-  return <button type="submit" style={{ minHeight: 42, border: 0, borderRadius: 11, padding: "9px 14px", background: "#FF6B00", color: "#fff", fontWeight: 900 }}>{children}</button>;
-}
-
-function SummaryLine({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
-  return <div style={{ display: "flex", justifyContent: "space-between", gap: 16, fontSize: strong ? 20 : 14 }}><span>{label}</span><strong style={strong ? { color: "#FF6B00" } : undefined}>{value}</strong></div>;
-}
-
+function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) { const { label, ...inputProps } = props; return <label style={{ display: "grid", gap: 5 }}><span style={{ fontSize: 13, fontWeight: 800 }}>{label}</span><input {...inputProps} style={{ minHeight: 44, border: "1px solid #e5ded6", borderRadius: 11, padding: "10px 12px", background: inputProps.disabled ? "#f4f1ed" : "#fff", color: "#181818" }} /></label>; }
+function ActionButton({ children }: { children: React.ReactNode }) { return <button type="submit" style={{ minHeight: 42, border: 0, borderRadius: 11, padding: "9px 14px", background: "#FF6B00", color: "#fff", fontWeight: 900 }}>{children}</button>; }
+function SummaryLine({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) { return <div style={{ display: "flex", justifyContent: "space-between", gap: 16, fontSize: strong ? 20 : 14 }}><span>{label}</span><strong style={strong ? { color: "#FF6B00" } : undefined}>{value}</strong></div>; }
 const sectionStyle: React.CSSProperties = { padding: 18, background: "#fff", border: "1px solid #eee7df", borderRadius: 20, display: "grid", gap: 14 };
 const twoColumns: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 };
 const choiceDetail: React.CSSProperties = { display: "block", marginTop: 4, fontSize: 12, color: "#716b64", fontWeight: 500 };
-function choiceStyle(active: boolean): React.CSSProperties {
-  return { display: "grid", gap: 4, textAlign: "left", border: `1px solid ${active ? "#FF6B00" : "#e5ded6"}`, background: active ? "#fff4eb" : "#fff", color: "#181818", borderRadius: 14, padding: 14, fontWeight: 900, cursor: "pointer" };
-}
+function choiceStyle(active: boolean): React.CSSProperties { return { display: "grid", gap: 4, textAlign: "left", border: `1px solid ${active ? "#FF6B00" : "#e5ded6"}`, background: active ? "#fff4eb" : "#fff", color: "#181818", borderRadius: 14, padding: 14, fontWeight: 900, cursor: "pointer" }; }
