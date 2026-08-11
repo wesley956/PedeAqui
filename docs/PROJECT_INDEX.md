@@ -41,6 +41,7 @@ Os módulos compartilham entidades e regras de domínio. Exemplo: `order.complet
 - `QUALITY_HARDENING_STATUS.md` — #116–#126.
 - `DINING_STATUS.md` — #127–#139.
 - `CRM_GROWTH_STATUS.md` — #140–#151.
+- `CONVERSATIONS_STATUS.md` — #152–#163.
 
 ## Ordem macro
 
@@ -80,69 +81,55 @@ Antes de criar um novo módulo, responder:
 
 ### Consolidado em `main`
 
-O `main` está consolidado oficialmente até **[151]**. A cadeia foi mesclada preservando ancestralidade e fechando cada milestone concluído:
+O `main` está consolidado oficialmente até **[151]**:
 
 - Pagamentos #096–#101 — PR #114.
 - PDV #102–#110 — PR #124.
 - Clientes/Dashboard #111–#115 — PR #130.
 - Qualidade/Hardening #116–#126 — PR #142.
-- Salão #127–#139 — PR #156, merge `90e0807aa08560f48012bee22631adee7d1396ff`.
-- CRM e Crescimento #140–#151 — PR #169, merge `e01a15b5d5f8cac1c846de3f70da088805e893e6`.
+- Salão #127–#139 — PR #156.
+- CRM e Crescimento #140–#151 — PR #169.
 
-Todo o núcleo #001–#151 está, portanto, no `main`. As migrations correspondentes permanecem aplicadas no Supabase oficial.
+Todo o núcleo #001–#151 está no `main` e as migrations correspondentes permanecem aplicadas no Supabase oficial.
 
 ### Milestone 15 — CRM e Crescimento #140–#151
 
 Status: **concluído e mesclado em `main`**.
 
-- PR #169 mesclado com merge commit `e01a15b5d5f8cac1c846de3f70da088805e893e6`;
-- issues oficiais #157–#168 encerradas como `completed`;
-- permissões `growth.view`, `growth.manage`, `growth.campaigns`;
-- cupons e elegibilidade;
-- ledgers de cashback e pontos;
-- resgate/acúmulo idempotentes e transações compensatórias;
-- integração autoritativa com checkout e PDV;
-- pedido total zero sem payment row monetária;
-- revalidação automática de benefícios após repricing do carrinho;
-- segmentos dinâmicos;
-- campaigns + recipients congelados;
-- automation rules/runs;
-- `order.completed` concede recompensas e executa automações idempotentes;
-- `/crescimento` para operação administrativa;
-- checkout público e PDV com cupom/cashback/pontos;
-- navegação desktop/mobile inclui Crescimento.
+- PR #169 mesclado;
+- issues #157–#168 encerradas como `completed`;
+- cupons, cashback, pontos, segmentos, campanhas, automações e painel `/crescimento` implementados;
+- integração autoritativa com checkout/PDV;
+- Security Advisor em 0 alertas;
+- detalhes em `CRM_GROWTH_STATUS.md`.
 
-Migrations Growth aplicadas no Supabase oficial:
+### Milestone 16 — Conversas / WhatsApp / IA #152–#163
 
-- `growth_core_140_151` — 38.
-- `growth_operations_140_151` — 39.
-- `growth_pdv_140_151` — 40.
-- `growth_campaigns_automations_140_151` — 41.
-- `growth_cart_refresh_140_151` — 42.
-- `growth_private_execution_grants_140_151` — 43.
+Status: **em implementação no draft PR #182**, branch `agent/conversations-whatsapp-ai-152-163`.
 
-E2Es PostgreSQL com rollback validaram:
+Issues oficiais: #170–#181.
 
-- checkout com cupom + cashback + pontos + geração posterior de recompensas;
-- rejeição com devolução dos benefícios;
-- pedido 100% coberto por cupom e sem payment row;
-- PDV com benefícios, idempotency retry, cupom anônimo e venda total zero;
-- segmento dinâmico;
-- snapshot de campanha;
-- automações `order.completed` de cashback/pontos/campanha;
-- rotinas de aniversário/inatividade idempotentes por data.
+Já implementado/validado no bloco:
 
-Segurança final:
+- contatos omnichannel vinculáveis ao CRM;
+- conversations/messages e State Machine `bot|waiting_agent|human|closed`;
+- handoff e histórico/auditoria;
+- Inbox `/conversas` com Realtime;
+- configuração `/configuracoes/conversas`;
+- adapter de WhatsApp desacoplado;
+- webhook assinado/idempotente;
+- resposta outbound humana idempotente;
+- `automation_sessions`;
+- allowlist de IA sem SQL arbitrário;
+- migrations 44–46 aplicadas no Supabase;
+- Security Advisor 0;
+- E2E PostgreSQL com rollback e zero resíduos;
+- CI #118 verde no head executável `9cff267347b508586549e9fe56bd8f474d5f6e14`.
 
-- Security Advisor: 0 alertas;
-- 12/12 tabelas Growth com RLS;
-- 0 privilégios diretos de `anon` nas tabelas Growth;
-- 0 privilégios de mutação de `authenticated`;
-- RPCs Growth e helpers privados executáveis somente por `service_role`;
-- 0 fixtures/resíduos após E2Es.
+Limite atual: a homologação real contra a infraestrutura externa do WhatsApp depende de um número/provider e credenciais reais conectados ao ambiente. Não considerar essa etapa externa validada até executar inbound/outbound real.
 
-Detalhes, regras e evidências: `CRM_GROWTH_STATUS.md`.
+Detalhes: `CONVERSATIONS_STATUS.md`.
 
-### Próxima expansão macro
+### Próxima expansão macro após o Milestone 16
 
-O blueprint segue para **Conversas / WhatsApp / IA**, reutilizando campaigns/recipients e mantendo provedores externos desacoplados do domínio de pedidos.
+O blueprint segue para **Gestão: estoque, fichas técnicas, compras, fornecedores, financeiro e DRE**, após concluir/homologar o Milestone 16.
