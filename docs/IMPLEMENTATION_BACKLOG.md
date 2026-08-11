@@ -1,6 +1,6 @@
 # Cruz — Backlog Técnico Mestre
 
-Versão 1.1 — Fase 0 + Fase 1, incluindo impressão profissional.
+Versão 1.2 — Fase 0 + Fase 1, incluindo impressão profissional e operação de salão.
 
 ## Definition of Done
 
@@ -183,6 +183,22 @@ Uma feature precisa validar happy path, erros, permissões, mobile, desktop, aud
 125. [PERFORMANCE] Otimização do MVP — P1.
 126. [UX] Validação mobile — P0.
 
+# Milestone 14 — Salão
+
+127. [DINING] Criar mesas — P0.
+128. [DINING] Criar TableService e estados — P0.
+129. [DINING] Criar comandas — P0.
+130. [DINING] Criar participantes da comanda — P1.
+131. [DINING] Abrir, transferir e encerrar comanda — P0.
+132. [DINING] Vincular pedidos e itens à comanda — P0.
+133. [DINING] Lançar rodada pelo garçom — P0.
+134. [DINING] Integrar rodada com produção e impressão — P0.
+135. [DINING UI] Criar painel de mesas — P0.
+136. [DINING UI] Criar detalhe da mesa/comanda — P0.
+137. [DINING] Gerar conta da comanda — P0.
+138. [DINING] Dividir conta e integrar pagamentos — P0.
+139. [DINING] QR público da mesa — P1.
+
 ## Jornada crítica 1 — Cardápio
 
 Proprietário cria conta/loja → cadastra categoria/produto/adicional → publica → cliente abre no celular → monta pedido → informa endereço → taxa → pagamento → restaurante recebe → aceita → imprime → produção → pronto → entrega/retirada → concluído → cliente e dashboard atualizam.
@@ -202,3 +218,7 @@ Cliente confirma duas vezes ou request é repetida → exatamente um pedido e ex
 ## Jornada crítica 5 — Preço
 
 Preço muda entre carrinho e checkout → servidor recalcula → cliente recebe informação e confirma valor válido; preço vindo do navegador nunca é autoridade.
+
+## Jornada crítica 6 — Salão
+
+Garçom abre mesa → comanda nasce → participantes podem ser identificados → rodada waiter/QR vira pedido normal → confirmação imprime e envia à cozinha → novas rodadas acumulam na mesma comanda → conta é dividida por pessoa ou valor → pagamentos reutilizam o motor financeiro de pedidos → saldo zera → pedidos são servidos/concluídos → mesa entra em limpeza e volta a ficar disponível.
