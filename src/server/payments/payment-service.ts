@@ -102,9 +102,10 @@ export class PaymentService {
       .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("order_id", id)
       .in("status", ["pending", "authorized"]).order("created_at");
     if (error) throw error;
-    if (!data || data.length === 0) throw new Error("No pending payment found");
-    if (data.length > 1) throw new Error("This order has multiple pending payments; confirm a specific payment");
-    return this.confirm(data[0].id, input);
+    const [payment, ...additional] = data ?? [];
+    if (!payment) throw new Error("No pending payment found");
+    if (additional.length > 0) throw new Error("This order has multiple pending payments; confirm a specific payment");
+    return this.confirm(payment.id, input);
   }
 
   static async fail(paymentId: string, reason: string) {
