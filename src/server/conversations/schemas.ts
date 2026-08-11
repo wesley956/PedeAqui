@@ -11,6 +11,7 @@ export const conversationTransitionInputSchema = z.object({
 export const conversationReplyInputSchema = z.object({
   conversationId: z.string().uuid(),
   body: z.string().trim().min(1).max(16000),
+  clientMessageId: z.string().trim().min(8).max(180).optional(),
 });
 
 export const inboxFilterSchema = z.enum(["all", "bot", "waiting_agent", "human", "closed"]);
