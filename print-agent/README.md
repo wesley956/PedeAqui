@@ -10,6 +10,8 @@ Agente local do bloco [077]–[081]. Ele roda no computador da unidade, busca jo
 - ACK após impressão
 - recuperação de `printed_unacked` sem reimprimir
 - heartbeat de agente/impressoras
+- consulta da configuração atribuída ao agente
+- teste periódico de conectividade TCP das impressoras de rede, mesmo com fila vazia
 - transporte TCP para impressoras ESC/POS de rede
 - CP850 básico para caracteres pt-BR
 - 58 mm e 80 mm
@@ -29,6 +31,8 @@ Variáveis opcionais:
 - `PEDEAQUI_PRINT_POLL_MS` (padrão 2000)
 - `PEDEAQUI_PRINT_HEARTBEAT_MS` (padrão 15000)
 - `PEDEAQUI_PRINT_SPOOL` (diretório do spool)
+
+O heartbeat consulta `/api/print-agent/config`, testa a porta das impressoras TCP atribuídas e reporta `online`/`offline`. Conexões ainda não suportadas pelo MVP ficam `unknown`, sem fingir que houve teste de hardware.
 
 ## Limite de exatamente-uma-vez
 
