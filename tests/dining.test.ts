@@ -28,14 +28,14 @@ describe("dining database contracts", () => {
   it("allows only one active tab per table and locks lifecycle operations", () => {
     expect(sql).toContain("tabs_one_active_per_table_idx");
     expect(sql).toContain("where status in ('open','settling')");
-    expect(sql).toMatch(/from public\.tables where id = p_table_id for update/);
-    expect(sql).toMatch(/from public\.tabs where id = p_tab_id for update/);
+    expect(sql).toMatch(/from\s+public\.tables\s+where\s+id\s*=\s*p_table_id\s+for\s+update/);
+    expect(sql).toMatch(/from\s+public\.tabs\s+where\s+id\s*=\s*p_tab_id\s+for\s+update/);
   });
   it("reuses orders, production and printing for waiter/table QR rounds", () => {
     expect(sql).toContain("channel in ('waiter','table_qr')");
     expect(sql).toContain("fulfillment_type = 'table'");
-    expect(sql).toContain("public.order_transition_internal(v_order_id, 'order', 'confirmed'");
-    expect(sql).toContain("public.order_start_production_internal(v_order_id");
+    expect(sql).toMatch(/public\.order_transition_internal\(v_order_id\s*,\s*'order'\s*,\s*'confirmed'/);
+    expect(sql).toMatch(/public\.order_start_production_internal\(v_order_id/);
   });
   it("keeps round and payment operations idempotent", () => {
     expect(sql).toContain("'dining.round'");
