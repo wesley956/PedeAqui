@@ -7,8 +7,9 @@ import { z } from "zod";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { orderCookieName } from "@/server/orders/order-token";
 import { OrderService } from "@/server/orders/order-service";
+import { PaymentService } from "@/server/payments/payment-service";
 import { PrintQueueService } from "@/server/printing/print-queue-service";
-import type { FulfillmentStatus, PaymentStatus, ProductionStatus } from "@/server/orders/state-machines";
+import type { FulfillmentStatus, ProductionStatus } from "@/server/orders/state-machines";
 
 export async function createOrderFromCheckoutAction(formData: FormData) {
   const storeSlug = String(formData.get("storeSlug") ?? "");
@@ -63,8 +64,9 @@ export async function transitionProductionAction(formData: FormData) {
 
 export async function transitionPaymentAction(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "");
-  const status = String(formData.get("status") ?? "") as PaymentStatus;
-  await OrderService.setPayment(orderId, status);
+  const status = String(formData.get("status") ?? "");
+  if (status !== "paid") throw new Error("Payment state must be changed through PaymentService");
+  await PaymentService.confirmDefaultForOrder(orderId);
   refreshOrder(orderId);
 }
 
@@ -121,7 +123,7 @@ export async function orderManagerAction(
         await OrderService.setProduction(orderId, "ready");
         break;
       case "mark_paid":
-        await OrderService.setPayment(orderId, "paid");
+        await PaymentService.confirmDefaultForOrder(orderId);
         break;
       case "await_pickup":
         await OrderService.setFulfillment(orderId, "awaiting_pickup");
@@ -160,7 +162,7 @@ export async function orderManagerAction(
       reject: "Pedido rejeitado.",
       start_production: "Produção iniciada.",
       mark_ready: "Pedido marcado como pronto.",
-      mark_paid: "Pagamento marcado como pago.",
+      mark_paid: "Pagamento confirmado no ledger.",
       await_pickup: "Pedido liberado para retirada.",
       customer_picked_up: "Retirada confirmada.",
       await_courier: "Pedido aguardando entregador.",
