@@ -14,6 +14,7 @@ function friendlyPdvError(error: unknown) {
     ["payment total does not match discounted order total", "Os pagamentos não fecham com o total após os benefícios."],
     ["payment total does not match order total", "Os pagamentos não fecham com o total atual do pedido."],
     ["cash received is below payment amount", "O valor recebido em dinheiro é menor que a parcela."],
+    ["open cash session required for cash payment", "Abra o caixa antes de finalizar uma venda em dinheiro."],
     ["coupon not found", "Cupom não encontrado ou indisponível para esta venda."],
     ["coupon inactive", "Este cupom está inativo."],
     ["coupon outside validity window", "Este cupom está fora da validade."],
@@ -40,6 +41,7 @@ export async function createPdvSaleAction(input: PosSaleInput, idempotencyKey: s
     revalidatePath(`/pedidos/${sale.orderId}`);
     revalidatePath("/producao");
     revalidatePath("/crescimento");
+    revalidatePath("/caixa");
     return { ok: true as const, sale, error: null };
   } catch (error) {
     return { ok: false as const, sale: null, error: friendlyPdvError(error) };

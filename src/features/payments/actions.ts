@@ -14,7 +14,7 @@ export async function savePaymentMethodsAction(formData: FormData) {
   revalidatePath("/m/[slug]/checkout", "page");
 }
 
-const intentSchema = z.enum(["confirm", "fail"]);
+const intentSchema = z.enum(["confirm", "fail", "refund"]);
 
 export type PaymentActionState = {
   ok: boolean;
@@ -25,6 +25,14 @@ export type PaymentActionState = {
 function refresh(orderId: string) {
   revalidatePath("/pedidos");
   revalidatePath(`/pedidos/${orderId}`);
+  revalidatePath("/caixa");
+}
+
+function friendly(error: unknown) {
+  const raw = error instanceof Error ? error.message.toLocaleLowerCase("pt-BR") : "";
+  if (raw.includes("open cash session required for cash payment")) return "Abra o caixa antes de movimentar um pagamento em dinheiro.";
+  if (raw.includes("cash outflow exceeds expected balance")) return "O caixa aberto não possui saldo físico esperado suficiente para este estorno.";
+  return error instanceof Error ? error.message : "Não foi possível atualizar o pagamento.";
 }
 
 export async function paymentAction(
@@ -49,10 +57,16 @@ export async function paymentAction(
     }
 
     const reason = String(formData.get("reason") ?? "");
+    if (intent.data === "refund") {
+      await PaymentService.refund(paymentId, reason);
+      refresh(orderId);
+      return { ok: true, message: "Pagamento estornado com movimento compensatório.", error: null };
+    }
+
     await PaymentService.fail(paymentId, reason);
     refresh(orderId);
     return { ok: true, message: "Tentativa de pagamento marcada como falha.", error: null };
   } catch (error) {
-    return { ok: false, message: null, error: error instanceof Error ? error.message : "Não foi possível atualizar o pagamento." };
+    return { ok: false, message: null, error: friendly(error) };
   }
 }

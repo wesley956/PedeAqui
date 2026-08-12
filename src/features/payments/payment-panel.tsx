@@ -39,7 +39,7 @@ export async function PaymentPanel({ orderId }: { orderId: string }) {
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "end", flexWrap: "wrap" }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 18 }}>Pagamentos</h2>
-          <p className="muted" style={{ margin: "4px 0 0", fontSize: 12 }}>Ledger financeiro do pedido. O status do pedido só vira pago quando a soma confirmada cobre o total.</p>
+          <p className="muted" style={{ margin: "4px 0 0", fontSize: 12 }}>Ledger financeiro do pedido. O status só vira pago quando a soma confirmada cobre o total.</p>
         </div>
         <div style={{ textAlign: "right" }}>
           <div className="muted" style={{ fontSize: 11 }}>PAGO / RESTANTE</div>
@@ -49,6 +49,7 @@ export async function PaymentPanel({ orderId }: { orderId: string }) {
 
       {payments.length === 0 ? <p className="muted" style={{ margin: 0 }}>Nenhum pagamento registrado.</p> : payments.map((payment) => {
         const open = ["pending", "authorized"].includes(payment.status);
+        const paid = payment.status === "paid";
         return (
           <div key={payment.id} style={{ display: "grid", gap: 7, paddingTop: 10, borderTop: "1px solid var(--border)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
@@ -56,13 +57,14 @@ export async function PaymentPanel({ orderId }: { orderId: string }) {
                 <strong>{methodLabels[payment.method] ?? payment.method}</strong>
                 <div className="muted" style={{ fontSize: 11, marginTop: 3 }}>{statusLabels[payment.status] ?? payment.status} · {payment.source}</div>
               </div>
-              <strong style={{ color: payment.status === "paid" ? "#22c55e" : undefined }}>{money(payment.amount_cents)}</strong>
+              <strong style={{ color: paid ? "#22c55e" : payment.status === "refunded" ? "#f97066" : undefined }}>{money(payment.amount_cents)}</strong>
             </div>
             {payment.reference ? <div className="muted" style={{ fontSize: 12 }}>Referência: {payment.reference}</div> : null}
             {payment.method === "cash" && payment.cash_tendered_cents ? <div className="muted" style={{ fontSize: 12 }}>Recebido/troco para: {money(payment.cash_tendered_cents)}</div> : null}
             {payment.method === "cash" && payment.change_due_cents !== null ? <div className="muted" style={{ fontSize: 12 }}>Troco devido: {money(payment.change_due_cents)}</div> : null}
             {payment.paid_at ? <div className="muted" style={{ fontSize: 11 }}>Confirmado em {new Date(payment.paid_at).toLocaleString("pt-BR")}</div> : null}
             {payment.failed_at ? <div className="muted" style={{ fontSize: 11 }}>Falhou em {new Date(payment.failed_at).toLocaleString("pt-BR")}</div> : null}
+            {payment.refunded_at ? <div className="muted" style={{ fontSize: 11 }}>Estornado em {new Date(payment.refunded_at).toLocaleString("pt-BR")}</div> : null}
 
             {open ? (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
@@ -76,13 +78,20 @@ export async function PaymentPanel({ orderId }: { orderId: string }) {
                 <PaymentActionForm orderId={orderId} paymentId={payment.id} method={payment.method} intent="fail" />
               </div>
             ) : null}
+
+            {paid ? (
+              <div style={{ display: "grid", gap: 5 }}>
+                {payment.method === "cash" ? <div className="muted" style={{ fontSize: 11 }}>Estorno em dinheiro exige um caixa aberto e saldo físico esperado suficiente.</div> : null}
+                <PaymentActionForm orderId={orderId} paymentId={payment.id} method={payment.method} intent="refund" />
+              </div>
+            ) : null}
           </div>
         );
       })}
 
       {payments.length > 1 ? (
         <div className="muted" style={{ fontSize: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-          Pagamento dividido preparado: cada linha é confirmada separadamente; o pedido permanece pendente enquanto houver saldo restante.
+          Pagamento dividido: cada linha é liquidada/estornada separadamente; o resumo do pedido é derivado do ledger confirmado.
         </div>
       ) : null}
     </article>
