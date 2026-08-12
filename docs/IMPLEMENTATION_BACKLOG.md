@@ -1,6 +1,6 @@
 # Cruz — Backlog Técnico Mestre
 
-Versão 1.3 — Fase 0 + crescimento, incluindo impressão profissional, operação de salão e CRM/fidelidade.
+Versão 1.4 — execução consolidada até Conversas/WhatsApp/IA e bloco de Caixa.
 
 ## Definition of Done
 
@@ -214,6 +214,35 @@ Uma feature precisa validar happy path, erros, permissões, mobile, desktop, aud
 150. [CRM UI] Criar painel de crescimento e fidelidade — P1.
 151. [CRM] Consumir order.completed no motor de crescimento — P0.
 
+# Milestone 16 — Conversas / WhatsApp / IA
+
+152. [CONVERSATIONS] Criar contacts omnichannel e vínculo com customers — P0.
+153. [CONVERSATIONS] Criar conversations — P0.
+154. [CONVERSATIONS] Criar messages — P0.
+155. [CONVERSATIONS] Criar State Machine e histórico de atendimento — P0.
+156. [CONVERSATIONS UI] Criar Inbox `/conversas` — P0.
+157. [WHATSAPP] Criar provider adapter desacoplado — P1.
+158. [WHATSAPP] Criar webhook seguro e idempotente — P0.
+159. [WHATSAPP] Implementar resposta humana outbound — P0.
+160. [AUTOMATION] Criar automation_sessions de conversa — P1.
+161. [CONVERSATIONS] Implementar handoff Bot → Fila → Humano → Encerrado — P0.
+162. [AI] Criar IA com allowlist de ferramentas autorizadas — P0.
+163. [TEST] E2E Conversa/WhatsApp → atendimento → cliente/pedido — P0.
+
+# Milestone 17 — Caixa
+
+164. [CASH] Criar caixas configuráveis por unidade — P0.
+165. [CASH] Criar sessões de caixa por turno — P0.
+166. [CASH] Criar ledger imutável de movimentos — P0.
+167. [CASH] Implementar abertura de caixa — P0.
+168. [CASH] Implementar suprimento e sangria — P0.
+169. [CASH] Integrar pagamentos em dinheiro ao caixa — P0.
+170. [CASH] Integrar estornos e compensações — P0.
+171. [CASH] Calcular saldo esperado e conciliação — P0.
+172. [CASH] Implementar fechamento e conferência de caixa — P0.
+173. [CASH] Criar histórico e relatório de sessões — P1.
+174. [CASH UI] Criar painel `/caixa` e E2E operacional — P0.
+
 ## Jornada crítica 1 — Cardápio
 
 Proprietário cria conta/loja → cadastra categoria/produto/adicional → publica → cliente abre no celular → monta pedido → informa endereço → taxa → pagamento → restaurante recebe → aceita → imprime → produção → pronto → entrega/retirada → concluído → cliente e dashboard atualizam.
@@ -241,3 +270,7 @@ Garçom abre mesa → comanda nasce → participantes podem ser identificados �
 ## Jornada crítica 7 — Crescimento
 
 Cliente identificado recebe/usa benefício → servidor revalida cupom/saldo/pontos → pedido grava snapshots e ledgers → cancelamento/rejeição gera compensação → `order.completed` concede recompensas idempotentes → segmento dinâmico seleciona público → campanha congela recipients → automação cria execução única por evento/data sem acoplar provedor externo ao motor de pedidos.
+
+## Jornada crítica 8 — Caixa
+
+Operador abre um caixa com saldo inicial → venda em dinheiro cria movimento físico exatamente uma vez → suprimentos/sangrias ficam auditados → estorno gera movimento compensatório → saldo esperado é derivado no banco → operador informa dinheiro contado → diferença é registrada → turno é fechado → nova venda em dinheiro exige nova sessão aberta.
