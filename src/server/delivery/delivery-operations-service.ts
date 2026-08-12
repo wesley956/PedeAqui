@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize, AuthorizationError } from "@/server/access/authorize";
-import { PERMISSIONS } from "@/server/access/permissions";
+import { PERMISSIONS, type PermissionKey } from "@/server/access/permissions";
 
 const uuid = z.string().uuid();
 const idempotency = z.string().trim().min(8).max(240);
@@ -22,7 +22,7 @@ function requireStore(storeId: string | null) {
   return storeId;
 }
 
-async function hasPermission(permission: string, context: Awaited<ReturnType<typeof authorize>>) {
+async function hasPermission(permission: PermissionKey, context: Awaited<ReturnType<typeof authorize>>) {
   try {
     await authorize(permission, context);
     return true;
@@ -139,7 +139,7 @@ export class DeliveryOperationsService {
     return data;
   }
 
-  static async markWaiting(orderId: string, key = randomUUID()) {
+  static async markWaiting(orderId: string, key: string = randomUUID()) {
     const id = uuid.parse(orderId);
     const safeKey = idempotency.parse(key);
     const context = await authorize(PERMISSIONS.DELIVERY_ASSIGN);
@@ -154,7 +154,7 @@ export class DeliveryOperationsService {
     return data;
   }
 
-  static async assign(orderId: string, driverId: string, reason: string | null, key = randomUUID()) {
+  static async assign(orderId: string, driverId: string, reason: string | null, key: string = randomUUID()) {
     const order = uuid.parse(orderId);
     const driver = uuid.parse(driverId);
     const safeKey = idempotency.parse(key);
@@ -179,7 +179,7 @@ export class DeliveryOperationsService {
     return data;
   }
 
-  static async advance(deliveryId: string, toState: z.input<typeof transition>, key = randomUUID()) {
+  static async advance(deliveryId: string, toState: z.input<typeof transition>, key: string = randomUUID()) {
     const id = uuid.parse(deliveryId);
     const state = transition.parse(toState);
     const safeKey = idempotency.parse(key);
@@ -196,7 +196,7 @@ export class DeliveryOperationsService {
       const { data: driver, error: driverError } = await admin.from("drivers").select("user_id")
         .eq("id", delivery.driver_id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
       if (driverError) throw driverError;
-      if (!driver || driver.user_id !== context.userId) throw new AuthorizationError("Delivery is not assigned to current driver");
+      if (!driver || driver.user_id !== context.userId) throw new Error("Delivery is not assigned to current driver");
     }
 
     const { data, error } = await admin.rpc("delivery_transition_internal", {
