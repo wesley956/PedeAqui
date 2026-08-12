@@ -42,13 +42,14 @@ Os módulos compartilham entidades e regras de domínio. Exemplo: `order.complet
 - `DINING_STATUS.md` — #127–#139.
 - `CRM_GROWTH_STATUS.md` — #140–#151.
 - `CONVERSATIONS_STATUS.md` — #152–#163.
+- `CASH_STATUS.md` — #164–#174.
 
-## Ordem macro
+## Ordem macro executável
 
 1. Fundação
 2. Catálogo
 3. Cardápio público
-4. Cliente e entrega
+4. Cliente e configuração de entrega
 5. Carrinho e pricing
 6. Checkout
 7. Motor de pedidos
@@ -62,9 +63,13 @@ Os módulos compartilham entidades e regras de domínio. Exemplo: `order.complet
 15. Salão
 16. CRM/marketing
 17. WhatsApp/IA
-18. Estoque/compras/financeiro
-19. Fiscal e integrações
-20. Escala/white-label
+18. Caixa
+19. Entregas operacionais/entregadores
+20. Estoque e fichas técnicas
+21. Compras/fornecedores
+22. Financeiro/DRE
+23. Fiscal e integrações
+24. Planos, escala e white-label
 
 ## Regra de consulta
 
@@ -81,7 +86,7 @@ Antes de criar um novo módulo, responder:
 
 ### Consolidado em `main`
 
-O `main` está consolidado oficialmente até **[151]**:
+O `main` está consolidado oficialmente até **[163]**.
 
 - Pagamentos #096–#101 — PR #114.
 - PDV #102–#110 — PR #124.
@@ -89,47 +94,50 @@ O `main` está consolidado oficialmente até **[151]**:
 - Qualidade/Hardening #116–#126 — PR #142.
 - Salão #127–#139 — PR #156.
 - CRM e Crescimento #140–#151 — PR #169.
+- Conversas / WhatsApp / IA #152–#163 — PR #182, merge `0c07a698287a3339be27217893c7f1b02017a0b2`.
 
-Todo o núcleo #001–#151 está no `main` e as migrations correspondentes permanecem aplicadas no Supabase oficial.
-
-### Milestone 15 — CRM e Crescimento #140–#151
-
-Status: **concluído e mesclado em `main`**.
-
-- PR #169 mesclado;
-- issues #157–#168 encerradas como `completed`;
-- cupons, cashback, pontos, segmentos, campanhas, automações e painel `/crescimento` implementados;
-- integração autoritativa com checkout/PDV;
-- Security Advisor em 0 alertas;
-- detalhes em `CRM_GROWTH_STATUS.md`.
+Todo o núcleo #001–#163 está no `main`. As migrations correspondentes permanecem aplicadas no Supabase oficial.
 
 ### Milestone 16 — Conversas / WhatsApp / IA #152–#163
 
-Status: **em implementação no draft PR #182**, branch `agent/conversations-whatsapp-ai-152-163`.
+Status: **concluído e mesclado em `main`**.
 
-Issues oficiais: #170–#181.
-
-Já implementado/validado no bloco:
-
-- contatos omnichannel vinculáveis ao CRM;
-- conversations/messages e State Machine `bot|waiting_agent|human|closed`;
-- handoff e histórico/auditoria;
-- Inbox `/conversas` com Realtime;
-- configuração `/configuracoes/conversas`;
-- adapter de WhatsApp desacoplado;
-- webhook assinado/idempotente;
-- resposta outbound humana idempotente;
-- `automation_sessions`;
-- allowlist de IA sem SQL arbitrário;
-- migrations 44–46 aplicadas no Supabase;
+- issues #170–#181;
+- Inbox `/conversas`, contacts/messages/conversations e State Machine;
+- adapter/webhook WhatsApp e outbound humano;
+- `automation_sessions` e allowlist de ferramentas de IA;
+- migrations 44–46;
 - Security Advisor 0;
-- E2E PostgreSQL com rollback e zero resíduos;
-- CI #118 verde no head executável `9cff267347b508586549e9fe56bd8f474d5f6e14`.
+- E2E interno/DB e CI final verdes.
 
-Limite atual: a homologação real contra a infraestrutura externa do WhatsApp depende de um número/provider e credenciais reais conectados ao ambiente. Não considerar essa etapa externa validada até executar inbound/outbound real.
+Pendência operacional externa: homologar tráfego real contra um número/conta da Meta quando as credenciais forem configuradas. Isso não reabre o milestone de domínio.
 
 Detalhes: `CONVERSATIONS_STATUS.md`.
 
-### Próxima expansão macro após o Milestone 16
+### Milestone 17 — Caixa #164–#174
 
-O blueprint segue para **Gestão: estoque, fichas técnicas, compras, fornecedores, financeiro e DRE**, após concluir/homologar o Milestone 16.
+Status: **em implementação/validação no draft PR #194**, branch `agent/cash-register-164-174`.
+
+Issues oficiais: #183–#193.
+
+Implementado no bloco:
+
+- `cash_registers`, `cash_sessions`, `cash_movements`;
+- ledger de movimentos imutável;
+- abertura/fechamento idempotentes;
+- suprimento e sangria;
+- saldo esperado e diferença contado × esperado;
+- integração automática com pagamentos em dinheiro;
+- estorno por movimento compensatório;
+- `/caixa` responsivo e navegação desktop/mobile;
+- PDV orienta abertura antes de venda cash;
+- painel de pagamentos permite refund auditado;
+- migrations 47–51 aplicadas em equivalentes oficiais;
+- E2E real com rollback e zero resíduos;
+- Security Advisor 0.
+
+Detalhes e evidências: `CASH_STATUS.md`.
+
+### Próxima expansão após Caixa
+
+A sequência acordada segue para **Entregas operacionais / Entregadores**. O módulo existente #033–#035 cobre endereço, configuração e taxa de entrega; o próximo bloco deve cobrir `drivers`, `deliveries`, atribuição, despacho, status e painel operacional sem duplicar as regras atuais de checkout/endereço.
