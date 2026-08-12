@@ -72,7 +72,8 @@ describe("cash database contracts", () => {
     expect(payments).toContain("payments_sync_cash_movement");
     expect(payments).toContain("'sale','in'");
     expect(payments).toContain("'refund','out'");
-    expect(payments).toContain("reference_movement_id");
+    expect(payments).toMatch(/new\.id\s*,\s*new\.order_id\s*,\s*v_original\.id/);
+    expect(core).toContain("reference_movement_id");
     expect(payments).toContain("open cash session required for cash payment");
   });
 
