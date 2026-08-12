@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 export const navigation = [
   ["Dashboard", "/dashboard"],
   ["Pedidos", "/pedidos"],
+  ["Conversas", "/conversas"],
   ["Salão", "/salao"],
   ["Cardápio", "/cardapio/produtos"],
   ["PDV", "/pdv"],
