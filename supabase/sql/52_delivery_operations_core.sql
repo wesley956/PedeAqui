@@ -16,9 +16,6 @@ where r.key = 'attendant' on conflict do nothing;
 insert into public.role_permissions (role_id, permission_id)
 select r.id, p.id from public.roles r join public.permissions p on p.key in ('delivery.view','delivery.update')
 where r.key = 'driver' on conflict do nothing;
-insert into public.role_permissions (role_id, permission_id)
-select r.id, p.id from public.roles r join public.permissions p on p.key = 'delivery.view'
-where r.key = 'cashier' on conflict do nothing;
 
 -- Para novos papéis não-owner/manager. Owner e manager recebem o catálogo inteiro no bootstrap.
 create or replace function private.grant_delivery_operations_permissions_for_role()
@@ -30,9 +27,6 @@ begin
   elsif new.key = 'driver' then
     insert into public.role_permissions(role_id,permission_id)
     select new.id,p.id from public.permissions p where p.key in ('delivery.view','delivery.update') on conflict do nothing;
-  elsif new.key = 'cashier' then
-    insert into public.role_permissions(role_id,permission_id)
-    select new.id,p.id from public.permissions p where p.key='delivery.view' on conflict do nothing;
   end if;
   return new;
 end; $$;
@@ -101,6 +95,7 @@ create table if not exists public.delivery_history (
   from_driver_id uuid,
   to_driver_id uuid,
   reason text check (reason is null or char_length(trim(reason)) between 3 and 500),
+  idempotency_key text not null check (char_length(idempotency_key) between 8 and 240),
   actor_user_id uuid references auth.users(id) on delete set null,
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
@@ -111,7 +106,8 @@ create table if not exists public.delivery_history (
   constraint delivery_history_from_driver_fk foreign key (organization_id,store_id,from_driver_id)
     references public.drivers(organization_id,store_id,id) on delete restrict,
   constraint delivery_history_to_driver_fk foreign key (organization_id,store_id,to_driver_id)
-    references public.drivers(organization_id,store_id,id) on delete restrict
+    references public.drivers(organization_id,store_id,id) on delete restrict,
+  constraint delivery_history_org_idem_unique unique (organization_id,idempotency_key)
 );
 create index if not exists delivery_history_delivery_created_idx on public.delivery_history(organization_id,store_id,delivery_id,created_at,id);
 
