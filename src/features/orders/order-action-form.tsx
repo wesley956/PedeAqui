@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { orderManagerAction, type OrderManagerActionState } from "@/features/orders/actions";
 
@@ -14,9 +15,15 @@ export type ManagerIntent =
   | "await_pickup"
   | "customer_picked_up"
   | "await_courier"
+  | "courier_assigned"
+  | "courier_picked_up"
+  | "out_for_delivery"
+  | "delivered"
   | "served"
   | "complete"
   | "reprint";
+
+const routedDeliveryIntents = new Set<ManagerIntent>(["courier_assigned", "courier_picked_up", "out_for_delivery", "delivered"]);
 
 export function OrderActionForm({ orderId, intent, label, tone = "primary", reasonLabel, reasonPlaceholder, printJobId, compact = false }: {
   orderId: string;
@@ -29,6 +36,9 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
   compact?: boolean;
 }) {
   const [state, action, pending] = useActionState(orderManagerAction, initialOrderManagerActionState);
+  if (routedDeliveryIntents.has(intent)) {
+    return <Link href="/entregas" style={{ ...buttonStyle("secondary"), display: "grid", placeItems: "center", textDecoration: "none" }}>{label} → Entregas</Link>;
+  }
   return (
     <form action={action} style={{ display: "grid", gap: 6 }}>
       <input type="hidden" name="orderId" value={orderId} />
