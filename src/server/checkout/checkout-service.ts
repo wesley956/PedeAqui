@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { CartService } from "@/server/cart/cart-service";
 import { hashCartToken } from "@/server/cart/cart-token";
 import { normalizePhone } from "@/server/customers/phone";
-import { neighborhoodKey } from "@/server/delivery/location-key";
+import { DeliveryQuoteService } from "@/server/delivery/delivery-quote-service";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
 import { StorePaymentMethodService } from "@/server/payments/store-payment-method-service";
 import {
@@ -22,16 +22,6 @@ import { reviewCheckout } from "@/server/checkout/review";
 type AdminClient = ReturnType<typeof createAdminClient>;
 
 type StoreRef = { id: string; organization_id: string; slug: string; name: string };
-
-const deliveryDefaults = {
-  enabled: true,
-  fee_mode: "neighborhood" as const,
-  default_fee_cents: 0,
-  free_delivery_over_cents: null as number | null,
-  estimated_min_minutes: 30,
-  estimated_max_minutes: 60,
-  require_neighborhood_match: true,
-};
 
 export class CheckoutError extends Error {
   constructor(public code: string, message: string) {
@@ -142,38 +132,14 @@ export class CheckoutService {
     if (error) throw error;
   }
 
-  private static async quoteDelivery(admin: AdminClient, store: StoreRef, subtotalCents: number, address: CheckoutAddressInput) {
-    const { data: settingsRow, error: settingsError } = await admin.from("store_delivery_settings")
-      .select("enabled, fee_mode, default_fee_cents, free_delivery_over_cents, estimated_min_minutes, estimated_max_minutes, require_neighborhood_match")
-      .eq("organization_id", store.organization_id).eq("store_id", store.id).maybeSingle();
-    if (settingsError) throw settingsError;
-    const settings = settingsRow ?? deliveryDefaults;
-    if (!settings.enabled) return { serviceable: false as const, reason: "delivery_disabled" as const };
-
-    const key = neighborhoodKey(address.district, address.city, address.state);
-    const { data: neighborhood, error: neighborhoodError } = await admin.from("delivery_neighborhoods")
-      .select("fee_cents, minimum_order_cents, additional_minutes")
-      .eq("organization_id", store.organization_id).eq("store_id", store.id)
-      .eq("neighborhood_key", key).eq("active", true).is("deleted_at", null).maybeSingle();
-    if (neighborhoodError) throw neighborhoodError;
-    if (!neighborhood && settings.require_neighborhood_match) {
-      return { serviceable: false as const, reason: "neighborhood_not_served" as const };
-    }
-    const minimum = neighborhood?.minimum_order_cents ?? 0;
-    if (subtotalCents < minimum) {
-      return { serviceable: false as const, reason: "minimum_order" as const, minimumOrderCents: minimum };
-    }
-    const rawFee = settings.fee_mode === "neighborhood"
-      ? (neighborhood?.fee_cents ?? settings.default_fee_cents)
-      : settings.default_fee_cents;
-    const feeCents = settings.free_delivery_over_cents !== null && subtotalCents >= settings.free_delivery_over_cents ? 0 : rawFee;
-    const extra = neighborhood?.additional_minutes ?? 0;
-    return {
-      serviceable: true as const,
-      feeCents,
-      estimatedMinMinutes: settings.estimated_min_minutes + extra,
-      estimatedMaxMinutes: settings.estimated_max_minutes + extra,
-    };
+  private static quoteDelivery(admin: AdminClient, store: StoreRef, subtotalCents: number, address: CheckoutAddressInput) {
+    return DeliveryQuoteService.quote({
+      admin,
+      organizationId: store.organization_id,
+      storeId: store.id,
+      subtotalCents,
+      address: { district: address.district, city: address.city, state: address.state },
+    });
   }
 
   static async saveAddress(storeSlug: string, token: string, input: CheckoutAddressInput) {
