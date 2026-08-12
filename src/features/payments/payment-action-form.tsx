@@ -15,10 +15,11 @@ export function PaymentActionForm({
   orderId: string;
   paymentId: string;
   method: string;
-  intent: "confirm" | "fail";
+  intent: "confirm" | "fail" | "refund";
   defaultCashReceived?: string | null;
 }) {
   const [state, action, pending] = useActionState(paymentAction, initialState);
+  const destructive = intent === "fail" || intent === "refund";
 
   return (
     <form action={action} style={{ display: "grid", gap: 8, paddingTop: 8 }}>
@@ -40,15 +41,15 @@ export function PaymentActionForm({
         </label>
       ) : null}
 
-      {intent === "fail" ? (
+      {destructive ? (
         <label style={{ display: "grid", gap: 4 }}>
-          <span className="muted" style={{ fontSize: 11 }}>MOTIVO</span>
-          <input name="reason" required minLength={3} maxLength={240} placeholder="Ex.: Pix não localizado" style={inputStyle} />
+          <span className="muted" style={{ fontSize: 11 }}>{intent === "refund" ? "MOTIVO DO ESTORNO" : "MOTIVO"}</span>
+          <input name="reason" required minLength={3} maxLength={intent === "refund" ? 500 : 240} placeholder={intent === "refund" ? "Ex.: venda cancelada após recebimento" : "Ex.: Pix não localizado"} style={inputStyle} />
         </label>
       ) : null}
 
-      <button type="submit" disabled={pending} style={intent === "fail" ? dangerButton : primaryButton}>
-        {pending ? "Processando…" : intent === "confirm" ? "Confirmar pagamento" : "Marcar tentativa como falha"}
+      <button type="submit" disabled={pending} style={destructive ? dangerButton : primaryButton}>
+        {pending ? "Processando…" : intent === "confirm" ? "Confirmar pagamento" : intent === "refund" ? "Estornar pagamento" : "Marcar tentativa como falha"}
       </button>
       {state.message ? <div style={{ color: "#22c55e", fontSize: 12 }}>{state.message}</div> : null}
       {state.error ? <div style={{ color: "#f97066", fontSize: 12 }}>{state.error}</div> : null}
