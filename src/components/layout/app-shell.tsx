@@ -10,6 +10,7 @@ export const navigation = [
   ["Salão", "/salao"],
   ["Cardápio", "/cardapio/produtos"],
   ["PDV", "/pdv"],
+  ["Caixa", "/caixa"],
   ["Produção", "/producao"],
   ["Clientes", "/clientes"],
   ["Crescimento", "/crescimento"],
