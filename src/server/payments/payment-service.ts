@@ -36,7 +36,7 @@ export class PaymentService {
     const admin = createAdminClient();
     const [{ data: order, error: orderError }, { data, error }] = await Promise.all([
       admin.from("orders").select("id, total_cents, payment_status").eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
-      admin.from("payments").select("id, order_id, method, status, amount_cents, cash_tendered_cents, change_due_cents, reference, source, paid_at, failed_at, created_at, updated_at")
+      admin.from("payments").select("id, order_id, method, status, amount_cents, cash_tendered_cents, change_due_cents, reference, source, paid_at, failed_at, refunded_at, created_at, updated_at")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("order_id", id).order("created_at"),
     ]);
     if (orderError) throw orderError;
@@ -126,6 +126,30 @@ export class PaymentService {
     });
     if (error) throw error;
     await AuditService.record(context, { action: "payment.failed", entityType: "payment", entityId: id, before: scoped, after: data });
+    return data;
+  }
+
+  static async refund(paymentId: string, reason: string) {
+    const id = uuid.parse(paymentId);
+    const safeReason = z.string().trim().min(3).max(500).parse(reason);
+    const context = await authorize(PERMISSIONS.PAYMENTS_MANAGE);
+    const storeId = requireStore(context.storeId);
+    const admin = createAdminClient();
+    const { data: scoped, error: scopedError } = await admin.from("payments")
+      .select("id, order_id, method, status, amount_cents, paid_at")
+      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
+    if (scopedError) throw scopedError;
+    if (!scoped) throw new Error("Payment not found");
+    if (scoped.method === "cash") await authorize(PERMISSIONS.CASH_WITHDRAW, context);
+
+    const { data, error } = await admin.rpc("payment_refund_internal", {
+      p_payment_id: id,
+      p_reason: safeReason,
+      p_actor_user_id: context.userId,
+      p_source: "panel",
+    });
+    if (error) throw error;
+    await AuditService.record(context, { action: "payment.refunded", entityType: "payment", entityId: id, before: scoped, after: data });
     return data;
   }
 
