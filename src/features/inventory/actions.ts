@@ -16,6 +16,7 @@ function friendly(error: unknown) {
   const rules: Array<[string, string]> = [
     ["inventory movement would make stock negative", "A operação deixaria o estoque negativo e esta unidade bloqueia saldo negativo."],
     ["inventory idempotency key reused", "Esta operação já foi enviada com dados diferentes. Atualize a tela e tente novamente."],
+    ["inventory reconciliation idempotency key reused", "Esta contagem já foi enviada com dados diferentes. Atualize a tela e tente novamente."],
     ["inventory item must be active in both transfer stores", "O insumo precisa estar habilitado nas duas unidades para transferir."],
     ["recipe contains duplicate inventory item", "A ficha técnica não pode repetir o mesmo insumo."],
     ["recipe inventory item is not active in store", "Todos os insumos da ficha precisam estar ativos nesta unidade."],
@@ -38,6 +39,17 @@ export async function enableInventoryItemAction(_previous: InventoryActionState,
   try {
     await InventoryService.enableItem(text(formData, "inventoryItemId"), text(formData, "minimumQuantity") || "0", formData.get("allowNegative") === "on");
     refresh(); return { ok: true, message: "Insumo habilitado nesta unidade.", error: null };
+  } catch (error) { return { ok: false, message: null, error: friendly(error) }; }
+}
+
+export async function updateInventoryStoreItemAction(_previous: InventoryActionState, formData: FormData): Promise<InventoryActionState> {
+  try {
+    await InventoryService.updateStoreItem({
+      inventoryItemId: text(formData, "inventoryItemId"), active: formData.get("active") === "on",
+      minimumQuantity: text(formData, "minimumQuantity") || "0", allowNegative: formData.get("allowNegative") === "on",
+      costInput: text(formData, "costInput"), baseUnit: text(formData, "baseUnit") as InventoryBaseUnit,
+    });
+    refresh(); return { ok: true, message: "Configuração do insumo atualizada.", error: null };
   } catch (error) { return { ok: false, message: null, error: friendly(error) }; }
 }
 
