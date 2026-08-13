@@ -23,9 +23,10 @@ export class FiscalReadService {
       admin.from("product_fiscal_profiles").select("id,product_id,version,effective_at,ncm,cest,default_cfop,cst_csosn,cclass_trib,created_at").eq("organization_id",context.organizationId).eq("store_id",storeId).order("version",{ ascending:false }),
     ]);
     for(const result of [storeResult,integrationsResult,profileResult,documentsResult,jobsResult,ordersResult,productsResult,profilesResult]) if(result.error) throw result.error;
-    const latestByProduct=new Map<string,(typeof profilesResult.data)[number]>();
+    type ProductFiscalRow=NonNullable<typeof profilesResult.data>[number];
+    const latestByProduct=new Map<string,ProductFiscalRow>();
     for(const row of profilesResult.data??[]) if(!latestByProduct.has(row.product_id)) latestByProduct.set(row.product_id,row);
-    const documentOrderIds=new Set((documentsResult.data??[]).map((d)=>d.order_id).filter(Boolean));
+    const documentOrderIds=new Set((documentsResult.data??[]).map((d)=>d.order_id).filter((id):id is string=>Boolean(id)));
     const eligibleOrders=(ordersResult.data??[]).filter((o)=>!documentOrderIds.has(o.id));
     return {
       context,storeId,store:storeResult.data,integrations:integrationsResult.data??[],profile:profileResult.data??null,
