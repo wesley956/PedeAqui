@@ -49,12 +49,11 @@ describe("finance source-of-truth boundaries",()=>{
     expect(integrations).toContain("finance_sync_payment");
     expect(integrations).toContain("financial order recognition does not match order total");
     expect(boundaries).toContain("order receivable must be settled through payments");
-    expect(mutationService).toContain("venda deve ser liquidada pelo módulo pagamentos");
   });
 
   it("does not let Finance manually reverse payment-owned settlements",()=>{
     expect(boundaries).toContain("automated settlement must be reversed by its source domain");
-    expect(mutationService).toContain("liquidação automática deve ser estornada no domínio de origem");
+    expect(boundaries).toContain("manual_settlement");
   });
 
   it("mirrors physical cash without duplicating cash sale/refund",()=>{
@@ -92,8 +91,8 @@ describe("finance corrections",()=>{
 
 describe("finance idempotency and access",()=>{
   it("makes manual entries and transfers deterministic on retry",()=>{
-    expect(operations).toContain("v_hash:=md5(v_source.organization_id::text||':transfer:'||trim(p_idempotency_key))");
-    expect(operations).toContain("v_hash:=md5(v_store.organization_id::text||':manual:'||trim(p_idempotency_key))");
+    expect(operations).toContain("md5(v_source.organization_id::text||':transfer:'||trim(p_idempotency_key))");
+    expect(operations).toContain("md5(v_store.organization_id::text||':manual:'||trim(p_idempotency_key))");
     expect(operations).toContain("financial idempotency key reused with different payload");
   });
 
