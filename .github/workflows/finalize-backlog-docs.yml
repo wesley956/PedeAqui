@@ -1,0 +1,42 @@
+name: Finalize canonical backlog docs
+
+on:
+  push:
+    branches:
+      - agent/finalize-backlog-docs
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/finalize-backlog-docs
+          fetch-depth: 0
+      - name: Extend backlog through 253
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('docs/IMPLEMENTATION_BACKLOG.md')
+          text = path.read_text()
+          text = text.replace(
+              'Versão 1.7 — execução consolidada até Compras/Fornecedores e bloco de Financeiro/DRE.',
+              'Versão 1.8 — execução consolidada até Planos, Escala e White-label (#253).',
+          )
+          if '# Milestone 22 — Fiscal e Integrações' not in text:
+              marker = '## Jornada crítica 1 — Cardápio'
+              milestones = '''# Milestone 22 — Fiscal e Integrações\n\n225. [FISCAL] Criar perfil fiscal por unidade — P0.\n226. [FISCAL] Criar classificação fiscal versionada por produto — P0.\n227. [FISCAL] Criar documentos, itens e snapshots fiscais — P0.\n228. [FISCAL] Criar State Machine e histórico fiscal independentes do pedido — P0.\n229. [FISCAL] Criar fila persistente de emissão/cancelamento com lease e retry — P0.\n230. [FISCAL] Criar contrato e registry de providers fiscais — P0.\n231. [FISCAL] Implementar emissão, cancelamento e contingência provider-agnostic — P0.\n232. [FISCAL] Persistir XML/DANFE em storage privado com integridade — P0.\n233. [FISCAL] Implementar webhook fiscal assinado e idempotente — P0.\n234. [FISCAL UI] Criar painel `/fiscal` — P0.\n235. [FISCAL] Criar saúde, reconciliação e observabilidade — P1.\n236. [INTEGRATION] Criar registry genérico e webhooks outbound duráveis — P0.\n237. [INTEGRATION] Proteger secrets, assinatura e egress de integrações — P0.\n238. [FISCAL] Hardening, segurança, índices e E2E — P0.\n\n# Milestone 23 — Planos, Escala e White-label\n\n239. [PLAN] Criar catálogo de planos e features — P0.\n240. [PLAN] Vincular features aos planos com limites — P0.\n241. [SUBSCRIPTION] Criar assinaturas por organização — P0.\n242. [ENTITLEMENT] Criar EntitlementService e feature flags server-side — P0.\n243. [ENTITLEMENT] Criar medição de uso e enforcement de limites — P0.\n244. [SUBSCRIPTION] Implementar ciclo de vida da assinatura — P0.\n245. [BILLING] Criar adapter de billing e webhooks de assinatura — P0.\n246. [PLATFORM UI] Criar console SaaS de planos e assinaturas — P1.\n247. [BRANDING] Criar branding e white-label por organização — P1.\n248. [DOMAIN] Criar domínios personalizados e verificação DNS — P1.\n249. [SCALE] Criar grupos de franquia e multiunidade avançada — P1.\n250. [SCALE] Criar central de compras multiunidade — P1.\n251. [BI] Criar BI agregado multiunidade — P1.\n252. [INTEGRATION] Criar catálogo/marketplace de integrações — P1.\n253. [SCALE] Hardening, segurança e E2E de escala — P0.\n\n'''
+              text = text.replace(marker, milestones + marker)
+          if '## Jornada crítica 13 — Fiscal' not in text:
+              text += '''\n\n## Jornada crítica 13 — Fiscal\n\nPedido elegível → snapshot fiscal imutável → fila persistente → provider fiscal → autorizado/rejeitado/contingência → XML/DANFE privado → webhook/reconciliação → cancelamento compensatório, sem alterar a State Machine do pedido.\n\n## Jornada crítica 14 — Planos e Escala\n\nOrganização recebe plano → RBAC valida quem pode e entitlement valida o que foi contratado → limites são aplicados no servidor → white-label/domínio/grupos respeitam quotas e isolamento → central de compras e BI agregam fontes existentes → adapters aprovados entram pelo marketplace → billing altera a assinatura por eventos idempotentes.\n'''
+          path.write_text(text)
+          PY
+          rm .github/workflows/finalize-backlog-docs.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/IMPLEMENTATION_BACKLOG.md .github/workflows/finalize-backlog-docs.yml
+          git commit -m "docs: finalize implementation backlog through 253"
+          git push origin HEAD:agent/finalize-backlog-docs
