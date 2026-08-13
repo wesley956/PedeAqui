@@ -10,8 +10,13 @@ export type FiscalDocumentEnvelope = {
   items: Array<Record<string, unknown>>;
 };
 
+export type FiscalArtifacts = {
+  xml?: string | null;
+  danfePdf?: Uint8Array | null;
+};
+
 export type FiscalIssueResult =
-  | { status: "authorized"; providerDocumentId?: string | null; accessKey: string; protocol: string; code?: string | null; message?: string | null }
+  | { status: "authorized"; providerDocumentId?: string | null; accessKey: string; protocol: string; code?: string | null; message?: string | null; artifacts?: FiscalArtifacts | null }
   | { status: "rejected"; providerDocumentId?: string | null; code?: string | null; message: string }
   | { status: "processing"; providerDocumentId: string; code?: string | null; message?: string | null }
   | { status: "contingency"; providerDocumentId?: string | null; code?: string | null; message?: string | null };
@@ -21,6 +26,7 @@ export type FiscalCancelResult = {
   cancellationProtocol: string;
   code?: string | null;
   message?: string | null;
+  artifacts?: FiscalArtifacts | null;
 };
 
 export type FiscalWebhookEvent = {
