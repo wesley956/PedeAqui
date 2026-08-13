@@ -1,5 +1,5 @@
 import { ScaleService } from "@/server/platform/scale-service";
-import { configureBrandingAction,configureDomainAction,createScaleGroupAction,assignScaleStoreAction,installIntegrationAction } from "@/features/platform/actions";
+import { configureBrandingAction,configureDomainAction,verifyDomainAction,createScaleGroupAction,assignScaleStoreAction,installIntegrationAction } from "@/features/platform/actions";
 
 function money(cents:number|bigint|null|undefined){ return new Intl.NumberFormat("pt-BR",{ style:"currency",currency:"BRL" }).format(Number(cents??0)/100); }
 function entitlementLabel(value:{ enabled:boolean;limit_value:number|null;used:number;remaining:number|null }){ if(!value.enabled) return "Não incluído"; if(value.limit_value===null) return "Incluído"; return `${value.remaining??0} restante(s) de ${value.limit_value}`; }
@@ -36,7 +36,7 @@ export default async function ScalePage(){
 
     <section className="card" style={{ padding:18 }}><h2 style={{ marginTop:0 }}>Domínios personalizados</h2>
       <form action={configureDomainAction} style={{ display:"flex",gap:8,flexWrap:"wrap",marginBottom:12 }}><input name="hostname" placeholder="pedidos.suaempresa.com.br" required /><select name="storeId"><option value="">Organização</option>{data.stores.map(store=><option key={store.id} value={store.id}>{store.name}</option>)}</select><button disabled={!data.canEdit}>Adicionar domínio</button></form>
-      <div style={{ display:"grid",gap:8 }}>{data.domains.map(domain=><div key={domain.id} className="card" style={{ padding:12,background:"var(--surface-2)" }}><strong>{domain.hostname}</strong> · {domain.status}<div className="muted" style={{ fontSize:12 }}>DNS TXT: <code>pedeaqui-verification={domain.verification_token}</code></div>{domain.last_error?<div style={{ color:"var(--danger)" }}>{domain.last_error}</div>:null}</div>)}</div>
+      <div style={{ display:"grid",gap:8 }}>{data.domains.map(domain=><div key={domain.id} className="card" style={{ padding:12,background:"var(--surface-2)" }}><strong>{domain.hostname}</strong> · {domain.status}<div className="muted" style={{ fontSize:12 }}>Crie TXT em <code>_pedeaqui.{domain.hostname}</code> com valor <code>pedeaqui-verification={domain.verification_token}</code></div>{domain.last_error?<div style={{ color:"var(--danger)" }}>{domain.last_error}</div>:null}<form action={verifyDomainAction} style={{ marginTop:8 }}><input type="hidden" name="domainId" value={domain.id}/><button disabled={!data.canEdit||domain.status==="verified"}>{domain.status==="verified"?"Verificado":"Verificar DNS"}</button></form></div>)}</div>
     </section>
 
     <section className="card" style={{ padding:18 }}><h2 style={{ marginTop:0 }}>Grupos / franquias</h2>
