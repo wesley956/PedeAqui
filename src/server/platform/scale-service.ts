@@ -41,10 +41,8 @@ export class ScaleService{
   }
 
   static async configureBranding(input:{ whiteLabelEnabled:boolean;productName?:string|null;logoAssetRef?:string|null;faviconAssetRef?:string|null;primaryColor?:string|null;secondaryColor?:string|null;supportUrl?:string|null;hidePedeAquiBranding:boolean }){
-    const { context }=await EntitlementService.require(PERMISSIONS.BRANDING_MANAGE,input.whiteLabelEnabled||input.hidePedeAquiBranding?"branding.white_label":"branding.white_label").catch(async(error)=>{
-      if(!input.whiteLabelEnabled&&!input.hidePedeAquiBranding) return { context:await authorize(PERMISSIONS.BRANDING_MANAGE),entitlement:null };
-      throw error;
-    });
+    const context=await authorize(PERMISSIONS.BRANDING_MANAGE);
+    if(input.whiteLabelEnabled||input.hidePedeAquiBranding) await EntitlementService.require(PERMISSIONS.BRANDING_MANAGE,"branding.white_label",context);
     const admin=createAdminClient(); const { data,error }=await admin.rpc("configure_branding_entitled_internal",{ p_organization_id:context.organizationId,p_white_label_enabled:input.whiteLabelEnabled,p_product_name:input.productName??null,p_logo_asset_ref:input.logoAssetRef??null,p_favicon_asset_ref:input.faviconAssetRef??null,p_primary_color:input.primaryColor??null,p_secondary_color:input.secondaryColor??null,p_support_url:input.supportUrl??null,p_hide_pedeaqui_branding:input.hidePedeAquiBranding,p_actor_user_id:context.userId });
     if(error) throw error; return data;
   }
