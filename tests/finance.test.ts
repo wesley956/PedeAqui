@@ -19,7 +19,8 @@ describe("finance ledger contracts",()=>{
     expect(core).toContain("create table public.financial_transactions");
     expect(core).toContain("financial_transactions_immutable");
     expect(core).toContain("create table public.financial_account_balances");
-    expect(page).not.toContain("editar saldo");
+    expect(page).toContain("sem editar saldo diretamente");
+    expect(page).not.toContain('name="balancecents"');
   });
 
   it("separates accrual recognition from settlement and cash flow",()=>{
@@ -97,9 +98,9 @@ describe("finance idempotency and access",()=>{
   });
 
   it("authorizes mutations before admin access",()=>{
-    expect(mutationService).toContain("authorize(permissions.finance_manage)");
-    expect(mutationService).toContain("authorize(permissions.finance_settle)");
-    expect(mutationService.indexOf("authorize(permissions.finance_manage)")).toBeLessThan(mutationService.indexOf("createadminclient()"));
+    expect(mutationService).toContain("authorize(permission(\"finance.manage\"))");
+    expect(mutationService).toContain("authorize(permission(\"finance.settle\"))");
+    expect(mutationService.indexOf("authorize(permission(\"finance.manage\"))")).toBeLessThan(mutationService.indexOf("createadminclient()"));
   });
 
   it("only loads DRE/report after finance.reports permission",()=>{
