@@ -49,7 +49,7 @@ describe("purchase transaction contracts", () => {
     expect(hardening).toContain("duplicate purchase inventory item");
     expect(hardening).toContain("duplicate receipt purchase item");
     expect(hardening).toContain("duplicate correction purchase item");
-    expect(core).toContain("purchase_receipt_items_receipt_order_item_unique");
+    expect(hardening).toContain("purchase_receipt_items_receipt_order_item_unique");
   });
 
   it("receives through the existing inventory ledger and updates weighted cost", () => {
