@@ -8,7 +8,7 @@ Issues oficiais: #234–#247.
 
 O PR de Financeiro permanece draft e não deve ser mesclado sem nova autorização explícita. Compras/Fornecedores também continua não mesclado; por isso Financeiro permanece empilhado sobre esse head verde.
 
-Gate final da branch: **CI #163 verde** no head `2332a055e837de6d5387c5ad1823145755710b16` antes desta atualização documental final: lint, TypeScript, testes, Print Agent e build de produção passaram. Após qualquer novo commit documental/código, usar somente o CI do head exato como evidência de merge.
+Gate técnico validado: **CI #164 verde** no head `3af54592442c13cbe7df0d024fcdb8e24357b611` antes desta atualização documental: lint, TypeScript, 203 testes, Print Agent e build de produção passaram. Como qualquer commit posterior gera um novo head, uma eventual decisão de merge deve sempre revalidar o CI do SHA exato atual.
 
 ## Princípios de domínio
 
