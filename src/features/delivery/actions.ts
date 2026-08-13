@@ -3,28 +3,39 @@
 import { revalidatePath } from "next/cache";
 import { parseMoneyToCents } from "@/server/catalog/money";
 import { DeliveryService } from "@/server/delivery/delivery-service";
+import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
 
 function optionalMoney(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.trim() ? parseMoneyToCents(value) : null;
 }
-
 function integer(value: FormDataEntryValue | null, fallback = 0) {
   if (typeof value !== "string" || value.trim() === "") return fallback;
   const parsed = Number(value);
   if (!Number.isInteger(parsed)) throw new Error("Expected an integer");
   return parsed;
 }
-
 function optionalNumber(value: FormDataEntryValue | null) {
   if (typeof value !== "string" || value.trim() === "") return null;
   const parsed = Number(value.replace(",", "."));
   if (!Number.isFinite(parsed)) throw new Error("Expected a number");
   return parsed;
 }
-
-function refresh() {
+function text(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
+function optional(formData: FormData, key: string) {
+  const value = text(formData, key);
+  return value || null;
+}
+function refreshSettings() {
   revalidatePath("/configuracoes/entrega");
   revalidatePath("/m/[slug]", "page");
+}
+function refreshOperations() {
+  revalidatePath("/entregas");
+  revalidatePath("/entregador");
+  revalidatePath("/pedidos");
 }
 
 export async function saveDeliverySettingsAction(formData: FormData) {
@@ -38,9 +49,8 @@ export async function saveDeliverySettingsAction(formData: FormData) {
     maxDistanceKm: optionalNumber(formData.get("maxDistanceKm")),
     requireNeighborhoodMatch: formData.get("requireNeighborhoodMatch") === "on",
   });
-  refresh();
+  refreshSettings();
 }
-
 export async function createDeliveryNeighborhoodAction(formData: FormData) {
   await DeliveryService.createNeighborhood({
     neighborhoodName: String(formData.get("neighborhoodName") ?? ""),
@@ -51,15 +61,86 @@ export async function createDeliveryNeighborhoodAction(formData: FormData) {
     additionalMinutes: integer(formData.get("additionalMinutes")),
     active: true,
   });
-  refresh();
+  refreshSettings();
 }
-
 export async function toggleDeliveryNeighborhoodAction(formData: FormData) {
   await DeliveryService.setNeighborhoodActive(String(formData.get("neighborhoodId") ?? ""), formData.get("active") === "true");
-  refresh();
+  refreshSettings();
 }
-
 export async function removeDeliveryNeighborhoodAction(formData: FormData) {
   await DeliveryService.removeNeighborhood(String(formData.get("neighborhoodId") ?? ""));
-  refresh();
+  refreshSettings();
+}
+
+export type DeliveryActionState = { ok: boolean; message: string | null; error: string | null };
+
+function friendly(error: unknown) {
+  const raw = error instanceof Error ? error.message : "Não foi possível concluir a operação de entrega.";
+  const lower = raw.toLocaleLowerCase("pt-BR");
+  const rules: Array<[string, string]> = [
+    ["driver capacity reached", "O entregador atingiu a capacidade configurada."],
+    ["driver is not available", "O entregador está fora de serviço ou inativo."],
+    ["driver has active deliveries", "Finalize ou reatribua as entregas ativas antes de tirar este entregador de serviço."],
+    ["reassignment reason required", "Informe o motivo da reatribuição."],
+    ["production must be ready", "O pedido precisa estar pronto antes de iniciar a entrega."],
+    ["order is not assignable", "Este pedido não está disponível para atribuição."],
+    ["not assigned to current driver", "Esta entrega não está atribuída ao seu usuário."],
+  ];
+  for (const [needle, message] of rules) if (lower.includes(needle)) return message;
+  return raw;
+}
+
+export async function createDriverAction(_previous: DeliveryActionState, formData: FormData): Promise<DeliveryActionState> {
+  try {
+    await DeliveryOperationsService.createDriver({
+      name: text(formData, "name"),
+      phone: optional(formData, "phone"),
+      userId: optional(formData, "userId"),
+      maxActiveDeliveries: Number(text(formData, "maxActiveDeliveries") || "3"),
+    });
+    refreshOperations();
+    return { ok: true, message: "Entregador cadastrado.", error: null };
+  } catch (error) {
+    return { ok: false, message: null, error: friendly(error) };
+  }
+}
+
+export async function updateDriverAction(_previous: DeliveryActionState, formData: FormData): Promise<DeliveryActionState> {
+  try {
+    await DeliveryOperationsService.updateDriver(text(formData, "driverId"), {
+      name: text(formData, "name"),
+      phone: optional(formData, "phone"),
+      active: formData.get("active") === "on",
+      onDuty: formData.get("onDuty") === "on",
+      maxActiveDeliveries: Number(text(formData, "maxActiveDeliveries") || "3"),
+    });
+    refreshOperations();
+    return { ok: true, message: "Entregador atualizado.", error: null };
+  } catch (error) {
+    return { ok: false, message: null, error: friendly(error) };
+  }
+}
+
+export async function deliveryOperationAction(_previous: DeliveryActionState, formData: FormData): Promise<DeliveryActionState> {
+  const intent = text(formData, "intent");
+  try {
+    if (intent === "waiting") {
+      await DeliveryOperationsService.markWaiting(text(formData, "orderId"), text(formData, "idempotencyKey"));
+      refreshOperations();
+      return { ok: true, message: "Pedido enviado para a fila de entregas.", error: null };
+    }
+    if (intent === "assign") {
+      await DeliveryOperationsService.assign(text(formData, "orderId"), text(formData, "driverId"), optional(formData, "reason"), text(formData, "idempotencyKey"));
+      refreshOperations();
+      return { ok: true, message: "Entregador atribuído.", error: null };
+    }
+    if (["picked_up", "out_for_delivery", "delivered"].includes(intent)) {
+      await DeliveryOperationsService.advance(text(formData, "deliveryId"), intent as "picked_up" | "out_for_delivery" | "delivered", text(formData, "idempotencyKey"));
+      refreshOperations();
+      return { ok: true, message: intent === "delivered" ? "Entrega concluída." : "Status da entrega atualizado.", error: null };
+    }
+    return { ok: false, message: null, error: "Ação de entrega inválida." };
+  } catch (error) {
+    return { ok: false, message: null, error: friendly(error) };
+  }
 }

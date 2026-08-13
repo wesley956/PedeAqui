@@ -43,6 +43,7 @@ Os módulos compartilham entidades e regras de domínio. Exemplo: `order.complet
 - `CRM_GROWTH_STATUS.md` — #140–#151.
 - `CONVERSATIONS_STATUS.md` — #152–#163.
 - `CASH_STATUS.md` — #164–#174.
+- `DELIVERY_OPERATIONS_STATUS.md` — #175–#185.
 
 ## Ordem macro executável
 
@@ -82,11 +83,11 @@ Antes de criar um novo módulo, responder:
 5. Quais dados pertencem à organização e à unidade?
 6. Quais ações precisam de auditoria?
 
-## Estado atual — 11/08/2026
+## Estado atual — 12/08/2026
 
 ### Consolidado em `main`
 
-O `main` está consolidado oficialmente até **[163]**.
+O `main` está consolidado oficialmente até **[174]**.
 
 - Pagamentos #096–#101 — PR #114.
 - PDV #102–#110 — PR #124.
@@ -94,50 +95,57 @@ O `main` está consolidado oficialmente até **[163]**.
 - Qualidade/Hardening #116–#126 — PR #142.
 - Salão #127–#139 — PR #156.
 - CRM e Crescimento #140–#151 — PR #169.
-- Conversas / WhatsApp / IA #152–#163 — PR #182, merge `0c07a698287a3339be27217893c7f1b02017a0b2`.
+- Conversas / WhatsApp / IA #152–#163 — PR #182.
+- Caixa #164–#174 — PR #194, merge `07fe3ea43ff7361258e73fcefc6eed1460f6f98e`.
 
-Todo o núcleo #001–#163 está no `main`. As migrations correspondentes permanecem aplicadas no Supabase oficial.
-
-### Milestone 16 — Conversas / WhatsApp / IA #152–#163
-
-Status: **concluído e mesclado em `main`**.
-
-- issues #170–#181;
-- Inbox `/conversas`, contacts/messages/conversations e State Machine;
-- adapter/webhook WhatsApp e outbound humano;
-- `automation_sessions` e allowlist de ferramentas de IA;
-- migrations 44–46;
-- Security Advisor 0;
-- E2E interno/DB e CI final verdes.
-
-Pendência operacional externa: homologar tráfego real contra um número/conta da Meta quando as credenciais forem configuradas. Isso não reabre o milestone de domínio.
-
-Detalhes: `CONVERSATIONS_STATUS.md`.
+Todo o núcleo #001–#174 está no `main`. As migrations correspondentes permanecem aplicadas no Supabase oficial.
 
 ### Milestone 17 — Caixa #164–#174
 
-Status: **em implementação/validação no draft PR #194**, branch `agent/cash-register-164-174`.
+Status: **concluído e mesclado em `main`**.
 
-Issues oficiais: #183–#193.
+- issues #183–#193 encerradas como completed;
+- caixas configuráveis, sessões/turnos e ledger imutável;
+- abertura/fechamento idempotentes;
+- suprimento, sangria, saldo esperado e conferência;
+- pagamentos e estornos em dinheiro integrados ao caixa;
+- `/caixa` responsivo;
+- Security Advisor 0;
+- E2E PostgreSQL com rollback e zero resíduos;
+- CI final #126 verde.
+
+Detalhes: `CASH_STATUS.md`.
+
+### Milestone 18 — Entregas operacionais / Entregadores #175–#185
+
+Status: **implementado/validado no draft PR #206**, branch `agent/delivery-operations-175-185`, ainda não mesclado.
+
+Issues oficiais: #195–#205.
 
 Implementado no bloco:
 
-- `cash_registers`, `cash_sessions`, `cash_movements`;
-- ledger de movimentos imutável;
-- abertura/fechamento idempotentes;
-- suprimento e sangria;
-- saldo esperado e diferença contado × esperado;
-- integração automática com pagamentos em dinheiro;
-- estorno por movimento compensatório;
-- `/caixa` responsivo e navegação desktop/mobile;
-- PDV orienta abertura antes de venda cash;
-- painel de pagamentos permite refund auditado;
-- migrations 47–51 aplicadas em equivalentes oficiais;
-- E2E real com rollback e zero resíduos;
-- Security Advisor 0.
+- `drivers`, `deliveries`, `delivery_history`;
+- `orders.fulfillment_status` preservado como fonte de verdade;
+- disponibilidade e capacidade por entregador;
+- atribuição e reatribuição atômicas/idempotentes;
+- histórico logístico imutável;
+- retirada → em rota → entregue reutilizando o State Machine existente;
+- `/entregas` para operação/expedição;
+- `/entregador` mobile-first e restrito ao usuário vinculado;
+- Realtime e SLA;
+- `DeliveryQuoteService` centraliza a cotação autoritativa por endereço;
+- ao inserir/selecionar endereço, o servidor recalcula elegibilidade, pedido mínimo, taxa/frete grátis e ETA;
+- a revisão final do checkout recalcula novamente antes da criação do pedido;
+- hardening de triggers do bootstrap para evitar colisão de grants de owner/manager;
+- migrations 52–55 aplicadas em equivalentes oficiais;
+- 3/3 tabelas novas com RLS e browser sem privilégios de mutação/RPC interna;
+- Security Advisor 0;
+- E2E PostgreSQL de capacidade, atribuição, retry, reatribuição e entrega com rollback/zero resíduos;
+- teste de bootstrap owner/manager: catálogo 44/44 permissões sem colisão;
+- CI #130 verde no head executável anterior à consolidação documental; usar o CI do head final do PR como evidência definitiva.
 
-Detalhes e evidências: `CASH_STATUS.md`.
+Detalhes: `DELIVERY_OPERATIONS_STATUS.md`.
 
-### Próxima expansão após Caixa
+### Próxima expansão após Entregas
 
-A sequência acordada segue para **Entregas operacionais / Entregadores**. O módulo existente #033–#035 cobre endereço, configuração e taxa de entrega; o próximo bloco deve cobrir `drivers`, `deliveries`, atribuição, despacho, status e painel operacional sem duplicar as regras atuais de checkout/endereço.
+A sequência acordada segue para **Estoque e Fichas Técnicas**. Esse bloco deve consumir catálogo/pedidos concluídos, controlar matérias-primas e baixas de estoque sem fazer do frontend autoridade de quantidade ou custo. Depois seguem Compras/Fornecedores e Financeiro/DRE.

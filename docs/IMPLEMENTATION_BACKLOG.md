@@ -1,6 +1,6 @@
 # Cruz — Backlog Técnico Mestre
 
-Versão 1.4 — execução consolidada até Conversas/WhatsApp/IA e bloco de Caixa.
+Versão 1.5 — execução consolidada até Caixa e bloco de Entregas operacionais/Entregadores.
 
 ## Definition of Done
 
@@ -243,6 +243,20 @@ Uma feature precisa validar happy path, erros, permissões, mobile, desktop, aud
 173. [CASH] Criar histórico e relatório de sessões — P1.
 174. [CASH UI] Criar painel `/caixa` e E2E operacional — P0.
 
+# Milestone 18 — Entregas operacionais / Entregadores
+
+175. [DELIVERY] Criar cadastro de entregadores — P0.
+176. [DELIVERY] Implementar disponibilidade e capacidade do entregador — P0.
+177. [DELIVERY] Criar execução logística por pedido — P0.
+178. [DELIVERY] Criar histórico de atribuição e execução — P0.
+179. [DELIVERY] Implementar atribuição e reatribuição atômicas — P0.
+180. [DELIVERY] Integrar ciclo do entregador ao fulfillment do pedido — P0.
+181. [DELIVERY] Centralizar cotação autoritativa por endereço — P0.
+182. [DELIVERY] Criar fila operacional e SLA em tempo real — P1.
+183. [DELIVERY UI] Criar painel `/entregas` — P0.
+184. [DRIVER UI] Criar visão mobile `/entregador` — P0.
+185. [DELIVERY] Hardening, eventos, segurança e E2E — P0.
+
 ## Jornada crítica 1 — Cardápio
 
 Proprietário cria conta/loja → cadastra categoria/produto/adicional → publica → cliente abre no celular → monta pedido → informa endereço → taxa → pagamento → restaurante recebe → aceita → imprime → produção → pronto → entrega/retirada → concluído → cliente e dashboard atualizam.
@@ -274,3 +288,7 @@ Cliente identificado recebe/usa benefício → servidor revalida cupom/saldo/pon
 ## Jornada crítica 8 — Caixa
 
 Operador abre um caixa com saldo inicial → venda em dinheiro cria movimento físico exatamente uma vez → suprimentos/sangrias ficam auditados → estorno gera movimento compensatório → saldo esperado é derivado no banco → operador informa dinheiro contado → diferença é registrada → turno é fechado → nova venda em dinheiro exige nova sessão aberta.
+
+## Jornada crítica 9 — Entrega operacional
+
+Cliente informa/seleciona endereço → servidor calcula elegibilidade, taxa e ETA pela unidade/zona configurada → checkout revalida o frete antes de criar o pedido → produção termina → expedição envia para fila → entregador disponível é atribuído → retirada → saiu para entrega → entregue → histórico/auditoria permanecem íntegros → pedido só conclui quando as regras de pagamento e fulfillment existentes permitirem.

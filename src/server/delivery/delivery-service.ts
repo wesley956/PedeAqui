@@ -6,6 +6,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { EventService } from "@/server/events/event-service";
+import { DeliveryQuoteService } from "@/server/delivery/delivery-quote-service";
 import { deliveryNeighborhoodInputSchema, deliverySettingsInputSchema, type DeliveryNeighborhoodInput, type DeliverySettingsInput } from "@/server/delivery/schemas";
 import { neighborhoodKey } from "@/server/delivery/location-key";
 
@@ -136,26 +137,11 @@ export class DeliveryService {
   static async quoteByNeighborhood(neighborhood: string, city: string, state: string, subtotalCents: number) {
     const context = await authorize(PERMISSIONS.DELIVERY_VIEW);
     const storeId = requireStoreId(context.storeId);
-    const admin = createAdminClient();
-    const [settings, row] = await Promise.all([
-      this.getSettings(),
-      admin.from("delivery_neighborhoods").select("fee_cents, minimum_order_cents, additional_minutes")
-        .eq("organization_id", context.organizationId).eq("store_id", storeId)
-        .eq("neighborhood_key", neighborhoodKey(neighborhood, city, state.toUpperCase()))
-        .eq("active", true).is("deleted_at", null).maybeSingle(),
-    ]);
-    if (row.error) throw row.error;
-    if (!settings.enabled) return { serviceable: false, reason: "delivery_disabled" as const };
-    if (!row.data && settings.require_neighborhood_match) return { serviceable: false, reason: "neighborhood_not_served" as const };
-    const minimum = row.data?.minimum_order_cents ?? 0;
-    if (subtotalCents < minimum) return { serviceable: false, reason: "minimum_order" as const, minimumOrderCents: minimum };
-    const rawFee = settings.fee_mode === "neighborhood" ? (row.data?.fee_cents ?? settings.default_fee_cents) : settings.default_fee_cents;
-    const feeCents = settings.free_delivery_over_cents !== null && subtotalCents >= settings.free_delivery_over_cents ? 0 : rawFee;
-    return {
-      serviceable: true,
-      feeCents,
-      estimatedMinMinutes: settings.estimated_min_minutes + (row.data?.additional_minutes ?? 0),
-      estimatedMaxMinutes: settings.estimated_max_minutes + (row.data?.additional_minutes ?? 0),
-    };
+    return DeliveryQuoteService.quote({
+      organizationId: context.organizationId,
+      storeId,
+      subtotalCents,
+      address: { district: neighborhood, city, state },
+    });
   }
 }
