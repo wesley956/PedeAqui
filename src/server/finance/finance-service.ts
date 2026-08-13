@@ -2,7 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { authorize, AuthorizationError } from "@/server/access/authorize";
+import { authorize } from "@/server/access/authorize";
 import type { PermissionKey } from "@/server/access/permissions";
 import { parseMoneyToCents } from "@/server/catalog/money";
 
@@ -15,23 +15,6 @@ const dreGroup = z.enum(["gross_revenue","deductions","delivery_revenue","cogs",
 type Context = Awaited<ReturnType<typeof authorize>>;
 function permission(value: string) { return value as PermissionKey; }
 function requireStore(storeId: string | null) { if (!storeId) throw new Error("Uma unidade ativa é necessária"); return storeId; }
-async function can(key: string, context: Context) {
-  try { await authorize(permission(key), context); return true; }
-  catch (error) { if (error instanceof AuthorizationError) return false; throw error; }
-}
-function dateParts(timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
-  const map = Object.fromEntries(parts.map((part) => [part.type,part.value]));
-  return { year: map.year!, month: map.month!, day: map.day! };
-}
-function normalizePeriod(timeZone: string, input?: { from?: string | null; to?: string | null }) {
-  const now = dateParts(timeZone); const fallbackTo = `${now.year}-${now.month}-${now.day}`; const fallbackFrom = `${now.year}-${now.month}-01`;
-  const from = input?.from ? dateText.parse(input.from) : fallbackFrom; const to = input?.to ? dateText.parse(input.to) : fallbackTo;
-  const start = new Date(`${from}T00:00:00Z`); const end = new Date(`${to}T00:00:00Z`);
-  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || start > end) throw new Error("Período financeiro inválido");
-  if ((end.getTime()-start.getTime()) / 86400000 > 400) throw new Error("O período financeiro não pode ultrapassar 400 dias");
-  return { from, to };
-}
 async function scopedAccount(admin: ReturnType<typeof createAdminClient>, context: Context, storeId: string, accountId: string) {
   const id = uuid.parse(accountId);
   const { data,error } = await admin.from("financial_accounts").select("id,organization_id,store_id,active").eq("id",id).eq("organization_id",context.organizationId).eq("store_id",storeId).eq("active",true).is("deleted_at",null).maybeSingle();
@@ -39,22 +22,6 @@ async function scopedAccount(admin: ReturnType<typeof createAdminClient>, contex
 }
 
 export class FinanceService {
-  static async load(input?: { from?: string | null; to?: string | null }) {
-    const context = await authorize(permission("finance.view")); const storeId = requireStore(context.storeId); const admin = createAdminClient();
-    const storeResult = await admin.from("stores").select("id,name,timezone").eq("id",storeId).eq("organization_id",context.organizationId).single();
-    if (storeResult.error) throw storeResult.error;
-    const period = normalizePeriod(storeResult.data.timezone || "America/Sao_Paulo", input);
-    const [reportResult,categoriesResult,obligationsResult,transactionsResult,canManage,canSettle,canReports] = await Promise.all([
-      admin.rpc("financial_report_internal", { p_store_id: storeId, p_from: period.from, p_to: period.to }),
-      admin.from("financial_categories").select("id,parent_id,name,nature,dre_group,system_key,active").eq("organization_id",context.organizationId).eq("active",true).is("deleted_at",null).order("name"),
-      admin.from("financial_obligations").select("id,direction,obligation_type,source_type,source_id,counterparty_type,counterparty_id,description,competence_date,due_date,principal_cents,settled_cents,open_cents,status,cancelled_reason,created_at").eq("organization_id",context.organizationId).eq("store_id",storeId).order("due_date",{ ascending: true }).limit(180),
-      admin.from("financial_transactions").select("id,obligation_id,account_id,category_id,transaction_type,direction,effect_sign,amount_cents,competence_date,source_type,source_id,transfer_group_id,description,metadata,occurred_at").eq("organization_id",context.organizationId).eq("store_id",storeId).order("occurred_at",{ ascending: false }).limit(180),
-      can("finance.manage",context), can("finance.settle",context), can("finance.reports",context),
-    ]);
-    for (const result of [reportResult,categoriesResult,obligationsResult,transactionsResult]) if (result.error) throw result.error;
-    return { context,storeId,store:storeResult.data,period,report:reportResult.data,categories:categoriesResult.data ?? [],obligations:obligationsResult.data ?? [],transactions:transactionsResult.data ?? [],canManage,canSettle,canReports };
-  }
-
   static async createAccount(input: { name: string; accountType: string }) {
     const context = await authorize(permission("finance.manage")); const storeId=requireStore(context.storeId); const admin=createAdminClient();
     const { data,error } = await admin.rpc("financial_create_account_internal", { p_store_id:storeId,p_name:input.name.trim(),p_account_type:accountType.parse(input.accountType),p_actor_user_id:context.userId });
