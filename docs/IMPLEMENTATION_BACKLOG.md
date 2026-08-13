@@ -1,6 +1,6 @@
 # Cruz — Backlog Técnico Mestre
 
-Versão 1.7 — execução consolidada até Compras/Fornecedores e bloco de Financeiro/DRE.
+Versão 1.8 — execução consolidada até Planos, Escala e White-label (#253).
 
 ## Definition of Done
 
@@ -305,6 +305,41 @@ Uma feature precisa validar happy path, erros, permissões, mobile, desktop, aud
 223. [FINANCE UI] Criar painel `/financeiro` — P0.
 224. [FINANCE] Hardening, segurança, concorrência e E2E — P0.
 
+# Milestone 22 — Fiscal e Integrações
+
+225. [FISCAL] Criar perfil fiscal por unidade — P0.
+226. [FISCAL] Criar classificação fiscal versionada por produto — P0.
+227. [FISCAL] Criar documentos, itens e snapshots fiscais — P0.
+228. [FISCAL] Criar State Machine e histórico fiscal independentes do pedido — P0.
+229. [FISCAL] Criar fila persistente de emissão/cancelamento com lease e retry — P0.
+230. [FISCAL] Criar contrato e registry de providers fiscais — P0.
+231. [FISCAL] Implementar emissão, cancelamento e contingência provider-agnostic — P0.
+232. [FISCAL] Persistir XML/DANFE em storage privado com integridade — P0.
+233. [FISCAL] Implementar webhook fiscal assinado e idempotente — P0.
+234. [FISCAL UI] Criar painel `/fiscal` — P0.
+235. [FISCAL] Criar saúde, reconciliação e observabilidade — P1.
+236. [INTEGRATION] Criar registry genérico e webhooks outbound duráveis — P0.
+237. [INTEGRATION] Proteger secrets, assinatura e egress de integrações — P0.
+238. [FISCAL] Hardening, segurança, índices e E2E — P0.
+
+# Milestone 23 — Planos, Escala e White-label
+
+239. [PLAN] Criar catálogo de planos e features — P0.
+240. [PLAN] Vincular features aos planos com limites — P0.
+241. [SUBSCRIPTION] Criar assinaturas por organização — P0.
+242. [ENTITLEMENT] Criar EntitlementService e feature flags server-side — P0.
+243. [ENTITLEMENT] Criar medição de uso e enforcement de limites — P0.
+244. [SUBSCRIPTION] Implementar ciclo de vida da assinatura — P0.
+245. [BILLING] Criar adapter de billing e webhooks de assinatura — P0.
+246. [PLATFORM UI] Criar console SaaS de planos e assinaturas — P1.
+247. [BRANDING] Criar branding e white-label por organização — P1.
+248. [DOMAIN] Criar domínios personalizados e verificação DNS — P1.
+249. [SCALE] Criar grupos de franquia e multiunidade avançada — P1.
+250. [SCALE] Criar central de compras multiunidade — P1.
+251. [BI] Criar BI agregado multiunidade — P1.
+252. [INTEGRATION] Criar catálogo/marketplace de integrações — P1.
+253. [SCALE] Hardening, segurança e E2E de escala — P0.
+
 ## Jornada crítica 1 — Cardápio
 
 Proprietário cria conta/loja → cadastra categoria/produto/adicional → publica → cliente abre no celular → monta pedido → informa endereço → taxa → pagamento → restaurante recebe → aceita → imprime → produção → pronto → entrega/retirada → concluído → cliente e dashboard atualizam.
@@ -352,3 +387,12 @@ Estoque abaixo do mínimo gera sugestão → operador escolhe fornecedor → ped
 ## Jornada crítica 12 — Financeiro
 
 Pedido concluído reconhece receita por competência → pagamento real liquida recebível na conta correspondente → consumo de estoque reconhece CPV → recebimento de compra gera pagável sem antecipar CPV → prazo do fornecedor fica congelado no pedido → liquidações e transferências afetam contas → DRE usa competência → fluxo usa movimentos realizados → reembolso e correção geram compensações sem apagar histórico → Caixa, Pagamentos, Compras e Estoque continuam fontes de verdade dos próprios domínios.
+
+
+## Jornada crítica 13 — Fiscal
+
+Pedido elegível → snapshot fiscal imutável → fila persistente → provider fiscal → autorizado/rejeitado/contingência → XML/DANFE privado → webhook/reconciliação → cancelamento compensatório, sem alterar a State Machine do pedido.
+
+## Jornada crítica 14 — Planos e Escala
+
+Organização recebe plano → RBAC valida quem pode e entitlement valida o que foi contratado → limites são aplicados no servidor → white-label/domínio/grupos respeitam quotas e isolamento → central de compras e BI agregam fontes existentes → adapters aprovados entram pelo marketplace → billing altera a assinatura por eventos idempotentes.
