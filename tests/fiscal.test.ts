@@ -9,11 +9,14 @@ const operations=read("supabase/sql/75_fiscal_operations.sql");
 const configuration=read("supabase/sql/76_fiscal_configuration.sql");
 const webhooks=read("supabase/sql/77_fiscal_webhooks_storage.sql");
 const indexes=read("supabase/sql/78_fiscal_fk_indexes.sql");
+const outbound=read("supabase/sql/79_integration_outbound_webhooks.sql");
+const outboundConfig=read("supabase/sql/80_integration_webhook_configuration.sql");
 const service=read("src/server/fiscal/fiscal-service.ts");
 const worker=read("src/server/fiscal/fiscal-worker.ts");
 const webhookService=read("src/server/fiscal/fiscal-webhook-service.ts");
 const webhookRoute=read("src/app/api/webhooks/fiscal/[integrationId]/route.ts");
 const artifactService=read("src/server/fiscal/fiscal-artifact-service.ts");
+const outboundWorker=read("src/server/integrations/outbound-webhook-worker.ts");
 const registry=read("src/server/fiscal/fiscal-provider-registry.ts");
 const page=read("src/app/(app)/fiscal/page.tsx");
 const permissions=read("src/server/access/permissions.ts");
@@ -30,13 +33,20 @@ describe("fiscal security boundaries",()=>{
   it("authorizes inside each operation before creating its admin client",()=>{
     const methodContracts=[
       ["static async configureintegration","integrations.manage"],
+      ["static async configureoutboundwebhook","integrations.manage"],
       ["static async configureprofile","fiscal.manage"],
       ["static async createproductprofile","fiscal.manage"],
       ["static async createdraft","fiscal.issue"],
       ["static async queue","fiscal.issue"],
       ["static async requestcancel","fiscal.cancel"],
     ] as const;
-    for(let index=0;index<methodContracts.length;index+=1){ const [marker,key]=methodContracts[index]; const start=service.indexOf(marker); const end=index+1<methodContracts.length?service.indexOf(methodContracts[index+1][0]):service.length; const slice=service.slice(start,end); expect(start).toBeGreaterThanOrEqual(0); expect(slice).toContain(`authorize(permission(\"${key}\"))`); expect(slice.indexOf("authorize(")).toBeLessThan(slice.indexOf("createadminclient()")); }
+    for(const [marker,key] of methodContracts){
+      const start=service.indexOf(marker); expect(start).toBeGreaterThanOrEqual(0);
+      const next=service.indexOf("static async ",start+marker.length);
+      const slice=service.slice(start,next===-1?service.length:next);
+      expect(slice).toContain(`authorize(permission(\"${key}\"))`);
+      expect(slice.indexOf("authorize(")).toBeLessThan(slice.indexOf("createadminclient()"));
+    }
   });
   it("keeps core tables and RPCs server-only",()=>{ expect(core).toContain("from anon,authenticated"); expect(operations).toContain("to service_role"); expect(webhooks).toContain("fiscal_webhook_receipts_browser_deny"); expect(configuration).toContain("fiscal_configure_profile_internal"); expect(configuration).toMatch(/revoke all on function public\.fiscal_configure_profile_internal[^;]+from public,anon,authenticated/); });
   it("requires provider verification for webhooks and caps payload",()=>{ expect(webhookService).toContain("provider.verifywebhook"); expect(webhookService).toContain("invalid fiscal webhook signature"); expect(webhookRoute).toContain("1_000_000"); expect(webhooks).toContain("webhook replay payload mismatch"); });
@@ -47,6 +57,12 @@ describe("fiscal artifacts and UI",()=>{
   it("keeps artifacts in private storage with tenant-scoped paths",()=>{ expect(webhooks).toContain("'fiscal-artifacts','fiscal-artifacts',false"); expect(webhooks).toContain("invalid fiscal xml path scope"); expect(artifactService).toContain("createsignedurl"); expect(artifactService).toContain("authorize(permission(\"fiscal.view\"))"); expect(artifactService).toContain("${input.organizationid}/${input.storeid}/${input.fiscaldocumentid}"); });
   it("exposes fiscal UI and granular permissions",()=>{ for(const key of ["fiscal.view","fiscal.manage","fiscal.issue","fiscal.cancel","integrations.view","integrations.manage"]) expect(permissions).toContain(key); expect(page).toContain("fiscal e integrações"); expect(page).toContain("documentos fiscais"); });
   it("covers foreign keys introduced by fiscal domain",()=>{ for(const name of ["fiscal_documents_integration_fk_idx","fiscal_items_order_item_fk_idx","fiscal_items_product_fk_idx","fiscal_jobs_integration_fk_idx","fiscal_webhook_receipts_integration_fk_idx"]) expect(indexes).toContain(name); });
+});
+
+describe("outbound integration contracts",()=>{
+  it("creates one durable delivery per subscription and domain event",()=>{ expect(outbound).toContain("create table public.integration_webhook_deliveries"); expect(outbound).toContain("unique (subscription_id,domain_event_id)"); expect(outbound).toContain("domain_events_enqueue_integration_webhooks"); expect(outbound).toContain("new.event_type=any(s.event_types)"); });
+  it("uses lease/retry and server-only RPCs",()=>{ expect(outbound).toContain("for update of d skip locked"); expect(outbound).toContain("integration_webhook_finish_internal"); expect(outbound).toContain("from public,anon,authenticated"); expect(outboundConfig).toContain("outbound webhook endpoint must use https"); });
+  it("signs outbound requests and restricts egress",()=>{ expect(outboundWorker).toContain("outbound_webhook_allowed_hosts"); expect(outboundWorker).toContain("createhmac(\"sha256\""); expect(outboundWorker).toContain("redirect:\"manual\""); expect(outboundWorker).toContain("abortsignal.timeout(10_000)"); expect(outboundWorker).toContain("x-pedeaqui-signature"); });
 });
 
 describe("provider adapter contract",()=>{
