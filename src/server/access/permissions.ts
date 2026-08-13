@@ -62,6 +62,11 @@ export const PERMISSIONS = {
   FISCAL_CANCEL: "fiscal.cancel",
   INTEGRATIONS_VIEW: "integrations.view",
   INTEGRATIONS_MANAGE: "integrations.manage",
+  SUBSCRIPTION_VIEW: "subscription.view",
+  BRANDING_VIEW: "branding.view",
+  BRANDING_MANAGE: "branding.manage",
+  SCALE_VIEW: "scale.view",
+  SCALE_MANAGE: "scale.manage",
   REPORTS_VIEW: "reports.view",
 } as const;
 
