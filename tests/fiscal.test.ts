@@ -19,23 +19,25 @@ const page=read("src/app/(app)/fiscal/page.tsx");
 const permissions=read("src/server/access/permissions.ts");
 
 describe("fiscal domain contracts",()=>{
-  it("keeps fiscal status independent from order state",()=>{
-    expect(core).toContain("create table public.fiscal_documents");
-    expect(core).toContain("draft','queued','processing','authorized','rejected','cancelled','contingency");
-    expect(operations).toContain("private.fiscal_can_transition");
-    expect(operations).toContain("when p_from='authorized' then p_to='cancelled'");
-    expect(operations).not.toContain("update public.orders set order_status");
-  });
-  it("stores tax identifiers as text and snapshots fiscal item versions",()=>{
-    expect(core).toContain("issuer_tax_id text not null"); expect(core).toContain("ncm text"); expect(operations).toContain("issuer_snapshot"); expect(operations).toContain("fiscal_snapshot"); expect(operations).toContain("missing_profile"); expect(operations).toContain("all fiscal items require a fiscal profile before queue");
-  });
+  it("keeps fiscal status independent from order state",()=>{ expect(core).toContain("create table public.fiscal_documents"); expect(core).toContain("draft','queued','processing','authorized','rejected','cancelled','contingency"); expect(operations).toContain("private.fiscal_can_transition"); expect(operations).toContain("when p_from='authorized' then p_to='cancelled'"); expect(operations).not.toContain("update public.orders set order_status"); });
+  it("stores tax identifiers as text and snapshots fiscal item versions",()=>{ expect(core).toContain("issuer_tax_id text not null"); expect(core).toContain("ncm text"); expect(operations).toContain("issuer_snapshot"); expect(operations).toContain("fiscal_snapshot"); expect(operations).toContain("missing_profile"); expect(operations).toContain("all fiscal items require a fiscal profile before queue"); });
   it("freezes fiscal items after the document leaves draft",()=>{ expect(core).toContain("fiscal_items_lock_after_queue"); expect(core).toContain("fiscal items are immutable after document is queued"); });
   it("uses persistent lease/retry queue with skip locked",()=>{ expect(operations).toContain("create table public.fiscal_jobs"); expect(operations).toContain("for update skip locked"); expect(operations).toContain("lease_expires_at"); expect(operations).toContain("attempts < j.max_attempts"); expect(worker).toContain("fiscal_claim_jobs_internal"); expect(worker).toContain("fiscal_finish_job_internal"); });
 });
 
 describe("fiscal security boundaries",()=>{
   it("stores only secret references in the domain",()=>{ expect(core).toContain("secret_ref text"); expect(core).toContain("webhook_secret_ref text"); expect(core).toContain("certificate_ref text"); expect(service).not.toContain("process.env["); expect(worker).toContain("resolvesecretreference"); });
-  it("authorizes before creating admin client",()=>{ for(const key of ["fiscal.issue","fiscal.cancel","fiscal.manage","integrations.manage"]) expect(service).toContain(`authorize(permission(\"${key}\"))`); expect(service.indexOf("authorize(permission(\"fiscal.issue\"))")).toBeLessThan(service.indexOf("createadminclient()")); });
+  it("authorizes inside each operation before creating its admin client",()=>{
+    const methodContracts=[
+      ["static async configureintegration","integrations.manage"],
+      ["static async configureprofile","fiscal.manage"],
+      ["static async createproductprofile","fiscal.manage"],
+      ["static async createdraft","fiscal.issue"],
+      ["static async queue","fiscal.issue"],
+      ["static async requestcancel","fiscal.cancel"],
+    ] as const;
+    for(let index=0;index<methodContracts.length;index+=1){ const [marker,key]=methodContracts[index]; const start=service.indexOf(marker); const end=index+1<methodContracts.length?service.indexOf(methodContracts[index+1][0]):service.length; const slice=service.slice(start,end); expect(start).toBeGreaterThanOrEqual(0); expect(slice).toContain(`authorize(permission(\"${key}\"))`); expect(slice.indexOf("authorize(")).toBeLessThan(slice.indexOf("createadminclient()")); }
+  });
   it("keeps core tables and RPCs server-only",()=>{ expect(core).toContain("from anon,authenticated"); expect(operations).toContain("to service_role"); expect(webhooks).toContain("fiscal_webhook_receipts_browser_deny"); expect(configuration).toContain("fiscal_configure_profile_internal"); expect(configuration).toMatch(/revoke all on function public\.fiscal_configure_profile_internal[^;]+from public,anon,authenticated/); });
   it("requires provider verification for webhooks and caps payload",()=>{ expect(webhookService).toContain("provider.verifywebhook"); expect(webhookService).toContain("invalid fiscal webhook signature"); expect(webhookRoute).toContain("1_000_000"); expect(webhooks).toContain("webhook replay payload mismatch"); });
   it("uses explicit adapter registry rather than dynamic code loading",()=>{ expect(registry).toContain("new map<string,fiscalprovider>()"); expect(registry).not.toContain("import("); expect(registry).not.toContain("eval("); });
@@ -48,9 +50,5 @@ describe("fiscal artifacts and UI",()=>{
 });
 
 describe("provider adapter contract",()=>{
-  it("allows a fake adapter without coupling core domain to a vendor",async()=>{
-    const fake:FiscalProvider={ key:"fake.fiscal",async issue(){ return { status:"authorized" as const,providerDocumentId:"fake-1",accessKey:"351234",protocol:"135",artifacts:{ xml:"<nfe/>" } }; },async cancel(){ return { status:"cancelled" as const,cancellationProtocol:"cancel-1" }; },verifyWebhook(){ return true; },parseWebhook(){ return [{ externalEventId:"evt-1",providerDocumentId:"fake-1",status:"authorized" as const,accessKey:"351234",protocol:"135" }]; } };
-    const issued=await fake.issue({ document:{ id:"doc-1" },items:[] },{ providerKey:fake.key,environment:"homologation",secret:"test",config:{} }); expect(issued.status).toBe("authorized");
-    const cancelled=await fake.cancel({ document:{ id:"doc-1" },items:[],reason:"teste" },{ providerKey:fake.key,environment:"homologation",secret:"test",config:{} }); expect(cancelled.cancellationProtocol).toBe("cancel-1");
-  });
+  it("allows a fake adapter without coupling core domain to a vendor",async()=>{ const fake:FiscalProvider={ key:"fake.fiscal",async issue(){ return { status:"authorized" as const,providerDocumentId:"fake-1",accessKey:"351234",protocol:"135",artifacts:{ xml:"<nfe/>" } }; },async cancel(){ return { status:"cancelled" as const,cancellationProtocol:"cancel-1" }; },verifyWebhook(){ return true; },parseWebhook(){ return [{ externalEventId:"evt-1",providerDocumentId:"fake-1",status:"authorized" as const,accessKey:"351234",protocol:"135" }]; } }; const issued=await fake.issue({ document:{ id:"doc-1" },items:[] },{ providerKey:fake.key,environment:"homologation",secret:"test",config:{} }); expect(issued.status).toBe("authorized"); const cancelled=await fake.cancel({ document:{ id:"doc-1" },items:[],reason:"teste" },{ providerKey:fake.key,environment:"homologation",secret:"test",config:{} }); expect(cancelled.cancellationProtocol).toBe("cancel-1"); });
 });
