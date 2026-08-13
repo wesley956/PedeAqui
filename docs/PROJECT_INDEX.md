@@ -44,6 +44,8 @@ Os módulos compartilham entidades e regras de domínio. Exemplo: `order.complet
 - `CONVERSATIONS_STATUS.md` — #152–#163.
 - `CASH_STATUS.md` — #164–#174.
 - `DELIVERY_OPERATIONS_STATUS.md` — #175–#185.
+- `INVENTORY_RECIPES_STATUS.md` — #186–#198.
+- `PURCHASES_SUPPLIERS_STATUS.md` — #199–#210.
 
 ## Ordem macro executável
 
@@ -87,7 +89,7 @@ Antes de criar um novo módulo, responder:
 
 ### Consolidado em `main`
 
-O `main` está consolidado oficialmente até **[174]**.
+O `main` está consolidado oficialmente até **[198]**.
 
 - Pagamentos #096–#101 — PR #114.
 - PDV #102–#110 — PR #124.
@@ -96,56 +98,78 @@ O `main` está consolidado oficialmente até **[174]**.
 - Salão #127–#139 — PR #156.
 - CRM e Crescimento #140–#151 — PR #169.
 - Conversas / WhatsApp / IA #152–#163 — PR #182.
-- Caixa #164–#174 — PR #194, merge `07fe3ea43ff7361258e73fcefc6eed1460f6f98e`.
+- Caixa #164–#174 — PR #194.
+- Entregas operacionais/Entregadores #175–#185 — PR #206, merge `b866ce5c2972791dd7674dbad219a6f7f5411227`.
+- Estoque e Fichas Técnicas #186–#198 — PR #220, merge `d93972cd8720c3594a0106d3ee66204b52acade7`.
 
-Todo o núcleo #001–#174 está no `main`. As migrations correspondentes permanecem aplicadas no Supabase oficial.
-
-### Milestone 17 — Caixa #164–#174
-
-Status: **concluído e mesclado em `main`**.
-
-- issues #183–#193 encerradas como completed;
-- caixas configuráveis, sessões/turnos e ledger imutável;
-- abertura/fechamento idempotentes;
-- suprimento, sangria, saldo esperado e conferência;
-- pagamentos e estornos em dinheiro integrados ao caixa;
-- `/caixa` responsivo;
-- Security Advisor 0;
-- E2E PostgreSQL com rollback e zero resíduos;
-- CI final #126 verde.
-
-Detalhes: `CASH_STATUS.md`.
+Todo o núcleo #001–#198 está no `main`. As migrations correspondentes permanecem aplicadas no Supabase oficial.
 
 ### Milestone 18 — Entregas operacionais / Entregadores #175–#185
 
-Status: **implementado/validado no draft PR #206**, branch `agent/delivery-operations-175-185`, ainda não mesclado.
+Status: **concluído e mesclado em `main`**.
 
-Issues oficiais: #195–#205.
+Issues #195–#205 encerradas como `completed`.
 
-Implementado no bloco:
+Destaques:
 
 - `drivers`, `deliveries`, `delivery_history`;
 - `orders.fulfillment_status` preservado como fonte de verdade;
-- disponibilidade e capacidade por entregador;
-- atribuição e reatribuição atômicas/idempotentes;
-- histórico logístico imutável;
-- retirada → em rota → entregue reutilizando o State Machine existente;
-- `/entregas` para operação/expedição;
-- `/entregador` mobile-first e restrito ao usuário vinculado;
+- disponibilidade/capacidade, atribuição e reatribuição atômicas/idempotentes;
+- `/entregas` e `/entregador`;
 - Realtime e SLA;
 - `DeliveryQuoteService` centraliza a cotação autoritativa por endereço;
-- ao inserir/selecionar endereço, o servidor recalcula elegibilidade, pedido mínimo, taxa/frete grátis e ETA;
-- a revisão final do checkout recalcula novamente antes da criação do pedido;
-- hardening de triggers do bootstrap para evitar colisão de grants de owner/manager;
-- migrations 52–55 aplicadas em equivalentes oficiais;
-- 3/3 tabelas novas com RLS e browser sem privilégios de mutação/RPC interna;
-- Security Advisor 0;
-- E2E PostgreSQL de capacidade, atribuição, retry, reatribuição e entrega com rollback/zero resíduos;
-- teste de bootstrap owner/manager: catálogo 44/44 permissões sem colisão;
-- CI #130 verde no head executável anterior à consolidação documental; usar o CI do head final do PR como evidência definitiva.
+- endereço inserido/selecionado recalcula elegibilidade, taxa/frete grátis, mínimo e ETA no servidor;
+- revisão final do checkout recalcula o frete novamente antes de criar o pedido;
+- E2E PostgreSQL com rollback/zero resíduos;
+- CI final #133 verde no head mesclado.
 
 Detalhes: `DELIVERY_OPERATIONS_STATUS.md`.
 
-### Próxima expansão após Entregas
+### Milestone 19 — Estoque e Fichas Técnicas #186–#198
 
-A sequência acordada segue para **Estoque e Fichas Técnicas**. Esse bloco deve consumir catálogo/pedidos concluídos, controlar matérias-primas e baixas de estoque sem fazer do frontend autoridade de quantidade ou custo. Depois seguem Compras/Fornecedores e Financeiro/DRE.
+Status: **concluído e mesclado em `main`**.
+
+Issues #207–#219 encerradas como `completed`.
+
+Destaques:
+
+- ledger imutável `inventory_movements` + projeção `inventory_balances`;
+- quantidades exatas `numeric(18,6)`;
+- entradas, perdas, ajustes, produção, transferências e contagem física;
+- estoque mínimo e eventos de reposição;
+- fichas técnicas imutáveis/versionadas para produtos e adicionais;
+- proteção histórica por `effective_at` e `created_at` na confirmação;
+- baixa automática/idempotente no `order.completed`;
+- `/estoque` e `/estoque/fichas`;
+- E2Es com rollback/zero resíduos;
+- CI #138 verde contra `main` antes do merge.
+
+Detalhes: `INVENTORY_RECIPES_STATUS.md`.
+
+### Milestone 20 — Compras e Fornecedores #199–#210
+
+Status: **implementado/validado no draft PR #233**, branch `agent/purchases-suppliers-199-210`, ainda não mesclado.
+
+Issues oficiais: #221–#232.
+
+Destaques atuais:
+
+- fornecedor mestre por organização + condições por unidade;
+- catálogo fornecedor↔insumo com unidade de compra e conversão exata;
+- pedido de compra com número amigável e snapshots;
+- ciclo `draft → sent → partially_received → received` e cancelamento controlado;
+- recebimentos/correções imutáveis;
+- integração transacional com Estoque/custo médio;
+- idempotência com fingerprint SHA-256 e rejeição de payload divergente;
+- sugestões de reposição sem compra automática;
+- `/fornecedores` e `/compras`;
+- 9/9 tabelas novas com RLS, browser sem privilégios diretos e sem EXECUTE das RPCs internas;
+- FKs novas cobertas por índices;
+- E2E endurecido: 10/10 checks, rollback/zero resíduos;
+- CI #144 verde no head de código; usar o CI do head documental final como evidência definitiva.
+
+Detalhes: `PURCHASES_SUPPLIERS_STATUS.md`.
+
+### Próxima expansão após Compras
+
+A sequência macro segue para **Financeiro/DRE [211+]**. Esse bloco deve consumir eventos já produzidos por vendas, pagamentos, caixa e compras sem transformar esses domínios em dependentes do ledger financeiro.

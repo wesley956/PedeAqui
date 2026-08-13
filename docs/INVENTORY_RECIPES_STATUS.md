@@ -2,9 +2,9 @@
 
 ## Estado
 
-Milestone 19 implementado na branch `agent/inventory-recipes-186-198`, draft PR #220, empilhado sobre o draft PR #206 de Entregas. Não mesclar sem autorização explícita.
+Milestone 19 concluído e mesclado em `main` pelo PR #220. Merge commit: `d93972cd8720c3594a0106d3ee66204b52acade7`.
 
-Issues oficiais: #207–#219.
+Issues #207–#219 encerradas como `completed`.
 
 ## Princípios de domínio
 
@@ -205,14 +205,17 @@ Segundo E2E validou especificamente:
 
 O arquivo de repositório `58_inventory_recipes_consumption.sql` contém receitas + consumo juntos; no Supabase oficial a aplicação foi dividida em duas migrations menores porque o conector bloqueou a chamada longa antes de executar qualquer DDL. Não houve aplicação parcial.
 
+## CI
+
+O **CI #138**, no head `51514b588e481726bab63f2e328fb573365acc01` retargetado para `main`, passou lint, TypeScript, testes, Print Agent e build antes do merge.
+
 ## Limites honestos
 
-- Compras/Fornecedores ainda não existem; o custo médio está preparado para receber entradas desse módulo;
 - não existe leitura de balança física;
 - não houve teste em hardware de estoque;
-- não há pedido de compra automático neste bloco;
-- alertas de mínimo são eventos internos, ainda sem fornecedor/lead time.
+- estoque mínimo não cria pedido de compra automaticamente;
+- custo médio é projeção operacional e não substitui o futuro ledger contábil/financeiro.
 
-## Próximo bloco
+## Continuação
 
-Após integração deste milestone, o próximo domínio é **Compras e Fornecedores [199+]**, reutilizando `inventory_items`, custos, unidades, estoque mínimo e eventos de reposição.
+O módulo **Compras e Fornecedores [199]–[210]** reutiliza diretamente `inventory_items`, custo médio, estoque mínimo e ledger de movimentos no draft PR #233. Financeiro/DRE vem depois desse bloco.

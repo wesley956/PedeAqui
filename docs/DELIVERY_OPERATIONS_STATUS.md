@@ -2,9 +2,9 @@
 
 ## Estado
 
-Milestone 18 implementado na branch `agent/delivery-operations-175-185`, draft PR #206, base `main` consolidado até [174]. Não mesclar sem autorização explícita.
+Milestone 18 concluído e mesclado em `main` pelo PR #206. Merge commit: `b866ce5c2972791dd7674dbad219a6f7f5411227`.
 
-Issues: #195–#205.
+Issues #195–#205 encerradas como `completed`.
 
 ## Princípios preservados
 
@@ -122,7 +122,7 @@ Teste com rollback:
 
 O run #128 detectou apenas erros de tipagem estrita no serviço novo, sem falha de lint ou banco. As assinaturas foram corrigidas sem afrouxar validações.
 
-Run #130 no head executável anterior à documentação: lint, TypeScript, testes, Print Agent e build verdes. Após a consolidação documental, usar o CI do head final como evidência definitiva do PR.
+O **CI final #133**, no head `fca200e2aa40531e9f79af14bbcbcf4e87a54c2c` que foi mesclado, passou lint, TypeScript, testes, Print Agent e build.
 
 ## Limites honestos
 

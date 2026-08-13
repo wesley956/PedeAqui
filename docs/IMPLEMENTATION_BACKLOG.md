@@ -1,6 +1,6 @@
 # Cruz — Backlog Técnico Mestre
 
-Versão 1.5 — execução consolidada até Caixa e bloco de Entregas operacionais/Entregadores.
+Versão 1.6 — execução consolidada até Estoque/Fichas e bloco de Compras/Fornecedores.
 
 ## Definition of Done
 
@@ -257,6 +257,37 @@ Uma feature precisa validar happy path, erros, permissões, mobile, desktop, aud
 184. [DRIVER UI] Criar visão mobile `/entregador` — P0.
 185. [DELIVERY] Hardening, eventos, segurança e E2E — P0.
 
+# Milestone 19 — Estoque e Fichas Técnicas
+
+186. [INVENTORY] Criar catálogo de insumos e vínculo por unidade — P0.
+187. [INVENTORY] Criar ledger imutável de movimentos — P0.
+188. [INVENTORY] Criar projeção de saldo por unidade — P0.
+189. [INVENTORY] Implementar entradas, perdas, ajustes e transferências — P0.
+190. [RECIPE] Criar fichas técnicas versionadas por produto — P0.
+191. [RECIPE] Criar itens da ficha técnica e quantidades exatas — P0.
+192. [RECIPE] Calcular custo estimado da ficha técnica — P1.
+193. [INVENTORY] Baixar estoque ao concluir pedido — P0.
+194. [INVENTORY] Criar estoque mínimo e alertas de reposição — P1.
+195. [INVENTORY UI] Criar painel `/estoque` — P0.
+196. [RECIPE UI] Criar painel de fichas técnicas — P0.
+197. [INVENTORY] Implementar contagem e reconciliação de estoque — P0.
+198. [INVENTORY] Hardening, segurança, concorrência e E2E — P0.
+
+# Milestone 20 — Compras e Fornecedores
+
+199. [SUPPLIER] Criar cadastro de fornecedores — P0.
+200. [SUPPLIER] Configurar fornecedor por unidade — P1.
+201. [SUPPLIER] Vincular insumos a fornecedores — P0.
+202. [PURCHASE] Criar pedidos de compra — P0.
+203. [PURCHASE] Criar itens do pedido de compra — P0.
+204. [PURCHASE] Implementar ciclo de vida do pedido de compra — P0.
+205. [PURCHASE] Criar recebimentos parciais e finais — P0.
+206. [PURCHASE] Integrar recebimento ao estoque e custo médio — P0.
+207. [PURCHASE] Tratar divergências e correções de recebimento — P0.
+208. [PURCHASE] Criar sugestões de reposição a partir do estoque mínimo — P1.
+209. [PURCHASE UI] Criar painéis de fornecedores e compras — P0.
+210. [PURCHASE] Hardening, segurança, concorrência e E2E — P0.
+
 ## Jornada crítica 1 — Cardápio
 
 Proprietário cria conta/loja → cadastra categoria/produto/adicional → publica → cliente abre no celular → monta pedido → informa endereço → taxa → pagamento → restaurante recebe → aceita → imprime → produção → pronto → entrega/retirada → concluído → cliente e dashboard atualizam.
@@ -292,3 +323,11 @@ Operador abre um caixa com saldo inicial → venda em dinheiro cria movimento f�
 ## Jornada crítica 9 — Entrega operacional
 
 Cliente informa/seleciona endereço → servidor calcula elegibilidade, taxa e ETA pela unidade/zona configurada → checkout revalida o frete antes de criar o pedido → produção termina → expedição envia para fila → entregador disponível é atribuído → retirada → saiu para entrega → entregue → histórico/auditoria permanecem íntegros → pedido só conclui quando as regras de pagamento e fulfillment existentes permitirem.
+
+## Jornada crítica 10 — Estoque
+
+Pedido concluído → receita válida na confirmação é resolvida → produto e adicionais consomem insumos no ledger exatamente uma vez → saldo projetado atualiza → estoque mínimo pode gerar alerta → contagem física gera apenas ajuste compensatório → nenhuma tela sobrescreve o saldo diretamente.
+
+## Jornada crítica 11 — Compras
+
+Estoque abaixo do mínimo gera sugestão → operador escolhe fornecedor → pedido de compra guarda snapshots de embalagem/conversão/custo → pedido é enviado → recebimento parcial/final converte para unidade-base → ledger de estoque e custo médio atualizam na mesma transação → divergência gera correção compensatória imutável → futuro Financeiro consome eventos sem acoplamento ao estoque.
