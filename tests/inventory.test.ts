@@ -8,6 +8,8 @@ const core = read("supabase/sql/56_inventory_core.sql");
 const operations = read("supabase/sql/57_inventory_operations.sql");
 const recipes = read("supabase/sql/58_inventory_recipes_consumption.sql");
 const hardening = read("supabase/sql/59_inventory_idempotency_hardening.sql");
+const forms = read("src/features/inventory/inventory-forms.tsx");
+const actions = read("src/features/inventory/actions.ts");
 
 describe("inventory exact values", () => {
   it("keeps decimal quantities as canonical strings", () => {
@@ -57,6 +59,19 @@ describe("inventory database contracts", () => {
       expect(source).toContain(`revoke all on function public.${rpc}`);
       expect(source).toMatch(new RegExp(`grant execute on function public\\.${rpc}[^;]+to service_role`));
     }
+  });
+});
+
+describe("inventory operation idempotency lifecycle", () => {
+  it("rotates client keys after completed attempts and keeps a server fallback", () => {
+    expect(forms).toContain("function useidempotencykeyref");
+    expect(forms).toContain("useref<htmlinputelement>(null)");
+    expect(forms).toContain("keyref.current.value = crypto.randomuuid()");
+    expect(forms.match(/const keyref = useidempotencykeyref\(state\);/g)?.length).toBe(3);
+    expect(forms.match(/ref=\{keyref\} type=\"hidden\" name=\"idempotencykey\" defaultvalue=\"\"/g)?.length).toBe(3);
+    expect(forms).not.toContain("setkey(crypto.randomuuid())");
+    expect(forms).not.toContain("usememo(() => crypto.randomuuid()");
+    expect(actions.match(/idempotencykey: optional\(formdata, \"idempotencykey\"\) \?\? undefined/g)?.length).toBe(3);
   });
 });
 

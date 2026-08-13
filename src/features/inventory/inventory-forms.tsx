@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import {
   createInventoryItemAction, enableInventoryItemAction, inventoryMovementAction, inventoryReconcileAction,
   inventoryTransferAction, updateInventoryStoreItemAction, type InventoryActionState,
@@ -17,6 +17,13 @@ function Feedback({ state }: { state: InventoryActionState }) {
   return null;
 }
 function costLabel(unit: InventoryBaseUnit) { return unit === "g" ? "Custo por kg (R$)" : unit === "ml" ? "Custo por litro (R$)" : "Custo por unidade (R$)"; }
+function useIdempotencyKeyRef(state: InventoryActionState) {
+  const keyRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (keyRef.current) keyRef.current.value = crypto.randomUUID();
+  }, [state]);
+  return keyRef;
+}
 
 export function InventoryItemCreateForm() {
   const [state, action, pending] = useActionState(createInventoryItemAction, initial);
@@ -55,11 +62,11 @@ export function InventorySettingsForm({ itemId, baseUnit, active, minimumQuantit
 
 export function InventoryMovementForm({ itemId, baseUnit }: { itemId: string; baseUnit: InventoryBaseUnit }) {
   const [state, action, pending] = useActionState(inventoryMovementAction, initial);
-  const key = useMemo(() => crypto.randomUUID(), []);
+  const keyRef = useIdempotencyKeyRef(state);
   const [type, setType] = useState("purchase");
   return (
     <form action={action} style={{ display: "grid", gap: 7 }}>
-      <input type="hidden" name="inventoryItemId" value={itemId} /><input type="hidden" name="baseUnit" value={baseUnit} /><input type="hidden" name="idempotencyKey" value={key} />
+      <input type="hidden" name="inventoryItemId" value={itemId} /><input type="hidden" name="baseUnit" value={baseUnit} /><input ref={keyRef} type="hidden" name="idempotencyKey" defaultValue="" />
       <select name="movementType" value={type} onChange={(event) => setType(event.target.value)} style={inputStyle}><option value="purchase">Entrada</option><option value="return">Retorno</option><option value="loss">Perda</option><option value="adjustment">Ajuste (+ ou -)</option><option value="production">Consumo de produção</option></select>
       <input name="quantity" required inputMode="decimal" placeholder={type === "adjustment" ? "Ex.: -2,5" : "Quantidade"} style={inputStyle} />
       {(type === "purchase" || type === "return") ? <input name="costInput" inputMode="decimal" placeholder={costLabel(baseUnit)} style={inputStyle} /> : null}
@@ -71,15 +78,15 @@ export function InventoryMovementForm({ itemId, baseUnit }: { itemId: string; ba
 
 export function InventoryTransferForm({ itemId, stores, currentStoreId }: { itemId: string; stores: Array<{ id: string; name: string }>; currentStoreId: string }) {
   const [state, action, pending] = useActionState(inventoryTransferAction, initial);
-  const key = useMemo(() => crypto.randomUUID(), []);
+  const keyRef = useIdempotencyKeyRef(state);
   const targets = stores.filter((store) => store.id !== currentStoreId);
   return (
-    <form action={action} style={{ display: "grid", gap: 7 }}><input type="hidden" name="inventoryItemId" value={itemId} /><input type="hidden" name="idempotencyKey" value={key} /><select name="targetStoreId" required defaultValue="" style={inputStyle}><option value="" disabled>Unidade destino</option>{targets.map((store) => <option key={store.id} value={store.id}>{store.name}</option>)}</select><input name="quantity" required inputMode="decimal" placeholder="Quantidade" style={inputStyle} /><input name="reason" required minLength={3} maxLength={500} placeholder="Motivo da transferência" style={inputStyle} /><button disabled={pending || targets.length === 0} style={buttonStyle}>{pending ? "Transferindo…" : "Transferir"}</button><Feedback state={state} /></form>
+    <form action={action} style={{ display: "grid", gap: 7 }}><input type="hidden" name="inventoryItemId" value={itemId} /><input ref={keyRef} type="hidden" name="idempotencyKey" defaultValue="" /><select name="targetStoreId" required defaultValue="" style={inputStyle}><option value="" disabled>Unidade destino</option>{targets.map((store) => <option key={store.id} value={store.id}>{store.name}</option>)}</select><input name="quantity" required inputMode="decimal" placeholder="Quantidade" style={inputStyle} /><input name="reason" required minLength={3} maxLength={500} placeholder="Motivo da transferência" style={inputStyle} /><button disabled={pending || targets.length === 0} style={buttonStyle}>{pending ? "Transferindo…" : "Transferir"}</button><Feedback state={state} /></form>
   );
 }
 
 export function InventoryReconcileForm({ itemId }: { itemId: string }) {
   const [state, action, pending] = useActionState(inventoryReconcileAction, initial);
-  const key = useMemo(() => crypto.randomUUID(), []);
-  return <form action={action} style={{ display: "grid", gap: 7 }}><input type="hidden" name="inventoryItemId" value={itemId} /><input type="hidden" name="idempotencyKey" value={key} /><input name="countedQuantity" required inputMode="decimal" placeholder="Quantidade contada" style={inputStyle} /><input name="reason" required minLength={3} maxLength={500} placeholder="Motivo da contagem" style={inputStyle} /><button disabled={pending} style={buttonStyle}>{pending ? "Conciliando…" : "Conciliar contagem"}</button><Feedback state={state} /></form>;
+  const keyRef = useIdempotencyKeyRef(state);
+  return <form action={action} style={{ display: "grid", gap: 7 }}><input type="hidden" name="inventoryItemId" value={itemId} /><input ref={keyRef} type="hidden" name="idempotencyKey" defaultValue="" /><input name="countedQuantity" required inputMode="decimal" placeholder="Quantidade contada" style={inputStyle} /><input name="reason" required minLength={3} maxLength={500} placeholder="Motivo da contagem" style={inputStyle} /><button disabled={pending} style={buttonStyle}>{pending ? "Conciliando…" : "Conciliar contagem"}</button><Feedback state={state} /></form>;
 }
