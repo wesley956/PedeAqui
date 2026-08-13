@@ -4,7 +4,7 @@
 create table public.integration_webhook_subscriptions (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
-  store_id uuid,
+  store_id uuid not null,
   integration_id uuid not null,
   name text not null check (char_length(trim(name)) between 2 and 120),
   endpoint_url text not null check (endpoint_url ~ '^https://'),
@@ -27,7 +27,7 @@ create index integration_webhook_subscriptions_updated_by_idx on public.integrat
 create table public.integration_webhook_deliveries (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
-  store_id uuid,
+  store_id uuid not null,
   subscription_id uuid not null,
   domain_event_id uuid not null,
   event_type text not null,
@@ -68,9 +68,10 @@ begin
   select new.organization_id,new.store_id,s.id,new.id,new.event_type,
     jsonb_build_object('event_id',new.id,'event_type',new.event_type,'entity_type',new.entity_type,'entity_id',new.entity_id,'occurred_at',new.occurred_at,'payload',new.payload)
   from public.integration_webhook_subscriptions s
-  where s.organization_id=new.organization_id
+  where new.store_id is not null
+    and s.organization_id=new.organization_id
+    and s.store_id=new.store_id
     and s.active=true
-    and (s.store_id is null or s.store_id is not distinct from new.store_id)
     and new.event_type=any(s.event_types)
   on conflict(subscription_id,domain_event_id) do nothing;
   return new;
