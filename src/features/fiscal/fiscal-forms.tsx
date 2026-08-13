@@ -8,7 +8,7 @@ const field:React.CSSProperties={ minHeight:40,borderRadius:10,border:"1px solid
 const button:React.CSSProperties={ minHeight:40,border:0,borderRadius:10,background:"var(--accent)",color:"#fff",padding:"8px 12px",fontWeight:850,cursor:"pointer" };
 function Feedback({ state }:{ state:FiscalActionState }){ if(state.error) return <div style={{ color:"#f97066",fontSize:12 }}>{state.error}</div>; if(state.message) return <div style={{ color:"#22c55e",fontSize:12 }}>{state.message}</div>; return null; }
 type ServerAction=(previous:FiscalActionState,formData:FormData)=>Promise<FiscalActionState>;
-function useIdempotentAction(serverAction:ServerAction){ const ref=useRef<string|null>(null); return useActionState(async(previous,formData)=>{ const key=ref.current??crypto.randomUUID(); ref.current=key; formData.set("idempotencyKey",key); const next=await serverAction(previous,formData); if(next.ok) ref.current=null; return next; },initial); }
+function useIdempotentAction(serverAction:ServerAction){ const ref=useRef<string|null>(null); return useActionState(async(previous:FiscalActionState,formData:FormData)=>{ const key=ref.current??crypto.randomUUID(); ref.current=key; formData.set("idempotencyKey",key); const next=await serverAction(previous,formData); if(next.ok) ref.current=null; return next; },initial); }
 
 type Integration={ id:string;provider_key:string;name:string;environment:string;secret_ref:string|null;webhook_secret_ref:string|null };
 type Profile={ integration_id:string|null;issuer_tax_id:string;state_registration:string|null;municipal_registration:string|null;crt_code:string|null;default_document_model:string;environment:string;certificate_ref:string|null;emission_policy:string };
