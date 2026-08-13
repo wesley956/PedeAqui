@@ -12,6 +12,7 @@ export const navigation = [
   ["PDV", "/pdv"],
   ["Caixa", "/caixa"],
   ["Financeiro", "/financeiro"],
+  ["Fiscal", "/fiscal"],
   ["Produção", "/producao"],
   ["Entregas", "/entregas"],
   ["Meu roteiro", "/entregador"],

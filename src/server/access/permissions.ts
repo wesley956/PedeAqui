@@ -56,6 +56,12 @@ export const PERMISSIONS = {
   FINANCE_MANAGE: "finance.manage",
   FINANCE_SETTLE: "finance.settle",
   FINANCE_REPORTS: "finance.reports",
+  FISCAL_VIEW: "fiscal.view",
+  FISCAL_MANAGE: "fiscal.manage",
+  FISCAL_ISSUE: "fiscal.issue",
+  FISCAL_CANCEL: "fiscal.cancel",
+  INTEGRATIONS_VIEW: "integrations.view",
+  INTEGRATIONS_MANAGE: "integrations.manage",
   REPORTS_VIEW: "reports.view",
 } as const;
 
