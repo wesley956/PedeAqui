@@ -42,6 +42,11 @@ export const PERMISSIONS = {
   DELIVERY_MANAGE: "delivery.manage",
   DELIVERY_ASSIGN: "delivery.assign",
   DELIVERY_UPDATE: "delivery.update",
+  INVENTORY_VIEW: "inventory.view",
+  INVENTORY_MANAGE: "inventory.manage",
+  INVENTORY_ADJUST: "inventory.adjust",
+  RECIPES_VIEW: "recipes.view",
+  RECIPES_MANAGE: "recipes.manage",
   REPORTS_VIEW: "reports.view",
 } as const;
 
