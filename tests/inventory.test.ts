@@ -64,10 +64,12 @@ describe("inventory database contracts", () => {
 
 describe("inventory operation idempotency lifecycle", () => {
   it("rotates client keys after completed attempts and keeps a server fallback", () => {
-    expect(forms).toContain("function useidempotencykey");
-    expect(forms).toContain("useeffect(() => { setkey(crypto.randomuuid()); }, []);");
-    expect(forms).toContain("if (state.message || state.error) setkey(crypto.randomuuid());");
-    expect(forms.match(/const key = useidempotencykey\(state\);/g)?.length).toBe(3);
+    expect(forms).toContain("function useidempotencykeyref");
+    expect(forms).toContain("useref<htmlinputelement>(null)");
+    expect(forms).toContain("keyref.current.value = crypto.randomuuid()");
+    expect(forms.match(/const keyref = useidempotencykeyref\(state\);/g)?.length).toBe(3);
+    expect(forms.match(/ref=\{keyref\} type=\"hidden\" name=\"idempotencykey\" defaultvalue=\"\"/g)?.length).toBe(3);
+    expect(forms).not.toContain("setkey(crypto.randomuuid())");
     expect(forms).not.toContain("usememo(() => crypto.randomuuid()");
     expect(actions.match(/idempotencykey: optional\(formdata, \"idempotencykey\"\) \?\? undefined/g)?.length).toBe(3);
   });
