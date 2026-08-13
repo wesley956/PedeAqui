@@ -55,21 +55,21 @@ export async function updateInventoryStoreItemAction(_previous: InventoryActionS
 
 export async function inventoryMovementAction(_previous: InventoryActionState, formData: FormData): Promise<InventoryActionState> {
   try {
-    await InventoryService.manualMovement({ inventoryItemId: text(formData, "inventoryItemId"), movementType: text(formData, "movementType"), quantity: text(formData, "quantity"), costInput: text(formData, "costInput"), baseUnit: text(formData, "baseUnit") as InventoryBaseUnit, reason: optional(formData, "reason"), idempotencyKey: text(formData, "idempotencyKey") });
+    await InventoryService.manualMovement({ inventoryItemId: text(formData, "inventoryItemId"), movementType: text(formData, "movementType"), quantity: text(formData, "quantity"), costInput: text(formData, "costInput"), baseUnit: text(formData, "baseUnit") as InventoryBaseUnit, reason: optional(formData, "reason"), idempotencyKey: optional(formData, "idempotencyKey") ?? undefined });
     refresh(); return { ok: true, message: "Movimento registrado.", error: null };
   } catch (error) { return { ok: false, message: null, error: friendly(error) }; }
 }
 
 export async function inventoryTransferAction(_previous: InventoryActionState, formData: FormData): Promise<InventoryActionState> {
   try {
-    await InventoryService.transfer({ targetStoreId: text(formData, "targetStoreId"), inventoryItemId: text(formData, "inventoryItemId"), quantity: text(formData, "quantity"), reason: text(formData, "reason"), idempotencyKey: text(formData, "idempotencyKey") });
+    await InventoryService.transfer({ targetStoreId: text(formData, "targetStoreId"), inventoryItemId: text(formData, "inventoryItemId"), quantity: text(formData, "quantity"), reason: text(formData, "reason"), idempotencyKey: optional(formData, "idempotencyKey") ?? undefined });
     refresh(); return { ok: true, message: "Transferência concluída.", error: null };
   } catch (error) { return { ok: false, message: null, error: friendly(error) }; }
 }
 
 export async function inventoryReconcileAction(_previous: InventoryActionState, formData: FormData): Promise<InventoryActionState> {
   try {
-    await InventoryService.reconcile({ inventoryItemId: text(formData, "inventoryItemId"), countedQuantity: text(formData, "countedQuantity"), reason: text(formData, "reason"), idempotencyKey: text(formData, "idempotencyKey") });
+    await InventoryService.reconcile({ inventoryItemId: text(formData, "inventoryItemId"), countedQuantity: text(formData, "countedQuantity"), reason: text(formData, "reason"), idempotencyKey: optional(formData, "idempotencyKey") ?? undefined });
     refresh(); return { ok: true, message: "Contagem conciliada.", error: null };
   } catch (error) { return { ok: false, message: null, error: friendly(error) }; }
 }
