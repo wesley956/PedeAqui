@@ -104,6 +104,7 @@ describe("finance idempotency and access",()=>{
   });
 
   it("only loads DRE/report after finance.reports permission",()=>{
+    expect(mutationService).not.toContain("financial_report_internal");
     expect(readService).toContain("can(\"finance.reports\",context)");
     expect(readService).toContain("if(canreports)");
     expect(readService.indexOf("if(canreports)")).toBeLessThan(readService.indexOf("financial_report_internal"));
