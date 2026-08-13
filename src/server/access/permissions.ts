@@ -52,6 +52,10 @@ export const PERMISSIONS = {
   PURCHASES_VIEW: "purchases.view",
   PURCHASES_MANAGE: "purchases.manage",
   PURCHASES_RECEIVE: "purchases.receive",
+  FINANCE_VIEW: "finance.view",
+  FINANCE_MANAGE: "finance.manage",
+  FINANCE_SETTLE: "finance.settle",
+  FINANCE_REPORTS: "finance.reports",
   REPORTS_VIEW: "reports.view",
 } as const;
 

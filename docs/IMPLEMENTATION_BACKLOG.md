@@ -1,6 +1,6 @@
 # Cruz — Backlog Técnico Mestre
 
-Versão 1.6 — execução consolidada até Estoque/Fichas e bloco de Compras/Fornecedores.
+Versão 1.7 — execução consolidada até Compras/Fornecedores e bloco de Financeiro/DRE.
 
 ## Definition of Done
 
@@ -288,6 +288,23 @@ Uma feature precisa validar happy path, erros, permissões, mobile, desktop, aud
 209. [PURCHASE UI] Criar painéis de fornecedores e compras — P0.
 210. [PURCHASE] Hardening, segurança, concorrência e E2E — P0.
 
+# Milestone 21 — Financeiro / DRE
+
+211. [FINANCE] Criar contas financeiras — P0.
+212. [FINANCE] Criar categorias financeiras — P0.
+213. [FINANCE] Criar ledger financeiro imutável — P0.
+214. [FINANCE] Criar contas a receber a partir de vendas/pagamentos — P0.
+215. [FINANCE] Criar contas a pagar a partir de compras — P0.
+216. [FINANCE] Implementar liquidação de recebíveis e pagáveis — P0.
+217. [FINANCE] Implementar transferências entre contas financeiras — P0.
+218. [FINANCE] Criar receitas e despesas manuais — P0.
+219. [FINANCE] Separar competência e regime de caixa — P0.
+220. [FINANCE] Criar DRE gerencial — P0.
+221. [FINANCE] Criar fluxo de caixa e projeções — P1.
+222. [FINANCE] Integrar Caixa e Financeiro sem duplicar dinheiro — P0.
+223. [FINANCE UI] Criar painel `/financeiro` — P0.
+224. [FINANCE] Hardening, segurança, concorrência e E2E — P0.
+
 ## Jornada crítica 1 — Cardápio
 
 Proprietário cria conta/loja → cadastra categoria/produto/adicional → publica → cliente abre no celular → monta pedido → informa endereço → taxa → pagamento → restaurante recebe → aceita → imprime → produção → pronto → entrega/retirada → concluído → cliente e dashboard atualizam.
@@ -330,4 +347,8 @@ Pedido concluído → receita válida na confirmação é resolvida → produto 
 
 ## Jornada crítica 11 — Compras
 
-Estoque abaixo do mínimo gera sugestão → operador escolhe fornecedor → pedido de compra guarda snapshots de embalagem/conversão/custo → pedido é enviado → recebimento parcial/final converte para unidade-base → ledger de estoque e custo médio atualizam na mesma transação → divergência gera correção compensatória imutável → futuro Financeiro consome eventos sem acoplamento ao estoque.
+Estoque abaixo do mínimo gera sugestão → operador escolhe fornecedor → pedido de compra guarda snapshots de embalagem/conversão/custo → pedido é enviado → recebimento parcial/final converte para unidade-base → ledger de estoque e custo médio atualizam na mesma transação → divergência gera correção compensatória imutável → Financeiro consome os fatos de compra sem acoplamento ao estoque.
+
+## Jornada crítica 12 — Financeiro
+
+Pedido concluído reconhece receita por competência → pagamento real liquida recebível na conta correspondente → consumo de estoque reconhece CPV → recebimento de compra gera pagável sem antecipar CPV → prazo do fornecedor fica congelado no pedido → liquidações e transferências afetam contas → DRE usa competência → fluxo usa movimentos realizados → reembolso e correção geram compensações sem apagar histórico → Caixa, Pagamentos, Compras e Estoque continuam fontes de verdade dos próprios domínios.
