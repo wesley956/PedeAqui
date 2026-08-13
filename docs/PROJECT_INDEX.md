@@ -4,7 +4,7 @@ Este diretório é a fonte oficial de decisões, arquitetura, escopo e backlog d
 
 ## Objetivo do produto
 
-Construir um SaaS multiempresa/multiunidade para restaurantes e operações de alimentação, centralizando cardápio digital, pedidos, PDV, produção/KDS, impressão, salão, delivery, pagamentos, caixa, clientes/CRM, fidelidade, estoque, compras, financeiro, fiscal, relatórios, marketing e integrações.
+Construir um SaaS multiempresa/multiunidade para restaurantes e operações de alimentação, centralizando cardápio digital, pedidos, PDV, produção/KDS, impressão, salão, delivery, pagamentos, caixa, clientes/CRM, fidelidade, estoque, compras, financeiro, fiscal, relatórios, marketing, integrações e escala SaaS.
 
 ## Princípio central
 
@@ -42,6 +42,7 @@ Os módulos compartilham entidades e eventos, mas cada domínio preserva sua pr�
 - `PURCHASES_SUPPLIERS_STATUS.md` — #199–#210
 - `FINANCE_STATUS.md` — #211–#224
 - `FISCAL_INTEGRATIONS_STATUS.md` — #225–#238
+- `PLANS_SCALE_STATUS.md` — #239–#253
 
 Documentos estruturais: `BLUEPRINT_MASTER.md`, `IMPLEMENTATION_BACKLOG.md`, `ARCHITECTURE_DECISIONS.md`, `INFRASTRUCTURE.md`, `PRINTING_SYSTEM.md` e `BRAND_IDENTITY.md`.
 
@@ -76,7 +77,7 @@ Documentos estruturais: `BLUEPRINT_MASTER.md`, `IMPLEMENTATION_BACKLOG.md`, `ARC
 
 ### Consolidado em `main`
 
-O `main` está consolidado oficialmente até **[224]**.
+Após a conclusão e merge do PR #279, o `main` fica consolidado oficialmente até **[253]**, encerrando os macroblocos previstos no blueprint principal.
 
 Marcos recentes:
 
@@ -86,37 +87,69 @@ Marcos recentes:
 - Estoque e Fichas Técnicas #186–#198 — PR #220
 - Compras e Fornecedores #199–#210 — PR #233, merge `cdb79c63ad61e7f24cba2d628ff5aaf7065043d6`
 - Financeiro / DRE #211–#224 — PR #248, merge `feffa6792838798b45769e8a5fa006a76bc5060d`
+- Fiscal e Integrações #225–#238 — PR #263, merge `d0afa1de71012cbd95d72b78a670bafb29e996ab`
+- Planos, Escala e White-label #239–#253 — PR #279
 
-Todo o núcleo técnico **#001–#224** está no `main`. As migrations correspondentes permanecem aplicadas no Supabase oficial.
+Todo o núcleo técnico **#001–#253** fica no `main` com as migrations correspondentes aplicadas no Supabase oficial.
 
 ### Milestone 22 — Fiscal e Integrações #225–#238
 
-Status: **em implementação/validação no draft PR #263**, branch `agent/fiscal-integrations-225-238`, diretamente sobre `main [224]`. Não mesclar sem autorização explícita.
+Status: **concluído e mesclado** no PR #263.
 
 Issues oficiais: #249–#262.
 
-Destaques já implementados:
+Entregue:
 
 - perfis fiscais por unidade e classificação fiscal versionada;
 - documento/itens/histórico fiscal separados de `orders`;
-- snapshots imutáveis e identificadores fiscais como texto;
 - State Machine fiscal própria;
 - fila persistente de emissão/cancelamento com lease/retry;
-- interface `FiscalProvider` + registry explícito de adapters;
-- configuração por referências a secrets, sem credencial em claro;
-- webhook fiscal inbound verificado pelo provider e com replay protection;
-- bucket privado de XML/DANFE com SHA-256 e URLs assinadas;
-- registry genérico de integrações;
-- webhooks outbound duráveis sobre `domain_events`, assinatura HMAC e egress allowlist;
-- `/fiscal` e snapshot de saúde/reconciliação;
-- 10/10 tabelas novas Fiscal/Integrações com RLS, zero grants diretos de browser e zero EXECUTE de RPCs internas por browser;
-- E2E PostgreSQL do ciclo fiscal executado com rollback e zero resíduos.
+- interface `FiscalProvider` e registry explícito de adapters;
+- webhook fiscal inbound seguro e proteção contra replay;
+- bucket privado de XML/DANFE e URLs assinadas;
+- registry genérico de integrações e webhooks outbound duráveis;
+- `/fiscal` e saúde/reconciliação;
+- segurança server-only/RLS validada;
+- E2E PostgreSQL com rollback e zero resíduos.
 
 Detalhes: `FISCAL_INTEGRATIONS_STATUS.md`.
 
-### Próximo e último macrobloco do blueprint principal
+### Milestone 23 — Planos, Escala e White-label #239–#253
 
-Após um head Fiscal verde, a sequência passa para **Planos, Escala e White-label [239+]**. O bloco deve consolidar `plans`, `features`, `plan_features`, `organization_subscriptions`, entitlements/limites, ciclo de assinatura desacoplado de provider, branding/white-label, domínios personalizados e recursos avançados multiunidade/escala.
+Status: **implementado no PR #279 e preparado para consolidação final**.
+
+Issues oficiais: #264–#278.
+
+Entregue:
+
+- catálogo de planos/features e matriz de entitlements;
+- assinatura por organização com lifecycle e histórico imutável;
+- limites periódicos atômicos/idempotentes e quotas concorrentes reais;
+- provider/registry de billing desacoplado e webhook assinado;
+- console SaaS `/platform` com Super Admin explícito;
+- branding/white-label aplicado ao shell real;
+- domínios personalizados com verificação DNS TXT;
+- grupos/franquias com isolamento de organização;
+- central de compras multiunidade sem estoque global fictício;
+- BI multiunidade sobre Pedidos/Financeiro existentes;
+- catálogo/marketplace de integrações aprovadas;
+- painel `/escala`;
+- 14/14 tabelas novas com RLS, 0 grants de browser e 0 EXECUTE de RPCs internas por browser;
+- E2E final de assinatura/quotas/isolamento/BI/marketplace com rollback e zero resíduos.
+
+Detalhes: `PLANS_SCALE_STATUS.md`.
+
+## Homologações externas que não alteram a conclusão do blueprint
+
+O núcleo do produto está implementado, mas alguns pontos dependem de ambiente/fornecedor físico externo e continuam como homologações de produção:
+
+- provider fiscal/SEFAZ real, certificado e regras específicas por estabelecimento/UF/regime;
+- provider de cobrança real para checkout/portal/webhooks de assinatura;
+- provisionamento de TLS/edge para domínios customizados após a verificação DNS;
+- teste físico final de impressão ESC/POS/hardware;
+- prova de concorrência PostgreSQL com duas conexões físicas independentes, quando houver `DATABASE_URL` apropriada.
+
+Esses itens não exigem reescrever o domínio: os adapters, filas e contratos já estão preparados para recebê-los.
 
 ## Regra de consulta
 
