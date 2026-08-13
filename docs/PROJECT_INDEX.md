@@ -46,7 +46,7 @@ Os módulos compartilham entidades e regras de domínio. Exemplo: `order.complet
 - `DELIVERY_OPERATIONS_STATUS.md` — #175–#185.
 - `INVENTORY_RECIPES_STATUS.md` — #186–#198.
 - `PURCHASES_SUPPLIERS_STATUS.md` — #199–#210.
-- `FINANCE_DRE_STATUS.md` — #211–#224.
+- `FINANCE_STATUS.md` — #211–#224.
 
 ## Ordem macro executável
 
@@ -156,7 +156,7 @@ Destaques:
 - tabelas financeiras com RLS e acesso server-only;
 - E2Es PostgreSQL de núcleo, integração e hardening executados com rollback/zero resíduos.
 
-Detalhes: `FINANCE_DRE_STATUS.md`.
+Detalhes: `FINANCE_STATUS.md`.
 
 ### Pilha de PRs ainda não mesclada
 
