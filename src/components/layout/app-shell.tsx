@@ -11,6 +11,7 @@ export const navigation = [
   ["Cardápio", "/cardapio/produtos"],
   ["PDV", "/pdv"],
   ["Caixa", "/caixa"],
+  ["Financeiro", "/financeiro"],
   ["Produção", "/producao"],
   ["Entregas", "/entregas"],
   ["Meu roteiro", "/entregador"],
