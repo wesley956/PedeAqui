@@ -8,6 +8,8 @@ Issues oficiais: #234–#247.
 
 O PR de Financeiro permanece draft e não deve ser mesclado sem nova autorização explícita. Compras/Fornecedores também continua não mesclado; por isso Financeiro permanece empilhado sobre esse head verde.
 
+Gate final da branch: **CI #163 verde** no head `2332a055e837de6d5387c5ad1823145755710b16` antes desta atualização documental final: lint, TypeScript, testes, Print Agent e build de produção passaram. Após qualquer novo commit documental/código, usar somente o CI do head exato como evidência de merge.
+
 ## Princípios de domínio
 
 O Financeiro não substitui nem duplica os módulos operacionais:
@@ -264,7 +266,9 @@ Validação direta no Supabase oficial:
 - `authenticated`: zero privilégios diretos;
 - `anon/authenticated`: zero EXECUTE nas RPCs públicas internas do Financeiro;
 - aplicação chama autorização antes de criar cliente admin/service-role;
-- IDs de conta/obrigação/transação são revalidados contra organização/unidade ativa antes da mutação.
+- IDs de conta/obrigação/transação são revalidados contra organização/unidade ativa antes da mutação;
+- o service de mutações não contém `financial_report_internal`;
+- o relatório agregado só é chamado no `FinanceReadService` após `finance.reports`.
 
 O Security Advisor pode listar INFO `rls_enabled_no_policy` nessas tabelas intencionalmente server-only. Elas não possuem grants diretos para o navegador.
 
