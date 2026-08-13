@@ -46,6 +46,7 @@ Os módulos compartilham entidades e regras de domínio. Exemplo: `order.complet
 - `DELIVERY_OPERATIONS_STATUS.md` — #175–#185.
 - `INVENTORY_RECIPES_STATUS.md` — #186–#198.
 - `PURCHASES_SUPPLIERS_STATUS.md` — #199–#210.
+- `FINANCE_DRE_STATUS.md` — #211–#224.
 
 ## Ordem macro executável
 
@@ -85,7 +86,7 @@ Antes de criar um novo módulo, responder:
 5. Quais dados pertencem à organização e à unidade?
 6. Quais ações precisam de auditoria?
 
-## Estado atual — 12/08/2026
+## Estado atual — 13/08/2026
 
 ### Consolidado em `main`
 
@@ -104,55 +105,13 @@ O `main` está consolidado oficialmente até **[198]**.
 
 Todo o núcleo #001–#198 está no `main`. As migrations correspondentes permanecem aplicadas no Supabase oficial.
 
-### Milestone 18 — Entregas operacionais / Entregadores #175–#185
-
-Status: **concluído e mesclado em `main`**.
-
-Issues #195–#205 encerradas como `completed`.
-
-Destaques:
-
-- `drivers`, `deliveries`, `delivery_history`;
-- `orders.fulfillment_status` preservado como fonte de verdade;
-- disponibilidade/capacidade, atribuição e reatribuição atômicas/idempotentes;
-- `/entregas` e `/entregador`;
-- Realtime e SLA;
-- `DeliveryQuoteService` centraliza a cotação autoritativa por endereço;
-- endereço inserido/selecionado recalcula elegibilidade, taxa/frete grátis, mínimo e ETA no servidor;
-- revisão final do checkout recalcula o frete novamente antes de criar o pedido;
-- E2E PostgreSQL com rollback/zero resíduos;
-- CI final #133 verde no head mesclado.
-
-Detalhes: `DELIVERY_OPERATIONS_STATUS.md`.
-
-### Milestone 19 — Estoque e Fichas Técnicas #186–#198
-
-Status: **concluído e mesclado em `main`**.
-
-Issues #207–#219 encerradas como `completed`.
-
-Destaques:
-
-- ledger imutável `inventory_movements` + projeção `inventory_balances`;
-- quantidades exatas `numeric(18,6)`;
-- entradas, perdas, ajustes, produção, transferências e contagem física;
-- estoque mínimo e eventos de reposição;
-- fichas técnicas imutáveis/versionadas para produtos e adicionais;
-- proteção histórica por `effective_at` e `created_at` na confirmação;
-- baixa automática/idempotente no `order.completed`;
-- `/estoque` e `/estoque/fichas`;
-- E2Es com rollback/zero resíduos;
-- CI #138 verde contra `main` antes do merge.
-
-Detalhes: `INVENTORY_RECIPES_STATUS.md`.
-
 ### Milestone 20 — Compras e Fornecedores #199–#210
 
 Status: **implementado/validado no draft PR #233**, branch `agent/purchases-suppliers-199-210`, ainda não mesclado.
 
 Issues oficiais: #221–#232.
 
-Destaques atuais:
+Destaques:
 
 - fornecedor mestre por organização + condições por unidade;
 - catálogo fornecedor↔insumo com unidade de compra e conversão exata;
@@ -166,10 +125,45 @@ Destaques atuais:
 - 9/9 tabelas novas com RLS, browser sem privilégios diretos e sem EXECUTE das RPCs internas;
 - FKs novas cobertas por índices;
 - E2E endurecido: 10/10 checks, rollback/zero resíduos;
-- CI #144 verde no head de código; usar o CI do head documental final como evidência definitiva.
+- **CI final #149 verde** no head `b08c3d416ddc5869ed3ee51b694e17b8ec9dca70`.
 
 Detalhes: `PURCHASES_SUPPLIERS_STATUS.md`.
 
-### Próxima expansão após Compras
+### Milestone 21 — Financeiro / DRE #211–#224
 
-A sequência macro segue para **Financeiro/DRE [211+]**. Esse bloco deve consumir eventos já produzidos por vendas, pagamentos, caixa e compras sem transformar esses domínios em dependentes do ledger financeiro.
+Status: **implementado e em validação final no draft PR #248**, branch `agent/finance-211-224`, empilhado sobre o PR #233 e ainda não mesclado.
+
+Issues oficiais: #234–#247.
+
+Destaques:
+
+- contas financeiras e projeções de saldo derivadas de ledger;
+- categorias financeiras e grupos gerenciais de DRE;
+- `financial_transactions` imutável;
+- recebíveis e pagáveis derivados das fontes operacionais;
+- competência separada de liquidação/caixa;
+- liquidação parcial/final, estorno compensatório e transferências pareadas;
+- venda concluída reconhece receita; pagamento realmente pago liquida recebível;
+- consumo real do Estoque reconhece CPV pelo custo do movimento;
+- recebimento de compra cria conta a pagar sem antecipar CPV;
+- prazo do fornecedor é snapshot do pedido de compra;
+- reembolso reduz conta, recebível e DRE;
+- correção de compra já paga pode gerar crédito contra fornecedor;
+- Caixa físico, Pagamentos, Compras e Estoque preservados como fontes de verdade dos próprios domínios;
+- `/financeiro` com `finance.view`, `finance.manage`, `finance.settle` e `finance.reports` separados;
+- vendas só podem ser liquidadas pelo domínio Pagamentos;
+- liquidações automáticas de Pagamentos só podem ser estornadas no domínio de origem;
+- tabelas financeiras com RLS e acesso server-only;
+- E2Es PostgreSQL de núcleo, integração e hardening executados com rollback/zero resíduos.
+
+Detalhes: `FINANCE_DRE_STATUS.md`.
+
+### Pilha de PRs ainda não mesclada
+
+`main [198] → #233 Compras/Fornecedores [199–210] → #248 Financeiro/DRE [211–224]`
+
+Nenhum desses PRs deve ser mesclado sem autorização explícita atual do usuário. Antes de qualquer merge, revalidar head SHA, base, mergeabilidade e CI do head exato.
+
+### Próxima expansão após Financeiro
+
+A sequência macro segue para **Fiscal e integrações [225+]**, somente depois de consolidar e revalidar a pilha atual. O módulo fiscal deverá consumir fatos já consolidados, sem transformar Pedidos, Pagamentos, Compras ou Financeiro em dependentes de um provedor fiscal específico.
