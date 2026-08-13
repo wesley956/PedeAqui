@@ -47,6 +47,11 @@ export const PERMISSIONS = {
   INVENTORY_ADJUST: "inventory.adjust",
   RECIPES_VIEW: "recipes.view",
   RECIPES_MANAGE: "recipes.manage",
+  SUPPLIERS_VIEW: "suppliers.view",
+  SUPPLIERS_MANAGE: "suppliers.manage",
+  PURCHASES_VIEW: "purchases.view",
+  PURCHASES_MANAGE: "purchases.manage",
+  PURCHASES_RECEIVE: "purchases.receive",
   REPORTS_VIEW: "reports.view",
 } as const;
 
