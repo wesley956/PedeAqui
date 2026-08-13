@@ -9,11 +9,12 @@ const lifecycle=read("supabase/sql/83_subscription_lifecycle_billing.sql");
 const scaleCore=read("supabase/sql/84_platform_branding_domains_scale.sql");
 const reporting=read("supabase/sql/85_scale_reporting_marketplace.sql");
 const guards=read("supabase/sql/86_scale_entitlement_guards.sql");
+const domainHardening=read("supabase/sql/87_domain_token_hardening.sql");
 const entitlementService=read("src/server/platform/entitlement-service.ts");
 const scaleService=read("src/server/platform/scale-service.ts");
 const billingService=read("src/server/platform/billing-webhook-service.ts");
 const billingRegistry=read("src/server/platform/billing-provider-registry.ts");
-const billingRoute=read("src/app/api/webhooks/billing/[providerkey]/route.ts");
+const billingRoute=read("src/app/api/webhooks/billing/[providerKey]/route.ts");
 const brandingRead=read("src/server/platform/branding-read-service.ts");
 const domainVerification=read("src/server/platform/domain-verification-service.ts");
 const platformService=read("src/server/platform/platform-admin-service.ts");
@@ -47,6 +48,7 @@ describe("white-label and custom domains",()=>{
   it("creates safe organization branding and requires entitlement for white-label",()=>{ expect(core).toContain("create table public.organization_branding"); expect(guards).toContain("white-label is not entitled for organization"); expect(brandingRead).toContain("branding.white_label"); });
   it("applies entitled branding through css variables with PedeAqui fallback",()=>{ expect(shell).toContain("--accent"); expect(shell).toContain("--accent-strong"); expect(shell).toContain("tecnologia pedeaqui"); expect(brandingRead).toContain("productname:\"pedeaqui\""); });
   it("verifies ownership with DNS TXT under a fixed prefix",()=>{ expect(domainVerification).toContain("resolvetxt"); expect(domainVerification).toContain("_pedeaqui.${domain.hostname}"); expect(domainVerification).toContain("pedeaqui-verification="); });
+  it("qualifies the pgcrypto token generator under an empty search_path",()=>{ expect(domainHardening).toContain("extensions.gen_random_bytes(18)"); expect(domainHardening).toContain("set search_path=''"); });
   it("resolves only verified hostnames server-side",()=>{ expect(scaleCore).toContain("resolve_verified_domain_internal"); expect(scaleCore).toContain("status='verified'"); });
 });
 
