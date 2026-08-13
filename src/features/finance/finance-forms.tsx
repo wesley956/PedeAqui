@@ -11,7 +11,7 @@ const inputStyle:React.CSSProperties={ minHeight:40,borderRadius:10,border:"1px 
 const buttonStyle:React.CSSProperties={ minHeight:40,border:0,borderRadius:10,background:"var(--accent)",color:"#fff",padding:"8px 12px",fontWeight:850,cursor:"pointer" };
 function Feedback({ state }:{ state:FinanceActionState }) { if(state.error) return <div style={{ color:"#f97066",fontSize:12 }}>{state.error}</div>; if(state.message) return <div style={{ color:"#22c55e",fontSize:12 }}>{state.message}</div>; return null; }
 type ServerAction=(previous:FinanceActionState,formData:FormData)=>Promise<FinanceActionState>;
-function useIdempotentAction(serverAction:ServerAction){ const keyRef=useRef<string|null>(null); return useActionState(async(previous,formData)=>{ const key=keyRef.current??crypto.randomUUID(); keyRef.current=key; formData.set("idempotencyKey",key); const next=await serverAction(previous,formData); if(next.ok) keyRef.current=null; return next; },initial); }
+function useIdempotentAction(serverAction:ServerAction){ const keyRef=useRef<string|null>(null); return useActionState(async(previous:FinanceActionState,formData:FormData)=>{ const key=keyRef.current??crypto.randomUUID(); keyRef.current=key; formData.set("idempotencyKey",key); const next=await serverAction(previous,formData); if(next.ok) keyRef.current=null; return next; },initial); }
 function money(cents:number|string){ return (Number(cents||0)/100).toFixed(2).replace(".",","); }
 
 type Account={ id:string;name:string;account_type:string;balance_cents:number|string };
