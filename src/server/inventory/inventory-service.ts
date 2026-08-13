@@ -34,7 +34,7 @@ export class InventoryService {
         .eq("organization_id", context.organizationId).eq("store_id", storeId),
       admin.from("inventory_movements").select("id,inventory_item_id,movement_type,quantity_delta,unit_cost_micros,idempotency_key,source_type,order_id,transfer_group_id,reason,created_at")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).order("created_at", { ascending: false }).limit(120),
-      admin.from("stores").select("id,name").eq("organization_id", context.organizationId).eq("active", true).order("name"),
+      admin.from("stores").select("id,name").eq("organization_id", context.organizationId).eq("status", "active").order("name"),
       can(PERMISSIONS.INVENTORY_MANAGE, context),
       can(PERMISSIONS.INVENTORY_ADJUST, context),
     ]);
@@ -118,7 +118,7 @@ export class InventoryService {
     const quantity = parseInventoryQuantity(input.quantity);
     const admin = createAdminClient();
     const [targetResult, sourceConfig, targetConfig] = await Promise.all([
-      admin.from("stores").select("id").eq("id", targetStoreId).eq("organization_id", context.organizationId).eq("active", true).maybeSingle(),
+      admin.from("stores").select("id").eq("id", targetStoreId).eq("organization_id", context.organizationId).eq("status", "active").maybeSingle(),
       admin.from("inventory_item_stores").select("inventory_item_id").eq("organization_id", context.organizationId).eq("store_id", sourceStoreId).eq("inventory_item_id", itemId).eq("active", true).maybeSingle(),
       admin.from("inventory_item_stores").select("inventory_item_id").eq("organization_id", context.organizationId).eq("store_id", targetStoreId).eq("inventory_item_id", itemId).eq("active", true).maybeSingle(),
     ]);
