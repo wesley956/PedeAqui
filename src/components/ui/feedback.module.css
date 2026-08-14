@@ -87,6 +87,13 @@
 }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
+@media (pointer: coarse) {
+  .close {
+    min-width: var(--control-height-lg);
+    min-height: var(--control-height-lg);
+  }
+}
+
 @media (max-width: 640px) {
   .message { grid-template-columns: auto minmax(0, 1fr); }
   .actions { grid-column: 1 / -1; justify-content: stretch; }
@@ -97,4 +104,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .spinner, .skeleton { animation-duration: .01ms; animation-iteration-count: 1; }
+}
+
+@media (forced-colors: active) {
+  .message, .dialog, .state { border-color: CanvasText; }
+  .close { border: 1px solid ButtonText; }
+  .spinner { border-color: CanvasText; border-top-color: Highlight; }
 }
