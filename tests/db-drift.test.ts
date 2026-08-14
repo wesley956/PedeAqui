@@ -41,7 +41,9 @@ describe("database drift checker", () => {
 
   it("detects a divergent migration name without exposing credentials", () => {
     const changed = baseline.migrations.map((entry) => [...entry] as [string, string]);
-    changed[changed.length - 1][1] = "controlled_wrong_name";
+    const last = changed.at(-1);
+    if (!last) throw new Error("baseline precisa conter migrations");
+    last[1] = "controlled_wrong_name";
     const result = run(changed);
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("Divergência na posição");
