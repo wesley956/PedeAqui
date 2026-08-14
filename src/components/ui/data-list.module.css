@@ -1,5 +1,17 @@
 .root { display: grid; gap: var(--space-4); min-width: 0; }
 
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .toolbar {
   display: flex;
   align-items: flex-end;
@@ -52,4 +64,8 @@
   .pagination { align-items: stretch; }
   .paginationControls { width: 100%; }
   .paginationControls > * { flex: 1 1 auto; }
+}
+
+@media (forced-colors: active) {
+  .tableWrap, .mobileItem { border-color: CanvasText; }
 }
