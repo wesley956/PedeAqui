@@ -1,23 +1,65 @@
 # PedeAqui — Índice Mestre do Projeto
 
-Este diretório é a fonte oficial de decisões, arquitetura, escopo e backlog do produto **PedeAqui**. O repositório técnico continua se chamando `cruz`.
+Este documento é a **fonte canônica para retomar o projeto PedeAqui**. Antes de implementar ou alterar qualquer módulo, consulte este índice e os documentos especializados citados abaixo.
+
+## Identidade técnica e de produto
+
+- Produto oficial: **PedeAqui**
+- Tagline: **Seu pedido começa aqui.**
+- Repositório oficial: **`wesley956/PedeAqui`**
+- Repository ID preservado no rename: `1329524264`
+- Package técnico: **`pedeaqui`**
+- Branch principal: `main`
+- GitHub Pages: `https://wesley956.github.io/PedeAqui/`
+- Supabase oficial: project ref `zsbsczjhiujnhdznrzck`, região `sa-east-1`
+- Observação: o display name do projeto Supabase ainda aparece como `Cruz`; isso é somente um rótulo administrativo legado. **Não recriar o projeto nem trocar o project ref por causa desse nome.**
 
 ## Objetivo do produto
 
 Construir um SaaS multiempresa/multiunidade para restaurantes e operações de alimentação, centralizando cardápio digital, pedidos, PDV, produção/KDS, impressão, salão, delivery, pagamentos, caixa, clientes/CRM, fidelidade, estoque, compras, financeiro, fiscal, relatórios, marketing, integrações e escala SaaS.
 
-## Princípio central
+## Princípio arquitetural
 
 Os módulos compartilham entidades e eventos, mas cada domínio preserva sua própria fonte de verdade. Exemplo: `order.completed` pode alimentar estoque, financeiro, CRM e integrações sem transformar o pedido em ledger financeiro, saldo de estoque ou documento fiscal.
 
-## Identidade oficial
+A visibilidade de navegação nunca substitui autorização. RLS/RBAC e verificações server-side continuam sendo a fronteira de segurança.
 
-- Nome: **PedeAqui**
-- Tagline: **Seu pedido começa aqui.**
-- Paleta-base: laranja + grafite
-- Especificação: `BRAND_IDENTITY.md`
+## Identidade visual oficial
 
-## Documentos de status
+Assets canônicos:
+
+- `public/brand/pedeaqui-logo.svg` — lockup horizontal para fundo claro
+- `public/brand/pedeaqui-logo-on-dark.svg` — lockup para fundo escuro
+- `public/brand/pedeaqui-symbol.svg` — símbolo isolado
+
+Documentação:
+
+- `BRAND_IDENTITY.md` — manual de identidade
+- `DESIGN_TOKENS.md` — tokens semânticos
+- `STRUCTURAL_TOKENS.md` — tipografia, espaçamento, raios, sombras, motion e densidade
+- `BUTTON_SYSTEM.md`, `FORM_SYSTEM.md`, `CARD_SYSTEM.md`, `FEEDBACK_SYSTEM.md`, `DATA_LIST_SYSTEM.md`, `STATUS_LANGUAGE.md` — primitives e padrões de UI
+- `COMPONENT_ACCESSIBILITY.md` — regras de acessibilidade dos componentes
+
+A marca da plataforma PedeAqui e o white-label do restaurante são camadas diferentes. O restaurante pode personalizar sua presença pública conforme o contrato de branding, mas isso não redefine os assets canônicos da plataforma.
+
+## Navegação e contextos operacionais
+
+A navegação é contextual e baseada nas permissões existentes. Os contextos operacionais documentados são gestor, gerente, caixa, atendimento, salão, cozinha, entregador e administrativo.
+
+Documentos principais:
+
+- `OPERATIONAL_CONTEXTS.md`
+- `CONTEXTUAL_NAVIGATION.md`
+- `DESKTOP_NAVIGATION.md`
+- `MOBILE_NAVIGATION.md`
+- `CONTEXT_START_ROUTE.md`
+- `OPERATIONAL_TOPBAR.md`
+
+Deep links explícitos são preservados. A tela inicial sem `next` é escolhida de forma determinística conforme os contextos/permissões disponíveis.
+
+## Módulos consolidados
+
+O núcleo funcional original #001–#253 permanece documentado pelos status abaixo:
 
 - `FOUNDATION_STATUS.md` — #001–#016
 - `CATALOG_STATUS.md` — #017–#024
@@ -44,116 +86,115 @@ Os módulos compartilham entidades e eventos, mas cada domínio preserva sua pr�
 - `FISCAL_INTEGRATIONS_STATUS.md` — #225–#238
 - `PLANS_SCALE_STATUS.md` — #239–#253
 
-Documentos estruturais: `BLUEPRINT_MASTER.md`, `IMPLEMENTATION_BACKLOG.md`, `ARCHITECTURE_DECISIONS.md`, `INFRASTRUCTURE.md`, `PRINTING_SYSTEM.md` e `BRAND_IDENTITY.md`.
+Operação atual também inclui as superfícies redesenhadas de Pedidos, KDS/Produção, PDV, Salão/Mesas, Caixa, Entregas/Entregador, Dashboard, Catálogo, Estoque/Fichas, Compras, Financeiro, Fiscal, Configurações, cardápio público, carrinho, checkout e acompanhamento de pedido.
 
-## Ordem macro executável
+## Ciclo de consolidação visual/técnica [254]–[323]
 
-1. Fundação
-2. Catálogo
-3. Cardápio público
-4. Cliente e configuração de entrega
-5. Carrinho e pricing
-6. Checkout
-7. Motor de pedidos
-8. Central de impressão
-9. Gestor de pedidos
-10. Produção
-11. Pagamentos
-12. PDV
-13. Clientes/dashboard
-14. Qualidade e hardening
-15. Salão
-16. CRM/marketing
-17. WhatsApp/IA
-18. Caixa
-19. Entregas operacionais/entregadores
-20. Estoque e fichas técnicas
-21. Compras/fornecedores
-22. Financeiro/DRE
-23. Fiscal e integrações
-24. Planos, escala e white-label
+As issues lógicas `[254]`–`[323]` correspondem às GitHub issues `#284`–`#353`. **Todas estão concluídas.**
 
-## Estado atual — 13/08/2026
+| Faixa | Resultado consolidado |
+| --- | --- |
+| [254]–[261] | identidade oficial PedeAqui, SVGs, manual, componentes de marca, tokens e guardrails |
+| [262]–[269] | design system: botões, formulários, cards, feedback, listagens, status, acessibilidade e migração de estilos |
+| [270]–[277] | contextos operacionais, matriz de navegação, desktop/mobile, topbar e rotas iniciais |
+| [278]–[287] | operação do restaurante: pedidos, KDS, PDV, salão, caixa e entregas |
+| [288]–[295] | gestão/admin: dashboard, catálogo, produto, estoque, compras, financeiro, fiscal e configurações |
+| [296]–[303] | experiência pública: marca/white-label, menu, produto, adicionais, carrinho, checkout e timeline |
+| [304]–[311] | migrations/drift, RLS/RBAC, auth, integrações, legado, performance e observabilidade |
+| [312]–[318] | homologação desktop/tablet/mobile, acessibilidade, performance frontend, E2E e segurança final |
+| [319] | revisão final do ciclo |
+| [320]–[322] | mapa técnico, rename do repositório e validação pós-rename |
+| [323] | documentação e baseline final |
 
-### Consolidado em `main`
+Evidências finais:
 
-Após a conclusão e merge do PR #279, o `main` fica consolidado oficialmente até **[253]**, encerrando os macroblocos previstos no blueprint principal.
+- `CYCLE_REVIEW_319.md`
+- `TECHNICAL_RENAME_MAP_320.md` — **snapshot histórico pré-rename**
+- `REPOSITORY_RENAME_321.md`
+- `POST_RENAME_INTEGRATIONS_322.md`
+- `FINAL_BASELINE_323.md`
 
-Marcos recentes:
+## Banco e migrations — baseline final
 
-- Conversas / WhatsApp / IA #152–#163 — PR #182
-- Caixa #164–#174 — PR #194
-- Entregas operacionais/Entregadores #175–#185 — PR #206
-- Estoque e Fichas Técnicas #186–#198 — PR #220
-- Compras e Fornecedores #199–#210 — PR #233, merge `cdb79c63ad61e7f24cba2d628ff5aaf7065043d6`
-- Financeiro / DRE #211–#224 — PR #248, merge `feffa6792838798b45769e8a5fa006a76bc5060d`
-- Fiscal e Integrações #225–#238 — PR #263, merge `d0afa1de71012cbd95d72b78a670bafb29e996ab`
-- Planos, Escala e White-label #239–#253 — PR #279
+- Supabase project ref: `zsbsczjhiujnhdznrzck`
+- Migrations oficiais reconciliadas: **89**
+- Cauda conhecida: `20260813065546 | onboarding_role_permission_conflict_hotfix`
+- Baseline versionado: `supabase/production-migrations.json`
+- Tabelas públicas verificadas: **113**
+- RLS habilitado: **113/113**
+- Grants diretos de tabela para `anon`: **0**
+- Resíduo dos fixtures E2E na homologação final: **0**
+- Órfãos verificados em relações críticas: **0**
 
-Todo o núcleo técnico **#001–#253** fica no `main` com as migrations correspondentes aplicadas no Supabase oficial.
+O CI executa `npm run db:drift`; quando `SUPABASE_DB_URL` está disponível, também compara o histórico remoto em modo somente leitura.
 
-### Milestone 22 — Fiscal e Integrações #225–#238
+Advisors: não havia novo alerta crítico no fechamento do ciclo. Permanece conhecido o WARN de **Leaked Password Protection desabilitada** no Supabase Auth. As tabelas server-only com RLS e sem policy/grant de browser continuam documentadas; não criar policies públicas apenas para silenciar INFO do advisor.
 
-Status: **concluído e mesclado** no PR #263.
+## Segurança e autorização
 
-Issues oficiais: #249–#262.
+Regras canônicas:
 
-Entregue:
+1. tenant/unidade sempre derivados do contexto autorizado, nunca apenas de input do cliente;
+2. RLS e RBAC server-side são obrigatórios para dados sensíveis;
+3. `service_role` é server-only;
+4. navegação contextual é apresentação, não controle de acesso;
+5. redirects de auth aceitam somente destinos internos validados;
+6. logs usam sanitização/correlação e não devem registrar segredos;
+7. fixtures e E2E devem terminar sem resíduos no banco.
 
-- perfis fiscais por unidade e classificação fiscal versionada;
-- documento/itens/histórico fiscal separados de `orders`;
-- State Machine fiscal própria;
-- fila persistente de emissão/cancelamento com lease/retry;
-- interface `FiscalProvider` e registry explícito de adapters;
-- webhook fiscal inbound seguro e proteção contra replay;
-- bucket privado de XML/DANFE e URLs assinadas;
-- registry genérico de integrações e webhooks outbound duráveis;
-- `/fiscal` e saúde/reconciliação;
-- segurança server-only/RLS validada;
-- E2E PostgreSQL com rollback e zero resíduos.
+Documentos de referência: `FINAL_DB_SECURITY_QA_318.md`, `ACCESS_ISOLATION.md`, `AUTH_HARDENING.md`, `INTEGRATION_INVENTORY.md`, `MONITORING.md` e `LEGACY_EDGE_FUNCTIONS.md` quando aplicáveis.
 
-Detalhes: `FISCAL_INTEGRATIONS_STATUS.md`.
+## CI e homologação
 
-### Milestone 23 — Planos, Escala e White-label #239–#253
+O workflow `.github/workflows/ci.yml` valida, nesta ordem:
 
-Status: **implementado no PR #279 e preparado para consolidação final**.
+1. nome técnico do repositório (`wesley956/PedeAqui`);
+2. histórico local de migrations;
+3. comparação remota opcional de migrations;
+4. lint;
+5. typecheck;
+6. testes automatizados;
+7. E2E por contexto;
+8. Print Agent;
+9. build Next.js.
 
-Issues oficiais: #264–#278.
+A homologação de layout possui contratos para desktop, tablet e celular, além de acessibilidade e performance frontend. O E2E contextual é determinístico e não depende de escrever dados no banco oficial.
 
-Entregue:
+## Integrações após o rename
 
-- catálogo de planos/features e matriz de entitlements;
-- assinatura por organização com lifecycle e histórico imutável;
-- limites periódicos atômicos/idempotentes e quotas concorrentes reais;
-- provider/registry de billing desacoplado e webhook assinado;
-- console SaaS `/platform` com Super Admin explícito;
-- branding/white-label aplicado ao shell real;
-- domínios personalizados com verificação DNS TXT;
-- grupos/franquias com isolamento de organização;
-- central de compras multiunidade sem estoque global fictício;
-- BI multiunidade sobre Pedidos/Financeiro existentes;
-- catálogo/marketplace de integrações aprovadas;
-- painel `/escala`;
-- 14/14 tabelas novas com RLS, 0 grants de browser e 0 EXECUTE de RPCs internas por browser;
-- E2E final de assinatura/quotas/isolamento/BI/marketplace com rollback e zero resíduos.
+- GitHub: `wesley956/PedeAqui`, mesmo Repository ID histórico.
+- GitHub Pages: workflow pós-rename validado; URL `https://wesley956.github.io/PedeAqui/`.
+- Supabase: integração continua pelo ref `zsbsczjhiujnhdznrzck`; o display name legado `Cruz` é exceção administrativa conhecida.
+- Vercel: o conector disponível ao final do ciclo não expôs nenhum projeto associado; não inventar vínculo.
+- Remotes antigos: o GitHub resolve a URL anterior para o repositório renomeado, mas novos clones/configurações devem usar a URL canônica.
 
-Detalhes: `PLANS_SCALE_STATUS.md`.
+Detalhes: `POST_RENAME_INTEGRATIONS_322.md`.
 
-## Homologações externas que não alteram a conclusão do blueprint
+## Homologações externas ainda dependentes de ambiente/fornecedor
 
-O núcleo do produto está implementado, mas alguns pontos dependem de ambiente/fornecedor físico externo e continuam como homologações de produção:
+Não são falhas de arquitetura, mas dependem de infraestrutura externa real:
 
-- provider fiscal/SEFAZ real, certificado e regras específicas por estabelecimento/UF/regime;
-- provider de cobrança real para checkout/portal/webhooks de assinatura;
-- provisionamento de TLS/edge para domínios customizados após a verificação DNS;
+- provider fiscal/SEFAZ, certificado e regras específicas por estabelecimento/UF/regime;
+- provider real de cobrança para fluxos que exigem adquirente externo;
+- provisionamento final de TLS/edge para domínios customizados;
 - teste físico final de impressão ESC/POS/hardware;
-- prova de concorrência PostgreSQL com duas conexões físicas independentes, quando houver `DATABASE_URL` apropriada.
+- proteção contra senhas vazadas deve ser habilitada no painel Supabase Auth quando disponível para o projeto/plano;
+- integrações externas não visíveis aos conectores precisam usar as URLs/nome canônicos ao serem configuradas.
 
-Esses itens não exigem reescrever o domínio: os adapters, filas e contratos já estão preparados para recebê-los.
+## Como retomar o projeto
 
-## Regra de consulta
+Antes de começar qualquer nova issue:
 
-Antes de criar um novo módulo, responder:
+1. confirmar que está em `wesley956/PedeAqui` e `main` atualizada;
+2. ler este `PROJECT_INDEX.md`;
+3. consultar `ARCHITECTURE_DECISIONS.md`, `BRAND_IDENTITY.md` e o status do domínio envolvido;
+4. verificar se já existe primitive/componente no design system antes de criar CSS/componente novo;
+5. preservar fontes de verdade e boundaries de domínio;
+6. criar branch atômica, implementar, rodar CI completo e só então mesclar;
+7. para alterações de banco, reconciliar migration local/remota e revisar RLS/advisors;
+8. não reintroduzir `cruz` como nome ativo. Referências antigas só são válidas em documentos históricos/rollback explicitamente marcados.
+
+## Perguntas obrigatórias para novos módulos
 
 1. Que entidade existente ele utiliza?
 2. Que eventos ele consome?
@@ -161,3 +202,5 @@ Antes de criar um novo módulo, responder:
 4. Quais permissões precisa?
 5. Quais dados pertencem à organização e à unidade?
 6. Quais ações precisam de auditoria?
+7. Qual é a fonte de verdade de cada valor exibido?
+8. Qual cenário E2E prova que a mudança não rompe a operação?
