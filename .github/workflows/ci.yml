@@ -59,6 +59,9 @@ jobs:
       - name: Test
         run: npm run test
 
+      - name: E2E context journeys
+        run: npm run test:e2e
+
       - name: Validate Print Agent
         run: |
           node --check print-agent/src/index.mjs
