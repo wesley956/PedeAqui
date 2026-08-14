@@ -1,4 +1,6 @@
-import type { HTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
+
+export { SelectField as Select } from "./form-controls";
 
 export function Card({ children, style, ...props }: HTMLAttributes<HTMLElement>) {
   return <section {...props} className={`card ${props.className ?? ""}`} style={{ padding: "var(--space-5)", ...style }}>{children}</section>;
@@ -21,16 +23,4 @@ export function EmptyState({ title, description, action }: { title: string; desc
 
 export function Skeleton({ width = "100%", height = 20 }: { width?: string | number; height?: string | number }) {
   return <span aria-hidden style={{ display: "block", width, height, borderRadius: "var(--radius-sm)", background: "var(--surface-2)", opacity: .8 }} />;
-}
-
-export function Select({ label, children, id, style, ...props }: SelectHTMLAttributes<HTMLSelectElement> & { label: string; children: ReactNode }) {
-  const selectId = id ?? props.name;
-  return (
-    <label htmlFor={selectId} style={{ display: "grid", gap: "var(--space-2)" }}>
-      <span style={{ fontWeight: "var(--font-weight-bold)", fontSize: "var(--font-size-sm)", lineHeight: "var(--line-height-snug)" }}>{label}</span>
-      <select {...props} id={selectId} style={{ minHeight: "var(--control-height)", borderRadius: "var(--radius-md)", border: "var(--border-width) solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "var(--space-2) var(--space-3)", lineHeight: "var(--line-height-normal)", transition: "border-color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard)", ...style }}>
-        {children}
-      </select>
-    </label>
-  );
 }
