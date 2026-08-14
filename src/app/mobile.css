@@ -1,0 +1,20 @@
+@media (max-width: 900px) {
+  .app-main { overflow-x: clip; }
+  .mobile-nav > a,
+  .mobile-more > summary { touch-action: manipulation; }
+  .mobile-more-panel {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .app-content :where(input, select, textarea) {
+    scroll-margin-block: var(--space-6) calc(96px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 480px) {
+  .app-topbar { align-items: flex-start; gap: var(--space-2); }
+  .app-topbar-context { flex: 1 1 0; overflow-wrap: anywhere; }
+  .app-topbar-actions { flex: 0 0 auto; }
+  .app-topbar-signals span { white-space: normal; text-align: left; }
+  .mobile-more-panel { max-height: min(52dvh, 440px); }
+}
