@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import { MenuBrowser } from "@/features/menu/menu-browser";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
 
@@ -53,8 +54,9 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
           <MenuBrowser menu={menu} />
         </div>
 
-        <footer style={{ textAlign: "center", color: "#8a837b", fontSize: 12, marginTop: 36 }}>
-          <strong style={{ color: "#181818" }}>Pede<span style={{ color: "#FF6B00" }}>Aqui</span></strong> · Seu pedido começa aqui.
+        <footer aria-label="PedeAqui — Seu pedido começa aqui" style={{ color: "#8a837b", fontSize: 12, marginTop: 36, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <PedeAquiLogo size="xs" decorative />
+          <span>Seu pedido começa aqui.</span>
         </footer>
       </div>
     </main>
