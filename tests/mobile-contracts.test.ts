@@ -6,10 +6,6 @@ function source(path: string) {
   return readFileSync(join(process.cwd(), path), "utf8");
 }
 
-function compactCss(path: string) {
-  return source(path).replace(/\s+/g, "");
-}
-
 describe("mobile UX contracts", () => {
   it("keeps every primary module represented in the canonical navigation model", () => {
     const navigation = source("src/components/layout/navigation-model.ts");
@@ -18,11 +14,14 @@ describe("mobile UX contracts", () => {
     }
   });
 
-  it("makes the current mobile navigation horizontally reachable", () => {
-    const css = compactCss("src/app/shell.css");
-    expect(css).toContain("grid-auto-flow:column");
-    expect(css).toContain("overflow-x:auto");
-    expect(css).toContain("min-height:52px");
+  it("keeps mobile navigation short instead of horizontally scrolling every module", () => {
+    const mobile = source("src/components/layout/mobile-navigation.tsx");
+    const css = source("src/app/shell.css");
+    expect(mobile).toContain("limit = 4");
+    expect(mobile).toContain("Mais");
+    expect(css).not.toContain("grid-auto-flow: column");
+    expect(css).not.toContain("overflow-x: auto");
+    expect(css).toContain("env(safe-area-inset-bottom)");
   });
 
   it("keeps PDV controls at touch-friendly height on small screens", () => {
