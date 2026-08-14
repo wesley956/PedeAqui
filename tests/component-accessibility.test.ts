@@ -12,7 +12,9 @@ function relativeLuminance(hex: string) {
 }
 
 function contrast(a: string, b: string) {
-  const [lighter, darker] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
+  const values = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
+  const lighter = values[0] ?? 0;
+  const darker = values[1] ?? 0;
   return (lighter + 0.05) / (darker + 0.05);
 }
 
@@ -70,9 +72,11 @@ describe("PedeAqui shared component accessibility", () => {
 
   it("keeps list and status information semantic instead of color-only", () => {
     const lists = read("src/components/ui/data-list.tsx");
+    const listCss = read("src/components/ui/data-list.module.css");
     const status = read("src/components/ui/status.tsx");
     const statusCss = read("src/components/ui/status.module.css");
-    expect(lists).toContain("<caption");
+    expect(lists).toContain("<caption className={styles.visuallyHidden}");
+    expect(listCss).toContain(".visuallyHidden");
     expect(lists).toContain('scope="col"');
     expect(lists).toContain('role="list"');
     expect(status).toContain("definition.icon");
