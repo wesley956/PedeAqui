@@ -1,12 +1,13 @@
-import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { signOutAction } from "@/features/auth/actions";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import { Button } from "@/components/ui/button";
 import { DesktopNavigation, type ShellNavigationItem } from "@/components/layout/desktop-navigation";
+import { MobileNavigation } from "@/components/layout/mobile-navigation";
+import type { OperationalContext } from "@/components/layout/navigation-model";
 import type { ResolvedBranding } from "@/server/platform/branding-read-service";
 
-export function AppShell({ children, email, branding, navigationItems }: { children: ReactNode; email: string | null; branding: ResolvedBranding; navigationItems: readonly ShellNavigationItem[] }) {
+export function AppShell({ children, email, branding, navigationItems, operationalContexts }: { children: ReactNode; email: string | null; branding: ResolvedBranding; navigationItems: readonly ShellNavigationItem[]; operationalContexts: readonly OperationalContext[] }) {
   // White-label values are runtime data. Keeping this single style object inline is intentional:
   // it only feeds the documented accent aliases and never introduces arbitrary layout values.
   const style = {
@@ -53,7 +54,7 @@ export function AppShell({ children, email, branding, navigationItems }: { child
           </footer>
         ) : null}
       </div>
-      <nav className="mobile-nav" aria-label="Navegação mobile">{navigationItems.map((item) => <Link key={item.key} href={item.href}>{item.label}</Link>)}</nav>
+      <MobileNavigation items={navigationItems} contexts={operationalContexts} />
     </div>
   );
 }
