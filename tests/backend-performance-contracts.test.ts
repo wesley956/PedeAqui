@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { groupPublicOrderModifiers } from "@/server/orders/public-order-service";
+import { groupPublicOrderModifiers } from "@/server/orders/public-order-projection";
 
 const root = process.cwd();
 const read = (relative: string) => fs.readFileSync(path.join(root, relative), "utf8");
