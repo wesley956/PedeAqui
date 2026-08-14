@@ -11,10 +11,13 @@ function contrastText(hex: string) {
   return luminance > 0.58 ? "#171717" : "#FFFFFF";
 }
 
+export function restaurantBrandVars(primaryColor: string) {
+  return { "--restaurant-primary": primaryColor, "--restaurant-on-primary": contrastText(primaryColor) } as CSSProperties;
+}
+
 export function RestaurantBrand({ name, logoUrl, primaryColor, children }: { name: string; logoUrl: string | null; primaryColor: string; children?: ReactNode }) {
   const initial = name.trim().charAt(0).toLocaleUpperCase("pt-BR") || "R";
-  const brandStyle = { "--restaurant-primary": primaryColor, "--restaurant-on-primary": contrastText(primaryColor) } as CSSProperties;
-  return <div className={styles.restaurantBrand} style={brandStyle}>
+  return <div className={styles.restaurantBrand} style={restaurantBrandVars(primaryColor)}>
     {logoUrl ? <img src={logoUrl} alt={`Logo ${name}`} className={styles.logo} width={74} height={74} /> : <div className={styles.fallback} aria-label={`Identidade ${name}`}>{initial}</div>}
     <div className={styles.copy}><h1 className={styles.name}>{name}</h1>{children}</div>
   </div>;
