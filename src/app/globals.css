@@ -40,6 +40,89 @@
   --state-info-text: #7dd3fc;
   --state-info-surface: #132735;
 
+  /* Typography */
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem;
+  --font-size-display: 2.5rem;
+  --line-height-tight: 1.1;
+  --line-height-snug: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.7;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* Spacing — base 4px */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Borders, radius and elevation */
+  --border-width: 1px;
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.24);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.32);
+
+  /* Controls and density */
+  --control-height-sm: 36px;
+  --control-height-md: 42px;
+  --control-height-lg: 48px;
+  --control-height: var(--control-height-md);
+  --control-padding-x: var(--space-4);
+  --control-gap: var(--space-2);
+
+  /* Content widths */
+  --content-compact: 640px;
+  --content-reading: 720px;
+  --content-standard: 1180px;
+  --content-wide: 1440px;
+
+  /* Canonical responsive references. CSS media conditions use the same literal values. */
+  --breakpoint-mobile: 640px;
+  --breakpoint-tablet: 820px;
+  --breakpoint-desktop: 1180px;
+  --breakpoint-wide: 1440px;
+
+  /* Layering */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-dropdown: 200;
+  --z-overlay: 400;
+  --z-modal: 500;
+  --z-toast: 600;
+
+  /* Motion */
+  --motion-fast: 120ms;
+  --motion-normal: 180ms;
+  --motion-slow: 280ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1.2);
+
   /* Compatibility aliases. Migrate consumers gradually; do not duplicate values. */
   --bg: var(--surface-0);
   --surface: var(--surface-1);
@@ -51,8 +134,7 @@
   --accent-highlight: var(--brand-highlight);
   --danger: var(--state-danger);
   --success: var(--state-success);
-
-  --radius: 14px;
+  --radius: var(--radius-lg);
 }
 
 * { box-sizing: border-box; }
@@ -62,7 +144,10 @@ body {
   min-height: 100vh;
   background: radial-gradient(circle at top right, rgba(255, 107, 0, .12), transparent 30%), var(--surface-0);
   color: var(--text-primary);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  text-rendering: optimizeLegibility;
 }
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; }
@@ -70,12 +155,38 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
-.container { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
-.card { background: var(--surface-1); border: 1px solid var(--border-default); border-radius: var(--radius); }
+.container { width: min(var(--content-standard), calc(100% - var(--space-8))); margin: 0 auto; }
+.card { background: var(--surface-1); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); }
 .muted { color: var(--text-secondary); }
+
+@media (pointer: coarse) {
+  :root {
+    --control-height: var(--control-height-lg);
+    --control-padding-x: var(--space-5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0.01ms;
+    --motion-normal: 0.01ms;
+    --motion-slow: 0.01ms;
+  }
+
+  html:focus-within { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Tablet breakpoint: 820px */
 @media (max-width: 820px) {
   .conversations-layout { grid-template-columns: minmax(0, 1fr) !important; }
 }
+
+/* Mobile breakpoint: 640px */
 @media (max-width: 640px) {
-  .container { width: min(100% - 20px, 1180px); }
+  .container { width: min(calc(100% - var(--space-5)), var(--content-standard)); }
 }
