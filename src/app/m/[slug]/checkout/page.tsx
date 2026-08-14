@@ -1,50 +1,25 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import {
-  reviewCheckoutAction,
-  saveCheckoutAddressAction,
-  saveCheckoutFulfillmentAction,
-  saveCheckoutIdentityAction,
-  saveCheckoutPaymentAction,
-} from "@/features/checkout/actions";
+import type { InputHTMLAttributes, ReactNode } from "react";
+import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
+import { reviewCheckoutAction, saveCheckoutAddressAction, saveCheckoutFulfillmentAction, saveCheckoutIdentityAction, saveCheckoutPaymentAction } from "@/features/checkout/actions";
 import { applyCheckoutBenefitsAction, clearCheckoutBenefitsAction } from "@/features/growth/actions";
 import { createOrderFromCheckoutAction } from "@/features/orders/actions";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { CheckoutService } from "@/server/checkout/checkout-service";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
 import { GrowthService } from "@/server/growth/growth-service";
+import styles from "./checkout.module.css";
 
-function money(cents: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
-}
+function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
+const errorMessages: Record<string, string> = { cart_empty: "Seu carrinho está vazio.", invalid_phone: "Informe um telefone válido.", pickup_disabled: "Retirada não está disponível nesta loja.", delivery_disabled: "Entrega não está disponível nesta loja.", delivery_not_selected: "Escolha entrega antes de informar o endereço.", delivery_minimum: "O pedido ainda não atingiu o mínimo exigido para este bairro.", neighborhood_not_served: "Este bairro ainda não é atendido pela loja.", payment_unavailable: "A forma de pagamento selecionada não está disponível.", invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.", checkout_not_ready: "O checkout precisa ser revisado novamente antes de criar o pedido.", benefit_invalid: "Não foi possível aplicar esses benefícios. Confira o cupom, o saldo disponível e a identificação do cliente." };
 
-const errorMessages: Record<string, string> = {
-  cart_empty: "Seu carrinho está vazio.",
-  invalid_phone: "Informe um telefone válido.",
-  pickup_disabled: "Retirada não está disponível nesta loja.",
-  delivery_disabled: "Entrega não está disponível nesta loja.",
-  delivery_not_selected: "Escolha entrega antes de informar o endereço.",
-  delivery_minimum: "O pedido ainda não atingiu o mínimo exigido para este bairro.",
-  neighborhood_not_served: "Este bairro ainda não é atendido pela loja.",
-  payment_unavailable: "A forma de pagamento selecionada não está disponível.",
-  invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.",
-  checkout_not_ready: "O checkout precisa ser revisado novamente antes de criar o pedido.",
-  benefit_invalid: "Não foi possível aplicar esses benefícios. Confira o cupom, o saldo disponível e a identificação do cliente.",
-};
-
-export default async function CheckoutPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<{ erro?: string; revisar?: string }>;
-}) {
+export default async function CheckoutPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ erro?: string; revisar?: string }> }) {
   const { slug } = await params;
   const query = await searchParams;
   const token = (await cookies()).get(cartCookieName(slug))?.value;
   if (!token) redirect(`/m/${slug}/carrinho`);
-
   const reviewed = query.revisar === "1" ? await CheckoutService.review(slug, token) : null;
   const data = reviewed ?? await CheckoutService.load(slug, token);
   const benefits = await GrowthService.loadCheckoutBenefits(slug, token);
@@ -53,143 +28,38 @@ export default async function CheckoutPage({
   const enabledMethods = data.paymentMethods.filter((item) => item.enabled);
   const selectedPayment = session?.payment_method ?? null;
   const totalDiscount = Number(cart.discount_cents);
+  const identityComplete = Boolean(session?.customer_name && session?.customer_phone_normalized);
+  const fulfillmentComplete = Boolean(session?.fulfillment_type);
+  const deliverySelected = session?.fulfillment_type === "delivery";
+  const addressComplete = !deliverySelected || session?.delivery_quote_status === "valid";
+  const paymentComplete = Boolean(selectedPayment);
 
-  return (
-    <main style={{ minHeight: "100vh", background: "#fffdf9", color: "#181818", padding: "18px 12px 64px" }}>
-      <div style={{ width: "min(820px, 100%)", margin: "0 auto", display: "grid", gap: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
-          <Link href={`/m/${slug}/carrinho`} style={{ color: "#6f675f", fontWeight: 700 }}>← Voltar ao carrinho</Link>
-          <strong>Pede<span style={{ color: "#FF6B00" }}>Aqui</span></strong>
-        </div>
+  return <main className={styles.root}><div className={styles.container}>
+    <div className={styles.topbar}><Link href={`/m/${slug}/carrinho`} className={styles.back}>← Voltar ao carrinho</Link><PedeAquiLogo size="xs" decorative /></div>
+    <header className={styles.header}><p className={styles.eyebrow}>Finalização</p><h1>Checkout</h1><p className="muted">Preencha somente o que se aplica ao seu pedido. Cada etapa é validada novamente no servidor.</p></header>
+    <div className={styles.progress} aria-label="Etapas do checkout"><ProgressItem number="1" label="Identificação" done={identityComplete}/><ProgressItem number="2" label="Recebimento" done={fulfillmentComplete}/>{deliverySelected ? <ProgressItem number="3" label="Endereço" done={addressComplete}/> : null}<ProgressItem number={deliverySelected ? "4" : "3"} label="Pagamento" done={paymentComplete}/><ProgressItem number={deliverySelected ? "5" : "4"} label="Revisão" done={Boolean(review?.ready)}/></div>
 
-        <header>
-          <p style={{ color: "#8a837b", margin: 0, fontSize: 13 }}>Finalização</p>
-          <h1 style={{ margin: "4px 0" }}>Checkout</h1>
-          <p style={{ color: "#716b64", margin: 0 }}>Preencha os dados abaixo. Tudo é validado novamente no servidor antes do pedido.</p>
-        </header>
+    {query.erro ? <div role="alert" className={`card ${styles.alert}`}>{errorMessages[query.erro] ?? "Não foi possível salvar esta etapa. Revise os dados e tente novamente."}</div> : null}
 
-        {query.erro ? (
-          <div role="alert" style={{ padding: 14, borderRadius: 14, background: "#fee4e2", color: "#9f281d", border: "1px solid #f8b4ad" }}>
-            {errorMessages[query.erro] ?? "Não foi possível salvar esta etapa. Revise os dados e tente novamente."}
-          </div>
-        ) : null}
+    <section className={`card ${styles.section}`}><StepTitle number="1" title="Quem está pedindo?" complete={identityComplete}/><form action={saveCheckoutIdentityAction} className={styles.form}><input type="hidden" name="storeSlug" value={slug}/><div className={styles.grid2}><Field label="Nome" name="name" defaultValue={session?.customer_name ?? ""} required/><Field label="Telefone / WhatsApp" name="phone" type="tel" defaultValue={session?.customer_phone ?? ""} placeholder="(19) 99999-9999" required/></div><Field label="E-mail (opcional)" name="email" type="email" defaultValue={session?.customer_email ?? ""}/><ActionButton>Salvar identificação</ActionButton></form></section>
 
-        <section style={sectionStyle}>
-          <StepTitle number="1" title="Quem está pedindo?" complete={Boolean(session?.customer_name && session?.customer_phone_normalized)} />
-          <form action={saveCheckoutIdentityAction} style={{ display: "grid", gap: 10 }}>
-            <input type="hidden" name="storeSlug" value={slug} />
-            <div style={twoColumns}>
-              <Field label="Nome" name="name" defaultValue={session?.customer_name ?? ""} required />
-              <Field label="Telefone" name="phone" type="tel" defaultValue={session?.customer_phone ?? ""} placeholder="(19) 99999-9999" required />
-            </div>
-            <Field label="E-mail (opcional)" name="email" type="email" defaultValue={session?.customer_email ?? ""} />
-            <div><ActionButton>Salvar identificação</ActionButton></div>
-          </form>
-        </section>
+    <section className={`card ${styles.section}`}><StepTitle number="2" title="Como você quer receber?" complete={fulfillmentComplete}/><form action={saveCheckoutFulfillmentAction} className={styles.choices}><input type="hidden" name="storeSlug" value={slug}/>{menu.settings.allow_delivery && menu.delivery.enabled ? <button type="submit" name="fulfillmentType" value="delivery" className={`${styles.choice} ${deliverySelected ? styles.choiceSelected : ""}`}><span>Entrega</span><span className={styles.choiceDetail}>{menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min · endereço validado na próxima etapa</span></button> : null}{menu.settings.allow_pickup ? <button type="submit" name="fulfillmentType" value="pickup" className={`${styles.choice} ${session?.fulfillment_type === "pickup" ? styles.choiceSelected : ""}`}><span>Retirada</span><span className={styles.choiceDetail}>Você busca no estabelecimento; endereço de entrega não será solicitado</span></button> : null}</form></section>
 
-        <section style={sectionStyle}>
-          <StepTitle number="2" title="Como você quer receber?" complete={Boolean(session?.fulfillment_type)} />
-          <form action={saveCheckoutFulfillmentAction} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
-            <input type="hidden" name="storeSlug" value={slug} />
-            {menu.settings.allow_delivery && menu.delivery.enabled ? (
-              <button type="submit" name="fulfillmentType" value="delivery" style={choiceStyle(session?.fulfillment_type === "delivery")}>Entrega<span style={choiceDetail}>Receba no endereço informado</span></button>
-            ) : null}
-            {menu.settings.allow_pickup ? (
-              <button type="submit" name="fulfillmentType" value="pickup" style={choiceStyle(session?.fulfillment_type === "pickup")}>Retirada<span style={choiceDetail}>Você busca no estabelecimento</span></button>
-            ) : null}
-          </form>
-        </section>
+    {deliverySelected ? <section className={`card ${styles.section}`}><StepTitle number="3" title="Onde devemos entregar?" complete={addressComplete}/><form action={saveCheckoutAddressAction} className={styles.form}><input type="hidden" name="storeSlug" value={slug}/><div className={styles.grid2}><Field label="CEP" name="postalCode" defaultValue={session?.address_postal_code ?? ""} required/><Field label="Bairro" name="district" defaultValue={session?.address_district ?? ""} required/></div><div className={styles.addressRow}><Field label="Rua" name="street" defaultValue={session?.address_street ?? ""} required/><Field label="Número" name="number" defaultValue={session?.address_number ?? ""} required/></div><Field label="Complemento (opcional)" name="complement" defaultValue={session?.address_complement ?? ""}/><div className={styles.grid2}><Field label="Cidade" name="city" defaultValue={session?.address_city ?? menu.store.city ?? ""} required/><Field label="UF" name="state" defaultValue={session?.address_state ?? menu.store.state ?? ""} maxLength={2} required/></div><Field label="Referência (opcional)" name="reference" defaultValue={session?.address_reference ?? ""}/>{session?.delivery_quote_status === "valid" ? <div className={styles.deliveryOk}>Entrega validada · {money(Number(session.delivery_fee_cents))} · {session.delivery_estimated_min_minutes}–{session.delivery_estimated_max_minutes} min</div> : session?.delivery_quote_status === "unserviceable" ? <div className={styles.deliveryError}>Este endereço não está apto para entrega com as regras atuais.</div> : null}<ActionButton>Validar endereço e frete</ActionButton></form></section> : null}
 
-        {session?.fulfillment_type === "delivery" ? (
-          <section style={sectionStyle}>
-            <StepTitle number="3" title="Endereço de entrega" complete={session.delivery_quote_status === "valid"} />
-            <form action={saveCheckoutAddressAction} style={{ display: "grid", gap: 10 }}>
-              <input type="hidden" name="storeSlug" value={slug} />
-              <div style={twoColumns}>
-                <Field label="CEP" name="postalCode" defaultValue={session.address_postal_code ?? ""} required />
-                <Field label="Bairro" name="district" defaultValue={session.address_district ?? ""} required />
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 120px", gap: 10 }}>
-                <Field label="Rua" name="street" defaultValue={session.address_street ?? ""} required />
-                <Field label="Número" name="number" defaultValue={session.address_number ?? ""} required />
-              </div>
-              <Field label="Complemento" name="complement" defaultValue={session.address_complement ?? ""} />
-              <div style={twoColumns}>
-                <Field label="Cidade" name="city" defaultValue={session.address_city ?? menu.store.city ?? ""} required />
-                <Field label="UF" name="state" defaultValue={session.address_state ?? menu.store.state ?? ""} maxLength={2} required />
-              </div>
-              <Field label="Referência" name="reference" defaultValue={session.address_reference ?? ""} />
-              {session.delivery_quote_status === "valid" ? (
-                <div style={{ padding: 12, borderRadius: 12, background: "#ecfdf3", color: "#166534", fontSize: 13 }}>
-                  Entrega validada · {money(Number(session.delivery_fee_cents))} · {session.delivery_estimated_min_minutes}–{session.delivery_estimated_max_minutes} min
-                </div>
-              ) : session.delivery_quote_status === "unserviceable" ? (
-                <div style={{ padding: 12, borderRadius: 12, background: "#fee4e2", color: "#9f281d", fontSize: 13 }}>Este endereço não está apto para entrega com as regras atuais.</div>
-              ) : null}
-              <div><ActionButton>Validar endereço e frete</ActionButton></div>
-            </form>
-          </section>
-        ) : null}
+    <section className={`card ${styles.section}`}><StepTitle number={deliverySelected ? "4" : "3"} title="Como você vai pagar?" complete={paymentComplete}/><form action={saveCheckoutPaymentAction} className={styles.form}><input type="hidden" name="storeSlug" value={slug}/><div className={styles.choices}>{enabledMethods.map((item) => <label key={item.method} className={`${styles.choice} ${selectedPayment === item.method ? styles.choiceSelected : ""}`}><span className={styles.paymentChoice}><input type="radio" name="paymentMethod" value={item.method} defaultChecked={selectedPayment === item.method} required/><strong>{paymentMethodLabels[item.method]}</strong></span></label>)}</div>{selectedPayment === "cash" ? <Field label="Troco para (opcional)" name="changeFor" inputMode="decimal" defaultValue={session?.cash_change_for_cents ? (Number(session.cash_change_for_cents) / 100).toFixed(2).replace(".", ",") : ""} placeholder="Ex.: 100,00"/> : null}<ActionButton>Salvar pagamento</ActionButton></form></section>
 
-        <section style={{ ...sectionStyle, borderColor: totalDiscount > 0 ? "#FF6B00" : "#eee7df" }}>
-          <div>
-            <p style={{ color: "#8a837b", margin: 0, fontSize: 12, fontWeight: 800 }}>BENEFÍCIOS</p>
-            <h2 style={{ margin: "4px 0" }}>Cupom, cashback e pontos</h2>
-            <p style={{ color: "#716b64", margin: 0, fontSize: 13 }}>O desconto é recalculado no servidor. Cashback e pontos exigem um cliente já cadastrado e identificado.</p>
-          </div>
-          <form action={applyCheckoutBenefitsAction} style={{ display: "grid", gap: 10 }}>
-            <input type="hidden" name="storeSlug" value={slug} />
-            <div style={twoColumns}>
-              <Field label="Cupom" name="couponCode" defaultValue={benefits.current.couponCode ?? ""} placeholder="Ex.: VOLTA20" />
-              <Field label={`Cashback para usar${benefits.customerIdentified ? ` · saldo ${money(benefits.cashbackBalanceCents)}` : ""}`} name="cashbackAmount" inputMode="decimal" defaultValue={benefits.current.cashbackRedeemCents ? (benefits.current.cashbackRedeemCents / 100).toFixed(2).replace(".", ",") : ""} disabled={!benefits.cashbackEnabled || !benefits.customerIdentified} />
-              <Field label={`Pontos para usar${benefits.customerIdentified ? ` · saldo ${benefits.loyaltyBalancePoints}` : ""}`} name="loyaltyPoints" type="number" min={0} defaultValue={benefits.current.loyaltyRedeemPoints || ""} disabled={!benefits.loyaltyEnabled || !benefits.customerIdentified} />
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}><ActionButton>Aplicar benefícios</ActionButton>{totalDiscount > 0 ? <button formAction={clearCheckoutBenefitsAction} type="submit" style={{ minHeight: 42, border: "1px solid #ddd6ce", borderRadius: 11, padding: "9px 14px", background: "#fff", color: "#181818", fontWeight: 900 }}>Remover benefícios</button> : null}</div>
-          </form>
-          {totalDiscount > 0 ? <div style={{ padding: 12, borderRadius: 12, background: "#fff4eb", display: "grid", gap: 5, fontSize: 13 }}><strong>Economia total: {money(totalDiscount)}</strong>{benefits.current.couponDiscountCents > 0 ? <span>Cupom: − {money(benefits.current.couponDiscountCents)}</span> : null}{benefits.current.cashbackDiscountCents > 0 ? <span>Cashback: − {money(benefits.current.cashbackDiscountCents)}</span> : null}{benefits.current.loyaltyDiscountCents > 0 ? <span>Pontos: − {money(benefits.current.loyaltyDiscountCents)}</span> : null}</div> : null}
-        </section>
+    <details className={styles.optional} open={totalDiscount > 0}><summary>Benefícios opcionais — cupom, cashback e pontos{totalDiscount > 0 ? ` · economia ${money(totalDiscount)}` : ""}</summary><div className={styles.optionalBody}><p className="muted">O desconto é recalculado no servidor. Cashback e pontos dependem de cliente identificado e saldo elegível.</p><form action={applyCheckoutBenefitsAction} className={styles.form}><input type="hidden" name="storeSlug" value={slug}/><div className={styles.grid2}><Field label="Cupom" name="couponCode" defaultValue={benefits.current.couponCode ?? ""} placeholder="Ex.: VOLTA20"/><Field label={`Cashback${benefits.customerIdentified ? ` · saldo ${money(benefits.cashbackBalanceCents)}` : ""}`} name="cashbackAmount" inputMode="decimal" defaultValue={benefits.current.cashbackRedeemCents ? (benefits.current.cashbackRedeemCents / 100).toFixed(2).replace(".", ",") : ""} disabled={!benefits.cashbackEnabled || !benefits.customerIdentified}/><Field label={`Pontos${benefits.customerIdentified ? ` · saldo ${benefits.loyaltyBalancePoints}` : ""}`} name="loyaltyPoints" type="number" min={0} defaultValue={benefits.current.loyaltyRedeemPoints || ""} disabled={!benefits.loyaltyEnabled || !benefits.customerIdentified}/></div><div className={styles.benefitActions}><ActionButton>Aplicar benefícios</ActionButton>{totalDiscount > 0 ? <button formAction={clearCheckoutBenefitsAction} type="submit" className={styles.secondary}>Remover benefícios</button> : null}</div></form>{totalDiscount > 0 ? <div className={styles.benefitSummary}><strong>Economia total: {money(totalDiscount)}</strong>{benefits.current.couponDiscountCents > 0 ? <span>Cupom: − {money(benefits.current.couponDiscountCents)}</span> : null}{benefits.current.cashbackDiscountCents > 0 ? <span>Cashback: − {money(benefits.current.cashbackDiscountCents)}</span> : null}{benefits.current.loyaltyDiscountCents > 0 ? <span>Pontos: − {money(benefits.current.loyaltyDiscountCents)}</span> : null}</div> : null}</div></details>
 
-        <section style={sectionStyle}>
-          <StepTitle number={session?.fulfillment_type === "delivery" ? "4" : "3"} title="Forma de pagamento" complete={Boolean(selectedPayment)} />
-          <form action={saveCheckoutPaymentAction} style={{ display: "grid", gap: 10 }}>
-            <input type="hidden" name="storeSlug" value={slug} />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8 }}>
-              {enabledMethods.map((item) => (
-                <label key={item.method} style={choiceStyle(selectedPayment === item.method)}>
-                  <span style={{ display: "flex", gap: 8, alignItems: "center" }}><input type="radio" name="paymentMethod" value={item.method} defaultChecked={selectedPayment === item.method} required /><strong>{paymentMethodLabels[item.method]}</strong></span>
-                </label>
-              ))}
-            </div>
-            {selectedPayment === "cash" ? <Field label="Troco para (opcional)" name="changeFor" inputMode="decimal" defaultValue={session?.cash_change_for_cents ? (Number(session.cash_change_for_cents) / 100).toFixed(2).replace(".", ",") : ""} placeholder="Ex.: 100,00" /> : null}
-            <div><ActionButton>Salvar pagamento</ActionButton></div>
-          </form>
-        </section>
-
-        <section style={{ ...sectionStyle, background: "#171717", color: "#fffdf9", borderColor: "#353535" }}>
-          <div style={{ display: "grid", gap: 8 }}>
-            <SummaryLine label="Subtotal" value={money(Number(cart.subtotal_cents))} />
-            {totalDiscount > 0 ? <SummaryLine label="Benefícios" value={`− ${money(totalDiscount)}`} /> : null}
-            <SummaryLine label="Entrega" value={Number(cart.delivery_fee_cents) > 0 ? money(Number(cart.delivery_fee_cents)) : "Grátis / não aplicável"} />
-            <div style={{ height: 1, background: "#353535" }} />
-            <SummaryLine label="Total" value={money(Number(cart.total_cents))} strong />
-          </div>
-
-          {review ? (review.ready ? <div style={{ padding: 14, borderRadius: 14, background: "#15351f", color: "#bdf4ca" }}><strong>Checkout validado.</strong><div style={{ marginTop: 4, fontSize: 13 }}>Os dados e benefícios foram revalidados. Você já pode confirmar o pedido.</div></div> : <div style={{ padding: 14, borderRadius: 14, background: "#3a211b", color: "#ffd0c4", display: "grid", gap: 6 }}><strong>Antes de criar o pedido:</strong>{review.blockers.map((blocker) => <div key={blocker.code} style={{ fontSize: 13 }}>• {blocker.message}</div>)}</div>) : null}
-
-          {review?.ready ? <form action={createOrderFromCheckoutAction}><input type="hidden" name="storeSlug" value={slug} /><button type="submit" style={{ width: "100%", minHeight: 52, border: 0, borderRadius: 14, background: "#FF6B00", color: "#fff", fontWeight: 950, fontSize: 16 }}>Confirmar pedido</button></form> : <form action={reviewCheckoutAction}><input type="hidden" name="storeSlug" value={slug} /><button type="submit" style={{ width: "100%", minHeight: 50, border: 0, borderRadius: 14, background: "#FF6B00", color: "#fff", fontWeight: 950, fontSize: 16 }}>Revisar pedido</button></form>}
-        </section>
-      </div>
-    </main>
-  );
+    <section className={`card ${styles.review}`}><StepTitle number={deliverySelected ? "5" : "4"} title="Revise e confirme" complete={Boolean(review?.ready)}/><div className={styles.summaryRows}><SummaryLine label="Subtotal" value={money(Number(cart.subtotal_cents))}/>{totalDiscount > 0 ? <SummaryLine label="Benefícios" value={`− ${money(totalDiscount)}`}/> : null}<SummaryLine label="Entrega" value={Number(cart.delivery_fee_cents) > 0 ? money(Number(cart.delivery_fee_cents)) : deliverySelected ? "Grátis" : "Não aplicável"}/><div className={styles.divider}/><SummaryLine label="Total" value={money(Number(cart.total_cents))} strong/></div>
+      {review ? review.ready ? <div className={styles.reviewOk}><strong>Checkout validado.</strong><div>Dados, disponibilidade, entrega, pagamento e benefícios foram revalidados. Você já pode confirmar o pedido.</div></div> : <div className={styles.reviewError}><strong>Antes de criar o pedido:</strong><div className={styles.blockers}>{review.blockers.map((blocker) => <span key={blocker.code}>• {blocker.message}</span>)}</div></div> : null}
+      {review?.ready ? <form action={createOrderFromCheckoutAction}><input type="hidden" name="storeSlug" value={slug}/><button type="submit" className={styles.finalAction}>Confirmar pedido</button></form> : <form action={reviewCheckoutAction}><input type="hidden" name="storeSlug" value={slug}/><button type="submit" className={styles.finalAction}>Revisar pedido</button></form>}
+    </section>
+  </div></main>;
 }
 
-function StepTitle({ number, title, complete }: { number: string; title: string; complete: boolean }) {
-  return <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ width: 30, height: 30, borderRadius: 10, display: "grid", placeItems: "center", background: complete ? "#dcfce7" : "#fff0e3", color: complete ? "#166534" : "#FF6B00", fontWeight: 950 }}>{complete ? "✓" : number}</span><h2 style={{ margin: 0, fontSize: 18 }}>{title}</h2></div>;
-}
-function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) { const { label, ...inputProps } = props; return <label style={{ display: "grid", gap: 5 }}><span style={{ fontSize: 13, fontWeight: 800 }}>{label}</span><input {...inputProps} style={{ minHeight: 44, border: "1px solid #e5ded6", borderRadius: 11, padding: "10px 12px", background: inputProps.disabled ? "#f4f1ed" : "#fff", color: "#181818" }} /></label>; }
-function ActionButton({ children }: { children: React.ReactNode }) { return <button type="submit" style={{ minHeight: 42, border: 0, borderRadius: 11, padding: "9px 14px", background: "#FF6B00", color: "#fff", fontWeight: 900 }}>{children}</button>; }
-function SummaryLine({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) { return <div style={{ display: "flex", justifyContent: "space-between", gap: 16, fontSize: strong ? 20 : 14 }}><span>{label}</span><strong style={strong ? { color: "#FF6B00" } : undefined}>{value}</strong></div>; }
-const sectionStyle: React.CSSProperties = { padding: 18, background: "#fff", border: "1px solid #eee7df", borderRadius: 20, display: "grid", gap: 14 };
-const twoColumns: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 };
-const choiceDetail: React.CSSProperties = { display: "block", marginTop: 4, fontSize: 12, color: "#716b64", fontWeight: 500 };
-function choiceStyle(active: boolean): React.CSSProperties { return { display: "grid", gap: 4, textAlign: "left", border: `1px solid ${active ? "#FF6B00" : "#e5ded6"}`, background: active ? "#fff4eb" : "#fff", color: "#181818", borderRadius: 14, padding: 14, fontWeight: 900, cursor: "pointer" }; }
+function ProgressItem({ number, label, done }: { number: string; label: string; done: boolean }) { return <span className={`${styles.progressItem} ${done ? styles.progressDone : ""}`}><strong>{done ? "✓" : number}. {label}</strong><span>{done ? "Concluído" : "Pendente"}</span></span>; }
+function StepTitle({ number, title, complete }: { number: string; title: string; complete: boolean }) { return <div className={styles.stepTitle}><span className={`${styles.stepBadge} ${complete ? styles.stepComplete : ""}`}>{complete ? "✓" : number}</span><h2>{title}</h2></div>; }
+function Field(props: InputHTMLAttributes<HTMLInputElement> & { label: string }) { const { label, ...inputProps } = props; return <label className={styles.field}><span>{label}</span><input {...inputProps} className={styles.input}/></label>; }
+function ActionButton({ children }: { children: ReactNode }) { return <button type="submit" className={styles.action}>{children}</button>; }
+function SummaryLine({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) { return <div className={`${styles.summaryLine} ${strong ? styles.total : ""}`}><span>{label}</span><strong>{value}</strong></div>; }
