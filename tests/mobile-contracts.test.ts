@@ -6,6 +6,10 @@ function source(path: string) {
   return readFileSync(join(process.cwd(), path), "utf8");
 }
 
+function compact(path: string) {
+  return source(path).replace(/\s+/g, "");
+}
+
 describe("mobile UX contracts", () => {
   it("keeps every primary module represented in the canonical navigation model", () => {
     const navigation = source("src/components/layout/navigation-model.ts");
@@ -24,12 +28,11 @@ describe("mobile UX contracts", () => {
     expect(css).toContain("env(safe-area-inset-bottom)");
   });
 
-  it("keeps PDV controls at touch-friendly height on small screens", () => {
-    const css = source("src/features/pdv/pdv.module.css");
-    expect(css).toContain("@media (max-width: 560px)");
-    expect(css).toContain("min-height: 44px");
-    expect(css).toContain(".twoColumns");
-    expect(css).toContain("grid-template-columns: 1fr");
+  it("keeps PDV controls at the canonical touch height on small screens", () => {
+    const css = compact("src/features/pdv/pdv.module.css");
+    expect(css).toContain("@media(max-width:560px)");
+    expect(css).toContain("min-height:var(--control-height-lg)");
+    expect(css).toContain(".twoColumns{grid-template-columns:1fr}");
   });
 
   it("keeps public menu search and product layout responsive", () => {
