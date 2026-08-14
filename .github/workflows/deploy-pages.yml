@@ -42,6 +42,7 @@ jobs:
           if [ -d src/app/api ]; then
             mv src/app/api .pages-disabled-api
           fi
+          find src/app -type f \( -name 'route.ts' -o -name 'route.tsx' -o -name 'route.js' -o -name 'route.jsx' \) -delete
           if [ -f src/proxy.ts ]; then
             mv src/proxy.ts .pages-disabled-proxy.ts
           fi
