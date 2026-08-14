@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./shell.css";
 import "./mobile.css";
+import "./accessibility.css";
 
 export const metadata: Metadata = {
   title: {
