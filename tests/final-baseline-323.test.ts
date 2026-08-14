@@ -43,7 +43,9 @@ describe("final PedeAqui baseline [323]", () => {
     expect(readme).toContain("wesley956/PedeAqui");
     expect(readme).not.toContain("wesley956/cruz");
 
-    const links = [...readme.matchAll(/\]\((docs\/[^)]+)\)/g)].map((match) => match[1]);
+    const links = [...readme.matchAll(/\]\((docs\/[^)]+)\)/g)].flatMap((match) =>
+      match[1] ? [match[1]] : [],
+    );
     expect(links.length).toBeGreaterThan(0);
     for (const link of links) expect(existsSync(join(root, link)), `${link} should exist`).toBe(true);
   });
