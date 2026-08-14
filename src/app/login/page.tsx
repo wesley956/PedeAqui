@@ -12,7 +12,7 @@ export default async function LoginPage({
   const params = await searchParams;
 
   return (
-    <AuthCard title="Entrar" subtitle="Acesse sua operação Cruz.">
+    <AuthCard title="Entrar" subtitle="Acesse sua operação PedeAqui.">
       {params.error ? <p role="alert" style={{ margin: 0, color: "#ff8a93" }}>Não foi possível entrar. Verifique os dados.</p> : null}
       {params.status === "check_email" ? <p style={{ margin: 0, color: "var(--success)" }}>Confira seu e-mail para concluir o cadastro.</p> : null}
       <form action={signInAction} style={{ display: "grid", gap: 14 }}>
