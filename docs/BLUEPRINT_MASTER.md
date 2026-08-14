@@ -1,4 +1,4 @@
-# Blueprint Mestre — Cruz
+# Blueprint Mestre — PedeAqui
 
 Versão 1.0 — fonte de produto e arquitetura.
 
