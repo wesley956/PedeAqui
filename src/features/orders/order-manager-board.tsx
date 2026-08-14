@@ -1,22 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/feedback";
+import { Input } from "@/components/ui/input";
+import { StatusBadge, type OperationalStatusKey } from "@/components/ui/status";
 import { OrderActionForm } from "@/features/orders/order-action-form";
 import {
   canCompleteFromManager,
   completionBlockers,
+  deriveOperationalBucket,
   deriveOrderLane,
   elapsedLabel,
-  orderLaneLabels,
-  type OrderLane,
+  operationalBucketLabels,
+  type OperationalOrderBucket,
   type OrderManagerRow,
 } from "@/features/orders/manager-model";
 import { orderStatusLabels, productionStatusLabels } from "@/server/orders/state-machines";
+import styles from "./order-manager.module.css";
 
-const lanes: OrderLane[] = ["new", "confirmed", "preparing", "ready", "finished"];
+const activeBuckets = ["new", "preparing", "ready", "late", "queued"] as const satisfies readonly OperationalOrderBucket[];
 const paymentLabels: Record<string, string> = { pending: "Pgto. pendente", authorized: "Pgto. autorizado", paid: "Pago", failed: "Pgto. falhou", partially_refunded: "Estorno parcial", refunded: "Estornado" };
 const fulfillmentLabels: Record<string, string> = {
   pending: "Fulfillment pendente", awaiting_assignment: "Aguardando entregador", assigned: "Entregador definido",
@@ -24,9 +30,29 @@ const fulfillmentLabels: Record<string, string> = {
   awaiting_pickup: "Aguardando retirada", picked_up_by_customer: "Retirado", served: "Servido",
   canceled: "Fulfillment cancelado", not_required: "Sem fulfillment",
 };
+const channelLabels: Record<string, string> = { menu: "Cardápio", pdv: "PDV", dining: "Salão", whatsapp: "WhatsApp", manual: "Manual" };
 
 function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
+}
+
+function fulfillmentTypeLabel(type: string) {
+  if (type === "delivery") return "Entrega";
+  if (type === "pickup") return "Retirada";
+  if (type === "dine_in") return "Mesa";
+  return type;
+}
+
+function statusForOrder(order: OrderManagerRow, bucket: OperationalOrderBucket): { status: OperationalStatusKey; label?: string } {
+  if (order.order_status === "completed") return { status: "order_completed" };
+  if (order.order_status === "rejected") return { status: "order_cancelled", label: "Recusado" };
+  if (order.order_status === "canceled") return { status: "order_cancelled" };
+  if (bucket === "late") return { status: "order_late" };
+  if (order.fulfillment_status === "out_for_delivery") return { status: "order_out_for_delivery" };
+  if (bucket === "new") return { status: "order_new" };
+  if (bucket === "preparing") return { status: "order_preparing" };
+  if (bucket === "ready") return { status: "order_ready" };
+  return { status: "order_confirmed" };
 }
 
 async function playAlertTone() {
@@ -116,13 +142,21 @@ export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders
     return orders.filter((order) =>
       String(order.display_number).includes(needle)
       || order.customer_name_snapshot.toLocaleLowerCase("pt-BR").includes(needle)
-      || order.fulfillment_type.toLocaleLowerCase("pt-BR").includes(needle),
+      || order.fulfillment_type.toLocaleLowerCase("pt-BR").includes(needle)
+      || order.channel.toLocaleLowerCase("pt-BR").includes(needle),
     );
   }, [orders, query]);
 
   const grouped = useMemo(() => {
-    return Object.fromEntries(lanes.map((lane) => [lane, filtered.filter((order) => deriveOrderLane(order) === lane)])) as Record<OrderLane, OrderManagerRow[]>;
-  }, [filtered]);
+    const result: Record<OperationalOrderBucket, OrderManagerRow[]> = {
+      new: [], preparing: [], ready: [], late: [], queued: [], history: [],
+    };
+    for (const order of filtered) result[deriveOperationalBucket(order, now)].push(order);
+    result.late.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
+    return result;
+  }, [filtered, now]);
+
+  const activeCount = activeBuckets.reduce((total, bucket) => total + grouped[bucket].length, 0);
 
   async function toggleSound() {
     const next = !soundEnabled;
@@ -133,84 +167,95 @@ export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders
   }
 
   return (
-    <div style={{ display: "grid", gap: 14 }}>
-      <div style={{ display: "flex", gap: 10, alignItems: "end", flexWrap: "wrap" }}>
-        <label style={{ display: "grid", gap: 5, flex: "1 1 260px" }}>
-          <span style={{ fontSize: 12, fontWeight: 800 }}>Buscar pedido</span>
-          <input
+    <div className={styles.board}>
+      <div className={styles.toolbar}>
+        <div className={styles.search}>
+          <Input
+            label="Buscar pedido"
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Número, cliente ou modalidade"
-            style={inputStyle}
+            placeholder="Número, cliente, canal ou modalidade"
           />
-        </label>
-        <button type="button" onClick={() => void toggleSound()} style={soundEnabled ? soundOnButton : secondaryButton} aria-pressed={soundEnabled}>
-          {soundEnabled ? "Som ativo" : "Ativar som"}
-        </button>
-        <div className="muted" style={{ fontSize: 12, paddingBottom: 9 }}>{orders.length} pedido(s) carregado(s)</div>
+        </div>
+        <Button type="button" tone="secondary" onClick={() => void toggleSound()} aria-pressed={soundEnabled}>
+          {soundEnabled ? "Som ativo ✓" : "Ativar som"}
+        </Button>
+        <div className={styles.toolbarMeta}>{activeCount} ativo(s) · {grouped.history.length} no histórico</div>
       </div>
 
-      <div aria-live="polite" role="status" style={{ minHeight: notice ? 42 : 0 }}>
-        {notice ? (
-          <div style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid var(--state-warning)", background: "var(--state-warning-surface)", display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
-            <strong>{notice}</strong>
-            <button type="button" onClick={() => setNotice(null)} style={secondaryButton}>Dispensar</button>
-          </div>
-        ) : null}
+      <div className={styles.noticeSlot} aria-live="polite">
+        {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}
       </div>
 
-      <div style={{ display: "grid", gridAutoFlow: "column", gridAutoColumns: "minmax(285px, 1fr)", gap: 12, overflowX: "auto", alignItems: "start", paddingBottom: 8 }}>
-        {lanes.map((lane) => (
-          <section key={lane} aria-label={orderLaneLabels[lane]} style={{ minWidth: 285, background: "var(--surface-2)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden" }}>
-            <header style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "12px 13px", borderBottom: "1px solid var(--border)" }}>
-              <strong>{orderLaneLabels[lane]}</strong>
-              <span style={{ minWidth: 24, height: 24, borderRadius: 999, background: lane === "new" && grouped[lane].length ? "var(--accent)" : "var(--surface-3)", display: "grid", placeItems: "center", fontSize: 12, fontWeight: 900 }}>{grouped[lane].length}</span>
+      <div className={styles.activeGrid} aria-label="Pedidos ativos">
+        {activeBuckets.map((bucket) => (
+          <section key={bucket} aria-label={operationalBucketLabels[bucket]} className={styles.lane} data-bucket={bucket}>
+            <header className={styles.laneHeader}>
+              <strong>{operationalBucketLabels[bucket]}</strong>
+              <span className={styles.laneCount} aria-label={`${grouped[bucket].length} pedidos`}>{grouped[bucket].length}</span>
             </header>
-            <div style={{ display: "grid", gap: 9, padding: 9, maxHeight: "calc(100vh - 260px)", overflowY: "auto" }}>
-              {grouped[lane].map((order) => <OrderCard key={order.id} order={order} now={now} />)}
-              {grouped[lane].length === 0 ? <div className="muted" style={{ padding: 18, textAlign: "center", fontSize: 12 }}>Nenhum pedido</div> : null}
+            <div className={styles.laneBody}>
+              {grouped[bucket].map((order) => <OrderCard key={order.id} order={order} now={now} bucket={bucket} />)}
+              {grouped[bucket].length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}
             </div>
           </section>
         ))}
       </div>
+
+      <details className={styles.history}>
+        <summary className={styles.historySummary}>
+          <span>Histórico de finalizados, cancelados e recusados</span>
+          <span className={styles.historyCount}>{grouped.history.length} pedido(s)</span>
+        </summary>
+        <div className={styles.historyGrid}>
+          {grouped.history.map((order) => <OrderCard key={order.id} order={order} now={now} bucket="history" />)}
+          {grouped.history.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido no histórico carregado.</div> : null}
+        </div>
+      </details>
     </div>
   );
 }
 
-function OrderCard({ order, now }: { order: OrderManagerRow; now: number }) {
+function OrderCard({ order, now, bucket }: { order: OrderManagerRow; now: number; bucket: OperationalOrderBucket }) {
   const lane = deriveOrderLane(order);
   const blockers = completionBlockers(order);
+  const status = statusForOrder(order, bucket);
+
   return (
-    <article className="card" style={{ padding: 12, display: "grid", gap: 10, border: lane === "new" ? "1px solid var(--accent)" : "1px solid var(--border)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "start" }}>
-        <div>
-          <div style={{ fontWeight: 950, fontSize: 18 }}>#{order.display_number}</div>
-          <strong style={{ display: "block", marginTop: 2 }}>{order.customer_name_snapshot}</strong>
+    <article className={styles.orderCard} data-bucket={bucket}>
+      <div className={styles.cardTop}>
+        <div className={styles.orderIdentity}>
+          <span className={styles.orderNumber}>#{order.display_number}</span>
+          <strong className={styles.customer}>{order.customer_name_snapshot}</strong>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <strong style={{ color: "var(--accent)" }}>{money(order.total_cents)}</strong>
-          <div className="muted" style={{ fontSize: 11, marginTop: 3 }}>{elapsedLabel(order.created_at, now)}</div>
+        <div className={styles.moneyTime}>
+          <span className={styles.total}>{money(order.total_cents)}</span>
+          <span className={styles.elapsed}>{elapsedLabel(order.created_at, now)}</span>
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-        <Tag>{order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : order.fulfillment_type}</Tag>
+      <div className={styles.statusRow}>
+        <StatusBadge status={status.status} label={status.label} />
+      </div>
+
+      <div className={styles.tags} aria-label="Origem e modalidade do pedido">
+        <Tag>{channelLabels[order.channel] ?? order.channel}</Tag>
+        <Tag>{fulfillmentTypeLabel(order.fulfillment_type)}</Tag>
         <Tag>{paymentLabels[order.payment_status] ?? order.payment_status}</Tag>
-        <Tag>{productionStatusLabels[order.production_status]}</Tag>
       </div>
 
-      <div className="muted" style={{ fontSize: 11 }}>
-        {orderStatusLabels[order.order_status]} · {fulfillmentLabels[order.fulfillment_status] ?? order.fulfillment_status}
+      <div className={styles.stateLine}>
+        {orderStatusLabels[order.order_status]} · {productionStatusLabels[order.production_status]} · {fulfillmentLabels[order.fulfillment_status] ?? order.fulfillment_status}
       </div>
 
-      <div style={{ display: "grid", gap: 6 }}>
+      <div className={styles.actions}>
         {order.order_status === "pending_confirmation" ? (
           <>
             <OrderActionForm orderId={order.id} intent="accept" label="Aceitar pedido" compact />
             <details>
-              <summary style={{ fontSize: 12, cursor: "pointer", color: "var(--state-danger-text)" }}>Recusar pedido</summary>
-              <div style={{ marginTop: 7 }}><OrderActionForm orderId={order.id} intent="reject" label="Confirmar recusa" tone="danger" reasonLabel="Motivo" reasonPlaceholder="Ex.: item indisponível" compact /></div>
+              <summary className={styles.rejectSummary}>Recusar pedido</summary>
+              <div className={styles.rejectBody}><OrderActionForm orderId={order.id} intent="reject" label="Confirmar recusa" tone="danger" reasonLabel="Motivo" reasonPlaceholder="Ex.: item indisponível" compact /></div>
             </details>
           </>
         ) : null}
@@ -223,17 +268,13 @@ function OrderCard({ order, now }: { order: OrderManagerRow; now: number }) {
         {canCompleteFromManager(order) ? <OrderActionForm orderId={order.id} intent="complete" label="Concluir pedido" compact /> : null}
       </div>
 
-      {order.order_status === "confirmed" && lane === "ready" && blockers.length > 0 ? <div className="muted" style={{ fontSize: 10 }}>Para concluir: {blockers.join("; ")}.</div> : null}
+      {order.order_status === "confirmed" && lane === "ready" && blockers.length > 0 ? <div className={styles.blockers}>Para concluir: {blockers.join("; ")}.</div> : null}
 
-      <Link href={`/pedidos/${order.id}`} style={{ display: "block", textAlign: "center", padding: "7px 9px", borderRadius: 9, border: "1px solid var(--border)", fontSize: 12, fontWeight: 800 }}>Abrir detalhes</Link>
+      <Link href={`/pedidos/${order.id}`} className={styles.detailsLink}>Abrir detalhes</Link>
     </article>
   );
 }
 
-function Tag({ children }: { children: React.ReactNode }) {
-  return <span style={{ padding: "4px 7px", borderRadius: 999, background: "var(--surface-3)", fontSize: 10, fontWeight: 800 }}>{children}</span>;
+function Tag({ children }: { children: ReactNode }) {
+  return <span className={styles.tag}>{children}</span>;
 }
-
-const inputStyle: React.CSSProperties = { minHeight: 42, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "9px 11px" };
-const secondaryButton: React.CSSProperties = { minHeight: 40, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-3)", color: "var(--text)", padding: "8px 11px", fontWeight: 800, cursor: "pointer" };
-const soundOnButton: React.CSSProperties = { ...secondaryButton, borderColor: "var(--accent)", color: "var(--accent)" };

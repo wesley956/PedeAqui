@@ -1,4 +1,5 @@
 import { OrderManagerBoard } from "@/features/orders/order-manager-board";
+import styles from "@/features/orders/order-manager.module.css";
 import type { OrderManagerRow } from "@/features/orders/manager-model";
 import { OrderService } from "@/server/orders/order-service";
 
@@ -7,14 +8,14 @@ export default async function OrdersPage() {
   if (!context.storeId) throw new Error("An active store is required");
 
   return (
-    <section style={{ display: "grid", gap: 18 }}>
-      <header style={{ display: "flex", justifyContent: "space-between", gap: 18, alignItems: "end", flexWrap: "wrap" }}>
-        <div>
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>Operação em tempo real</p>
-          <h1 style={{ margin: "4px 0" }}>Gestor de Pedidos</h1>
-          <p className="muted" style={{ margin: 0 }}>Kanban derivado dos estados independentes de pedido, produção, pagamento e fulfillment.</p>
+    <section className={styles.page}>
+      <header className={styles.pageHeader}>
+        <div className={styles.pageHeading}>
+          <p className={styles.pageEyebrow}>Operação em tempo real</p>
+          <h1>Pedidos</h1>
+          <p className={styles.pageHint}>Acompanhe os pedidos ativos por prioridade e consulte finalizados, cancelados e recusados no histórico.</p>
         </div>
-        <div className="muted" style={{ fontSize: 12 }}>Nenhum mega-status é persistido.</div>
+        <p className={styles.pageHint}>A tela é atualizada automaticamente enquanto a operação estiver aberta.</p>
       </header>
 
       <OrderManagerBoard storeId={context.storeId} orders={orders as OrderManagerRow[]} />

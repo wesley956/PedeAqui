@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  ORDER_ATTENTION_MINUTES,
   canCompleteFromManager,
   completionBlockers,
+  deriveOperationalBucket,
   deriveOrderLane,
   elapsedLabel,
+  isOrderAttentionLate,
   type OrderManagerRow,
 } from "@/features/orders/manager-model";
 
@@ -55,6 +58,39 @@ describe("order manager timing", () => {
     expect(elapsedLabel(created, Date.parse("2026-08-10T20:00:30.000Z"))).toBe("agora");
     expect(elapsedLabel(created, Date.parse("2026-08-10T20:17:00.000Z"))).toBe("17 min");
     expect(elapsedLabel(created, Date.parse("2026-08-10T21:25:00.000Z"))).toBe("1h 25m");
+  });
+
+  it("treats 30 minutes as a visual attention threshold only for active orders", () => {
+    const created = "2026-08-10T20:00:00.000Z";
+    const beforeThreshold = Date.parse("2026-08-10T20:29:59.000Z");
+    const atThreshold = Date.parse("2026-08-10T20:30:00.000Z");
+    expect(ORDER_ATTENTION_MINUTES).toBe(30);
+    expect(isOrderAttentionLate(order({ created_at: created }), beforeThreshold)).toBe(false);
+    expect(isOrderAttentionLate(order({ created_at: created }), atThreshold)).toBe(true);
+    expect(isOrderAttentionLate(order({ created_at: created, order_status: "completed" }), atThreshold)).toBe(false);
+  });
+});
+
+describe("operational order buckets", () => {
+  const now = Date.parse("2026-08-10T20:20:00.000Z");
+
+  it("keeps active orders in presentation buckets derived from authoritative states", () => {
+    expect(deriveOperationalBucket(order(), now)).toBe("new");
+    expect(deriveOperationalBucket(order({ order_status: "confirmed", production_status: "preparing" }), now)).toBe("preparing");
+    expect(deriveOperationalBucket(order({ order_status: "confirmed", production_status: "ready" }), now)).toBe("ready");
+    expect(deriveOperationalBucket(order({ order_status: "confirmed", production_status: "queued" }), now)).toBe("queued");
+  });
+
+  it("moves an old active order to attention without persisting a new state", () => {
+    const lateNow = Date.parse("2026-08-10T20:31:00.000Z");
+    expect(deriveOperationalBucket(order({ order_status: "confirmed", production_status: "preparing" }), lateNow)).toBe("late");
+  });
+
+  it("keeps terminal orders in history even when they are older than the attention threshold", () => {
+    const lateNow = Date.parse("2026-08-10T22:00:00.000Z");
+    expect(deriveOperationalBucket(order({ order_status: "completed" }), lateNow)).toBe("history");
+    expect(deriveOperationalBucket(order({ order_status: "canceled" }), lateNow)).toBe("history");
+    expect(deriveOperationalBucket(order({ order_status: "rejected" }), lateNow)).toBe("history");
   });
 });
 
