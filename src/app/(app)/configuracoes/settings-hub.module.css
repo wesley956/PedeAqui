@@ -1,0 +1,14 @@
+.root { display: grid; gap: var(--space-6); }
+.header { display: grid; gap: var(--space-2); }
+.header h1, .section h2 { margin: 0; }
+.header p, .section p { margin: 0; }
+.section { display: grid; gap: var(--space-3); }
+.sectionHeader { display: grid; gap: var(--space-1); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: var(--space-3); }
+.linkCard { min-height: 132px; padding: var(--space-4); display: grid; align-content: start; gap: var(--space-2); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); background: var(--surface-1); }
+.linkCard:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.linkCard:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.linkCard strong { font-size: var(--font-size-md); }
+.linkCard span { color: var(--text-secondary); font-size: var(--font-size-sm); }
+.linkCard em { margin-top: auto; color: var(--accent); font-size: var(--font-size-xs); font-style: normal; font-weight: var(--font-weight-bold); text-transform: uppercase; }
+@media (max-width: 640px) { .root { gap: var(--space-5); } .linkCard { min-height: 112px; } }
