@@ -64,6 +64,23 @@
   .sidebar-toggle, .app-nav-link { min-height: var(--control-height-lg); }
 }
 
+@media (min-width: 901px) and (max-width: 1180px) {
+  .app-shell,
+  .app-shell:has(.desktop-navigation[data-compact="true"]) { grid-template-columns: 88px minmax(0, 1fr); }
+  .app-sidebar { padding-inline: var(--space-2); }
+  .brand-row { justify-content: center; padding-inline: 0; }
+  .brand-wordmark,
+  .sidebar-toggle-label,
+  .nav-group-title,
+  .nav-link-label { display: none; }
+  .nav-link-marker { display: grid; }
+  .app-nav-link { justify-content: center; padding-inline: var(--space-2); }
+  .app-nav { gap: var(--space-2); }
+  .nav-group-links { gap: var(--space-1); }
+  .app-topbar { padding-inline: var(--space-4); }
+  .app-content { padding: var(--space-4); }
+}
+
 @media (max-width: 900px) {
   .app-shell,
   .app-shell:has(.desktop-navigation[data-compact="true"]) {
