@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { Button } from "./button";
 import styles from "./feedback.module.css";
 
@@ -48,6 +48,9 @@ export function Toast({ tone = "info", title, children, action, onDismiss, dismi
 
 export function Dialog({ open, title, description, children, primaryAction, secondaryAction, onClose, closeLabel = "Fechar diálogo" }: { open: boolean; title: string; description?: string; children?: ReactNode; primaryAction?: ReactNode; secondaryAction?: ReactNode; onClose: () => void; closeLabel?: string }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const baseId = useId();
+  const titleId = `${baseId}-title`;
+  const descriptionId = `${baseId}-description`;
 
   useEffect(() => {
     const dialog = ref.current;
@@ -70,14 +73,14 @@ export function Dialog({ open, title, description, children, primaryAction, seco
   }, [onClose]);
 
   return (
-    <dialog ref={ref} className={styles.dialog} aria-labelledby="pedeaqui-dialog-title" aria-describedby={description ? "pedeaqui-dialog-description" : undefined}>
+    <dialog ref={ref} className={styles.dialog} aria-labelledby={titleId} aria-describedby={description ? descriptionId : undefined}>
       <div className={styles.dialogInner}>
         <header className={styles.dialogHeader}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--space-3)" }}>
-            <h2 id="pedeaqui-dialog-title" className={styles.dialogTitle}>{title}</h2>
+            <h2 id={titleId} className={styles.dialogTitle}>{title}</h2>
             <button type="button" className={styles.close} onClick={onClose} aria-label={closeLabel}>×</button>
           </div>
-          {description ? <p id="pedeaqui-dialog-description" className={styles.dialogDescription}>{description}</p> : null}
+          {description ? <p id={descriptionId} className={styles.dialogDescription}>{description}</p> : null}
         </header>
         {children}
         {(secondaryAction || primaryAction) ? <footer className={styles.dialogActions}>{secondaryAction}{primaryAction}</footer> : null}
