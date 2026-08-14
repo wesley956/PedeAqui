@@ -13,17 +13,18 @@ function Feedback({ state }: { state: DeliveryActionState }) {
 }
 
 export function DeliveryOperationForm({
-  intent, orderId, deliveryId, drivers = [], currentDriverId = null,
+  intent, orderId, deliveryId, drivers = [], currentDriverId = null, prominent = false,
 }: {
   intent: "waiting" | "assign" | "picked_up" | "out_for_delivery" | "delivered";
   orderId?: string;
   deliveryId?: string;
   drivers?: Array<{ id: string; name: string; active: boolean; on_duty: boolean; max_active_deliveries: number; activeDeliveries: number }>;
   currentDriverId?: string | null;
+  prominent?: boolean;
 }) {
   const [state, action, pending] = useActionState(deliveryOperationAction, initial);
   const key = useMemo(() => crypto.randomUUID(), []);
-  const labels = { waiting: "Enviar para entregas", assign: currentDriverId ? "Reatribuir" : "Atribuir", picked_up: "Pedido retirado", out_for_delivery: "Saiu para entrega", delivered: "Marcar entregue" };
+  const labels = { waiting: "Enviar para entregas", assign: currentDriverId ? "Reatribuir" : "Atribuir", picked_up: "Confirmar retirada", out_for_delivery: "Iniciar rota", delivered: "Confirmar entrega" };
   const available = drivers.filter((driver) => driver.active && driver.on_duty && (driver.activeDeliveries < driver.max_active_deliveries || driver.id === currentDriverId));
 
   return (
@@ -39,7 +40,7 @@ export function DeliveryOperationForm({
         </select>
         {currentDriverId ? <input name="reason" minLength={3} maxLength={500} placeholder="Motivo da reatribuição" className={styles.input} /> : null}
       </> : null}
-      <button type="submit" disabled={pending || (intent === "assign" && available.length === 0)} className={styles.button}>{pending ? "Processando…" : labels[intent]}</button>
+      <button type="submit" disabled={pending || (intent === "assign" && available.length === 0)} className={`${styles.button} ${prominent ? styles.prominentButton : ""}`}>{pending ? "Processando…" : labels[intent]}</button>
       <Feedback state={state} />
     </form>
   );
