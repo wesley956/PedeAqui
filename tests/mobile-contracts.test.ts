@@ -6,6 +6,10 @@ function source(path: string) {
   return readFileSync(join(process.cwd(), path), "utf8");
 }
 
+function compactCss(path: string) {
+  return source(path).replace(/\s+/g, "");
+}
+
 describe("mobile UX contracts", () => {
   it("keeps every primary module reachable after the sidebar disappears", () => {
     const shell = source("src/components/layout/app-shell.tsx");
@@ -16,7 +20,7 @@ describe("mobile UX contracts", () => {
   });
 
   it("makes the full mobile navigation horizontally reachable", () => {
-    const css = source("src/app/shell.css");
+    const css = compactCss("src/app/shell.css");
     expect(css).toContain("grid-auto-flow:column");
     expect(css).toContain("overflow-x:auto");
     expect(css).toContain("min-height:52px");
