@@ -5,6 +5,7 @@ import styles from "./settings-hub.module.css";
 
 const storeSettings = [
   { title: "Cardápio digital", description: "Identidade, publicação, entrega/retirada e pedido mínimo.", href: "/configuracoes/cardapio", permissions: [PERMISSIONS.STORES_VIEW] },
+  { title: "Salão e mesas", description: "Estrutura de mesas, capacidade, áreas e QR do salão.", href: "/configuracoes/salao", permissions: [PERMISSIONS.DINING_MANAGE] },
   { title: "Horários", description: "Períodos de funcionamento, inclusive após meia-noite.", href: "/configuracoes/horarios", permissions: [PERMISSIONS.STORES_VIEW] },
   { title: "Entrega", description: "Prazo, taxa padrão, frete grátis e bairros atendidos.", href: "/configuracoes/entrega", permissions: [PERMISSIONS.STORES_VIEW] },
   { title: "Pagamentos", description: "Pix, cartões e dinheiro disponíveis no checkout.", href: "/configuracoes/pagamentos", permissions: [PERMISSIONS.STORES_VIEW] },
@@ -19,7 +20,6 @@ const administrationDescriptions: Record<string, string> = {
   purchases: "Compras e entrada de suprimentos.",
   team: "Usuários, funções e equipe — inclusive perfis de entrega.",
   scale: "Escalas e organização da equipe.",
-  dining: "Mesas e operação do salão na superfície já existente.",
 };
 
 export default async function SettingsPage() {

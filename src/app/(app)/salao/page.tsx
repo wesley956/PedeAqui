@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { createDiningTableAction } from "@/features/dining/actions";
 import styles from "@/features/dining/dining.module.css";
 import { DiningService } from "@/server/dining/dining-service";
 import { occupiedMinutes } from "@/server/dining/model";
@@ -9,22 +8,44 @@ const statusLabel: Record<string, string> = { available: "Livre", occupied: "Ocu
 
 export default async function DiningPage() {
   const { tables } = await DiningService.listTables();
+  const active = tables.filter((table) => table.tab);
+  const settling = active.filter((table) => table.tab?.status === "settling");
+
   return <div className={styles.page}>
-    <header className={styles.header}><div><p className={styles.muted} style={{ margin: 0 }}>OPERAÇÃO DE SALÃO</p><h1>Mesas e comandas</h1><p className={styles.muted}>Abra mesas, acompanhe consumo e feche contas usando o mesmo motor de pedidos do PedeAqui.</p></div></header>
-    <section className={styles.tableGrid}>
-      {tables.map((table) => <Link href={`/salao/${table.id}`} key={table.id} className={styles.tableCard}>
-        <div className={styles.cardTop}><strong>{table.name}</strong><span className={styles.status}>{statusLabel[table.status] ?? table.status}</span></div>
-        <div><span className={styles.muted}>{table.area || `Mesa ${table.code}`}</span>{table.tab ? <><div className={styles.metric}>{money(table.due_cents)}</div><div className={styles.muted}>Comanda #{table.tab.display_number} · {table.tab.guest_count} pessoa(s)</div><div className={styles.muted}>{occupiedMinutes(table.tab.opened_at)} min aberta</div></> : <div className={styles.muted} style={{ marginTop: 18 }}>Sem comanda ativa</div>}</div>
-      </Link>)}
-      {!tables.length ? <div className={styles.panel}><strong>Nenhuma mesa cadastrada</strong><span className={styles.muted}>Cadastre a primeira mesa abaixo.</span></div> : null}
+    <header className={styles.header}>
+      <div>
+        <p className={styles.muted} style={{ margin: 0 }}>OPERAÇÃO DE SALÃO</p>
+        <h1>Mesas</h1>
+        <p className={styles.muted}>Veja rapidamente ocupação, tempo de sessão, consumo e mesas que já pediram a conta.</p>
+      </div>
+      <Link href="/configuracoes/salao" className={styles.secondary}>Configurar mesas</Link>
+    </header>
+
+    <div className={styles.diningSummary} aria-label="Resumo do salão">
+      <span><strong>{tables.length - active.length}</strong> livres</span>
+      <span><strong>{active.length}</strong> em atendimento</span>
+      <span data-attention={settling.length > 0 ? "true" : undefined}><strong>{settling.length}</strong> com conta solicitada</span>
+    </div>
+
+    <section className={styles.tableGrid} aria-label="Mesas da unidade">
+      {tables.map((table) => {
+        const tab = table.tab;
+        const isSettling = tab?.status === "settling";
+        const visualStatus = isSettling ? "settling" : table.status;
+        return <Link href={`/salao/${table.id}`} key={table.id} className={styles.tableCard} data-table-status={visualStatus}>
+          <div className={styles.cardTop}>
+            <strong className={styles.tableName}>{table.name}</strong>
+            <span className={styles.status} data-table-status={visualStatus}>{isSettling ? "Conta solicitada" : statusLabel[table.status] ?? table.status}</span>
+          </div>
+          <div className={styles.tableMeta}>{table.area || `${table.capacity} lugar(es)`}</div>
+          {tab ? <>
+            <div className={styles.metric}>{money(table.due_cents)}</div>
+            <div className={styles.sessionMeta}><span>{tab.guest_count} pessoa(s)</span><span>{occupiedMinutes(tab.opened_at)} min</span></div>
+            <div className={styles.muted}>Comanda #{tab.display_number}</div>
+          </> : <div className={styles.freeState}>Toque para iniciar atendimento</div>}
+        </Link>;
+      })}
+      {!tables.length ? <div className={styles.panel}><strong>Nenhuma mesa cadastrada</strong><span className={styles.muted}>Cadastre mesas em Configurações → Salão.</span><Link href="/configuracoes/salao" className={styles.button}>Configurar salão</Link></div> : null}
     </section>
-    <section className={styles.panel}><h2 style={{ margin: 0 }}>Cadastrar mesa</h2><form action={createDiningTableAction} className={styles.formGrid}>
-      <label className={styles.field}><span>Código</span><input name="code" required maxLength={32} placeholder="01" /></label>
-      <label className={styles.field}><span>Nome</span><input name="name" required maxLength={80} placeholder="Mesa 01" /></label>
-      <label className={styles.field}><span>Capacidade</span><input name="capacity" type="number" min={1} max={100} defaultValue={4} required /></label>
-      <label className={styles.field}><span>Área</span><input name="area" maxLength={80} placeholder="Salão principal" /></label>
-      <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input name="qrEnabled" type="checkbox" /> Habilitar pedidos por QR</label>
-      <button className={styles.button} type="submit">Criar mesa</button>
-    </form></section>
   </div>;
 }
