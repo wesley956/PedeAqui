@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
+const isGitHubPages = process.env.GITHUB_PAGES === "true";
 
 export const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -28,7 +29,18 @@ export const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
-  ...(isDevelopment
+  ...(isGitHubPages
+    ? {
+        output: "export",
+        basePath: "/cruz",
+        assetPrefix: "/cruz/",
+        trailingSlash: true,
+        images: {
+          unoptimized: true,
+        },
+      }
+    : {}),
+  ...(isDevelopment && !isGitHubPages
     ? {
         allowedDevOrigins: ["*.app.github.dev"],
         experimental: {
@@ -38,14 +50,18 @@ const nextConfig: NextConfig = {
         },
       }
     : {}),
-  async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: [...securityHeaders],
-      },
-    ];
-  },
+  ...(!isGitHubPages
+    ? {
+        async headers() {
+          return [
+            {
+              source: "/(.*)",
+              headers: [...securityHeaders],
+            },
+          ];
+        },
+      }
+    : {}),
 };
 
 export default nextConfig;
