@@ -1,0 +1,37 @@
+{
+  "projectRef": "zsbsczjhiujnhdznrzck",
+  "verifiedAt": "2026-08-14",
+  "database": {
+    "publicTables": 113,
+    "rlsEnabled": 113,
+    "rlsDisabled": 0,
+    "anonTableGrants": 0,
+    "authenticatedTableGrants": 225,
+    "serviceRoleBypassRls": true,
+    "anonRoutineGrants": 7,
+    "authenticatedRoutineGrants": 15
+  },
+  "authenticatedWithoutJwt": {
+    "organizationsVisible": 0,
+    "storesVisible": 0,
+    "ordersVisible": 0,
+    "customersVisible": 0
+  },
+  "migrations": {
+    "count": 89,
+    "tailVersion": "20260813065546",
+    "tailName": "onboarding_role_permission_conflict_hotfix"
+  },
+  "integrity": {
+    "orphanOrderItems": 0,
+    "orphanCartItems": 0,
+    "orphanOrderItemModifiers": 0,
+    "orphanCartItemModifiers": 0,
+    "e2eFixtureResidue": 0
+  },
+  "advisor": {
+    "critical": 0,
+    "knownInfoRlsEnabledNoPolicy": 20,
+    "knownWarnings": ["auth_leaked_password_protection"]
+  }
+}
