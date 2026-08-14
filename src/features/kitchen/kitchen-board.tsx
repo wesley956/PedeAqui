@@ -222,7 +222,7 @@ function FilterButton({ active, onClick, children }: { active: boolean; onClick:
 }
 
 function SummaryBadge({ label, value, tone = "default" }: { label: string; value: number; tone?: "default" | "attention" | "late" }) {
-  const border = tone === "late" ? "#ef4444" : tone === "attention" ? "#f59e0b" : "var(--border)";
+  const border = tone === "late" ? "var(--state-danger)" : tone === "attention" ? "var(--state-warning)" : "var(--border)";
   return (
     <div style={{ border: `1px solid ${border}`, borderRadius: 999, padding: "5px 9px", fontSize: 11, fontWeight: 850 }}>
       {label}: {value}
@@ -232,15 +232,15 @@ function SummaryBadge({ label, value, tone = "default" }: { label: string; value
 
 function StationTag({ children, warning = false }: { children: React.ReactNode; warning?: boolean }) {
   return (
-    <span style={{ borderRadius: 999, padding: "3px 7px", background: warning ? "#3a2d1b" : "var(--surface-3)", fontSize: 10, fontWeight: 800 }}>
+    <span style={{ borderRadius: 999, padding: "3px 7px", background: warning ? "var(--state-warning-surface)" : "var(--surface-3)", fontSize: 10, fontWeight: 800 }}>
       {children}
     </span>
   );
 }
 
 function urgencyStyle(urgency: KitchenUrgency) {
-  if (urgency === "late") return { border: "2px solid #ef4444", background: "#2b1c1c", timerColor: "#ff8a80" };
-  if (urgency === "attention") return { border: "2px solid #f59e0b", background: "#2c2519", timerColor: "#ffc35c" };
+  if (urgency === "late") return { border: "2px solid var(--state-danger)", background: "var(--state-danger-surface)", timerColor: "var(--state-danger-text)" };
+  if (urgency === "attention") return { border: "2px solid var(--state-warning)", background: "var(--state-warning-surface)", timerColor: "var(--state-warning-text)" };
   return { border: "1px solid var(--border)", background: "var(--surface)", timerColor: "var(--text)" };
 }
 
