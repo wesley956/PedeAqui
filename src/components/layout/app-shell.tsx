@@ -3,32 +3,10 @@ import type { CSSProperties, ReactNode } from "react";
 import { signOutAction } from "@/features/auth/actions";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import { Button } from "@/components/ui/button";
+import { DesktopNavigation, type ShellNavigationItem } from "@/components/layout/desktop-navigation";
 import type { ResolvedBranding } from "@/server/platform/branding-read-service";
 
-export const navigation = [
-  ["Dashboard", "/dashboard"],
-  ["Pedidos", "/pedidos"],
-  ["Conversas", "/conversas"],
-  ["Salão", "/salao"],
-  ["Cardápio", "/cardapio/produtos"],
-  ["PDV", "/pdv"],
-  ["Caixa", "/caixa"],
-  ["Financeiro", "/financeiro"],
-  ["Fiscal", "/fiscal"],
-  ["Produção", "/producao"],
-  ["Entregas", "/entregas"],
-  ["Meu roteiro", "/entregador"],
-  ["Estoque", "/estoque"],
-  ["Fornecedores", "/fornecedores"],
-  ["Compras", "/compras"],
-  ["Clientes", "/clientes"],
-  ["Crescimento", "/crescimento"],
-  ["Escala", "/escala"],
-  ["Equipe", "/equipe"],
-  ["Configurações", "/configuracoes"],
-] as const;
-
-export function AppShell({ children, email, branding }: { children: ReactNode; email: string | null; branding: ResolvedBranding }) {
+export function AppShell({ children, email, branding, navigationItems }: { children: ReactNode; email: string | null; branding: ResolvedBranding; navigationItems: readonly ShellNavigationItem[] }) {
   // White-label values are runtime data. Keeping this single style object inline is intentional:
   // it only feeds the documented accent aliases and never introduces arbitrary layout values.
   const style = {
@@ -54,9 +32,7 @@ export function AppShell({ children, email, branding }: { children: ReactNode; e
             </>
           )}
         </div>
-        <nav className="app-nav" aria-label="Navegação principal">
-          {navigation.map(([label, href]) => <Link key={href} href={href} className="app-nav-link">{label}</Link>)}
-        </nav>
+        <DesktopNavigation items={navigationItems} />
       </aside>
       <div className="app-main">
         <header className="app-topbar">
@@ -77,7 +53,7 @@ export function AppShell({ children, email, branding }: { children: ReactNode; e
           </footer>
         ) : null}
       </div>
-      <nav className="mobile-nav" aria-label="Navegação mobile">{navigation.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
+      <nav className="mobile-nav" aria-label="Navegação mobile">{navigationItems.map((item) => <Link key={item.key} href={item.href}>{item.label}</Link>)}</nav>
     </div>
   );
 }

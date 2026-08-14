@@ -11,15 +11,14 @@ function compactCss(path: string) {
 }
 
 describe("mobile UX contracts", () => {
-  it("keeps every primary module reachable after the sidebar disappears", () => {
-    const shell = source("src/components/layout/app-shell.tsx");
-    expect(shell).not.toContain("navigation.slice(");
+  it("keeps every primary module represented in the canonical navigation model", () => {
+    const navigation = source("src/components/layout/navigation-model.ts");
     for (const href of ["/dashboard", "/pedidos", "/cardapio/produtos", "/pdv", "/producao", "/clientes", "/equipe", "/configuracoes"]) {
-      expect(shell).toContain(`"${href}"`);
+      expect(navigation).toContain(`href: "${href}"`);
     }
   });
 
-  it("makes the full mobile navigation horizontally reachable", () => {
+  it("makes the current mobile navigation horizontally reachable", () => {
     const css = compactCss("src/app/shell.css");
     expect(css).toContain("grid-auto-flow:column");
     expect(css).toContain("overflow-x:auto");
