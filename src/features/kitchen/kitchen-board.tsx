@@ -4,14 +4,16 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { OrderActionForm } from "@/features/orders/order-action-form";
 import {
   filterKitchenOrdersByStation,
   kitchenElapsedLabel,
   kitchenUrgency,
   type KitchenOrder,
   type KitchenStation,
-  type KitchenUrgency,
 } from "@/features/kitchen/kitchen-model";
+import styles from "./kitchen-board.module.css";
 
 const productionLabels: Record<KitchenOrder["productionStatus"], string> = {
   pending_confirmation: "Aguardando início",
@@ -20,12 +22,7 @@ const productionLabels: Record<KitchenOrder["productionStatus"], string> = {
   ready: "Pronto",
 };
 
-export function KitchenBoard({
-  storeId,
-  stations,
-  orders,
-  initialNow,
-}: {
+export function KitchenBoard({ storeId, stations, orders, initialNow }: {
   storeId: string;
   stations: KitchenStation[];
   orders: KitchenOrder[];
@@ -44,28 +41,13 @@ export function KitchenBoard({
     const supabase = createClient();
     const channel = supabase
       .channel(`kds:${storeId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
-        () => router.refresh(),
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` }, () => router.refresh())
       .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+    return () => { void supabase.removeChannel(channel); };
   }, [router, storeId]);
 
-  const visibleOrders = useMemo(
-    () => filterKitchenOrdersByStation(orders, stationId),
-    [orders, stationId],
-  );
-
-  const stationNames = useMemo(
-    () => new Map(stations.map((station) => [station.id, station.name])),
-    [stations],
-  );
-
+  const visibleOrders = useMemo(() => filterKitchenOrdersByStation(orders, stationId), [orders, stationId]);
+  const stationNames = useMemo(() => new Map(stations.map((station) => [station.id, station.name])), [stations]);
   const counts = useMemo(() => {
     let attention = 0;
     let late = 0;
@@ -78,51 +60,41 @@ export function KitchenBoard({
   }, [now, visibleOrders]);
 
   return (
-    <div style={{ display: "grid", gap: 14 }}>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        <FilterButton active={stationId === null} onClick={() => setStationId(null)}>
-          Todas
-        </FilterButton>
-        {stations.map((station) => (
-          <FilterButton key={station.id} active={stationId === station.id} onClick={() => setStationId(station.id)}>
-            {station.name}
-          </FilterButton>
-        ))}
-        <button type="button" onClick={() => router.refresh()} style={secondaryButton}>Atualizar</button>
+    <div className={styles.board}>
+      <div className={styles.toolbar}>
+        <div className={styles.filters} aria-label="Filtrar produção por estação">
+          <Button tone={stationId === null ? "primary" : "secondary"} size="lg" aria-pressed={stationId === null} onClick={() => setStationId(null)}>Todas</Button>
+          {stations.map((station) => (
+            <Button key={station.id} tone={stationId === station.id ? "primary" : "secondary"} size="lg" aria-pressed={stationId === station.id} onClick={() => setStationId(station.id)}>
+              {station.name}
+            </Button>
+          ))}
+        </div>
+        <Button type="button" tone="ghost" size="lg" onClick={() => router.refresh()}>Atualizar</Button>
       </div>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} aria-live="polite">
-        <SummaryBadge label="Na tela" value={visibleOrders.length} />
-        <SummaryBadge label="Atenção" value={counts.attention} tone="attention" />
-        <SummaryBadge label="Atrasados" value={counts.late} tone="late" />
+      <div className={styles.summary} aria-live="polite">
+        <Summary label="Na tela" value={visibleOrders.length} />
+        <Summary label="Atenção" value={counts.attention} tone="warning" />
+        <Summary label="Atrasados" value={counts.late} tone="danger" />
       </div>
 
       {stations.length === 0 ? (
-        <div className="card" style={{ padding: 24 }}>
+        <div className={styles.empty}>
           <strong>Nenhuma estação de produção ativa</strong>
-          <p className="muted" style={{ marginBottom: 0 }}>
-            O painel em “Todas” continua exibindo pedidos. Configure estações em Configurações → Impressões para usar o filtro de cozinha/chapa/fritura.
-          </p>
+          <p>O painel em “Todas” continua exibindo pedidos. Configure estações em Configurações → Impressões para usar o filtro por cozinha, chapa ou fritura.</p>
         </div>
       ) : null}
 
       {visibleOrders.length === 0 ? (
-        <div className="card" style={{ padding: 34, textAlign: "center" }}>
+        <div className={styles.empty}>
           <strong>Nenhum pedido em produção</strong>
-          <p className="muted" style={{ marginBottom: 0 }}>
-            Pedidos confirmados aparecerão aqui automaticamente.
-          </p>
+          <p>Pedidos confirmados aparecerão aqui automaticamente.</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: 12, alignItems: "start" }}>
+        <div className={styles.grid}>
           {visibleOrders.map((order) => (
-            <KitchenCard
-              key={order.id}
-              order={order}
-              now={now}
-              stationNames={stationNames}
-              filteredByStation={stationId !== null}
-            />
+            <KitchenCard key={order.id} order={order} now={now} stationNames={stationNames} filteredByStation={stationId !== null} />
           ))}
         </div>
       )}
@@ -130,127 +102,67 @@ export function KitchenBoard({
   );
 }
 
-function KitchenCard({
-  order,
-  now,
-  stationNames,
-  filteredByStation,
-}: {
+function KitchenCard({ order, now, stationNames, filteredByStation }: {
   order: KitchenOrder;
   now: number;
   stationNames: Map<string, string>;
   filteredByStation: boolean;
 }) {
   const urgency = kitchenUrgency(order, now);
-  const style = urgencyStyle(urgency);
+  const canStart = ["pending_confirmation", "queued"].includes(order.productionStatus);
+  const canReady = order.productionStatus === "preparing";
 
   return (
-    <article className="card" style={{ padding: 0, overflow: "hidden", border: style.border, background: style.background }}>
-      <header style={{ padding: "13px 14px", display: "flex", justifyContent: "space-between", gap: 14, alignItems: "start", borderBottom: "1px solid var(--border)" }}>
+    <article className={styles.card} data-urgency={urgency}>
+      <header className={styles.cardHeader}>
         <div>
-          <div style={{ fontSize: 24, fontWeight: 950 }}>#{order.displayNumber}</div>
-          <strong style={{ display: "block", marginTop: 2 }}>{order.customerName}</strong>
-          <div className="muted" style={{ fontSize: 11, marginTop: 3 }}>
-            {order.fulfillmentType === "delivery" ? "Entrega" : order.fulfillmentType === "pickup" ? "Retirada" : order.fulfillmentType}
-          </div>
+          <div className={styles.orderNumber}>#{order.displayNumber}</div>
+          <strong className={styles.customer}>{order.customerName}</strong>
+          <div className={styles.fulfillment}>{order.fulfillmentType === "delivery" ? "Entrega" : order.fulfillmentType === "pickup" ? "Retirada" : order.fulfillmentType}</div>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 24, lineHeight: 1, fontWeight: 950, color: style.timerColor }}>
-            {kitchenElapsedLabel(order, now)}
-          </div>
-          <div style={{ fontSize: 11, fontWeight: 850, marginTop: 7 }}>{productionLabels[order.productionStatus]}</div>
-          {urgency !== "fresh" ? (
-            <div style={{ marginTop: 5, fontSize: 10, fontWeight: 950, textTransform: "uppercase", color: style.timerColor }}>
-              {urgency === "late" ? "Atrasado" : "Atenção"}
-            </div>
-          ) : null}
+        <div className={styles.timerBlock}>
+          <div className={styles.timer}>{kitchenElapsedLabel(order, now)}</div>
+          <div className={styles.production}>{productionLabels[order.productionStatus]}</div>
+          {urgency !== "fresh" ? <div className={styles.urgency}>{urgency === "late" ? "Atrasado" : "Atenção"}</div> : null}
         </div>
       </header>
 
-      <div style={{ display: "grid", gap: 0 }}>
+      <div className={styles.items}>
         {order.items.map((item) => (
-          <div key={item.id} style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)", display: "grid", gap: 6 }}>
-            <div style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
-              <strong style={{ fontSize: 21, color: "var(--accent)" }}>{item.quantity}×</strong>
-              <strong style={{ fontSize: 17 }}>{item.name}</strong>
+          <div key={item.id} className={styles.item}>
+            <div className={styles.itemMain}>
+              <strong className={styles.quantity}>{item.quantity}×</strong>
+              <strong className={styles.itemName}>{item.name}</strong>
             </div>
             {item.modifiers.length > 0 ? (
-              <div style={{ display: "grid", gap: 3 }}>
-                {item.modifiers.map((modifier, index) => (
-                  <div key={`${item.id}:${modifier.groupName}:${modifier.name}:${index}`} className="muted" style={{ fontSize: 12 }}>
-                    + {modifier.name}
-                  </div>
-                ))}
+              <div className={styles.modifiers}>
+                {item.modifiers.map((modifier, index) => <div key={`${item.id}:${modifier.groupName}:${modifier.name}:${index}`}>+ {modifier.name}</div>)}
               </div>
             ) : null}
-            {item.note ? (
-              <div style={{ padding: "7px 8px", borderRadius: 8, background: "var(--surface-3)", fontSize: 12, fontWeight: 800 }}>
-                Obs.: {item.note}
-              </div>
-            ) : null}
+            {item.note ? <div className={styles.note}>Observação: {item.note}</div> : null}
             {!filteredByStation ? (
-              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+              <div className={styles.stations}>
                 {item.stationIds.length > 0
-                  ? item.stationIds.map((id) => <StationTag key={id}>{stationNames.get(id) ?? "Estação"}</StationTag>)
-                  : <StationTag warning>Sem estação</StationTag>}
+                  ? item.stationIds.map((stationId) => <span className={styles.stationTag} key={stationId}>{stationNames.get(stationId) ?? "Estação"}</span>)
+                  : <span className={styles.stationTag} data-warning="true">Sem estação</span>}
               </div>
             ) : null}
           </div>
         ))}
       </div>
 
-      <footer style={{ padding: 10 }}>
-        <Link href={`/pedidos/${order.id}`} style={{ display: "block", textAlign: "center", border: "1px solid var(--border)", borderRadius: 9, padding: "8px 10px", fontSize: 12, fontWeight: 850 }}>
-          Abrir pedido
-        </Link>
+      <footer className={styles.actions}>
+        <div className={styles.primaryAction}>
+          {canStart ? <OrderActionForm orderId={order.id} intent="start_production" label="Iniciar preparo" /> : null}
+          {canReady ? <OrderActionForm orderId={order.id} intent="mark_ready" label="Marcar como pronto" /> : null}
+          {!canStart && !canReady ? <div className={styles.production}>Sem ação de produção pendente</div> : null}
+        </div>
+        <Link href={`/pedidos/${order.id}`} className={styles.detailLink}>Detalhes</Link>
       </footer>
     </article>
   );
 }
 
-function FilterButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      style={{ ...secondaryButton, borderColor: active ? "var(--accent)" : "var(--border)", color: active ? "var(--accent)" : "var(--text)" }}
-    >
-      {children}
-    </button>
-  );
+function Summary({ label, value, tone = "neutral" }: { label: string; value: number; tone?: "neutral" | "warning" | "danger" }) {
+  return <div className={styles.summaryItem} data-tone={tone}><span>{label}</span><strong className={styles.summaryValue}>{value}</strong></div>;
 }
-
-function SummaryBadge({ label, value, tone = "default" }: { label: string; value: number; tone?: "default" | "attention" | "late" }) {
-  const border = tone === "late" ? "var(--state-danger)" : tone === "attention" ? "var(--state-warning)" : "var(--border)";
-  return (
-    <div style={{ border: `1px solid ${border}`, borderRadius: 999, padding: "5px 9px", fontSize: 11, fontWeight: 850 }}>
-      {label}: {value}
-    </div>
-  );
-}
-
-function StationTag({ children, warning = false }: { children: React.ReactNode; warning?: boolean }) {
-  return (
-    <span style={{ borderRadius: 999, padding: "3px 7px", background: warning ? "var(--state-warning-surface)" : "var(--surface-3)", fontSize: 10, fontWeight: 800 }}>
-      {children}
-    </span>
-  );
-}
-
-function urgencyStyle(urgency: KitchenUrgency) {
-  if (urgency === "late") return { border: "2px solid var(--state-danger)", background: "var(--state-danger-surface)", timerColor: "var(--state-danger-text)" };
-  if (urgency === "attention") return { border: "2px solid var(--state-warning)", background: "var(--state-warning-surface)", timerColor: "var(--state-warning-text)" };
-  return { border: "1px solid var(--border)", background: "var(--surface)", timerColor: "var(--text)" };
-}
-
-const secondaryButton: React.CSSProperties = {
-  minHeight: 38,
-  borderRadius: 10,
-  border: "1px solid var(--border)",
-  background: "var(--surface-2)",
-  color: "var(--text)",
-  padding: "7px 11px",
-  fontWeight: 850,
-  cursor: "pointer",
-};
