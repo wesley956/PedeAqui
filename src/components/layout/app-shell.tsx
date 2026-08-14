@@ -18,6 +18,7 @@ export function AppShell({ children, email, branding, navigationItems, operation
 
   return (
     <div className="app-shell" style={style}>
+      <a className="skip-link" href="#main-content">Pular para o conteúdo principal</a>
       <aside className="app-sidebar">
         <div className="brand-row" aria-label={branding.productName}>
           {usesPlatformDefault ? (
@@ -37,7 +38,7 @@ export function AppShell({ children, email, branding, navigationItems, operation
       </aside>
       <div className="app-main">
         <OperationTopbar email={email} data={operationHeader} />
-        <main className="app-content">{children}</main>
+        <main id="main-content" className="app-content" tabIndex={-1}>{children}</main>
         {!branding.hidePedeAquiBranding && !usesPlatformDefault ? (
           <footer className="platform-footer" aria-label="Tecnologia PedeAqui">
             <span>Tecnologia</span>
