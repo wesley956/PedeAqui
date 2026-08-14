@@ -34,9 +34,9 @@ describe("contextual navigation", () => {
 
   it("references only canonical permission constants for tenant modules", () => {
     const valid = new Set<string>(Object.values(PERMISSIONS));
-    for (const module of NAVIGATION_MODULES) {
-      if (module.authorization === "platform") continue;
-      for (const permission of module.permissions) expect(valid.has(permission), `${module.key}:${permission}`).toBe(true);
+    for (const navModule of NAVIGATION_MODULES) {
+      if (navModule.authorization === "platform") continue;
+      for (const permission of navModule.permissions) expect(valid.has(permission), `${navModule.key}:${permission}`).toBe(true);
     }
   });
 });
