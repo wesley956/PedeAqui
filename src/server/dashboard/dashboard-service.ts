@@ -71,10 +71,12 @@ export class DashboardService {
 
     const cancellationsToday = (cancellationsResult.data ?? []).filter((row) => localDate(row.created_at, snapshot.timezone) === snapshot.local_date).length;
 
+    // Same definition used by /estoque: configured item whose projected balance is
+    // less than or equal to the configured minimum quantity.
     const balanceByItem = new Map((inventoryBalancesResult.data ?? []).map((row) => [row.inventory_item_id, Number(row.quantity)]));
     const nameByItem = new Map((inventoryItemsResult.data ?? []).map((row) => [row.id, row.name]));
     const criticalStock = (inventoryConfigsResult.data ?? [])
-      .filter((row) => balanceByItem.get(row.inventory_item_id) ?? 0 <= Number(row.minimum_quantity))
+      .filter((row) => (balanceByItem.get(row.inventory_item_id) ?? 0) <= Number(row.minimum_quantity))
       .map((row) => ({
         id: row.inventory_item_id,
         name: nameByItem.get(row.inventory_item_id) ?? "Insumo",
