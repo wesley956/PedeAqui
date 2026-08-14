@@ -22,40 +22,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
       - name: Setup GitHub Pages
         continue-on-error: true
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-
-      - name: Prepare static-only build
-        shell: bash
+      - name: Prepare Pages site
         run: |
-          if [ -d src/app/api ]; then
-            mv src/app/api .pages-disabled-api
-          fi
-          find src/app -type f \( -name 'route.ts' -o -name 'route.tsx' -o -name 'route.js' -o -name 'route.jsx' \) -delete
-          if [ -f src/proxy.ts ]; then
-            mv src/proxy.ts .pages-disabled-proxy.ts
-          fi
-
-      - name: Build static site
-        env:
-          GITHUB_PAGES: "true"
-        run: npm run build
+          mkdir -p pages/brand
+          cp public/brand/pedeaqui-logo-on-dark.svg pages/brand/
+          cp public/brand/pedeaqui-logo.svg pages/brand/
+          cp public/brand/pedeaqui-symbol.svg pages/brand/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./out
+          path: ./pages
 
   deploy:
     environment:
