@@ -25,10 +25,11 @@ describe("technical rename map [320]", () => {
     expect(map).toContain("wesley956/PedeAqui");
   });
 
-  it("keeps the technical rename deferred until [321]/[322]", () => {
+  it("keeps the mapped target aligned after [321]/[322]", () => {
     const pkg = JSON.parse(read("package.json")) as { name: string };
-    expect(pkg.name).toBe("cruz");
+    expect(pkg.name).toBe("pedeaqui");
     expect(read("README.md")).toContain("# PedeAqui");
+    expect(read("docs/TECHNICAL_RENAME_MAP_320.md")).toContain("Package alvo: **`pedeaqui`**");
   });
 
   it("does not hardcode the old repository URL in central workflows", () => {
