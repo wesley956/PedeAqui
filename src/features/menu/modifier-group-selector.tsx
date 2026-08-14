@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PublicProduct } from "@/server/menu/schemas";
 import styles from "./modifier-group-selector.module.css";
 
-type Group = PublicProduct["modifier_groups"][number];
+type Group = PublicProduct["product"]["modifier_groups"][number];
 function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
 
 export function ModifierGroupSelector({ group, disabled = false }: { group: Group; disabled?: boolean }) {
