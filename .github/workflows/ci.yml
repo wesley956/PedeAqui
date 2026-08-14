@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Validate repository technical name
+        run: node scripts/check-repository-name.mjs
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
