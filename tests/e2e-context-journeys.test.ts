@@ -72,8 +72,8 @@ describe("E2E context journeys [317]", () => {
     const delivery = read("src/app/(app)/entregas/page.tsx");
     expect(orders).toContain("OrderService.list");
     expect(orders).toContain("OrderManagerBoard");
-    expect(dining).toContain("DiningService.overview");
-    expect(dining).toContain("TableOverview");
+    expect(dining).toContain("DiningService.listTables");
+    expect(dining).toContain('aria-label="Mesas da unidade"');
     expect(kitchen).toContain("KitchenService.snapshot");
     expect(kitchen).toContain("KitchenBoard");
     expect(delivery).toContain("DeliveryOperationsService.loadOperations");
