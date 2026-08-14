@@ -7,7 +7,7 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
             <div aria-hidden style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, var(--accent), var(--accent-strong))" }} />
-            <strong style={{ fontSize: 20 }}>Cruz</strong>
+            <strong style={{ fontSize: 20 }}>PedeAqui</strong>
           </div>
           <h1 style={{ margin: 0, fontSize: 26 }}>{title}</h1>
           <p className="muted" style={{ marginBottom: 0 }}>{subtitle}</p>
