@@ -54,7 +54,7 @@ export function ResponsiveDataList<T>({
     <div className={styles.root}>
       <div className={styles.tableWrap}>
         <table className={styles.table}>
-          <caption style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>{caption}</caption>
+          <caption className={styles.visuallyHidden}>{caption}</caption>
           <thead>
             <tr>
               {columns.map((column) => (
