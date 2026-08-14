@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { safeInternalPath } from "@/lib/auth/safe-return-path";
 import { createClient } from "@/lib/supabase/server";
 import { StartRouteService } from "@/server/access/start-route-service";
 
@@ -21,12 +22,6 @@ function getAppUrl() {
   return process.env.APP_URL ?? "http://localhost:3000";
 }
 
-function getSafeReturnPath(value: FormDataEntryValue | null) {
-  if (typeof value !== "string" || value.length === 0) return null;
-  if (!value.startsWith("/") || value.startsWith("//")) return null;
-  return value;
-}
-
 function loginErrorPath(error: string, returnPath: string | null) {
   const next = returnPath ? `&next=${encodeURIComponent(returnPath)}` : "";
   return `/login?error=${error}${next}`;
@@ -34,14 +29,14 @@ function loginErrorPath(error: string, returnPath: string | null) {
 
 export async function signInAction(formData: FormData) {
   const parsed = getCredentials(formData);
-  const returnPath = getSafeReturnPath(formData.get("next"));
+  const returnPath = safeInternalPath(typeof formData.get("next") === "string" ? String(formData.get("next")) : null);
   if (!parsed.success) redirect(loginErrorPath("invalid_input", returnPath));
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) redirect(loginErrorPath("invalid_credentials", returnPath));
 
-  // Explicit deep links win. Only a generic login uses the operational start route.
+  // Explicit internal deep links win. Only a generic login uses the operational start route.
   redirect(returnPath ?? await StartRouteService.resolve());
 }
 
@@ -66,11 +61,10 @@ export async function requestPasswordResetAction(formData: FormData) {
   if (!email.success) redirect("/recuperar-senha?error=invalid_email");
 
   const supabase = await createClient();
+  // Intentionally return the same UI result regardless of account existence.
   await supabase.auth.resetPasswordForEmail(email.data, {
     redirectTo: `${getAppUrl()}/auth/callback?next=/nova-senha`,
   });
-
-  // Same result regardless of account existence to reduce enumeration.
   redirect("/recuperar-senha?status=sent");
 }
 
@@ -79,6 +73,9 @@ export async function updatePasswordAction(formData: FormData) {
   if (!password.success) redirect("/nova-senha?error=invalid_password");
 
   const supabase = await createClient();
+  const { data: userData, error: sessionError } = await supabase.auth.getUser();
+  if (sessionError || !userData.user) redirect("/login?error=session_expired&next=/nova-senha");
+
   const { error } = await supabase.auth.updateUser({ password: password.data });
   if (error) redirect("/nova-senha?error=update_failed");
 
