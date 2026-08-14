@@ -1,10 +1,7 @@
-import type { HTMLAttributes, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export { SelectField as Select } from "./form-controls";
-
-export function Card({ children, style, ...props }: HTMLAttributes<HTMLElement>) {
-  return <section {...props} className={`card ${props.className ?? ""}`} style={{ padding: "var(--space-5)", ...style }}>{children}</section>;
-}
+export { Card } from "./card";
 
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "success" | "danger" }) {
   const color = tone === "success" ? "var(--success)" : tone === "danger" ? "var(--danger)" : "var(--muted)";

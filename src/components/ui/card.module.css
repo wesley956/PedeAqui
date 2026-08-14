@@ -1,0 +1,80 @@
+.card {
+  min-width: 0;
+  border: var(--border-width) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  overflow: clip;
+}
+
+.standard { padding: var(--space-5); }
+.compact { padding: var(--space-4); }
+.comfortable { padding: var(--space-6); }
+
+.informational { background: var(--surface-1); }
+.operational { background: var(--surface-2); border-color: var(--border-strong); }
+.kpi { background: linear-gradient(180deg, var(--surface-2), var(--surface-1)); }
+.order { border-inline-start: 4px solid var(--brand-primary); }
+.product { background: var(--surface-1); }
+.table { background: var(--surface-2); }
+.customer { background: var(--surface-1); }
+.alert { border-color: var(--state-warning); background: var(--state-warning-surface); }
+
+.neutral { --card-accent: var(--border-strong); }
+.success { --card-accent: var(--state-success); border-color: var(--state-success); }
+.warning { --card-accent: var(--state-warning); border-color: var(--state-warning); }
+.danger { --card-accent: var(--state-danger); border-color: var(--state-danger); }
+.info { --card-accent: var(--state-info); border-color: var(--state-info); }
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.heading {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-snug);
+  font-weight: var(--font-weight-bold);
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.body { min-width: 0; }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+.kpiValue {
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-tight);
+  font-weight: var(--font-weight-extrabold);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .standard, .comfortable { padding: var(--space-4); }
+  .header { gap: var(--space-3); margin-bottom: var(--space-3); }
+  .actions { justify-content: stretch; }
+  .actions > * { flex: 1 1 auto; }
+}
