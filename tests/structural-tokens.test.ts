@@ -76,7 +76,8 @@ describe("PedeAqui structural design tokens", () => {
   it("applies structural tokens to the shared primitives", () => {
     const buttonComponent = read("src/components/ui/button.tsx");
     const buttonStyles = read("src/components/ui/button.module.css");
-    const input = read("src/components/ui/input.tsx");
+    const formComponent = read("src/components/ui/form-controls.tsx");
+    const formStyles = read("src/components/ui/form-controls.module.css");
     const primitives = read("src/components/ui/primitives.tsx");
 
     expect(buttonComponent).toContain('import styles from "./button.module.css"');
@@ -84,13 +85,14 @@ describe("PedeAqui structural design tokens", () => {
     expect(buttonStyles).toContain("var(--radius-md)");
     expect(buttonStyles).toContain("var(--motion-fast)");
 
-    expect(input).toContain("var(--control-height)");
-    expect(input).toContain("var(--font-size-sm)");
-    expect(input).toContain("var(--space-3)");
+    expect(formComponent).toContain('import styles from "./form-controls.module.css"');
+    expect(formStyles).toContain("var(--control-height)");
+    expect(formStyles).toContain("var(--font-size-sm)");
+    expect(formStyles).toContain("var(--space-3)");
 
     expect(primitives).toContain("var(--radius-pill)");
     expect(primitives).toContain("var(--space-5)");
-    expect(primitives).toContain("var(--control-height)");
+    expect(primitives).toContain("var(--radius-sm)");
   });
 
   it("keeps the structural contract documented", () => {
