@@ -1,5 +1,16 @@
 # PedeAqui
 
-Plataforma SaaS multiempresa para gestão, pedidos, PDV, produção, impressão, delivery e operação de estabelecimentos alimentícios.
+Plataforma SaaS multiempresa para gestão, pedidos, PDV, produção/KDS, impressão, salão, delivery, caixa, estoque, compras, financeiro, fiscal, CRM, cardápio público e checkout de estabelecimentos alimentícios.
 
-> Fonte oficial do projeto: consulte `docs/PROJECT_INDEX.md` antes de implementar novas funcionalidades.
+## Baseline oficial
+
+- Repositório: `wesley956/PedeAqui`
+- Package: `pedeaqui`
+- Branch principal: `main`
+- GitHub Pages: `https://wesley956.github.io/PedeAqui/`
+- Supabase oficial: project ref `zsbsczjhiujnhdznrzck`
+- Ciclo consolidado: **[001]–[323]**
+
+> Fonte canônica para retomar o projeto: [`docs/PROJECT_INDEX.md`](docs/PROJECT_INDEX.md).
+
+Identidade visual: [`docs/BRAND_IDENTITY.md`](docs/BRAND_IDENTITY.md). Baseline final: [`docs/FINAL_BASELINE_323.md`](docs/FINAL_BASELINE_323.md).
