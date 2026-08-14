@@ -43,8 +43,10 @@ describe("external integration inventory", () => {
 
   it("does not dump raw billing webhook errors at the HTTP boundary", () => {
     const route = read("src/app/api/webhooks/billing/[providerKey]/route.ts");
-    expect(route).toContain("errorType");
-    expect(route).not.toContain('console.error("billing webhook failed",error)');
+    const failure = read("src/server/observability/failure.ts");
+    expect(route).toContain('recordFailure("billing.webhook.failed"');
+    expect(failure).toContain("errorType");
+    expect(route).not.toContain("console.error");
     expect(route).not.toContain("rawBody,error");
   });
 
