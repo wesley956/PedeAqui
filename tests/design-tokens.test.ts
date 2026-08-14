@@ -48,8 +48,8 @@ function sourceFiles(directory: string): string[] {
   });
 }
 
-function tokensMatching(content: string, pattern: RegExp) {
-  return [...content.matchAll(pattern)].map((match) => match[1]);
+function tokensMatching(content: string, pattern: RegExp): string[] {
+  return [...content.matchAll(pattern)].flatMap((match) => match[1] ? [match[1]] : []);
 }
 
 describe("PedeAqui semantic design tokens", () => {
