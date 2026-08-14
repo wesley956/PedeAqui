@@ -11,10 +11,13 @@ describe("post-rename technical integration guardrail", () => {
     expect(pkg.name).toBe("pedeaqui");
   });
 
-  it("pins CI to the canonical repository context", () => {
+  it("pins CI to the canonical repository context through the guard script", () => {
     const ci = read(".github/workflows/ci.yml");
-    expect(ci).toContain("wesley956/PedeAqui");
+    const guard = read("scripts/check-repository-name.mjs");
+    expect(ci).toContain("node scripts/check-repository-name.mjs");
+    expect(guard).toContain('const expected = "wesley956/PedeAqui"');
     expect(ci).not.toContain("wesley956/cruz");
+    expect(guard).not.toContain("wesley956/cruz");
   });
 
   it("keeps Pages repository-name agnostic", () => {
