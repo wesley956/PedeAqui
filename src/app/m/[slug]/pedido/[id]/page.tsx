@@ -1,38 +1,18 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
+import { PublicOrderRefresh } from "@/features/orders/public-order-refresh";
+import { PublicOrderTimeline } from "@/features/orders/public-order-timeline";
+import { paymentMethodLabels, type FulfillmentType } from "@/server/checkout/schemas";
 import { orderCookieName } from "@/server/orders/order-token";
 import { PublicOrderService } from "@/server/orders/public-order-service";
-import { orderStatusLabels, productionStatusLabels } from "@/server/orders/state-machines";
-import { paymentMethodLabels } from "@/server/checkout/schemas";
-import { PublicOrderRefresh } from "@/features/orders/public-order-refresh";
+import { orderStatusLabels, productionStatusLabels, type FulfillmentStatus, type OrderStatus, type ProductionStatus } from "@/server/orders/state-machines";
+import styles from "./order-tracking.module.css";
 
-function money(cents: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
-}
-
-const paymentLabels: Record<string, string> = {
-  pending: "Pendente",
-  authorized: "Autorizado",
-  paid: "Pago",
-  failed: "Falhou",
-  partially_refunded: "Parcialmente estornado",
-  refunded: "Estornado",
-};
-
-const fulfillmentLabels: Record<string, string> = {
-  pending: "Aguardando operação",
-  awaiting_assignment: "Aguardando entregador",
-  assigned: "Entregador definido",
-  picked_up: "Pedido retirado pelo entregador",
-  out_for_delivery: "Saiu para entrega",
-  delivered: "Entregue",
-  awaiting_pickup: "Aguardando retirada",
-  picked_up_by_customer: "Retirado",
-  served: "Servido",
-  canceled: "Cancelado",
-  not_required: "Não aplicável",
-};
+function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
+const paymentLabels: Record<string, string> = { pending: "Pendente", authorized: "Autorizado", paid: "Pago", failed: "Falhou", partially_refunded: "Parcialmente estornado", refunded: "Estornado" };
+const fulfillmentLabels: Record<string, string> = { pending: "Aguardando operação", awaiting_assignment: "Aguardando entregador", assigned: "Entregador definido", picked_up: "Pedido retirado pelo entregador", out_for_delivery: "Saiu para entrega", delivered: "Entregue", awaiting_pickup: "Aguardando retirada", picked_up_by_customer: "Retirado", served: "Servido", canceled: "Cancelado", not_required: "Não aplicável" };
 
 export default async function PublicOrderPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
@@ -40,81 +20,49 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
   if (!accessToken) notFound();
   const data = await PublicOrderService.get(slug, id, accessToken);
   if (!data) notFound();
-
   const { order, items, store } = data;
-  const terminal = order.order_status === "completed" || order.order_status === "canceled" || order.order_status === "rejected";
+  const orderStatus = order.order_status as OrderStatus;
+  const productionStatus = order.production_status as ProductionStatus;
+  const fulfillmentStatus = order.fulfillment_status as FulfillmentStatus;
+  const fulfillmentType = order.fulfillment_type as FulfillmentType;
+  const terminal = orderStatus === "completed" || orderStatus === "canceled" || orderStatus === "rejected";
+  const terminalProblem = orderStatus === "canceled" || orderStatus === "rejected";
+  const completedFulfillment = fulfillmentStatus === "delivered" || fulfillmentStatus === "picked_up_by_customer";
+  const currentLabel = terminalProblem ? orderStatusLabels[orderStatus] : fulfillmentStatus === "delivered" ? "Entregue" : fulfillmentStatus === "picked_up_by_customer" ? "Retirado" : fulfillmentStatus === "out_for_delivery" ? "Saiu para entrega" : productionStatus === "ready" ? "Pronto" : productionStatus === "preparing" || productionStatus === "queued" ? productionStatusLabels[productionStatus] : orderStatusLabels[orderStatus];
+  const updatedAt = new Date(order.updated_at).toLocaleString("pt-BR");
 
-  return (
-    <main style={{ minHeight: "100vh", background: "#fffdf9", color: "#181818", padding: "18px 12px 64px" }}>
-      {!terminal ? <PublicOrderRefresh /> : null}
-      <div style={{ width: "min(760px, 100%)", margin: "0 auto", display: "grid", gap: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
-          <Link href={`/m/${slug}`} style={{ color: "#6f675f", fontWeight: 700 }}>← Cardápio</Link>
-          <strong>Pede<span style={{ color: "#FF6B00" }}>Aqui</span></strong>
-        </div>
+  return <main className={styles.root}>
+    {!terminal ? <PublicOrderRefresh /> : null}
+    <div className={styles.container}>
+      <div className={styles.topbar}><Link href={`/m/${slug}`} className={styles.back}>← Cardápio</Link><PedeAquiLogo size="xs" decorative /></div>
+      <header className={`card ${styles.hero}`}>
+        <span className={styles.store}>{store.name}</span>
+        <div className={styles.heroRow}><h1>Pedido #{order.display_number}</h1><strong className={styles.total}>{money(Number(order.total_cents))}</strong></div>
+        <div className={styles.statusLine}><span className={`${styles.status} ${terminalProblem ? styles.terminalProblem : completedFulfillment || orderStatus === "completed" ? styles.terminalSuccess : ""}`}>{currentLabel}</span><span className={styles.updated}>Atualizado em {updatedAt}</span></div>
+      </header>
 
-        <header style={{ padding: 20, borderRadius: 22, background: "#171717", color: "#fffdf9" }}>
-          <p style={{ margin: 0, color: "#bbb4ac", fontSize: 13 }}>{store.name}</p>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "baseline", flexWrap: "wrap" }}>
-            <h1 style={{ margin: "5px 0" }}>Pedido #{order.display_number}</h1>
-            <strong style={{ color: "#FF6B00" }}>{money(Number(order.total_cents))}</strong>
-          </div>
-          <p style={{ margin: 0, color: "#d8d2cb" }}>{orderStatusLabels[order.order_status as keyof typeof orderStatusLabels]}</p>
-        </header>
+      <section className={`card ${styles.card}`}>
+        <h2>Acompanhe seu pedido</h2>
+        <PublicOrderTimeline fulfillmentType={fulfillmentType} orderStatus={orderStatus} productionStatus={productionStatus} fulfillmentStatus={fulfillmentStatus} />
+        {!terminal ? <p className={styles.autoUpdate}>A página verifica atualizações automaticamente enquanto estiver visível. Você não precisa recarregar.</p> : null}
+        {order.cancel_reason ? <div className={styles.cancel}><strong>Motivo:</strong> {order.cancel_reason}</div> : null}
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Acompanhamento</h2>
-          <div style={statusGrid}>
-            <Status label="Pedido" value={orderStatusLabels[order.order_status as keyof typeof orderStatusLabels]} />
-            <Status label="Produção" value={productionStatusLabels[order.production_status as keyof typeof productionStatusLabels]} />
-            <Status label="Pagamento" value={paymentLabels[order.payment_status] ?? order.payment_status} />
-            <Status label={order.fulfillment_type === "delivery" ? "Entrega" : "Retirada"} value={fulfillmentLabels[order.fulfillment_status] ?? order.fulfillment_status} />
-          </div>
-          {!terminal ? <p style={{ margin: 0, color: "#716b64", fontSize: 12 }}>Esta página atualiza automaticamente enquanto o pedido estiver em andamento.</p> : null}
-          {order.cancel_reason ? <div style={{ padding: 12, borderRadius: 12, background: "#fee4e2", color: "#9f281d" }}>Motivo: {order.cancel_reason}</div> : null}
-        </section>
+      <section className={`card ${styles.card}`}>
+        <h2>Situação agora</h2>
+        <div className={styles.statusGrid}><Status label="Produção" value={productionStatusLabels[productionStatus]}/><Status label="Pagamento" value={paymentLabels[order.payment_status] ?? order.payment_status}/><Status label={fulfillmentType === "delivery" ? "Entrega" : "Retirada"} value={fulfillmentLabels[fulfillmentStatus] ?? fulfillmentStatus}/></div>
+      </section>
 
-        <section style={cardStyle}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Itens</h2>
-          {items.map((item) => (
-            <div key={item.id} style={{ padding: "10px 0", borderTop: "1px solid #eee7df", display: "grid", gap: 4 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                <strong>{item.quantity}× {item.product_name_snapshot}</strong>
-                <strong>{money(Number(item.line_total_cents))}</strong>
-              </div>
-              {item.modifiers.length > 0 ? <div style={{ color: "#716b64", fontSize: 12 }}>{item.modifiers.map((m) => m.modifier_name_snapshot).join(" · ")}</div> : null}
-              {item.note ? <div style={{ color: "#716b64", fontSize: 12 }}>Obs.: {item.note}</div> : null}
-            </div>
-          ))}
-        </section>
+      <section className={`card ${styles.card}`}><h2>Itens</h2><div className={styles.items}>{items.map((item) => <div key={item.id} className={styles.item}><div className={styles.itemTop}><strong>{item.quantity}× {item.product_name_snapshot}</strong><strong>{money(Number(item.line_total_cents))}</strong></div>{item.modifiers.length > 0 ? <div className={styles.meta}>{item.modifiers.map((modifier) => modifier.modifier_name_snapshot).join(" · ")}</div> : null}{item.note ? <div className={styles.meta}>Obs.: {item.note}</div> : null}</div>)}</div></section>
 
-        <section style={cardStyle}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Resumo</h2>
-          <Summary label="Subtotal" value={money(Number(order.subtotal_cents))} />
-          <Summary label="Entrega" value={Number(order.delivery_fee_cents) > 0 ? money(Number(order.delivery_fee_cents)) : "Grátis / não aplicável"} />
-          <Summary label="Total" value={money(Number(order.total_cents))} strong />
-          <Summary label="Pagamento" value={paymentMethodLabels[order.payment_method_snapshot as keyof typeof paymentMethodLabels] ?? order.payment_method_snapshot} />
-          {order.cash_change_for_cents ? <Summary label="Troco para" value={money(Number(order.cash_change_for_cents))} /> : null}
-        </section>
+      <section className={`card ${styles.card}`}><h2>Resumo</h2><div className={styles.summaryRows}><Summary label="Subtotal" value={money(Number(order.subtotal_cents))}/>{Number(order.discount_cents) > 0 ? <Summary label="Descontos" value={`− ${money(Number(order.discount_cents))}`}/> : null}<Summary label="Entrega" value={Number(order.delivery_fee_cents) > 0 ? money(Number(order.delivery_fee_cents)) : fulfillmentType === "delivery" ? "Grátis" : "Não aplicável"}/><Summary label="Total" value={money(Number(order.total_cents))} strong/><Summary label="Pagamento" value={paymentMethodLabels[order.payment_method_snapshot as keyof typeof paymentMethodLabels] ?? order.payment_method_snapshot}/>{order.cash_change_for_cents ? <Summary label="Troco para" value={money(Number(order.cash_change_for_cents))}/> : null}</div></section>
 
-        {order.fulfillment_type === "delivery" ? (
-          <section style={cardStyle}>
-            <h2 style={{ margin: 0, fontSize: 18 }}>Entrega</h2>
-            <div>{order.address_street_snapshot}, {order.address_number_snapshot}{order.address_complement_snapshot ? ` — ${order.address_complement_snapshot}` : ""}</div>
-            <div style={{ color: "#716b64" }}>{order.address_district_snapshot} · {order.address_city_snapshot}/{order.address_state_snapshot}</div>
-            {order.delivery_estimated_min_minutes !== null && order.delivery_estimated_max_minutes !== null ? <div style={{ color: "#716b64", fontSize: 13 }}>Estimativa registrada: {order.delivery_estimated_min_minutes}–{order.delivery_estimated_max_minutes} min</div> : null}
-          </section>
-        ) : null}
-      </div>
-    </main>
-  );
+      {fulfillmentType === "delivery" ? <section className={`card ${styles.card}`}><h2>Entrega</h2><div className={styles.delivery}><span className={styles.address}>{order.address_street_snapshot}, {order.address_number_snapshot}{order.address_complement_snapshot ? ` — ${order.address_complement_snapshot}` : ""}</span><span className={styles.meta}>{order.address_district_snapshot} · {order.address_city_snapshot}/{order.address_state_snapshot}</span>{order.delivery_estimated_min_minutes !== null && order.delivery_estimated_max_minutes !== null ? <span className={styles.meta}>Estimativa registrada: {order.delivery_estimated_min_minutes}–{order.delivery_estimated_max_minutes} min</span> : null}</div></section> : fulfillmentStatus === "awaiting_pickup" ? <section className={`card ${styles.card}`}><h2>Retirada</h2><p>Seu pedido está aguardando retirada no estabelecimento.</p></section> : null}
+
+      <div className={styles.actions}><Link href={`/m/${slug}`} className={`${styles.cta} ${terminal ? "" : styles.ctaSecondary}`}>{terminal ? "Fazer novo pedido" : "Ver cardápio"}</Link>{!terminal ? <span className={styles.cta}>Acompanhamento ativo</span> : <span className={`${styles.cta} ${styles.ctaSecondary}`}>Pedido finalizado</span>}</div>
+    </div>
+  </main>;
 }
 
-function Status({ label, value }: { label: string; value: string }) {
-  return <div style={{ padding: 12, borderRadius: 14, background: "#f7f2ec" }}><div style={{ color: "#8a837b", fontSize: 11, fontWeight: 800 }}>{label.toUpperCase()}</div><strong style={{ display: "block", marginTop: 4 }}>{value}</strong></div>;
-}
-function Summary({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
-  return <div style={{ display: "flex", justifyContent: "space-between", gap: 14, fontSize: strong ? 18 : 14 }}><span>{label}</span><strong style={strong ? { color: "#FF6B00" } : undefined}>{value}</strong></div>;
-}
-const cardStyle: React.CSSProperties = { padding: 18, background: "#fff", border: "1px solid #eee7df", borderRadius: 20, display: "grid", gap: 12 };
-const statusGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8 };
+function Status({ label, value }: { label: string; value: string }) { return <div className={styles.statusCard}><span className={styles.statusLabel}>{label}</span><strong>{value}</strong></div>; }
+function Summary({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) { return <div className={`${styles.summary} ${strong ? styles.summaryTotal : ""}`}><span>{label}</span><strong>{value}</strong></div>; }
