@@ -1,30 +1,14 @@
-import {
-  cashMovementAction,
-  closeCashSessionAction,
-  createCashRegisterAction,
-  openCashSessionAction,
-  updateCashRegisterAction,
-} from "@/features/cash/actions";
+import Link from "next/link";
+import { cashMovementAction, closeCashSessionAction, openCashSessionAction } from "@/features/cash/actions";
 import { cashMovementLabels, type CashMovementType } from "@/features/cash/model";
+import styles from "@/features/cash/cash.module.css";
 import { CashService } from "@/server/cash/cash-service";
 
 function money(value: unknown) {
   const cents = Number(value ?? 0);
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 }
-
-function dateTime(value: unknown) {
-  return typeof value === "string" ? new Date(value).toLocaleString("pt-BR") : "—";
-}
-
-const inputStyle: React.CSSProperties = {
-  minHeight: 42, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "9px 11px",
-};
-const buttonStyle: React.CSSProperties = {
-  minHeight: 42, border: 0, borderRadius: 10, background: "var(--accent)", color: "#fff", padding: "9px 13px", fontWeight: 800, cursor: "pointer",
-};
-const secondaryButton: React.CSSProperties = { ...buttonStyle, background: "var(--surface-2)", border: "1px solid var(--border)" };
-const dangerButton: React.CSSProperties = { ...buttonStyle, background: "#b42318" };
+function dateTime(value: unknown) { return typeof value === "string" ? new Date(value).toLocaleString("pt-BR") : "—"; }
 
 export default async function CashPage({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const notice = await searchParams;
@@ -35,154 +19,87 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
   const openByRegister = new Map(sessions.filter((session) => session.status === "open").map((session) => [session.cash_register_id, session]));
   const freeRegisters = registers.filter((register) => register.active && !openByRegister.has(register.id));
 
-  return (
-    <section style={{ display: "grid", gap: 18, maxWidth: 1280 }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "end", gap: 16, flexWrap: "wrap" }}>
-        <div>
-          <p className="muted" style={{ margin: 0, fontSize: 12 }}>Operação de dinheiro físico</p>
-          <h1 style={{ margin: "4px 0" }}>Caixa</h1>
-          <p className="muted" style={{ margin: 0 }}>Abertura, vendas em dinheiro, suprimentos, sangrias e conferência em um ledger imutável.</p>
-        </div>
-        <div className="muted" style={{ fontSize: 12 }}>Pagamento continua sendo o ledger financeiro; Caixa controla o dinheiro físico do turno.</div>
-      </header>
+  return <section className={styles.page}>
+    <header className={styles.header}>
+      <div><p className={styles.muted}>OPERAÇÃO DE CAIXA</p><h1>Caixa</h1><p className={styles.muted}>Abra o turno, acompanhe o dinheiro esperado e registre somente os movimentos necessários.</p></div>
+      {abilities.manage ? <div className={styles.headerActions}><Link href="/configuracoes/caixa" className={styles.secondary}>Configurar caixas</Link></div> : null}
+    </header>
 
-      {notice.ok ? <div className="card" style={{ padding: 12, borderColor: "#22c55e" }}>{notice.ok}</div> : null}
-      {notice.error ? <div className="card" style={{ padding: 12, borderColor: "#f97066", color: "#fda29b" }}>{notice.error}</div> : null}
+    {notice.ok ? <div className={styles.notice} data-tone="success">{notice.ok}</div> : null}
+    {notice.error ? <div className={styles.notice} data-tone="danger">{notice.error}</div> : null}
 
-      {currentSession ? (
-        <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
-            <Metric label="Caixa" value={currentSession.register?.name ?? "Caixa"} />
-            <Metric label="Aberto em" value={dateTime(currentSession.opened_at)} />
-            <Metric label="Saldo esperado" value={money(summary?.expected_cash_cents)} accent />
-            <Metric label="Vendas em dinheiro" value={money(totals.sales_cents)} />
-            <Metric label="Suprimentos" value={money(totals.supplies_cents)} />
-            <Metric label="Sangrias" value={money(totals.withdrawals_cents)} />
-            <Metric label="Estornos" value={money(totals.refunds_cents)} />
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(290px, 1fr))", gap: 14, alignItems: "start" }}>
-            {abilities.supply ? (
-              <article className="card" style={{ padding: 16, display: "grid", gap: 10 }}>
-                <h2 style={{ margin: 0, fontSize: 17 }}>Suprimento</h2>
-                <p className="muted" style={{ margin: 0, fontSize: 12 }}>Entrada manual de dinheiro no caixa.</p>
-                <form action={cashMovementAction.bind(null, "supply", currentSession.id)} style={{ display: "grid", gap: 8 }}>
-                  <input name="amount" required inputMode="decimal" placeholder="Valor, ex.: 100,00" style={inputStyle} />
-                  <input name="reason" required minLength={3} maxLength={500} placeholder="Motivo do suprimento" style={inputStyle} />
-                  <button type="submit" style={buttonStyle}>Registrar suprimento</button>
-                </form>
-              </article>
-            ) : null}
-
-            {abilities.withdraw ? (
-              <article className="card" style={{ padding: 16, display: "grid", gap: 10 }}>
-                <h2 style={{ margin: 0, fontSize: 17 }}>Sangria</h2>
-                <p className="muted" style={{ margin: 0, fontSize: 12 }}>Saída auditada; o banco bloqueia valor acima do saldo esperado.</p>
-                <form action={cashMovementAction.bind(null, "withdrawal", currentSession.id)} style={{ display: "grid", gap: 8 }}>
-                  <input name="amount" required inputMode="decimal" placeholder="Valor, ex.: 200,00" style={inputStyle} />
-                  <input name="reason" required minLength={3} maxLength={500} placeholder="Motivo da sangria" style={inputStyle} />
-                  <button type="submit" style={dangerButton}>Registrar sangria</button>
-                </form>
-              </article>
-            ) : null}
-
-            {abilities.close ? (
-              <article className="card" style={{ padding: 16, display: "grid", gap: 10 }}>
-                <h2 style={{ margin: 0, fontSize: 17 }}>Fechar e conferir</h2>
-                <p className="muted" style={{ margin: 0, fontSize: 12 }}>Conte o dinheiro físico. A diferença é calculada contra o saldo esperado no PostgreSQL.</p>
-                <form action={closeCashSessionAction.bind(null, currentSession.id)} style={{ display: "grid", gap: 8 }}>
-                  <input name="countedCash" required inputMode="decimal" placeholder="Dinheiro contado" style={inputStyle} />
-                  <input name="note" maxLength={500} placeholder="Observação opcional" style={inputStyle} />
-                  <button type="submit" style={dangerButton}>Conferir e fechar turno</button>
-                </form>
-              </article>
-            ) : null}
-          </div>
-
-          <article className="card" style={{ padding: 16, display: "grid", gap: 10 }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: 17 }}>Movimentos deste turno</h2>
-              <p className="muted" style={{ margin: "4px 0 0", fontSize: 12 }}>O histórico é somente leitura. Correções financeiras entram como movimentos compensatórios.</p>
-            </div>
-            {movements.length === 0 ? <p className="muted">Nenhum movimento ainda.</p> : movements.map((raw) => {
-              const movement = raw as Record<string, unknown>;
-              const type = String(movement.movement_type) as CashMovementType;
-              const outgoing = movement.direction === "out";
-              return (
-                <div key={String(movement.id)} style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "10px 0", borderTop: "1px solid var(--border)", alignItems: "center" }}>
-                  <div>
-                    <strong>{cashMovementLabels[type] ?? type}</strong>
-                    <div className="muted" style={{ fontSize: 11, marginTop: 3 }}>{dateTime(movement.created_at)}{movement.reason ? ` · ${String(movement.reason)}` : ""}</div>
-                  </div>
-                  <strong style={{ color: outgoing ? "#f97066" : "#22c55e" }}>{outgoing ? "−" : "+"}{money(movement.amount_cents)}</strong>
-                </div>
-              );
-            })}
-          </article>
-        </>
-      ) : (
-        <article className="card" style={{ padding: 18, display: "grid", gap: 12 }}>
-          <div>
-            <h2 style={{ margin: 0, fontSize: 18 }}>Abrir turno</h2>
-            <p className="muted" style={{ margin: "4px 0 0" }}>Você precisa de uma sessão aberta para confirmar vendas em dinheiro.</p>
-          </div>
-          {abilities.open && freeRegisters.length > 0 ? (
-            <form action={openCashSessionAction} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 9, alignItems: "end" }}>
-              <label style={{ display: "grid", gap: 5 }}><span className="muted" style={{ fontSize: 11 }}>CAIXA</span><select name="cashRegisterId" required style={inputStyle}>{freeRegisters.map((register) => <option key={register.id} value={register.id}>{register.code} · {register.name}</option>)}</select></label>
-              <label style={{ display: "grid", gap: 5 }}><span className="muted" style={{ fontSize: 11 }}>SALDO INICIAL</span><input name="openingBalance" inputMode="decimal" defaultValue="0,00" style={inputStyle} /></label>
-              <label style={{ display: "grid", gap: 5 }}><span className="muted" style={{ fontSize: 11 }}>OBSERVAÇÃO</span><input name="note" maxLength={500} placeholder="Opcional" style={inputStyle} /></label>
-              <button type="submit" style={buttonStyle}>Abrir caixa</button>
-            </form>
-          ) : (
-            <p className="muted" style={{ margin: 0 }}>{freeRegisters.length === 0 ? "Não há caixa ativo e livre. Crie um novo caixa ou aguarde o encerramento de outro turno." : "Seu perfil não possui permissão para abrir caixa."}</p>
-          )}
-        </article>
-      )}
-
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(300px, .65fr)", gap: 14, alignItems: "start" }}>
-        <article className="card" style={{ padding: 16, display: "grid", gap: 10, minWidth: 0 }}>
-          <h2 style={{ margin: 0, fontSize: 17 }}>Caixas da unidade</h2>
-          {registers.length === 0 ? <p className="muted">Nenhum caixa configurado.</p> : registers.map((register) => {
-            const open = openByRegister.get(register.id);
-            return (
-              <div key={register.id} style={{ display: "grid", gap: 7, padding: "10px 0", borderTop: "1px solid var(--border)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                  <div><strong>{register.code} · {register.name}</strong><div className="muted" style={{ fontSize: 11 }}>{register.active ? "Ativo" : "Desativado"}{open ? " · turno aberto" : " · livre"}</div></div>
-                </div>
-                {abilities.manage ? (
-                  <form action={updateCashRegisterAction.bind(null, register.id)} style={{ display: "grid", gridTemplateColumns: "minmax(160px, 1fr) auto auto", gap: 8, alignItems: "center" }}>
-                    <input name="name" defaultValue={register.name} required maxLength={80} style={inputStyle} />
-                    <label className="muted" style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 12 }}><input type="checkbox" name="active" defaultChecked={register.active} /> Ativo</label>
-                    <button type="submit" style={secondaryButton}>Salvar</button>
-                  </form>
-                ) : null}
-              </div>
-            );
-          })}
-          {abilities.manage ? (
-            <form action={createCashRegisterAction} style={{ display: "grid", gridTemplateColumns: "minmax(120px, .4fr) minmax(180px, 1fr) auto", gap: 8, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
-              <input name="code" required maxLength={32} placeholder="Código" style={inputStyle} />
-              <input name="name" required maxLength={80} placeholder="Nome do caixa" style={inputStyle} />
-              <button type="submit" style={buttonStyle}>Criar caixa</button>
-            </form>
-          ) : null}
-        </article>
-
-        <article className="card" style={{ padding: 16, display: "grid", gap: 10 }}>
-          <h2 style={{ margin: 0, fontSize: 17 }}>Histórico de turnos</h2>
-          {sessions.length === 0 ? <p className="muted">Nenhum turno registrado.</p> : sessions.slice(0, 15).map((session) => (
-            <div key={session.id} style={{ padding: "9px 0", borderTop: "1px solid var(--border)" }}>
-              <strong>{session.register?.name ?? "Caixa"} · {session.status === "open" ? "Aberto" : "Fechado"}</strong>
-              <div className="muted" style={{ fontSize: 11, marginTop: 3 }}>{dateTime(session.opened_at)}{session.closed_at ? ` → ${dateTime(session.closed_at)}` : ""}</div>
-              {session.status === "closed" ? <div className="muted" style={{ fontSize: 11, marginTop: 3 }}>Esperado {money(session.expected_cash_cents_snapshot)} · Contado {money(session.counted_cash_cents)} · Diferença {money(session.difference_cents)}</div> : null}
-            </div>
-          ))}
-        </article>
+    {currentSession ? <>
+      <div className={styles.statusBar} aria-label="Resumo do turno de caixa">
+        <Metric label="Caixa" value={currentSession.register?.name ?? "Caixa"} />
+        <Metric label="Aberto em" value={dateTime(currentSession.opened_at)} />
+        <Metric label="Saldo esperado" value={money(summary?.expected_cash_cents)} primary />
+        <Metric label="Vendas em dinheiro" value={money(totals.sales_cents)} />
+        <Metric label="Suprimentos" value={money(totals.supplies_cents)} />
+        <Metric label="Sangrias" value={money(totals.withdrawals_cents)} />
       </div>
-    </section>
-  );
+
+      <div className={styles.operationGrid}>
+        {abilities.supply ? <article className={styles.panel}>
+          <div className={styles.panelHeader}><h2>Suprimento</h2><p>Entrada manual de dinheiro no caixa.</p></div>
+          <form action={cashMovementAction.bind(null, "supply", currentSession.id)} className={styles.form}>
+            <input className={styles.input} name="amount" required inputMode="decimal" placeholder="Valor, ex.: 100,00" />
+            <input className={styles.input} name="reason" required minLength={3} maxLength={500} placeholder="Motivo do suprimento" />
+            <button className={styles.primary} type="submit">Registrar suprimento</button>
+          </form>
+        </article> : null}
+
+        {abilities.withdraw ? <article className={styles.panel}>
+          <div className={styles.panelHeader}><h2>Sangria</h2><p>Saída auditada; o servidor bloqueia valor acima do saldo permitido.</p></div>
+          <form action={cashMovementAction.bind(null, "withdrawal", currentSession.id)} className={styles.form}>
+            <input className={styles.input} name="amount" required inputMode="decimal" placeholder="Valor, ex.: 200,00" />
+            <input className={styles.input} name="reason" required minLength={3} maxLength={500} placeholder="Motivo da sangria" />
+            <button className={styles.danger} type="submit">Registrar sangria</button>
+          </form>
+        </article> : null}
+
+        {abilities.close ? <article className={styles.panel}>
+          <div className={styles.panelHeader}><h2>Fechar e conferir</h2><p>Conte o dinheiro físico. A diferença é calculada pelo backend contra o saldo esperado.</p></div>
+          <form action={closeCashSessionAction.bind(null, currentSession.id)} className={styles.form}>
+            <input className={styles.input} name="countedCash" required inputMode="decimal" placeholder="Dinheiro contado" />
+            <input className={styles.input} name="note" maxLength={500} placeholder="Observação opcional" />
+            <button className={styles.danger} type="submit">Conferir e fechar turno</button>
+          </form>
+        </article> : null}
+      </div>
+
+      <article className={styles.panel}>
+        <div className={styles.panelHeader}><h2>Movimentos deste turno</h2><p>Histórico somente leitura; correções financeiras continuam entrando como movimentos compensatórios.</p></div>
+        {movements.length === 0 ? <p className={styles.muted}>Nenhum movimento ainda.</p> : <div className={styles.movements}>{movements.map((raw) => {
+          const movement = raw as Record<string, unknown>;
+          const type = String(movement.movement_type) as CashMovementType;
+          const outgoing = movement.direction === "out";
+          return <div key={String(movement.id)} className={styles.movement}>
+            <div><strong>{cashMovementLabels[type] ?? type}</strong><div className={styles.movementMeta}>{dateTime(movement.created_at)}{movement.reason ? ` · ${String(movement.reason)}` : ""}</div></div>
+            <strong className={styles.movementAmount} data-direction={outgoing ? "out" : "in"}>{outgoing ? "−" : "+"}{money(movement.amount_cents)}</strong>
+          </div>;
+        })}</div>}
+      </article>
+    </> : <article className={`${styles.panel} ${styles.openPanel}`}>
+      <div className={styles.panelHeader}><h2>Abrir turno</h2><p>Uma sessão de caixa aberta é necessária para a operação em dinheiro.</p></div>
+      {abilities.open && freeRegisters.length > 0 ? <form action={openCashSessionAction} className={styles.formGrid}>
+        <label className={styles.field}><span>CAIXA</span><select className={styles.select} name="cashRegisterId" required>{freeRegisters.map((register) => <option key={register.id} value={register.id}>{register.code} · {register.name}</option>)}</select></label>
+        <label className={styles.field}><span>SALDO INICIAL</span><input className={styles.input} name="openingBalance" inputMode="decimal" defaultValue="0,00" /></label>
+        <label className={styles.field}><span>OBSERVAÇÃO</span><input className={styles.input} name="note" maxLength={500} placeholder="Opcional" /></label>
+        <button className={styles.primary} type="submit">Abrir caixa</button>
+      </form> : <p className={styles.muted}>{freeRegisters.length === 0 ? "Não há caixa ativo e livre. Verifique a configuração ou aguarde o encerramento de outro turno." : "Seu perfil não possui permissão para abrir caixa."}</p>}
+    </article>}
+
+    <details className={styles.secondarySection}>
+      <summary>Histórico de turnos</summary>
+      <div className={styles.secondaryBody}>{sessions.length === 0 ? <p className={styles.muted}>Nenhum turno registrado.</p> : sessions.slice(0, 15).map((session) => <div key={session.id} className={styles.session}>
+        <strong>{session.register?.name ?? "Caixa"} · {session.status === "open" ? "Aberto" : "Fechado"}</strong>
+        <div className={styles.sessionMeta}>{dateTime(session.opened_at)}{session.closed_at ? ` → ${dateTime(session.closed_at)}` : ""}</div>
+        {session.status === "closed" ? <div className={styles.sessionMeta}>Esperado {money(session.expected_cash_cents_snapshot)} · Contado {money(session.counted_cash_cents)} · Diferença {money(session.difference_cents)}</div> : null}
+      </div>)}</div>
+    </details>
+  </section>;
 }
 
-function Metric({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
-  return <div className="card" style={{ padding: 14 }}><span className="muted" style={{ fontSize: 10 }}>{label.toUpperCase()}</span><strong style={{ display: "block", marginTop: 4, color: accent ? "var(--accent)" : undefined, fontSize: accent ? 20 : 15 }}>{value}</strong></div>;
+function Metric({ label, value, primary = false }: { label: string; value: string; primary?: boolean }) {
+  return <div className={styles.metric} data-primary={primary || undefined}><span className={styles.metricLabel}>{label}</span><strong className={styles.metricValue}>{value}</strong></div>;
 }
