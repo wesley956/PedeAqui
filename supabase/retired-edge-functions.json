@@ -1,0 +1,24 @@
+{
+  "projectRef": "zsbsczjhiujnhdznrzck",
+  "verifiedAt": "2026-08-14",
+  "observationWindow": "last 24 hours",
+  "observedInvocationLogs": 0,
+  "retirementResponse": {
+    "status": 410,
+    "bodyError": "legacy_function_retired",
+    "verifyJwt": true
+  },
+  "functions": [
+    "create-employee",
+    "create-company",
+    "update-company-status",
+    "sync-offline-event",
+    "scan-absences",
+    "send-alert",
+    "validate-handover-employee",
+    "update-employee-field-access",
+    "mobile-history-feed",
+    "review-presence-status",
+    "reset-user-password"
+  ]
+}
