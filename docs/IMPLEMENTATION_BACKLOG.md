@@ -1,4 +1,4 @@
-# Cruz — Backlog Técnico Mestre
+# PedeAqui — Backlog Técnico Mestre
 
 Versão 1.8 — execução consolidada até Planos, Escala e White-label (#253).
 
