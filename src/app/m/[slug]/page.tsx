@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import { MenuBrowser } from "@/features/menu/menu-browser";
-import { PedeAquiSignature, RestaurantBrand } from "@/features/menu/public-brand";
+import { RestaurantBrand } from "@/features/menu/public-brand";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
 
 const statusCopy = { open: ["Aberto", "Aceitando pedidos"], closed: ["Fechado", "Você pode consultar o cardápio"], paused: ["Pausado", "Novos pedidos estão temporariamente pausados"] } as const;
@@ -25,7 +26,7 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
         <Link href={`/m/${menu.store.slug}/carrinho`} style={{ marginLeft: "auto", flexShrink: 0, background: "#171717", color: "#fffdf9", borderRadius: 13, padding: "10px 13px", fontWeight: 900, fontSize: 13 }}>Carrinho</Link>
       </header>
       <div style={{ display: "grid", gap: 18, marginTop: 20 }}><div style={{ display: "flex", gap: 8, flexWrap: "wrap", fontSize: 13 }}>{deliveryAvailable ? <span style={modePill}>Entrega · a partir de {money(menu.delivery.starting_fee_cents)}</span> : null}{deliveryAvailable ? <span style={modePill}>{menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span> : null}{menu.settings.allow_pickup ? <span style={modePill}>Retirada</span> : null}{menu.settings.minimum_order_cents > 0 ? <span style={modePill}>Mínimo {money(menu.settings.minimum_order_cents)}</span> : null}{deliveryAvailable && menu.delivery.free_delivery_over_cents !== null ? <span style={modePill}>Frete grátis acima de {money(menu.delivery.free_delivery_over_cents)}</span> : null}</div><MenuBrowser menu={menu} /></div>
-      <PedeAquiSignature />
+      <footer aria-label="PedeAqui — Seu pedido começa aqui" style={{ color: "#8a837b", fontSize: 12, marginTop: 36, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, flexWrap: "wrap" }}><PedeAquiLogo size="xs" decorative /><span>Seu pedido começa aqui.</span></footer>
     </div>
   </main>;
 }
