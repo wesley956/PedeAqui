@@ -28,15 +28,15 @@ jobs:
 
       - name: Prepare Pages site
         run: |
-          mkdir -p pages/brand
-          cp public/brand/pedeaqui-logo-on-dark.svg pages/brand/
-          cp public/brand/pedeaqui-logo.svg pages/brand/
-          cp public/brand/pedeaqui-symbol.svg pages/brand/
+          mkdir -p github-pages/brand
+          cp public/brand/pedeaqui-logo-on-dark.svg github-pages/brand/
+          cp public/brand/pedeaqui-logo.svg github-pages/brand/
+          cp public/brand/pedeaqui-symbol.svg github-pages/brand/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./pages
+          path: ./github-pages
 
   deploy:
     environment:
