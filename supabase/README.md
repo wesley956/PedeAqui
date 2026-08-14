@@ -1,4 +1,4 @@
-# Supabase — Cruz
+# Supabase — PedeAqui
 
 Os arquivos em `supabase/sql/` são a especificação canônica da fundação enquanto o projeto Supabase ainda não está vinculado a este repositório.
 
