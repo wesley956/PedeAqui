@@ -1,0 +1,28 @@
+import Link from "next/link";
+import { DriverCreateForm, DriverUpdateForm } from "@/features/delivery/operation-forms";
+import styles from "@/features/delivery/delivery.module.css";
+import { DriverSettingsService } from "@/server/delivery/driver-settings-service";
+
+export default async function DriverSettingsPage() {
+  const data = await DriverSettingsService.load();
+
+  return <section className={styles.page}>
+    <header className={styles.header}>
+      <div><p className="muted">CONFIGURAÇÕES · ENTREGA</p><h1>Entregadores</h1><p className="muted">Cadastre pessoas, vínculo de acesso, disponibilidade e capacidade simultânea fora da fila operacional.</p></div>
+      <div className={styles.headerActions}><Link href="/entregas" className={styles.secondaryLink}>Voltar às entregas</Link></div>
+    </header>
+
+    <section className={styles.driverSettings}>
+      <h2 style={{ margin: 0 }}>Novo entregador</h2>
+      <DriverCreateForm />
+    </section>
+
+    <section className={styles.driverSettings}>
+      <h2 style={{ margin: 0 }}>Equipe de entrega</h2>
+      {data.drivers.length === 0 ? <p className="muted">Nenhum entregador cadastrado.</p> : data.drivers.map((driver) => <article className={styles.driver} key={driver.id}>
+        <div className={styles.driverHead}><div><strong>{driver.name}</strong><div className={styles.driverMeta}>{driver.active ? (driver.on_duty ? "Em serviço" : "Fora de serviço") : "Inativo"}{driver.user_id ? " · acesso vinculado" : " · sem acesso vinculado"}</div></div><strong>{driver.activeDeliveries}/{driver.max_active_deliveries}</strong></div>
+        <DriverUpdateForm driver={driver} />
+      </article>)}
+    </section>
+  </section>;
+}

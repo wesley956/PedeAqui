@@ -9,6 +9,7 @@ const storeSettings = [
   { title: "Caixas", description: "Pontos físicos usados na abertura e fechamento dos turnos.", href: "/configuracoes/caixa", permissions: [PERMISSIONS.CASH_MANAGE] },
   { title: "Horários", description: "Períodos de funcionamento, inclusive após meia-noite.", href: "/configuracoes/horarios", permissions: [PERMISSIONS.STORES_VIEW] },
   { title: "Entrega", description: "Prazo, taxa padrão, frete grátis e bairros atendidos.", href: "/configuracoes/entrega", permissions: [PERMISSIONS.STORES_VIEW] },
+  { title: "Entregadores", description: "Equipe, disponibilidade, acesso e capacidade simultânea de entrega.", href: "/configuracoes/entregadores", permissions: [PERMISSIONS.DELIVERY_MANAGE] },
   { title: "Pagamentos", description: "Pix, cartões e dinheiro disponíveis no checkout.", href: "/configuracoes/pagamentos", permissions: [PERMISSIONS.STORES_VIEW] },
   { title: "Conversas e WhatsApp", description: "Provider, webhook, bot e referências seguras de credenciais.", href: "/configuracoes/conversas", permissions: [PERMISSIONS.INTEGRATIONS_VIEW, PERMISSIONS.CONVERSATIONS_VIEW] },
   { title: "Impressões", description: "Estações, impressoras, Print Agents, roteamento e fila persistente.", href: "/configuracoes/impressoes", permissions: [PERMISSIONS.PRINTING_VIEW] },
