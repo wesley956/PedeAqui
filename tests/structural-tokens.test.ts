@@ -74,13 +74,15 @@ describe("PedeAqui structural design tokens", () => {
   });
 
   it("applies structural tokens to the shared primitives", () => {
-    const button = read("src/components/ui/button.tsx");
+    const buttonComponent = read("src/components/ui/button.tsx");
+    const buttonStyles = read("src/components/ui/button.module.css");
     const input = read("src/components/ui/input.tsx");
     const primitives = read("src/components/ui/primitives.tsx");
 
-    expect(button).toContain("var(--control-height)");
-    expect(button).toContain("var(--radius-md)");
-    expect(button).toContain("var(--motion-fast)");
+    expect(buttonComponent).toContain('import styles from "./button.module.css"');
+    expect(buttonStyles).toContain("var(--control-height-md)");
+    expect(buttonStyles).toContain("var(--radius-md)");
+    expect(buttonStyles).toContain("var(--motion-fast)");
 
     expect(input).toContain("var(--control-height)");
     expect(input).toContain("var(--font-size-sm)");
