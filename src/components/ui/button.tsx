@@ -1,33 +1,61 @@
 import type { ButtonHTMLAttributes } from "react";
+import styles from "./button.module.css";
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  tone?: "primary" | "secondary" | "danger";
+export type ButtonTone = "primary" | "secondary" | "ghost" | "danger";
+export type ButtonSize = "sm" | "md" | "lg";
+
+type BaseButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  tone?: ButtonTone;
+  size?: ButtonSize;
+  loading?: boolean;
+  loadingLabel?: string;
 };
 
-export function Button({ tone = "primary", style, ...props }: ButtonProps) {
-  const backgrounds = {
-    primary: "linear-gradient(135deg, var(--accent), var(--accent-strong))",
-    secondary: "var(--surface-2)",
-    danger: "var(--danger)",
-  } as const;
+type IconButtonProps = BaseButtonProps & {
+  iconOnly: true;
+  "aria-label": string;
+};
+
+type RegularButtonProps = BaseButtonProps & {
+  iconOnly?: false;
+};
+
+export type ButtonProps = IconButtonProps | RegularButtonProps;
+
+export function Button({
+  tone = "primary",
+  size = "md",
+  iconOnly = false,
+  loading = false,
+  loadingLabel,
+  className,
+  disabled,
+  children,
+  ...props
+}: ButtonProps) {
+  const isDisabled = disabled || loading;
+  const classes = [
+    styles.button,
+    styles[tone],
+    styles[size],
+    iconOnly ? styles.iconOnly : null,
+    className,
+  ].filter(Boolean).join(" ");
+  const content = loading && loadingLabel && !iconOnly ? loadingLabel : children;
 
   return (
     <button
       {...props}
-      style={{
-        border: "var(--border-width) solid var(--border)",
-        borderRadius: "var(--radius-md)",
-        padding: "var(--space-2) var(--control-padding-x)",
-        minHeight: "var(--control-height)",
-        background: backgrounds[tone],
-        color: "var(--text)",
-        cursor: props.disabled ? "not-allowed" : "pointer",
-        opacity: props.disabled ? 0.6 : 1,
-        fontWeight: "var(--font-weight-bold)",
-        lineHeight: "var(--line-height-snug)",
-        transition: "background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard), opacity var(--motion-fast) var(--ease-standard)",
-        ...style,
-      }}
-    />
+      className={classes}
+      disabled={isDisabled}
+      aria-busy={loading || undefined}
+      data-tone={tone}
+      data-size={size}
+      data-icon-only={iconOnly || undefined}
+      data-loading={loading || undefined}
+    >
+      {loading ? <span className={styles.spinner} aria-hidden="true" /> : null}
+      {content}
+    </button>
   );
 }
