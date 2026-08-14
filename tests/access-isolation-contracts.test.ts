@@ -10,11 +10,13 @@ function read(relativePath: string) { return fs.readFileSync(path.join(root, rel
 
 describe("access isolation contracts", () => {
   it("never surfaces an organization module without a real granted permission", () => {
-    for (const module of NAVIGATION_MODULES.filter((item) => item.authorization === "organization")) {
-      expect(module.permissions.length, `${module.key} must declare permissions`).toBeGreaterThan(0);
-      for (const permission of module.permissions) expect(permissionValues.has(permission)).toBe(true);
-      expect(canSurfaceModule(module, new Set())).toBe(false);
-      expect(canSurfaceModule(module, new Set([module.permissions[0]]))).toBe(true);
+    for (const navModule of NAVIGATION_MODULES.filter((item) => item.authorization === "organization")) {
+      expect(navModule.permissions.length, `${navModule.key} must declare permissions`).toBeGreaterThan(0);
+      for (const permission of navModule.permissions) expect(permissionValues.has(permission)).toBe(true);
+      expect(canSurfaceModule(navModule, new Set())).toBe(false);
+      const firstPermission = navModule.permissions[0];
+      if (!firstPermission) throw new Error(`${navModule.key} must declare at least one permission`);
+      expect(canSurfaceModule(navModule, new Set([firstPermission]))).toBe(true);
     }
   });
 
