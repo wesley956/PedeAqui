@@ -3,19 +3,9 @@ import "server-only";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hashOrderAccessToken } from "@/server/orders/order-token";
+import { groupPublicOrderModifiers, type PublicOrderModifierProjection } from "@/server/orders/public-order-projection";
 
 const uuidSchema = z.string().uuid();
-type PublicModifier = { order_item_id: string; modifier_name_snapshot: string; unit_price_cents: number };
-
-export function groupPublicOrderModifiers(rows: PublicModifier[]) {
-  const grouped = new Map<string, PublicModifier[]>();
-  for (const row of rows) {
-    const current = grouped.get(row.order_item_id) ?? [];
-    current.push(row);
-    grouped.set(row.order_item_id, current);
-  }
-  return grouped;
-}
 
 export class PublicOrderService {
   static async get(storeSlug: string, orderId: string, accessToken: string) {
@@ -57,7 +47,7 @@ export class PublicOrderService {
         .in("order_item_id", itemIds).order("created_at")
       : { data: [], error: null };
     if (modifiersResult.error) throw modifiersResult.error;
-    const modifiersByItem = groupPublicOrderModifiers((modifiersResult.data ?? []) as PublicModifier[]);
+    const modifiersByItem = groupPublicOrderModifiers((modifiersResult.data ?? []) as PublicOrderModifierProjection[]);
 
     return {
       store,
