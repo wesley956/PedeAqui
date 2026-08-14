@@ -78,6 +78,8 @@ describe("PedeAqui structural design tokens", () => {
     const buttonStyles = read("src/components/ui/button.module.css");
     const formComponent = read("src/components/ui/form-controls.tsx");
     const formStyles = read("src/components/ui/form-controls.module.css");
+    const cardComponent = read("src/components/ui/card.tsx");
+    const cardStyles = read("src/components/ui/card.module.css");
     const primitives = read("src/components/ui/primitives.tsx");
 
     expect(buttonComponent).toContain('import styles from "./button.module.css"');
@@ -90,8 +92,12 @@ describe("PedeAqui structural design tokens", () => {
     expect(formStyles).toContain("var(--font-size-sm)");
     expect(formStyles).toContain("var(--space-3)");
 
+    expect(cardComponent).toContain('import styles from "./card.module.css"');
+    expect(cardStyles).toContain("var(--space-5)");
+    expect(cardStyles).toContain("var(--radius-lg)");
+    expect(cardStyles).toContain("var(--shadow-sm)");
+
     expect(primitives).toContain("var(--radius-pill)");
-    expect(primitives).toContain("var(--space-5)");
     expect(primitives).toContain("var(--radius-sm)");
   });
 
