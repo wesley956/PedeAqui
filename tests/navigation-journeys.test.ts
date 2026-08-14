@@ -56,8 +56,10 @@ describe("navigation journeys [277]", () => {
 
   it("login preserves a safe deep link and generic login uses the contextual start", () => {
     const actions = read("src/features/auth/actions.ts");
+    const safeReturnPath = read("src/lib/auth/safe-return-path.ts");
     expect(actions).toContain("redirect(returnPath ?? await StartRouteService.resolve())");
-    expect(actions).toContain('!value.startsWith("/") || value.startsWith("//")');
+    expect(actions).toContain("safeInternalPath");
+    expect(safeReturnPath).toContain('!value.startsWith("/") || value.startsWith("//")');
   });
 
   it("logout always returns to the public login surface", () => {
