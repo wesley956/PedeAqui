@@ -1,76 +1,103 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  Checkbox,
+  Input,
+  MoneyInput,
+  QuantityInput,
+  SelectField,
+  Textarea,
+} from "@/components/ui/form-controls";
 import { CategoryService } from "@/server/catalog/category-service";
 import { createProductAction } from "@/features/catalog/actions";
-
-const fieldStyle = {
-  width: "100%",
-  minHeight: 44,
-  borderRadius: 10,
-  border: "1px solid var(--border)",
-  background: "var(--surface-2)",
-  color: "var(--text)",
-  padding: "10px 12px",
-} as const;
+import styles from "./product-editor.module.css";
 
 export default async function NewProductPage() {
   const categories = await CategoryService.list();
 
   return (
-    <section style={{ display: "grid", gap: 20, maxWidth: 820 }}>
-      <div>
-        <Link href="/cardapio/produtos" className="muted">← Voltar</Link>
+    <section className={styles.page}>
+      <div className={styles.heading}>
+        <Link href="/cardapio/produtos" className={styles.back}>← Voltar para produtos</Link>
         <h1>Novo produto</h1>
-        <p className="muted">Cadastre preço, categoria e informações operacionais.</p>
+        <p className="muted">Preencha primeiro o essencial. Dados técnicos ficam recolhidos para não atrapalhar o cadastro comum.</p>
       </div>
 
-      <form action={createProductAction} className="card" style={{ padding: 20, display: "grid", gap: 16 }}>
-        <Input label="Nome" name="name" required maxLength={120} />
-
-        <label style={{ display: "grid", gap: 6 }}>
-          <span style={{ fontWeight: 700, fontSize: 14 }}>Descrição</span>
-          <textarea name="description" rows={4} maxLength={1000} style={fieldStyle} />
-        </label>
-
-        <label style={{ display: "grid", gap: 6 }}>
-          <span style={{ fontWeight: 700, fontSize: 14 }}>Categoria</span>
-          <select name="categoryId" defaultValue="" style={fieldStyle}>
+      <form action={createProductAction} className={styles.form}>
+        <section className={`card ${styles.section}`} aria-labelledby="produto-basico">
+          <div className={styles.sectionHeader}>
+            <h2 id="produto-basico">Informações básicas</h2>
+            <p className="muted">Nome, descrição e categoria são o que o cliente reconhece primeiro.</p>
+          </div>
+          <Input label="Nome" name="name" required maxLength={120} autoFocus />
+          <Textarea label="Descrição" name="description" rows={3} maxLength={1000} />
+          <SelectField label="Categoria" name="categoryId" defaultValue="">
             <option value="">Sem categoria</option>
             {categories.map((category) => <option value={category.id} key={category.id}>{category.name}</option>)}
-          </select>
-        </label>
+          </SelectField>
+        </section>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
-          <Input label="Preço" name="price" inputMode="decimal" placeholder="29,90" required />
-          <Input label="Preço promocional" name="promotionalPrice" inputMode="decimal" placeholder="24,90" />
-          <Input label="Custo" name="cost" inputMode="decimal" placeholder="12,50" />
-        </div>
+        <section className={`card ${styles.section}`} aria-labelledby="produto-preco">
+          <div className={styles.sectionHeader}>
+            <h2 id="produto-preco">Preço</h2>
+            <p className="muted">O preço de venda é obrigatório. Promoção só precisa ser preenchida quando houver.</p>
+          </div>
+          <div className={styles.grid2}>
+            <MoneyInput label="Preço" name="price" placeholder="29,90" required />
+            <MoneyInput label="Preço promocional" name="promotionalPrice" placeholder="24,90" />
+          </div>
+        </section>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
-          <Input label="SKU" name="sku" maxLength={64} />
-          <Input label="Código de barras" name="barcode" maxLength={64} />
-          <Input label="Preparo (min)" name="preparationTimeMinutes" type="number" min={0} max={1440} defaultValue={0} />
-        </div>
+        <section className={`card ${styles.section}`} aria-labelledby="produto-imagem">
+          <div className={styles.sectionHeader}>
+            <h2 id="produto-imagem">Imagem</h2>
+            <p className="muted">Uma imagem clara ajuda o cliente a escolher. O produto pode ser salvo sem ela.</p>
+          </div>
+          <Input label="URL da imagem" name="imageUrl" type="url" hint="O upload direto será ativado quando o storage do ambiente estiver provisionado." />
+        </section>
 
-        <Input label="URL da imagem" name="imageUrl" type="url" hint="O upload direto será ativado quando o storage do novo ambiente for provisionado." />
-
-        <label style={{ display: "grid", gap: 6 }}>
-          <span style={{ fontWeight: 700, fontSize: 14 }}>Disponibilidade inicial</span>
-          <select name="availability" defaultValue="available" style={fieldStyle}>
+        <section className={`card ${styles.section}`} aria-labelledby="produto-disponibilidade">
+          <div className={styles.sectionHeader}>
+            <h2 id="produto-disponibilidade">Disponibilidade</h2>
+            <p className="muted">Defina como o item deve entrar no catálogo. Depois, a disponibilidade pode ser alterada diretamente na lista de produtos.</p>
+          </div>
+          <SelectField label="Disponibilidade inicial" name="availability" defaultValue="available">
             <option value="available">Disponível</option>
             <option value="sold_out">Esgotado</option>
             <option value="inactive">Inativo</option>
-          </select>
-        </label>
+          </SelectField>
+          <Checkbox label="Produto ativo no catálogo" name="active" defaultChecked hint="Desative somente quando o item não deve participar da operação." />
+        </section>
 
-        <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <input name="active" type="checkbox" defaultChecked />
-          <span>Produto ativo no catálogo</span>
-        </label>
+        <section className={`card ${styles.section}`} aria-labelledby="produto-adicionais">
+          <div className={styles.sectionHeader}>
+            <h2 id="produto-adicionais">Adicionais e opções</h2>
+            <p className="muted">Grupos de adicionais são compartilhados entre produtos e continuam sendo administrados na área própria.</p>
+          </div>
+          <div className={styles.helperCard}>
+            <strong>Vincule adicionais depois de salvar o produto.</strong>
+            <p>Isso evita interromper o cadastro básico e mantém as regras existentes de grupos e opções.</p>
+            <Link href="/cardapio/adicionais">Abrir gestão de adicionais</Link>
+          </div>
+        </section>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-          <Link href="/cardapio/produtos" style={{ alignSelf: "center" }}>Cancelar</Link>
+        <details className={styles.details}>
+          <summary>Dados avançados e operacionais</summary>
+          <div className={styles.detailsBody}>
+            <p className="muted">Preencha apenas quando fizer parte da rotina do estabelecimento.</p>
+            <div className={styles.grid2}>
+              <MoneyInput label="Custo" name="cost" placeholder="12,50" />
+              <QuantityInput label="Preparo (min)" name="preparationTimeMinutes" min={0} max={1440} defaultValue={0} />
+            </div>
+            <div className={styles.grid2}>
+              <Input label="SKU" name="sku" maxLength={64} />
+              <Input label="Código de barras" name="barcode" maxLength={64} />
+            </div>
+          </div>
+        </details>
+
+        <div className={styles.actions}>
+          <Link href="/cardapio/produtos">Cancelar</Link>
           <Button type="submit">Salvar produto</Button>
         </div>
       </form>
