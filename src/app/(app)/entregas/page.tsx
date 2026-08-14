@@ -16,8 +16,6 @@ export default async function DeliveryOperationsPage() {
 
   const open = data.deliveries.filter((item) => item.fulfillment_status !== "delivered");
   const delivered = data.deliveries.filter((item) => item.fulfillment_status === "delivered").slice(-20).reverse();
-  const now = Date.now();
-  const late = open.filter((item) => item.delivery?.promised_by_at && Date.parse(item.delivery.promised_by_at) < now).length;
   const driversForForm = data.drivers.map((driver) => ({
     id: driver.id,
     name: driver.name,
@@ -47,7 +45,6 @@ export default async function DeliveryOperationsPage() {
       <Metric label="Abertas" value={open.length} />
       <Metric label="Aguardando" value={open.filter((item) => ["pending", "awaiting_assignment"].includes(item.fulfillment_status)).length} />
       <Metric label="Em rota" value={open.filter((item) => item.fulfillment_status === "out_for_delivery").length} />
-      <Metric label="Atrasadas" value={late} danger={late > 0} />
       <Metric label="Entregadores em serviço" value={data.drivers.filter((driver) => driver.active && driver.on_duty).length} />
     </div>
 
@@ -65,6 +62,6 @@ export default async function DeliveryOperationsPage() {
   </section>;
 }
 
-function Metric({ label, value, danger = false }: { label: string; value: number; danger?: boolean }) {
-  return <div className={styles.metric} data-tone={danger ? "danger" : undefined}><span>{label}</span><strong>{value}</strong></div>;
+function Metric({ label, value }: { label: string; value: number }) {
+  return <div className={styles.metric}><span>{label}</span><strong>{value}</strong></div>;
 }
