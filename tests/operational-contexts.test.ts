@@ -36,7 +36,7 @@ describe("restaurant operational contexts", () => {
   it("keeps operational context explicitly separate from authorization", () => {
     expect(doc).toContain("não define autorização");
     expect(doc).toContain("Não altera RBAC");
-    expect(doc).toContain("não transform");
+    expect(doc).toContain("sem transformar visibilidade de menu em mecanismo de segurança");
   });
 
   it("defines concrete starting surfaces for specialist roles", () => {
