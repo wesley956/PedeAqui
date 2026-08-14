@@ -29,6 +29,8 @@ export const navigation = [
 ] as const;
 
 export function AppShell({ children, email, branding }: { children: ReactNode; email: string | null; branding: ResolvedBranding }) {
+  // White-label values are runtime data. Keeping this single style object inline is intentional:
+  // it only feeds the documented accent aliases and never introduces arbitrary layout values.
   const style = {
     ...(branding.primaryColor ? { "--accent": branding.primaryColor } : {}),
     ...(branding.secondaryColor ? { "--accent-strong": branding.secondaryColor } : {}),
@@ -44,7 +46,7 @@ export function AppShell({ children, email, branding }: { children: ReactNode; e
           ) : (
             <>
               {branding.logoUrl ? (
-                <img src={branding.logoUrl} alt="" width={34} height={34} style={{ objectFit: "contain", borderRadius: 8 }} />
+                <img src={branding.logoUrl} alt="" width={32} height={32} className="brand-logo-image" />
               ) : (
                 <div className="brand-mark" aria-hidden>{branding.productName.slice(0, 1).toUpperCase()}</div>
               )}
@@ -58,12 +60,18 @@ export function AppShell({ children, email, branding }: { children: ReactNode; e
       </aside>
       <div className="app-main">
         <header className="app-topbar">
-          <div><strong>Operação</strong><div className="muted" style={{ fontSize: 12 }}>Unidade atual protegida pelo contexto multiempresa</div></div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>{email ? <span className="muted app-user-email">{email}</span> : null}<form action={signOutAction}><Button tone="secondary" type="submit">Sair</Button></form></div>
+          <div className="app-topbar-context">
+            <strong>Operação</strong>
+            <span className="app-topbar-meta">Unidade atual protegida pelo contexto multiempresa</span>
+          </div>
+          <div className="app-topbar-actions">
+            {email ? <span className="muted app-user-email">{email}</span> : null}
+            <form action={signOutAction}><Button tone="secondary" type="submit">Sair</Button></form>
+          </div>
         </header>
         <main className="app-content">{children}</main>
         {!branding.hidePedeAquiBranding && !usesPlatformDefault ? (
-          <footer className="muted" aria-label="Tecnologia PedeAqui" style={{ padding: "0 24px 24px", fontSize: 12, display: "flex", alignItems: "center", gap: 7 }}>
+          <footer className="platform-footer" aria-label="Tecnologia PedeAqui">
             <span>Tecnologia</span>
             <PedeAquiLogo size="xs" decorative />
           </footer>

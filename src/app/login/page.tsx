@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { AuthCard } from "@/components/auth/auth-card";
+import authStyles from "@/components/auth/auth-flow.module.css";
 import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { signInAction } from "@/features/auth/actions";
 
@@ -13,17 +15,17 @@ export default async function LoginPage({
 
   return (
     <AuthCard title="Entrar" subtitle="Acesse sua operação PedeAqui.">
-      {params.error ? <p role="alert" style={{ margin: 0, color: "#ff8a93" }}>Não foi possível entrar. Verifique os dados.</p> : null}
-      {params.status === "check_email" ? <p style={{ margin: 0, color: "var(--success)" }}>Confira seu e-mail para concluir o cadastro.</p> : null}
-      <form action={signInAction} style={{ display: "grid", gap: 14 }}>
+      {params.error ? <Alert tone="danger">Não foi possível entrar. Verifique os dados.</Alert> : null}
+      {params.status === "check_email" ? <Alert tone="success">Confira seu e-mail para concluir o cadastro.</Alert> : null}
+      <form action={signInAction} className={authStyles.form}>
         <input type="hidden" name="next" value={params.next ?? ""} />
         <Input label="E-mail" name="email" type="email" autoComplete="email" required />
         <Input label="Senha" name="password" type="password" autoComplete="current-password" required minLength={8} />
         <Button type="submit">Entrar</Button>
       </form>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 14 }}>
-        <Link href="/recuperar-senha" className="muted">Esqueci a senha</Link>
-        <Link href="/cadastro">Criar conta</Link>
+      <div className={authStyles.links}>
+        <Link href="/recuperar-senha" className={authStyles.linkMuted}>Esqueci a senha</Link>
+        <Link href="/cadastro" className={authStyles.link}>Criar conta</Link>
       </div>
     </AuthCard>
   );
