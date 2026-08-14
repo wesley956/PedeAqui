@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { StartRouteService } from "@/server/access/start-route-service";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -21,21 +22,27 @@ function getAppUrl() {
 }
 
 function getSafeReturnPath(value: FormDataEntryValue | null) {
-  if (typeof value !== "string") return "/dashboard";
-  if (!value.startsWith("/") || value.startsWith("//")) return "/dashboard";
+  if (typeof value !== "string" || value.length === 0) return null;
+  if (!value.startsWith("/") || value.startsWith("//")) return null;
   return value;
+}
+
+function loginErrorPath(error: string, returnPath: string | null) {
+  const next = returnPath ? `&next=${encodeURIComponent(returnPath)}` : "";
+  return `/login?error=${error}${next}`;
 }
 
 export async function signInAction(formData: FormData) {
   const parsed = getCredentials(formData);
   const returnPath = getSafeReturnPath(formData.get("next"));
-  if (!parsed.success) redirect(`/login?error=invalid_input&next=${encodeURIComponent(returnPath)}`);
+  if (!parsed.success) redirect(loginErrorPath("invalid_input", returnPath));
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) redirect(`/login?error=invalid_credentials&next=${encodeURIComponent(returnPath)}`);
+  if (error) redirect(loginErrorPath("invalid_credentials", returnPath));
 
-  redirect(returnPath);
+  // Explicit deep links win. Only a generic login uses the operational start route.
+  redirect(returnPath ?? await StartRouteService.resolve());
 }
 
 export async function signUpAction(formData: FormData) {
@@ -75,7 +82,7 @@ export async function updatePasswordAction(formData: FormData) {
   const { error } = await supabase.auth.updateUser({ password: password.data });
   if (error) redirect("/nova-senha?error=update_failed");
 
-  redirect("/dashboard");
+  redirect(await StartRouteService.resolve());
 }
 
 export async function signOutAction() {
