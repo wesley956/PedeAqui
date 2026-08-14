@@ -23,7 +23,7 @@ describe("mobile contextual navigation", () => {
   });
 
   it("does not surface hidden modules", () => {
-    const hidden = [{ key: "finance", label: "Financeiro", href: "/financeiro", group: "management", priority: "hidden" as const }];
+    const hidden: ShellNavigationItem[] = [{ key: "finance", label: "Financeiro", href: "/financeiro", group: "management", priority: "hidden" }];
     expect(selectMobileNavigation([...items, ...hidden], ["floor"]).more.some((item) => item.key === "finance")).toBe(false);
   });
 });
