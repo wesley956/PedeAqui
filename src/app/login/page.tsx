@@ -11,6 +11,7 @@ const loginErrors: Record<string, string> = {
   auth_callback: "O link de autenticação é inválido ou expirou. Solicite um novo link e tente novamente.",
   invalid_input: "Revise o e-mail e a senha informados.",
   invalid_credentials: "Não foi possível entrar. Verifique o e-mail e a senha.",
+  auth_unavailable: "A autenticação está temporariamente indisponível. Tente novamente em instantes.",
 };
 
 export default async function LoginPage({
