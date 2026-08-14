@@ -48,8 +48,10 @@
 
 .app-main { min-width: 0; }
 .app-topbar { min-height: 68px; border-bottom: var(--border-width) solid var(--border-default); display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-3) var(--space-6); position: sticky; top: 0; background: var(--surface-0); z-index: var(--z-raised); }
-.app-topbar-context { display: grid; gap: var(--space-1); }
-.app-topbar-meta { color: var(--text-secondary); font-size: var(--font-size-xs); }
+.app-topbar-context { display: grid; gap: var(--space-1); min-width: 0; }
+.app-topbar-signals { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; color: var(--text-secondary); font-size: var(--font-size-xs); }
+.app-topbar-signals span { display: inline-flex; align-items: center; min-height: var(--space-6); padding: 0 var(--space-2); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-pill); background: var(--surface-1); }
+.app-topbar-signals [data-state="open"] { color: var(--state-success-text); border-color: var(--state-success); background: var(--state-success-surface); }
 .app-topbar-actions { display: flex; align-items: center; gap: var(--space-3); }
 .app-content { padding: var(--space-6); width: min(100%, var(--content-wide)); margin: 0 auto; min-width: 0; }
 .platform-footer { padding: 0 var(--space-6) var(--space-6); color: var(--text-secondary); font-size: var(--font-size-xs); display: flex; align-items: center; gap: var(--space-2); }
@@ -141,6 +143,8 @@
 
 @media (max-width: 640px) {
   .app-topbar { padding: var(--space-2) var(--space-3); }
+  .app-topbar-signals { gap: var(--space-1); }
+  .app-topbar-signals span { padding-inline: var(--space-1); }
   .app-content { padding: var(--space-3); overflow-x: hidden; }
   .platform-footer { padding: 0 var(--space-3) var(--space-4); }
   .metric-grid { grid-template-columns: 1fr; }
