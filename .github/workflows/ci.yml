@@ -30,6 +30,26 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Check database migration history
+        run: npm run db:drift
+
+      - name: Compare production migration history
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "${SUPABASE_DB_URL:-}" ]; then
+            echo "DB_DRIFT: comparação remota ignorada; secret SUPABASE_DB_URL não configurado."
+            exit 0
+          fi
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          remote_file="$(mktemp)"
+          trap 'rm -f "$remote_file"' EXIT
+          psql "$SUPABASE_DB_URL" -X -qAt -v ON_ERROR_STOP=1 \
+            -c "select version || '|' || name from supabase_migrations.schema_migrations order by version" \
+            > "$remote_file"
+          node scripts/check-db-drift.mjs --remote-file "$remote_file"
+
       - name: Lint
         run: npm run lint
 
