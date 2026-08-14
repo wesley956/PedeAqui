@@ -11,7 +11,8 @@ export async function POST(request:Request,{ params }:{ params:Promise<{ provide
     const result=await processBillingWebhook(providerKey,rawBody,request.headers);
     return NextResponse.json({ ok:true,...result });
   }catch(error){
-    console.error("billing webhook failed",error);
+    // Do not log provider payloads, signatures, tokens or raw error messages at the HTTP boundary.
+    console.error("billing webhook failed",{ errorType:error instanceof Error?error.name:"UnknownError" });
     return NextResponse.json({ error:"Billing webhook rejected" },{ status:400 });
   }
 }
