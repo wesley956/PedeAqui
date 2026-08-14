@@ -41,7 +41,7 @@ A escala representa **elevação/hierarquia**, não uma licença para cada módu
 - `--text-primary`: conteúdo principal em fundo escuro.
 - `--text-secondary`: conteúdo auxiliar/muted.
 - `--text-inverse`: conteúdo escuro sobre superfície clara.
-- `--text-on-brand`: conteúdo sobre preenchimento de marca quando contraste validado.
+- `--text-on-brand`: conteúdo sobre preenchimentos fortes da plataforma. A partir da [268] referencia `--brand-graphite-deep`, porque branco sobre o laranja principal não atingia contraste AA para texto normal; grafite profundo mantém contraste adequado inclusive no hover institucional e no botão de perigo.
 - `--border-default`: separação padrão.
 - `--border-strong`: separação de maior ênfase.
 - `--focus-ring`: foco de teclado; atualmente referencia a cor principal PedeAqui.
