@@ -21,7 +21,7 @@
   --text-primary: #fffdf9;
   --text-secondary: #b5b0aa;
   --text-inverse: #202427;
-  --text-on-brand: #ffffff;
+  --text-on-brand: var(--brand-graphite-deep);
   --border-default: #353535;
   --border-strong: #4a4a4a;
   --focus-ring: var(--brand-primary);
