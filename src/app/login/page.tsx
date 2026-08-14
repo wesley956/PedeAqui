@@ -6,6 +6,13 @@ import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { signInAction } from "@/features/auth/actions";
 
+const loginErrors: Record<string, string> = {
+  session_expired: "Sua sessão expirou. Entre novamente para continuar.",
+  auth_callback: "O link de autenticação é inválido ou expirou. Solicite um novo link e tente novamente.",
+  invalid_input: "Revise o e-mail e a senha informados.",
+  invalid_credentials: "Não foi possível entrar. Verifique o e-mail e a senha.",
+};
+
 export default async function LoginPage({
   searchParams,
 }: {
@@ -15,7 +22,7 @@ export default async function LoginPage({
 
   return (
     <AuthCard title="Entrar" subtitle="Acesse sua operação PedeAqui.">
-      {params.error ? <Alert tone="danger">Não foi possível entrar. Verifique os dados.</Alert> : null}
+      {params.error ? <Alert tone="danger">{loginErrors[params.error] ?? "Não foi possível entrar. Verifique os dados."}</Alert> : null}
       {params.status === "check_email" ? <Alert tone="success">Confira seu e-mail para concluir o cadastro.</Alert> : null}
       <form action={signInAction} className={authStyles.form}>
         <input type="hidden" name="next" value={params.next ?? ""} />
