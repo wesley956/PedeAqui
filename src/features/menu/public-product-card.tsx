@@ -14,6 +14,6 @@ export function PublicProductCard({ product, storeSlug, showImage }: { product: 
       <div className={styles.productText}><div className={styles.productTitleRow}><strong className={styles.productTitle}>{product.name}</strong>{soldOut ? <span className={styles.soldOut}>ESGOTADO</span> : hasPromotion ? <span className={styles.promo}>OFERTA</span> : null}</div>{product.description ? <p className={styles.description}>{product.description}</p> : null}</div>
       <div className={styles.priceRow}><strong className={styles.price}>{money(price)}</strong>{hasPromotion ? <span className={styles.oldPrice}>{money(product.price_cents)}</span> : null}{!soldOut ? <span className={styles.viewHint}>Ver opções →</span> : <span className={styles.unavailableHint}>Indisponível para adicionar</span>}</div>
     </div>
-    {showImage ? product.image_url ? <img src={product.image_url} alt="" width={104} height={104} loading="lazy" className={styles.image} /> : <div aria-hidden className={styles.placeholder}><span>Sem foto</span></div> : null}
+    {showImage ? product.image_url ? <img src={product.image_url} alt="" width={104} height={104} loading="lazy" decoding="async" className={styles.image} /> : <div aria-hidden className={styles.placeholder}><span>Sem foto</span></div> : null}
   </Link>;
 }
