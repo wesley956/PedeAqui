@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import type { NavigationGroup } from "./navigation-model";
+import type { NavigationGroup, NavigationPriority } from "./navigation-model";
 
 export type ShellNavigationItem = {
   key: string;
   label: string;
   href: string;
   group: NavigationGroup;
-  priority: "primary" | "secondary";
+  priority: NavigationPriority;
 };
 
 const groups: readonly { key: NavigationGroup; label: string }[] = [
@@ -37,7 +37,7 @@ export function DesktopNavigation({ items }: { items: readonly ShellNavigationIt
       </button>
       <nav className="app-nav" aria-label="Navegação principal">
         {groups.map((group) => {
-          const groupItems = items.filter((item) => item.group === group.key);
+          const groupItems = items.filter((item) => item.group === group.key && item.priority !== "hidden");
           if (groupItems.length === 0) return null;
           return (
             <section className="nav-group" key={group.key} aria-labelledby={`nav-group-${group.key}`}>
