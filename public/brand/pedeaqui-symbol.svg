@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-labelledby="title desc">
+  <title id="title">Símbolo PedeAqui</title>
+  <desc id="desc">Símbolo oficial PedeAqui: marcador de localização com P, cloche e linhas de velocidade.</desc>
+<defs>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF9A00"/>
+      <stop offset="0.55" stop-color="#FF6B00"/>
+      <stop offset="1" stop-color="#FF4A00"/>
+    </linearGradient>
+    <linearGradient id="orangeSoft" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FF9A00"/>
+      <stop offset="1" stop-color="#FF6B00"/>
+    </linearGradient>
+    <linearGradient id="graphite" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30363A"/>
+      <stop offset="1" stop-color="#171A1C"/>
+    </linearGradient>
+  </defs>
+  <rect x="22" y="238" width="126" height="24" rx="12" fill="url(#orangeSoft)"/>
+  <rect x="48" y="276" width="132" height="24" rx="12" fill="#202427"/>
+  <path d="M220 24 C118 24 58 95 58 186 C58 286 123 331 220 397 C317 331 382 286 382 186 C382 95 322 24 220 24 Z" fill="url(#orange)"/>
+  <path d="M92 139 C111 75 158 47 218 43 C170 57 131 87 104 142 Z" fill="#FFFFFF" opacity="0.26"/>
+  <path d="M128 102 H229 C303 102 340 143 340 196 C340 250 303 291 229 291 H177 V356 H128 Z M177 148 V245 H225 C269 245 287 226 287 196 C287 166 269 148 225 148 Z" fill="#FFFFFF" fill-rule="evenodd"/>
+  <circle cx="233" cy="158" r="11" fill="url(#orangeSoft)"/>
+  <path d="M180 214 A53 53 0 0 1 286 214 Z" fill="url(#orangeSoft)"/>
+  <path d="M193 196 C203 178 217 169 234 166" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/>
+  <rect x="174" y="216" width="118" height="22" rx="11" fill="url(#graphite)"/>
+  <ellipse cx="220" cy="394" rx="62" ry="10" fill="#202427" opacity="0.22"/>
+</svg>
