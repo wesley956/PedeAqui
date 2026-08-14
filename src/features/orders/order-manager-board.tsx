@@ -153,7 +153,7 @@ export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders
 
       <div aria-live="polite" role="status" style={{ minHeight: notice ? 42 : 0 }}>
         {notice ? (
-          <div style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #7a4b1b", background: "#2d251d", display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+          <div style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid var(--state-warning)", background: "var(--state-warning-surface)", display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
             <strong>{notice}</strong>
             <button type="button" onClick={() => setNotice(null)} style={secondaryButton}>Dispensar</button>
           </div>
@@ -209,7 +209,7 @@ function OrderCard({ order, now }: { order: OrderManagerRow; now: number }) {
           <>
             <OrderActionForm orderId={order.id} intent="accept" label="Aceitar pedido" compact />
             <details>
-              <summary style={{ fontSize: 12, cursor: "pointer", color: "#f97066" }}>Recusar pedido</summary>
+              <summary style={{ fontSize: 12, cursor: "pointer", color: "var(--state-danger-text)" }}>Recusar pedido</summary>
               <div style={{ marginTop: 7 }}><OrderActionForm orderId={order.id} intent="reject" label="Confirmar recusa" tone="danger" reasonLabel="Motivo" reasonPlaceholder="Ex.: item indisponível" compact /></div>
             </details>
           </>
