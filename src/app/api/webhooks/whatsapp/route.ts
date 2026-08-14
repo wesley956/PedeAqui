@@ -1,6 +1,8 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { ConversationService } from "@/server/conversations/conversation-service";
 import { parseWhatsAppWebhook, verifyMetaWebhookSignature, webhookPhoneNumberIds } from "@/server/conversations/whatsapp-webhook";
+import { recordFailure } from "@/server/observability/failure";
+import { getRequestContext } from "@/server/observability/request-context";
 
 export const runtime = "nodejs";
 
@@ -24,18 +26,20 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const requestContext = await getRequestContext();
+  const responseHeaders = { "x-request-id": requestContext.requestId };
   const rawBody = await request.text();
-  if (rawBody.length > 1_000_000) return new Response("Payload too large", { status: 413 });
+  if (rawBody.length > 1_000_000) return new Response("Payload too large", { status: 413, headers: responseHeaders });
 
   let payload: unknown;
   try {
     payload = JSON.parse(rawBody);
   } catch {
-    return new Response("Invalid JSON", { status: 400 });
+    return new Response("Invalid JSON", { status: 400, headers: responseHeaders });
   }
 
   const events = parseWhatsAppWebhook(payload);
-  if (events.length === 0) return Response.json({ ok: true });
+  if (events.length === 0) return Response.json({ ok: true, requestId: requestContext.requestId }, { headers: responseHeaders });
 
   try {
     const phoneNumberIds = webhookPhoneNumberIds(events);
@@ -43,15 +47,19 @@ export async function POST(request: Request) {
     for (const phoneNumberId of phoneNumberIds) {
       secrets.add(await ConversationService.resolveWebhookAppSecret(phoneNumberId));
     }
-    if (secrets.size !== 1) return new Response("Ambiguous webhook app", { status: 400 });
+    if (secrets.size !== 1) return new Response("Ambiguous webhook app", { status: 400, headers: responseHeaders });
     const appSecret = [...secrets][0];
     if (!appSecret || !verifyMetaWebhookSignature(rawBody, request.headers.get("x-hub-signature-256"), appSecret)) {
-      return new Response("Invalid signature", { status: 401 });
+      return new Response("Invalid signature", { status: 401, headers: responseHeaders });
     }
 
     for (const event of events) await ConversationService.ingestWhatsAppEvent(event);
-    return Response.json({ ok: true });
-  } catch {
-    return new Response("Webhook processing failed", { status: 500 });
+    return Response.json({ ok: true, requestId: requestContext.requestId }, { headers: responseHeaders });
+  } catch (error) {
+    const failure = recordFailure("whatsapp.webhook.failed", error, { requestId: requestContext.requestId });
+    return Response.json(
+      { error: failure.retryable ? "Webhook temporarily unavailable" : "Webhook processing failed", requestId: requestContext.requestId },
+      { status: failure.retryable ? 503 : 500, headers: responseHeaders },
+    );
   }
 }
