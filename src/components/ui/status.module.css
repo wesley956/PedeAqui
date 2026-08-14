@@ -1,0 +1,30 @@
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 28px;
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  white-space: nowrap;
+}
+
+.icon {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.2em;
+  font-weight: var(--font-weight-extrabold);
+}
+
+.neutral { color: var(--text-secondary); background: var(--surface-2); border-color: var(--border-strong); }
+.info { color: var(--state-info-text); background: var(--state-info-surface); border-color: var(--state-info); }
+.success { color: var(--state-success-text); background: var(--state-success-surface); border-color: var(--state-success); }
+.warning { color: var(--state-warning-text); background: var(--state-warning-surface); border-color: var(--state-warning); }
+.danger { color: var(--state-danger-text); background: var(--state-danger-surface); border-color: var(--state-danger); }
+
+@media (forced-colors: active) {
+  .status { border: 1px solid CanvasText; }
+}
