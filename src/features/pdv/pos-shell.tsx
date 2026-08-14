@@ -44,7 +44,6 @@ function paymentPayload(drafts: readonly PaymentDraft[], totalCents: number) {
     if (!hint || drafts.length !== 1) return { ok: false as const, error: "Venda zerada deve manter apenas uma forma de pagamento como referência." };
     return { ok: true as const, value: [{ method: hint.method, amountCents: 0, cashReceivedCents: null, reference: null }] satisfies PosSaleInput["payments"] };
   }
-
   const lines: PosSaleInput["payments"] = [];
   let paymentTotal = 0;
   for (const draft of drafts) {
@@ -123,7 +122,6 @@ export function PosShell({ categories, products, customers, paymentMethods, coup
 
   function touchSale() { setRevision((value) => value + 1); setError(null); setLastSale(null); }
   function changeBenefit(setter: (value: string) => void, value: string) { setter(value); touchSale(); }
-
   function addCartLine(product: PosProduct, modifierIds: string[], quantity: number, note: string) {
     const validation = validateModifierSelection(product, modifierIds);
     if (!validation.valid) { setConfigurator((current) => current ? { ...current, error: validation.message } : current); return; }
@@ -149,24 +147,19 @@ export function PosShell({ categories, products, customers, paymentMethods, coup
     if (!growthProjection.valid) { setError(growthProjection.message); return; }
     const resolvedPayments = paymentPayload(payments, growthProjection.totalCents); if (!resolvedPayments.ok) { setError(resolvedPayments.error); return; }
     const customer: PosSaleInput["customer"] = selectedCustomer ? { id: selectedCustomer.id } : (customerName.trim() || customerPhone.trim() || customerEmail.trim()) ? { name: customerName.trim() || null, phone: customerPhone.trim() || null, email: customerEmail.trim() || null } : null;
-    const input: PosSaleInput = {
-      items: cart.map((line) => ({ productId: line.productId, quantity: line.quantity, note: line.note, modifierIds: line.modifierIds })),
-      payments: resolvedPayments.value, customer,
-      growth: { couponCode: couponCode.trim() || null, cashbackRedeemCents: cashbackParsed ?? 0, loyaltyRedeemPoints: loyaltyNumber },
-    };
+    const input: PosSaleInput = { items: cart.map((line) => ({ productId: line.productId, quantity: line.quantity, note: line.note, modifierIds: line.modifierIds })), payments: resolvedPayments.value, customer, growth: { couponCode: couponCode.trim() || null, cashbackRedeemCents: cashbackParsed ?? 0, loyaltyRedeemPoints: loyaltyNumber } };
     setPending(true);
     try {
       const result = await createPdvSaleAction(input, `${sessionNonce}:${revision}`);
       if (!result.ok || !result.sale) { setError(result.error ?? "Não foi possível finalizar a venda."); return; }
-      setLastSale(result.sale); setCart([]); setSelectedCustomerId(null); setCustomerQuery(""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail("");
-      setCouponCode(""); setCashbackText(""); setLoyaltyPointsText("");
+      setLastSale(result.sale); setCart([]); setSelectedCustomerId(null); setCustomerQuery(""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail(""); setCouponCode(""); setCashbackText(""); setLoyaltyPointsText("");
       setPayments([{ id: crypto.randomUUID(), method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]); setRevision((value) => value + 1);
     } finally { setPending(false); }
   }
 
   return (
     <section className={styles.shell}>
-      <header className={styles.header}><div><p className="muted">Venda presencial · preços e benefícios revalidados no servidor</p><h1>PDV</h1></div><div className={styles.mutedSmall}>Carrinho local rápido · pedido, pagamento, fidelidade, produção e impressão transacionais</div></header>
+      <header className={styles.header}><div><p className="muted">Venda presencial · preços e benefícios revalidados no servidor</p><h1>PDV</h1></div><div className={styles.mutedSmall}>Selecione itens, confira a venda e finalize.</div></header>
       {lastSale ? <div className={styles.statusSuccess}>Venda <strong>#{lastSale.displayNumber}</strong> finalizada em {money(lastSale.totalCents)}.{lastSale.changeDueCents > 0 ? <> Troco: <strong>{money(lastSale.changeDueCents)}</strong>.</> : null}{" "}<Link href={`/pedidos/${lastSale.orderId}`}>Abrir pedido</Link></div> : null}
       {error ? <div className={styles.statusError}>{error}</div> : null}
 
@@ -180,21 +173,25 @@ export function PosShell({ categories, products, customers, paymentMethods, coup
           <div className={styles.cartHeader}><div><div className={styles.mutedSmall}>VENDA ATUAL</div><h2 style={{ margin: "3px 0 0", fontSize: 19 }}>Carrinho</h2></div><strong>{cart.reduce((sum, line) => sum + line.quantity, 0)} item(ns)</strong></div>
           {cart.length === 0 ? <div className={styles.empty}>Selecione produtos para iniciar a venda.</div> : <div className={styles.cartList}>{cart.map((line) => <div key={line.key} className={styles.cartLine}><div className={styles.rowBetween}><strong>{line.productName}</strong><strong>{money(line.unitPriceCents * line.quantity)}</strong></div>{line.modifierLabels.length > 0 ? <div className={styles.mutedSmall}>{line.modifierLabels.join(" · ")}</div> : null}{line.note ? <div className={styles.mutedSmall}>Obs.: {line.note}</div> : null}<div className={styles.rowBetween}><div className={styles.qtyRow}><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, -1)}>−</button><strong>{line.quantity}</strong><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, 1)}>+</button></div><button type="button" className={styles.removeButton} onClick={() => removeLine(line.key)}>Remover</button></div></div>)}</div>}
 
-          <div className={styles.section}>
-            <div className={styles.rowBetween}><h3>Cliente</h3><button type="button" className={styles.smallButton} onClick={() => selectCustomer(null)}>Consumidor</button></div>
-            {customers.length > 0 ? <><input className={styles.field} value={customerQuery} onChange={(event) => { setCustomerQuery(event.target.value); setSelectedCustomerId(null); setCashbackText(""); setLoyaltyPointsText(""); }} placeholder="Buscar por nome, telefone ou e-mail" />{customerMatches.length > 0 ? <div className={styles.customerMatches}>{customerMatches.map((customer) => <button type="button" key={customer.id} className={selectedCustomerId === customer.id ? styles.customerSelected : styles.customerButton} onClick={() => selectCustomer(customer)}><strong>{customer.name}</strong><div className={styles.mutedSmall}>{customer.phone ?? customer.email ?? "Cliente cadastrado"} · Cashback {money(customer.cashbackBalanceCents)} · {customer.loyaltyBalancePoints} pts</div></button>)}</div> : null}</> : null}
-            {selectedCustomer ? <div className={styles.customerSelected}><strong>{selectedCustomer.name}</strong><div className={styles.mutedSmall}>{selectedCustomer.phone ?? selectedCustomer.email ?? "Cliente cadastrado"}</div><div className={styles.mutedSmall}>Cashback {money(selectedCustomer.cashbackBalanceCents)} · Pontos {selectedCustomer.loyaltyBalancePoints}</div></div> : <div className={styles.twoColumns}><input className={styles.field} value={customerName} onChange={(event) => changeManualCustomer("name", event.target.value)} placeholder="Nome (opcional)" maxLength={120} /><input className={styles.field} value={customerPhone} onChange={(event) => changeManualCustomer("phone", event.target.value)} placeholder="Telefone" maxLength={32} inputMode="tel" /><input className={styles.field} value={customerEmail} onChange={(event) => changeManualCustomer("email", event.target.value)} placeholder="E-mail (opcional)" type="email" maxLength={200} /></div>}
-          </div>
-
-          <div className={styles.section}>
-            <div className={styles.rowBetween}><h3>Benefícios</h3>{growthProjection.valid && growthProjection.discountCents > 0 ? <strong style={{ color: "#FF6B00" }}>− {money(growthProjection.discountCents)}</strong> : null}</div>
-            <div className={styles.twoColumns}>
-              <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Cupom</span><input className={styles.field} list="pdv-coupons" value={couponCode} onChange={(event) => changeBenefit(setCouponCode, event.target.value.toUpperCase())} placeholder="Código" /><datalist id="pdv-coupons">{coupons.map((coupon) => <option key={coupon.id} value={coupon.code}>{coupon.name}</option>)}</datalist></label>
-              <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Usar cashback</span><input className={styles.field} inputMode="decimal" value={cashbackText} onChange={(event) => changeBenefit(setCashbackText, event.target.value)} disabled={!selectedCustomer || !growthSettings.cashbackEnabled} placeholder={selectedCustomer ? money(selectedCustomer.cashbackBalanceCents) : "Identifique o cliente"} /></label>
-              <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Usar pontos</span><input className={styles.field} type="number" min={0} value={loyaltyPointsText} onChange={(event) => changeBenefit(setLoyaltyPointsText, event.target.value)} disabled={!selectedCustomer || !growthSettings.loyaltyEnabled} placeholder={selectedCustomer ? `${selectedCustomer.loyaltyBalancePoints} disponíveis` : "Identifique o cliente"} /></label>
+          <details className={styles.advancedSection}>
+            <summary>Cliente e benefícios <span className={styles.mutedSmall}>opcional</span></summary>
+            <div className={styles.advancedBody}>
+              <div className={styles.section}>
+                <div className={styles.rowBetween}><h3>Cliente</h3><button type="button" className={styles.smallButton} onClick={() => selectCustomer(null)}>Consumidor</button></div>
+                {customers.length > 0 ? <><input className={styles.field} value={customerQuery} onChange={(event) => { setCustomerQuery(event.target.value); setSelectedCustomerId(null); setCashbackText(""); setLoyaltyPointsText(""); }} placeholder="Buscar por nome, telefone ou e-mail" />{customerMatches.length > 0 ? <div className={styles.customerMatches}>{customerMatches.map((customer) => <button type="button" key={customer.id} className={selectedCustomerId === customer.id ? styles.customerSelected : styles.customerButton} onClick={() => selectCustomer(customer)}><strong>{customer.name}</strong><div className={styles.mutedSmall}>{customer.phone ?? customer.email ?? "Cliente cadastrado"} · Cashback {money(customer.cashbackBalanceCents)} · {customer.loyaltyBalancePoints} pts</div></button>)}</div> : null}</> : null}
+                {selectedCustomer ? <div className={styles.customerSelected}><strong>{selectedCustomer.name}</strong><div className={styles.mutedSmall}>{selectedCustomer.phone ?? selectedCustomer.email ?? "Cliente cadastrado"}</div><div className={styles.mutedSmall}>Cashback {money(selectedCustomer.cashbackBalanceCents)} · Pontos {selectedCustomer.loyaltyBalancePoints}</div></div> : <div className={styles.twoColumns}><input className={styles.field} value={customerName} onChange={(event) => changeManualCustomer("name", event.target.value)} placeholder="Nome (opcional)" maxLength={120} /><input className={styles.field} value={customerPhone} onChange={(event) => changeManualCustomer("phone", event.target.value)} placeholder="Telefone" maxLength={32} inputMode="tel" /><input className={styles.field} value={customerEmail} onChange={(event) => changeManualCustomer("email", event.target.value)} placeholder="E-mail (opcional)" type="email" maxLength={200} /></div>}
+              </div>
+              <div className={styles.section}>
+                <div className={styles.rowBetween}><h3>Benefícios</h3>{growthProjection.valid && growthProjection.discountCents > 0 ? <strong className={styles.benefitValue}>− {money(growthProjection.discountCents)}</strong> : null}</div>
+                <div className={styles.twoColumns}>
+                  <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Cupom</span><input className={styles.field} list="pdv-coupons" value={couponCode} onChange={(event) => changeBenefit(setCouponCode, event.target.value.toUpperCase())} placeholder="Código" /><datalist id="pdv-coupons">{coupons.map((coupon) => <option key={coupon.id} value={coupon.code}>{coupon.name}</option>)}</datalist></label>
+                  <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Usar cashback</span><input className={styles.field} inputMode="decimal" value={cashbackText} onChange={(event) => changeBenefit(setCashbackText, event.target.value)} disabled={!selectedCustomer || !growthSettings.cashbackEnabled} placeholder={selectedCustomer ? money(selectedCustomer.cashbackBalanceCents) : "Identifique o cliente"} /></label>
+                  <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Usar pontos</span><input className={styles.field} type="number" min={0} value={loyaltyPointsText} onChange={(event) => changeBenefit(setLoyaltyPointsText, event.target.value)} disabled={!selectedCustomer || !growthSettings.loyaltyEnabled} placeholder={selectedCustomer ? `${selectedCustomer.loyaltyBalancePoints} disponíveis` : "Identifique o cliente"} /></label>
+                </div>
+                {!growthProjection.valid ? <div className={styles.statusError}>{growthProjection.message}</div> : growthProjection.discountCents > 0 ? <div className={styles.mutedSmall}>Cupom {money(growthProjection.couponDiscountCents)} · Cashback {money(growthProjection.cashbackDiscountCents)} · Pontos {money(growthProjection.loyaltyDiscountCents)}</div> : <div className={styles.mutedSmall}>Cupom pode ser usado sem cadastro quando a regra não limita uso por cliente. Cashback e pontos exigem cliente identificado.</div>}
+              </div>
             </div>
-            {!growthProjection.valid ? <div className={styles.statusError}>{growthProjection.message}</div> : growthProjection.discountCents > 0 ? <div className={styles.mutedSmall}>Cupom {money(growthProjection.couponDiscountCents)} · Cashback {money(growthProjection.cashbackDiscountCents)} · Pontos {money(growthProjection.loyaltyDiscountCents)}</div> : <div className={styles.mutedSmall}>Cupom pode ser usado sem cadastro quando a regra não limita uso por cliente. Cashback e pontos exigem cliente identificado.</div>}
-          </div>
+          </details>
 
           <div className={styles.section}>
             <div className={styles.rowBetween}><h3>Pagamento</h3><button type="button" className={styles.smallButton} disabled={paymentMethods.length === 0 || saleTotal === 0 || payments.length >= 10} onClick={addPayment}>+ Dividir</button></div>
@@ -205,7 +202,7 @@ export function PosShell({ categories, products, customers, paymentMethods, coup
             {growthProjection.valid && growthProjection.discountCents > 0 ? <><div className={styles.rowBetween}><span className={styles.mutedSmall}>Subtotal</span><span>{money(cartSubtotal)}</span></div><div className={styles.rowBetween}><span className={styles.mutedSmall}>Benefícios</span><span>− {money(growthProjection.discountCents)}</span></div></> : null}
             <div className={styles.rowBetween}><strong>Total</strong><span className={styles.total}>{money(saleTotal)}</span></div>
             <button type="submit" className={styles.primaryButton} disabled={pending || cart.length === 0 || paymentMethods.length === 0 || !growthProjection.valid}>{pending ? "Finalizando venda…" : `Finalizar · ${money(saleTotal)}`}</button>
-            <div className={styles.mutedSmall}>O servidor recalcula produtos, adicionais, benefícios e pagamentos antes de gravar. Ao concluir, o pedido segue automaticamente para produção e impressão.</div>
+            <div className={styles.mutedSmall}>O servidor recalcula produtos, adicionais, benefícios e pagamentos antes de gravar.</div>
           </div>
         </form>
       </div>
