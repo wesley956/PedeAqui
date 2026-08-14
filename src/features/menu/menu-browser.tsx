@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import type { PublicMenu } from "@/server/menu/schemas";
 import { PublicProductCard } from "./public-product-card";
 import styles from "./menu-browser.module.css";
@@ -9,11 +9,12 @@ function normalize(value: string) { return value.normalize("NFD").replace(/[\u03
 
 export function MenuBrowser({ menu }: { menu: PublicMenu }) {
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const [categoryId, setCategoryId] = useState<string>("all");
   const filtered = useMemo(() => {
-    const needle = normalize(query);
+    const needle = normalize(deferredQuery);
     return menu.categories.filter((category) => categoryId === "all" || category.id === categoryId).map((category) => ({ ...category, products: category.products.filter((product) => !needle || normalize(`${product.name} ${product.description ?? ""}`).includes(needle)) })).filter((category) => category.products.length > 0);
-  }, [menu.categories, query, categoryId]);
+  }, [menu.categories, deferredQuery, categoryId]);
   const total = filtered.reduce((sum, category) => sum + category.products.length, 0);
 
   return <div className={styles.browser}>

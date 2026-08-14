@@ -30,7 +30,7 @@ export default async function PublicCartPage({ params }: { params: Promise<{ slu
     <div className={styles.items}>{cart.items.map((item) => {
       const invalid = item.validation_status !== "valid";
       return <article key={item.id} className={`card ${styles.item} ${invalid ? styles.itemInvalid : ""}`}>
-        {item.product_image_url_snapshot ? <img src={item.product_image_url_snapshot} alt="" width={80} height={80} className={styles.image} /> : <div className={styles.placeholder} aria-hidden>Sem foto</div>}
+        {item.product_image_url_snapshot ? <img src={item.product_image_url_snapshot} alt="" width={80} height={80} loading="lazy" decoding="async" className={styles.image} /> : <div className={styles.placeholder} aria-hidden>Sem foto</div>}
         <div className={styles.itemBody}>
           <div className={styles.itemTop}><div className={styles.itemIdentity}><span className={styles.itemName}>{item.product_name_snapshot}</span>{invalid ? <span className={styles.invalidLabel}>{item.validation_status === "unavailable" ? "INDISPONÍVEL" : "OPÇÕES ALTERADAS"}</span> : null}</div><span className={styles.itemPrice}>{money(Number(item.line_total_cents))}</span></div>
           {item.modifiers.length > 0 ? <div className={styles.meta}>{item.modifiers.map((modifier) => `${modifier.modifier_name_snapshot}${Number(modifier.unit_price_cents) > 0 ? ` (+ ${money(Number(modifier.unit_price_cents))})` : ""}`).join(" · ")}</div> : null}
