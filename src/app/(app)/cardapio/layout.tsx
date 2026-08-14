@@ -1,19 +1,21 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import styles from "./catalog-management.module.css";
 
 const links = [
-  ["Produtos", "/cardapio/produtos"],
-  ["Categorias", "/cardapio/categorias"],
-  ["Adicionais", "/cardapio/adicionais"],
+  { label: "Produtos", href: "/cardapio/produtos", hint: "Preço, imagem e disponibilidade" },
+  { label: "Categorias", href: "/cardapio/categorias", hint: "Ordem e organização do menu" },
+  { label: "Adicionais", href: "/cardapio/adicionais", hint: "Grupos, opções e complementos" },
 ] as const;
 
 export default function CatalogLayout({ children }: { children: ReactNode }) {
   return (
-    <div style={{ display: "grid", gap: 18 }}>
-      <nav className="card" aria-label="Navegação do cardápio" style={{ padding: 10, display: "flex", gap: 8, overflowX: "auto" }}>
-        {links.map(([label, href]) => (
-          <Link key={href} href={href} style={{ padding: "9px 12px", borderRadius: 9, background: "var(--surface-2)", whiteSpace: "nowrap", fontWeight: 700 }}>
-            {label}
+    <div className={styles.shell}>
+      <nav className={`card ${styles.nav}`} aria-label="Gestão do cardápio">
+        {links.map(({ label, href, hint }) => (
+          <Link key={href} href={href} className={styles.navLink}>
+            <span className={styles.navTitle}>{label}</span>
+            <span className={styles.navHint}>{hint}</span>
           </Link>
         ))}
       </nav>
