@@ -15,15 +15,17 @@ export function Button({ tone = "primary", style, ...props }: ButtonProps) {
     <button
       {...props}
       style={{
-        border: "1px solid var(--border)",
-        borderRadius: 10,
-        padding: "10px 14px",
-        minHeight: 42,
+        border: "var(--border-width) solid var(--border)",
+        borderRadius: "var(--radius-md)",
+        padding: "var(--space-2) var(--control-padding-x)",
+        minHeight: "var(--control-height)",
         background: backgrounds[tone],
         color: "var(--text)",
         cursor: props.disabled ? "not-allowed" : "pointer",
         opacity: props.disabled ? 0.6 : 1,
-        fontWeight: 700,
+        fontWeight: "var(--font-weight-bold)",
+        lineHeight: "var(--line-height-snug)",
+        transition: "background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard), opacity var(--motion-fast) var(--ease-standard)",
         ...style,
       }}
     />
