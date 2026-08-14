@@ -1,13 +1,13 @@
 import type { CSSProperties, ReactNode } from "react";
-import { signOutAction } from "@/features/auth/actions";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
-import { Button } from "@/components/ui/button";
 import { DesktopNavigation, type ShellNavigationItem } from "@/components/layout/desktop-navigation";
 import { MobileNavigation } from "@/components/layout/mobile-navigation";
+import { OperationTopbar } from "@/components/layout/operation-topbar";
 import type { OperationalContext } from "@/components/layout/navigation-model";
+import type { OperationHeaderData } from "@/server/access/operation-header-service";
 import type { ResolvedBranding } from "@/server/platform/branding-read-service";
 
-export function AppShell({ children, email, branding, navigationItems, operationalContexts }: { children: ReactNode; email: string | null; branding: ResolvedBranding; navigationItems: readonly ShellNavigationItem[]; operationalContexts: readonly OperationalContext[] }) {
+export function AppShell({ children, email, branding, navigationItems, operationalContexts, operationHeader }: { children: ReactNode; email: string | null; branding: ResolvedBranding; navigationItems: readonly ShellNavigationItem[]; operationalContexts: readonly OperationalContext[]; operationHeader: OperationHeaderData }) {
   // White-label values are runtime data. Keeping this single style object inline is intentional:
   // it only feeds the documented accent aliases and never introduces arbitrary layout values.
   const style = {
@@ -36,16 +36,7 @@ export function AppShell({ children, email, branding, navigationItems, operation
         <DesktopNavigation items={navigationItems} />
       </aside>
       <div className="app-main">
-        <header className="app-topbar">
-          <div className="app-topbar-context">
-            <strong>Operação</strong>
-            <span className="app-topbar-meta">Unidade atual protegida pelo contexto multiempresa</span>
-          </div>
-          <div className="app-topbar-actions">
-            {email ? <span className="muted app-user-email">{email}</span> : null}
-            <form action={signOutAction}><Button tone="secondary" type="submit">Sair</Button></form>
-          </div>
-        </header>
+        <OperationTopbar email={email} data={operationHeader} />
         <main className="app-content">{children}</main>
         {!branding.hidePedeAquiBranding && !usesPlatformDefault ? (
           <footer className="platform-footer" aria-label="Tecnologia PedeAqui">
