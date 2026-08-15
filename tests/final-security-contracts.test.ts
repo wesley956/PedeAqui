@@ -38,7 +38,7 @@ describe("final database and security homologation [318]", () => {
   const baseline = json<SecurityBaseline>("supabase/security-qa-baseline.json");
   const migrations = json<MigrationBaseline>("supabase/production-migrations.json");
 
-  it("records every public table with RLS and no anon table grant", () => {
+  it("records the [318] public-table RLS baseline with no anon table grant", () => {
     expect(baseline.database.publicTables).toBe(113);
     expect(baseline.database.rlsEnabled).toBe(baseline.database.publicTables);
     expect(baseline.database.rlsDisabled).toBe(0);
@@ -50,10 +50,10 @@ describe("final database and security homologation [318]", () => {
     expect(Object.values(baseline.authenticatedWithoutJwt)).toEqual([0, 0, 0, 0]);
   });
 
-  it("keeps the production migration baseline reconciled with the recorded live tail", () => {
+  it("preserves the [318] migration tail as an immutable prefix of the current production history", () => {
     expect(migrations.projectRef).toBe(baseline.projectRef);
-    expect(migrations.migrations).toHaveLength(baseline.migrations.count);
-    expect(migrations.migrations.at(-1)).toEqual([baseline.migrations.tailVersion, baseline.migrations.tailName]);
+    expect(migrations.migrations.length).toBeGreaterThanOrEqual(baseline.migrations.count);
+    expect(migrations.migrations[baseline.migrations.count - 1]).toEqual([baseline.migrations.tailVersion, baseline.migrations.tailName]);
     expect(fs.existsSync(path.join(root, "supabase/sql/90_onboarding_role_permission_conflict_hotfix.sql"))).toBe(true);
   });
 
