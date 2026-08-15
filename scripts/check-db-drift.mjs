@@ -59,7 +59,7 @@ export function localDriftErrors({ sqlFiles, baseline }) {
   if (history.missing.join(",") !== "17") errors.push(`Lacunas históricas inesperadas: ${history.missing.join(",") || "nenhuma"}`);
   if (history.files.at(-1) !== "97_order_payment_providers.sql") errors.push(`Cauda SQL inesperada: ${history.files.at(-1) ?? "nenhuma"}`);
   const remoteTail = baseline.migrations.at(-1);
-  if (!remoteTail || remoteTail[1] !== "platform_incidents_344") errors.push("Baseline remoto não termina na migration da Central de Incidentes.");
+  if (!remoteTail || remoteTail[1] !== "order_payment_providers_327_328") errors.push("Baseline remoto não termina na migration de provedores de pagamento dos pedidos.");
   return errors;
 }
 
