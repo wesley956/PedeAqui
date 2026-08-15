@@ -39,15 +39,17 @@ const nextConfig: NextConfig = {
           unoptimized: true,
         },
       }
-    : {}),
+    : {
+        experimental: {
+          serverActions: {
+            bodySizeLimit: "6mb",
+            ...(isDevelopment ? { allowedOrigins: ["*.app.github.dev"] } : {}),
+          },
+        },
+      }),
   ...(isDevelopment && !isGitHubPages
     ? {
         allowedDevOrigins: ["*.app.github.dev"],
-        experimental: {
-          serverActions: {
-            allowedOrigins: ["*.app.github.dev"],
-          },
-        },
       }
     : {}),
   ...(!isGitHubPages
