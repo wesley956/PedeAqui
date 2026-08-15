@@ -82,7 +82,8 @@ export async function useSavedCheckoutAddressAction(formData: FormData) {
   const recognitionToken = await recognitionTokenFor(storeSlug);
   const addressIndex = Number(formData.get("addressIndex"));
   try {
-    await CheckoutService.useRecognizedAddress(storeSlug, token, recognitionToken, addressIndex);
+    const applyRecognizedAddress = CheckoutService.useRecognizedAddress;
+    await applyRecognizedAddress.call(CheckoutService, storeSlug, token, recognitionToken, addressIndex);
   } catch (error) {
     if (error instanceof CheckoutError) errorRedirect(storeSlug, error);
     throw error;
