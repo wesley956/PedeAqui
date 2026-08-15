@@ -21,7 +21,7 @@ describe("Restaurant 360 support view [338]", () => {
     for (const key of ["store", "menu", "orders", "products", "hours", "fulfillment", "delivery", "payments", "whatsapp", "printing"]) {
       expect(service).toContain(`key: "${key}"`);
     }
-    expect(service).toContain("Bloqueando vendas").toBe(false);
+    expect(service).not.toContain("Bloqueando vendas");
     expect(page).toContain("Prontidão comercial");
     expect(page).toContain("Bloqueando vendas");
   });
