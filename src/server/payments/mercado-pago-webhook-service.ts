@@ -14,6 +14,13 @@ const webhookSchema = z.object({
   data: z.object({ id: z.union([z.string(), z.number()]).transform(String) }),
 }).passthrough();
 
+export class MercadoPagoWebhookAuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "MercadoPagoWebhookAuthError";
+  }
+}
+
 export async function processMercadoPagoOrderWebhook(input: {
   storeId: string;
   rawBody: string;
@@ -28,13 +35,13 @@ export async function processMercadoPagoOrderWebhook(input: {
 
   const xSignature = input.headers.get("x-signature");
   const xRequestId = input.headers.get("x-request-id");
-  if (!xSignature || !xRequestId) throw new Error("Mercado Pago webhook signature headers are missing");
+  if (!xSignature || !xRequestId) throw new MercadoPagoWebhookAuthError("Mercado Pago webhook signature headers are missing");
   if (!validateMercadoPagoWebhookSignature({
     xSignature,
     xRequestId,
     dataId: input.dataId,
     secret: credentials.webhook_secret,
-  })) throw new Error("Mercado Pago webhook signature is invalid");
+  })) throw new MercadoPagoWebhookAuthError("Mercado Pago webhook signature is invalid");
 
   const admin = createAdminClient();
   const payloadHash = createHash("sha256").update(input.rawBody).digest("hex");
