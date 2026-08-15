@@ -13,7 +13,7 @@ const navigation = [
   ["Operação", "/platform/operacao"],
   ["Integrações", "/platform/integracoes"],
   ["Assinaturas", "/platform/assinaturas"],
-  ["Incidentes", "/platform#incidentes"],
+  ["Incidentes", "/platform/incidentes"],
   ["Suporte", "/platform/suporte"],
   ["Configuração", "/platform#configuracao"],
 ] as const;
