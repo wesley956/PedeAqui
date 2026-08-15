@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { getRequestContext } from "@/server/observability/request-context";
 import { recordFailure } from "@/server/observability/failure";
-import { processMercadoPagoOrderWebhook } from "@/server/payments/mercado-pago-webhook-service";
+import {
+  MercadoPagoWebhookAuthError,
+  processMercadoPagoOrderWebhook,
+} from "@/server/payments/mercado-pago-webhook-service";
 
 const MAX_WEBHOOK_BYTES = 256_000;
 
@@ -25,6 +28,12 @@ export async function POST(
     const result = await processMercadoPagoOrderWebhook({ storeId, rawBody, headers: request.headers, dataId });
     return NextResponse.json({ ok: true, ...result, requestId: requestContext.requestId }, { headers: responseHeaders });
   } catch (error) {
+    if (error instanceof MercadoPagoWebhookAuthError) {
+      return NextResponse.json(
+        { error: "Payment webhook authentication failed", requestId: requestContext.requestId },
+        { status: 401, headers: responseHeaders },
+      );
+    }
     const failure = recordFailure("payments.mercado_pago.webhook.failed", error, { requestId: requestContext.requestId });
     return NextResponse.json(
       { error: failure.retryable ? "Payment webhook temporarily unavailable" : "Payment webhook rejected", requestId: requestContext.requestId },
