@@ -15,6 +15,7 @@ const navigation = [
   ["Assinaturas", "/platform/assinaturas"],
   ["Incidentes", "/platform/incidentes"],
   ["Suporte", "/platform/suporte"],
+  ["Modo suporte", "/platform/suporte/modo"],
   ["Configuração", "/platform#configuracao"],
 ] as const;
 
