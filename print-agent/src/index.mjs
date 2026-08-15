@@ -1,11 +1,12 @@
 import { printNetwork, probeNetwork } from "./escpos.mjs";
+import { printSystem, probeSystem } from "./system-print.mjs";
 import { listSpool, removeSpool, saveSpool } from "./spool.mjs";
 
 const apiUrl = (process.env.PEDEAQUI_URL || "").replace(/\/$/, "");
 const token = process.env.PEDEAQUI_PRINT_AGENT_TOKEN || "";
 const pollMs = Math.max(1000, Number(process.env.PEDEAQUI_PRINT_POLL_MS || 2000));
 const heartbeatMs = Math.max(5000, Number(process.env.PEDEAQUI_PRINT_HEARTBEAT_MS || 15000));
-const version = "0.1.0";
+const version = "0.2.0";
 const printers = new Map();
 let heartbeatRunning = false;
 
@@ -42,14 +43,25 @@ async function recoverSpool() {
   }
 }
 
+async function sendToPrinter(printer, content, copies) {
+  if (printer.connectionType === "network") {
+    await printNetwork({ address: printer.address, port: printer.port }, content, copies);
+    return;
+  }
+  if (printer.connectionType === "system" || printer.connectionType === "usb") {
+    await printSystem({ address: printer.address }, content, copies);
+    return;
+  }
+  throw new Error(`connection type ${printer.connectionType} is not implemented by this agent`);
+}
+
 async function deliver(job) {
   await saveSpool(job, "claimed");
   const printer = job.printer;
   printers.set(printer.id, { id: printer.id, status: "online", error: null });
   try {
     await saveSpool(job, "printing");
-    if (printer.connectionType !== "network") throw new Error(`connection type ${printer.connectionType} is not implemented by agent MVP`);
-    await printNetwork({ address: printer.address, port: printer.port }, job.renderedContent, job.copies);
+    await sendToPrinter(printer, job.renderedContent, job.copies);
     await saveSpool(job, "printed_unacked");
     await acknowledge(job.id);
     await removeSpool(job.id);
@@ -63,16 +75,28 @@ async function deliver(job) {
   }
 }
 
+async function probePrinter(printer) {
+  if (printer.connectionType === "network") {
+    await probeNetwork({ address: printer.address, port: printer.port });
+    return;
+  }
+  if (printer.connectionType === "system" || printer.connectionType === "usb") {
+    await probeSystem({ address: printer.address });
+    return;
+  }
+  throw new Error(`health check unavailable for ${printer.connectionType}`);
+}
+
 async function refreshPrinterHealth() {
   const { printers: configured = [] } = await post("/api/print-agent/config");
   const configuredIds = new Set(configured.map((printer) => printer.id));
   await Promise.all(configured.map(async (printer) => {
-    if (printer.connectionType !== "network") {
+    if (!["network", "system", "usb"].includes(printer.connectionType)) {
       printers.set(printer.id, { id: printer.id, status: "unknown", error: null });
       return;
     }
     try {
-      await probeNetwork({ address: printer.address, port: printer.port });
+      await probePrinter(printer);
       printers.set(printer.id, { id: printer.id, status: "online", error: null });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -91,7 +115,14 @@ async function heartbeat() {
     await refreshPrinterHealth();
     await post("/api/print-agent/heartbeat", {
       version,
-      capabilities: { networkEscPos: true, spool: true, healthProbe: true, paperWidthsMm: [58, 80] },
+      capabilities: {
+        networkEscPos: true,
+        windowsRawSpooler: process.platform === "win32",
+        usbViaWindowsSpooler: process.platform === "win32",
+        spool: true,
+        healthProbe: true,
+        paperWidthsMm: [58, 80],
+      },
       printers: [...printers.values()],
     });
   } catch (error) {

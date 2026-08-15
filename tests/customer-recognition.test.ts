@@ -55,14 +55,17 @@ describe("[324] privacy and persistence contracts", () => {
     expect(checkout).toContain("CustomerRecognitionService.resolve");
     expect(checkout).toContain("recognized.customerId !== session.customer_id");
     expect(checkout).toContain("Por segurança, informe o endereço novamente neste dispositivo");
-    expect(page).toContain("nenhum endereço salvo foi exibido");
+    expect(page).toContain("recognizedCustomer && identityComplete && !recognizedForSession");
+    expect(page).toContain("Por segurança, confirme o endereço novamente para este WhatsApp");
   });
 
   it("reuses saved addresses through the canonical server-side delivery quote path", () => {
     expect(checkout).toContain("return this.saveAddress(storeSlug, token");
     expect(checkout).toContain("DeliveryQuoteService.quote");
-    expect(page).toContain("Entregar neste endereço");
-    expect(page).toContain("Usar outro endereço e recalcular frete");
+    expect(page).toContain("useSavedCheckoutAddressAction");
+    expect(page).toContain("Pode usar um endereço salvo");
+    expect(page).toContain("Ou informe outro endereço");
+    expect(page).toContain("Usar este endereço");
   });
 
   it("issues recognition only after order creation using an HttpOnly store-scoped cookie", () => {
