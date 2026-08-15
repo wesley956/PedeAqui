@@ -113,7 +113,7 @@ export class OrderPixService {
   static async ensureForOrder(orderId: string): Promise<PublicPixPayment | null> {
     const admin = createAdminClient();
     const { data: order, error: orderError } = await admin.from("orders")
-      .select("id, organization_id, store_id, source_cart_id, display_number, payment_method_snapshot, payment_status, total_cents")
+      .select("id, organization_id, store_id, source_cart_id, payment_method_snapshot, payment_status, total_cents")
       .eq("id", orderId)
       .maybeSingle();
     if (orderError) throw orderError;
@@ -174,7 +174,6 @@ export class OrderPixService {
         externalReference: charge.external_reference,
         idempotencyKey: charge.idempotency_key,
         payerEmail: email,
-        description: `Pedido ${order.display_number} - PedeAqui`,
       });
       return publicProjection(await updateFromProvider(charge, remote));
     } catch (error) {
