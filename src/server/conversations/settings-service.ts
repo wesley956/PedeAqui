@@ -5,6 +5,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
+import {
+  WhatsAppCloudProvider,
+  WhatsAppProviderError,
+  resolveWhatsAppAccessToken,
+  resolveWhatsAppAppSecret,
+  resolveWhatsAppGraphVersion,
+} from "@/server/conversations/provider";
 
 const settingsSchema = z.object({
   whatsappEnabled: z.boolean(),
@@ -17,6 +24,15 @@ const settingsSchema = z.object({
 });
 
 export type ConversationSettingsInput = z.infer<typeof settingsSchema>;
+
+export type WhatsAppChannelHealth = {
+  status: "disabled" | "misconfigured" | "connected" | "provider_unavailable" | "invalid_credentials";
+  message: string;
+  displayPhoneNumber: string | null;
+  verifiedName: string | null;
+  qualityRating: string | null;
+  graphVersion: string | null;
+};
 
 function requireStoreId(storeId: string | null) {
   if (!storeId) throw new Error("Selecione uma unidade para configurar Conversas.");
@@ -35,6 +51,60 @@ export class ConversationSettingsService {
       .maybeSingle();
     if (error) throw error;
     return data;
+  }
+
+  static async health(): Promise<WhatsAppChannelHealth> {
+    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const { data: settings, error } = await admin.from("store_conversation_settings")
+      .select("whatsapp_enabled, provider, whatsapp_phone_number_id, access_token_secret_ref, app_secret_secret_ref")
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!settings?.whatsapp_enabled) {
+      return { status: "disabled", message: "WhatsApp desabilitado nesta unidade.", displayPhoneNumber: null, verifiedName: null, qualityRating: null, graphVersion: null };
+    }
+    if (settings.provider !== "meta_cloud" || !settings.whatsapp_phone_number_id || !settings.access_token_secret_ref || !settings.app_secret_secret_ref) {
+      return { status: "misconfigured", message: "Configuração incompleta do canal WhatsApp.", displayPhoneNumber: null, verifiedName: null, qualityRating: null, graphVersion: null };
+    }
+
+    let graphVersion: string | null = null;
+    try {
+      graphVersion = resolveWhatsAppGraphVersion();
+      const accessToken = resolveWhatsAppAccessToken(settings.access_token_secret_ref);
+      resolveWhatsAppAppSecret(settings.app_secret_secret_ref);
+      const provider = new WhatsAppCloudProvider(accessToken);
+      const inspected = await provider.inspectPhoneNumber(settings.whatsapp_phone_number_id);
+      return {
+        status: "connected",
+        message: "Credencial e Phone Number ID aceitos pela WhatsApp Cloud API.",
+        displayPhoneNumber: inspected.displayPhoneNumber,
+        verifiedName: inspected.verifiedName,
+        qualityRating: inspected.qualityRating,
+        graphVersion,
+      };
+    } catch (error) {
+      if (error instanceof WhatsAppProviderError) {
+        return {
+          status: error.retryable ? "provider_unavailable" : "invalid_credentials",
+          message: error.retryable ? "A Meta está temporariamente indisponível para este canal." : "A Meta rejeitou a credencial ou o Phone Number ID configurado.",
+          displayPhoneNumber: null,
+          verifiedName: null,
+          qualityRating: null,
+          graphVersion,
+        };
+      }
+      return {
+        status: "misconfigured",
+        message: error instanceof Error ? error.message : "Configuração do WhatsApp inválida.",
+        displayPhoneNumber: null,
+        verifiedName: null,
+        qualityRating: null,
+        graphVersion,
+      };
+    }
   }
 
   static async save(input: ConversationSettingsInput) {
