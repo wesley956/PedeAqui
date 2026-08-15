@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
 import styles from "./platform.module.css";
 
@@ -16,6 +17,7 @@ export type PlatformOrganizationCard = {
 
 export type PlatformUnitCard = {
   id: string;
+  organizationId: string;
   name: string;
   organizationName: string;
   statusLabel: string;
@@ -74,15 +76,18 @@ export function OrganizationSearch({ organizations, units }: { organizations: Pl
         <div className={styles.searchGroupTitle}><strong>Unidades</strong><span>{filteredUnits.length}</span></div>
         <div className={styles.orgGrid}>
           {filteredUnits.map((unit) => (
-            <article key={unit.id} className={styles.orgCard}>
-              <div className={styles.cardTop}>
-                <strong>{unit.name}</strong>
-                <span className={styles.pill} data-tone={unit.tone}>{unit.statusLabel}</span>
-              </div>
-              <span className={styles.meta}>{unit.organizationName}</span>
-              <span className={styles.meta}>{unit.locationLabel}</span>
-              <span className={styles.meta}>{unit.recentOrders > 0 ? `Atividade recente detectada · ${unit.lastOrderLabel}` : unit.lastOrderLabel}</span>
-            </article>
+            <Link key={unit.id} className={styles.orgCardLink} href={`/platform/empresas/${unit.organizationId}/unidades/${unit.id}`}>
+              <article className={styles.orgCard}>
+                <div className={styles.cardTop}>
+                  <strong>{unit.name}</strong>
+                  <span className={styles.pill} data-tone={unit.tone}>{unit.statusLabel}</span>
+                </div>
+                <span className={styles.meta}>{unit.organizationName}</span>
+                <span className={styles.meta}>{unit.locationLabel}</span>
+                <span className={styles.meta}>{unit.recentOrders > 0 ? `Atividade recente detectada · ${unit.lastOrderLabel}` : unit.lastOrderLabel}</span>
+                <span className={styles.open360}>Abrir visão 360° →</span>
+              </article>
+            </Link>
           ))}
         </div>
         {filteredUnits.length === 0 ? <div className={styles.empty}>Nenhuma unidade encontrada.</div> : null}
