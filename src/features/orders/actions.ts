@@ -5,8 +5,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { cartCookieName } from "@/server/cart/cart-token";
+import { CustomerRecognitionService } from "@/server/customers/recognition-service";
+import { CUSTOMER_RECOGNITION_MAX_AGE_SECONDS, customerRecognitionCookieName } from "@/server/customers/recognition-token";
 import { orderCookieName } from "@/server/orders/order-token";
 import { OrderService } from "@/server/orders/order-service";
+import { logger } from "@/server/observability/logger";
 import { PaymentService } from "@/server/payments/payment-service";
 import { PrintQueueService } from "@/server/printing/print-queue-service";
 import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
@@ -24,6 +27,25 @@ export async function createOrderFromCheckoutAction(formData: FormData) {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
     path: `/m/${storeSlug}/pedido/${result.order_id}`, maxAge: 30 * 24 * 60 * 60,
   });
+
+  try {
+    const recognition = await CustomerRecognitionService.issueFromOrder(result.order_id);
+    if (recognition) {
+      cookieStore.set(customerRecognitionCookieName(storeSlug), recognition.token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: `/m/${storeSlug}`,
+        maxAge: CUSTOMER_RECOGNITION_MAX_AGE_SECONDS,
+      });
+    }
+  } catch (error) {
+    logger.warn("customer_recognition_issue_failed", {
+      orderId: result.order_id,
+      errorType: error instanceof Error ? error.name : "unknown",
+    });
+  }
+
   cookieStore.set(cartCookie, "", {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
     path: `/m/${storeSlug}`, maxAge: 0,
