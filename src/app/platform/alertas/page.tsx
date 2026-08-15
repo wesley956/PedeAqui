@@ -1,0 +1,12 @@
+import Link from "next/link";
+import { PlatformAlertService } from "@/server/platform/platform-alert-service";
+import styles from "../platform.module.css";
+
+const when=(value:string)=>new Date(value).toLocaleString("pt-BR");
+export default async function AlertsPage(){const data=await PlatformAlertService.load();return <div className={styles.page}>
+<section className={styles.hero}><div><p className={styles.eyebrow}>MONITORAMENTO PROATIVO</p><h1>Alertas da plataforma</h1><p>Problemas que exigem atenção antes do cliente abrir chamado. Alertas iguais são deduplicados e deixam de aparecer quando a condição atual se recupera.</p></div></section>
+<section className={styles.metrics}><M l="P0" v={data.totals.p0}/><M l="P1" v={data.totals.p1}/><M l="P2" v={data.totals.p2}/><M l="P3" v={data.totals.p3}/><M l="Clientes afetados" v={data.totals.organizations}/></section>
+<section className={styles.section}><div className={styles.sectionHeader}><div><h2>Exigem atenção</h2><p>Sem secrets ou PII. Nenhum alerta executa alteração financeira ou comercial automaticamente.</p></div></div><div className={styles.orgGrid}>{data.alerts.map(a=><article className={styles.orgCard} key={a.key}><div className={styles.cardTop}><div><strong>{a.title}</strong><span>{a.organizationName}{a.storeName?` · ${a.storeName}`:""}</span></div><span className={styles.pill} data-tone={a.severity==="P0"||a.severity==="P1"?"danger":a.severity==="P2"?"warn":"neutral"}>{a.severity}</span></div><p className={styles.meta}>{a.detail}</p><p className={styles.meta}>Fonte: {a.source} · desde {when(a.firstSeenAt)}</p><Link className={styles.button} href={a.href}>Abrir diagnóstico</Link></article>)}</div>{data.alerts.length===0?<p className={styles.empty}>Nenhum alerta ativo nas fontes monitoradas.</p>:null}</section>
+<section className={styles.section}><div className={styles.sectionHeader}><div><h2>Recuperados</h2><p>Histórico recente dos incidentes cujo health já foi marcado como resolvido.</p></div></div><div className={styles.featureList}>{data.resolved.map(r=><div className={styles.featureRow} key={r.key}><span><strong>{r.title}</strong><small>{r.organizationName}{r.storeName?` · ${r.storeName}`:""} · {r.severity}</small></span><strong>{when(r.resolvedAt)}</strong></div>)}</div>{data.resolved.length===0?<p className={styles.empty}>Nenhum incidente resolvido registrado ainda.</p>:null}</section>
+</div>}
+function M({l,v}:{l:string;v:number}){return <article className={styles.metric}><span>{l}</span><strong>{v}</strong></article>}
