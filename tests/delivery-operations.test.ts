@@ -67,8 +67,12 @@ describe("authoritative delivery fee contract", () => {
   });
 
   it("prevents the old order manager from directly advancing courier lifecycle", () => {
-    expect(orderActions).toContain("delivery fulfillment must be changed through deliveryoperationsservice");
+    for (const routedState of ["awaiting_assignment", "assigned", "picked_up", "out_for_delivery", "delivered"]) {
+      expect(orderActions).toContain(`\"${routedState}\"`);
+    }
     expect(orderActions).toContain("deliveryoperationsservice.markwaiting");
     expect(orderActions).not.toContain("case \"courier_assigned\"");
+    expect(orderActions).not.toContain("case \"out_for_delivery\"");
+    expect(orderActions).not.toContain("case \"delivered\"");
   });
 });
