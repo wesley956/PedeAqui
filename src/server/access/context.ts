@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuthenticatedUser } from "@/server/auth/session";
@@ -21,7 +22,7 @@ export class MissingOrganizationError extends Error {
   }
 }
 
-export async function getAccessContext(): Promise<AccessContext> {
+const resolveAccessContext = cache(async (): Promise<AccessContext> => {
   const user = await requireAuthenticatedUser();
   const cookieStore = await cookies();
   const requestedOrganizationId = cookieStore.get(ORG_COOKIE)?.value;
@@ -65,4 +66,8 @@ export async function getAccessContext(): Promise<AccessContext> {
     storeId: stores?.[0]?.id ?? null,
     roleId: membership.role_id,
   };
+});
+
+export async function getAccessContext(): Promise<AccessContext> {
+  return resolveAccessContext();
 }
