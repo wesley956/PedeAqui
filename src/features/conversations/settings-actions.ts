@@ -10,12 +10,14 @@ function optional(formData: FormData, key: string) {
 }
 
 export async function saveConversationSettingsAction(formData: FormData) {
+  const current = await ConversationSettingsService.load();
+
   await ConversationSettingsService.save({
     whatsappEnabled: formData.get("whatsappEnabled") === "on",
-    phoneNumberId: optional(formData, "phoneNumberId"),
-    businessAccountId: optional(formData, "businessAccountId"),
-    accessTokenSecretRef: optional(formData, "accessTokenSecretRef"),
-    appSecretSecretRef: optional(formData, "appSecretSecretRef"),
+    phoneNumberId: current?.whatsapp_phone_number_id ?? null,
+    businessAccountId: current?.whatsapp_business_account_id ?? null,
+    accessTokenSecretRef: current?.access_token_secret_ref ?? null,
+    appSecretSecretRef: current?.app_secret_secret_ref ?? null,
     botEnabled: formData.get("botEnabled") === "on",
     aiEnabled: formData.get("aiEnabled") === "on",
     greetingEnabled: formData.get("greetingEnabled") === "on",
