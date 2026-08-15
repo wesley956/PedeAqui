@@ -14,6 +14,28 @@ function money(cents: unknown) { return currency.format(Number(cents ?? 0) / 100
 function percent(bps: unknown) { return (Number(bps ?? 0) / 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 }); }
 function dateTime(value: unknown) { return value ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(String(value))) : "—"; }
 
+function segmentSummary(value: unknown) {
+  if (!value || typeof value !== "object") return "Público personalizado";
+  const rules = value as Record<string, unknown>;
+  const labels: string[] = [];
+  if (Number(rules.orders_count_min) > 0) labels.push(`${Number(rules.orders_count_min)}+ pedidos`);
+  if (Number(rules.total_spent_cents_min) > 0) labels.push(`gastou ${money(rules.total_spent_cents_min)} ou mais`);
+  if (Number(rules.average_ticket_cents_min) > 0) labels.push(`ticket médio de ${money(rules.average_ticket_cents_min)} ou mais`);
+  if (Number(rules.inactive_days_min) > 0) labels.push(`inativo há ${Number(rules.inactive_days_min)}+ dias`);
+  if (Number(rules.last_order_days_max) > 0) labels.push(`comprou nos últimos ${Number(rules.last_order_days_max)} dias`);
+  if (rules.has_cashback_balance === true) labels.push("tem cashback");
+  if (rules.has_loyalty_balance === true) labels.push("tem pontos");
+  return labels.length > 0 ? labels.join(" · ") : "Público personalizado";
+}
+
+const campaignStatusLabels: Record<string, string> = {
+  draft: "Rascunho", prepared: "Público preparado", queued: "Agendada", running: "Em andamento",
+  sending: "Em envio", completed: "Finalizada", canceled: "Cancelada", failed: "Precisa de atenção",
+};
+const triggerLabels: Record<string, string> = { "order.completed": "Pedido concluído", "customer.inactive": "Cliente inativo", "customer.birthday": "Aniversário" };
+const actionLabels: Record<string, string> = { bonus_cashback: "Cashback bônus", bonus_points: "Pontos bônus", campaign: "Adicionar à campanha" };
+const runStatusLabels: Record<string, string> = { pending: "Aguardando", running: "Em andamento", completed: "Concluída", success: "Concluída", failed: "Precisa de atenção", skipped: "Não necessária" };
+
 const fieldStyle: React.CSSProperties = { minHeight: 42, border: "1px solid #ddd6ce", borderRadius: 10, padding: "9px 11px", background: "#fff", color: "#181818", width: "100%" };
 const labelStyle: React.CSSProperties = { display: "grid", gap: 5, fontSize: 13, fontWeight: 800 };
 const gridStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10 };
@@ -27,21 +49,21 @@ export default async function GrowthPage() {
   return (
     <section style={{ display: "grid", gap: 18 }}>
       <header>
-        <div className="muted" style={{ fontSize: 13 }}>CRM E CRESCIMENTO</div>
+        <div className="muted" style={{ fontSize: 13 }}>CRESCIMENTO</div>
         <h1 style={{ margin: "4px 0" }}>Fidelidade, campanhas e recompra</h1>
-        <p className="muted" style={{ margin: 0 }}>Benefícios e públicos são calculados no servidor. Canais externos como WhatsApp/e-mail ficam desacoplados desta camada.</p>
+        <p className="muted" style={{ margin: 0 }}>Crie benefícios para seus clientes, organize públicos e incentive novas compras.</p>
       </header>
 
       <div style={{ ...gridStyle, gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}>
         <Metric label="Cupons ativos" value={String(data.coupons.filter((item) => item.active).length)} />
         <Metric label="Clientes com saldo" value={String(data.balances.length)} />
-        <Metric label="Segmentos" value={String(data.segments.filter((item) => item.active).length)} />
+        <Metric label="Grupos de clientes" value={String(data.segments.filter((item) => item.active).length)} />
         <Metric label="Campanhas" value={String(data.campaigns.length)} />
         <Metric label="Automações" value={String(data.automationRules.filter((item) => item.active).length)} />
       </div>
 
       <section className="card" style={{ display: "grid", gap: 14 }}>
-        <div><h2 style={{ margin: 0 }}>Regras de fidelidade</h2><p className="muted" style={{ margin: "5px 0 0" }}>Configuração por unidade. O ganho ocorre somente em pedido concluído.</p></div>
+        <div><h2 style={{ margin: 0 }}>Regras de fidelidade</h2><p className="muted" style={{ margin: "5px 0 0" }}>Defina os benefícios desta unidade. O saldo é liberado depois que o pedido é concluído.</p></div>
         <form action={saveGrowthSettingsAction} style={{ display: "grid", gap: 12 }}>
           <div style={gridStyle}>
             <label style={labelStyle}><span><input type="checkbox" name="cashbackEnabled" defaultChecked={Boolean(settings?.cashback_enabled)} /> Cashback ativo</span><input style={fieldStyle} name="cashbackRate" inputMode="decimal" defaultValue={percent(settings?.cashback_rate_bps)} placeholder="% por compra" /></label>
@@ -79,7 +101,7 @@ export default async function GrowthPage() {
       </section>
 
       <section className="card" style={{ display: "grid", gap: 14 }}>
-        <h2 style={{ margin: 0 }}>Segmentação dinâmica</h2>
+        <h2 style={{ margin: 0 }}>Grupos de clientes</h2>
         <form action={createSegmentAction} style={{ display: "grid", gap: 10 }}>
           <div style={gridStyle}>
             <label style={labelStyle}>Nome<input style={fieldStyle} name="name" required placeholder="Clientes VIP" /></label>
@@ -91,44 +113,44 @@ export default async function GrowthPage() {
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}><label><input type="checkbox" name="hasCashbackBalance" /> Com cashback</label><label><input type="checkbox" name="hasLoyaltyBalance" /> Com pontos</label></div>
           <label style={labelStyle}>Descrição<input style={fieldStyle} name="description" maxLength={500} /></label>
-          <div><button style={buttonStyle} type="submit">Criar segmento</button></div>
+          <div><button style={buttonStyle} type="submit">Criar grupo</button></div>
         </form>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{data.segments.map((segment) => <span key={segment.id} style={{ padding: "8px 11px", borderRadius: 999, border: "1px solid #ded7d0", background: segment.active ? "#fff4eb" : "#f4f4f4" }}><strong>{segment.name}</strong> <span className="muted" style={{ fontSize: 12 }}>{JSON.stringify(segment.rules)}</span></span>)}</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{data.segments.map((segment) => <span key={segment.id} style={{ padding: "8px 11px", borderRadius: 999, border: "1px solid #ded7d0", background: segment.active ? "#fff4eb" : "#f4f4f4" }}><strong>{segment.name}</strong> <span className="muted" style={{ fontSize: 12 }}>{segmentSummary(segment.rules)}</span></span>)}</div>
       </section>
 
       <section className="card" style={{ display: "grid", gap: 14 }}>
         <h2 style={{ margin: 0 }}>Campanhas</h2>
         <form action={createCampaignAction} style={{ display: "grid", gap: 10 }}>
+          <input type="hidden" name="channel" value="internal" />
           <div style={gridStyle}>
             <label style={labelStyle}>Nome<input style={fieldStyle} name="name" required /></label>
             <label style={labelStyle}>Objetivo<input style={fieldStyle} name="objective" /></label>
-            <label style={labelStyle}>Canal<select style={fieldStyle} name="channel"><option value="internal">Interno</option><option value="whatsapp">WhatsApp (adaptador futuro)</option><option value="email">E-mail (adaptador futuro)</option></select></label>
-            <label style={labelStyle}>Segmento<select style={fieldStyle} name="segmentId"><option value="">Todos os clientes</option>{data.segments.filter((item) => item.active).map((segment) => <option key={segment.id} value={segment.id}>{segment.name}</option>)}</select></label>
+            <label style={labelStyle}>Público<select style={fieldStyle} name="segmentId"><option value="">Todos os clientes</option>{data.segments.filter((item) => item.active).map((segment) => <option key={segment.id} value={segment.id}>{segment.name}</option>)}</select></label>
           </div>
           <label style={labelStyle}>Conteúdo<textarea style={{ ...fieldStyle, minHeight: 86 }} name="content" maxLength={4000} /></label>
           <div><button style={buttonStyle} type="submit">Criar campanha</button></div>
         </form>
-        <div style={{ display: "grid", gap: 9 }}>{data.campaigns.map((campaign) => <div key={campaign.id} style={{ border: "1px solid #e7e0d9", borderRadius: 14, padding: 13, display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 12, alignItems: "center" }}><div><strong>{campaign.name}</strong><div className="muted" style={{ fontSize: 12 }}>{campaign.channel} · {campaign.status} · criado {dateTime(campaign.created_at)}</div></div>{!(["completed", "canceled"] as string[]).includes(campaign.status) ? <form action={prepareCampaignAction}><input type="hidden" name="campaignId" value={campaign.id} /><button style={secondaryButton} type="submit">Preparar público</button></form> : null}</div>)}</div>
+        <div style={{ display: "grid", gap: 9 }}>{data.campaigns.map((campaign) => <div key={campaign.id} style={{ border: "1px solid #e7e0d9", borderRadius: 14, padding: 13, display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 12, alignItems: "center" }}><div><strong>{campaign.name}</strong><div className="muted" style={{ fontSize: 12 }}>{campaignStatusLabels[campaign.status] ?? "Em preparação"} · criada em {dateTime(campaign.created_at)}</div></div>{!(["completed", "canceled"] as string[]).includes(campaign.status) ? <form action={prepareCampaignAction}><input type="hidden" name="campaignId" value={campaign.id} /><button style={secondaryButton} type="submit">Preparar público</button></form> : null}</div>)}</div>
       </section>
 
       <section className="card" style={{ display: "grid", gap: 14 }}>
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}><div><h2 style={{ margin: 0 }}>Automações</h2><p className="muted" style={{ margin: "4px 0 0" }}>Pedido concluído roda automaticamente; aniversário/inatividade podem ser processados pelo executor diário.</p></div><form action={runGrowthAutomationsAction}><button style={secondaryButton} type="submit">Executar rotinas de hoje</button></form></div>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}><div><h2 style={{ margin: 0 }}>Automações</h2><p className="muted" style={{ margin: "4px 0 0" }}>Algumas ações acontecem após pedidos concluídos; rotinas de aniversário e clientes inativos podem ser verificadas diariamente.</p></div><form action={runGrowthAutomationsAction}><button style={secondaryButton} type="submit">Verificar ações de hoje</button></form></div>
         <form action={createAutomationAction} style={{ display: "grid", gap: 10 }}>
           <div style={gridStyle}>
             <label style={labelStyle}>Nome<input style={fieldStyle} name="name" required /></label>
-            <label style={labelStyle}>Gatilho<select style={fieldStyle} name="triggerType"><option value="order.completed">Pedido concluído</option><option value="customer.inactive">Cliente inativo</option><option value="customer.birthday">Aniversário</option></select></label>
-            <label style={labelStyle}>Ação<select style={fieldStyle} name="actionType"><option value="bonus_cashback">Cashback bônus</option><option value="bonus_points">Pontos bônus</option><option value="campaign">Adicionar à campanha</option></select></label>
+            <label style={labelStyle}>Quando<select style={fieldStyle} name="triggerType"><option value="order.completed">Pedido concluído</option><option value="customer.inactive">Cliente inativo</option><option value="customer.birthday">Aniversário</option></select></label>
+            <label style={labelStyle}>O que fazer<select style={fieldStyle} name="actionType"><option value="bonus_cashback">Dar cashback bônus</option><option value="bonus_points">Dar pontos bônus</option><option value="campaign">Adicionar à campanha</option></select></label>
             <label style={labelStyle}>Pedido mínimo<input style={fieldStyle} name="minimumTotal" inputMode="decimal" /></label>
             <label style={labelStyle}>Inatividade (dias)<input style={fieldStyle} name="inactiveDays" type="number" min={1} /></label>
-            <label style={labelStyle}>Canal do pedido<input style={fieldStyle} name="orderChannel" placeholder="digital_menu / pdv" /></label>
+            <label style={labelStyle}>Origem do pedido<select style={fieldStyle} name="orderChannel" defaultValue=""><option value="">Qualquer origem</option><option value="digital_menu">Cardápio digital</option><option value="pdv">PDV</option><option value="counter">Balcão</option><option value="waiter">Garçom</option><option value="table_qr">QR da mesa</option><option value="manual">Pedido manual</option></select></label>
             <label style={labelStyle}>Cashback bônus<input style={fieldStyle} name="bonusCashback" inputMode="decimal" /></label>
             <label style={labelStyle}>Pontos bônus<input style={fieldStyle} name="bonusPoints" type="number" min={1} /></label>
             <label style={labelStyle}>Campanha<select style={fieldStyle} name="campaignId"><option value="">—</option>{data.campaigns.filter((item) => !["completed", "canceled"].includes(item.status)).map((campaign) => <option key={campaign.id} value={campaign.id}>{campaign.name}</option>)}</select></label>
           </div>
           <div><button style={buttonStyle} type="submit">Criar automação</button></div>
         </form>
-        <div style={{ display: "grid", gap: 8 }}>{data.automationRules.map((rule) => <div key={rule.id} style={{ border: "1px solid #e7e0d9", borderRadius: 12, padding: 12 }}><strong>{rule.name}</strong><div className="muted" style={{ fontSize: 12 }}>{rule.trigger_type} → {rule.action_type} · {rule.active ? "ativa" : "inativa"}</div></div>)}</div>
-        {data.automationRuns.length > 0 ? <div><h3>Execuções recentes</h3><div style={{ display: "grid", gap: 6 }}>{data.automationRuns.slice(0, 15).map((run) => <div key={run.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "8px 0", borderBottom: "1px solid #eee7df", fontSize: 13 }}><span>{dateTime(run.started_at)}</span><strong>{run.status}</strong></div>)}</div></div> : null}
+        <div style={{ display: "grid", gap: 8 }}>{data.automationRules.map((rule) => <div key={rule.id} style={{ border: "1px solid #e7e0d9", borderRadius: 12, padding: 12 }}><strong>{rule.name}</strong><div className="muted" style={{ fontSize: 12 }}>{triggerLabels[rule.trigger_type] ?? "Evento configurado"} → {actionLabels[rule.action_type] ?? "Ação configurada"} · {rule.active ? "ativa" : "inativa"}</div></div>)}</div>
+        {data.automationRuns.length > 0 ? <div><h3>Atividades recentes</h3><div style={{ display: "grid", gap: 6 }}>{data.automationRuns.slice(0, 15).map((run) => <div key={run.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "8px 0", borderBottom: "1px solid #eee7df", fontSize: 13 }}><span>{dateTime(run.started_at)}</span><strong>{runStatusLabels[run.status] ?? "Processada"}</strong></div>)}</div></div> : null}
       </section>
     </section>
   );
