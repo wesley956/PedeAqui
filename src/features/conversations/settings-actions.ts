@@ -9,17 +9,26 @@ function optional(formData: FormData, key: string) {
   return value || null;
 }
 
+function restoreGreetingTokens(value: string) {
+  return value
+    .replaceAll("[nome do restaurante]", "{restaurante}")
+    .replaceAll("[link do cardápio]", "{link}");
+}
+
 export async function saveConversationSettingsAction(formData: FormData) {
+  const current = await ConversationSettingsService.load();
+  const greeting = optional(formData, "greetingTemplate");
+
   await ConversationSettingsService.save({
     whatsappEnabled: formData.get("whatsappEnabled") === "on",
-    phoneNumberId: optional(formData, "phoneNumberId"),
-    businessAccountId: optional(formData, "businessAccountId"),
-    accessTokenSecretRef: optional(formData, "accessTokenSecretRef"),
-    appSecretSecretRef: optional(formData, "appSecretSecretRef"),
+    phoneNumberId: current?.whatsapp_phone_number_id ?? null,
+    businessAccountId: current?.whatsapp_business_account_id ?? null,
+    accessTokenSecretRef: current?.access_token_secret_ref ?? null,
+    appSecretSecretRef: current?.app_secret_secret_ref ?? null,
     botEnabled: formData.get("botEnabled") === "on",
     aiEnabled: formData.get("aiEnabled") === "on",
     greetingEnabled: formData.get("greetingEnabled") === "on",
-    greetingTemplate: optional(formData, "greetingTemplate") ?? DEFAULT_WHATSAPP_GREETING,
+    greetingTemplate: greeting ? restoreGreetingTokens(greeting) : DEFAULT_WHATSAPP_GREETING,
     greetingFallbackMessage: optional(formData, "greetingFallbackMessage") ?? DEFAULT_WHATSAPP_GREETING_FALLBACK,
   });
   revalidatePath("/configuracoes/conversas");

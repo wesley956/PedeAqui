@@ -55,8 +55,8 @@ export async function createPrintAgentAction(_state: AgentCreationState, formDat
     const result = await PrintAgentAdminService.create(text(formData, "name"));
     refresh();
     return { token: result.token, name: result.name, error: null };
-  } catch (error) {
-    return { token: null, name: null, error: error instanceof Error ? error.message : "Não foi possível criar o agente." };
+  } catch {
+    return { token: null, name: null, error: "Não foi possível preparar este computador para impressão. Tente novamente." };
   }
 }
 

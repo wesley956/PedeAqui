@@ -10,15 +10,15 @@ export function AgentTokenCreator() {
   return (
     <div style={{ display: "grid", gap: 10 }}>
       <form action={action} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <input name="name" required minLength={2} maxLength={100} placeholder="Ex.: PC Balcão" style={inputStyle} />
-        <button type="submit" disabled={pending} style={buttonStyle}>{pending ? "Criando…" : "Criar Print Agent"}</button>
+        <input name="name" required minLength={2} maxLength={100} placeholder="Ex.: Computador do balcão" style={inputStyle} />
+        <button type="submit" disabled={pending} style={buttonStyle}>{pending ? "Preparando…" : "Adicionar computador"}</button>
       </form>
       {state.error ? <div style={{ color: "#f97066", fontSize: 13 }}>{state.error}</div> : null}
       {state.token ? (
         <div style={{ padding: 12, borderRadius: 12, background: "#2d251d", border: "1px solid #684d31", display: "grid", gap: 6 }}>
-          <strong>Token de {state.name} — copie agora</strong>
+          <strong>Chave de conexão de {state.name}</strong>
           <code style={{ overflowWrap: "anywhere", userSelect: "all" }}>{state.token}</code>
-          <span className="muted" style={{ fontSize: 12 }}>Este valor não será exibido novamente. O banco guarda apenas o hash.</span>
+          <span className="muted" style={{ fontSize: 12 }}>Copie esta chave agora para conectar o computador. Por segurança, ela será mostrada somente uma vez.</span>
         </div>
       ) : null}
     </div>

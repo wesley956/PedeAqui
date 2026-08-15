@@ -80,7 +80,7 @@ export async function transitionProductionAction(formData: FormData) {
 export async function transitionPaymentAction(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "");
   const status = String(formData.get("status") ?? "");
-  if (status !== "paid") throw new Error("Payment state must be changed through PaymentService");
+  if (status !== "paid") throw new Error("Esta alteração de pagamento não está disponível por esta ação.");
   await PaymentService.confirmDefaultForOrder(orderId);
   refreshOrder(orderId);
 }
@@ -88,7 +88,7 @@ export async function transitionFulfillmentAction(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "");
   const status = String(formData.get("status") ?? "") as FulfillmentStatus;
   if (["awaiting_assignment","assigned","picked_up","out_for_delivery","delivered"].includes(status)) {
-    throw new Error("Delivery fulfillment must be changed through DeliveryOperationsService");
+    throw new Error("Atualize as etapas da entrega pela Central de Entregas.");
   }
   await OrderService.setFulfillment(orderId, status);
   refreshOrder(orderId);
@@ -104,7 +104,7 @@ export type OrderManagerActionState = { ok: boolean; message: string | null; err
 export async function orderManagerAction(_previousState: OrderManagerActionState, formData: FormData): Promise<OrderManagerActionState> {
   const orderId = String(formData.get("orderId") ?? "");
   const parsed = managerIntentSchema.safeParse(String(formData.get("intent") ?? ""));
-  if (!parsed.success) return { ok: false, message: null, error: "Ação operacional inválida." };
+  if (!parsed.success) return { ok: false, message: null, error: "Esta ação não está disponível para o pedido." };
 
   try {
     switch (parsed.data) {
@@ -128,14 +128,13 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
     refreshOrder(orderId);
     const labels: Record<z.infer<typeof managerIntentSchema>, string> = {
       accept: "Pedido aceito.", reject: "Pedido rejeitado.", start_production: "Produção iniciada.",
-      mark_ready: "Pedido marcado como pronto.", mark_paid: "Pagamento confirmado no ledger.",
+      mark_ready: "Pedido marcado como pronto.", mark_paid: "Pagamento confirmado.",
       await_pickup: "Pedido liberado para retirada.", customer_picked_up: "Retirada confirmada.",
-      await_courier: "Pedido enviado para a fila de entregas.", served: "Atendimento de balcão concluído.",
-      complete: "Pedido concluído.", reprint: "Reimpressão enviada para a fila.",
+      await_courier: "Pedido enviado para a central de entregas.", served: "Atendimento de balcão concluído.",
+      complete: "Pedido concluído.", reprint: "Reimpressão solicitada.",
     };
     return { ok: true, message: labels[parsed.data], error: null };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Não foi possível executar a ação.";
-    return { ok: false, message: null, error: message };
+  } catch {
+    return { ok: false, message: null, error: "Não foi possível concluir esta ação. Atualize a página e tente novamente." };
   }
 }
