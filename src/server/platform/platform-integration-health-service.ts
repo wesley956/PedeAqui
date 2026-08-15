@@ -42,7 +42,7 @@ export class PlatformIntegrationHealthService {
       admin.from("print_jobs").select("organization_id,store_id,status,last_error,printed_at,failed_at,created_at,updated_at").gte("created_at", since24h).order("created_at", { ascending: false }).limit(500),
       admin.from("integration_webhook_deliveries").select("organization_id,store_id,status,response_status,last_error,created_at,completed_at,updated_at").gte("created_at", since24h).order("created_at", { ascending: false }).limit(500),
       admin.from("billing_webhook_receipts").select("provider_key,status,error_message,created_at,processed_at,updated_at").gte("created_at", since24h).order("created_at", { ascending: false }).limit(200),
-      admin.from("integrations").select("id,organization_id,store_id,kind,provider_key,active,last_health_status,last_health_checked_at,last_error,updated_at").eq("active", true),
+      admin.from("integrations").select("id,organization_id,store_id,kind,provider_key,environment,secret_ref,active,updated_at").eq("active", true),
     ]);
     for (const result of [organizations, stores, whatsapp, messages, agents, printers, jobs, webhookDeliveries, billingReceipts, integrations]) if (result.error) throw result.error;
 
@@ -61,8 +61,7 @@ export class PlatformIntegrationHealthService {
       const waState: IntegrationHealthState = !wa?.whatsapp_enabled ? "disconnected" : !waConfigured ? "action_required" : failedMessages.length > 0 ? "attention" : "connected";
       items.push({
         key: `whatsapp:${store.id}`, kind: "whatsapp", organizationId: store.organization_id, organizationName: orgLabel, storeId: store.id, storeName: store.name,
-        state: waState,
-        label: "WhatsApp",
+        state: waState, label: "WhatsApp",
         impact: waState === "action_required" || waState === "disconnected" ? "Mensagens automáticas indisponíveis; pedidos continuam operando." : waState === "attention" ? "Envios podem falhar; pedidos não são bloqueados." : "Mensagens disponíveis.",
         detail: !wa?.whatsapp_enabled ? "Canal desativado nesta unidade." : !waConfigured ? "Conexão incompleta. Reconexão/configuração necessária." : failedMessages.length > 0 ? `${failedMessages.length} envio(s) falharam nas últimas 24h. ${safeFailure(failedMessages[0]?.error_message) ?? "Verifique o canal."}` : "Configuração completa e sem falha outbound recente.",
         lastSuccessAt: latestOutboundSuccess?.updated_at ?? latestInbound?.created_at ?? null,
@@ -79,8 +78,7 @@ export class PlatformIntegrationHealthService {
       const printState: IntegrationHealthState = !hasPrinting ? "disconnected" : onlineAgents.length === 0 ? "action_required" : failedJobs.length > 0 ? "attention" : "connected";
       items.push({
         key: `printing:${store.id}`, kind: "printing", organizationId: store.organization_id, organizationName: orgLabel, storeId: store.id, storeName: store.name,
-        state: printState,
-        label: "Impressão",
+        state: printState, label: "Impressão",
         impact: !hasPrinting ? "Sem impressão automática configurada." : onlineAgents.length === 0 ? "Impressão automática pode parar; pedido continua disponível no painel." : failedJobs.length > 0 ? "Alguns tickets precisam de atenção." : "Impressão operacional.",
         detail: !hasPrinting ? "Nenhum agente/impressora ativo." : onlineAgents.length === 0 ? "Nenhum Print Agent apresentou heartbeat recente." : failedJobs.length > 0 ? `${failedJobs.length} job(s) falharam nas últimas 24h. ${safeFailure(failedJobs[0]?.last_error) ?? "Abra o diagnóstico."}` : `${onlineAgents.length} agente(s) online e sem falha recente na fila.`,
         lastSuccessAt: latestPrint?.printed_at ?? onlineAgents[0]?.last_seen_at ?? null,
@@ -103,16 +101,38 @@ export class PlatformIntegrationHealthService {
 
     for (const integration of integrations.data ?? []) {
       if (integration.kind !== "payment") continue;
-      const label = integration.provider_key ? `Pagamento · ${integration.provider_key}` : "Pagamento online";
-      const state: IntegrationHealthState = integration.last_health_status === "healthy" ? "connected" : integration.last_health_status === "unavailable" ? "unavailable" : integration.last_error ? "attention" : "action_required";
-      items.push({ key: `payment:${integration.id}`, kind: "payments", organizationId: integration.organization_id, organizationName: orgName.get(integration.organization_id) ?? "Empresa", storeId: integration.store_id, storeName: integration.store_id ? storeName.get(integration.store_id) ?? "Unidade" : "Todas as unidades", state, label, impact: state === "connected" ? "Pagamento online disponível." : "Pagamento online pode estar indisponível; não considerar cobrança confirmada sem o provider.", detail: state === "connected" ? "Último health check saudável." : safeFailure(integration.last_error) ?? "Integração requer verificação/configuração.", lastSuccessAt: state === "connected" ? integration.last_health_checked_at : null, lastFailureAt: state !== "connected" ? integration.last_health_checked_at : null });
+      const configured = Boolean(integration.secret_ref);
+      items.push({
+        key: `payment:${integration.id}`, kind: "payments", organizationId: integration.organization_id,
+        organizationName: orgName.get(integration.organization_id) ?? "Empresa", storeId: integration.store_id,
+        storeName: integration.store_id ? storeName.get(integration.store_id) ?? "Unidade" : "Todas as unidades",
+        state: configured ? "connected" : "action_required", label: `Pagamento · ${integration.provider_key}`,
+        impact: configured ? "Provider configurado; confirmação financeira continua obedecendo o ledger autoritativo." : "Pagamento online indisponível até concluir a conexão.",
+        detail: configured ? `Integração ${integration.environment} configurada. Nenhuma credencial é exibida nesta tela.` : "A integração está ativa, mas não possui referência de credencial configurada.",
+        lastSuccessAt: configured ? integration.updated_at : null, lastFailureAt: null,
+      });
     }
 
     const failedBilling = (billingReceipts.data ?? []).filter((row) => row.status === "failed");
     const processedBilling = (billingReceipts.data ?? []).find((row) => row.status === "processed");
-    items.push({ key: "billing:platform", kind: "billing", organizationId: null, organizationName: "PedeAqui", storeId: null, storeName: "Plataforma", state: failedBilling.length > 0 ? "attention" : "connected", label: "Cobrança SaaS", impact: failedBilling.length > 0 ? "Assinaturas podem exigir reconciliação; pedidos dos restaurantes não são afetados." : "Processamento de eventos de assinatura sem falha recente.", detail: failedBilling.length > 0 ? `${failedBilling.length} evento(s) de billing falharam nas últimas 24h. ${safeFailure(failedBilling[0]?.error_message) ?? "Abra o diagnóstico."}` : "Nenhuma falha de billing nas últimas 24h.", lastSuccessAt: processedBilling?.processed_at ?? null, lastFailureAt: failedBilling[0]?.updated_at ?? null });
+    items.push({
+      key: "billing:platform", kind: "billing", organizationId: null, organizationName: "PedeAqui", storeId: null, storeName: "Plataforma",
+      state: failedBilling.length > 0 ? "attention" : "connected", label: "Cobrança SaaS",
+      impact: failedBilling.length > 0 ? "Assinaturas podem exigir reconciliação; pedidos dos restaurantes não são afetados." : "Processamento de eventos de assinatura sem falha recente.",
+      detail: failedBilling.length > 0 ? `${failedBilling.length} evento(s) de billing falharam nas últimas 24h. ${safeFailure(failedBilling[0]?.error_message) ?? "Abra o diagnóstico."}` : "Nenhuma falha de billing nas últimas 24h.",
+      lastSuccessAt: processedBilling?.processed_at ?? null, lastFailureAt: failedBilling[0]?.updated_at ?? null,
+    });
 
     const priority: Record<IntegrationHealthState, number> = { action_required: 0, unavailable: 1, attention: 2, disconnected: 3, connected: 4 };
-    return { items: items.sort((a, b) => priority[a.state] - priority[b.state] || a.organizationName.localeCompare(b.organizationName) || a.storeName.localeCompare(b.storeName)), totals: { connected: items.filter((item) => item.state === "connected").length, attention: items.filter((item) => item.state === "attention").length, actionRequired: items.filter((item) => item.state === "action_required").length, unavailable: items.filter((item) => item.state === "unavailable").length, disconnected: items.filter((item) => item.state === "disconnected").length } };
+    return {
+      items: items.sort((a, b) => priority[a.state] - priority[b.state] || a.organizationName.localeCompare(b.organizationName) || a.storeName.localeCompare(b.storeName)),
+      totals: {
+        connected: items.filter((item) => item.state === "connected").length,
+        attention: items.filter((item) => item.state === "attention").length,
+        actionRequired: items.filter((item) => item.state === "action_required").length,
+        unavailable: items.filter((item) => item.state === "unavailable").length,
+        disconnected: items.filter((item) => item.state === "disconnected").length,
+      },
+    };
   }
 }
