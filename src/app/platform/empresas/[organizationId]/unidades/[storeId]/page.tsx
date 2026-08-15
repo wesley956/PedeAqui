@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PlatformRestaurant360Service } from "@/server/platform/platform-restaurant-360-service";
-import styles from "../../../platform.module.css";
+import styles from "@/app/platform/platform.module.css";
 
 const dateTime = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" });
 const orderLabels: Record<string, string> = { pending_confirmation: "Aguardando confirmação", confirmed: "Confirmado", rejected: "Rejeitado", canceled: "Cancelado", completed: "Concluído" };
