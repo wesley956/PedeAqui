@@ -10,6 +10,7 @@ const read = (relative: string) => fs.readFileSync(path.join(root, relative), "u
 describe("WhatsApp Cloud API live readiness [325]", () => {
   const provider = read("src/server/conversations/provider.ts");
   const settings = read("src/server/conversations/settings-service.ts");
+  const settingsAction = read("src/features/conversations/settings-actions.ts");
   const route = read("src/app/api/webhooks/whatsapp/route.ts");
   const service = read("src/server/conversations/conversation-service.ts");
   const page = read("src/app/(app)/configuracoes/conversas/page.tsx");
@@ -29,7 +30,11 @@ describe("WhatsApp Cloud API live readiness [325]", () => {
     expect(settings).toContain("access_token_secret_ref");
     expect(settings).toContain("app_secret_secret_ref");
     expect(provider).toContain("process.env[envName]");
-    expect(page).toContain("Tokens e App Secret nunca ficam expostos no navegador");
+    expect(settingsAction).toContain("ConversationSettingsService.load()");
+    expect(settingsAction).toContain("current?.access_token_secret_ref");
+    expect(settingsAction).toContain("current?.app_secret_secret_ref");
+    expect(page).not.toContain('name="accessTokenSecretRef"');
+    expect(page).not.toContain('name="appSecretSecretRef"');
     expect(page).not.toContain("process.env.WHATSAPP_ACCESS_TOKEN");
     expect(page).not.toContain("process.env.WHATSAPP_APP_SECRET");
   });
