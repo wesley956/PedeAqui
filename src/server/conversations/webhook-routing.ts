@@ -36,6 +36,7 @@ export async function resolveWhatsAppWebhookRouting(phoneNumberIds: readonly str
   // correspondem a um Phone Number ID cadastrado. Nessa situação validamos a
   // assinatura com o App Secret global e, depois, ignoramos os eventos não
   // roteáveis em vez de gerar 500 ou persistir dados de teste.
-  const appSecret = secrets.size === 1 ? [...secrets][0] : resolveWhatsAppAppSecret();
+  const configuredAppSecret = secrets.values().next().value as string | undefined;
+  const appSecret = configuredAppSecret ?? resolveWhatsAppAppSecret();
   return { appSecret, configuredPhoneNumberIds };
 }
