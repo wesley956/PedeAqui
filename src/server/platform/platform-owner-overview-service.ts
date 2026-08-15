@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { PlatformAdminService } from "@/server/platform/platform-admin-service";
 
 const RECENT_ORDER_SAMPLE_LIMIT = 200;
+const UNIT_SEARCH_LIMIT = 1000;
 
 export type PlatformUnitOverview = {
   id: string;
@@ -45,11 +46,14 @@ export class PlatformOwnerOverviewService {
     const admin = createAdminClient();
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    const [storesResult, orderCountResult, openOrderCountResult, recentOrdersResult, integrationAlertsResult] = await Promise.all([
+    const [storesResult, activeUnitCountResult, orderCountResult, openOrderCountResult, recentOrdersResult, integrationAlertsResult] = await Promise.all([
       admin.from("stores")
-        .select("id,organization_id,name,slug,status,city,state,is_primary,created_at")
+        .select("id,organization_id,name,slug,status,city,state,is_primary,created_at", { count: "exact" })
         .order("created_at", { ascending: false })
-        .limit(1000),
+        .limit(UNIT_SEARCH_LIMIT),
+      admin.from("stores")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "active"),
       admin.from("orders")
         .select("id", { count: "exact", head: true })
         .gte("created_at", since),
@@ -66,7 +70,7 @@ export class PlatformOwnerOverviewService {
         .eq("status", "dead"),
     ]);
 
-    for (const result of [storesResult, orderCountResult, openOrderCountResult, recentOrdersResult, integrationAlertsResult]) {
+    for (const result of [storesResult, activeUnitCountResult, orderCountResult, openOrderCountResult, recentOrdersResult, integrationAlertsResult]) {
       if (result.error) throw result.error;
     }
 
@@ -96,8 +100,8 @@ export class PlatformOwnerOverviewService {
     });
 
     return {
-      activeUnits: units.filter((unit) => unit.status === "active").length,
-      totalUnits: units.length,
+      activeUnits: activeUnitCountResult.count ?? 0,
+      totalUnits: storesResult.count ?? units.length,
       ordersLast24h: orderCountResult.count ?? 0,
       openOrders: openOrderCountResult.count ?? 0,
       integrationAlerts: integrationAlertsResult.count ?? 0,
