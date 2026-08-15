@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { isOpenAt } from "@/server/menu/schedule";
 import { publicMenuSchema, publicProductSchema, type PublicMenu, type PublicProduct } from "@/server/menu/schemas";
 
@@ -15,7 +15,7 @@ export type PublicMenuState = PublicMenu & {
 
 export class PublicMenuService {
   static async getMenu(slug: string, now = new Date()): Promise<PublicMenuState | null> {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase.rpc("get_public_menu", { p_store_slug: slug });
     if (error) throw error;
     if (!data) return null;
@@ -30,7 +30,7 @@ export class PublicMenuService {
   }
 
   static async getProduct(slug: string, productId: string): Promise<PublicProduct | null> {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase.rpc("get_public_product", {
       p_store_slug: slug,
       p_product_id: productId,
