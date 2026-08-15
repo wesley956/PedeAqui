@@ -26,8 +26,9 @@ describe("canonical Supabase SQL history", () => {
     expect(files).toContain("14_delivery_fk_indexes.sql");
   });
 
-  it("versions the production onboarding hotfix as the append-only tail", () => {
-    expect(files.at(-1)).toBe("90_onboarding_role_permission_conflict_hotfix.sql");
+  it("preserves the onboarding hotfix and appends new migrations after it", () => {
+    expect(files.at(-1)).toBe("91_customer_recognition.sql");
+    expect(files).toContain("90_onboarding_role_permission_conflict_hotfix.sql");
 
     const hotfix = read("supabase/sql/90_onboarding_role_permission_conflict_hotfix.sql");
     const conflictSafeGrants = hotfix.match(/on conflict do nothing/gi) ?? [];
