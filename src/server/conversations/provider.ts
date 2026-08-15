@@ -66,6 +66,8 @@ function providerError(response: Response, payload: { error?: { message?: string
   return new WhatsAppProviderError(`WhatsApp Cloud API indisponível ou rejeitou a solicitação: ${detail}`, response.status, code, retryable);
 }
 
+const PROVIDER_TIMEOUT_MS = 8_000;
+
 export class WhatsAppCloudProvider implements ConversationProvider {
   constructor(private readonly accessToken: string) {}
 
@@ -77,6 +79,7 @@ export class WhatsAppCloudProvider implements ConversationProvider {
       method: "GET",
       headers: { Authorization: `Bearer ${this.accessToken}` },
       cache: "no-store",
+      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
     });
     const payload = await response.json().catch(() => null) as {
       id?: string;
@@ -110,6 +113,7 @@ export class WhatsAppCloudProvider implements ConversationProvider {
         text: { body: input.body },
       }),
       cache: "no-store",
+      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
     });
 
     const payload = await response.json().catch(() => null) as { messages?: Array<{ id?: string }>; error?: { message?: string; code?: number; type?: string } } | null;
