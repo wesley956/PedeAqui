@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getAccessContext, type AccessContext } from "@/server/access/context";
 import type { PermissionKey } from "@/server/access/permissions";
@@ -11,24 +12,28 @@ export class AuthorizationError extends Error {
   }
 }
 
-async function checkPermission(context: AccessContext, permission: PermissionKey, storeId: string | null) {
+const checkPermission = cache(async (
+  organizationId: string,
+  storeId: string | null,
+  permission: PermissionKey,
+) => {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("has_permission", {
-    organization_id: context.organizationId,
+    organization_id: organizationId,
     store_id: storeId,
     permission_key: permission,
   });
 
   if (error) throw error;
   if (data !== true) throw new AuthorizationError(permission);
-}
+});
 
 export async function authorize(
   permission: PermissionKey,
   existingContext?: AccessContext,
 ): Promise<AccessContext> {
   const context = existingContext ?? (await getAccessContext());
-  await checkPermission(context, permission, context.storeId);
+  await checkPermission(context.organizationId, context.storeId, permission);
   return context;
 }
 
@@ -37,6 +42,6 @@ export async function authorizeOrganization(
   existingContext?: AccessContext,
 ): Promise<AccessContext> {
   const context = existingContext ?? (await getAccessContext());
-  await checkPermission(context, permission, null);
+  await checkPermission(context.organizationId, null, permission);
   return { ...context, storeId: null };
 }
