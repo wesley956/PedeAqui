@@ -13,8 +13,7 @@ function refresh(){ revalidatePath("/platform"); revalidatePath("/escala"); }
 export async function platformSubscriptionAction(formData:FormData){
   const status=text(formData,"status") as "trialing"|"active"|"past_due"|"cancelled"|"expired";
   const interval=text(formData,"billingInterval") as "month"|"year"|"manual";
-  const reason=text(formData,"reason");
-  if(reason.length<4) throw new Error("Informe o motivo da alteração da assinatura.");
+  const reason=text(formData,"reason")||"Alteração manual pelo Painel do Proprietário";
   await PlatformAdminService.applySubscription({ organizationId:text(formData,"organizationId"),planKey:text(formData,"planKey"),status,billingInterval:interval,periodEnd:optional(formData,"periodEnd"),trialEndsAt:optional(formData,"trialEndsAt"),graceEndsAt:optional(formData,"graceEndsAt"),cancelAtPeriodEnd:checked(formData,"cancelAtPeriodEnd"),reason,protocol:optional(formData,"protocol"),idempotencyKey:text(formData,"idempotencyKey")||`platform:${randomUUID()}` }); refresh();
 }
 
