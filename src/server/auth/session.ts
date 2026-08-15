@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,7 +9,7 @@ export type AuthenticatedUser = {
   email: string | null;
 };
 
-export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
+const resolveAuthenticatedUser = cache(async (): Promise<AuthenticatedUser | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
 
@@ -18,6 +19,10 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
     id: data.claims.sub,
     email: typeof data.claims.email === "string" ? data.claims.email : null,
   };
+});
+
+export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
+  return resolveAuthenticatedUser();
 }
 
 export async function requireAuthenticatedUser(): Promise<AuthenticatedUser> {
