@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ImageUploadField } from "@/components/media/image-upload-field";
 import { pauseOrdersAction, resumeOrdersAction, saveMenuSettingsAction } from "@/features/menu/actions";
 import { StoreMenuService } from "@/server/menu/store-menu-service";
 import { formatCents } from "@/server/catalog/money";
@@ -43,8 +44,11 @@ export default async function MenuSettingsPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
           <Input label="Cor principal" name="primaryColor" defaultValue={settings.primary_color} pattern="#[0-9A-Fa-f]{6}" />
           <Input label="Pedido mínimo" name="minimumOrder" defaultValue={(settings.minimum_order_cents / 100).toFixed(2).replace(".", ",")} hint={`Atual: ${formatCents(settings.minimum_order_cents)}`} inputMode="decimal" />
-          <Input label="URL da logo" name="logoUrl" type="url" defaultValue={settings.logo_url ?? ""} />
-          <Input label="URL da capa" name="coverUrl" type="url" defaultValue={settings.cover_url ?? ""} />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14 }}>
+          <ImageUploadField name="logoFile" removeName="removeLogo" label="Logo do restaurante" currentUrl={settings.logo_url} />
+          <ImageUploadField name="coverFile" removeName="removeCover" label="Capa do cardápio" currentUrl={settings.cover_url} />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
