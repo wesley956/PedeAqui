@@ -6,36 +6,5 @@ import { ThemeSelector } from "@/components/theme/theme-selector";
 import { signOutAction } from "@/features/auth/actions";
 import { PlatformAdminService, PlatformAuthorizationError } from "@/server/platform/platform-admin-service";
 import styles from "./platform.module.css";
-
-const navigation = [
-  ["Visão geral", "/platform#visao-geral"],
-  ["Empresas", "/platform#empresas"],
-  ["Operação", "/platform/operacao"],
-  ["Integrações", "/platform/integracoes"],
-  ["Assinaturas", "/platform/assinaturas"],
-  ["Incidentes", "/platform/incidentes"],
-  ["Suporte", "/platform/suporte"],
-  ["Modo suporte", "/platform/suporte/modo"],
-  ["Configuração", "/platform#configuracao"],
-] as const;
-
-export default async function PlatformLayout({ children }: { children: ReactNode }) {
-  let access: Awaited<ReturnType<typeof PlatformAdminService.access>>;
-  try { access = await PlatformAdminService.access(); }
-  catch (error) { if (error instanceof PlatformAuthorizationError) notFound(); throw error; }
-  const roleLabel = access.role === "super_admin" ? "Proprietário" : "Suporte";
-  return (
-    <div className={styles.shell}>
-      <a href="#platform-content" className={styles.skip}>Pular para o conteúdo</a>
-      <aside className={styles.sidebar}>
-        <div className={styles.brand}><PedeAquiLogo size="sm" decorative /><div><strong>PedeAqui</strong><span>Painel do Proprietário</span></div></div>
-        <nav className={styles.nav} aria-label="Painel do Proprietário">{navigation.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
-        <div className={styles.sidebarBottom}><Link href="/dashboard" className={styles.backLink}>← Voltar ao restaurante</Link></div>
-      </aside>
-      <div className={styles.main}>
-        <header className={styles.topbar}><div><strong>{roleLabel}</strong><span>{access.user.email ?? "Acesso de plataforma"}</span></div><div className={styles.topActions}><ThemeSelector compact /><form action={signOutAction}><button type="submit" className={styles.exit}>Sair</button></form></div></header>
-        <main id="platform-content" className={styles.content}>{children}</main>
-      </div>
-    </div>
-  );
-}
+const navigation=[["Visão geral","/platform#visao-geral"],["Empresas","/platform#empresas"],["Operação","/platform/operacao"],["Integrações","/platform/integracoes"],["Assinaturas","/platform/assinaturas"],["Incidentes","/platform/incidentes"],["Suporte","/platform/suporte"],["Modo suporte","/platform/suporte/modo"],["Integridade","/platform/integridade"],["Configuração","/platform#configuracao"]] as const;
+export default async function PlatformLayout({children}:{children:ReactNode}){let access:Awaited<ReturnType<typeof PlatformAdminService.access>>;try{access=await PlatformAdminService.access()}catch(error){if(error instanceof PlatformAuthorizationError)notFound();throw error}const roleLabel=access.role==="super_admin"?"Proprietário":"Suporte";return <div className={styles.shell}><a href="#platform-content" className={styles.skip}>Pular para o conteúdo</a><aside className={styles.sidebar}><div className={styles.brand}><PedeAquiLogo size="sm" decorative/><div><strong>PedeAqui</strong><span>Painel do Proprietário</span></div></div><nav className={styles.nav} aria-label="Painel do Proprietário">{navigation.map(([label,href])=><Link key={href} href={href}>{label}</Link>)}</nav><div className={styles.sidebarBottom}><Link href="/dashboard" className={styles.backLink}>← Voltar ao restaurante</Link></div></aside><div className={styles.main}><header className={styles.topbar}><div><strong>{roleLabel}</strong><span>{access.user.email??"Acesso de plataforma"}</span></div><div className={styles.topActions}><ThemeSelector compact/><form action={signOutAction}><button type="submit" className={styles.exit}>Sair</button></form></div></header><main id="platform-content" className={styles.content}>{children}</main></div></div>}
