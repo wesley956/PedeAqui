@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { ConversationService } from "@/server/conversations/conversation-service";
+import { ConversationGreetingService } from "@/server/conversations/greeting-service";
 import { parseWhatsAppWebhook, verifyMetaWebhookSignature, webhookPhoneNumberIds } from "@/server/conversations/whatsapp-webhook";
 import { recordFailure } from "@/server/observability/failure";
 import { getRequestContext } from "@/server/observability/request-context";
@@ -53,7 +54,16 @@ export async function POST(request: Request) {
       return new Response("Invalid signature", { status: 401, headers: responseHeaders });
     }
 
-    for (const event of events) await ConversationService.ingestWhatsAppEvent(event);
+    for (const event of events) {
+      const result = await ConversationService.ingestWhatsAppEvent(event);
+      if (event.kind === "message") {
+        try {
+          await ConversationGreetingService.afterInbound(result, requestContext.requestId);
+        } catch (error) {
+          recordFailure("whatsapp.greeting.failed", error, { requestId: requestContext.requestId });
+        }
+      }
+    }
     return Response.json({ ok: true, requestId: requestContext.requestId }, { headers: responseHeaders });
   } catch (error) {
     const failure = recordFailure("whatsapp.webhook.failed", error, { requestId: requestContext.requestId });
