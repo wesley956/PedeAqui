@@ -29,12 +29,15 @@ function localClock(timeZone: string) {
     minute: "2-digit",
     hourCycle: "h23",
   }).formatToParts(new Date());
-  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return { weekday: weekdayMap[value.weekday] ?? 0, minutes: Number(value.hour) * 60 + Number(value.minute) };
+  const value: Record<string, string> = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const weekdayKey = value.weekday ?? "Sun";
+  const hour = Number(value.hour ?? "0");
+  const minute = Number(value.minute ?? "0");
+  return { weekday: weekdayMap[weekdayKey] ?? 0, minutes: hour * 60 + minute };
 }
 
 function timeToMinutes(value: string) {
-  const [hour, minute] = value.slice(0, 5).split(":").map(Number);
+  const [hour = 0, minute = 0] = value.slice(0, 5).split(":").map(Number);
   return hour * 60 + minute;
 }
 
