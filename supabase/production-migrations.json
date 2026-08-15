@@ -93,6 +93,7 @@
     ["20260813065546", "onboarding_role_permission_conflict_hotfix"],
     ["20260815002853", "customer_recognition_324"],
     ["20260815004939", "whatsapp_greeting_326"],
-    ["20260815062455", "printing_private_execution_grants_hotfix"]
+    ["20260815062455", "printing_private_execution_grants_hotfix"],
+    ["20260815063520", "finance_effect_sign_integer_compat_hotfix"]
   ]
 }
