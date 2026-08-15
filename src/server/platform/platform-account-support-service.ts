@@ -28,8 +28,8 @@ function getAppUrl() {
 
 function maskEmail(email: string | null | undefined) {
   if (!email) return "e-mail indisponível";
-  const [local, domain] = email.toLowerCase().split("@");
-  if (!domain) return "e-mail indisponível";
+  const [local = "", domain] = email.toLowerCase().split("@");
+  if (!local || !domain) return "e-mail indisponível";
   const visible = local.length <= 2 ? local.slice(0, 1) : local.slice(0, 2);
   return `${visible}${"*".repeat(Math.max(3, local.length - visible.length))}@${domain}`;
 }
@@ -176,7 +176,7 @@ export class PlatformAccountSupportService {
     const safeInvitations = (invitations.data ?? []).map((invite) => {
       const org = orgById.get(invite.organization_id);
       const assignedRole = invite.role_id ? roleById.get(invite.role_id) : null;
-      const storeNames = (invite.store_ids ?? []).map((id: string) => storeById.get(id)?.name ?? "Unidade indisponível");
+      const storeNames: string[] = (invite.store_ids ?? []).map((id: string) => storeById.get(id)?.name ?? "Unidade indisponível");
       const state = invite.accepted_at ? "accepted" : new Date(invite.expires_at).getTime() <= now ? "expired" : "pending";
       return {
         invitationId: invite.id,
@@ -190,7 +190,7 @@ export class PlatformAccountSupportService {
         expiresAt: invite.expires_at,
         state,
       };
-    }).filter((invite) => !normalizedQuery || [invite.organizationName.toLowerCase(), invite.emailSearch, ...invite.storeNames.map((name) => name.toLowerCase())].some((value) => value.includes(normalizedQuery)));
+    }).filter((invite) => !normalizedQuery || [invite.organizationName.toLowerCase(), invite.emailSearch, ...invite.storeNames.map((name: string) => name.toLowerCase())].some((value) => value.includes(normalizedQuery)));
 
     const assignableRoles = (roles.data ?? []).filter((item) => item.key !== "owner").map((item) => ({ id: item.id, organizationId: item.organization_id, key: item.key, name: item.name }));
     const safeStores = (stores.data ?? []).map((item) => ({ id: item.id, organizationId: item.organization_id, name: item.name, status: item.status }));
