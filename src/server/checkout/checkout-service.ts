@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { CartService } from "@/server/cart/cart-service";
 import { hashCartToken } from "@/server/cart/cart-token";
 import { normalizePhone } from "@/server/customers/phone";
+import { CustomerRecognitionService } from "@/server/customers/recognition-service";
 import { DeliveryQuoteService } from "@/server/delivery/delivery-quote-service";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
 import { StorePaymentMethodService } from "@/server/payments/store-payment-method-service";
@@ -63,16 +64,21 @@ export class CheckoutService {
     return data.id;
   }
 
-  static async load(storeSlug: string, token: string) {
+  static async load(storeSlug: string, token: string, recognitionToken: string | null = null) {
     const cartResult = await this.requireCart(storeSlug, token);
     const admin = createAdminClient();
-    const [session, methods, menu] = await Promise.all([
+    const [session, methods, menu, recognizedCustomer] = await Promise.all([
       this.getSession(admin, cartResult.cart.id),
       StorePaymentMethodService.listForStore(cartResult.store.organization_id, cartResult.store.id),
       PublicMenuService.getMenu(storeSlug),
+      CustomerRecognitionService.resolve(
+        cartResult.store.organization_id,
+        cartResult.store.id,
+        recognitionToken,
+      ),
     ]);
     if (!menu) throw new CheckoutError("menu_unavailable", "Cardápio indisponível");
-    return { ...cartResult, session, paymentMethods: methods, menu };
+    return { ...cartResult, session, paymentMethods: methods, menu, recognizedCustomer };
   }
 
   static async saveIdentity(storeSlug: string, token: string, input: CheckoutIdentityInput) {
@@ -183,6 +189,43 @@ export class CheckoutService {
     return quote;
   }
 
+  static async useRecognizedAddress(storeSlug: string, token: string, recognitionToken: string | null, addressIndex: number) {
+    if (!Number.isInteger(addressIndex) || addressIndex < 0) {
+      throw new CheckoutError("saved_address_invalid", "Endereço salvo inválido");
+    }
+    const cartResult = await this.requireCart(storeSlug, token);
+    const admin = createAdminClient();
+    const session = await this.getSession(admin, cartResult.cart.id);
+    if (session?.fulfillment_type !== "delivery") {
+      throw new CheckoutError("delivery_not_selected", "Selecione entrega antes de escolher o endereço");
+    }
+    if (!session.customer_id) {
+      throw new CheckoutError("identity_required", "Confirme seu nome e WhatsApp antes de reutilizar um endereço");
+    }
+
+    const recognized = await CustomerRecognitionService.resolve(
+      cartResult.store.organization_id,
+      cartResult.store.id,
+      recognitionToken,
+    );
+    if (!recognized || recognized.customerId !== session.customer_id) {
+      throw new CheckoutError("recognition_required", "Por segurança, informe o endereço novamente neste dispositivo");
+    }
+    const saved = recognized.addresses[addressIndex];
+    if (!saved) throw new CheckoutError("saved_address_invalid", "Endereço salvo não está mais disponível");
+
+    return this.saveAddress(storeSlug, token, {
+      postalCode: saved.postalCode,
+      street: saved.street,
+      number: saved.number,
+      complement: saved.complement,
+      district: saved.district,
+      city: saved.city,
+      state: saved.state,
+      reference: saved.reference,
+    });
+  }
+
   static async savePayment(storeSlug: string, token: string, input: CheckoutPaymentInput) {
     const values = checkoutPaymentSchema.parse(input);
     const cartResult = await this.requireCart(storeSlug, token);
@@ -201,8 +244,8 @@ export class CheckoutService {
     });
   }
 
-  static async review(storeSlug: string, token: string) {
-    let loaded = await this.load(storeSlug, token);
+  static async review(storeSlug: string, token: string, recognitionToken: string | null = null) {
+    let loaded = await this.load(storeSlug, token, recognitionToken);
     const admin = createAdminClient();
     let session = loaded.session;
 
@@ -236,7 +279,7 @@ export class CheckoutService {
           p_estimated_max_minutes: quote.serviceable ? quote.estimatedMaxMinutes : null,
         });
         if (error) throw error;
-        loaded = await this.load(storeSlug, token);
+        loaded = await this.load(storeSlug, token, recognitionToken);
         session = loaded.session;
       }
     }
