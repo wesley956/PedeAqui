@@ -93,7 +93,7 @@ export default async function PrintingSettingsPage() {
           <details className={styles.advanced}>
             <summary>Como usar a chave de conexão?</summary>
             <div className={styles.advancedBody}>
-              <p className={styles.hint}>No computador escolhido, execute o PedeAqui Print Agent e informe a URL do seu PedeAqui e a chave exibida acima. A chave aparece uma única vez por segurança.</p>
+              <p className={styles.hint}>No computador escolhido, abra o aplicativo de impressão do PedeAqui e informe a URL do sistema e a chave exibida acima. A chave aparece uma única vez por segurança.</p>
               <code>PEDEAQUI_URL=https://seu-pedeaqui<br />PEDEAQUI_PRINT_AGENT_TOKEN=sua-chave<br />npm start</code>
             </div>
           </details>
