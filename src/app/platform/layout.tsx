@@ -12,7 +12,7 @@ const navigation = [
   ["Empresas", "/platform#empresas"],
   ["Operação", "/platform/operacao"],
   ["Integrações", "/platform/integracoes"],
-  ["Assinaturas", "/platform#assinaturas"],
+  ["Assinaturas", "/platform/assinaturas"],
   ["Incidentes", "/platform#incidentes"],
   ["Suporte", "/platform/suporte"],
   ["Configuração", "/platform#configuracao"],

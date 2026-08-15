@@ -10,6 +10,8 @@ const search = read("src/app/platform/organization-search.tsx");
 const overview = read("src/server/platform/platform-owner-overview-service.ts");
 const platform = read("src/server/platform/platform-admin-service.ts");
 const actions = read("src/features/platform-admin/actions.ts");
+const commercialBilling = read("src/server/platform/platform-commercial-billing-service.ts");
+const subscriptionsPage = read("src/app/platform/assinaturas/page.tsx");
 
 describe("Painel do Proprietário foundation [337]", () => {
   it("has a dedicated PedeAqui shell with the complete support navigation foundation", () => {
@@ -25,7 +27,9 @@ describe("Painel do Proprietário foundation [337]", () => {
     expect(platform).toContain('role as "super_admin"|"support"');
     expect(platform).toContain("requirePlatformAdmin(true)");
     expect(page).toContain('const canManage = data.role === "super_admin"');
-    expect(page).toContain("{canManage ? <details");
+    expect(page).toContain('href="/platform/assinaturas"');
+    expect(commercialBilling).toContain('access.role !== "super_admin"');
+    expect(subscriptionsPage).toContain("data.canManage &&");
   });
 
   it("searches both companies and units without privileged clients in the browser", () => {
@@ -67,5 +71,7 @@ describe("Painel do Proprietário foundation [337]", () => {
     expect(platform).toContain("reason:input.reason");
     expect(platform).toContain("protocol:input.protocol??null");
     expect(platform).toContain("actor_user_id:user.id");
+    expect(commercialBilling).toContain("reason: values.reason");
+    expect(commercialBilling).toContain("protocol: values.protocol");
   });
 });
