@@ -1,19 +1,25 @@
 import "server-only";
 
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAuthenticatedUser } from "@/server/auth/session";
 
 export class PlatformAuthorizationError extends Error{ constructor(){ super("Platform admin required"); this.name="PlatformAuthorizationError"; } }
 
-async function requirePlatformAdmin(requireSuperAdmin=false){
+const requirePlatformAdmin=cache(async (requireSuperAdmin=false)=>{
   const user=await requireAuthenticatedUser(); const admin=createAdminClient();
   const { data,error }=await admin.rpc("platform_admin_check_internal",{ p_user_id:user.id }); if(error) throw error;
   const role=Array.isArray(data)?data[0]?.role:null;
   if(!role||(requireSuperAdmin&&role!=="super_admin")) throw new PlatformAuthorizationError();
   return { user,admin,role:role as "super_admin"|"support" };
-}
+});
 
 export class PlatformAdminService{
+  static async access(){
+    const { user,role }=await requirePlatformAdmin(false);
+    return { user,role };
+  }
+
   static async load(){
     const { user,admin,role }=await requirePlatformAdmin(false);
     const [plans,features,planFeatures,organizations,subscriptions,catalog,webhooks]=await Promise.all([
@@ -29,10 +35,10 @@ export class PlatformAdminService{
     return { user,role,plans:plans.data??[],features:features.data??[],planFeatures:planFeatures.data??[],organizations:organizations.data??[],subscriptions:subscriptions.data??[],catalog:catalog.data??[],webhooks:webhooks.data??[] };
   }
 
-  static async applySubscription(input:{ organizationId:string;planKey:string;status:"trialing"|"active"|"past_due"|"cancelled"|"expired";billingInterval:"month"|"year"|"manual";periodEnd?:string|null;trialEndsAt?:string|null;graceEndsAt?:string|null;cancelAtPeriodEnd:boolean;idempotencyKey:string }){
-    const { admin }=await requirePlatformAdmin(true);
+  static async applySubscription(input:{ organizationId:string;planKey:string;status:"trialing"|"active"|"past_due"|"cancelled"|"expired";billingInterval:"month"|"year"|"manual";periodEnd?:string|null;trialEndsAt?:string|null;graceEndsAt?:string|null;cancelAtPeriodEnd:boolean;reason:string;protocol?:string|null;idempotencyKey:string }){
+    const { admin,user }=await requirePlatformAdmin(true);
     const now=new Date().toISOString();
-    const { data,error }=await admin.rpc("subscription_apply_internal",{ p_organization_id:input.organizationId,p_plan_key:input.planKey,p_to_status:input.status,p_idempotency_key:input.idempotencyKey,p_event_type:"platform.subscription_change",p_billing_interval:input.billingInterval,p_current_period_start:now,p_current_period_end:input.periodEnd??null,p_trial_ends_at:input.trialEndsAt??null,p_grace_ends_at:input.graceEndsAt??null,p_cancel_at_period_end:input.cancelAtPeriodEnd,p_billing_provider_key:null,p_provider_customer_id:null,p_provider_subscription_id:null,p_metadata:{ source:"platform_admin" } });
+    const { data,error }=await admin.rpc("subscription_apply_internal",{ p_organization_id:input.organizationId,p_plan_key:input.planKey,p_to_status:input.status,p_idempotency_key:input.idempotencyKey,p_event_type:"platform.subscription_change",p_billing_interval:input.billingInterval,p_current_period_start:now,p_current_period_end:input.periodEnd??null,p_trial_ends_at:input.trialEndsAt??null,p_grace_ends_at:input.graceEndsAt??null,p_cancel_at_period_end:input.cancelAtPeriodEnd,p_billing_provider_key:null,p_provider_customer_id:null,p_provider_subscription_id:null,p_metadata:{ source:"platform_admin",actor_user_id:user.id,reason:input.reason,protocol:input.protocol??null } });
     if(error) throw error; return data;
   }
 

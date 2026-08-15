@@ -13,7 +13,8 @@ function refresh(){ revalidatePath("/platform"); revalidatePath("/escala"); }
 export async function platformSubscriptionAction(formData:FormData){
   const status=text(formData,"status") as "trialing"|"active"|"past_due"|"cancelled"|"expired";
   const interval=text(formData,"billingInterval") as "month"|"year"|"manual";
-  await PlatformAdminService.applySubscription({ organizationId:text(formData,"organizationId"),planKey:text(formData,"planKey"),status,billingInterval:interval,periodEnd:optional(formData,"periodEnd"),trialEndsAt:optional(formData,"trialEndsAt"),graceEndsAt:optional(formData,"graceEndsAt"),cancelAtPeriodEnd:checked(formData,"cancelAtPeriodEnd"),idempotencyKey:text(formData,"idempotencyKey")||`platform:${randomUUID()}` }); refresh();
+  const reason=text(formData,"reason")||"Alteração manual pelo Painel do Proprietário";
+  await PlatformAdminService.applySubscription({ organizationId:text(formData,"organizationId"),planKey:text(formData,"planKey"),status,billingInterval:interval,periodEnd:optional(formData,"periodEnd"),trialEndsAt:optional(formData,"trialEndsAt"),graceEndsAt:optional(formData,"graceEndsAt"),cancelAtPeriodEnd:checked(formData,"cancelAtPeriodEnd"),reason,protocol:optional(formData,"protocol"),idempotencyKey:text(formData,"idempotencyKey")||`platform:${randomUUID()}` }); refresh();
 }
 
 export async function platformPlanAction(formData:FormData){ await PlatformAdminService.upsertPlan({ key:text(formData,"key"),name:text(formData,"name"),description:optional(formData,"description"),active:checked(formData,"active"),position:numberValue(formData,"position") }); refresh(); }
