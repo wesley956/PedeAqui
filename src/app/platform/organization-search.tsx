@@ -81,7 +81,7 @@ export function OrganizationSearch({ organizations, units }: { organizations: Pl
               </div>
               <span className={styles.meta}>{unit.organizationName}</span>
               <span className={styles.meta}>{unit.locationLabel}</span>
-              <span className={styles.meta}>{unit.recentOrders} pedido(s) nas últimas 24h · {unit.lastOrderLabel}</span>
+              <span className={styles.meta}>{unit.recentOrders > 0 ? `Atividade recente detectada · ${unit.lastOrderLabel}` : unit.lastOrderLabel}</span>
             </article>
           ))}
         </div>
