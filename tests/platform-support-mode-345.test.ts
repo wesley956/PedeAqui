@@ -1,0 +1,8 @@
+import fs from "node:fs";import path from "node:path";import{describe,expect,it}from"vitest";const root=process.cwd();const read=(f:string)=>fs.readFileSync(path.join(root,f),"utf8");const service=read("src/server/platform/platform-support-mode-service.ts");const page=read("src/app/platform/suporte/modo/page.tsx");const layout=read("src/app/platform/layout.tsx");
+describe("temporary support mode [345]",()=>{
+it("uses a short signed HttpOnly session rather than client credentials",()=>{expect(service).toContain("createHmac");expect(service).toContain("timingSafeEqual");expect(service).toContain("httpOnly:true");expect(service).toContain("TTL_SECONDS=30*60");expect(service).not.toContain("password");});
+it("validates organization store and role server-side",()=>{expect(service).toContain('.eq("organization_id",orgId)');expect(service).toContain("async function target");expect(service).toContain("PlatformAdminService.access()");});
+it("is read-only and delegates writes to the audited support action center",()=>{expect(page).toContain("SOMENTE LEITURA");expect(page).toContain("não oferece escrita direta");expect(page).toContain("Central de Ações de Suporte [339]");expect(page).not.toContain("PlatformSupportActionService");});
+it("audits start and end without reusing a customer session",()=>{expect(service).toContain("platform.support_mode.started");expect(service).toContain("platform.support_mode.ended");expect(service).not.toContain("setSession");expect(service).not.toContain("refresh_token");});
+it("keeps the support context visibly reachable",()=>{expect(layout).toContain('["Modo suporte", "/platform/suporte/modo"]');expect(page).toContain("Expira");expect(page).toContain("Protocolo");});
+});
