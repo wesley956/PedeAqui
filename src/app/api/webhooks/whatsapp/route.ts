@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { ConversationService } from "@/server/conversations/conversation-service";
 import { ConversationGreetingService } from "@/server/conversations/greeting-service";
+import { resolveWhatsAppWebhookRouting } from "@/server/conversations/webhook-routing";
 import { parseWhatsAppWebhook, verifyMetaWebhookSignature, webhookPhoneNumberIds } from "@/server/conversations/whatsapp-webhook";
 import { recordFailure } from "@/server/observability/failure";
 import { getRequestContext } from "@/server/observability/request-context";
@@ -43,19 +44,16 @@ export async function POST(request: Request) {
   if (events.length === 0) return Response.json({ ok: true, requestId: requestContext.requestId }, { headers: responseHeaders });
 
   try {
-    const phoneNumberIds = webhookPhoneNumberIds(events);
-    const secrets = new Set<string>();
-    for (const phoneNumberId of phoneNumberIds) {
-      secrets.add(await ConversationService.resolveWebhookAppSecret(phoneNumberId));
-    }
-    if (secrets.size !== 1) return new Response("Ambiguous webhook app", { status: 400, headers: responseHeaders });
-    const appSecret = [...secrets][0];
-    if (!appSecret || !verifyMetaWebhookSignature(rawBody, request.headers.get("x-hub-signature-256"), appSecret)) {
+    const routing = await resolveWhatsAppWebhookRouting(webhookPhoneNumberIds(events));
+    if (!verifyMetaWebhookSignature(rawBody, request.headers.get("x-hub-signature-256"), routing.appSecret)) {
       return new Response("Invalid signature", { status: 401, headers: responseHeaders });
     }
 
+    let processed = 0;
     for (const event of events) {
+      if (!routing.configuredPhoneNumberIds.has(event.phoneNumberId)) continue;
       const result = await ConversationService.ingestWhatsAppEvent(event);
+      processed += 1;
       if (event.kind === "message") {
         try {
           await ConversationGreetingService.afterInbound(result, requestContext.requestId);
@@ -64,7 +62,11 @@ export async function POST(request: Request) {
         }
       }
     }
-    return Response.json({ ok: true, requestId: requestContext.requestId }, { headers: responseHeaders });
+
+    return Response.json(
+      { ok: true, processed, ignored: events.length - processed, requestId: requestContext.requestId },
+      { headers: responseHeaders },
+    );
   } catch (error) {
     const failure = recordFailure("whatsapp.webhook.failed", error, { requestId: requestContext.requestId });
     return Response.json(
