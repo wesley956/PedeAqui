@@ -9,6 +9,10 @@ export type OrderTimelineEntry = { key:string; domain:string; label:string; deta
 
 const minute = 60_000;
 const ageMinutes = (value:string)=>Math.max(0,Math.floor((Date.now()-new Date(value).getTime())/minute));
+const safeSupportText=(value:string|null|undefined,fallback:string)=>{
+  if(!value)return fallback;
+  return value.replace(/Bearer\s+\S+/gi,"credencial protegida").replace(/[A-Za-z0-9_-]{32,}/g,"[dado protegido]").slice(0,180);
+};
 
 export class PlatformOrderDiagnosticService {
   static async listRecent(limit=100){
@@ -62,11 +66,11 @@ export class PlatformOrderDiagnosticService {
 
     const timeline:OrderTimelineEntry[]=[
       {key:`order:${order.id}`,domain:"Pedido",label:"Pedido criado",detail:`Canal ${order.channel} · ${order.fulfillment_type}`,occurredAt:order.created_at},
-      ...(stateHistory.data??[]).map(row=>({key:`state:${row.id}`,domain:row.state_domain,label:`${row.from_state??"início"} → ${row.to_state}`,detail:row.reason||`Origem: ${row.source}`,occurredAt:row.created_at})),
+      ...(stateHistory.data??[]).map(row=>({key:`state:${row.id}`,domain:row.state_domain,label:`${row.from_state??"início"} → ${row.to_state}`,detail:safeSupportText(row.reason,`Origem: ${row.source}`),occurredAt:row.created_at})),
       ...(payments.data??[]).map(row=>({key:`payment:${row.id}`,domain:"Pagamento",label:`${row.method} · ${row.status}`,detail:`${(Number(row.amount_cents)/100).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})} · origem ${row.source}`,occurredAt:row.paid_at||row.failed_at||row.canceled_at||row.refunded_at||row.updated_at||row.created_at})),
-      ...(deliveryHistory.data??[]).map(row=>({key:`delivery:${row.id}`,domain:"Entrega",label:row.event_type,detail:row.reason||"Movimentação logística registrada",occurredAt:row.created_at})),
-      ...(printJobs.data??[]).map(row=>({key:`print:${row.id}`,domain:"Impressão",label:`${row.document_type} · ${row.status}`,detail:row.last_error?String(row.last_error).slice(0,180):`Tentativas: ${row.attempts}/${row.max_attempts}`,occurredAt:row.printed_at||row.failed_at||row.updated_at||row.created_at})),
-      ...(events.data??[]).map(row=>({key:`event:${row.id}`,domain:"Evento",label:`${row.event_type} · ${row.status}`,detail:row.error_message?String(row.error_message).slice(0,180):`Tentativas: ${row.attempts}`,occurredAt:row.occurred_at})),
+      ...(deliveryHistory.data??[]).map(row=>({key:`delivery:${row.id}`,domain:"Entrega",label:row.event_type,detail:safeSupportText(row.reason,"Movimentação logística registrada"),occurredAt:row.created_at})),
+      ...(printJobs.data??[]).map(row=>({key:`print:${row.id}`,domain:"Impressão",label:`${row.document_type} · ${row.status}`,detail:safeSupportText(row.last_error,`Tentativas: ${row.attempts}/${row.max_attempts}`),occurredAt:row.printed_at||row.failed_at||row.updated_at||row.created_at})),
+      ...(events.data??[]).map(row=>({key:`event:${row.id}`,domain:"Evento",label:`${row.event_type} · ${row.status}`,detail:safeSupportText(row.error_message,`Tentativas: ${row.attempts}`),occurredAt:row.occurred_at})),
     ].sort((a,b)=>new Date(a.occurredAt).getTime()-new Date(b.occurredAt).getTime());
 
     return { order:{...order,organizationName:org.data?.name??"Empresa",storeName:store.data?.name??"Unidade"}, findings, timeline, payments:payments.data??[], delivery:delivery.data??null, printJobs:printJobs.data??[], failedPrintJobs:failedPrints };
