@@ -91,6 +91,7 @@
     ["20260813055119", "scale_fk_indexes_239_253"],
     ["20260813055309", "scale_fk_indexes_final_239_253"],
     ["20260813065546", "onboarding_role_permission_conflict_hotfix"],
-    ["20260815002853", "customer_recognition_324"]
+    ["20260815002853", "customer_recognition_324"],
+    ["20260815004939", "whatsapp_greeting_326"]
   ]
 }

@@ -15,21 +15,19 @@ describe("canonical Supabase SQL history", () => {
   it("keeps historical numbering anomalies explicit instead of rewriting applied history", () => {
     const counts = new Map<number, number>();
     for (const prefix of prefixes) counts.set(prefix, (counts.get(prefix) ?? 0) + 1);
-
     const duplicates = [...counts.entries()].filter(([, count]) => count > 1).map(([prefix]) => prefix);
     const max = Math.max(...prefixes);
     const missing = Array.from({ length: max }, (_, index) => index + 1).filter((prefix) => !counts.has(prefix));
-
     expect(duplicates).toEqual([14]);
     expect(missing).toEqual([17]);
     expect(files).toContain("14_cart.sql");
     expect(files).toContain("14_delivery_fk_indexes.sql");
   });
 
-  it("preserves the onboarding hotfix and appends new migrations after it", () => {
-    expect(files.at(-1)).toBe("91_customer_recognition.sql");
+  it("preserves historical migrations and advances only by append", () => {
+    expect(files.at(-1)).toBe("92_whatsapp_greeting.sql");
     expect(files).toContain("90_onboarding_role_permission_conflict_hotfix.sql");
-
+    expect(files).toContain("91_customer_recognition.sql");
     const hotfix = read("supabase/sql/90_onboarding_role_permission_conflict_hotfix.sql");
     const conflictSafeGrants = hotfix.match(/on conflict do nothing/gi) ?? [];
     expect(conflictSafeGrants).toHaveLength(8);
