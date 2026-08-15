@@ -1,6 +1,7 @@
 import { signOutAction } from "@/features/auth/actions";
 import { Button } from "@/components/ui/button";
 import type { OperationHeaderData } from "@/server/access/operation-header-service";
+import { ThemeSelector } from "@/components/theme/theme-selector";
 
 function storeStatusLabel(status: string | null) {
   if (status === "active") return "Unidade ativa";
@@ -28,6 +29,7 @@ export function OperationTopbar({ email, data }: { email: string | null; data: O
         </div>
       </div>
       <div className="app-topbar-actions">
+        <ThemeSelector compact />
         {email ? <span className="muted app-user-email">{email}</span> : null}
         <form action={signOutAction}><Button tone="secondary" type="submit">Sair</Button></form>
       </div>

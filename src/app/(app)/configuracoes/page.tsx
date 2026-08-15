@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { NavigationAccessService } from "@/server/access/navigation-access-service";
 import styles from "./settings-hub.module.css";
+import { ThemeSelector } from "@/components/theme/theme-selector";
 
 type SettingsGroup = "Estabelecimento" | "Operação" | "Canais e integrações";
 const storeSettings = [
@@ -26,6 +27,7 @@ export default async function SettingsPage() {
   const groups = (Object.keys(groupDescriptions) as SettingsGroup[]).map((group) => ({ group, items: settings.filter((item) => item.group === group) })).filter(({ items }) => items.length > 0);
   return <section className={styles.root}>
     <header className={styles.header}><h1>Configurações</h1><p className="muted">Um único ponto de entrada para parâmetros da unidade. Cada cartão continua apontando para a rota e a fonte de verdade já existentes.</p></header>
+    <section className={styles.section} aria-labelledby="settings-appearance-title"><div className={styles.sectionHeader}><h2 id="settings-appearance-title">Aparência</h2><p className="muted">Escolha como o PedeAqui aparece neste dispositivo.</p></div><ThemeSelector /></section>
     {groups.map(({ group, items }) => <section key={group} className={styles.section} aria-labelledby={`settings-${group}`}><div className={styles.sectionHeader}><h2 id={`settings-${group}`}>{group}</h2><p className="muted">{groupDescriptions[group]}</p></div><div className={styles.grid}>{items.map((item) => <Link key={item.href} href={item.href} className={styles.linkCard}><strong>{item.title}</strong><span>{item.description}</span><em>Abrir configuração →</em></Link>)}</div></section>)}
     {administration.length > 0 ? <section className={styles.section} aria-labelledby="settings-admin-title"><div className={styles.sectionHeader}><h2 id="settings-admin-title">Equipe, cadastros e estrutura</h2><p className="muted">Módulos administrativos autorizados para sua função; nenhuma rota ou permissão é duplicada pelo hub.</p></div><div className={styles.grid}>{administration.map((item) => <Link key={item.key} href={item.href} className={styles.linkCard}><strong>{item.label}</strong><span>{administrationDescriptions[item.key]}</span><em>Abrir módulo →</em></Link>)}</div></section> : null}
   </section>;
