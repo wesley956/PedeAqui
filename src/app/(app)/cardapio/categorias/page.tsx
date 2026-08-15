@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ImageUploadField } from "@/components/media/image-upload-field";
 import { CategoryService } from "@/server/catalog/category-service";
 import { createCategoryAction } from "@/features/catalog/actions";
 
@@ -20,7 +21,7 @@ export default async function CategoriesPage() {
           <Input label="Ordem" name="sortOrder" type="number" min={0} defaultValue={0} />
         </div>
         <Input label="Descrição" name="description" maxLength={240} />
-        <Input label="URL da imagem" name="imageUrl" type="url" />
+        <ImageUploadField name="imageFile" label="Imagem da categoria" />
         <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <input name="active" type="checkbox" defaultChecked />
           <span>Categoria ativa</span>
