@@ -79,7 +79,7 @@ export default async function CheckoutPage({
   const progress = Math.round((completedSteps / totalSteps) * 100);
   const fulfillmentSummary = deliverySelected ? "Entrega" : session?.fulfillment_type === "pickup" ? "Retirada no local" : "Escolha como receber";
   const addressSummary = session?.address_street && session?.address_number ? `${session.address_street}, ${session.address_number}` : "Informe o endereço";
-  const paymentSummary = selectedPayment ? paymentMethodLabels[selectedPayment] : "Escolha a forma de pagamento";
+  const paymentSummary = selectedPayment ? paymentMethodLabels[selectedPayment as keyof typeof paymentMethodLabels] : "Escolha a forma de pagamento";
 
   return (
     <main className={styles.root}>
