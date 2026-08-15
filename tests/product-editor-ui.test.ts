@@ -19,11 +19,12 @@ describe("product editor UI", () => {
     expect(page).toContain('name="barcode"');
   });
 
-  it("preserves the authoritative create action and existing field names", () => {
+  it("preserves the authoritative create action and commercial field contract", () => {
     expect(page).toContain("createProductAction");
-    for (const name of ["name", "description", "categoryId", "price", "promotionalPrice", "cost", "imageUrl", "availability", "active", "preparationTimeMinutes"]) {
+    for (const name of ["name", "description", "categoryId", "price", "promotionalPrice", "cost", "imageFile", "availability", "active", "preparationTimeMinutes"]) {
       expect(page).toContain(`name="${name}"`);
     }
+    expect(page).not.toContain('name="imageUrl"');
   });
 
   it("has a compact mobile layout and sticky save area", () => {

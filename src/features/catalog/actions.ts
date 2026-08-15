@@ -7,9 +7,14 @@ import { ModifierService } from "@/server/catalog/modifier-service";
 import { CatalogImageService } from "@/server/catalog/catalog-image-service";
 import { parseMoneyToCents } from "@/server/catalog/money";
 import { productAvailabilitySchema } from "@/server/catalog/schemas";
+import { PERMISSIONS } from "@/server/access/permissions";
 
 function optionalString(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function optionalFile(value: FormDataEntryValue | null) {
+  return value instanceof File && value.size > 0 ? value : null;
 }
 
 function integer(value: FormDataEntryValue | null, fallback = 0) {
@@ -19,11 +24,22 @@ function integer(value: FormDataEntryValue | null, fallback = 0) {
   return parsed;
 }
 
+async function uploadNewCatalogImage(value: FormDataEntryValue | null, purpose: "product" | "category") {
+  const file = optionalFile(value);
+  if (!file) return null;
+  const uploaded = await CatalogImageService.upload(file, {
+    permission: PERMISSIONS.PRODUCTS_CREATE,
+    purpose,
+  });
+  return uploaded.publicUrl;
+}
+
 export async function createCategoryAction(formData: FormData) {
+  const imageUrl = await uploadNewCatalogImage(formData.get("imageFile"), "category");
   await CategoryService.create({
     name: String(formData.get("name") ?? ""),
     description: optionalString(formData.get("description")),
-    imageUrl: optionalString(formData.get("imageUrl")),
+    imageUrl,
     sortOrder: integer(formData.get("sortOrder")),
     active: formData.get("active") === "on",
   });
@@ -33,11 +49,12 @@ export async function createCategoryAction(formData: FormData) {
 export async function createProductAction(formData: FormData) {
   const promotional = formData.get("promotionalPrice");
   const cost = formData.get("cost");
+  const imageUrl = await uploadNewCatalogImage(formData.get("imageFile"), "product");
   await ProductService.create({
     categoryId: optionalString(formData.get("categoryId")),
     name: String(formData.get("name") ?? ""),
     description: optionalString(formData.get("description")),
-    imageUrl: optionalString(formData.get("imageUrl")),
+    imageUrl,
     priceCents: parseMoneyToCents(formData.get("price")),
     promotionalPriceCents: typeof promotional === "string" && promotional.trim() ? parseMoneyToCents(promotional) : null,
     costCents: typeof cost === "string" && cost.trim() ? parseMoneyToCents(cost) : null,
@@ -96,7 +113,7 @@ export async function linkModifierGroupAction(formData: FormData) {
 }
 
 export async function uploadCatalogImageAction(formData: FormData) {
-  const file = formData.get("file");
-  if (!(file instanceof File)) throw new Error("Image file is required");
+  const file = optionalFile(formData.get("file"));
+  if (!file) throw new Error("Escolha uma imagem para enviar.");
   return CatalogImageService.upload(file);
 }
