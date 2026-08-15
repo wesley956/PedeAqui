@@ -128,7 +128,6 @@ export class MercadoPagoOrderProvider implements OrderPaymentProvider {
           }],
         },
         payer: { email: input.payerEmail },
-        description: input.description.slice(0, 150),
       }),
       cache: "no-store",
     });
