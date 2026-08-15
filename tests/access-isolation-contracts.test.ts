@@ -31,10 +31,10 @@ describe("access isolation contracts", () => {
   it("keeps server authorization bound to organization/store context and has_permission", () => {
     const source = read("src/server/access/authorize.ts");
     expect(source).toContain('supabase.rpc("has_permission"');
-    expect(source).toContain("organization_id: context.organizationId");
+    expect(source).toContain("organization_id: organizationId");
     expect(source).toContain("store_id: storeId");
-    expect(source).toContain("checkPermission(context, permission, context.storeId)");
-    expect(source).toContain("checkPermission(context, permission, null)");
+    expect(source).toContain("checkPermission(context.organizationId, context.storeId, permission)");
+    expect(source).toContain("checkPermission(context.organizationId, null, permission)");
     expect(source).not.toMatch(/user_metadata/i);
     expect(source).not.toContain("NAVIGATION_MODULES");
   });
