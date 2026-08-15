@@ -5,6 +5,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { paymentMethodSchema, type PaymentMethod } from "@/server/checkout/schemas";
 import { AuditService } from "@/server/audit/audit-service";
+import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
 
 export const defaultPaymentMethods: Array<{ method: PaymentMethod; enabled: boolean; sortOrder: number }> = [
   { method: "pix", enabled: true, sortOrder: 10 },
@@ -24,6 +25,16 @@ export class StorePaymentMethodService {
     if (error) throw error;
     if (!data || data.length === 0) return defaultPaymentMethods;
     return data.map((row) => ({ method: paymentMethodSchema.parse(row.method), enabled: row.enabled, sortOrder: row.sort_order }));
+  }
+
+  static async listForCheckout(organizationId: string, storeId: string) {
+    const [methods, onlinePixReady] = await Promise.all([
+      this.listForStore(organizationId, storeId),
+      OrderPaymentProviderConfigService.isOnlinePixReady(organizationId, storeId),
+    ]);
+    return methods.map((item) => item.method === "pix"
+      ? { ...item, enabled: item.enabled && onlinePixReady }
+      : item);
   }
 
   static async listCurrentStore() {
