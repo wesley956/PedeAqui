@@ -10,8 +10,27 @@ export type ProviderSendResult = {
   externalMessageId: string;
 };
 
+export type WhatsAppPhoneNumberInspection = {
+  id: string;
+  displayPhoneNumber: string | null;
+  verifiedName: string | null;
+  qualityRating: string | null;
+};
+
 export interface ConversationProvider {
   sendText(input: ProviderSendTextInput): Promise<ProviderSendResult>;
+}
+
+export class WhatsAppProviderError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly providerCode: string | null,
+    public readonly retryable: boolean,
+  ) {
+    super(message);
+    this.name = "WhatsAppProviderError";
+  }
 }
 
 function requireSecretReference(reference: string | null | undefined, fallbackName: string) {
@@ -24,7 +43,7 @@ function requireSecretReference(reference: string | null | undefined, fallbackNa
   return value;
 }
 
-function requireGraphVersion() {
+export function resolveWhatsAppGraphVersion() {
   const version = process.env.WHATSAPP_GRAPH_API_VERSION?.trim();
   if (!version || !/^v\d+\.\d+$/.test(version)) {
     throw new Error("WHATSAPP_GRAPH_API_VERSION não configurado.");
@@ -40,11 +59,47 @@ export function resolveWhatsAppAccessToken(reference?: string | null) {
   return requireSecretReference(reference, "WHATSAPP_ACCESS_TOKEN");
 }
 
+function providerError(response: Response, payload: { error?: { message?: string; code?: number; type?: string } } | null) {
+  const code = payload?.error?.code === undefined ? null : String(payload.error.code);
+  const retryable = response.status === 408 || response.status === 429 || response.status >= 500;
+  const detail = payload?.error?.message?.slice(0, 240) || `HTTP ${response.status}`;
+  return new WhatsAppProviderError(`WhatsApp Cloud API indisponível ou rejeitou a solicitação: ${detail}`, response.status, code, retryable);
+}
+
+const PROVIDER_TIMEOUT_MS = 8_000;
+
 export class WhatsAppCloudProvider implements ConversationProvider {
   constructor(private readonly accessToken: string) {}
 
+  async inspectPhoneNumber(phoneNumberId: string): Promise<WhatsAppPhoneNumberInspection> {
+    const version = resolveWhatsAppGraphVersion();
+    const url = new URL(`https://graph.facebook.com/${version}/${encodeURIComponent(phoneNumberId)}`);
+    url.searchParams.set("fields", "id,display_phone_number,verified_name,quality_rating");
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${this.accessToken}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+    });
+    const payload = await response.json().catch(() => null) as {
+      id?: string;
+      display_phone_number?: string;
+      verified_name?: string;
+      quality_rating?: string;
+      error?: { message?: string; code?: number; type?: string };
+    } | null;
+    if (!response.ok || !payload?.id) throw providerError(response, payload);
+    if (payload.id !== phoneNumberId) throw new WhatsAppProviderError("O token retornou um Phone Number ID diferente do configurado.", 409, "phone_number_mismatch", false);
+    return {
+      id: payload.id,
+      displayPhoneNumber: payload.display_phone_number ?? null,
+      verifiedName: payload.verified_name ?? null,
+      qualityRating: payload.quality_rating ?? null,
+    };
+  }
+
   async sendText(input: ProviderSendTextInput): Promise<ProviderSendResult> {
-    const version = requireGraphVersion();
+    const version = resolveWhatsAppGraphVersion();
     const response = await fetch(`https://graph.facebook.com/${version}/${encodeURIComponent(input.phoneNumberId)}/messages`, {
       method: "POST",
       headers: {
@@ -58,14 +113,12 @@ export class WhatsAppCloudProvider implements ConversationProvider {
         text: { body: input.body },
       }),
       cache: "no-store",
+      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
     });
 
-    const payload = await response.json().catch(() => null) as { messages?: Array<{ id?: string }>; error?: { message?: string; code?: number } } | null;
+    const payload = await response.json().catch(() => null) as { messages?: Array<{ id?: string }>; error?: { message?: string; code?: number; type?: string } } | null;
     const externalMessageId = payload?.messages?.[0]?.id;
-    if (!response.ok || !externalMessageId) {
-      const detail = payload?.error?.message?.slice(0, 300) || `HTTP ${response.status}`;
-      throw new Error(`WhatsApp Cloud API rejeitou a mensagem: ${detail}`);
-    }
+    if (!response.ok || !externalMessageId) throw providerError(response, payload);
     return { externalMessageId };
   }
 }

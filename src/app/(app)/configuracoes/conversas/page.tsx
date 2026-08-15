@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/primitives";
 import { saveConversationSettingsAction } from "@/features/conversations/settings-actions";
-import { ConversationSettingsService } from "@/server/conversations/settings-service";
+import { ConversationSettingsService, type WhatsAppChannelHealth } from "@/server/conversations/settings-service";
 
 const fieldStyle = {
   minHeight: 44,
@@ -13,8 +13,19 @@ const fieldStyle = {
   width: "100%",
 } as const;
 
+const healthLabels: Record<WhatsAppChannelHealth["status"], string> = {
+  disabled: "Desabilitado",
+  misconfigured: "Configuração incompleta",
+  connected: "Conectado à Meta",
+  provider_unavailable: "Meta indisponível",
+  invalid_credentials: "Credencial inválida",
+};
+
 export default async function ConversationSettingsPage() {
-  const settings = await ConversationSettingsService.load();
+  const [settings, health] = await Promise.all([
+    ConversationSettingsService.load(),
+    ConversationSettingsService.health(),
+  ]);
 
   return (
     <section style={{ display: "grid", gap: 18, maxWidth: 880 }}>
@@ -23,6 +34,23 @@ export default async function ConversationSettingsPage() {
         <h1 style={{ margin: "4px 0" }}>Conversas e WhatsApp</h1>
         <p className="muted" style={{ margin: 0 }}>A aplicação salva apenas nomes de variáveis de ambiente para os segredos. Tokens e App Secret nunca ficam expostos no navegador.</p>
       </header>
+
+      <Card style={{ display: "grid", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Saúde do canal</p>
+            <strong>{healthLabels[health.status]}</strong>
+          </div>
+          {health.graphVersion ? <span className="muted" style={{ fontSize: 12 }}>Graph API {health.graphVersion}</span> : null}
+        </div>
+        <p style={{ margin: 0 }}>{health.message}</p>
+        {health.status === "connected" ? <div className="muted" style={{ display: "grid", gap: 3, fontSize: 13 }}>
+          {health.verifiedName ? <span>Nome verificado: <strong>{health.verifiedName}</strong></span> : null}
+          {health.displayPhoneNumber ? <span>Número: <strong>{health.displayPhoneNumber}</strong></span> : null}
+          {health.qualityRating ? <span>Qualidade informada pela Meta: <strong>{health.qualityRating}</strong></span> : null}
+        </div> : null}
+        <p className="muted" style={{ margin: 0, fontSize: 12 }}>Este diagnóstico consulta apenas metadados não sensíveis do Phone Number ID. Ele não exibe access token, App Secret nem assinatura do webhook.</p>
+      </Card>
 
       <form action={saveConversationSettingsAction} style={{ display: "grid", gap: 14 }}>
         <Card style={{ display: "grid", gap: 14 }}>
@@ -34,7 +62,7 @@ export default async function ConversationSettingsPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
             <label style={{ display: "grid", gap: 6 }}>
               <span style={{ fontWeight: 700 }}>Phone Number ID</span>
-              <input name="phoneNumberId" defaultValue={settings?.whatsapp_phone_number_id ?? ""} placeholder="ID fornecido pelo provider" style={fieldStyle} />
+              <input name="phoneNumberId" defaultValue={settings?.whatsapp_phone_number_id ?? ""} placeholder="ID fornecido pela Meta" style={fieldStyle} />
             </label>
             <label style={{ display: "grid", gap: 6 }}>
               <span style={{ fontWeight: 700 }}>Business Account ID</span>
@@ -49,7 +77,7 @@ export default async function ConversationSettingsPage() {
               <input name="appSecretSecretRef" defaultValue={settings?.app_secret_secret_ref ?? "WHATSAPP_APP_SECRET"} placeholder="WHATSAPP_APP_SECRET" style={fieldStyle} />
             </label>
           </div>
-          <p className="muted" style={{ margin: 0, fontSize: 12 }}>Também configure <code>WHATSAPP_WEBHOOK_VERIFY_TOKEN</code> e <code>WHATSAPP_GRAPH_API_VERSION</code> no ambiente do servidor.</p>
+          <p className="muted" style={{ margin: 0, fontSize: 12 }}>Também configure <code>WHATSAPP_WEBHOOK_VERIFY_TOKEN</code> e <code>WHATSAPP_GRAPH_API_VERSION</code> no ambiente do servidor. O endpoint público de callback é <code>/api/webhooks/whatsapp</code>.</p>
         </Card>
 
         <Card style={{ display: "grid", gap: 12 }}>
