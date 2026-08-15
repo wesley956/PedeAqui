@@ -1,10 +1,11 @@
 import "server-only";
 
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { createHash } from "node:crypto";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
 import { OrderPixService } from "@/server/payments/order-pix-service";
+import { validateMercadoPagoWebhookSignature } from "@/server/payments/providers/mercado-pago-signature";
 
 const webhookSchema = z.object({
   id: z.union([z.string(), z.number()]).transform(String),
@@ -12,30 +13,6 @@ const webhookSchema = z.object({
   action: z.string().min(1),
   data: z.object({ id: z.union([z.string(), z.number()]).transform(String) }),
 }).passthrough();
-
-function signatureParts(value: string) {
-  const parts = new Map<string, string>();
-  for (const entry of value.split(",")) {
-    const [key, ...rest] = entry.trim().split("=");
-    if (key && rest.length) parts.set(key, rest.join("=").trim());
-  }
-  return { ts: parts.get("ts") ?? null, v1: parts.get("v1") ?? null };
-}
-
-export function validateMercadoPagoWebhookSignature(input: {
-  xSignature: string;
-  xRequestId: string;
-  dataId: string;
-  secret: string;
-}) {
-  const { ts, v1 } = signatureParts(input.xSignature);
-  if (!ts || !v1 || !/^[a-f0-9]{64}$/i.test(v1)) return false;
-  const manifest = `id:${input.dataId};request-id:${input.xRequestId};ts:${ts};`;
-  const expected = createHmac("sha256", input.secret).update(manifest).digest("hex");
-  const expectedBuffer = Buffer.from(expected, "hex");
-  const actualBuffer = Buffer.from(v1, "hex");
-  return expectedBuffer.length === actualBuffer.length && timingSafeEqual(expectedBuffer, actualBuffer);
-}
 
 export async function processMercadoPagoOrderWebhook(input: {
   storeId: string;
