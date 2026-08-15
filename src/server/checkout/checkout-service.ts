@@ -229,6 +229,11 @@ export class CheckoutService {
   static async savePayment(storeSlug: string, token: string, input: CheckoutPaymentInput) {
     const values = checkoutPaymentSchema.parse(input);
     const cartResult = await this.requireCart(storeSlug, token);
+    const admin = createAdminClient();
+    const session = values.method === "pix" ? await this.getSession(admin, cartResult.cart.id) : null;
+    if (values.method === "pix" && !session?.customer_email) {
+      throw new CheckoutError("pix_email_required", "Informe seu e-mail em Seus dados para gerar o Pix online");
+    }
     const methods = await StorePaymentMethodService.listForStore(cartResult.store.organization_id, cartResult.store.id);
     if (!methods.some((item) => item.method === values.method && item.enabled)) {
       throw new CheckoutError("payment_unavailable", "Forma de pagamento indisponível");
@@ -237,7 +242,6 @@ export class CheckoutService {
     if (changeFor !== null && changeFor < Number(cartResult.cart.total_cents)) {
       throw new CheckoutError("invalid_change", "O valor para troco deve ser igual ou maior que o total");
     }
-    const admin = createAdminClient();
     await this.upsertSession(admin, cartResult.store, cartResult.cart.id, {
       payment_method: values.method,
       cash_change_for_cents: changeFor,
@@ -284,7 +288,9 @@ export class CheckoutService {
       }
     }
 
-    const enabledMethods = loaded.paymentMethods.filter((item) => item.enabled).map((item) => item.method);
+    const enabledMethods = loaded.paymentMethods
+      .filter((item) => item.enabled && !(item.method === "pix" && session?.payment_method === "pix" && !session.customer_email))
+      .map((item) => item.method);
     const result = reviewCheckout({
       cartItemStatuses: loaded.cart.items.map((item) => item.validation_status),
       subtotalCents: Number(loaded.cart.subtotal_cents),

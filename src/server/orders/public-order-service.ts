@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hashOrderAccessToken } from "@/server/orders/order-token";
 import { groupPublicOrderModifiers, type PublicOrderModifierProjection } from "@/server/orders/public-order-projection";
+import { OrderPixService, type PublicPixPayment } from "@/server/payments/order-pix-service";
 
 const uuidSchema = z.string().uuid();
 
@@ -17,9 +18,6 @@ export class PublicOrderService {
     if (storeError) throw storeError;
     if (!store) return null;
 
-    // Tracking is polled while an order is active. Order authorization and item
-    // snapshots are independent once the store scope is known, so they share a
-    // network round-trip phase instead of being read serially on every refresh.
     const [orderResult, itemsResult] = await Promise.all([
       admin.from("orders")
         .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, address_street_snapshot, address_number_snapshot, address_complement_snapshot, address_district_snapshot, address_city_snapshot, address_state_snapshot, subtotal_cents, discount_cents, delivery_fee_cents, total_cents, payment_method_snapshot, cash_change_for_cents, delivery_estimated_min_minutes, delivery_estimated_max_minutes, confirmed_at, completed_at, canceled_at, cancel_reason, created_at, updated_at")
@@ -38,6 +36,25 @@ export class PublicOrderService {
     const order = orderResult.data;
     if (!order) return null;
 
+    let pixPayment: PublicPixPayment | null = null;
+    if (order.payment_method_snapshot === "pix") {
+      try {
+        pixPayment = await OrderPixService.ensureForOrder(id);
+      } catch {
+        pixPayment = await OrderPixService.getExistingForOrder(id);
+        if (!pixPayment && order.payment_status !== "paid") {
+          pixPayment = {
+            status: "unavailable",
+            amountCents: Number(order.total_cents),
+            qrCode: null,
+            qrCodeBase64: null,
+            ticketUrl: null,
+            expiresAt: null,
+          };
+        }
+      }
+    }
+
     const items = itemsResult.data ?? [];
     const itemIds = items.map((item) => item.id);
     const modifiersResult = itemIds.length > 0
@@ -52,6 +69,7 @@ export class PublicOrderService {
     return {
       store,
       order,
+      pixPayment,
       items: items.map((item) => ({ ...item, modifiers: modifiersByItem.get(item.id) ?? [] })),
     };
   }

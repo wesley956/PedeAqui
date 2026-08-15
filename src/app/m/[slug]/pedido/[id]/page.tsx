@@ -1,9 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import { PublicOrderRefresh } from "@/features/orders/public-order-refresh";
 import { PublicOrderTimeline } from "@/features/orders/public-order-timeline";
+import { PixCopyButton } from "@/features/payments/pix-copy-button";
 import { paymentMethodLabels, type FulfillmentType } from "@/server/checkout/schemas";
 import { orderCookieName } from "@/server/orders/order-token";
 import { PublicOrderService } from "@/server/orders/public-order-service";
@@ -43,7 +45,7 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
   const data = await PublicOrderService.get(slug, id, accessToken);
   if (!data) notFound();
 
-  const { order, items, store } = data;
+  const { order, items, store, pixPayment } = data;
   const orderStatus = order.order_status as OrderStatus;
   const productionStatus = order.production_status as ProductionStatus;
   const fulfillmentStatus = order.fulfillment_status as FulfillmentStatus;
@@ -97,6 +99,29 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
           {estimate && !terminalProblem ? <div className={styles.estimate}><span>{fulfillmentType === "delivery" ? "Previsão registrada" : "Recebimento"}</span><strong>{estimate}</strong></div> : null}
           <div className={styles.updated}>Pedido #{order.display_number} · atualizado em {updatedAt}</div>
         </header>
+
+        {pixPayment ? (
+          <section className={`card ${styles.card}`} style={{ textAlign: "center", display: "grid", gap: 14, justifyItems: "center" }}>
+            {pixPayment.status === "paid" || order.payment_status === "paid" ? (
+              <><h2 style={{ marginBottom: 0 }}>Pix confirmado ✓</h2><p className="muted" style={{ margin: 0 }}>O pagamento de {money(pixPayment.amountCents)} já foi confirmado automaticamente.</p></>
+            ) : pixPayment.status === "waiting" && pixPayment.qrCode ? (
+              <>
+                <div><p className="muted" style={{ margin: 0, fontSize: 12 }}>PAGAMENTO PIX</p><h2 style={{ margin: "4px 0" }}>Escaneie o QR Code</h2><p className="muted" style={{ margin: 0 }}>Valor exato: <strong>{money(pixPayment.amountCents)}</strong></p></div>
+                {pixPayment.qrCodeBase64 ? <Image src={`data:image/png;base64,${pixPayment.qrCodeBase64}`} alt="QR Code Pix do pedido" width={240} height={240} unoptimized style={{ maxWidth: "100%", height: "auto", borderRadius: 12 }} /> : null}
+                <div style={{ width: "100%", display: "grid", gap: 8 }}>
+                  <label htmlFor="pix-code" style={{ fontWeight: 600 }}>Pix Copia e Cola</label>
+                  <textarea id="pix-code" value={pixPayment.qrCode} readOnly rows={3} style={{ width: "100%", resize: "none" }} />
+                  <PixCopyButton code={pixPayment.qrCode} />
+                </div>
+                {pixPayment.expiresAt ? <p className="muted" style={{ margin: 0, fontSize: 12 }}>Este QR Code é temporário. Se expirar, a página gera uma nova cobrança segura.</p> : null}
+              </>
+            ) : pixPayment.status === "unavailable" ? (
+              <><h2 style={{ marginBottom: 0 }}>Pix temporariamente indisponível</h2><p className="muted" style={{ margin: 0 }}>Seu pedido foi registrado. Esta página tentará gerar o Pix novamente sem duplicar a cobrança.</p></>
+            ) : (
+              <><h2 style={{ marginBottom: 0 }}>Preparando seu Pix…</h2><p className="muted" style={{ margin: 0 }}>Aguarde a atualização automática desta página. Não é necessário refazer o pedido.</p></>
+            )}
+          </section>
+        ) : null}
 
         <section className={`card ${styles.card}`}>
           <div className={styles.cardHead}><h2>Acompanhe seu pedido</h2>{!terminal ? <span className={styles.autoUpdate}>Atualização automática</span> : null}</div>

@@ -6,10 +6,33 @@ import { StorePaymentMethodService } from "@/server/payments/store-payment-metho
 import { paymentMethodSchema } from "@/server/checkout/schemas";
 import { parseMoneyToCents } from "@/server/catalog/money";
 import { PaymentService } from "@/server/payments/payment-service";
+import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
 
 export async function savePaymentMethodsAction(formData: FormData) {
   const methods = formData.getAll("method").map((value) => paymentMethodSchema.parse(String(value)));
   await StorePaymentMethodService.save(methods);
+  revalidatePath("/configuracoes/pagamentos");
+  revalidatePath("/m/[slug]/checkout", "page");
+}
+
+const onlinePixConfigSchema = z.object({
+  environment: z.enum(["test", "production"]),
+  accessToken: z.string().trim().max(500).optional(),
+  webhookSecret: z.string().trim().max(500).optional(),
+});
+
+export async function saveOnlinePixProviderAction(formData: FormData) {
+  const input = onlinePixConfigSchema.parse({
+    environment: String(formData.get("environment") ?? "production"),
+    accessToken: String(formData.get("accessToken") ?? ""),
+    webhookSecret: String(formData.get("webhookSecret") ?? ""),
+  });
+  await OrderPaymentProviderConfigService.configureCurrentStore({
+    enabled: formData.get("enabled") === "on",
+    environment: input.environment,
+    accessToken: input.accessToken || null,
+    webhookSecret: input.webhookSecret || null,
+  });
   revalidatePath("/configuracoes/pagamentos");
   revalidatePath("/m/[slug]/checkout", "page");
 }

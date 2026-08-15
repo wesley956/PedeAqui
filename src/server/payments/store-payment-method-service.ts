@@ -5,6 +5,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { paymentMethodSchema, type PaymentMethod } from "@/server/checkout/schemas";
 import { AuditService } from "@/server/audit/audit-service";
+import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
 
 export const defaultPaymentMethods: Array<{ method: PaymentMethod; enabled: boolean; sortOrder: number }> = [
   { method: "pix", enabled: true, sortOrder: 10 },
@@ -14,7 +15,7 @@ export const defaultPaymentMethods: Array<{ method: PaymentMethod; enabled: bool
 ];
 
 export class StorePaymentMethodService {
-  static async listForStore(organizationId: string, storeId: string) {
+  private static async listConfiguredForStore(organizationId: string, storeId: string) {
     const admin = createAdminClient();
     const { data, error } = await admin.from("store_payment_methods")
       .select("method, enabled, sort_order")
@@ -26,10 +27,26 @@ export class StorePaymentMethodService {
     return data.map((row) => ({ method: paymentMethodSchema.parse(row.method), enabled: row.enabled, sortOrder: row.sort_order }));
   }
 
+  // Public checkout availability. PIX is only offered when its online provider
+  // is explicitly enabled and both server-side secrets are configured.
+  static async listForStore(organizationId: string, storeId: string) {
+    const [methods, onlinePixReady] = await Promise.all([
+      this.listConfiguredForStore(organizationId, storeId),
+      OrderPaymentProviderConfigService.isOnlinePixReady(organizationId, storeId),
+    ]);
+    return methods.map((item) => item.method === "pix"
+      ? { ...item, enabled: item.enabled && onlinePixReady }
+      : item);
+  }
+
+  static async listForCheckout(organizationId: string, storeId: string) {
+    return this.listForStore(organizationId, storeId);
+  }
+
   static async listCurrentStore() {
     const context = await authorize(PERMISSIONS.STORES_VIEW);
     if (!context.storeId) throw new Error("An active store is required");
-    return this.listForStore(context.organizationId, context.storeId);
+    return this.listConfiguredForStore(context.organizationId, context.storeId);
   }
 
   static async save(enabledMethods: PaymentMethod[]) {
