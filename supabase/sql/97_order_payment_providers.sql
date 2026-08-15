@@ -272,7 +272,7 @@ begin
     v_payment.amount_cents,
     'BRL',
     v_charge_id::text,
-    'pa_payment_' || replace(v_payment.id::text, '-', '')
+    'pa_payment_' || replace(v_payment.id::text, '-', '') || '_' || v_attempt::text
   ) returning * into v_charge;
 
   return v_charge;
