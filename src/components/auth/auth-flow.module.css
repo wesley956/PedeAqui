@@ -31,6 +31,16 @@
   text-underline-offset: 3px;
 }
 
+.appearance :global(.theme-selector-card) {
+  width: 100%;
+  padding: var(--space-3);
+  background: var(--surface-2);
+}
+
+.appearance :global(.theme-selector-help) {
+  font-size: var(--font-size-xs);
+}
+
 @media (max-width: 420px) {
   .links {
     align-items: stretch;

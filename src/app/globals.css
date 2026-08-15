@@ -137,6 +137,34 @@
   --radius: var(--radius-lg);
 }
 
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --surface-0: #f7f7f5;
+  --surface-1: #ffffff;
+  --surface-2: #f0efec;
+  --surface-3: #e5e3df;
+
+  --text-primary: #202427;
+  --text-secondary: #625f5b;
+  --text-inverse: #fffdf9;
+  --border-default: #dedbd6;
+  --border-strong: #b8b3ac;
+
+  --state-success-text: #166534;
+  --state-success-surface: #dcfce7;
+  --state-warning-text: #854d0e;
+  --state-warning-surface: #fef3c7;
+  --state-danger-text: #991b1b;
+  --state-danger-surface: #fee2e2;
+  --state-info-text: #075985;
+  --state-info-surface: #e0f2fe;
+
+  --shadow-sm: 0 2px 8px rgba(32, 36, 39, 0.08);
+  --shadow-md: 0 10px 28px rgba(32, 36, 39, 0.12);
+  --shadow-lg: 0 18px 48px rgba(32, 36, 39, 0.16);
+}
+
 * { box-sizing: border-box; }
 html { background: var(--surface-0); }
 body {

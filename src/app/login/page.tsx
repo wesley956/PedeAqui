@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { signInAction } from "@/features/auth/actions";
+import { ThemeSelector } from "@/components/theme/theme-selector";
 
 const loginErrors: Record<string, string> = {
   session_expired: "Sua sessão expirou. Entre novamente para continuar.",
@@ -34,6 +35,9 @@ export default async function LoginPage({
       <div className={authStyles.links}>
         <Link href="/recuperar-senha" className={authStyles.linkMuted}>Esqueci a senha</Link>
         <Link href="/cadastro" className={authStyles.link}>Criar conta</Link>
+      </div>
+      <div className={authStyles.appearance}>
+        <ThemeSelector />
       </div>
     </AuthCard>
   );
