@@ -8,6 +8,7 @@ import {
   SelectField,
   Textarea,
 } from "@/components/ui/form-controls";
+import { ImageUploadField } from "@/components/media/image-upload-field";
 import { CategoryService } from "@/server/catalog/category-service";
 import { createProductAction } from "@/features/catalog/actions";
 import styles from "./product-editor.module.css";
@@ -51,9 +52,9 @@ export default async function NewProductPage() {
         <section className={`card ${styles.section}`} aria-labelledby="produto-imagem">
           <div className={styles.sectionHeader}>
             <h2 id="produto-imagem">Imagem</h2>
-            <p className="muted">Uma imagem clara ajuda o cliente a escolher. O produto pode ser salvo sem ela.</p>
+            <p className="muted">Escolha uma foto clara do produto. Você também pode salvar o item sem imagem.</p>
           </div>
-          <Input label="URL da imagem" name="imageUrl" type="url" hint="O upload direto será ativado quando o storage do ambiente estiver provisionado." />
+          <ImageUploadField name="imageFile" label="Foto do produto" />
         </section>
 
         <section className={`card ${styles.section}`} aria-labelledby="produto-disponibilidade">
