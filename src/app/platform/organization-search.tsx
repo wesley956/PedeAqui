@@ -17,7 +17,6 @@ export type PlatformOrganizationCard = {
 
 export type PlatformUnitCard = {
   id: string;
-  organizationId: string;
   name: string;
   organizationName: string;
   statusLabel: string;
@@ -76,7 +75,7 @@ export function OrganizationSearch({ organizations, units }: { organizations: Pl
         <div className={styles.searchGroupTitle}><strong>Unidades</strong><span>{filteredUnits.length}</span></div>
         <div className={styles.orgGrid}>
           {filteredUnits.map((unit) => (
-            <Link key={unit.id} className={styles.orgCardLink} href={`/platform/empresas/${unit.organizationId}/unidades/${unit.id}`}>
+            <Link key={unit.id} className={styles.orgCardLink} href={`/platform/unidades/${unit.id}`}>
               <article className={styles.orgCard}>
                 <div className={styles.cardTop}>
                   <strong>{unit.name}</strong>
