@@ -6,7 +6,6 @@ export type OnlinePixChargeRequest = {
   externalReference: string;
   idempotencyKey: string;
   payerEmail: string;
-  description: string;
 };
 
 export type OnlinePixProviderOrder = {
