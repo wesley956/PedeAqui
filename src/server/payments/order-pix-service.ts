@@ -74,6 +74,20 @@ function assertProviderMatches(charge: ChargeRow, remote: OnlinePixProviderOrder
 async function updateFromProvider(charge: ChargeRow, remote: OnlinePixProviderOrder) {
   assertProviderMatches(charge, remote);
   const admin = createAdminClient();
+
+  // The PedeAqui ledger remains authoritative. Settle it first: if the provider
+  // mirror update fails afterwards, reconciliation can safely retry this RPC.
+  if (remote.status === "paid") {
+    const { error: confirmError } = await admin.rpc("payment_confirm_internal", {
+      p_payment_id: charge.payment_id,
+      p_cash_received_cents: null,
+      p_reference: remote.providerPaymentId ?? remote.providerOrderId,
+      p_actor_user_id: null,
+      p_source: "integration",
+    });
+    if (confirmError) throw confirmError;
+  }
+
   const nextStatus = charge.status === "paid" ? "paid" : remote.status;
   const { data, error } = await admin.from("order_payment_provider_charges").update({
     status: nextStatus,
@@ -88,17 +102,6 @@ async function updateFromProvider(charge: ChargeRow, remote: OnlinePixProviderOr
     updated_at: new Date().toISOString(),
   }).eq("id", charge.id).select("*").single();
   if (error) throw error;
-
-  if (remote.status === "paid") {
-    const { error: confirmError } = await admin.rpc("payment_confirm_internal", {
-      p_payment_id: charge.payment_id,
-      p_cash_received_cents: null,
-      p_reference: remote.providerPaymentId ?? remote.providerOrderId,
-      p_actor_user_id: null,
-      p_source: "integration",
-    });
-    if (confirmError) throw confirmError;
-  }
 
   return data as ChargeRow;
 }
@@ -141,7 +144,11 @@ export class OrderPixService {
       .limit(1)
       .maybeSingle();
     if (existingError) throw existingError;
-    if (payment.status === "paid") return existing ? publicProjection(existing as ChargeRow) : null;
+    if (payment.status === "paid") {
+      if (!existing) return null;
+      const projected = publicProjection(existing as ChargeRow);
+      return projected.status === "paid" ? projected : { ...projected, status: "paid" };
+    }
     if (existing && existing.status === "pending" && existing.provider_order_id) return publicProjection(existing as ChargeRow);
     if (existing && existing.status === "paid") return publicProjection(existing as ChargeRow);
 
@@ -210,7 +217,9 @@ export class OrderPixService {
       charge = referenced as ChargeRow | null;
     }
     if (!charge) return null;
-    if (charge.status === "paid") return publicProjection(charge);
+
+    // Always pass through updateFromProvider, including local paid rows. The
+    // provider values are revalidated and ledger confirmation is idempotent.
     return publicProjection(await updateFromProvider(charge, remote));
   }
 
