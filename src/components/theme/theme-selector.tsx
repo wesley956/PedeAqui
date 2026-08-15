@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import styles from "./theme-selector.module.css";
 
 export type ThemePreference = "light" | "dark" | "system";
 
 const STORAGE_KEY = "pedeaqui-theme";
 const darkModeQuery = "(prefers-color-scheme: dark)";
+const themeChangeEvent = "pedeaqui-theme-change";
 
 function isThemePreference(value: string | null | undefined): value is ThemePreference {
   return value === "light" || value === "dark" || value === "system";
@@ -20,6 +21,27 @@ function applyTheme(preference: ThemePreference) {
   const resolved = preference === "system" ? systemTheme() : preference;
   document.documentElement.dataset.themePreference = preference;
   document.documentElement.dataset.theme = resolved;
+}
+
+function themeSnapshot(): ThemePreference {
+  if (typeof document === "undefined") return "system";
+  const value = document.documentElement.dataset.themePreference;
+  return isThemePreference(value) ? value : "system";
+}
+
+function subscribeTheme(callback: () => void) {
+  const media = window.matchMedia(darkModeQuery);
+  const notify = () => callback();
+  const handleSystemChange = () => {
+    if (document.documentElement.dataset.themePreference === "system") applyTheme("system");
+    callback();
+  };
+  window.addEventListener(themeChangeEvent, notify);
+  media.addEventListener("change", handleSystemChange);
+  return () => {
+    window.removeEventListener(themeChangeEvent, notify);
+    media.removeEventListener("change", handleSystemChange);
+  };
 }
 
 function SunIcon() {
@@ -48,36 +70,16 @@ const options: Array<{ value: ThemePreference; label: string; icon: () => React.
 ];
 
 export function ThemeSelector({ compact = false }: { compact?: boolean }) {
-  const [preference, setPreference] = useState<ThemePreference>("system");
-
-  useEffect(() => {
-    let stored: string | null = null;
-    try {
-      stored = window.localStorage.getItem(STORAGE_KEY);
-    } catch {
-      // Storage can be unavailable in privacy-restricted browsers.
-    }
-    const fromDocument = document.documentElement.dataset.themePreference;
-    const initial = isThemePreference(stored) ? stored : isThemePreference(fromDocument) ? fromDocument : "system";
-    setPreference(initial);
-    applyTheme(initial);
-
-    const media = window.matchMedia(darkModeQuery);
-    const handleSystemChange = () => {
-      if (document.documentElement.dataset.themePreference === "system") applyTheme("system");
-    };
-    media.addEventListener("change", handleSystemChange);
-    return () => media.removeEventListener("change", handleSystemChange);
-  }, []);
+  const preference = useSyncExternalStore(subscribeTheme, themeSnapshot, () => "system");
 
   function chooseTheme(value: ThemePreference) {
-    setPreference(value);
     try {
       window.localStorage.setItem(STORAGE_KEY, value);
     } catch {
       // The choice still applies for the current page when storage is unavailable.
     }
     applyTheme(value);
+    window.dispatchEvent(new Event(themeChangeEvent));
   }
 
   return (
