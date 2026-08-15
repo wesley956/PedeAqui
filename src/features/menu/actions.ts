@@ -2,10 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { parseMoneyToCents } from "@/server/catalog/money";
+import { CatalogImageService } from "@/server/catalog/catalog-image-service";
 import { StoreMenuService } from "@/server/menu/store-menu-service";
+import { PERMISSIONS } from "@/server/access/permissions";
 
 function optionalString(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function optionalFile(value: FormDataEntryValue | null) {
+  return value instanceof File && value.size > 0 ? value : null;
 }
 
 function integer(value: FormDataEntryValue | null, fallback = 0) {
@@ -22,12 +28,35 @@ function revalidateMenu() {
   revalidatePath("/m/[slug]/produto/[id]", "page");
 }
 
+async function resolveStoreImage(
+  fileValue: FormDataEntryValue | null,
+  removeValue: FormDataEntryValue | null,
+  currentUrl: string | null,
+  purpose: "menu-logo" | "menu-cover",
+) {
+  const file = optionalFile(fileValue);
+  if (file) {
+    const uploaded = await CatalogImageService.upload(file, {
+      permission: PERMISSIONS.STORES_MANAGE,
+      purpose,
+    });
+    return uploaded.publicUrl;
+  }
+  return removeValue === "on" ? null : currentUrl;
+}
+
 export async function saveMenuSettingsAction(formData: FormData) {
   const minimum = formData.get("minimumOrder");
+  const current = await StoreMenuService.getSettings();
+  const [logoUrl, coverUrl] = await Promise.all([
+    resolveStoreImage(formData.get("logoFile"), formData.get("removeLogo"), current.logo_url, "menu-logo"),
+    resolveStoreImage(formData.get("coverFile"), formData.get("removeCover"), current.cover_url, "menu-cover"),
+  ]);
+
   await StoreMenuService.saveSettings({
     primaryColor: String(formData.get("primaryColor") || "#FF6B00"),
-    logoUrl: optionalString(formData.get("logoUrl")),
-    coverUrl: optionalString(formData.get("coverUrl")),
+    logoUrl,
+    coverUrl,
     showSearch: formData.get("showSearch") === "on",
     showCategories: formData.get("showCategories") === "on",
     showProductImages: formData.get("showProductImages") === "on",
