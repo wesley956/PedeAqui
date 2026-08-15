@@ -2,7 +2,7 @@ import { paymentMethodLabels, type PaymentMethod } from "@/server/checkout/schem
 import styles from "./final-order-options.module.css";
 
 export const paymentMethodHelp: Record<PaymentMethod, string> = {
-  pix: "Pix habilitado pelo estabelecimento.",
+  pix: "Pix online com QR Code e confirmação automática. Para usar, informe seu e-mail em Seus dados.",
   credit_card: "Cartão de crédito habilitado pelo estabelecimento.",
   debit_card: "Cartão de débito habilitado pelo estabelecimento.",
   cash: "Dinheiro; informe troco somente se precisar.",
