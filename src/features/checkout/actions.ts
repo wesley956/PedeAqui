@@ -5,9 +5,14 @@ import { redirect } from "next/navigation";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { parseMoneyToCents } from "@/server/catalog/money";
 import { CheckoutError, CheckoutService } from "@/server/checkout/checkout-service";
+import { customerRecognitionCookieName } from "@/server/customers/recognition-token";
 
 async function tokenFor(storeSlug: string) {
   return (await cookies()).get(cartCookieName(storeSlug))?.value ?? null;
+}
+
+async function recognitionTokenFor(storeSlug: string) {
+  return (await cookies()).get(customerRecognitionCookieName(storeSlug))?.value ?? null;
 }
 
 function errorRedirect(storeSlug: string, error: CheckoutError): never {
@@ -63,6 +68,22 @@ export async function saveCheckoutAddressAction(formData: FormData) {
       state: String(formData.get("state") ?? ""),
       reference: optional(formData.get("reference")),
     });
+  } catch (error) {
+    if (error instanceof CheckoutError) errorRedirect(storeSlug, error);
+    throw error;
+  }
+  redirect(`/m/${storeSlug}/checkout`);
+}
+
+export async function useSavedCheckoutAddressAction(formData: FormData) {
+  const storeSlug = String(formData.get("storeSlug") ?? "");
+  const token = await tokenFor(storeSlug);
+  if (!token) redirect(`/m/${storeSlug}/carrinho`);
+  const recognitionToken = await recognitionTokenFor(storeSlug);
+  const addressIndex = Number(formData.get("addressIndex"));
+  try {
+    const applyRecognizedAddress = CheckoutService.useRecognizedAddress;
+    await applyRecognizedAddress.call(CheckoutService, storeSlug, token, recognitionToken, addressIndex);
   } catch (error) {
     if (error instanceof CheckoutError) errorRedirect(storeSlug, error);
     throw error;

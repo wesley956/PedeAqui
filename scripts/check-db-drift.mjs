@@ -76,12 +76,12 @@ export function localDriftErrors({ sqlFiles, baseline }) {
   const history = inspectSqlHistory(sqlFiles);
   if (history.duplicates.join(",") !== "14") errors.push(`Prefixos duplicados inesperados: ${history.duplicates.join(",") || "nenhum"}`);
   if (history.missing.join(",") !== "17") errors.push(`Lacunas históricas inesperadas: ${history.missing.join(",") || "nenhuma"}`);
-  if (history.files.at(-1) !== "90_onboarding_role_permission_conflict_hotfix.sql") {
+  if (history.files.at(-1) !== "91_customer_recognition.sql") {
     errors.push(`Cauda SQL inesperada: ${history.files.at(-1) ?? "nenhuma"}`);
   }
   const remoteTail = baseline.migrations.at(-1);
-  if (!remoteTail || remoteTail[1] !== "onboarding_role_permission_conflict_hotfix") {
-    errors.push("Baseline remoto não termina no hotfix de onboarding reconciliado.");
+  if (!remoteTail || remoteTail[1] !== "customer_recognition_324") {
+    errors.push("Baseline remoto não termina na migration de reconhecimento de cliente [324].");
   }
   return errors;
 }
