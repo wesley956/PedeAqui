@@ -57,9 +57,9 @@ export function localDriftErrors({ sqlFiles, baseline }) {
   const errors = validateProductionBaseline(baseline); const history = inspectSqlHistory(sqlFiles);
   if (history.duplicates.join(",") !== "14") errors.push(`Prefixos duplicados inesperados: ${history.duplicates.join(",") || "nenhum"}`);
   if (history.missing.join(",") !== "17") errors.push(`Lacunas históricas inesperadas: ${history.missing.join(",") || "nenhuma"}`);
-  if (history.files.at(-1) !== "92_whatsapp_greeting.sql") errors.push(`Cauda SQL inesperada: ${history.files.at(-1) ?? "nenhuma"}`);
+  if (history.files.at(-1) !== "95_public_menu_anon_security_definer.sql") errors.push(`Cauda SQL inesperada: ${history.files.at(-1) ?? "nenhuma"}`);
   const remoteTail = baseline.migrations.at(-1);
-  if (!remoteTail || remoteTail[1] !== "whatsapp_greeting_326") errors.push("Baseline remoto não termina na migration da saudação WhatsApp [326].");
+  if (!remoteTail || remoteTail[1] !== "public_menu_anon_security_definer_hotfix") errors.push("Baseline remoto não termina no hotfix de acesso anônimo ao cardápio público.");
   return errors;
 }
 
