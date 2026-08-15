@@ -10,7 +10,7 @@ import styles from "./platform.module.css";
 const navigation = [
   ["Visão geral", "/platform#visao-geral"],
   ["Empresas", "/platform#empresas"],
-  ["Operação", "/platform#operacao"],
+  ["Operação", "/platform/operacao"],
   ["Integrações", "/platform/integracoes"],
   ["Assinaturas", "/platform#assinaturas"],
   ["Incidentes", "/platform#incidentes"],
