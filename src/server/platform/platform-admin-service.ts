@@ -1,19 +1,25 @@
 import "server-only";
 
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAuthenticatedUser } from "@/server/auth/session";
 
 export class PlatformAuthorizationError extends Error{ constructor(){ super("Platform admin required"); this.name="PlatformAuthorizationError"; } }
 
-async function requirePlatformAdmin(requireSuperAdmin=false){
+const requirePlatformAdmin=cache(async (requireSuperAdmin=false)=>{
   const user=await requireAuthenticatedUser(); const admin=createAdminClient();
   const { data,error }=await admin.rpc("platform_admin_check_internal",{ p_user_id:user.id }); if(error) throw error;
   const role=Array.isArray(data)?data[0]?.role:null;
   if(!role||(requireSuperAdmin&&role!=="super_admin")) throw new PlatformAuthorizationError();
   return { user,admin,role:role as "super_admin"|"support" };
-}
+});
 
 export class PlatformAdminService{
+  static async access(){
+    const { user,role }=await requirePlatformAdmin(false);
+    return { user,role };
+  }
+
   static async load(){
     const { user,admin,role }=await requirePlatformAdmin(false);
     const [plans,features,planFeatures,organizations,subscriptions,catalog,webhooks]=await Promise.all([
