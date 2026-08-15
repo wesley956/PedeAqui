@@ -1,0 +1,115 @@
+.root {
+  display: grid;
+  gap: 8px;
+}
+
+.card {
+  max-width: 520px;
+}
+
+.compact {
+  display: inline-flex;
+  align-items: center;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.segmented {
+  display: inline-grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  width: fit-content;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.card .segmented {
+  min-width: min(100%, 360px);
+}
+
+.compact .segmented {
+  border-radius: 999px;
+}
+
+.option {
+  min-height: 38px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.compact .option {
+  width: 34px;
+  min-height: 34px;
+  padding: 5px;
+  border-radius: 999px;
+}
+
+.option:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.option[data-selected="true"] {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.16);
+}
+
+.option:active {
+  transform: scale(0.96);
+}
+
+.option:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.icon,
+.icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.icon svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 560px) {
+  .card .segmented {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .card .option {
+    padding-inline: 7px;
+  }
+}
