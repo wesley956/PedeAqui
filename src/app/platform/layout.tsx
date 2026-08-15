@@ -10,9 +10,12 @@ import styles from "./platform.module.css";
 const navigation = [
   ["Visão geral", "/platform#visao-geral"],
   ["Empresas", "/platform#empresas"],
-  ["Planos", "/platform#planos"],
+  ["Operação", "/platform#operacao"],
   ["Integrações", "/platform#integracoes"],
-  ["Saúde", "/platform#saude"],
+  ["Assinaturas", "/platform#assinaturas"],
+  ["Incidentes", "/platform#incidentes"],
+  ["Suporte", "/platform#suporte"],
+  ["Configuração", "/platform#configuracao"],
 ] as const;
 
 export default async function PlatformLayout({ children }: { children: ReactNode }) {
