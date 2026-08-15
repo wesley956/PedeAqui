@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/primitives";
 import { saveConversationSettingsAction } from "@/features/conversations/settings-actions";
+import { DEFAULT_WHATSAPP_GREETING, DEFAULT_WHATSAPP_GREETING_FALLBACK } from "@/server/conversations/greeting";
 import { ConversationSettingsService, type WhatsAppChannelHealth } from "@/server/conversations/settings-service";
 
 const fieldStyle = {
@@ -12,6 +13,8 @@ const fieldStyle = {
   padding: "10px 12px",
   width: "100%",
 } as const;
+
+const textareaStyle = { ...fieldStyle, minHeight: 108, resize: "vertical" as const };
 
 const healthLabels: Record<WhatsAppChannelHealth["status"], string> = {
   disabled: "Desabilitado",
@@ -91,6 +94,24 @@ export default async function ConversationSettingsPage() {
             <span>Permitir IA através da allowlist de ferramentas</span>
           </label>
           <p className="muted" style={{ margin: 0, fontSize: 12 }}>A IA não recebe acesso SQL nem service role. Cada ferramenta executa autorização e escopo próprios.</p>
+        </Card>
+
+        <Card style={{ display: "grid", gap: 12 }}>
+          <h2 style={{ margin: 0, fontSize: 18 }}>Saudação automática</h2>
+          <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
+            <input type="checkbox" name="greetingEnabled" defaultChecked={Boolean(settings?.greeting_enabled)} />
+            <span>Responder o primeiro contato com o link do cardápio</span>
+          </label>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontWeight: 700 }}>Mensagem de boas-vindas</span>
+            <textarea name="greetingTemplate" defaultValue={settings?.greeting_template ?? DEFAULT_WHATSAPP_GREETING} style={textareaStyle} />
+            <span className="muted" style={{ fontSize: 12 }}>Use <code>{"{restaurante}"}</code> e <code>{"{link}"}</code>. O link é gerado pelo PedeAqui; URLs digitadas manualmente são bloqueadas.</span>
+          </label>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontWeight: 700 }}>Fallback quando o cardápio não puder receber pedidos</span>
+            <textarea name="greetingFallbackMessage" defaultValue={settings?.greeting_fallback_message ?? DEFAULT_WHATSAPP_GREETING_FALLBACK} style={textareaStyle} />
+            <span className="muted" style={{ fontSize: 12 }}>Esse texto não contém link externo; o atendimento é encaminhado para a fila humana.</span>
+          </label>
         </Card>
 
         <div><Button type="submit">Salvar configurações</Button></div>
