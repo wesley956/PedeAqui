@@ -188,20 +188,31 @@ export class OrderPixService {
 
   static async reconcile(storeId: string, providerOrderId: string): Promise<PublicPixPayment | null> {
     const admin = createAdminClient();
-    const { data: charge, error } = await admin.from("order_payment_provider_charges")
+    const provider = await loadProvider(storeId);
+    const remote = await provider.getOrder(providerOrderId);
+
+    const { data: direct, error: directError } = await admin.from("order_payment_provider_charges")
       .select("*")
       .eq("store_id", storeId)
       .eq("provider", "mercado_pago")
       .eq("provider_order_id", providerOrderId)
       .maybeSingle();
-    if (error) throw error;
-    if (!charge) return null;
-    const typed = charge as ChargeRow;
-    if (typed.status === "paid") return publicProjection(typed);
+    if (directError) throw directError;
 
-    const provider = await loadProvider(storeId);
-    const remote = await provider.getOrder(providerOrderId);
-    return publicProjection(await updateFromProvider(typed, remote));
+    let charge = direct as ChargeRow | null;
+    if (!charge) {
+      const { data: referenced, error: referenceError } = await admin.from("order_payment_provider_charges")
+        .select("*")
+        .eq("store_id", storeId)
+        .eq("provider", "mercado_pago")
+        .eq("external_reference", remote.externalReference)
+        .maybeSingle();
+      if (referenceError) throw referenceError;
+      charge = referenced as ChargeRow | null;
+    }
+    if (!charge) return null;
+    if (charge.status === "paid") return publicProjection(charge);
+    return publicProjection(await updateFromProvider(charge, remote));
   }
 
   static async getExistingForOrder(orderId: string): Promise<PublicPixPayment | null> {
