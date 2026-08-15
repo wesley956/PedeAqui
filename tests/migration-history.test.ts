@@ -25,9 +25,13 @@ describe("canonical Supabase SQL history", () => {
   });
 
   it("preserves historical migrations and advances only by append", () => {
-    expect(files.at(-1)).toBe("92_whatsapp_greeting.sql");
+    expect(files.at(-1)).toBe("95_public_menu_anon_security_definer.sql");
     expect(files).toContain("90_onboarding_role_permission_conflict_hotfix.sql");
     expect(files).toContain("91_customer_recognition.sql");
+    expect(files).toContain("92_whatsapp_greeting.sql");
+    expect(files).toContain("93_printing_private_execution_grants.sql");
+    expect(files).toContain("94_finance_effect_sign_integer_compat_hotfix.sql");
+    expect(files).toContain("95_public_menu_anon_security_definer.sql");
     const hotfix = read("supabase/sql/90_onboarding_role_permission_conflict_hotfix.sql");
     const conflictSafeGrants = hotfix.match(/on conflict do nothing/gi) ?? [];
     expect(conflictSafeGrants).toHaveLength(8);
