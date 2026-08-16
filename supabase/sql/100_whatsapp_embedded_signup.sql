@@ -42,6 +42,16 @@ alter table public.store_conversation_settings
   add constraint store_conversation_settings_connection_error_shape
     check (last_connection_error_kind is null or char_length(last_connection_error_kind) between 1 and 120);
 
+-- Preserve canais de homologação já configurados antes do Embedded Signup.
+update public.store_conversation_settings
+set connection_status = 'connected',
+    onboarding_status = 'completed',
+    connected_at = coalesce(connected_at, updated_at, now())
+where whatsapp_enabled = true
+  and whatsapp_phone_number_id is not null
+  and whatsapp_business_account_id is not null
+  and connection_status = 'not_connected';
+
 create index if not exists store_conversation_settings_connection_idx
   on public.store_conversation_settings (organization_id, connection_status, onboarding_status);
 
