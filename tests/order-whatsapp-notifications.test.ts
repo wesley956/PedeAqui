@@ -45,8 +45,11 @@ describe("[329] order notification model", () => {
 describe("[329] persistence and safety contracts", () => {
   const migration = read("supabase/sql/98_order_whatsapp_notifications.sql");
   const worker = read("src/server/conversations/order-notification-worker.ts");
+  const dispatch = read("src/server/conversations/order-notification-dispatch.ts");
   const accessRoute = read("src/app/m/[slug]/pedido/[id]/acesso/route.ts");
   const orderAction = read("src/features/orders/actions.ts");
+  const deliveryAction = read("src/features/delivery/actions.ts");
+  const paymentWebhook = read("src/app/api/webhooks/payments/mercado-pago/[storeId]/route.ts");
 
   it("reacts to authoritative domain events without changing the order state machine", () => {
     expect(migration).toContain("after insert on public.domain_events");
@@ -63,6 +66,15 @@ describe("[329] persistence and safety contracts", () => {
     expect(worker).toContain("conversation_create_outbound_internal");
     expect(worker).toContain("conversation_mark_outbound_result_internal");
     expect(worker).toContain("notificationClientMessageId");
+  });
+
+  it("dispatches first attempts after the authoritative response without blocking it", () => {
+    expect(dispatch).toContain('import { after } from "next/server"');
+    expect(dispatch).toContain("after(async () =>");
+    expect(orderAction).toContain('scheduleOrderWhatsAppNotifications("checkout.order_created")');
+    expect(orderAction).toContain("order_manager.${parsed.data}");
+    expect(deliveryAction).toContain("scheduleOrderWhatsAppNotifications(`delivery.${intent}`)");
+    expect(paymentWebhook).toContain('scheduleOrderWhatsAppNotifications("mercado_pago.webhook")');
   });
 
   it("keeps tracking context service-role only and out of notification payloads", () => {
