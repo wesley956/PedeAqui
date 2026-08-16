@@ -36,6 +36,8 @@ export async function saveConversationSettingsAction(formData: FormData) {
     notifyPickupReady: formData.get("notifyPickupReady") === "on",
     notifyOutForDelivery: formData.get("notifyOutForDelivery") === "on",
     notifyDelivered: formData.get("notifyDelivered") === "on",
+    orderNotificationTemplateName: optional(formData, "orderNotificationTemplateName") ?? current?.order_notification_template_name ?? null,
+    orderNotificationTemplateLanguage: optional(formData, "orderNotificationTemplateLanguage") ?? current?.order_notification_template_language ?? "pt_BR",
   });
   revalidatePath("/configuracoes/conversas");
   revalidatePath("/conversas");
