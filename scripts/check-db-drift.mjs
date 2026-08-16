@@ -57,9 +57,9 @@ export function localDriftErrors({ sqlFiles, baseline }) {
   const errors = validateProductionBaseline(baseline); const history = inspectSqlHistory(sqlFiles);
   if (history.duplicates.join(",") !== "14") errors.push(`Prefixos duplicados inesperados: ${history.duplicates.join(",") || "nenhum"}`);
   if (history.missing.join(",") !== "17") errors.push(`Lacunas históricas inesperadas: ${history.missing.join(",") || "nenhuma"}`);
-  if (history.files.at(-1) !== "98_order_whatsapp_notifications.sql") errors.push(`Cauda SQL inesperada: ${history.files.at(-1) ?? "nenhuma"}`);
+  if (history.files.at(-1) !== "99_order_whatsapp_template_support.sql") errors.push(`Cauda SQL inesperada: ${history.files.at(-1) ?? "nenhuma"}`);
   const remoteTail = baseline.migrations.at(-1);
-  if (!remoteTail || remoteTail[1] !== "order_whatsapp_notifications_329") errors.push("Baseline remoto não termina na migration de notificações de pedido pelo WhatsApp.");
+  if (!remoteTail || remoteTail[1] !== "order_whatsapp_template_support_329") errors.push("Baseline remoto não termina na migration de template transacional do WhatsApp.");
   return errors;
 }
 
