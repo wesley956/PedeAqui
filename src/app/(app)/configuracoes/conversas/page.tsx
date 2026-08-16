@@ -45,6 +45,7 @@ export default async function ConversationSettingsPage() {
   const connectionConfigured = Boolean(
     settings?.whatsapp_phone_number_id && settings?.access_token_secret_ref && settings?.app_secret_secret_ref,
   );
+  const orderTemplateConfigured = Boolean(settings?.order_notification_template_name);
 
   return (
     <section style={{ display: "grid", gap: 18, maxWidth: 880 }}>
@@ -111,6 +112,29 @@ export default async function ConversationSettingsPage() {
               <span>Pedido entregue</span>
             </label>
           </div>
+
+          <div style={{ display: "grid", gap: 10, padding: 14, borderRadius: 10, border: "1px solid var(--border)" }}>
+            <div>
+              <strong>Modelo aprovado para avisos</strong>
+              <p className="muted" style={{ margin: "4px 0 0", fontSize: 12 }}>Quando o cliente não falou com a loja nas últimas 24 horas, o WhatsApp exige um modelo previamente aprovado pela Meta. Ele deve ter quatro campos, nesta ordem: restaurante, número do pedido, situação e link de acompanhamento.</p>
+            </div>
+            <label style={{ display: "grid", gap: 6 }}>
+              <span style={{ fontWeight: 700 }}>Nome do modelo aprovado</span>
+              <input name="orderNotificationTemplateName" defaultValue={settings?.order_notification_template_name ?? ""} placeholder="pedeaqui_atualizacao_pedido" style={fieldStyle} autoCapitalize="none" autoCorrect="off" />
+            </label>
+            <label style={{ display: "grid", gap: 6, maxWidth: 220 }}>
+              <span style={{ fontWeight: 700 }}>Idioma do modelo</span>
+              <select name="orderNotificationTemplateLanguage" defaultValue={settings?.order_notification_template_language ?? "pt_BR"} style={fieldStyle}>
+                <option value="pt_BR">Português (Brasil)</option>
+                <option value="en_US">English (US)</option>
+                <option value="es_ES">Español</option>
+              </select>
+            </label>
+            <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: orderTemplateConfigured ? "var(--accent)" : "var(--muted)" }}>
+              {orderTemplateConfigured ? "Modelo configurado para esta unidade." : "Falta informar o modelo aprovado antes de ativar os avisos."}
+            </p>
+          </div>
+
           <p className="muted" style={{ margin: 0, fontSize: 12 }}>Cada aviso possui uma chave única por pedido. Reprocessamentos e eventos repetidos não criam uma segunda mensagem local.</p>
         </Card>
 
