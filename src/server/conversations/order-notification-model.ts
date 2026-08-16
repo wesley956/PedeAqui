@@ -22,6 +22,14 @@ const flagByType: Record<OrderNotificationType, keyof OrderNotificationFlags> = 
   delivered: "notify_delivered",
 };
 
+const statusByType: Record<OrderNotificationType, string> = {
+  order_received: "Pedido recebido",
+  payment_paid: "Pagamento confirmado",
+  pickup_ready: "Pronto para retirada",
+  out_for_delivery: "Saiu para entrega",
+  delivered: "Pedido entregue",
+};
+
 export function notificationEnabled(settings: OrderNotificationFlags, type: OrderNotificationType) {
   return Boolean(settings.order_notifications_enabled && settings[flagByType[type]]);
 }
@@ -34,6 +42,24 @@ export function buildOrderTrackingUrl(appUrl: string, slug: string, orderId: str
   const url = new URL(`/m/${encodeURIComponent(slug)}/pedido/${encodeURIComponent(orderId)}/acesso`, appUrl);
   url.searchParams.set("t", accessToken);
   return url.toString();
+}
+
+export function notificationStatusText(type: OrderNotificationType) {
+  return statusByType[type];
+}
+
+export function buildOrderNotificationTemplateParameters(input: {
+  type: OrderNotificationType;
+  storeName: string;
+  displayNumber: number;
+  trackingUrl: string;
+}) {
+  return [
+    input.storeName,
+    `#${input.displayNumber}`,
+    notificationStatusText(input.type),
+    input.trackingUrl,
+  ];
 }
 
 export function buildOrderNotificationBody(input: {
