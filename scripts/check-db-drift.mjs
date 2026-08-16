@@ -4,13 +4,17 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
+function migrationPrefix(name) {
+  const match = name.match(/^(\d+)_/);
+  if (!match) throw new Error(`Migration SQL sem prefixo numérico: ${name}`);
+  return Number(match[1]);
+}
+
 export function inspectSqlHistory(fileNames) {
-  const files = fileNames.filter((name) => name.endsWith(".sql")).sort();
-  const parsed = files.map((name) => {
-    const match = name.match(/^(\d+)_/);
-    if (!match) throw new Error(`Migration SQL sem prefixo numérico: ${name}`);
-    return { name, prefix: Number(match[1]) };
-  });
+  const files = fileNames
+    .filter((name) => name.endsWith(".sql"))
+    .sort((a, b) => migrationPrefix(a) - migrationPrefix(b) || a.localeCompare(b));
+  const parsed = files.map((name) => ({ name, prefix: migrationPrefix(name) }));
   const counts = new Map();
   for (const item of parsed) counts.set(item.prefix, (counts.get(item.prefix) ?? 0) + 1);
   const max = Math.max(...parsed.map((item) => item.prefix));
