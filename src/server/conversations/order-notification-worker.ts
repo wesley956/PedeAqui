@@ -208,6 +208,7 @@ async function processOne(job: QueueRow, workerId: string) {
       retryAfterSeconds: retryDelaySeconds(job.attempts),
     });
     recordFailure("whatsapp.order_notification.send_failed", error, {
+      requestId: workerId,
       organizationId: job.organization_id,
       storeId: job.store_id,
       orderId: job.order_id,
@@ -245,6 +246,7 @@ export async function runOrderWhatsAppNotificationWorker(options?: { workerId?: 
         // O lease expira e torna o job recuperável; não bloquear os demais pedidos.
       }
       recordFailure("whatsapp.order_notification.worker_failed", error, {
+        requestId: workerId,
         organizationId: job.organization_id,
         storeId: job.store_id,
         orderId: job.order_id,
