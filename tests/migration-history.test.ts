@@ -25,7 +25,7 @@ describe("canonical Supabase SQL history", () => {
   });
 
   it("preserves historical migrations and advances only by append", () => {
-    expect(files.at(-1)).toBe("98_order_whatsapp_notifications.sql");
+    expect(files.at(-1)).toBe("99_order_whatsapp_template_support.sql");
     expect(files).toContain("90_onboarding_role_permission_conflict_hotfix.sql");
     expect(files).toContain("91_customer_recognition.sql");
     expect(files).toContain("92_whatsapp_greeting.sql");
@@ -35,6 +35,7 @@ describe("canonical Supabase SQL history", () => {
     expect(files).toContain("96_platform_incidents.sql");
     expect(files).toContain("97_order_payment_providers.sql");
     expect(files).toContain("98_order_whatsapp_notifications.sql");
+    expect(files).toContain("99_order_whatsapp_template_support.sql");
     const hotfix = read("supabase/sql/90_onboarding_role_permission_conflict_hotfix.sql");
     const conflictSafeGrants = hotfix.match(/on conflict do nothing/gi) ?? [];
     expect(conflictSafeGrants).toHaveLength(8);
