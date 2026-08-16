@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { cartCookieName } from "@/server/cart/cart-token";
+import { OrderNotificationContextService } from "@/server/conversations/order-notification-context-service";
 import { CustomerRecognitionService } from "@/server/customers/recognition-service";
 import { CUSTOMER_RECOGNITION_MAX_AGE_SECONDS, customerRecognitionCookieName } from "@/server/customers/recognition-token";
 import { orderCookieName } from "@/server/orders/order-token";
@@ -23,6 +24,7 @@ export async function createOrderFromCheckoutAction(formData: FormData) {
   if (!token) redirect(`/m/${storeSlug}/carrinho`);
 
   const result = await OrderService.createFromCheckout(storeSlug, token);
+  await OrderNotificationContextService.capture(result.order_id, result.accessToken);
   cookieStore.set(orderCookieName(storeSlug, result.order_id), result.accessToken, {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
     path: `/m/${storeSlug}/pedido/${result.order_id}`, maxAge: 30 * 24 * 60 * 60,
