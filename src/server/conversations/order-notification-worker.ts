@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   buildOrderNotificationBody,
+  buildOrderNotificationTemplateParameters,
   buildOrderTrackingUrl,
   notificationClientMessageId,
   notificationEnabled,
@@ -28,14 +29,24 @@ type ResolvedConversation = {
   external_id?: string;
 };
 
+const CUSTOMER_SUPPORT_WINDOW_MS = 23 * 60 * 60 * 1000 + 50 * 60 * 1000;
+
 function safeError(error: unknown) {
   if (error instanceof WhatsAppProviderError) {
     return {
       code: error.providerCode ? `provider_${error.providerCode}` : `provider_http_${error.status}`,
-      message: error.retryable ? "A Meta está temporariamente indisponível." : "A Meta rejeitou o envio. Revise a conexão do WhatsApp.",
+      message: error.retryable ? "A Meta está temporariamente indisponível." : "A Meta rejeitou o envio. Revise a conexão do WhatsApp ou o template aprovado.",
     };
   }
   return { code: "notification_error", message: "Não foi possível enviar a notificação do pedido." };
+}
+
+function hasCustomerSupportWindow(createdAt: string | null | undefined) {
+  if (!createdAt) return false;
+  const timestamp = Date.parse(createdAt);
+  if (!Number.isFinite(timestamp)) return false;
+  const age = Date.now() - timestamp;
+  return age >= 0 && age <= CUSTOMER_SUPPORT_WINDOW_MS;
 }
 
 async function finish(input: {
@@ -76,7 +87,7 @@ async function processOne(job: QueueRow, workerId: string) {
 
   const [settingsResult, storeResult, contextResult, customerResult] = await Promise.all([
     admin.from("store_conversation_settings")
-      .select("whatsapp_enabled, whatsapp_phone_number_id, access_token_secret_ref, order_notifications_enabled, notify_order_received, notify_payment_paid, notify_pickup_ready, notify_out_for_delivery, notify_delivered")
+      .select("whatsapp_enabled, whatsapp_phone_number_id, access_token_secret_ref, order_notifications_enabled, notify_order_received, notify_payment_paid, notify_pickup_ready, notify_out_for_delivery, notify_delivered, order_notification_template_name, order_notification_template_language")
       .eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
     admin.from("stores").select("name, slug, status")
       .eq("organization_id", job.organization_id).eq("id", job.store_id).maybeSingle(),
@@ -140,12 +151,13 @@ async function processOne(job: QueueRow, workerId: string) {
   }
 
   const trackingUrl = buildOrderTrackingUrl(appUrl, store.slug, order.id, context.tracking_access_token);
-  const body = buildOrderNotificationBody({
+  const messageInput = {
     type: job.notification_type,
     storeName: store.name,
     displayNumber: Number(order.display_number),
     trackingUrl,
-  });
+  };
+  const body = buildOrderNotificationBody(messageInput);
 
   const { data: resolved, error: resolveError } = await admin.rpc("conversation_resolve_outbound_internal", {
     p_store_id: job.store_id,
@@ -156,6 +168,18 @@ async function processOne(job: QueueRow, workerId: string) {
   if (resolveError) throw resolveError;
   const conversation = resolved as ResolvedConversation | null;
   if (!conversation?.conversation_id || !conversation.external_id) throw new Error("Outbound conversation resolution failed");
+
+  const { data: lastInbound, error: lastInboundError } = await admin.from("messages")
+    .select("created_at")
+    .eq("organization_id", job.organization_id)
+    .eq("store_id", job.store_id)
+    .eq("conversation_id", conversation.conversation_id)
+    .eq("direction", "inbound")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (lastInboundError) throw lastInboundError;
+  const canSendFreeForm = hasCustomerSupportWindow(lastInbound?.created_at);
 
   const { data: pending, error: pendingError } = await admin.rpc("conversation_create_outbound_internal", {
     p_conversation_id: conversation.conversation_id,
@@ -172,13 +196,42 @@ async function processOne(job: QueueRow, workerId: string) {
     return "sent" as const;
   }
 
+  if (!canSendFreeForm && !settings.order_notification_template_name) {
+    const message = "Configure um template aprovado da Meta para enviar atualizações fora da janela de atendimento.";
+    await admin.rpc("conversation_mark_outbound_result_internal", {
+      p_message_id: pending.id,
+      p_external_message_id: null,
+      p_status: "failed",
+      p_error_code: "template_required",
+      p_error_message: message,
+    });
+    await finish({
+      notificationId: job.id,
+      workerId,
+      status: "failed",
+      messageId: pending.id,
+      errorCode: "template_required",
+      errorMessage: message,
+      retryAfterSeconds: 3600,
+    });
+    return "failed" as const;
+  }
+
   try {
     const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(settings.access_token_secret_ref));
-    const sent = await provider.sendText({
-      phoneNumberId: settings.whatsapp_phone_number_id,
-      recipient: conversation.external_id,
-      body,
-    });
+    const sent = canSendFreeForm
+      ? await provider.sendText({
+          phoneNumberId: settings.whatsapp_phone_number_id,
+          recipient: conversation.external_id,
+          body,
+        })
+      : await provider.sendTemplate({
+          phoneNumberId: settings.whatsapp_phone_number_id,
+          recipient: conversation.external_id,
+          templateName: settings.order_notification_template_name!,
+          languageCode: settings.order_notification_template_language || "pt_BR",
+          bodyParameters: buildOrderNotificationTemplateParameters(messageInput),
+        });
     const { error: markError } = await admin.rpc("conversation_mark_outbound_result_internal", {
       p_message_id: pending.id,
       p_external_message_id: sent.externalMessageId,
