@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildOrderNotificationBody,
+  buildOrderNotificationTemplateParameters,
   buildOrderTrackingUrl,
   notificationClientMessageId,
   notificationEnabled,
@@ -33,6 +34,9 @@ describe("[329] order notification model", () => {
     expect(buildOrderNotificationBody({ type: "order_received", storeName: "Cantina", displayNumber: 42, trackingUrl: url })).toContain("pedido #42");
     expect(buildOrderNotificationBody({ type: "pickup_ready", storeName: "Cantina", displayNumber: 42, trackingUrl: url })).toContain("pronto para retirada");
     expect(buildOrderNotificationBody({ type: "out_for_delivery", storeName: "Cantina", displayNumber: 42, trackingUrl: url })).toContain("saiu para entrega");
+    expect(buildOrderNotificationTemplateParameters({ type: "out_for_delivery", storeName: "Cantina", displayNumber: 42, trackingUrl: url })).toEqual([
+      "Cantina", "#42", "Saiu para entrega", url,
+    ]);
   });
 
   it("backs off retries instead of polling aggressively", () => {
@@ -44,7 +48,9 @@ describe("[329] order notification model", () => {
 
 describe("[329] persistence and safety contracts", () => {
   const migration = read("supabase/sql/98_order_whatsapp_notifications.sql");
+  const templateMigration = read("supabase/sql/99_order_whatsapp_template_support.sql");
   const worker = read("src/server/conversations/order-notification-worker.ts");
+  const provider = read("src/server/conversations/provider.ts");
   const dispatch = read("src/server/conversations/order-notification-dispatch.ts");
   const accessRoute = read("src/app/m/[slug]/pedido/[id]/acesso/route.ts");
   const orderAction = read("src/features/orders/actions.ts");
@@ -75,6 +81,18 @@ describe("[329] persistence and safety contracts", () => {
     expect(orderAction).toContain("order_manager.${parsed.data}");
     expect(deliveryAction).toContain("scheduleOrderWhatsAppNotifications(`delivery.${intent}`)");
     expect(paymentWebhook).toContain('scheduleOrderWhatsAppNotifications("mercado_pago.webhook")');
+  });
+
+  it("uses free-form text only inside the support window and an approved template outside it", () => {
+    expect(worker).toContain('eq("direction", "inbound")');
+    expect(worker).toContain("CUSTOMER_SUPPORT_WINDOW_MS");
+    expect(worker).toContain("provider.sendText");
+    expect(worker).toContain("provider.sendTemplate");
+    expect(worker).toContain("template_required");
+    expect(provider).toContain('type: "template"');
+    expect(provider).toContain("bodyParameters.map");
+    expect(templateMigration).toContain("order_notification_template_name");
+    expect(templateMigration).toContain("order_notification_template_language");
   });
 
   it("keeps tracking context service-role only and out of notification payloads", () => {
