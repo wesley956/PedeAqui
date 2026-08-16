@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { OrderNotificationContextService } from "@/server/conversations/order-notification-context-service";
+import { scheduleOrderWhatsAppNotifications } from "@/server/conversations/order-notification-dispatch";
 import { CustomerRecognitionService } from "@/server/customers/recognition-service";
 import { CUSTOMER_RECOGNITION_MAX_AGE_SECONDS, customerRecognitionCookieName } from "@/server/customers/recognition-token";
 import { orderCookieName } from "@/server/orders/order-token";
@@ -25,6 +26,7 @@ export async function createOrderFromCheckoutAction(formData: FormData) {
 
   const result = await OrderService.createFromCheckout(storeSlug, token);
   await OrderNotificationContextService.capture(result.order_id, result.accessToken);
+  scheduleOrderWhatsAppNotifications("checkout.order_created");
   cookieStore.set(orderCookieName(storeSlug, result.order_id), result.accessToken, {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
     path: `/m/${storeSlug}/pedido/${result.order_id}`, maxAge: 30 * 24 * 60 * 60,
@@ -66,17 +68,20 @@ export async function cancelOrderAction(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "");
   const reason = String(formData.get("reason") ?? "");
   await OrderService.cancel(orderId, reason);
+  scheduleOrderWhatsAppNotifications("order.canceled");
   refreshOrder(orderId);
 }
 export async function confirmOrderAction(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "");
   await OrderService.confirm(orderId);
+  scheduleOrderWhatsAppNotifications("order.confirmed");
   refreshOrder(orderId);
 }
 export async function transitionProductionAction(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "");
   const status = String(formData.get("status") ?? "") as ProductionStatus;
   await OrderService.setProduction(orderId, status);
+  scheduleOrderWhatsAppNotifications(`production.${status}`);
   refreshOrder(orderId);
 }
 export async function transitionPaymentAction(formData: FormData) {
@@ -84,6 +89,7 @@ export async function transitionPaymentAction(formData: FormData) {
   const status = String(formData.get("status") ?? "");
   if (status !== "paid") throw new Error("Esta alteração de pagamento não está disponível por esta ação.");
   await PaymentService.confirmDefaultForOrder(orderId);
+  scheduleOrderWhatsAppNotifications("payment.paid");
   refreshOrder(orderId);
 }
 export async function transitionFulfillmentAction(formData: FormData) {
@@ -93,6 +99,7 @@ export async function transitionFulfillmentAction(formData: FormData) {
     throw new Error("Atualize as etapas da entrega pela Central de Entregas.");
   }
   await OrderService.setFulfillment(orderId, status);
+  scheduleOrderWhatsAppNotifications(`fulfillment.${status}`);
   refreshOrder(orderId);
 }
 
@@ -127,6 +134,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
         break;
       }
     }
+    if (parsed.data !== "reprint") scheduleOrderWhatsAppNotifications(`order_manager.${parsed.data}`);
     refreshOrder(orderId);
     const labels: Record<z.infer<typeof managerIntentSchema>, string> = {
       accept: "Pedido aceito.", reject: "Pedido rejeitado.", start_production: "Produção iniciada.",
