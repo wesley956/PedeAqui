@@ -4,17 +4,20 @@ import { describe, expect, it } from "vitest";
 
 const root = process.cwd();
 const sqlDir = path.join(root, "supabase/sql");
-const files = fs.readdirSync(sqlDir).filter((name) => name.endsWith(".sql")).sort();
-const prefixes = files.map((name) => Number(name.match(/^(\d+)_/)?.[1]));
+const prefix = (name: string) => Number(name.match(/^(\d+)_/)?.[1]);
+const files = fs.readdirSync(sqlDir)
+  .filter((name) => name.endsWith(".sql"))
+  .sort((a, b) => prefix(a) - prefix(b) || a.localeCompare(b));
+const prefixes = files.map(prefix);
 function read(relativePath: string) { return fs.readFileSync(path.join(root, relativePath), "utf8"); }
 
 describe("canonical Supabase SQL history", () => {
   it("keeps historical numbering anomalies explicit instead of rewriting applied history", () => {
     const counts = new Map<number, number>();
-    for (const prefix of prefixes) counts.set(prefix, (counts.get(prefix) ?? 0) + 1);
-    const duplicates = [...counts.entries()].filter(([, count]) => count > 1).map(([prefix]) => prefix);
+    for (const value of prefixes) counts.set(value, (counts.get(value) ?? 0) + 1);
+    const duplicates = [...counts.entries()].filter(([, count]) => count > 1).map(([value]) => value);
     const max = Math.max(...prefixes);
-    const missing = Array.from({ length: max }, (_, index) => index + 1).filter((prefix) => !counts.has(prefix));
+    const missing = Array.from({ length: max }, (_, index) => index + 1).filter((value) => !counts.has(value));
     expect(duplicates).toEqual([14]); expect(missing).toEqual([17]);
     expect(files).toContain("14_cart.sql"); expect(files).toContain("14_delivery_fk_indexes.sql");
   });
