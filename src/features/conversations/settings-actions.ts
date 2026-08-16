@@ -30,6 +30,12 @@ export async function saveConversationSettingsAction(formData: FormData) {
     greetingEnabled: formData.get("greetingEnabled") === "on",
     greetingTemplate: greeting ? restoreGreetingTokens(greeting) : DEFAULT_WHATSAPP_GREETING,
     greetingFallbackMessage: optional(formData, "greetingFallbackMessage") ?? DEFAULT_WHATSAPP_GREETING_FALLBACK,
+    orderNotificationsEnabled: formData.get("orderNotificationsEnabled") === "on",
+    notifyOrderReceived: formData.get("notifyOrderReceived") === "on",
+    notifyPaymentPaid: formData.get("notifyPaymentPaid") === "on",
+    notifyPickupReady: formData.get("notifyPickupReady") === "on",
+    notifyOutForDelivery: formData.get("notifyOutForDelivery") === "on",
+    notifyDelivered: formData.get("notifyDelivered") === "on",
   });
   revalidatePath("/configuracoes/conversas");
   revalidatePath("/conversas");
