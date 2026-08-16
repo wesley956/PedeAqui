@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { scheduleOrderWhatsAppNotifications } from "@/server/conversations/order-notification-dispatch";
 import { getRequestContext } from "@/server/observability/request-context";
 import { recordFailure } from "@/server/observability/failure";
 import {
@@ -26,6 +27,7 @@ export async function POST(
     const { storeId } = await params;
     const dataId = new URL(request.url).searchParams.get("data.id");
     const result = await processMercadoPagoOrderWebhook({ storeId, rawBody, headers: request.headers, dataId });
+    scheduleOrderWhatsAppNotifications("mercado_pago.webhook");
     return NextResponse.json({ ok: true, ...result, requestId: requestContext.requestId }, { headers: responseHeaders });
   } catch (error) {
     if (error instanceof MercadoPagoWebhookAuthError) {
