@@ -1,10 +1,10 @@
 -- PedeAqui — [331]
 -- Onboarding multitenant do WhatsApp via Meta Embedded Signup.
--- Tokens e PIN de registro ficam no Vault; navegador nunca recebe credencial permanente.
+-- Credencial permanente é do System User do PedeAqui; token do cliente é transitório.
+-- O PIN de registro por número fica protegido no Supabase Vault.
 
 alter table public.store_conversation_settings
   add column if not exists meta_business_id text,
-  add column if not exists access_token_secret_id uuid,
   add column if not exists registration_pin_secret_id uuid,
   add column if not exists connection_status text not null default 'not_connected',
   add column if not exists onboarding_status text not null default 'not_started',
@@ -82,25 +82,20 @@ alter table public.whatsapp_embedded_signup_sessions enable row level security;
 revoke all on table public.whatsapp_embedded_signup_sessions from public, anon, authenticated;
 grant select, insert, update, delete on table public.whatsapp_embedded_signup_sessions to service_role;
 
-create or replace function public.whatsapp_channel_store_credentials_internal(
+create or replace function public.whatsapp_channel_store_registration_pin_internal(
   p_store_id uuid,
-  p_access_token text,
   p_registration_pin text
-) returns public.store_conversation_settings
+) returns uuid
 language plpgsql
 security invoker
 set search_path = ''
 as $$
 declare
   v_store public.stores%rowtype;
-  v_config public.store_conversation_settings%rowtype;
-  v_access_secret uuid;
-  v_pin_secret uuid;
+  v_secret_id uuid;
   v_name text;
 begin
-  if nullif(trim(coalesce(p_access_token,'')),'') is null then raise exception 'access token required'; end if;
   if p_registration_pin !~ '^[0-9]{6}$' then raise exception 'registration pin must have 6 digits'; end if;
-
   select * into v_store from public.stores where id = p_store_id;
   if v_store.id is null then raise exception 'store not found'; end if;
 
@@ -108,49 +103,39 @@ begin
   values (v_store.organization_id, v_store.id)
   on conflict (store_id) do nothing;
 
-  select * into v_config from public.store_conversation_settings where store_id = v_store.id for update;
-  v_access_secret := v_config.access_token_secret_id;
-  v_pin_secret := v_config.registration_pin_secret_id;
-
-  v_name := 'pedeaqui_whatsapp_' || v_store.id::text || '_access_token';
-  if v_access_secret is null then
-    select vault.create_secret(trim(p_access_token), v_name, 'PedeAqui WhatsApp Embedded Signup access token') into v_access_secret;
-  else
-    perform vault.update_secret(v_access_secret, trim(p_access_token), v_name, 'PedeAqui WhatsApp Embedded Signup access token');
-  end if;
+  select registration_pin_secret_id into v_secret_id
+  from public.store_conversation_settings
+  where store_id = v_store.id
+  for update;
 
   v_name := 'pedeaqui_whatsapp_' || v_store.id::text || '_registration_pin';
-  if v_pin_secret is null then
-    select vault.create_secret(p_registration_pin, v_name, 'PedeAqui WhatsApp Cloud API registration PIN') into v_pin_secret;
+  if v_secret_id is null then
+    select vault.create_secret(p_registration_pin, v_name, 'PedeAqui WhatsApp Cloud API registration PIN') into v_secret_id;
   else
-    perform vault.update_secret(v_pin_secret, p_registration_pin, v_name, 'PedeAqui WhatsApp Cloud API registration PIN');
+    perform vault.update_secret(v_secret_id, p_registration_pin, v_name, 'PedeAqui WhatsApp Cloud API registration PIN');
   end if;
 
   update public.store_conversation_settings
-  set access_token_secret_id = v_access_secret,
-      registration_pin_secret_id = v_pin_secret,
-      updated_at = now()
-  where store_id = v_store.id
-  returning * into v_config;
-  return v_config;
+  set registration_pin_secret_id = v_secret_id, updated_at = now()
+  where store_id = v_store.id;
+  return v_secret_id;
 end;
 $$;
-revoke all on function public.whatsapp_channel_store_credentials_internal(uuid,text,text) from public, anon, authenticated;
-grant execute on function public.whatsapp_channel_store_credentials_internal(uuid,text,text) to service_role;
+revoke all on function public.whatsapp_channel_store_registration_pin_internal(uuid,text) from public, anon, authenticated;
+grant execute on function public.whatsapp_channel_store_registration_pin_internal(uuid,text) to service_role;
 
-create or replace function public.whatsapp_channel_credentials_internal(
+create or replace function public.whatsapp_channel_registration_pin_internal(
   p_store_id uuid
-) returns table (access_token text, registration_pin text)
+) returns text
 language sql
 security definer
 set search_path = ''
 as $$
-  select a.decrypted_secret, p.decrypted_secret
+  select p.decrypted_secret
   from public.store_conversation_settings c
-  left join vault.decrypted_secrets a on a.id = c.access_token_secret_id
-  left join vault.decrypted_secrets p on p.id = c.registration_pin_secret_id
+  join vault.decrypted_secrets p on p.id = c.registration_pin_secret_id
   where c.store_id = p_store_id
   limit 1
 $$;
-revoke all on function public.whatsapp_channel_credentials_internal(uuid) from public, anon, authenticated;
-grant execute on function public.whatsapp_channel_credentials_internal(uuid) to service_role;
+revoke all on function public.whatsapp_channel_registration_pin_internal(uuid) from public, anon, authenticated;
+grant execute on function public.whatsapp_channel_registration_pin_internal(uuid) to service_role;
