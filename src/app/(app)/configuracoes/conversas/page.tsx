@@ -51,7 +51,7 @@ export default async function ConversationSettingsPage() {
       <header>
         <p className="muted" style={{ margin: 0, fontSize: 13 }}>Atendimento</p>
         <h1 style={{ margin: "4px 0" }}>Conversas e WhatsApp</h1>
-        <p className="muted" style={{ margin: 0 }}>Acompanhe a conexão do WhatsApp e escolha como o PedeAqui recebe os primeiros contatos dos seus clientes.</p>
+        <p className="muted" style={{ margin: 0 }}>Acompanhe a conexão do WhatsApp e escolha como o PedeAqui conversa com seus clientes.</p>
       </header>
 
       <Card style={{ display: "grid", gap: 8 }}>
@@ -78,6 +78,40 @@ export default async function ConversationSettingsPage() {
             <input type="checkbox" name="whatsappEnabled" defaultChecked={Boolean(settings?.whatsapp_enabled)} />
             <span>Usar este WhatsApp no atendimento</span>
           </label> : <p className="muted" style={{ margin: 0 }}>Conecte o WhatsApp antes de ativar o atendimento por este canal.</p>}
+        </Card>
+
+        <Card style={{ display: "grid", gap: 12 }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 18 }}>Atualizações automáticas do pedido</h2>
+            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>O PedeAqui avisa o cliente no WhatsApp sem alterar o andamento do pedido. Se a Meta estiver indisponível, a operação do restaurante continua normalmente.</p>
+          </div>
+          <label style={{ display: "flex", gap: 9, alignItems: "center", fontWeight: 700 }}>
+            <input type="checkbox" name="orderNotificationsEnabled" defaultChecked={Boolean(settings?.order_notifications_enabled)} disabled={!connectionConfigured} />
+            <span>Enviar atualizações do pedido pelo WhatsApp</span>
+          </label>
+          <div style={{ display: "grid", gap: 8, padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)" }}>
+            <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
+              <input type="checkbox" name="notifyOrderReceived" defaultChecked={settings?.notify_order_received ?? true} disabled={!connectionConfigured} />
+              <span>Pedido recebido + link de acompanhamento</span>
+            </label>
+            <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
+              <input type="checkbox" name="notifyPaymentPaid" defaultChecked={Boolean(settings?.notify_payment_paid)} disabled={!connectionConfigured} />
+              <span>Pagamento confirmado</span>
+            </label>
+            <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
+              <input type="checkbox" name="notifyPickupReady" defaultChecked={settings?.notify_pickup_ready ?? true} disabled={!connectionConfigured} />
+              <span>Pronto para retirada</span>
+            </label>
+            <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
+              <input type="checkbox" name="notifyOutForDelivery" defaultChecked={settings?.notify_out_for_delivery ?? true} disabled={!connectionConfigured} />
+              <span>Saiu para entrega</span>
+            </label>
+            <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
+              <input type="checkbox" name="notifyDelivered" defaultChecked={Boolean(settings?.notify_delivered)} disabled={!connectionConfigured} />
+              <span>Pedido entregue</span>
+            </label>
+          </div>
+          <p className="muted" style={{ margin: 0, fontSize: 12 }}>Cada aviso possui uma chave única por pedido. Reprocessamentos e eventos repetidos não criam uma segunda mensagem local.</p>
         </Card>
 
         <Card style={{ display: "grid", gap: 12 }}>
