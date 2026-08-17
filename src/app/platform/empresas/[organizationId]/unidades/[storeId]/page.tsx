@@ -66,7 +66,10 @@ export default async function Restaurant360Page({ params }: { params: Promise<{ 
       </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionHeader}><div><h2>Configuração operacional</h2><p>Resumo suficiente para suporte identificar lacunas sem abrir banco ou terminal.</p></div></div>
+        <div className={styles.sectionHeader}>
+          <div><h2>Configuração operacional</h2><p>Resumo suficiente para suporte identificar lacunas sem abrir banco ou terminal.</p></div>
+          <Link className={styles.button} href={`/platform/unidades/${storeId}/whatsapp`}>Configurar WhatsApp</Link>
+        </div>
         <div className={styles.supportGrid}>
           <InfoCard title="Cardápio e venda" lines={[`${data.commercial.productCount} produto(s) disponível(is)`, `${data.commercial.activeHours} período(s) de funcionamento`, data.readiness.openNow ? "Dentro do horário agora" : "Fora do horário agora"]} />
           <InfoCard title="Entrega e retirada" lines={[data.commercial.deliveryEnabled ? "Entrega configurada" : "Entrega não configurada/indisponível", `${data.commercial.neighborhoods} região(ões) ativa(s)`, "As regras comerciais permanecem sob controle do restaurante"]} />
