@@ -1,6 +1,6 @@
 {
   "projectRef": "zsbsczjhiujnhdznrzck",
-  "capturedAt": "2026-08-15",
+  "capturedAt": "2026-08-16",
   "migrations": [
     ["20260810081833", "pedeaqui_foundation_tables"],
     ["20260810081858", "pedeaqui_foundation_security"],
@@ -97,6 +97,8 @@
     ["20260815063520", "finance_effect_sign_integer_compat_hotfix"],
     ["20260815065430", "public_menu_anon_security_definer_hotfix"],
     ["20260815113755", "platform_incidents_344"],
-    ["20260815182508", "order_payment_providers_327_328"]
+    ["20260815182508", "order_payment_providers_327_328"],
+    ["20260816213452", "order_whatsapp_notifications_329"],
+    ["20260816214323", "order_whatsapp_template_support_329"]
   ]
 }

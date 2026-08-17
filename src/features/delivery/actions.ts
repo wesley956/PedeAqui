@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { parseMoneyToCents } from "@/server/catalog/money";
+import { scheduleOrderWhatsAppNotifications } from "@/server/conversations/order-notification-dispatch";
 import { DeliveryService } from "@/server/delivery/delivery-service";
 import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
 
@@ -126,16 +127,19 @@ export async function deliveryOperationAction(_previous: DeliveryActionState, fo
   try {
     if (intent === "waiting") {
       await DeliveryOperationsService.markWaiting(text(formData, "orderId"), text(formData, "idempotencyKey"));
+      scheduleOrderWhatsAppNotifications("delivery.waiting");
       refreshOperations();
       return { ok: true, message: "Pedido enviado para a fila de entregas.", error: null };
     }
     if (intent === "assign") {
       await DeliveryOperationsService.assign(text(formData, "orderId"), text(formData, "driverId"), optional(formData, "reason"), text(formData, "idempotencyKey"));
+      scheduleOrderWhatsAppNotifications("delivery.assigned");
       refreshOperations();
       return { ok: true, message: "Entregador atribuído.", error: null };
     }
     if (["picked_up", "out_for_delivery", "delivered"].includes(intent)) {
       await DeliveryOperationsService.advance(text(formData, "deliveryId"), intent as "picked_up" | "out_for_delivery" | "delivered", text(formData, "idempotencyKey"));
+      scheduleOrderWhatsAppNotifications(`delivery.${intent}`);
       refreshOperations();
       return { ok: true, message: intent === "delivered" ? "Entrega concluída." : "Status da entrega atualizado.", error: null };
     }

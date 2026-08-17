@@ -6,6 +6,14 @@ export type ProviderSendTextInput = {
   body: string;
 };
 
+export type ProviderSendTemplateInput = {
+  phoneNumberId: string;
+  recipient: string;
+  templateName: string;
+  languageCode: string;
+  bodyParameters: string[];
+};
+
 export type ProviderSendResult = {
   externalMessageId: string;
 };
@@ -19,6 +27,7 @@ export type WhatsAppPhoneNumberInspection = {
 
 export interface ConversationProvider {
   sendText(input: ProviderSendTextInput): Promise<ProviderSendResult>;
+  sendTemplate?(input: ProviderSendTemplateInput): Promise<ProviderSendResult>;
 }
 
 export class WhatsAppProviderError extends Error {
@@ -68,6 +77,11 @@ function providerError(response: Response, payload: { error?: { message?: string
 
 const PROVIDER_TIMEOUT_MS = 8_000;
 
+type MessageResponse = {
+  messages?: Array<{ id?: string }>;
+  error?: { message?: string; code?: number; type?: string };
+} | null;
+
 export class WhatsAppCloudProvider implements ConversationProvider {
   constructor(private readonly accessToken: string) {}
 
@@ -98,27 +112,51 @@ export class WhatsAppCloudProvider implements ConversationProvider {
     };
   }
 
-  async sendText(input: ProviderSendTextInput): Promise<ProviderSendResult> {
+  private async sendMessage(phoneNumberId: string, body: Record<string, unknown>): Promise<ProviderSendResult> {
     const version = resolveWhatsAppGraphVersion();
-    const response = await fetch(`https://graph.facebook.com/${version}/${encodeURIComponent(input.phoneNumberId)}/messages`, {
+    const response = await fetch(`https://graph.facebook.com/${version}/${encodeURIComponent(phoneNumberId)}/messages`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to: input.recipient,
-        type: "text",
-        text: { body: input.body },
-      }),
+      body: JSON.stringify(body),
       cache: "no-store",
       signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
     });
-
-    const payload = await response.json().catch(() => null) as { messages?: Array<{ id?: string }>; error?: { message?: string; code?: number; type?: string } } | null;
+    const payload = await response.json().catch(() => null) as MessageResponse;
     const externalMessageId = payload?.messages?.[0]?.id;
     if (!response.ok || !externalMessageId) throw providerError(response, payload);
     return { externalMessageId };
+  }
+
+  async sendText(input: ProviderSendTextInput): Promise<ProviderSendResult> {
+    return this.sendMessage(input.phoneNumberId, {
+      messaging_product: "whatsapp",
+      to: input.recipient,
+      type: "text",
+      text: { body: input.body },
+    });
+  }
+
+  async sendTemplate(input: ProviderSendTemplateInput): Promise<ProviderSendResult> {
+    if (!/^[a-z0-9_]{1,512}$/.test(input.templateName)) throw new Error("Nome de template do WhatsApp inválido.");
+    if (!/^[a-z]{2}_[A-Z]{2}$/.test(input.languageCode)) throw new Error("Idioma do template do WhatsApp inválido.");
+    return this.sendMessage(input.phoneNumberId, {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: input.recipient,
+      type: "template",
+      template: {
+        name: input.templateName,
+        language: { code: input.languageCode },
+        components: [
+          {
+            type: "body",
+            parameters: input.bodyParameters.map((text) => ({ type: "text", text })),
+          },
+        ],
+      },
+    });
   }
 }
