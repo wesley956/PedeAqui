@@ -72,37 +72,44 @@ describe("order manager timing", () => {
 });
 
 describe("operational order buckets", () => {
-  const now = Date.parse("2026-08-10T20:20:00.000Z");
-
   it("keeps active orders in presentation buckets derived from authoritative states", () => {
-    expect(deriveOperationalBucket(order(), now)).toBe("new");
-    expect(deriveOperationalBucket(order({ order_status: "confirmed", production_status: "preparing" }), now)).toBe("preparing");
-    expect(deriveOperationalBucket(order({ order_status: "confirmed", production_status: "ready" }), now)).toBe("ready");
-    expect(deriveOperationalBucket(order({ order_status: "confirmed", production_status: "queued" }), now)).toBe("queued");
+    expect(deriveOperationalBucket(order())).toBe("new");
+    expect(deriveOperationalBucket(order({ order_status: "confirmed", production_status: "preparing" }))).toBe("preparing");
+    expect(deriveOperationalBucket(order({ order_status: "confirmed", production_status: "ready" }))).toBe("ready");
+    expect(deriveOperationalBucket(order({ order_status: "confirmed", production_status: "queued" }))).toBe("queued");
   });
 
-  it("moves an old active order to attention without persisting a new state", () => {
+  it("keeps an old order in its operational bucket and marks lateness independently", () => {
     const lateNow = Date.parse("2026-08-10T20:31:00.000Z");
-    expect(deriveOperationalBucket(order({ order_status: "confirmed", production_status: "preparing" }), lateNow)).toBe("late");
+    const preparing = order({ order_status: "confirmed", production_status: "preparing" });
+    expect(deriveOperationalBucket(preparing)).toBe("preparing");
+    expect(isOrderAttentionLate(preparing, lateNow)).toBe(true);
   });
 
   it("keeps terminal orders in history even when they are older than the attention threshold", () => {
     const lateNow = Date.parse("2026-08-10T22:00:00.000Z");
-    expect(deriveOperationalBucket(order({ order_status: "completed" }), lateNow)).toBe("history");
-    expect(deriveOperationalBucket(order({ order_status: "canceled" }), lateNow)).toBe("history");
-    expect(deriveOperationalBucket(order({ order_status: "rejected" }), lateNow)).toBe("history");
+    const completed = order({ order_status: "completed" });
+    const canceled = order({ order_status: "canceled" });
+    const rejected = order({ order_status: "rejected" });
+    expect(deriveOperationalBucket(completed)).toBe("history");
+    expect(deriveOperationalBucket(canceled)).toBe("history");
+    expect(deriveOperationalBucket(rejected)).toBe("history");
+    expect(isOrderAttentionLate(completed, lateNow)).toBe(false);
+    expect(isOrderAttentionLate(canceled, lateNow)).toBe(false);
+    expect(isOrderAttentionLate(rejected, lateNow)).toBe(false);
   });
 });
 
 describe("order completion gating", () => {
-  it("allows completion only when payment and fulfillment are complete", () => {
-    const ready = order({
+  it("allows completion after fulfillment for paid or refunded payments", () => {
+    const base = order({
       order_status: "confirmed",
-      payment_status: "paid",
       fulfillment_status: "picked_up_by_customer",
     });
-    expect(canCompleteFromManager(ready)).toBe(true);
-    expect(completionBlockers(ready)).toEqual([]);
+    expect(canCompleteFromManager({ ...base, payment_status: "paid" })).toBe(true);
+    expect(canCompleteFromManager({ ...base, payment_status: "partially_refunded" })).toBe(true);
+    expect(canCompleteFromManager({ ...base, payment_status: "refunded" })).toBe(true);
+    expect(completionBlockers({ ...base, payment_status: "refunded" })).toEqual([]);
   });
 
   it("explains all blockers without inventing a combined status", () => {
@@ -110,7 +117,7 @@ describe("order completion gating", () => {
     expect(canCompleteFromManager(blocked)).toBe(false);
     expect(completionBlockers(blocked)).toEqual([
       "pedido não está confirmado",
-      "pagamento não está pago",
+      "pagamento ainda não está liquidado",
       "entrega/retirada não foi concluída",
     ]);
   });
