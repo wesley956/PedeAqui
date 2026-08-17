@@ -10,6 +10,7 @@ const TEMPLATE_NAME = "pedeaqui_atualizacao_pedido";
 const TEMPLATE_LANGUAGE = "pt_BR";
 const TEMPLATE_CATEGORY = "UTILITY";
 const APPROVED = "APPROVED";
+const TEST_WINDOW_ONLY = "TEST_WINDOW_ONLY";
 
 export type OrderTemplateState = {
   name: string;
@@ -18,6 +19,9 @@ export type OrderTemplateState = {
   status: string;
   id: string | null;
   notificationsEnabled: boolean;
+  accountName: string | null;
+  testAccount: boolean;
+  windowOnly: boolean;
 };
 
 export class PlatformWhatsAppOrderTemplateError extends Error {
@@ -108,6 +112,16 @@ type MetaTemplate = {
   category?: string;
 };
 
+type MetaWaba = { id?: string; name?: string };
+
+async function inspectWaba(wabaId: string) {
+  return graphRequest<MetaWaba>(`${encodeURIComponent(wabaId)}?fields=id,name`);
+}
+
+function isMetaTestAccount(name: string | null | undefined) {
+  return /test whatsapp business account/i.test(name ?? "");
+}
+
 async function getTemplate(wabaId: string) {
   const result = await graphRequest<{ data?: MetaTemplate[] }>(
     `${encodeURIComponent(wabaId)}/message_templates?name=${encodeURIComponent(TEMPLATE_NAME)}`,
@@ -162,14 +176,43 @@ async function persistTemplateReference(storeId: string, actorUserId: string, st
   if (error) throw error;
 }
 
-function normalizeState(template: MetaTemplate | null, notificationsEnabled: boolean): OrderTemplateState {
+async function persistTestWindowMode(storeId: string, actorUserId: string) {
+  const admin = createAdminClient();
+  const now = new Date().toISOString();
+  const { error } = await admin.from("store_conversation_settings")
+    .update({
+      order_notifications_enabled: true,
+      notify_order_received: true,
+      notify_payment_paid: true,
+      notify_pickup_ready: true,
+      notify_out_for_delivery: true,
+      notify_delivered: true,
+      order_notification_template_name: null,
+      order_notification_template_language: TEMPLATE_LANGUAGE,
+      updated_by: actorUserId,
+      updated_at: now,
+    })
+    .eq("store_id", storeId);
+  if (error) throw error;
+}
+
+function normalizeState(
+  template: MetaTemplate | null,
+  notificationsEnabled: boolean,
+  accountName: string | null,
+  testAccount: boolean,
+): OrderTemplateState {
+  const windowOnly = testAccount && notificationsEnabled && !template;
   return {
     name: TEMPLATE_NAME,
     language: TEMPLATE_LANGUAGE,
-    category: template?.category ?? null,
-    status: template?.status ?? "MISSING",
+    category: template?.category ?? (testAccount ? null : TEMPLATE_CATEGORY),
+    status: windowOnly ? TEST_WINDOW_ONLY : (template?.status ?? "MISSING"),
     id: template?.id ?? null,
     notificationsEnabled,
+    accountName,
+    testAccount,
+    windowOnly,
   };
 }
 
@@ -177,16 +220,38 @@ export class PlatformWhatsAppOrderTemplateService {
   static async inspect(rawStoreId: string): Promise<OrderTemplateState> {
     const storeId = storeIdSchema.parse(rawStoreId);
     const { settings } = await loadStoreContext(storeId);
+    const waba = await inspectWaba(settings.whatsapp_business_account_id!);
+    const testAccount = isMetaTestAccount(waba.name);
     const template = await getTemplate(settings.whatsapp_business_account_id!);
-    return normalizeState(template, Boolean(settings.order_notifications_enabled));
+    return normalizeState(template, Boolean(settings.order_notifications_enabled), waba.name ?? null, testAccount);
   }
 
   static async ensure(rawStoreId: string): Promise<OrderTemplateState> {
     const storeId = storeIdSchema.parse(rawStoreId);
     const { user } = await requireSuperAdmin();
     const { admin, store, settings } = await loadStoreContext(storeId);
-    let template = await getTemplate(settings.whatsapp_business_account_id!);
+    const waba = await inspectWaba(settings.whatsapp_business_account_id!);
+    const testAccount = isMetaTestAccount(waba.name);
 
+    if (testAccount) {
+      await persistTestWindowMode(storeId, user.id);
+      await admin.from("audit_logs").insert({
+        organization_id: store.organization_id,
+        store_id: storeId,
+        actor_user_id: user.id,
+        action: "platform.whatsapp_order_notifications_test_window_enabled",
+        entity_type: "store_conversation_settings",
+        entity_id: storeId,
+        after_data: {
+          waba_name: waba.name ?? "Test WhatsApp Business Account",
+          notification_mode: "customer_support_window_only",
+          order_notifications_enabled: true,
+        },
+      });
+      return normalizeState(null, true, waba.name ?? null, true);
+    }
+
+    let template = await getTemplate(settings.whatsapp_business_account_id!);
     if (!template) {
       const created = await createTemplate(settings.whatsapp_business_account_id!);
       template = {
@@ -216,6 +281,6 @@ export class PlatformWhatsAppOrderTemplateService {
       },
     });
 
-    return normalizeState(template, template.status === APPROVED);
+    return normalizeState(template, template.status === APPROVED, waba.name ?? null, false);
   }
 }
