@@ -4,13 +4,17 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
+function migrationPrefix(name) {
+  const match = name.match(/^(\d+)_/);
+  if (!match) throw new Error(`Migration SQL sem prefixo numérico: ${name}`);
+  return Number(match[1]);
+}
+
 export function inspectSqlHistory(fileNames) {
-  const files = fileNames.filter((name) => name.endsWith(".sql")).sort();
-  const parsed = files.map((name) => {
-    const match = name.match(/^(\d+)_/);
-    if (!match) throw new Error(`Migration SQL sem prefixo numérico: ${name}`);
-    return { name, prefix: Number(match[1]) };
-  });
+  const files = fileNames
+    .filter((name) => name.endsWith(".sql"))
+    .sort((a, b) => migrationPrefix(a) - migrationPrefix(b) || a.localeCompare(b));
+  const parsed = files.map((name) => ({ name, prefix: migrationPrefix(name) }));
   const counts = new Map();
   for (const item of parsed) counts.set(item.prefix, (counts.get(item.prefix) ?? 0) + 1);
   const max = Math.max(...parsed.map((item) => item.prefix));
@@ -57,9 +61,9 @@ export function localDriftErrors({ sqlFiles, baseline }) {
   const errors = validateProductionBaseline(baseline); const history = inspectSqlHistory(sqlFiles);
   if (history.duplicates.join(",") !== "14") errors.push(`Prefixos duplicados inesperados: ${history.duplicates.join(",") || "nenhum"}`);
   if (history.missing.join(",") !== "17") errors.push(`Lacunas históricas inesperadas: ${history.missing.join(",") || "nenhuma"}`);
-  if (history.files.at(-1) !== "99_order_whatsapp_template_support.sql") errors.push(`Cauda SQL inesperada: ${history.files.at(-1) ?? "nenhuma"}`);
+  if (history.files.at(-1) !== "100_whatsapp_embedded_signup.sql") errors.push(`Cauda SQL inesperada: ${history.files.at(-1) ?? "nenhuma"}`);
   const remoteTail = baseline.migrations.at(-1);
-  if (!remoteTail || remoteTail[1] !== "order_whatsapp_template_support_329") errors.push("Baseline remoto não termina na migration de template transacional do WhatsApp.");
+  if (!remoteTail || remoteTail[1] !== "whatsapp_embedded_signup_331") errors.push("Baseline remoto não termina na migration do Meta Embedded Signup.");
   return errors;
 }
 
