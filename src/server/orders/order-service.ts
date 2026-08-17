@@ -10,6 +10,7 @@ import { deriveOrderAccessToken, hashOrderAccessToken } from "@/server/orders/or
 import {
   assertTransition,
   fulfillmentIsComplete,
+  paymentAllowsOrderCompletion,
   type FulfillmentStatus,
   type OrderStateDomain,
   type OrderStatus,
@@ -217,7 +218,9 @@ export class OrderService {
       if (!fulfillmentIsComplete(order.fulfillment_status as FulfillmentStatus)) {
         throw new Error("Fulfillment must be complete before the order can be completed");
       }
-      if (order.payment_status !== "paid") throw new Error("Payment must be paid before the order can be completed");
+      if (!paymentAllowsOrderCompletion(order.payment_status as PaymentStatus)) {
+        throw new Error("Payment must be settled before the order can be completed");
+      }
     }
     if (domain === "order" && (to === "canceled" || to === "rejected")) {
       if (!reason || reason.trim().length < 3) throw new Error("Reason is required");
