@@ -1,4 +1,5 @@
 import type { FulfillmentStatus, OrderStatus, PaymentStatus, ProductionStatus } from "@/server/orders/state-machines";
+import { paymentAllowsOrderCompletion } from "@/server/orders/state-machines";
 
 export type OrderManagerRow = {
   id: string;
@@ -16,7 +17,7 @@ export type OrderManagerRow = {
 };
 
 export type OrderLane = "new" | "confirmed" | "preparing" | "ready" | "finished";
-export type OperationalOrderBucket = "new" | "preparing" | "ready" | "late" | "queued" | "history";
+export type OperationalOrderBucket = "new" | "preparing" | "ready" | "queued" | "history";
 
 export const ORDER_ATTENTION_MINUTES = 30;
 
@@ -32,7 +33,6 @@ export const operationalBucketLabels: Record<OperationalOrderBucket, string> = {
   new: "Novos",
   preparing: "Em preparo",
   ready: "Prontos",
-  late: `Atrasados (${ORDER_ATTENTION_MINUTES}+ min)`,
   queued: "A iniciar",
   history: "Histórico",
 };
@@ -66,10 +66,9 @@ export function isOrderAttentionLate(order: Pick<OrderManagerRow, "order_status"
   return elapsedMinutes(order.created_at, now) >= thresholdMinutes;
 }
 
-export function deriveOperationalBucket(order: Pick<OrderManagerRow, "order_status" | "production_status" | "fulfillment_status" | "created_at">, now = Date.now()): OperationalOrderBucket {
+export function deriveOperationalBucket(order: Pick<OrderManagerRow, "order_status" | "production_status" | "fulfillment_status">): OperationalOrderBucket {
   const lane = deriveOrderLane(order);
   if (lane === "finished") return "history";
-  if (isOrderAttentionLate(order, now)) return "late";
   if (lane === "new") return "new";
   if (lane === "preparing") return "preparing";
   if (lane === "ready") return "ready";
@@ -78,13 +77,13 @@ export function deriveOperationalBucket(order: Pick<OrderManagerRow, "order_stat
 
 export function canCompleteFromManager(order: Pick<OrderManagerRow, "order_status" | "payment_status" | "fulfillment_status">) {
   const fulfillmentDone = ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status);
-  return order.order_status === "confirmed" && order.payment_status === "paid" && fulfillmentDone;
+  return order.order_status === "confirmed" && paymentAllowsOrderCompletion(order.payment_status) && fulfillmentDone;
 }
 
 export function completionBlockers(order: Pick<OrderManagerRow, "order_status" | "payment_status" | "fulfillment_status">) {
   const blockers: string[] = [];
   if (order.order_status !== "confirmed") blockers.push("pedido não está confirmado");
-  if (order.payment_status !== "paid") blockers.push("pagamento não está pago");
+  if (!paymentAllowsOrderCompletion(order.payment_status)) blockers.push("pagamento ainda não está liquidado");
   if (!["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status)) blockers.push("entrega/retirada não foi concluída");
   return blockers;
 }
