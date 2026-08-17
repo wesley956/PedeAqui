@@ -16,7 +16,13 @@ export type UserGuideStep = {
   actionLabel?: string;
 };
 
-const moduleCopy: Record<string, Omit<UserGuideStep, "id" | "href">> = {
+type ModuleGuideCopy = {
+  title: string;
+  description: string;
+  actionLabel: string;
+};
+
+const moduleCopy: Record<string, ModuleGuideCopy> = {
   dashboard: {
     title: "Comece pelo resumo da operação",
     description: "O Dashboard mostra o que merece atenção agora: pedidos, vendas e sinais da sua operação.",
@@ -130,12 +136,20 @@ export function buildUserGuideSteps(items: readonly GuideNavigationItem[], roleK
   const byKey = new Map(items.map((item) => [item.key, item]));
   const preferred = roleKeys.flatMap((role) => roleOrder[role] ?? []);
   const moduleKeys = [...new Set([...preferred, ...fallbackOrder])]
-    .filter((key) => byKey.has(key) && moduleCopy[key])
+    .filter((key) => byKey.has(key) && Boolean(moduleCopy[key]))
     .slice(0, 5);
 
-  const modules = moduleKeys.map((key) => {
-    const item = byKey.get(key)!;
-    return { id: key, href: item.href, ...moduleCopy[key] };
+  const modules: UserGuideStep[] = moduleKeys.flatMap((key) => {
+    const item = byKey.get(key);
+    const copy = moduleCopy[key];
+    if (!item || !copy) return [];
+    return [{
+      id: key,
+      href: item.href,
+      title: copy.title,
+      description: copy.description,
+      actionLabel: copy.actionLabel,
+    }];
   });
 
   return [
