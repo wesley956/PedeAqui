@@ -77,6 +77,10 @@ export function fulfillmentIsComplete(status: FulfillmentStatus) {
   return status === "delivered" || status === "picked_up_by_customer" || status === "served" || status === "not_required";
 }
 
+export function paymentAllowsOrderCompletion(status: PaymentStatus) {
+  return status === "paid" || status === "partially_refunded" || status === "refunded";
+}
+
 export const orderStatusLabels: Record<OrderStatus, string> = {
   pending_confirmation: "Aguardando confirmação",
   confirmed: "Confirmado",
