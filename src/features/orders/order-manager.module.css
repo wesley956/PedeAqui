@@ -13,18 +13,16 @@
 
 .activeGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: var(--space-3); align-items: start; }
 .lane { min-width: 0; overflow: hidden; border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); background: var(--surface-2); }
-.lane[data-bucket="late"] { border-color: var(--state-danger); background: var(--state-danger-surface); }
 .laneHeader { display: flex; justify-content: space-between; gap: var(--space-2); align-items: center; padding: var(--space-3) var(--space-4); border-bottom: var(--border-width) solid var(--border-default); }
-.lane[data-bucket="late"] .laneHeader { border-bottom-color: var(--state-danger); }
 .laneCount { min-width: var(--space-6); height: var(--space-6); padding: 0 var(--space-1); border-radius: var(--radius-pill); background: var(--surface-3); display: grid; place-items: center; font-size: var(--font-size-xs); font-weight: var(--font-weight-extrabold); }
 .lane[data-bucket="new"] .laneCount { background: var(--accent); color: var(--text-on-brand); }
-.lane[data-bucket="late"] .laneCount { background: var(--state-danger); color: var(--text-on-brand); }
 .laneBody { display: grid; gap: var(--space-2); padding: var(--space-2); max-height: min(62vh, 720px); overflow-y: auto; }
 .emptyLane { padding: var(--space-5); color: var(--text-secondary); text-align: center; font-size: var(--font-size-xs); }
 
 .orderCard { padding: var(--space-3); display: grid; gap: var(--space-3); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); background: var(--surface-1); }
 .orderCard[data-bucket="new"] { border-color: var(--accent); }
-.orderCard[data-bucket="late"] { border-color: var(--state-danger); }
+.orderCard[data-late="true"] { border-color: var(--state-danger); box-shadow: 0 0 0 1px var(--state-danger); }
+.orderCard[data-late="true"] .elapsed { color: var(--state-danger-text); font-weight: var(--font-weight-bold); }
 .cardTop { display: flex; justify-content: space-between; gap: var(--space-3); align-items: start; }
 .orderIdentity { display: grid; gap: var(--space-1); min-width: 0; }
 .orderNumber { font-size: var(--font-size-lg); font-weight: var(--font-weight-extrabold); }
