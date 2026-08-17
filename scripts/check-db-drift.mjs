@@ -61,9 +61,9 @@ export function localDriftErrors({ sqlFiles, baseline }) {
   const errors = validateProductionBaseline(baseline); const history = inspectSqlHistory(sqlFiles);
   if (history.duplicates.join(",") !== "14") errors.push(`Prefixos duplicados inesperados: ${history.duplicates.join(",") || "nenhum"}`);
   if (history.missing.join(",") !== "17") errors.push(`Lacunas históricas inesperadas: ${history.missing.join(",") || "nenhuma"}`);
-  if (history.files.at(-1) !== "102_new_user_guide.sql") errors.push(`Cauda SQL inesperada: ${history.files.at(-1) ?? "nenhuma"}`);
+  if (history.files.at(-1) !== "103_order_completion_refund_states.sql") errors.push(`Cauda SQL inesperada: ${history.files.at(-1) ?? "nenhuma"}`);
   const remoteTail = baseline.migrations.at(-1);
-  if (!remoteTail || remoteTail[1] !== "new_user_guide_351") errors.push("Baseline remoto não termina na migration do guia automático de novos usuários.");
+  if (!remoteTail || remoteTail[1] !== "order_completion_refund_states") errors.push("Baseline remoto não termina na migration de conclusão após estorno.");
   return errors;
 }
 
