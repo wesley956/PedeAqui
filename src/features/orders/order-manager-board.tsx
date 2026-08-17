@@ -15,6 +15,7 @@ import {
   deriveOperationalBucket,
   deriveOrderLane,
   elapsedLabel,
+  isOrderAttentionLate,
   operationalBucketLabels,
   type OperationalOrderBucket,
   type OrderManagerRow,
@@ -22,7 +23,7 @@ import {
 import { orderStatusLabels, productionStatusLabels } from "@/server/orders/state-machines";
 import styles from "./order-manager.module.css";
 
-const activeBuckets = ["new", "preparing", "ready", "late", "queued"] as const satisfies readonly OperationalOrderBucket[];
+const activeBuckets = ["new", "preparing", "ready", "queued"] as const satisfies readonly OperationalOrderBucket[];
 const paymentLabels: Record<string, string> = { pending: "Pgto. pendente", authorized: "Pgto. autorizado", paid: "Pago", failed: "Pgto. falhou", partially_refunded: "Estorno parcial", refunded: "Estornado" };
 const fulfillmentLabels: Record<string, string> = {
   pending: "Fulfillment pendente", awaiting_assignment: "Aguardando entregador", assigned: "Entregador definido",
@@ -47,7 +48,6 @@ function statusForOrder(order: OrderManagerRow, bucket: OperationalOrderBucket):
   if (order.order_status === "completed") return { status: "order_completed" };
   if (order.order_status === "rejected") return { status: "order_cancelled", label: "Recusado" };
   if (order.order_status === "canceled") return { status: "order_cancelled" };
-  if (bucket === "late") return { status: "order_late" };
   if (order.fulfillment_status === "out_for_delivery") return { status: "order_out_for_delivery" };
   if (bucket === "new") return { status: "order_new" };
   if (bucket === "preparing") return { status: "order_preparing" };
@@ -149,14 +149,14 @@ export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders
 
   const grouped = useMemo(() => {
     const result: Record<OperationalOrderBucket, OrderManagerRow[]> = {
-      new: [], preparing: [], ready: [], late: [], queued: [], history: [],
+      new: [], preparing: [], ready: [], queued: [], history: [],
     };
-    for (const order of filtered) result[deriveOperationalBucket(order, now)].push(order);
-    result.late.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
+    for (const order of filtered) result[deriveOperationalBucket(order)].push(order);
     return result;
-  }, [filtered, now]);
+  }, [filtered]);
 
   const activeCount = activeBuckets.reduce((total, bucket) => total + grouped[bucket].length, 0);
+  const lateCount = useMemo(() => filtered.filter((order) => isOrderAttentionLate(order, now)).length, [filtered, now]);
 
   async function toggleSound() {
     const next = !soundEnabled;
@@ -181,7 +181,7 @@ export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders
         <Button type="button" tone="secondary" onClick={() => void toggleSound()} aria-pressed={soundEnabled}>
           {soundEnabled ? "Som ativo ✓" : "Ativar som"}
         </Button>
-        <div className={styles.toolbarMeta}>{activeCount} ativo(s) · {grouped.history.length} no histórico</div>
+        <div className={styles.toolbarMeta}>{activeCount} ativo(s) · {lateCount} atrasado(s) · {grouped.history.length} no histórico</div>
       </div>
 
       <div className={styles.noticeSlot} aria-live="polite">
@@ -221,9 +221,10 @@ function OrderCard({ order, now, bucket }: { order: OrderManagerRow; now: number
   const lane = deriveOrderLane(order);
   const blockers = completionBlockers(order);
   const status = statusForOrder(order, bucket);
+  const late = isOrderAttentionLate(order, now);
 
   return (
-    <article className={styles.orderCard} data-bucket={bucket}>
+    <article className={styles.orderCard} data-bucket={bucket} data-late={late || undefined}>
       <div className={styles.cardTop}>
         <div className={styles.orderIdentity}>
           <span className={styles.orderNumber}>#{order.display_number}</span>
@@ -237,6 +238,7 @@ function OrderCard({ order, now, bucket }: { order: OrderManagerRow; now: number
 
       <div className={styles.statusRow}>
         <StatusBadge status={status.status} label={status.label} />
+        {late ? <StatusBadge status="order_late" /> : null}
       </div>
 
       <div className={styles.tags} aria-label="Origem e modalidade do pedido">
