@@ -52,6 +52,8 @@ export default async function PlatformPage() {
   const billingPending = data.webhooks.length - billingFailures - billingSuccess;
   const incidentCount = billingAttention + billingFailures + overview.integrationAlerts;
   const healthLabel = incidentCount === 0 ? "Saudável" : "Atenção necessária";
+  const whatsappPending = overview.units.filter((unit) => !unit.isDemo && (unit.whatsappStatus !== "connected" || !unit.whatsappEnabled));
+  const whatsappReady = overview.units.filter((unit) => !unit.isDemo && unit.whatsappStatus === "connected" && unit.whatsappEnabled).length;
 
   const organizations: PlatformOrganizationCard[] = data.organizations.map((org) => {
     const subscription = subscriptionByOrg.get(org.id);
@@ -72,15 +74,15 @@ export default async function PlatformPage() {
     id: unit.id,
     name: unit.name,
     organizationName: organizationById.get(unit.organizationId)?.name ?? "Empresa",
-    statusLabel: storeLabels[unit.status] ?? "Cadastrada",
+    statusLabel: unit.isDemo ? "Demonstração" : (storeLabels[unit.status] ?? "Cadastrada"),
     locationLabel: [unit.city, unit.state].filter(Boolean).join(" / ") || "Localização não informada",
     recentOrders: unit.recentOrders,
     lastOrderLabel: unit.lastOrderAt ? `último pedido em ${dateTime.format(new Date(unit.lastOrderAt))}` : "sem pedido recente",
-    tone: unitTone(unit.status),
+    tone: unit.isDemo ? "neutral" : unitTone(unit.status),
   }));
 
   const activeUnitRows = overview.units
-    .filter((unit) => unit.recentOrders > 0)
+    .filter((unit) => unit.recentOrders > 0 && !unit.isDemo)
     .sort((a, b) => b.recentOrders - a.recentOrders || a.name.localeCompare(b.name, "pt-BR"))
     .slice(0, 8);
 
@@ -88,16 +90,46 @@ export default async function PlatformPage() {
     <div className={styles.page}>
       <header className={styles.hero} id="visao-geral">
         <div><p className={styles.eyebrow}>PEDEAQUI · PLATAFORMA</p><h1>Painel do Proprietário</h1><p>Acompanhe empresas, unidades, assinaturas, integrações e a saúde geral do PedeAqui em uma central separada da operação dos restaurantes.</p></div>
-        <span className={styles.roleBadge}>{canManage ? "Acesso total" : "Acesso de suporte"}</span>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end" }}>
+          {canManage ? <Link className={styles.button} href="/platform/demo" target="_blank">Abrir demonstração</Link> : null}
+          {canManage ? <Link className={styles.button} href="/platform/novo-restaurante">+ Novo restaurante</Link> : null}
+          <span className={styles.roleBadge}>{canManage ? "Acesso total" : "Acesso de suporte"}</span>
+        </div>
       </header>
 
       <section className={styles.metrics} aria-label="Resumo da plataforma">
         <Metric label="Unidades ativas" value={overview.activeUnits} helper={`de ${overview.totalUnits} cadastradas`} />
         <Metric label="Pedidos 24h" value={overview.ordersLast24h} helper={`${overview.openOrders} em andamento agora`} />
         <Metric label="Clientes ativos" value={activeSubscriptions} helper="assinaturas ativas" />
-        <Metric label="Em teste" value={trials} helper="períodos de avaliação" />
+        <Metric label="WhatsApp pendente" value={whatsappPending.length} helper={`${whatsappReady} conectado(s)`} />
         <Metric label="Alertas" value={incidentCount} helper={healthLabel} />
       </section>
+
+      {canManage ? <section className={styles.section} id="comercial">
+        <div className={styles.sectionHeader}>
+          <div><h2>Fila comercial</h2><p>Restaurantes podem avançar com cardápio e operação mesmo enquanto o número do WhatsApp ainda não foi definido.</p></div>
+          <Link className={styles.button} href="/platform/novo-restaurante">Cadastrar cliente</Link>
+        </div>
+        <div className={styles.operationGrid}>
+          <div className={styles.operationPanel}>
+            <strong>WhatsApp para configurar depois</strong>
+            <div className={styles.featureList}>
+              {whatsappPending.slice(0, 8).map((unit) => <div key={unit.id} className={styles.featureRow}>
+                <span>{unit.name}<small>{organizationById.get(unit.organizationId)?.name ?? "Empresa"}</small></span>
+                <Link href={`/platform/restaurantes/${unit.id}`} style={{ fontWeight: 800 }}>Abrir</Link>
+              </div>)}
+              {whatsappPending.length === 0 ? <div className={styles.empty}>Nenhum cliente pendente de WhatsApp.</div> : null}
+            </div>
+          </div>
+          <div className={styles.operationPanel}>
+            <strong>Visita comercial pelo celular</strong>
+            <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
+              <span className={styles.meta}>1. Abra a demonstração. 2. Mostre o cardápio e checkout. 3. Se o cliente avançar, cadastre apenas o nome. 4. WhatsApp fica para depois.</span>
+              <Link className={styles.button} href="/platform/demo" target="_blank">Abrir demonstração agora</Link>
+            </div>
+          </div>
+        </div>
+      </section> : null}
 
       <section className={styles.section} id="empresas">
         <div className={styles.sectionHeader}><div><h2>Empresas e unidades</h2><p>Busque uma empresa, unidade ou plano sem entrar na área operacional do restaurante.</p></div></div>

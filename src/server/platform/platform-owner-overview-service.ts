@@ -15,8 +15,11 @@ export type PlatformUnitOverview = {
   city: string | null;
   state: string | null;
   isPrimary: boolean;
+  isDemo: boolean;
   recentOrders: number;
   lastOrderAt: string | null;
+  whatsappStatus: string;
+  whatsappEnabled: boolean;
 };
 
 export type PlatformOwnerOverview = {
@@ -46,9 +49,9 @@ export class PlatformOwnerOverviewService {
     const admin = createAdminClient();
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    const [storesResult, activeUnitCountResult, orderCountResult, openOrderCountResult, recentOrdersResult, integrationAlertsResult] = await Promise.all([
+    const [storesResult, activeUnitCountResult, orderCountResult, openOrderCountResult, recentOrdersResult, integrationAlertsResult, whatsappResult] = await Promise.all([
       admin.from("stores")
-        .select("id,organization_id,name,slug,status,city,state,is_primary,created_at", { count: "exact" })
+        .select("id,organization_id,name,slug,status,city,state,is_primary,platform_demo,created_at", { count: "exact" })
         .order("created_at", { ascending: false })
         .limit(UNIT_SEARCH_LIMIT),
       admin.from("stores")
@@ -68,9 +71,12 @@ export class PlatformOwnerOverviewService {
       admin.from("integration_webhook_deliveries")
         .select("id", { count: "exact", head: true })
         .eq("status", "dead"),
+      admin.from("store_conversation_settings")
+        .select("store_id,connection_status,whatsapp_enabled")
+        .limit(UNIT_SEARCH_LIMIT),
     ]);
 
-    for (const result of [storesResult, activeUnitCountResult, orderCountResult, openOrderCountResult, recentOrdersResult, integrationAlertsResult]) {
+    for (const result of [storesResult, activeUnitCountResult, orderCountResult, openOrderCountResult, recentOrdersResult, integrationAlertsResult, whatsappResult]) {
       if (result.error) throw result.error;
     }
 
@@ -83,8 +89,10 @@ export class PlatformOwnerOverviewService {
       activityByStore.set(row.store_id, current);
     }
 
+    const whatsappByStore = new Map((whatsappResult.data ?? []).map((row) => [row.store_id, row]));
     const units = (storesResult.data ?? []).map((store) => {
       const activity = activityByStore.get(store.id);
+      const whatsapp = whatsappByStore.get(store.id);
       return {
         id: store.id,
         organizationId: store.organization_id,
@@ -94,8 +102,11 @@ export class PlatformOwnerOverviewService {
         city: store.city,
         state: store.state,
         isPrimary: Boolean(store.is_primary),
+        isDemo: Boolean(store.platform_demo),
         recentOrders: activity?.count ?? 0,
         lastOrderAt: activity?.lastOrderAt ?? null,
+        whatsappStatus: whatsapp?.connection_status ?? "not_connected",
+        whatsappEnabled: Boolean(whatsapp?.whatsapp_enabled),
       } satisfies PlatformUnitOverview;
     });
 
