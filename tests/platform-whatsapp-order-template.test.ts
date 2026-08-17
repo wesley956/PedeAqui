@@ -10,7 +10,7 @@ const page = read("src/app/platform/unidades/[storeId]/whatsapp/notificacoes/pag
 const actions = read("src/app/platform/unidades/[storeId]/whatsapp/notificacoes/actions.ts");
 
 describe("platform WhatsApp order template", () => {
-  it("creates the transactional template through the WABA using the permanent server token", () => {
+  it("creates the transactional template through a commercial WABA using the permanent server token", () => {
     expect(service).toContain('const TEMPLATE_NAME = "pedeaqui_atualizacao_pedido"');
     expect(service).toContain('const TEMPLATE_CATEGORY = "UTILITY"');
     expect(service).toContain('resolveWhatsAppAccessToken("META_SYSTEM_USER_ACCESS_TOKEN")');
@@ -25,7 +25,17 @@ describe("platform WhatsApp order template", () => {
     expect(service).toContain('"Saiu para entrega"');
   });
 
-  it("only enables all automatic order notifications after Meta reports APPROVED", () => {
+  it("uses a safe 24h-only mode for Meta Test WhatsApp Business Accounts", () => {
+    expect(service).toContain('const TEST_WINDOW_ONLY = "TEST_WINDOW_ONLY"');
+    expect(service).toContain("test whatsapp business account");
+    expect(service).toContain("persistTestWindowMode");
+    expect(service).toContain("order_notifications_enabled: true");
+    expect(service).toContain("order_notification_template_name: null");
+    expect(page).toContain("Modo de homologação ativo");
+    expect(page).toContain("Ativas por 24h");
+  });
+
+  it("only enables unrestricted production mode after Meta reports APPROVED", () => {
     expect(service).toContain('const APPROVED = "APPROVED"');
     expect(service).toContain("order_notifications_enabled: approved");
     expect(service).toContain("notify_order_received: true");
