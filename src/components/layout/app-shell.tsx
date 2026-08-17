@@ -4,10 +4,13 @@ import { DesktopNavigation, type ShellNavigationItem } from "@/components/layout
 import { MobileNavigation } from "@/components/layout/mobile-navigation";
 import { OperationTopbar } from "@/components/layout/operation-topbar";
 import type { OperationalContext } from "@/components/layout/navigation-model";
+import { NewUserGuide } from "@/features/user-guide/new-user-guide";
+import type { UserGuideStep } from "@/features/user-guide/guide-model";
 import type { OperationHeaderData } from "@/server/access/operation-header-service";
+import type { UserGuideState } from "@/server/onboarding/user-guide-service";
 import type { ResolvedBranding } from "@/server/platform/branding-read-service";
 
-export function AppShell({ children, email, branding, navigationItems, operationalContexts, operationHeader }: { children: ReactNode; email: string | null; branding: ResolvedBranding; navigationItems: readonly ShellNavigationItem[]; operationalContexts: readonly OperationalContext[]; operationHeader: OperationHeaderData }) {
+export function AppShell({ children, email, branding, navigationItems, operationalContexts, operationHeader, userGuide, guideSteps }: { children: ReactNode; email: string | null; branding: ResolvedBranding; navigationItems: readonly ShellNavigationItem[]; operationalContexts: readonly OperationalContext[]; operationHeader: OperationHeaderData; userGuide: UserGuideState; guideSteps: readonly UserGuideStep[] }) {
   // White-label values are runtime data. Keeping this single style object inline is intentional:
   // it only feeds the documented accent aliases and never introduces arbitrary layout values.
   const style = {
@@ -47,6 +50,12 @@ export function AppShell({ children, email, branding, navigationItems, operation
         ) : null}
       </div>
       <MobileNavigation items={navigationItems} contexts={operationalContexts} />
+      <NewUserGuide
+        initialStatus={userGuide.status}
+        initialStep={userGuide.currentStep}
+        autoOpen={userGuide.autoOpen}
+        steps={guideSteps}
+      />
     </div>
   );
 }
