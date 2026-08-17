@@ -24,16 +24,18 @@ export function NewUserGuide({
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(autoOpen);
+  const [runtimeStatus, setRuntimeStatus] = useState<UserGuideStatus>(initialStatus);
   const [stepIndex, setStepIndex] = useState(() => clampStep(initialStep, steps.length));
   const [syncError, setSyncError] = useState(false);
   const [isPending, startTransition] = useTransition();
   const startedRef = useRef(false);
-  const persistentRun = initialStatus === "not_started" || initialStatus === "in_progress";
+  const persistentRun = runtimeStatus === "not_started" || runtimeStatus === "in_progress";
   const current = steps[stepIndex];
   const isLast = stepIndex === steps.length - 1;
   const progress = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 100;
 
   function persist(status: "in_progress" | "skipped" | "completed", currentStep = stepIndex) {
+    setRuntimeStatus(status);
     startTransition(async () => {
       try {
         await saveUserGuideProgressAction({ status, currentStep });
@@ -101,7 +103,7 @@ export function NewUserGuide({
   };
 
   const reopen = () => {
-    setStepIndex(initialStatus === "completed" || initialStatus === "skipped" ? 0 : clampStep(stepIndex, steps.length));
+    setStepIndex(runtimeStatus === "completed" || runtimeStatus === "skipped" ? 0 : clampStep(stepIndex, steps.length));
     setOpen(true);
   };
 
