@@ -22,11 +22,16 @@ describe("order manager UI [278]", () => {
     }
   });
 
-  it("uses the canonical status language and separates history", () => {
+  it("keeps lateness as attention without replacing the real operational stage", () => {
     expect(board).toContain("<StatusBadge");
-    expect(board).toContain('const activeBuckets = ["new", "preparing", "ready", "late", "queued"]');
+    expect(board).toContain('const activeBuckets = ["new", "preparing", "ready", "queued"]');
+    expect(board).toContain("isOrderAttentionLate");
+    expect(board).toContain('status="order_late"');
+    expect(board).toContain("data-late={late || undefined}");
     expect(board).toContain("<details className={styles.history}>");
     expect(board).toContain("grouped.history");
+    expect(css).toContain('.orderCard[data-late="true"]');
+    expect(css).not.toContain('.lane[data-bucket="late"]');
   });
 
   it("uses an adaptive grid instead of the old mandatory horizontal five-lane board", () => {
