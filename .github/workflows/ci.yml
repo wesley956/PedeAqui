@@ -30,8 +30,11 @@ jobs:
       - name: Validate repository technical name
         run: node scripts/check-repository-name.mjs
 
+      # npm 10.9.8/Arborist currently crashes resolving this graph's peer set
+      # before project validation can begin. Keep the workaround scoped to install;
+      # lint, typecheck, tests, E2E and build remain the authoritative gates below.
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm install --legacy-peer-deps --no-audit --no-fund
 
       - name: Check database migration history
         run: npm run db:drift
