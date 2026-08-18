@@ -1,6 +1,6 @@
 {
   "projectRef": "zsbsczjhiujnhdznrzck",
-  "capturedAt": "2026-08-17",
+  "capturedAt": "2026-08-18",
   "migrations": [
     ["20260810081833", "pedeaqui_foundation_tables"],
     ["20260810081858", "pedeaqui_foundation_security"],
@@ -103,6 +103,7 @@
     ["20260816225803", "whatsapp_embedded_signup_331"],
     ["20260817042049", "platform_commercial_onboarding_349"],
     ["20260817080012", "new_user_guide_351"],
-    ["20260817081824", "order_completion_refund_states"]
+    ["20260817081824", "order_completion_refund_states"],
+    ["20260818234927", "user_guides_rls_initplan_hardening"]
   ]
 }
