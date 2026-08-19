@@ -3,18 +3,25 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { realtimeStoreScope } from "@/lib/supabase/realtime";
 
 export function DeliveryRealtime({ storeId, showStatus = false }: { storeId: string; showStatus?: boolean }) {
   const router = useRouter();
   const [status, setStatus] = useState<"connecting" | "connected" | "error">("connecting");
 
   useEffect(() => {
+    const scope = realtimeStoreScope(storeId);
+    if (!scope) {
+      setStatus("error");
+      return;
+    }
+
     const supabase = createClient();
     const refresh = () => router.refresh();
-    const channel = supabase.channel(`delivery-ops:${storeId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` }, refresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "deliveries", filter: `store_id=eq.${storeId}` }, refresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "drivers", filter: `store_id=eq.${storeId}` }, refresh)
+    const channel = supabase.channel(`delivery-ops:${scope.storeId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: scope.filter }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "deliveries", filter: scope.filter }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "drivers", filter: scope.filter }, refresh)
       .subscribe((next) => {
         if (next === "SUBSCRIBED") setStatus("connected");
         else if (["CHANNEL_ERROR", "TIMED_OUT", "CLOSED"].includes(next)) setStatus("error");
