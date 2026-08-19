@@ -14,6 +14,10 @@ const catalogImageService = readFileSync("src/server/catalog/catalog-image-servi
 const categoryPage = readFileSync("src/app/(app)/cardapio/categorias/page.tsx", "utf8");
 const productPage = readFileSync("src/app/(app)/cardapio/produtos/novo/page.tsx", "utf8");
 const appErrorBoundary = readFileSync("src/app/(app)/error.tsx", "utf8");
+const orderRealtime = readFileSync("src/features/orders/order-realtime.tsx", "utf8");
+const deliveryRealtime = readFileSync("src/features/delivery/delivery-realtime.tsx", "utf8");
+const conversationRealtime = readFileSync("src/features/conversations/conversation-realtime.tsx", "utf8");
+const kitchenRealtime = readFileSync("src/features/kitchen/kitchen-board.tsx", "utf8");
 const ciWorkflow = readFileSync(".github/workflows/ci.yml", "utf8");
 
 describe("catalog resilience contracts", () => {
@@ -39,6 +43,7 @@ describe("catalog resilience contracts", () => {
 describe("onboarding store slug resilience", () => {
   it("normalizes names and generates deterministic collision candidates", () => {
     expect(slugifyStoreName("  Pizzaria São João  ")).toBe("pizzaria-sao-joao");
+    expect(slugifyStoreName("Á!")).toBe("a-loja");
     expect(storeSlugCandidate("Pizzaria São João", 0)).toBe("pizzaria-sao-joao");
     expect(storeSlugCandidate("Pizzaria São João", 1)).toBe("pizzaria-sao-joao-2");
     expect(storeSlugCandidate("Pizzaria São João", 2)).toBe("pizzaria-sao-joao-3");
@@ -73,6 +78,13 @@ describe("Realtime store scope", () => {
     expect(realtimeStoreScope("")).toBeNull();
     expect(realtimeStoreScope("not-a-uuid")).toBeNull();
     expect(realtimeStoreScope("550e8400-e29b-41d4-a716-446655440000,or=(true)")).toBeNull();
+  });
+
+  it("centralizes every audited store subscription on the validated scope", () => {
+    for (const source of [orderRealtime, deliveryRealtime, conversationRealtime, kitchenRealtime]) {
+      expect(source).toContain("realtimeStoreScope");
+      expect(source).toContain("scope.filter");
+    }
   });
 });
 
