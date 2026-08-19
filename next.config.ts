@@ -35,32 +35,25 @@ const nextConfig: NextConfig = {
         basePath: "/cruz",
         assetPrefix: "/cruz/",
         trailingSlash: true,
-        images: {
-          unoptimized: true,
-        },
+        images: { unoptimized: true },
       }
     : {
         experimental: {
           serverActions: {
-            bodySizeLimit: "6mb",
+            // Individual catalog images stay capped at 5 MiB. This envelope leaves
+            // room for forms that legitimately submit two images plus text fields.
+            bodySizeLimit: "16mb",
             ...(isDevelopment ? { allowedOrigins: ["*.app.github.dev"] } : {}),
           },
         },
       }),
   ...(isDevelopment && !isGitHubPages
-    ? {
-        allowedDevOrigins: ["*.app.github.dev"],
-      }
+    ? { allowedDevOrigins: ["*.app.github.dev"] }
     : {}),
   ...(!isGitHubPages
     ? {
         async headers() {
-          return [
-            {
-              source: "/(.*)",
-              headers: [...securityHeaders],
-            },
-          ];
+          return [{ source: "/(.*)", headers: [...securityHeaders] }];
         },
       }
     : {}),
