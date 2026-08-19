@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { realtimeStoreScope } from "@/lib/supabase/realtime";
 
 const REFRESH_COALESCE_MS = 160;
 
@@ -11,6 +12,9 @@ export function OrderRealtime({ storeId }: { storeId: string }) {
   const refreshTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
+    const scope = realtimeStoreScope(storeId);
+    if (!scope) return;
+
     const supabase = createClient();
     const scheduleRefresh = () => {
       if (refreshTimerRef.current !== null) return;
@@ -21,10 +25,10 @@ export function OrderRealtime({ storeId }: { storeId: string }) {
     };
 
     const channel = supabase
-      .channel(`orders:${storeId}`)
+      .channel(`orders:${scope.storeId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
+        { event: "*", schema: "public", table: "orders", filter: scope.filter },
         scheduleRefresh,
       )
       .subscribe();
