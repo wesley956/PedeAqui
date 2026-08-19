@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/form-controls";
 import { ImageUploadField } from "@/components/media/image-upload-field";
 import { CategoryService } from "@/server/catalog/category-service";
-import { createProductAction } from "@/features/catalog/actions";
+import { createProductFormAction } from "@/features/catalog/actions";
+import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import styles from "./product-editor.module.css";
 
 export default async function NewProductPage() {
@@ -24,7 +25,7 @@ export default async function NewProductPage() {
         <p className="muted">Preencha primeiro o essencial. Dados técnicos ficam recolhidos para não atrapalhar o cadastro comum.</p>
       </div>
 
-      <form action={createProductAction} className={styles.form}>
+      <ResilientMutationForm action={createProductFormAction} className={styles.form}>
         <section className={`card ${styles.section}`} aria-labelledby="produto-basico">
           <div className={styles.sectionHeader}>
             <h2 id="produto-basico">Informações básicas</h2>
@@ -101,7 +102,7 @@ export default async function NewProductPage() {
           <Link href="/cardapio/produtos">Cancelar</Link>
           <Button type="submit">Salvar produto</Button>
         </div>
-      </form>
+      </ResilientMutationForm>
     </section>
   );
 }
