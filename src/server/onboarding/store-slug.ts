@@ -8,7 +8,8 @@ export function slugifyStoreName(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-  return (slug || "loja").slice(0, MAX_STORE_SLUG_LENGTH);
+  const safeSlug = !slug ? "loja" : slug.length === 1 ? `${slug}-loja` : slug;
+  return safeSlug.slice(0, MAX_STORE_SLUG_LENGTH);
 }
 
 export function storeSlugCandidate(storeName: string, attempt: number) {
