@@ -27,3 +27,10 @@ export function isUniqueViolation(error: unknown) {
   if (!error || typeof error !== "object" || !("code" in error)) return false;
   return (error as { code?: unknown }).code === "23505";
 }
+
+export function isStoreSlugConflict(error: unknown) {
+  if (!isUniqueViolation(error) || !error || typeof error !== "object") return false;
+  const candidate = error as { message?: unknown; details?: unknown };
+  const diagnostic = `${String(candidate.message ?? "")} ${String(candidate.details ?? "")}`.toLowerCase();
+  return diagnostic.includes("stores_slug") || diagnostic.includes("(slug)");
+}
