@@ -8,13 +8,11 @@ import { realtimeStoreScope } from "@/lib/supabase/realtime";
 export function DeliveryRealtime({ storeId, showStatus = false }: { storeId: string; showStatus?: boolean }) {
   const router = useRouter();
   const [status, setStatus] = useState<"connecting" | "connected" | "error">("connecting");
+  const hasValidStoreScope = realtimeStoreScope(storeId) !== null;
 
   useEffect(() => {
     const scope = realtimeStoreScope(storeId);
-    if (!scope) {
-      setStatus("error");
-      return;
-    }
+    if (!scope) return;
 
     const supabase = createClient();
     const refresh = () => router.refresh();
@@ -31,7 +29,8 @@ export function DeliveryRealtime({ storeId, showStatus = false }: { storeId: str
   }, [router, storeId]);
 
   if (!showStatus) return null;
-  return <span className="delivery-realtime-status" data-status={status} role="status" aria-live="polite">
-    {status === "connected" ? "Atualização ao vivo" : status === "error" ? "Sem atualização ao vivo · use Atualizar se necessário" : "Conectando atualizações…"}
+  const displayStatus = hasValidStoreScope ? status : "error";
+  return <span className="delivery-realtime-status" data-status={displayStatus} role="status" aria-live="polite">
+    {displayStatus === "connected" ? "Atualização ao vivo" : displayStatus === "error" ? "Sem atualização ao vivo · use Atualizar se necessário" : "Conectando atualizações…"}
   </span>;
 }
