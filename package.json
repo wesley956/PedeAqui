@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "vitest run tests/e2e-context-journeys.test.ts",
-    "db:drift": "node scripts/check-db-drift.mjs"
+    "db:drift": "node scripts/check-db-drift.mjs",
+    "preflight:production": "node scripts/production-preflight.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",
