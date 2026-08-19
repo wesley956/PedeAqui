@@ -46,8 +46,8 @@ describe("device image upload UI", () => {
     expect(menuActions).toContain("current.cover_url");
   });
 
-  it("allows the validated five megabyte image payload through Server Actions", () => {
-    expect(nextConfig).toContain('bodySizeLimit: "6mb"');
+  it("allows multiple validated image payloads through the Server Action envelope", () => {
+    expect(nextConfig).toContain('bodySizeLimit: "16mb"');
     expect(mediaService).toContain("MAX_CATALOG_IMAGE_BYTES = 5 * 1024 * 1024");
   });
 });

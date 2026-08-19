@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImageUploadField } from "@/components/media/image-upload-field";
 import { CategoryService } from "@/server/catalog/category-service";
-import { createCategoryAction } from "@/features/catalog/actions";
+import { createCategoryFormAction } from "@/features/catalog/actions";
+import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 
 export default async function CategoriesPage() {
   const categories = await CategoryService.list();
@@ -14,7 +15,7 @@ export default async function CategoriesPage() {
         <p className="muted">Organize a navegação do cardápio por ordem e disponibilidade.</p>
       </div>
 
-      <form action={createCategoryAction} className="card" style={{ padding: 18, display: "grid", gap: 12 }}>
+      <ResilientMutationForm action={createCategoryFormAction} className="card" style={{ padding: 18, display: "grid", gap: 12 }}>
         <h2 style={{ margin: 0, fontSize: 18 }}>Nova categoria</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
           <Input label="Nome" name="name" required maxLength={80} />
@@ -27,7 +28,7 @@ export default async function CategoriesPage() {
           <span>Categoria ativa</span>
         </label>
         <div><Button type="submit">Criar categoria</Button></div>
-      </form>
+      </ResilientMutationForm>
 
       <div style={{ display: "grid", gap: 10 }}>
         {categories.length === 0 ? (

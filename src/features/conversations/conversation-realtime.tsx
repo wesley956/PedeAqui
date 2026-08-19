@@ -3,11 +3,15 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { realtimeStoreScope } from "@/lib/supabase/realtime";
 
 export function ConversationRealtime({ storeId }: { storeId: string }) {
   const router = useRouter();
 
   useEffect(() => {
+    const scope = realtimeStoreScope(storeId);
+    if (!scope) return;
+
     const supabase = createClient();
     let refreshTimer: number | null = null;
     const scheduleRefresh = () => {
@@ -19,15 +23,15 @@ export function ConversationRealtime({ storeId }: { storeId: string }) {
     };
 
     const channel = supabase
-      .channel(`conversations:${storeId}`)
+      .channel(`conversations:${scope.storeId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "conversations", filter: `store_id=eq.${storeId}` },
+        { event: "*", schema: "public", table: "conversations", filter: scope.filter },
         scheduleRefresh,
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "messages", filter: `store_id=eq.${storeId}` },
+        { event: "*", schema: "public", table: "messages", filter: scope.filter },
         scheduleRefresh,
       )
       .subscribe();

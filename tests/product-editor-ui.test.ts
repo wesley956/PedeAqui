@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const page = readFileSync("src/app/(app)/cardapio/produtos/novo/page.tsx", "utf8");
+const actions = readFileSync("src/features/catalog/actions.ts", "utf8");
 const styles = readFileSync("src/app/(app)/cardapio/produtos/novo/product-editor.module.css", "utf8");
 
 describe("product editor UI", () => {
@@ -19,8 +20,9 @@ describe("product editor UI", () => {
     expect(page).toContain('name="barcode"');
   });
 
-  it("preserves the authoritative create action and commercial field contract", () => {
-    expect(page).toContain("createProductAction");
+  it("preserves the authoritative create mutation behind the resilient form and commercial field contract", () => {
+    expect(page).toContain("createProductFormAction");
+    expect(actions).toContain("await createProductAction(formData)");
     for (const name of ["name", "description", "categoryId", "price", "promotionalPrice", "cost", "imageFile", "availability", "active", "preparationTimeMinutes"]) {
       expect(page).toContain(`name="${name}"`);
     }

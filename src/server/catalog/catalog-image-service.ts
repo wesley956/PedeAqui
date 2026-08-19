@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS, type PermissionKey } from "@/server/access/permissions";
+import { logger } from "@/server/observability/logger";
 
 export const CATALOG_MEDIA_BUCKET = "catalog-media";
 export const MAX_CATALOG_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -13,6 +14,11 @@ const extensions: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
+};
+
+export type CatalogImageUpload = {
+  path: string;
+  publicUrl: string;
 };
 
 export function validateCatalogImage(file: Pick<File, "size" | "type">) {
@@ -41,8 +47,14 @@ export function buildCatalogImagePath(organizationId: string, storeId: string, m
     : `${organizationId}/${storeId}/${fileName}`;
 }
 
+function validateUploadedPath(path: string) {
+  if (!path || path.startsWith("/") || path.includes("..")) {
+    throw new Error("Invalid catalog media path");
+  }
+}
+
 export class CatalogImageService {
-  static async upload(file: File, options?: { permission?: PermissionKey; purpose?: string }) {
+  static async upload(file: File, options?: { permission?: PermissionKey; purpose?: string }): Promise<CatalogImageUpload> {
     validateCatalogImage(file);
     const context = await authorize(options?.permission ?? PERMISSIONS.PRODUCTS_EDIT);
     if (!context.storeId) throw new Error("É necessário selecionar uma unidade para enviar imagens.");
@@ -54,9 +66,36 @@ export class CatalogImageService {
       cacheControl: "31536000",
       upsert: false,
     });
-    if (error) throw new Error("Não foi possível enviar a imagem. Tente novamente.");
+
+    if (error) {
+      logger.error("catalog_image_upload_failed", {
+        organizationId: context.organizationId,
+        storeId: context.storeId,
+        bucket: CATALOG_MEDIA_BUCKET,
+        path,
+        storageCode: "statusCode" in error ? error.statusCode : undefined,
+        storageError: error.message,
+      });
+      throw new Error("Não foi possível enviar a imagem. Tente novamente.");
+    }
 
     const { data } = admin.storage.from(CATALOG_MEDIA_BUCKET).getPublicUrl(path);
     return { path, publicUrl: data.publicUrl };
+  }
+
+  static async remove(path: string) {
+    validateUploadedPath(path);
+    const admin = createAdminClient();
+    const { error } = await admin.storage.from(CATALOG_MEDIA_BUCKET).remove([path]);
+
+    if (error) {
+      logger.error("catalog_image_rollback_failed", {
+        bucket: CATALOG_MEDIA_BUCKET,
+        path,
+        storageCode: "statusCode" in error ? error.statusCode : undefined,
+        storageError: error.message,
+      });
+      throw new Error("Catalog media rollback failed");
+    }
   }
 }

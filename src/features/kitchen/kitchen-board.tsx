@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { realtimeStoreScope } from "@/lib/supabase/realtime";
 import { Button } from "@/components/ui/button";
 import { OrderActionForm } from "@/features/orders/order-action-form";
 import {
@@ -38,10 +39,13 @@ export function KitchenBoard({ storeId, stations, orders, initialNow }: {
   }, []);
 
   useEffect(() => {
+    const scope = realtimeStoreScope(storeId);
+    if (!scope) return;
+
     const supabase = createClient();
     const channel = supabase
-      .channel(`kds:${storeId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` }, () => router.refresh())
+      .channel(`kds:${scope.storeId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: scope.filter }, () => router.refresh())
       .subscribe();
     return () => { void supabase.removeChannel(channel); };
   }, [router, storeId]);

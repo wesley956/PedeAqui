@@ -6,21 +6,15 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuthenticatedUser } from "@/server/auth/session";
 import { ORG_COOKIE, STORE_COOKIE } from "@/server/access/context";
+import { logger } from "@/server/observability/logger";
+import { isStoreSlugConflict, storeSlugCandidate } from "@/server/onboarding/store-slug";
 
 const onboardingSchema = z.object({
   organizationName: z.string().trim().min(2).max(120),
   storeName: z.string().trim().min(2).max(120),
 });
 
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 63);
-}
+const MAX_STORE_SLUG_ATTEMPTS = 20;
 
 export async function bootstrapOrganizationAction(formData: FormData) {
   const user = await requireAuthenticatedUser();
@@ -42,21 +36,58 @@ export async function bootstrapOrganizationAction(formData: FormData) {
     { onConflict: "id" },
   );
 
-  if (profileError) redirect("/onboarding?error=profile_failed");
+  if (profileError) {
+    logger.error("onboarding_profile_upsert_failed", {
+      userId: user.id,
+      errorCode: profileError.code,
+      errorMessage: profileError.message,
+    });
+    redirect("/onboarding?error=profile_failed");
+  }
 
-  const storeSlug = slugify(parsed.data.storeName);
-  const { data, error } = await supabase.rpc("bootstrap_organization", {
-    organization_name: parsed.data.organizationName,
-    store_name: parsed.data.storeName,
-    store_slug: storeSlug,
-  });
+  let bootstrapData: unknown = null;
 
-  if (error || !data || typeof data !== "object") {
+  for (let attempt = 0; attempt < MAX_STORE_SLUG_ATTEMPTS; attempt += 1) {
+    const storeSlug = storeSlugCandidate(parsed.data.storeName, attempt);
+    const { data, error } = await supabase.rpc("bootstrap_organization", {
+      organization_name: parsed.data.organizationName,
+      store_name: parsed.data.storeName,
+      store_slug: storeSlug,
+    });
+
+    if (!error) {
+      bootstrapData = data;
+      break;
+    }
+
+    if (isStoreSlugConflict(error) && attempt < MAX_STORE_SLUG_ATTEMPTS - 1) {
+      logger.warn("onboarding_store_slug_conflict", {
+        userId: user.id,
+        attempt: attempt + 1,
+      });
+      continue;
+    }
+
+    logger.error("onboarding_bootstrap_failed", {
+      userId: user.id,
+      attempt: attempt + 1,
+      errorCode: error.code,
+      errorMessage: error.message,
+    });
     redirect("/onboarding?error=bootstrap_failed");
   }
 
-  const result = data as { organization_id?: string; store_id?: string };
+  if (!bootstrapData || typeof bootstrapData !== "object") {
+    logger.error("onboarding_bootstrap_missing_result", {
+      userId: user.id,
+      attempts: MAX_STORE_SLUG_ATTEMPTS,
+    });
+    redirect("/onboarding?error=bootstrap_failed");
+  }
+
+  const result = bootstrapData as { organization_id?: string; store_id?: string };
   if (!result.organization_id || !result.store_id) {
+    logger.error("onboarding_bootstrap_invalid_result", { userId: user.id });
     redirect("/onboarding?error=bootstrap_failed");
   }
 

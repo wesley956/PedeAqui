@@ -56,6 +56,12 @@ jobs:
             > "$remote_file"
           node scripts/check-db-drift.mjs --remote-file "$remote_file"
 
+      - name: Production infrastructure preflight
+        env:
+          PREFLIGHT_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || secrets.SUPABASE_URL }}
+          PREFLIGHT_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run preflight:production
+
       - name: Lint
         run: npm run lint
 
