@@ -25,7 +25,7 @@ describe("catalog resilience contracts", () => {
   it("rolls back a newly uploaded image when persistence fails", () => {
     expect(catalogImageService).toContain("static async remove(path: string)");
     expect(catalogActions).toContain("await rollbackCatalogImage(uploaded)");
-    expect(catalogActions).toContain("catalog_image_rollback_failed");
+    expect(catalogImageService).toContain("catalog_image_rollback_failed");
   });
 
   it("uses resilient forms for category and product creation", () => {
