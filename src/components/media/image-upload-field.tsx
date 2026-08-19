@@ -34,6 +34,25 @@ export function ImageUploadField({
     };
   }, [objectUrl]);
 
+  useEffect(() => {
+    const form = inputRef.current?.form;
+    if (!form) return;
+
+    const handleReset = () => {
+      setObjectUrl((value) => {
+        if (value) URL.revokeObjectURL(value);
+        return null;
+      });
+      setPreviewUrl(currentUrl);
+      setFileName(null);
+      setRemoved(false);
+      setError(null);
+    };
+
+    form.addEventListener("reset", handleReset);
+    return () => form.removeEventListener("reset", handleReset);
+  }, [currentUrl]);
+
   function clearObjectPreview() {
     if (objectUrl) URL.revokeObjectURL(objectUrl);
     setObjectUrl(null);
