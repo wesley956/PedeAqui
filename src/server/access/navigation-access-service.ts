@@ -2,11 +2,22 @@ import "server-only";
 
 import { cache } from "react";
 import { getAccessContext, type AccessContext } from "@/server/access/context";
-import { contextsForRoleKeys, contextualNavigation } from "@/components/layout/navigation-model";
+import { contextsForRoleKeys, contextualNavigation, type NavigationGroup, type NavigationPriority } from "@/components/layout/navigation-model";
 import { isModuleKey, moduleLabel, type BusinessType } from "@/modules/module-catalog";
 import { selectEasyModuleKeys, type ExperienceMode } from "@/modules/user-experience";
 import { ModuleAccessService, type StoreModuleSnapshot } from "@/server/modules/module-access-service";
 import { UserExperienceService } from "@/server/preferences/user-experience-service";
+
+export type NavigationAccessItem = {
+  key: string;
+  label: string;
+  href: string;
+  group: NavigationGroup;
+  priority: NavigationPriority;
+  permissions: readonly string[];
+  authorization: "organization" | "platform";
+  easyPrimary: boolean;
+};
 
 export type NavigationAccess = {
   context: AccessContext;
@@ -16,7 +27,7 @@ export type NavigationAccess = {
   businessType: BusinessType;
   experienceMode: ExperienceMode;
   moduleAvailability: StoreModuleSnapshot["availability"];
-  items: Array<ReturnType<typeof contextualNavigation>[number] & { easyPrimary: boolean }>;
+  items: NavigationAccessItem[];
 };
 
 const loadNavigationAccess = cache(async (): Promise<NavigationAccess> => {
@@ -36,7 +47,10 @@ const loadNavigationAccess = cache(async (): Promise<NavigationAccess> => {
     }));
   const availableKeys = authorized.flatMap((item) => isModuleKey(item.key) ? [item.key] : []);
   const easyKeys = new Set(selectEasyModuleKeys(availableKeys, roleKeys));
-  const items = authorized.map((item) => ({ ...item, easyPrimary: isModuleKey(item.key) && easyKeys.has(item.key) }));
+  const items: NavigationAccessItem[] = authorized.map((item) => ({
+    ...item,
+    easyPrimary: isModuleKey(item.key) && easyKeys.has(item.key),
+  }));
 
   return {
     context,
