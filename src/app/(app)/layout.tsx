@@ -39,7 +39,7 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
   }
 
   const userGuide = await UserGuideService.load(user.id);
-  const guideSteps = buildUserGuideSteps(navigationAccess.items, navigationAccess.roleKeys);
+  const guideSteps = buildUserGuideSteps(navigationAccess.items, navigationAccess.roleKeys, navigationAccess.businessType);
 
   return (
     <AppShell
