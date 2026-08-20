@@ -51,9 +51,9 @@ export function DriverCreateForm() {
   return <form action={action} className={styles.form}>
     <input name="name" required minLength={2} maxLength={100} placeholder="Nome do entregador" className={styles.input} />
     <input name="phone" placeholder="Telefone" className={styles.input} />
-    <input name="userId" placeholder="ID do usuário (opcional para acesso mobile)" className={styles.input} />
     <label className={styles.form}><span className={styles.driverMeta}>CAPACIDADE SIMULTÂNEA</span><input name="maxActiveDeliveries" type="number" min={1} max={20} defaultValue={3} className={styles.input} /></label>
-    <button type="submit" disabled={pending} className={styles.button}>{pending ? "Salvando…" : "Cadastrar entregador"}</button>
+    <div className={styles.driverMeta}>O entregador será cadastrado como ativo e em serviço, pronto para receber pedidos. O acesso pelo celular poderá ser vinculado depois sem precisar informar nenhum código técnico.</div>
+    <button type="submit" disabled={pending} className={styles.button}>{pending ? "Salvando…" : "Cadastrar e deixar disponível"}</button>
     <Feedback state={state} />
   </form>;
 }
