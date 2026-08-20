@@ -106,6 +106,7 @@
     ["20260817081824", "order_completion_refund_states"],
     ["20260818234927", "user_guides_rls_initplan_hardening"],
     ["20260819205759", "create_catalog_media_bucket"],
-    ["20260820002244", "modular_foundation"]
+    ["20260820002244", "modular_foundation"],
+    ["20260820004213", "modular_experience"]
   ]
 }
