@@ -47,6 +47,7 @@ export const NAVIGATION_MODULES = [
   { key: "deliveries", label: "Entregas", href: "/entregas", group: "operation", permissions: [PERMISSIONS.DELIVERY_VIEW, PERMISSIONS.ORDERS_VIEW], authorization: "organization" },
   { key: "driver", label: "Meu roteiro", href: "/entregador", group: "operation", permissions: [PERMISSIONS.DELIVERY_VIEW, PERMISSIONS.ORDERS_VIEW], authorization: "organization" },
   { key: "inventory", label: "Estoque", href: "/estoque", group: "supplies", permissions: [PERMISSIONS.INVENTORY_VIEW], authorization: "organization" },
+  { key: "gas_containers", label: "Vasilhames", href: "/vasilhames", group: "supplies", permissions: [PERMISSIONS.GAS_CONTAINERS_VIEW], authorization: "organization" },
   { key: "suppliers", label: "Fornecedores", href: "/fornecedores", group: "supplies", permissions: [PERMISSIONS.SUPPLIERS_VIEW], authorization: "organization" },
   { key: "purchases", label: "Compras", href: "/compras", group: "supplies", permissions: [PERMISSIONS.PURCHASES_VIEW], authorization: "organization" },
   { key: "customers", label: "Clientes", href: "/clientes", group: "relationship", permissions: [PERMISSIONS.CUSTOMERS_VIEW], authorization: "organization" },
@@ -62,14 +63,14 @@ const S = "secondary" as const;
 const H = "hidden" as const;
 
 export const CONTEXT_MODULE_PRIORITY: Record<OperationalContext, Record<string, NavigationPriority>> = {
-  management: { dashboard:P, orders:P, cash:P, finance:P, inventory:S, catalog:S, customers:S, growth:S, fiscal:S, purchases:S, team:S, conversations:S, dining:S, pdv:S, production:S, deliveries:S, driver:H, suppliers:S, scale:S, settings:S, platform:H },
-  manager: { orders:P, dining:P, production:P, deliveries:P, dashboard:S, cash:S, pdv:S, conversations:S, inventory:S, team:S, customers:S, catalog:S, finance:S, fiscal:H, purchases:S, suppliers:H, growth:H, driver:H, scale:S, settings:S, platform:H },
-  cashier: { pdv:P, cash:P, orders:P, customers:S, conversations:S, dining:S, dashboard:S, catalog:H, finance:H, fiscal:H, production:H, deliveries:H, driver:H, inventory:H, suppliers:H, purchases:H, growth:H, scale:H, team:H, settings:H, platform:H },
-  service: { conversations:P, orders:P, customers:P, pdv:S, deliveries:S, catalog:S, dashboard:S, dining:S, cash:H, finance:H, fiscal:H, production:H, driver:H, inventory:H, suppliers:H, purchases:H, growth:H, scale:H, team:H, settings:H, platform:H },
-  floor: { dining:P, orders:P, customers:S, catalog:S, pdv:S, dashboard:H, conversations:H, cash:H, finance:H, fiscal:H, production:H, deliveries:H, driver:H, inventory:H, suppliers:H, purchases:H, growth:H, scale:H, team:H, settings:H, platform:H },
-  kitchen: { production:P, orders:S, dashboard:H, conversations:H, dining:H, catalog:H, pdv:H, cash:H, finance:H, fiscal:H, deliveries:H, driver:H, inventory:H, suppliers:H, purchases:H, customers:H, growth:H, scale:H, team:H, settings:H, platform:H },
-  delivery: { driver:P, deliveries:S, orders:S, dashboard:H, conversations:H, dining:H, catalog:H, pdv:H, cash:H, finance:H, fiscal:H, production:H, inventory:H, suppliers:H, purchases:H, customers:H, growth:H, scale:H, team:H, settings:H, platform:H },
-  administrative: { catalog:P, inventory:P, purchases:P, suppliers:P, fiscal:P, settings:P, finance:S, team:S, scale:S, customers:S, dashboard:S, growth:S, orders:H, conversations:H, dining:H, pdv:H, cash:H, production:H, deliveries:H, driver:H, platform:H },
+  management: { dashboard:P, orders:P, cash:P, finance:P, inventory:S, gas_containers:S, catalog:S, customers:S, growth:S, fiscal:S, purchases:S, team:S, conversations:S, dining:S, pdv:S, production:S, deliveries:S, driver:H, suppliers:S, scale:S, settings:S, platform:H },
+  manager: { orders:P, dining:P, production:P, deliveries:P, dashboard:S, cash:S, pdv:S, conversations:S, inventory:S, gas_containers:S, team:S, customers:S, catalog:S, finance:S, fiscal:H, purchases:S, suppliers:H, growth:H, driver:H, scale:S, settings:S, platform:H },
+  cashier: { pdv:P, cash:P, orders:P, customers:S, conversations:S, dining:S, dashboard:S, catalog:H, finance:H, fiscal:H, production:H, deliveries:H, driver:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, growth:H, scale:H, team:H, settings:H, platform:H },
+  service: { conversations:P, orders:P, customers:P, pdv:S, deliveries:S, catalog:S, dashboard:S, dining:S, cash:H, finance:H, fiscal:H, production:H, driver:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, growth:H, scale:H, team:H, settings:H, platform:H },
+  floor: { dining:P, orders:P, customers:S, catalog:S, pdv:S, dashboard:H, conversations:H, cash:H, finance:H, fiscal:H, production:H, deliveries:H, driver:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, growth:H, scale:H, team:H, settings:H, platform:H },
+  kitchen: { production:P, orders:S, dashboard:H, conversations:H, dining:H, catalog:H, pdv:H, cash:H, finance:H, fiscal:H, deliveries:H, driver:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, customers:H, growth:H, scale:H, team:H, settings:H, platform:H },
+  delivery: { driver:P, deliveries:S, orders:S, dashboard:H, conversations:H, dining:H, catalog:H, pdv:H, cash:H, finance:H, fiscal:H, production:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, customers:H, growth:H, scale:H, team:H, settings:H, platform:H },
+  administrative: { catalog:P, inventory:P, gas_containers:P, purchases:P, suppliers:P, fiscal:P, settings:P, finance:S, team:S, scale:S, customers:S, dashboard:S, growth:S, orders:H, conversations:H, dining:H, pdv:H, cash:H, production:H, deliveries:H, driver:H, platform:H },
 };
 
 const priorityWeight: Record<NavigationPriority, number> = { hidden: 0, secondary: 1, primary: 2 };

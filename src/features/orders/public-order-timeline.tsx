@@ -1,5 +1,7 @@
 import type { FulfillmentType } from "@/server/checkout/schemas";
-import { orderStatusLabels, productionStatusLabels, type FulfillmentStatus, type OrderStatus, type ProductionStatus } from "@/server/orders/state-machines";
+import { orderStatusLabels, type FulfillmentStatus, type OrderStatus, type ProductionStatus } from "@/server/orders/state-machines";
+import { businessVocabulary, productionStatusLabelForBusiness } from "@/modules/business-vocabulary";
+import type { BusinessType } from "@/modules/module-catalog";
 import styles from "./public-order-timeline.module.css";
 
 type TimelineState = "done" | "current" | "upcoming";
@@ -19,7 +21,9 @@ const fulfillmentLabels: Record<FulfillmentStatus, string> = {
   not_required: "Não aplicável",
 };
 
-export function buildPublicOrderTimeline(input: { fulfillmentType: FulfillmentType; orderStatus: OrderStatus; productionStatus: ProductionStatus; fulfillmentStatus: FulfillmentStatus }) {
+export function buildPublicOrderTimeline(input: { fulfillmentType: FulfillmentType; orderStatus: OrderStatus; productionStatus: ProductionStatus; fulfillmentStatus: FulfillmentStatus; businessType?: BusinessType }) {
+  const businessType = input.businessType ?? "restaurant";
+  const vocabulary = businessVocabulary(businessType);
   const confirmed = input.orderStatus === "confirmed" || input.orderStatus === "completed";
   const productionRequired = input.productionStatus !== "not_required";
   const preparing = input.productionStatus === "queued" || input.productionStatus === "preparing" || input.productionStatus === "ready";
@@ -33,8 +37,8 @@ export function buildPublicOrderTimeline(input: { fulfillmentType: FulfillmentTy
     { key: "confirmed", label: "Confirmado", detail: orderStatusLabels[input.orderStatus], reached: confirmed },
   ];
   if (productionRequired) {
-    steps.push({ key: "preparing", label: "Preparo", detail: productionStatusLabels[input.productionStatus], reached: preparing });
-    steps.push({ key: "ready", label: "Pronto", detail: ready ? (input.fulfillmentType === "delivery" ? "Pronto para seguir com a entrega" : "Pronto para retirada") : "Aguardando conclusão do preparo", reached: ready });
+    steps.push({ key: "preparing", label: vocabulary.productionLabel, detail: productionStatusLabelForBusiness(input.productionStatus, businessType), reached: preparing });
+    steps.push({ key: "ready", label: vocabulary.readyLabel, detail: ready ? (input.fulfillmentType === "delivery" ? `${vocabulary.readyLabel} para seguir com a entrega` : `${vocabulary.readyLabel} para retirada`) : `Aguardando conclusão da ${vocabulary.productionLabel.toLowerCase()}`, reached: ready });
   }
   if (input.fulfillmentType === "delivery") {
     steps.push({ key: "out", label: "Saiu para entrega", detail: fulfillmentLabels[input.fulfillmentStatus], reached: deliveryOut });
@@ -48,7 +52,7 @@ export function buildPublicOrderTimeline(input: { fulfillmentType: FulfillmentTy
   return steps.map((step, index) => ({ ...step, state: (index < currentIndex ? "done" : index === currentIndex ? "current" : "upcoming") as TimelineState }));
 }
 
-export function PublicOrderTimeline(props: { fulfillmentType: FulfillmentType; orderStatus: OrderStatus; productionStatus: ProductionStatus; fulfillmentStatus: FulfillmentStatus }) {
+export function PublicOrderTimeline(props: { fulfillmentType: FulfillmentType; orderStatus: OrderStatus; productionStatus: ProductionStatus; fulfillmentStatus: FulfillmentStatus; businessType?: BusinessType }) {
   const terminalProblem = props.orderStatus === "canceled" || props.orderStatus === "rejected";
   const steps = buildPublicOrderTimeline(props);
   return <div className={styles.timeline} aria-label="Progresso do pedido">

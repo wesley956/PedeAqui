@@ -45,6 +45,8 @@ export const PERMISSIONS = {
   INVENTORY_VIEW: "inventory.view",
   INVENTORY_MANAGE: "inventory.manage",
   INVENTORY_ADJUST: "inventory.adjust",
+  GAS_CONTAINERS_VIEW: "gas_containers.view",
+  GAS_CONTAINERS_MANAGE: "gas_containers.manage",
   RECIPES_VIEW: "recipes.view",
   RECIPES_MANAGE: "recipes.manage",
   SUPPLIERS_VIEW: "suppliers.view",

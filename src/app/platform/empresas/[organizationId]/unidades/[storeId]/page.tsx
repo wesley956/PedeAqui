@@ -20,29 +20,37 @@ function tone(status: string) {
   return status === "active" ? "good" : status === "temporarily_closed" ? "warn" : "danger";
 }
 
+function presetLabel(preset: string) {
+  if (preset === "essential") return "Essencial";
+  if (preset === "complete") return "Completo";
+  return "Personalizado";
+}
+
 export default async function Restaurant360Page({ params }: { params: Promise<{ organizationId: string; storeId: string }> }) {
   const { organizationId, storeId } = await params;
   const data = await PlatformRestaurant360Service.load(organizationId, storeId);
   if (!data) notFound();
 
   const readinessTone = data.readiness.ready ? "good" : "danger";
+  const moduleTone = data.modules.dependencyIssues.length === 0 ? "good" : "danger";
   return (
     <div className={styles.page}>
       <div className={styles.breadcrumbs}><Link href="/platform#empresas">← Empresas e unidades</Link><span>/</span><span>{data.organization.name}</span><span>/</span><strong>{data.store.name}</strong></div>
 
       <header className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>VISÃO 360° · RESTAURANTE</p>
+          <p className={styles.eyebrow}>VISÃO 360° · {data.business.label.toUpperCase()}</p>
           <h1>{data.store.name}</h1>
           <p>{data.organization.name} · {data.store.city && data.store.state ? `${data.store.city} / ${data.store.state}` : "Localização não informada"} · /m/{data.store.slug}</p>
         </div>
         <div className={styles.heroBadges}>
           <span className={styles.pill} data-tone={tone(data.store.status)}>{statusLabel(data.store.status)}</span>
           <span className={styles.pill} data-tone={readinessTone}>{data.readiness.ready ? "Pronta para vender" : `${data.readiness.blockers} bloqueio(s)`}</span>
+          <span className={styles.pill} data-tone={moduleTone}>{data.modules.dependencyIssues.length === 0 ? "Módulos consistentes" : `${data.modules.dependencyIssues.length} dependência(s) quebrada(s)`}</span>
         </div>
       </header>
 
-      <section className={styles.metrics} aria-label="Resumo do restaurante">
+      <section className={styles.metrics} aria-label="Resumo da unidade">
         <Metric label="Produtos disponíveis" value={data.commercial.productCount} helper="ativos para venda" />
         <Metric label="Pedidos recentes" value={data.recentOrders.length} helper="últimos registros" />
         <Metric label="Usuários ativos" value={data.access.activeMembers} helper={`${data.access.pendingInvites} convite(s) pendente(s)`} />
@@ -52,7 +60,22 @@ export default async function Restaurant360Page({ params }: { params: Promise<{ 
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <div><h2>Prontidão comercial</h2><p>Diagnóstico determinístico do que impede ou permite esta unidade receber pedidos agora.</p></div>
+          <div><h2>Configuração modular</h2><p>Perfil, preset e módulos efetivos da unidade, separados de permissões de usuário e sem expor dados pessoais.</p></div>
+          <span className={styles.pill} data-tone={moduleTone}>{presetLabel(data.modules.preset)}</span>
+        </div>
+        <div className={styles.supportGrid}>
+          <InfoCard title="Perfil do negócio" lines={[data.business.label, `Preset: ${presetLabel(data.modules.preset)}`, `Catálogo modular v${data.modules.catalogVersion} · revisão ${data.modules.configRevision}`]} />
+          <InfoCard title="Módulos ativos" lines={data.modules.active.length > 0 ? data.modules.active.map((module) => module.label) : ["Nenhum módulo ativo identificado"]} />
+          <InfoCard title="Módulos inativos" lines={data.modules.inactive.length > 0 ? data.modules.inactive.map((module) => module.label) : ["Nenhum módulo opcional inativo"]} />
+          <InfoCard title="Disponibilidade do plano" lines={data.modules.unavailableByPlan.length > 0 ? data.modules.unavailableByPlan.map((module) => `${module.label}: indisponível no plano atual`) : ["Todos os módulos configurados estão disponíveis no plano"]} />
+          <InfoCard title="Dependências" lines={data.modules.dependencyIssues.length > 0 ? data.modules.dependencyIssues.map((issue) => `${issue.moduleLabel} precisa de ${issue.dependencyLabel}`) : ["Nenhuma dependência quebrada"]} />
+          <InfoCard title="Experiência dos usuários" lines={[`${data.modules.easyModeUsers} usuário(s) em Modo Fácil`, `${data.modules.standardModeUsers} usuário(s) no modo padrão`, "O modo de experiência não concede permissões"]} />
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <div><h2>Prontidão comercial</h2><p>Diagnóstico determinístico do que impede ou permite esta unidade receber pedidos agora, considerando somente os módulos que fazem parte da configuração atual.</p></div>
           <span className={styles.pill} data-tone={readinessTone}>{data.readiness.ready ? "Tudo certo" : "Ação necessária"}</span>
         </div>
         <div className={styles.readinessGrid}>
@@ -71,8 +94,8 @@ export default async function Restaurant360Page({ params }: { params: Promise<{ 
           <Link className={styles.button} href={`/platform/unidades/${storeId}/whatsapp`}>Configurar WhatsApp</Link>
         </div>
         <div className={styles.supportGrid}>
-          <InfoCard title="Cardápio e venda" lines={[`${data.commercial.productCount} produto(s) disponível(is)`, `${data.commercial.activeHours} período(s) de funcionamento`, data.readiness.openNow ? "Dentro do horário agora" : "Fora do horário agora"]} />
-          <InfoCard title="Entrega e retirada" lines={[data.commercial.deliveryEnabled ? "Entrega configurada" : "Entrega não configurada/indisponível", `${data.commercial.neighborhoods} região(ões) ativa(s)`, "As regras comerciais permanecem sob controle do restaurante"]} />
+          <InfoCard title={`${data.business.catalogLabel} e venda`} lines={[`${data.commercial.productCount} produto(s) disponível(is)`, `${data.commercial.activeHours} período(s) de funcionamento`, data.readiness.openNow ? "Dentro do horário agora" : "Fora do horário agora"]} />
+          <InfoCard title="Entrega e retirada" lines={[data.commercial.deliveryEnabled ? "Entrega configurada" : "Entrega não configurada ou fora da configuração atual", `${data.commercial.neighborhoods} região(ões) ativa(s)`, "As regras comerciais permanecem sob controle do estabelecimento"]} />
           <InfoCard title="Comunicação" lines={[data.commercial.whatsappHealthy ? "WhatsApp conectado" : "WhatsApp exige atenção", `${data.commercial.printAgentsOnline} agente(s) de impressão online`, `${data.commercial.printers} impressora(s) ativa(s)`]} />
           <InfoCard title="Assinatura" lines={[data.subscription?.planName ?? "Sem plano identificado", data.subscription ? `Situação: ${data.subscription.status}` : "Sem assinatura encontrada", data.subscription?.current_period_end ? `Período até ${dateTime.format(new Date(data.subscription.current_period_end))}` : "Período não informado"]} />
           <InfoCard title="Equipe" lines={[`${data.access.activeMembers} membro(s) ativo(s)`, `${data.access.pendingInvites} convite(s) pendente(s)`, "Detalhes de acesso ficam restritos ao suporte autorizado"]} />

@@ -107,6 +107,11 @@
     ["20260818234927", "user_guides_rls_initplan_hardening"],
     ["20260819205759", "create_catalog_media_bucket"],
     ["20260820002244", "modular_foundation"],
-    ["20260820004213", "modular_experience"]
+    ["20260820004213", "modular_experience"],
+    ["20260820013719", "gas_segment_domain"],
+    ["20260820015053", "gas_segment_integrations"],
+    ["20260820015108", "gas_cart_reprice"],
+    ["20260820020321", "gas_segment_security_hardening"],
+    ["20260820020641", "gas_segment_fk_indexes"]
   ]
 }
