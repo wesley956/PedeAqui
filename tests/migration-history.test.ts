@@ -18,9 +18,9 @@ describe("canonical Supabase SQL history", () => {
   });
 
   it("preserves historical migrations and advances only by append", () => {
-    expect(files.at(-1)).toBe("110_gas_segment_security_hardening.sql");
+    expect(files.at(-1)).toBe("111_gas_segment_fk_indexes.sql");
     for (const file of [
-      "90_onboarding_role_permission_conflict_hotfix.sql","91_customer_recognition.sql","92_whatsapp_greeting.sql","93_printing_private_execution_grants.sql","94_finance_effect_sign_integer_compat_hotfix.sql","95_public_menu_anon_security_definer.sql","96_platform_incidents.sql","97_order_payment_providers.sql","98_order_whatsapp_notifications.sql","99_order_whatsapp_template_support.sql","100_whatsapp_embedded_signup.sql","101_platform_commercial_onboarding.sql","102_new_user_guide.sql","103_order_completion_refund_states.sql","104_user_guides_rls_initplan_hardening.sql","105_modular_foundation.sql","106_modular_experience.sql","107_gas_segment_domain.sql","108_gas_segment_integrations.sql","109_gas_cart_reprice.sql","110_gas_segment_security_hardening.sql",
+      "90_onboarding_role_permission_conflict_hotfix.sql","91_customer_recognition.sql","92_whatsapp_greeting.sql","93_printing_private_execution_grants.sql","94_finance_effect_sign_integer_compat_hotfix.sql","95_public_menu_anon_security_definer.sql","96_platform_incidents.sql","97_order_payment_providers.sql","98_order_whatsapp_notifications.sql","99_order_whatsapp_template_support.sql","100_whatsapp_embedded_signup.sql","101_platform_commercial_onboarding.sql","102_new_user_guide.sql","103_order_completion_refund_states.sql","104_user_guides_rls_initplan_hardening.sql","105_modular_foundation.sql","106_modular_experience.sql","107_gas_segment_domain.sql","108_gas_segment_integrations.sql","109_gas_cart_reprice.sql","110_gas_segment_security_hardening.sql","111_gas_segment_fk_indexes.sql",
     ]) expect(files).toContain(file);
     const hotfix = read("supabase/sql/90_onboarding_role_permission_conflict_hotfix.sql");
     expect(hotfix.match(/on conflict do nothing/gi) ?? []).toHaveLength(8); expect(hotfix).toContain("create or replace function private.bootstrap_organization"); expect(hotfix).toContain("set search_path = ''");
