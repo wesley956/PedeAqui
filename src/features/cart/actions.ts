@@ -21,12 +21,14 @@ function safeInteger(value: FormDataEntryValue | null) {
 }
 
 export async function addToCartAction(formData: FormData) {
+  const gasSaleModeRaw = formData.get("gasSaleMode");
   const values = addCartItemSchema.parse({
     storeSlug: String(formData.get("storeSlug") ?? ""),
     productId: String(formData.get("productId") ?? ""),
     quantity: safeInteger(formData.get("quantity")),
     note: typeof formData.get("note") === "string" ? String(formData.get("note")) : null,
     modifierIds: selectedModifierIds(formData),
+    gasSaleMode: typeof gasSaleModeRaw === "string" && gasSaleModeRaw ? gasSaleModeRaw : null,
   });
   const cookieName = cartCookieName(values.storeSlug);
   const cookieStore = await cookies();
