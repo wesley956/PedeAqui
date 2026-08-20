@@ -1,6 +1,6 @@
 import { PERMISSIONS, type PermissionKey } from "@/server/access/permissions";
 
-export const MODULE_CATALOG_VERSION = 1;
+export const MODULE_CATALOG_VERSION = 2;
 
 export const BUSINESS_TYPES = ["restaurant", "gas", "generic_commerce"] as const;
 export type BusinessType = (typeof BUSINESS_TYPES)[number];
@@ -22,6 +22,7 @@ export const MODULE_KEYS = [
   "deliveries",
   "driver",
   "inventory",
+  "gas_containers",
   "suppliers",
   "purchases",
   "customers",
@@ -123,6 +124,11 @@ export const MODULE_CATALOG: Record<ModuleKey, ModuleDefinition> = {
     routes: ["/estoque"], permissionsAny: [PERMISSIONS.INVENTORY_VIEW], dependencies: [], incompatibleWith: [],
     kind: "optional", canDisable: true, supportedBusinessTypes: COMMERCE_BUSINESS_TYPES, entitlementFeatureKey: null,
   },
+  gas_containers: {
+    key: "gas_containers", defaultLabel: "Vasilhames", description: "Trocas, cascos vendidos e saldo de vasilhames cheios, vazios e em rota.", group: "supplies",
+    routes: ["/vasilhames"], permissionsAny: [PERMISSIONS.GAS_CONTAINERS_VIEW], dependencies: ["orders", "catalog"], incompatibleWith: [],
+    kind: "segmented", canDisable: true, supportedBusinessTypes: ["gas"], entitlementFeatureKey: "module.gas_containers",
+  },
   suppliers: {
     key: "suppliers", defaultLabel: "Fornecedores", description: "Cadastro e gestão de fornecedores.", group: "supplies",
     routes: ["/fornecedores"], permissionsAny: [PERMISSIONS.SUPPLIERS_VIEW], dependencies: [], incompatibleWith: [],
@@ -169,7 +175,8 @@ const PROFILE_PRESETS: Record<BusinessType, Record<Exclude<ModulePreset, "custom
   },
   gas: {
     essential: ["pdv", "deliveries", "driver"],
-    complete: MODULE_KEYS.filter((key) => MODULE_CATALOG[key].supportedBusinessTypes.includes("gas")),
+    // Vasilhames é um add-on explícito: o perfil Completo não ativa um módulo comercial pago sem confirmação.
+    complete: MODULE_KEYS.filter((key) => key !== "gas_containers" && MODULE_CATALOG[key].supportedBusinessTypes.includes("gas")),
   },
   generic_commerce: {
     essential: ["pdv"],
