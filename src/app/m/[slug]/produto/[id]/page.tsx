@@ -14,6 +14,7 @@ export default async function PublicProductPage({ params, searchParams }: { para
   if (!result) notFound();
   const { product, store, businessType, gas } = result;
   const vocabulary = businessVocabulary(businessType);
+  const productLabel = vocabulary.productSingular.charAt(0).toUpperCase() + vocabulary.productSingular.slice(1);
   const price = product.promotional_price_cents ?? product.price_cents;
   const soldOut = product.availability === "sold_out";
   const timeLabel = businessType === "restaurant" ? "Preparo estimado" : businessType === "gas" ? "Separação estimada" : "Prazo estimado";
@@ -40,8 +41,8 @@ export default async function PublicProductPage({ params, searchParams }: { para
 
       <section style={{ background: "#fff", border: "1px solid #eee7df", borderRadius: 18, padding: 18, display: "grid", gap: 14 }}>
         <label style={{ display: "grid", gap: 6 }}><strong>Observação</strong><textarea name="note" maxLength={500} placeholder={notePlaceholder} disabled={soldOut} style={{ minHeight: 88, resize: "vertical", padding: 12, borderRadius: 12, border: "1px solid #e5ded6", background: "#fff", color: "#181818" }} /></label>
-        <div style={{ display: "grid", gridTemplateColumns: "120px minmax(0,1fr)", gap: 12, alignItems: "end" }}><label style={{ display: "grid", gap: 6 }}><strong>Quantidade</strong><input name="quantity" type="number" min={1} max={99} defaultValue={1} required disabled={soldOut} style={{ minHeight: 48, borderRadius: 12, border: "1px solid #e5ded6", padding: "10px 12px", background: "#fff", color: "#181818" }} /></label><button type="submit" disabled={soldOut} style={{ minHeight: 50, border: 0, borderRadius: 14, padding: "12px 18px", background: soldOut ? "#d8d2cb" : "#FF6B00", color: soldOut ? "#756e67" : "#fff", fontWeight: 900, cursor: soldOut ? "not-allowed" : "pointer" }}>{soldOut ? `${vocabulary.productLabel} esgotado` : "Adicionar ao carrinho"}</button></div>
-        <small style={{ color: "#8a837b" }}>O valor exibido aqui é informativo. O PedeAqui recalcula {vocabulary.productLabel.toLowerCase()}, adicionais e opções do segmento no servidor antes de salvar.</small>
+        <div style={{ display: "grid", gridTemplateColumns: "120px minmax(0,1fr)", gap: 12, alignItems: "end" }}><label style={{ display: "grid", gap: 6 }}><strong>Quantidade</strong><input name="quantity" type="number" min={1} max={99} defaultValue={1} required disabled={soldOut} style={{ minHeight: 48, borderRadius: 12, border: "1px solid #e5ded6", padding: "10px 12px", background: "#fff", color: "#181818" }} /></label><button type="submit" disabled={soldOut} style={{ minHeight: 50, border: 0, borderRadius: 14, padding: "12px 18px", background: soldOut ? "#d8d2cb" : "#FF6B00", color: soldOut ? "#756e67" : "#fff", fontWeight: 900, cursor: soldOut ? "not-allowed" : "pointer" }}>{soldOut ? `${productLabel} esgotado` : "Adicionar ao carrinho"}</button></div>
+        <small style={{ color: "#8a837b" }}>O valor exibido aqui é informativo. O PedeAqui recalcula {vocabulary.productSingular.toLowerCase()}, adicionais e opções do segmento no servidor antes de salvar.</small>
       </section>
     </form>
   </main>;
