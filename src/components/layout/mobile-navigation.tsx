@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ExperienceMode } from "@/modules/user-experience";
 import type { OperationalContext } from "./navigation-model";
 import type { ShellNavigationItem } from "./desktop-navigation";
 
@@ -27,58 +28,54 @@ function mobileLabel(item: ShellNavigationItem, contexts: readonly OperationalCo
   return item.label;
 }
 
-export function selectMobileNavigation(items: readonly ShellNavigationItem[], contexts: readonly OperationalContext[], limit = 4) {
+export function selectMobileNavigation(
+  items: readonly ShellNavigationItem[],
+  contexts: readonly OperationalContext[],
+  limit = 4,
+  experienceMode: ExperienceMode = "standard",
+) {
   const visible = items.filter((item) => item.priority !== "hidden");
+  if (experienceMode === "easy") {
+    const selected = visible.filter((item) => item.easyPrimary).slice(0, limit);
+    const selectedKeys = new Set(selected.map((item) => item.key));
+    return { selected, more: visible.filter((item) => !selectedKeys.has(item.key)) };
+  }
+
   const byKey = new Map(visible.map((item) => [item.key, item]));
   const orderedKeys = [...new Set(contexts.flatMap((context) => preferredOrder[context]))];
   const selected: ShellNavigationItem[] = [];
-
   for (const key of orderedKeys) {
     const item = byKey.get(key);
     if (item && !selected.some((entry) => entry.key === item.key)) selected.push(item);
     if (selected.length === limit) break;
   }
-
-  if (selected.length < limit) {
-    for (const item of visible.filter((entry) => entry.priority === "primary")) {
-      if (!selected.some((entry) => entry.key === item.key)) selected.push(item);
-      if (selected.length === limit) break;
-    }
+  if (selected.length < limit) for (const item of visible.filter((entry) => entry.priority === "primary")) {
+    if (!selected.some((entry) => entry.key === item.key)) selected.push(item);
+    if (selected.length === limit) break;
   }
-
-  if (selected.length < limit) {
-    for (const item of visible) {
-      if (!selected.some((entry) => entry.key === item.key)) selected.push(item);
-      if (selected.length === limit) break;
-    }
+  if (selected.length < limit) for (const item of visible) {
+    if (!selected.some((entry) => entry.key === item.key)) selected.push(item);
+    if (selected.length === limit) break;
   }
-
   const selectedKeys = new Set(selected.map((item) => item.key));
-  const more = visible.filter((item) => !selectedKeys.has(item.key));
-  return { selected, more };
+  return { selected, more: visible.filter((item) => !selectedKeys.has(item.key)) };
 }
 
-export function MobileNavigation({ items, contexts }: { items: readonly ShellNavigationItem[]; contexts: readonly OperationalContext[] }) {
+export function MobileNavigation({ items, contexts, experienceMode = "standard" }: { items: readonly ShellNavigationItem[]; contexts: readonly OperationalContext[]; experienceMode?: ExperienceMode }) {
   const pathname = usePathname();
-  const { selected, more } = selectMobileNavigation(items, contexts);
-
+  const { selected, more } = selectMobileNavigation(items, contexts, 4, experienceMode);
   return (
-    <nav className="mobile-nav" aria-label="Navegação principal mobile">
+    <nav className="mobile-nav" aria-label="Navegação principal mobile" data-experience={experienceMode}>
       {selected.map((item) => {
         const active = isActive(pathname, item.href);
         return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}>{mobileLabel(item, contexts)}</Link>;
       })}
-      {more.length > 0 ? (
-        <details className="mobile-more">
-          <summary aria-label="Abrir mais opções">Mais</summary>
-          <div className="mobile-more-panel">
-            {more.map((item) => {
-              const active = isActive(pathname, item.href);
-              return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}>{item.label}</Link>;
-            })}
-          </div>
-        </details>
-      ) : null}
+      {more.length > 0 ? <details className="mobile-more"><summary aria-label="Abrir mais opções">Mais</summary><div className="mobile-more-panel">
+        {more.map((item) => {
+          const active = isActive(pathname, item.href);
+          return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}>{item.label}</Link>;
+        })}
+      </div></details> : null}
     </nav>
   );
 }
