@@ -48,6 +48,11 @@ async function operationalBlockers(organizationId: string, storeId: string, modu
     if (error) throw error;
     return data?.length ? ["delivery_in_progress"] : [];
   }
+  if (moduleKey === "gas_containers") {
+    const { data, error } = await admin.from("gas_container_balances").select("container_type_id").eq("organization_id", organizationId).eq("store_id", storeId).neq("in_route_quantity", 0).limit(1);
+    if (error) throw error;
+    return data?.length ? ["gas_containers_in_route"] : [];
+  }
   return [];
 }
 
