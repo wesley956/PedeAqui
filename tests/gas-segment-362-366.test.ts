@@ -79,7 +79,8 @@ describe("gas segment [362]-[366]", () => {
     expect(integrationSql).toContain("public.create_order_from_checkout_internal");
     expect(integrationSql).toContain("'digital_menu'");
     expect(orderService).toContain("order_item_gas_options");
-    expect(tracking).toContain("gasOption");
+    expect(tracking).toContain("item.gas");
+    expect(tracking).toContain("Troca de vasilhame");
     expect(domainSql).not.toContain("gas_orders");
   });
 
