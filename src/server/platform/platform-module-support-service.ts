@@ -82,11 +82,11 @@ export class PlatformModuleSupportService {
     if (claimError?.code === "23505") return { duplicate: true, preview };
     if (claimError) throw claimError;
 
-    const beforeResult = await admin.from("store_modules").select("module_key,enabled,configuration_source,catalog_version,updated_at")
-      .eq("organization_id", input.organizationId).eq("store_id", input.storeId).order("module_key");
-    if (beforeResult.error) throw beforeResult.error;
-
     try {
+      const beforeResult = await admin.from("store_modules").select("module_key,enabled,configuration_source,catalog_version,updated_at")
+        .eq("organization_id", input.organizationId).eq("store_id", input.storeId).order("module_key");
+      if (beforeResult.error) throw beforeResult.error;
+
       const result = await ModuleConfigurationService.supportApply({
         organizationId: input.organizationId,
         storeId: input.storeId,
