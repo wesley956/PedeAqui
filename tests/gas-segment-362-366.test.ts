@@ -10,6 +10,8 @@ const read = (relative: string) => fs.readFileSync(path.join(root, relative), "u
 const domainSql = read("supabase/sql/107_gas_segment_domain.sql");
 const integrationSql = read("supabase/sql/108_gas_segment_integrations.sql");
 const repriceSql = read("supabase/sql/109_gas_cart_reprice.sql");
+const securitySql = read("supabase/sql/110_gas_segment_security_hardening.sql");
+const indexesSql = read("supabase/sql/111_gas_segment_fk_indexes.sql");
 
 describe("gas segment [362]-[366]", () => {
   it("keeps gas as a profile over the shared PedeAqui core", () => {
@@ -119,5 +121,16 @@ describe("gas segment [362]-[366]", () => {
     expect(panel).toContain("Pré-validar e aplicar alteração");
     expect(panel).toContain('name="reason"');
     expect(panel).not.toContain("module.gas_containers");
+  });
+
+  it("hardens gas public access and covers new foreign keys", () => {
+    expect(securitySql).toContain("security_invoker = true");
+    expect(securitySql).toContain("cart_item_gas_options_deny_direct");
+    for (const indexName of [
+      "cart_item_gas_options_org_store_item_fk_idx",
+      "order_item_gas_options_org_store_item_fk_idx",
+      "gas_container_movements_org_store_type_fk_idx",
+      "product_gas_profiles_org_store_type_fk_idx",
+    ]) expect(indexesSql).toContain(indexName);
   });
 });
