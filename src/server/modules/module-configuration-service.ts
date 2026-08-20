@@ -1,12 +1,13 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { MODULE_KEYS, modulesForPreset, type ModuleKey, type ModulePreset } from "@/modules/module-catalog";
+import { MODULE_CATALOG, MODULE_KEYS, isBusinessType, modulesForPreset, type ModuleKey, type ModulePreset } from "@/modules/module-catalog";
 import { planModuleChange, type ModuleLifecyclePlan } from "@/modules/module-lifecycle";
 import { authorize } from "@/server/access/authorize";
 import { getAccessContext, type AccessContext } from "@/server/access/context";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { ModuleAccessService, type StoreModuleSnapshot } from "@/server/modules/module-access-service";
+import { PlatformAdminService, PlatformAuthorizationError } from "@/server/platform/platform-admin-service";
 
 export class ModuleConfigurationError extends Error {
   constructor(public readonly plan: ModuleLifecyclePlan) {
@@ -62,6 +63,39 @@ async function authorizedSnapshot(existingContext?: AccessContext) {
   if (!context.storeId) throw new Error("Module configuration requires an active store");
   const snapshot = await ModuleAccessService.load(context);
   return { context, snapshot };
+}
+
+async function supportSnapshot(organizationId: string, storeId: string) {
+  const access = await PlatformAdminService.access();
+  if (access.role !== "super_admin") throw new PlatformAuthorizationError();
+  const admin = createAdminClient();
+  const [{ data: store, error: storeError }, { data: rows, error: rowsError }] = await Promise.all([
+    admin.from("stores").select("id,organization_id,business_type,module_config_revision").eq("organization_id", organizationId).eq("id", storeId).maybeSingle(),
+    admin.from("store_modules").select("module_key,enabled").eq("organization_id", organizationId).eq("store_id", storeId),
+  ]);
+  if (storeError) throw storeError;
+  if (rowsError) throw rowsError;
+  if (!store) throw new Error("Unidade não encontrada para configuração modular.");
+  const rawBusinessType = String(store.business_type ?? "restaurant");
+  const businessType = isBusinessType(rawBusinessType) ? rawBusinessType : "restaurant";
+  const enabledModuleKeys = new Set<ModuleKey>();
+  for (const row of rows ?? []) {
+    const key = String(row.module_key ?? "") as ModuleKey;
+    if ((MODULE_KEYS as readonly string[]).includes(key) && row.enabled === true) enabledModuleKeys.add(key);
+  }
+  const modulesBlockedByPlan = new Set<ModuleKey>();
+  for (const moduleKey of MODULE_KEYS) {
+    const featureKey = MODULE_CATALOG[moduleKey].entitlementFeatureKey;
+    if (!featureKey) continue;
+    const { data, error } = await admin.rpc("organization_entitlement_internal", {
+      p_organization_id: organizationId,
+      p_feature_key: featureKey,
+      p_at: new Date().toISOString(),
+    });
+    if (error) throw error;
+    if (!Boolean((data as { enabled?: boolean } | null)?.enabled)) modulesBlockedByPlan.add(moduleKey);
+  }
+  return { access, admin, businessType, enabledModuleKeys, modulesBlockedByPlan, configRevision: Number(store.module_config_revision) || 0 };
 }
 
 export class ModuleConfigurationService {
@@ -127,5 +161,38 @@ export class ModuleConfigurationService {
       throw error;
     }
     return { ...preview, changed: preview.changes.length > 0 || preview.snapshot.preset !== preview.preset };
+  }
+
+  static async supportPreview(input: { organizationId: string; storeId: string; moduleKey: ModuleKey; enabled: boolean }) {
+    const snapshot = await supportSnapshot(input.organizationId, input.storeId);
+    const blockers = input.enabled ? [] : await operationalBlockers(input.organizationId, input.storeId, input.moduleKey);
+    const plan = planModuleChange({
+      moduleKey: input.moduleKey,
+      enabled: input.enabled,
+      businessType: snapshot.businessType,
+      enabledModuleKeys: snapshot.enabledModuleKeys,
+      modulesBlockedByPlan: snapshot.modulesBlockedByPlan,
+      operationalBlockers: blockers,
+    });
+    return { ...snapshot, plan };
+  }
+
+  static async supportApply(input: { organizationId: string; storeId: string; moduleKey: ModuleKey; enabled: boolean }) {
+    const preview = await this.supportPreview(input);
+    if (preview.plan.status === "blocked") throw new ModuleConfigurationError(preview.plan);
+    if (preview.plan.changes.length === 0) return { ...preview, changed: false };
+    const { error } = await preview.admin.rpc("set_store_modules_internal", {
+      p_organization_id: input.organizationId,
+      p_store_id: input.storeId,
+      p_changes: preview.plan.changes.map((change) => ({ module_key: change.moduleKey, enabled: change.enabled })),
+      p_source: "support",
+      p_actor_user_id: preview.access.user.id,
+      p_expected_revision: preview.configRevision,
+    });
+    if (error) {
+      if (/module configuration revision conflict/i.test(error.message ?? "")) throw new ModuleConfigurationConflictError();
+      throw error;
+    }
+    return { ...preview, changed: true };
   }
 }
