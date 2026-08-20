@@ -116,8 +116,10 @@ describe("modular foundation [352]-[356]", () => {
 
   it("preserves RBAC as the source of permission keys used by navigation", () => {
     const nav = read("src/server/access/navigation-access-service.ts");
+    const moduleAccess = read("src/server/modules/module-access-service.ts");
     const snapshot = read("src/server/access/permission-snapshot-service.ts");
-    expect(nav).toContain("PermissionSnapshotService.load(context)");
+    expect(nav).toContain("ModuleAccessService.load(context)");
+    expect(moduleAccess).toContain("PermissionSnapshotService.load(context)");
     expect(nav).toContain("contextualNavigation(operationalContexts, new Set(permissionKeys), false)");
     expect(snapshot).toContain('from("role_permissions")');
     expect(snapshot).toContain('from("permissions")');

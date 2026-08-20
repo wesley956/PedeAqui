@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const page = readFileSync(join(process.cwd(), "src/app/(app)/dashboard/page.tsx"), "utf8");
+const vocabulary = readFileSync(join(process.cwd(), "src/modules/business-vocabulary.ts"), "utf8");
 const service = readFileSync(join(process.cwd(), "src/server/dashboard/dashboard-service.ts"), "utf8");
 const css = readFileSync(join(process.cwd(), "src/app/(app)/dashboard/dashboard.module.css"), "utf8");
 const errorState = readFileSync(join(process.cwd(), "src/app/(app)/dashboard/error.tsx"), "utf8");
@@ -13,7 +14,9 @@ describe("management dashboard", () => {
       expect(page).toContain(label);
     }
     expect(page).toContain("Vendas por hora");
-    expect(page).toContain("Produtos mais vendidos");
+    expect(page).toContain("productPluralTitle");
+    expect(page).toContain("mais vendidos");
+    expect(vocabulary).toContain('productPlural: "produtos"');
   });
 
   it("keeps revenue/order comparisons tied to the canonical dashboard snapshot", () => {
