@@ -1,8 +1,8 @@
 import { adjustGasContainerAction, configureGasProductAction, createGasContainerTypeAction } from "@/features/gas-containers/actions";
 import { GasContainerService } from "@/server/gas/gas-container-service";
 
-const fieldStyle = { minHeight: 46, borderRadius: 10, border: "1px solid var(--color-border)", padding: "10px 12px", background: "var(--color-surface)", color: "inherit" } as const;
-const cardStyle = { border: "1px solid var(--color-border)", borderRadius: 16, padding: 16, background: "var(--color-surface)" } as const;
+const fieldStyle = { minHeight: 46, borderRadius: 10, border: "1px solid var(--border-default)", padding: "10px 12px", background: "var(--surface-1)", color: "inherit" } as const;
+const cardStyle = { border: "1px solid var(--border-default)", borderRadius: 16, padding: 16, background: "var(--surface-1)" } as const;
 
 export default async function GasContainersPage() {
   const { balances, profiles, products, movements } = await GasContainerService.load();
@@ -32,7 +32,7 @@ export default async function GasContainersPage() {
         <label style={{ display: "grid", gap: 6 }}><strong>Código</strong><input name="code" required maxLength={24} placeholder="P13" style={fieldStyle} /></label>
         <label style={{ display: "grid", gap: 6 }}><strong>Nome</strong><input name="name" required maxLength={100} placeholder="Botijão residencial" style={fieldStyle} /></label>
         <label style={{ display: "grid", gap: 6 }}><strong>Peso nominal (kg)</strong><input name="nominalWeightKg" inputMode="decimal" placeholder="13" style={fieldStyle} /></label>
-        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--color-primary)", color: "white", fontWeight: 900, cursor: "pointer" }}>Cadastrar vasilhame</button>
+        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--brand-primary)", color: "white", fontWeight: 900, cursor: "pointer" }}>Cadastrar vasilhame</button>
       </form>
 
       <form action={adjustGasContainerAction} style={{ ...cardStyle, display: "grid", gap: 12 }}>
@@ -44,7 +44,7 @@ export default async function GasContainersPage() {
           <label style={{ display: "grid", gap: 6 }}><strong>Em rota ±</strong><input name="inRouteDelta" type="number" defaultValue={0} style={fieldStyle} /></label>
         </div>
         <label style={{ display: "grid", gap: 6 }}><strong>Motivo</strong><input name="reason" required minLength={3} maxLength={500} placeholder="Ex.: inventário inicial" style={fieldStyle} /></label>
-        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--color-primary)", color: "white", fontWeight: 900, cursor: "pointer" }}>Registrar ajuste</button>
+        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--brand-primary)", color: "white", fontWeight: 900, cursor: "pointer" }}>Registrar ajuste</button>
       </form>
     </div>
 
@@ -60,14 +60,14 @@ export default async function GasContainersPage() {
         <label><input name="containerSaleEnabled" type="checkbox" defaultChecked /> Permitir produto + casco</label>
         <label><input name="requireContainerChoice" type="checkbox" defaultChecked /> Exigir escolha no pedido</label>
       </div>
-      <button type="submit" style={{ ...fieldStyle, justifySelf: "start", border: 0, background: "var(--color-primary)", color: "white", fontWeight: 900, cursor: "pointer" }}>Salvar vínculo</button>
+      <button type="submit" style={{ ...fieldStyle, justifySelf: "start", border: 0, background: "var(--brand-primary)", color: "white", fontWeight: 900, cursor: "pointer" }}>Salvar vínculo</button>
     </form>
 
     <article style={cardStyle}>
       <h2 style={{ marginTop: 0 }}>Movimentações recentes</h2>
       {movements.length === 0 ? <p className="muted">Ainda não há movimentações de vasilhames.</p> : <div style={{ display: "grid", gap: 8 }}>{movements.map((movement) => {
         const type = balances.find((item) => item.container_type_id === movement.container_type_id);
-        return <div key={movement.id} style={{ display: "grid", gridTemplateColumns: "minmax(120px,1fr) repeat(3,minmax(70px,auto))", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--color-border)" }}>
+        return <div key={movement.id} style={{ display: "grid", gridTemplateColumns: "minmax(120px,1fr) repeat(3,minmax(70px,auto))", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--border-default)" }}>
           <div><strong>{type?.code ?? "Vasilhame"}</strong><div className="muted">{movement.movement_kind.replaceAll("_", " ")} · {new Date(movement.created_at).toLocaleString("pt-BR")}</div>{movement.reason ? <small>{movement.reason}</small> : null}</div>
           <span>Cheios {Number(movement.full_delta) >= 0 ? "+" : ""}{movement.full_delta}</span><span>Vazios {Number(movement.empty_delta) >= 0 ? "+" : ""}{movement.empty_delta}</span><span>Rota {Number(movement.in_route_delta) >= 0 ? "+" : ""}{movement.in_route_delta}</span>
         </div>;
