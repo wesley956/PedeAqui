@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { PlatformModuleSupportService } from "@/server/platform/platform-module-support-service";
 import { PlatformSupportActionService, type PlatformSupportCommon } from "@/server/platform/platform-support-action-service";
 
 const text=(f:FormData,k:string)=>{const v=f.get(k);return typeof v==="string"?v.trim():""};
@@ -16,3 +17,4 @@ export async function supportFulfillmentAction(f:FormData){await PlatformSupport
 export async function supportPaymentAction(f:FormData){await PlatformSupportActionService.setPaymentMethod({...common(f),method:text(f,"method") as "cash"|"pix"|"credit_card"|"debit_card",enabled:text(f,"enabled")==="true"});refresh(f)}
 export async function supportHourAction(f:FormData){await PlatformSupportActionService.addStoreHour({...common(f),weekday:num(f,"weekday"),opensAt:text(f,"opensAt"),closesAt:text(f,"closesAt"),closesNextDay:checked(f,"closesNextDay")});refresh(f)}
 export async function supportDeliveryAction(f:FormData){await PlatformSupportActionService.configureDelivery({...common(f),enabled:checked(f,"enabled"),feeMode:text(f,"feeMode") as "default"|"neighborhood",defaultFeeCents:Math.round(num(f,"defaultFeeReais")*100),estimatedMinMinutes:num(f,"estimatedMinMinutes"),estimatedMaxMinutes:num(f,"estimatedMaxMinutes"),requireNeighborhoodMatch:checked(f,"requireNeighborhoodMatch")});refresh(f)}
+export async function supportModuleAction(f:FormData){const base=common(f);await PlatformModuleSupportService.apply({...base,moduleKey:text(f,"moduleKey"),enabled:text(f,"enabled")==="true"});refresh(f)}
