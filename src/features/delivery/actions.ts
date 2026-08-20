@@ -96,11 +96,10 @@ export async function createDriverAction(_previous: DeliveryActionState, formDat
     await DeliveryOperationsService.createDriver({
       name: text(formData, "name"),
       phone: optional(formData, "phone"),
-      userId: optional(formData, "userId"),
       maxActiveDeliveries: Number(text(formData, "maxActiveDeliveries") || "3"),
     });
     refreshOperations();
-    return { ok: true, message: "Entregador cadastrado.", error: null };
+    return { ok: true, message: "Entregador cadastrado e disponível para receber entregas.", error: null };
   } catch (error) {
     return { ok: false, message: null, error: friendly(error) };
   }
