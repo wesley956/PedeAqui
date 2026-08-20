@@ -6,7 +6,7 @@ import { DashboardService } from "@/server/dashboard/dashboard-service";
 import { hourlyBarPercent, maxHourlySales, percentageDelta } from "@/server/dashboard/dashboard-model";
 import styles from "./dashboard.module.css";
 
-function localDateLabel(value: string) { const [year, month, day] = value.split("-"); void year; return `${day}/${month}/${year}`; }
+function localDateLabel(value: string) { const [year, month, day] = value.split("-"); return `${day}/${month}/${year}`; }
 function deltaLabel(current: number, previous: number) {
   const delta = percentageDelta(current, previous);
   if (delta === null) return { text: "Novo movimento vs. ontem", tone: "positive" as const };
@@ -17,6 +17,7 @@ function deltaLabel(current: number, previous: number) {
 export default async function DashboardPage() {
   const [{ snapshot, operations }, access] = await Promise.all([DashboardService.snapshot(), NavigationAccessService.load()]);
   const vocabulary = businessVocabulary(access.businessType);
+  const productPluralTitle = vocabulary.productPlural.charAt(0).toUpperCase() + vocabulary.productPlural.slice(1);
   const salesDelta = deltaLabel(snapshot.sales_cents, snapshot.previous_sales_cents);
   const ordersDelta = deltaLabel(snapshot.sales_count, snapshot.previous_sales_count);
   const maxSales = maxHourlySales(snapshot.hourly);
@@ -54,7 +55,7 @@ export default async function DashboardPage() {
     </div>{moduleVisible("inventory") && operations.criticalStock.length > 0 ? <div className={styles.stockPreview}><strong>Reposição prioritária:</strong> {operations.criticalStock.map((item) => item.name).join(" · ")}</div> : null}</section>
     <div className={styles.grid}>
       <article className={styles.panel}><div className={styles.panelHeader}><div><h2>Vendas por hora</h2><p>Receita bruta de pedidos concluídos em cada hora local.</p></div><strong>{formatCents(snapshot.sales_cents)}</strong></div>{snapshot.hourly.every((point) => point.orders === 0) ? <div className={styles.empty}>Ainda não há pedidos concluídos hoje.</div> : <div className={styles.chart} aria-label="Gráfico de vendas por hora">{snapshot.hourly.map((point) => { const height = hourlyBarPercent(point.sales_cents, maxSales); return <div className={styles.hourColumn} key={point.hour} title={`${String(point.hour).padStart(2, "0")}:00 · ${formatCents(point.sales_cents)} · ${point.orders} pedido(s)`}><div className={styles.barTrack}><div className={styles.bar} style={{ height: `${height}%` }} /></div><span className={styles.hourLabel}>{point.hour % 3 === 0 || point.hour === 23 ? `${String(point.hour).padStart(2, "0")}h` : "·"}</span></div>; })}</div>}</article>
-      <article className={styles.panel}><div className={styles.panelHeader}><div><h2>{vocabulary.productPlural[0].toUpperCase() + vocabulary.productPlural.slice(1)} mais vendidos</h2><p>Ranking de hoje por quantidade.</p></div></div>{snapshot.top_products.length === 0 ? <div className={styles.empty}>Os {vocabulary.productPlural} aparecem aqui assim que houver pedidos concluídos hoje.</div> : <div className={styles.productList}>{snapshot.top_products.map((product, index) => <div className={styles.productRow} key={product.product_key}><span className={styles.productRank}>{index + 1}</span><div className={styles.productIdentity}><strong>{product.name}</strong><span>{product.quantity} unidade(s)</span></div><div className={styles.productSales}>{formatCents(product.sales_cents)}</div></div>)}</div>}</article>
+      <article className={styles.panel}><div className={styles.panelHeader}><div><h2>{productPluralTitle} mais vendidos</h2><p>Ranking de hoje por quantidade.</p></div></div>{snapshot.top_products.length === 0 ? <div className={styles.empty}>Os {vocabulary.productPlural} aparecem aqui assim que houver pedidos concluídos hoje.</div> : <div className={styles.productList}>{snapshot.top_products.map((product, index) => <div className={styles.productRow} key={product.product_key}><span className={styles.productRank}>{index + 1}</span><div className={styles.productIdentity}><strong>{product.name}</strong><span>{product.quantity} unidade(s)</span></div><div className={styles.productSales}>{formatCents(product.sales_cents)}</div></div>)}</div>}</article>
     </div>
   </section>;
 }
