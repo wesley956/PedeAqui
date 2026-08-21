@@ -48,14 +48,9 @@ export function NewUserGuide({
     if (!autoOpen || startedRef.current) return;
     startedRef.current = true;
     persist("in_progress", Math.max(0, initialStep));
+    // The first persistence only marks the automatic run as started.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoOpen]);
-
-  useEffect(() => {
-    if (!allDone || runtimeStatus === "completed") return;
-    persist("completed", tasks.length);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allDone]);
 
   useEffect(() => {
     if (!open) return;
@@ -75,7 +70,11 @@ export function NewUserGuide({
 
   const reopen = () => setOpen(true);
   const closeGuide = () => {
-    if (runtimeStatus === "not_started" || runtimeStatus === "in_progress") persist("skipped", 0);
+    if (allDone && runtimeStatus !== "completed") {
+      persist("completed", tasks.length);
+    } else if (runtimeStatus === "not_started" || runtimeStatus === "in_progress") {
+      persist("skipped", 0);
+    }
     setOpen(false);
   };
 
