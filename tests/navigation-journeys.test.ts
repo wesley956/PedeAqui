@@ -15,7 +15,7 @@ const journeys: Array<{ name: string; context: OperationalContext; permissions: 
   { name: "caixa", context: "cashier", permissions: new Set([PERMISSIONS.DASHBOARD_VIEW, PERMISSIONS.ORDERS_VIEW, PERMISSIONS.ORDERS_CREATE, PERMISSIONS.CASH_OPEN, PERMISSIONS.CUSTOMERS_VIEW]), start: "/pdv", required: ["pdv", "cash", "orders"] },
   { name: "salão", context: "floor", permissions: new Set([PERMISSIONS.ORDERS_VIEW, PERMISSIONS.ORDERS_CREATE, PERMISSIONS.ORDERS_EDIT, PERMISSIONS.CUSTOMERS_VIEW]), start: "/salao", required: ["dining", "orders"] },
   { name: "cozinha", context: "kitchen", permissions: new Set([PERMISSIONS.ORDERS_VIEW, PERMISSIONS.ORDERS_EDIT]), start: "/producao", required: ["production", "orders"] },
-  { name: "entrega", context: "delivery", permissions: new Set([PERMISSIONS.ORDERS_VIEW]), start: "/entregador", required: ["driver", "deliveries", "orders"] },
+  { name: "entrega", context: "delivery", permissions: new Set([PERMISSIONS.DELIVERY_VIEW, PERMISSIONS.DELIVERY_UPDATE, PERMISSIONS.ORDERS_VIEW]), start: "/entregador", required: ["driver"] },
 ];
 
 describe("navigation journeys [277]", () => {
