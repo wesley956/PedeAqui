@@ -35,6 +35,20 @@ export async function createPrinterAction(formData: FormData) {
   refresh();
 }
 
+export async function quickSetupDetectedPrinterAction(formData: FormData) {
+  await PrintConfigService.quickSetupDetectedPrinter({
+    agentId: text(formData, "agentId"),
+    printerName: text(formData, "printerName"),
+    paperWidthMm: integer(formData, "paperWidthMm", 80) as 58 | 80,
+  });
+  refresh();
+}
+
+export async function enqueuePrinterTestAction(formData: FormData) {
+  await PrintQueueService.enqueueSetupTest(text(formData, "printerId"));
+  refresh();
+}
+
 export async function linkStationPrinterAction(formData: FormData) {
   await PrintConfigService.linkStationPrinter(
     text(formData, "stationId"), text(formData, "printerId"),
