@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { PrintAgentAdminService } from "@/server/printing/print-agent-admin-service";
 import { PrintConfigService } from "@/server/printing/print-config-service";
 import { PrintQueueService } from "@/server/printing/print-queue-service";
@@ -42,11 +43,13 @@ export async function quickSetupDetectedPrinterAction(formData: FormData) {
     paperWidthMm: integer(formData, "paperWidthMm", 80) as 58 | 80,
   });
   refresh();
+  redirect("/configuracoes/impressoes?setup=printer_ready");
 }
 
 export async function enqueuePrinterTestAction(formData: FormData) {
   await PrintQueueService.enqueueSetupTest(text(formData, "printerId"));
   refresh();
+  redirect("/configuracoes/impressoes?test=queued");
 }
 
 export async function linkStationPrinterAction(formData: FormData) {
