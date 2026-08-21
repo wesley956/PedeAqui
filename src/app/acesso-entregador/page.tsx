@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AuthCard } from "@/components/auth/auth-card";
 import authStyles from "@/components/auth/auth-flow.module.css";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { ThemeSelector } from "@/components/theme/theme-selector";
 import { signInAction } from "@/features/auth/actions";
 import { getAuthenticatedUser } from "@/server/auth/session";
-import { redirect } from "next/navigation";
 
 const loginErrors: Record<string, string> = {
   session_expired: "Sua sessão expirou. Entre novamente para continuar.",
@@ -37,6 +37,7 @@ export default async function DriverAccessPage({
 
       <form action={signInAction} className={authStyles.form}>
         <input type="hidden" name="next" value="/entregador" />
+        <input type="hidden" name="entry" value="driver" />
         <Input label="E-mail" name="email" type="email" autoComplete="email" required />
         <Input label="Senha" name="password" type="password" autoComplete="current-password" required minLength={8} />
         <Button type="submit">Entrar como entregador</Button>
