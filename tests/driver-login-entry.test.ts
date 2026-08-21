@@ -15,6 +15,12 @@ describe("driver login entry", () => {
     expect(accessPage).toContain("Entrar como entregador");
   });
 
+  it("stays available even when another account is already logged in", () => {
+    expect(accessPage).not.toContain("getAuthenticatedUser");
+    expect(accessPage).not.toContain('redirect("/entregador")');
+    expect(accessPage).toContain("troca a sessão para a conta do entregador");
+  });
+
   it("keeps the protected courier area behind the global authentication contract", () => {
     expect(protectedLayout).toContain("requireAuthenticatedUser()");
   });
