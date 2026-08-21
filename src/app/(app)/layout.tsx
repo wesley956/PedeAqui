@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { buildUserGuideSteps } from "@/features/user-guide/guide-model";
 import { moduleKeyForPathname } from "@/modules/module-routing";
-import { requireAuthenticatedUser } from "@/server/auth/session";
+import { getAuthenticatedUser, requireAuthenticatedUser } from "@/server/auth/session";
 import { MissingOrganizationError } from "@/server/access/context";
 import { NavigationAccessService } from "@/server/access/navigation-access-service";
 import { OperationHeaderService, type OperationHeaderData } from "@/server/access/operation-header-service";
@@ -12,6 +12,12 @@ import { UserGuideService } from "@/server/onboarding/user-guide-service";
 import { BrandingReadService, type ResolvedBranding } from "@/server/platform/branding-read-service";
 
 export default async function ProtectedLayout({ children }: { children: ReactNode }) {
+  const requestHeaders = await headers();
+  const pathname = requestHeaders.get("x-pedeaqui-pathname") ?? "";
+  const existingUser = await getAuthenticatedUser();
+  if (!existingUser && (pathname === "/entregador" || pathname.startsWith("/entregador/"))) {
+    redirect("/acesso-entregador");
+  }
   const user = await requireAuthenticatedUser();
   let branding: ResolvedBranding;
   let operationHeader: OperationHeaderData;
@@ -19,8 +25,6 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
 
   try {
     navigationAccess = await NavigationAccessService.load();
-    const requestHeaders = await headers();
-    const pathname = requestHeaders.get("x-pedeaqui-pathname") ?? "";
     const driverOnly = navigationAccess.operationalContexts.length === 1 && navigationAccess.operationalContexts[0] === "delivery";
     if (driverOnly && pathname && pathname !== "/entregador" && !pathname.startsWith("/entregador/")) {
       redirect("/entregador");
