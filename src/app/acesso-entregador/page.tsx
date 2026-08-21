@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { AuthCard } from "@/components/auth/auth-card";
 import authStyles from "@/components/auth/auth-flow.module.css";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,6 @@ import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { ThemeSelector } from "@/components/theme/theme-selector";
 import { signInAction } from "@/features/auth/actions";
-import { getAuthenticatedUser } from "@/server/auth/session";
 
 const loginErrors: Record<string, string> = {
   session_expired: "Sua sessão expirou. Entre novamente para continuar.",
@@ -21,9 +19,6 @@ export default async function DriverAccessPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const user = await getAuthenticatedUser();
-  if (user) redirect("/entregador");
-
   const params = await searchParams;
 
   return (
@@ -45,6 +40,9 @@ export default async function DriverAccessPage({
 
       <p className={authStyles.note}>
         Primeiro acesso? Use o link de convite enviado pela loja para criar e vincular sua conta.
+      </p>
+      <p className={authStyles.note}>
+        Se o painel da loja já estiver aberto neste navegador, entrar aqui troca a sessão para a conta do entregador.
       </p>
       <div className={authStyles.links}>
         <Link href="/recuperar-senha" className={authStyles.linkMuted}>Esqueci a senha</Link>
