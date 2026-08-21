@@ -69,7 +69,7 @@ export const CONTEXT_MODULE_PRIORITY: Record<OperationalContext, Record<string, 
   service: { conversations:P, orders:P, customers:P, pdv:S, deliveries:S, catalog:S, dashboard:S, dining:S, cash:H, finance:H, fiscal:H, production:H, driver:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, growth:H, scale:H, team:H, settings:H, platform:H },
   floor: { dining:P, orders:P, customers:S, catalog:S, pdv:S, dashboard:H, conversations:H, cash:H, finance:H, fiscal:H, production:H, deliveries:H, driver:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, growth:H, scale:H, team:H, settings:H, platform:H },
   kitchen: { production:P, orders:S, dashboard:H, conversations:H, dining:H, catalog:H, pdv:H, cash:H, finance:H, fiscal:H, deliveries:H, driver:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, customers:H, growth:H, scale:H, team:H, settings:H, platform:H },
-  delivery: { driver:P, deliveries:S, orders:S, dashboard:H, conversations:H, dining:H, catalog:H, pdv:H, cash:H, finance:H, fiscal:H, production:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, customers:H, growth:H, scale:H, team:H, settings:H, platform:H },
+  delivery: { driver:P, deliveries:H, orders:H, dashboard:H, conversations:H, dining:H, catalog:H, pdv:H, cash:H, finance:H, fiscal:H, production:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, customers:H, growth:H, scale:H, team:H, settings:H, platform:H },
   administrative: { catalog:P, inventory:P, gas_containers:P, purchases:P, suppliers:P, fiscal:P, settings:P, finance:S, team:S, scale:S, customers:S, dashboard:S, growth:S, orders:H, conversations:H, dining:H, pdv:H, cash:H, production:H, deliveries:H, driver:H, platform:H },
 };
 
