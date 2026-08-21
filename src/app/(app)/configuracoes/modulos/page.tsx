@@ -73,7 +73,7 @@ export default async function ModulesSettingsPage({ searchParams }: { searchPara
           const availability = snapshot.availability[key];
           const selectedPreview = requestedModule === key ? modulePreview : null;
           const selectedTarget = requestedModule === key ? requestedEnabled : null;
-          const unavailableToActivate = !enabled && (availability.reason === "not_in_plan" || availability.reason === "unsupported_profile");
+          const unavailableToActivate = !enabled && (availability.reason === "not_in_plan" || availability.reason === "not_supported_by_profile");
 
           return <article className="card" key={key} style={{ padding: 16, display: "grid", gap: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "start", flexWrap: "wrap" }}>
