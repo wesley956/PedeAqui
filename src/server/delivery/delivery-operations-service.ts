@@ -83,14 +83,45 @@ export class DeliveryOperationsService {
       .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("driver_id", driver.id)
       .order("updated_at", { ascending: false }).limit(50);
     if (error) throw error;
+
     const orderIds = (deliveries ?? []).map((item) => item.order_id);
     const ordersResult = orderIds.length
       ? await admin.from("orders")
-        .select("id,display_number,customer_name_snapshot,customer_phone_snapshot,address_street_snapshot,address_number_snapshot,address_complement_snapshot,address_district_snapshot,address_city_snapshot,address_state_snapshot,address_reference_snapshot,fulfillment_status,production_status,delivery_estimated_min_minutes,delivery_estimated_max_minutes,created_at")
+        .select("id,display_number,customer_name_snapshot,customer_phone_snapshot,address_street_snapshot,address_number_snapshot,address_complement_snapshot,address_district_snapshot,address_city_snapshot,address_state_snapshot,address_reference_snapshot,total_cents,payment_method_snapshot,payment_status,cash_change_for_cents,fulfillment_status,production_status,delivery_estimated_min_minutes,delivery_estimated_max_minutes,created_at")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).in("id", orderIds)
       : { data: [], error: null };
     if (ordersResult.error) throw ordersResult.error;
-    const orderMap = new Map((ordersResult.data ?? []).map((order) => [order.id, order]));
+
+    const itemsResult = orderIds.length
+      ? await admin.from("order_items")
+        .select("id,order_id,product_name_snapshot,quantity,note,line_total_cents")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).in("order_id", orderIds)
+        .order("created_at", { ascending: true })
+      : { data: [], error: null };
+    if (itemsResult.error) throw itemsResult.error;
+
+    const itemIds = (itemsResult.data ?? []).map((item) => item.id);
+    const gasResult = itemIds.length
+      ? await admin.from("order_item_gas_options")
+        .select("order_item_id,sale_mode,container_code_snapshot,container_name_snapshot")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).in("order_item_id", itemIds)
+      : { data: [], error: null };
+    if (gasResult.error) throw gasResult.error;
+
+    const gasByItem = new Map((gasResult.data ?? []).map((gas) => [gas.order_item_id, gas]));
+    const itemsByOrder = new Map<string, Array<(typeof itemsResult.data extends Array<infer T> ? T : never) & { gas: (typeof gasResult.data extends Array<infer G> ? G : never) | null }>>();
+    for (const item of itemsResult.data ?? []) {
+      const enriched = { ...item, gas: gasByItem.get(item.id) ?? null };
+      const current = itemsByOrder.get(item.order_id) ?? [];
+      current.push(enriched);
+      itemsByOrder.set(item.order_id, current);
+    }
+
+    const orderMap = new Map((ordersResult.data ?? []).map((order) => [
+      order.id,
+      { ...order, items: itemsByOrder.get(order.id) ?? [] },
+    ]));
+
     return {
       context,
       driver,
