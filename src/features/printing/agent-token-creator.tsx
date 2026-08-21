@@ -41,10 +41,10 @@ echo [3/4] Conectando com sua unidade...\r
   echo @echo off\r
   echo set "PEDEAQUI_URL=${safeUrl}"\r
   echo set "PEDEAQUI_PRINT_AGENT_TOKEN=${safeToken}"\r
-  echo "%%ProgramFiles%%\\nodejs\\node.exe" "%%LOCALAPPDATA%%\\PedeAqui\\PrintAgent\\src\\index.mjs"\r
+  echo "%NODE_EXE%" "%LOCALAPPDATA%\\PedeAqui\\PrintAgent\\src\\index.mjs"\r
 ) > "%APP_DIR%\\run.cmd"\r
 (\r
-  echo Set shell = CreateObject^("WScript.Shell"^\)\r
+  echo Set shell = CreateObject^("WScript.Shell"^)\r
   echo shell.Run Chr^(34^) ^& "%APP_DIR%\\run.cmd" ^& Chr^(34^), 0, False\r
 ) > "%APP_DIR%\\launch.vbs"\r
 icacls "%APP_DIR%" /inheritance:r /grant:r "%USERNAME%:(OI)(CI)F" /T >nul 2>&1\r
