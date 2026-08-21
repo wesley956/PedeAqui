@@ -79,10 +79,10 @@ export type DeliveryActionState = { ok: boolean; message: string | null; error: 
 export type DriverMobileAccessState = {
   ok: boolean;
   error: string | null;
-  email: string | null;
   inviteUrl: string | null;
   expiresAt: string | null;
   phone: string | null;
+  linked: boolean;
 };
 
 function friendly(error: unknown) {
@@ -96,8 +96,8 @@ function friendly(error: unknown) {
     ["production must be ready", "O pedido precisa estar pronto antes de iniciar a entrega."],
     ["order is not assignable", "Este pedido não está disponível para atribuição."],
     ["not assigned to current driver", "Esta entrega não está atribuída ao seu usuário."],
-    ["team.manage", "Seu usuário não possui permissão para liberar acesso mobile."],
-    ["already possesses mobile access", "Este entregador já possui acesso mobile vinculado."],
+    ["telefone já está vinculado", "Este telefone já está vinculado a outro entregador."],
+    ["cadastre o telefone", "Cadastre o telefone do entregador antes de liberar o acesso."],
   ];
   for (const [needle, message] of rules) if (lower.includes(needle)) return message;
   return raw;
@@ -121,19 +121,18 @@ export async function createDriverMobileAccessAction(_previous: DriverMobileAcce
   try {
     const result = await DriverMobileAccessService.createInvitation({
       driverId: text(formData, "driverId"),
-      email: text(formData, "email"),
     });
     revalidatePath("/configuracoes/entregadores");
     return {
       ok: true,
       error: null,
-      email: result.email,
       inviteUrl: result.inviteUrl,
       expiresAt: result.expiresAt,
       phone: result.phone,
+      linked: result.linked,
     };
   } catch (error) {
-    return { ok: false, error: friendly(error), email: null, inviteUrl: null, expiresAt: null, phone: null };
+    return { ok: false, error: friendly(error), inviteUrl: null, expiresAt: null, phone: null, linked: false };
   }
 }
 
