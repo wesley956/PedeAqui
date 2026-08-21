@@ -18,9 +18,9 @@ describe("canonical Supabase SQL history", () => {
   });
 
   it("preserves historical migrations and advances only by append", () => {
-    expect(files.at(-1)).toBe("112_delivery_driver_registration_ux.sql");
+    expect(files.at(-1)).toBe("113_driver_mobile_access.sql");
     for (const file of [
-      "90_onboarding_role_permission_conflict_hotfix.sql","91_customer_recognition.sql","92_whatsapp_greeting.sql","93_printing_private_execution_grants.sql","94_finance_effect_sign_integer_compat_hotfix.sql","95_public_menu_anon_security_definer.sql","96_platform_incidents.sql","97_order_payment_providers.sql","98_order_whatsapp_notifications.sql","99_order_whatsapp_template_support.sql","100_whatsapp_embedded_signup.sql","101_platform_commercial_onboarding.sql","102_new_user_guide.sql","103_order_completion_refund_states.sql","104_user_guides_rls_initplan_hardening.sql","105_modular_foundation.sql","106_modular_experience.sql","107_gas_segment_domain.sql","108_gas_segment_integrations.sql","109_gas_cart_reprice.sql","110_gas_segment_security_hardening.sql","111_gas_segment_fk_indexes.sql","112_delivery_driver_registration_ux.sql",
+      "90_onboarding_role_permission_conflict_hotfix.sql","91_customer_recognition.sql","92_whatsapp_greeting.sql","93_printing_private_execution_grants.sql","94_finance_effect_sign_integer_compat_hotfix.sql","95_public_menu_anon_security_definer.sql","96_platform_incidents.sql","97_order_payment_providers.sql","98_order_whatsapp_notifications.sql","99_order_whatsapp_template_support.sql","100_whatsapp_embedded_signup.sql","101_platform_commercial_onboarding.sql","102_new_user_guide.sql","103_order_completion_refund_states.sql","104_user_guides_rls_initplan_hardening.sql","105_modular_foundation.sql","106_modular_experience.sql","107_gas_segment_domain.sql","108_gas_segment_integrations.sql","109_gas_cart_reprice.sql","110_gas_segment_security_hardening.sql","111_gas_segment_fk_indexes.sql","112_delivery_driver_registration_ux.sql","113_driver_mobile_access.sql",
     ]) expect(files).toContain(file);
     const hotfix = read("supabase/sql/90_onboarding_role_permission_conflict_hotfix.sql");
     expect(hotfix.match(/on conflict do nothing/gi) ?? []).toHaveLength(8); expect(hotfix).toContain("create or replace function private.bootstrap_organization"); expect(hotfix).toContain("set search_path = ''");
@@ -31,6 +31,15 @@ describe("canonical Supabase SQL history", () => {
     expect(hotfix).toContain("create or replace function public.delivery_create_driver_internal");
     expect(hotfix).toContain("active,\n    on_duty");
     expect(hotfix).toContain("true,\n    true,");
+  });
+
+  it("binds driver mobile access through the invitation acceptance transaction", () => {
+    const access = read("supabase/sql/113_driver_mobile_access.sql");
+    expect(access).toContain("create table if not exists public.driver_access_invitations");
+    expect(access).toContain("create or replace function private.accept_invitation");
+    expect(access).toContain("set user_id = actor_id");
+    expect(access).toContain("next_path := '/entregador'");
+    expect(access).toContain("uq_drivers_store_user_active");
   });
 
   it("keeps user guide RLS semantics while avoiding per-row auth init plans", () => {
