@@ -22,7 +22,8 @@ function getAppUrl() {
   return process.env.APP_URL ?? "http://localhost:3000";
 }
 
-function loginErrorPath(error: string, returnPath: string | null) {
+function loginErrorPath(error: string, returnPath: string | null, entry: string | null) {
+  if (entry === "driver") return `/acesso-entregador?error=${error}`;
   const next = returnPath ? `&next=${encodeURIComponent(returnPath)}` : "";
   return `/login?error=${error}${next}`;
 }
@@ -38,11 +39,12 @@ function signupPath(error: string | null, returnPath: string | null) {
 export async function signInAction(formData: FormData) {
   const parsed = getCredentials(formData);
   const returnPath = safeInternalPath(typeof formData.get("next") === "string" ? String(formData.get("next")) : null);
-  if (!parsed.success) redirect(loginErrorPath("invalid_input", returnPath));
+  const entry = formData.get("entry") === "driver" ? "driver" : null;
+  if (!parsed.success) redirect(loginErrorPath("invalid_input", returnPath, entry));
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) redirect(loginErrorPath("invalid_credentials", returnPath));
+  if (error) redirect(loginErrorPath("invalid_credentials", returnPath, entry));
 
   // Explicit internal deep links win. Only a generic login uses the operational start route.
   redirect(returnPath ?? await StartRouteService.resolve());
