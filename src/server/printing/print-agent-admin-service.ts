@@ -30,4 +30,43 @@ export class PrintAgentAdminService {
     });
     return { id: data.id, name: data.name, token };
   }
+
+  static async reconnect(agentId: string) {
+    const id = z.string().uuid().parse(agentId);
+    const context = await authorize(PERMISSIONS.PRINTING_MANAGE);
+    if (!context.storeId) throw new Error("An active store is required");
+    const admin = createAdminClient();
+    const { data: current, error: readError } = await admin.from("print_agents")
+      .select("id, name, active, version")
+      .eq("id", id)
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", context.storeId)
+      .maybeSingle();
+    if (readError) throw readError;
+    if (!current) throw new Error("Computador de impressão não encontrado nesta unidade");
+
+    const token = createPrintAgentToken();
+    const { data, error } = await admin.from("print_agents")
+      .update({
+        token_hash: hashPrintAgentToken(token),
+        active: true,
+        status: "unknown",
+        last_error: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", current.id)
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", context.storeId)
+      .select("id, name")
+      .single();
+    if (error) throw error;
+    await AuditService.record(context, {
+      action: "print.agent_reconnected",
+      entityType: "print_agent",
+      entityId: data.id,
+      before: { active: current.active, version: current.version },
+      after: { active: true, credentialRotated: true },
+    });
+    return { id: data.id, name: data.name, token };
+  }
 }
