@@ -21,6 +21,7 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string; status?: string; next?: string }>;
 }) {
   const params = await searchParams;
+  const signupHref = params.next ? `/cadastro?next=${encodeURIComponent(params.next)}` : "/cadastro";
 
   return (
     <AuthCard title="Entrar" subtitle="Acesse sua operação PedeAqui.">
@@ -34,7 +35,7 @@ export default async function LoginPage({
       </form>
       <div className={authStyles.links}>
         <Link href="/recuperar-senha" className={authStyles.linkMuted}>Esqueci a senha</Link>
-        <Link href="/cadastro" className={authStyles.link}>Criar conta</Link>
+        <Link href={signupHref} className={authStyles.link}>Criar conta</Link>
       </div>
       <div className={authStyles.appearance}>
         <ThemeSelector />

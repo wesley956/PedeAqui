@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { safeInternalPath } from "@/lib/auth/safe-return-path";
 import { createClient } from "@/lib/supabase/server";
 import { ORG_COOKIE, STORE_COOKIE } from "@/server/access/context";
 import { requireAuthenticatedUser } from "@/server/auth/session";
@@ -23,7 +24,7 @@ export async function acceptInvitationAction(formData: FormData) {
     redirect("/convite?error=accept_failed");
   }
 
-  const result = data as { organization_id?: string; store_id?: string | null };
+  const result = data as { organization_id?: string; store_id?: string | null; next_path?: string | null };
   if (!result.organization_id) redirect("/convite?error=accept_failed");
 
   const cookieStore = await cookies();
@@ -37,5 +38,5 @@ export async function acceptInvitationAction(formData: FormData) {
   cookieStore.set(ORG_COOKIE, result.organization_id, options);
   if (result.store_id) cookieStore.set(STORE_COOKIE, result.store_id, options);
 
-  redirect("/dashboard");
+  redirect(safeInternalPath(result.next_path, "/dashboard") ?? "/dashboard");
 }

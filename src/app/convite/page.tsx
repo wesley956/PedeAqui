@@ -21,10 +21,14 @@ export default async function ConvitePage({
   }
 
   if (!user) {
-    const next = encodeURIComponent(`/convite?token=${params.token}`);
+    const returnPath = `/convite?token=${params.token}`;
+    const next = encodeURIComponent(returnPath);
     return (
-      <AuthCard title="Entre para aceitar" subtitle="Use o mesmo e-mail que recebeu o convite.">
-        <Link href={`/login?next=${next}`}>Entrar</Link>
+      <AuthCard title="Acesso ao PedeAqui" subtitle="Entre ou crie sua conta usando o mesmo e-mail informado pelo estabelecimento.">
+        <div style={{ display: "grid", gap: 10 }}>
+          <Link href={`/login?next=${next}`}>Já tenho conta · Entrar</Link>
+          <Link href={`/cadastro?next=${next}`}>Primeiro acesso · Criar conta</Link>
+        </div>
       </AuthCard>
     );
   }

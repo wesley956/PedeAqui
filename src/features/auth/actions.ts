@@ -27,6 +27,14 @@ function loginErrorPath(error: string, returnPath: string | null) {
   return `/login?error=${error}${next}`;
 }
 
+function signupPath(error: string | null, returnPath: string | null) {
+  const params = new URLSearchParams();
+  if (error) params.set("error", error);
+  if (returnPath) params.set("next", returnPath);
+  const query = params.toString();
+  return `/cadastro${query ? `?${query}` : ""}`;
+}
+
 export async function signInAction(formData: FormData) {
   const parsed = getCredentials(formData);
   const returnPath = safeInternalPath(typeof formData.get("next") === "string" ? String(formData.get("next")) : null);
@@ -42,18 +50,19 @@ export async function signInAction(formData: FormData) {
 
 export async function signUpAction(formData: FormData) {
   const parsed = getCredentials(formData);
-  if (!parsed.success) redirect("/cadastro?error=invalid_input");
+  const returnPath = safeInternalPath(typeof formData.get("next") === "string" ? String(formData.get("next")) : null, "/onboarding") ?? "/onboarding";
+  if (!parsed.success) redirect(signupPath("invalid_input", returnPath));
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     ...parsed.data,
     options: {
-      emailRedirectTo: `${getAppUrl()}/auth/callback?next=/onboarding`,
+      emailRedirectTo: `${getAppUrl()}/auth/callback?next=${encodeURIComponent(returnPath)}`,
     },
   });
-  if (error) redirect("/cadastro?error=signup_failed");
+  if (error) redirect(signupPath("signup_failed", returnPath));
 
-  redirect("/login?status=check_email");
+  redirect(`/login?status=check_email&next=${encodeURIComponent(returnPath)}`);
 }
 
 export async function requestPasswordResetAction(formData: FormData) {
