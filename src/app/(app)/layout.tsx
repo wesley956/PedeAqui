@@ -21,6 +21,10 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
     navigationAccess = await NavigationAccessService.load();
     const requestHeaders = await headers();
     const pathname = requestHeaders.get("x-pedeaqui-pathname") ?? "";
+    const driverOnly = navigationAccess.operationalContexts.length === 1 && navigationAccess.operationalContexts[0] === "delivery";
+    if (driverOnly && pathname && pathname !== "/entregador" && !pathname.startsWith("/entregador/")) {
+      redirect("/entregador");
+    }
     const moduleKey = moduleKeyForPathname(pathname);
     if (moduleKey) {
       const availability = navigationAccess.moduleAvailability[moduleKey];
