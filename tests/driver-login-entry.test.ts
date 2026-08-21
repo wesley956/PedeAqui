@@ -15,9 +15,8 @@ describe("driver login entry", () => {
     expect(accessPage).toContain("Entrar como entregador");
   });
 
-  it("redirects unauthenticated courier routes to the dedicated entry", () => {
-    expect(protectedLayout).toContain('pathname === "/entregador"');
-    expect(protectedLayout).toContain('redirect("/acesso-entregador")');
+  it("keeps the protected courier area behind the global authentication contract", () => {
+    expect(protectedLayout).toContain("requireAuthenticatedUser()");
   });
 
   it("keeps invalid driver credentials on the courier entry", () => {
