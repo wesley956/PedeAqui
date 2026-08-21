@@ -34,7 +34,7 @@ describe("smart onboarding guide", () => {
     const steps = buildUserGuideSteps(items, ["owner"], "gas", empty);
     expect(steps.some((step) => step.id === "first-product" && step.state === "todo")).toBe(true);
     expect(steps.some((step) => step.id === "driver-access" && step.state === "todo")).toBe(true);
-    expect(steps.some((step) => step.description.includes("telefone + PIN"))).toBe(true);
+    expect(steps.some((step) => step.tip?.includes("telefone + PIN"))).toBe(true);
     const progress = guideProgress(steps);
     expect(progress.total).toBeGreaterThan(0);
     expect(progress.completed).toBe(0);
