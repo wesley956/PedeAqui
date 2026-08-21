@@ -5,6 +5,7 @@ import { parseMoneyToCents } from "@/server/catalog/money";
 import { scheduleOrderWhatsAppNotifications } from "@/server/conversations/order-notification-dispatch";
 import { DeliveryService } from "@/server/delivery/delivery-service";
 import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
+import { DriverMobileAccessService } from "@/server/delivery/driver-mobile-access-service";
 
 function optionalMoney(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.trim() ? parseMoneyToCents(value) : null;
@@ -37,6 +38,7 @@ function refreshOperations() {
   revalidatePath("/entregas");
   revalidatePath("/entregador");
   revalidatePath("/pedidos");
+  revalidatePath("/configuracoes/entregadores");
 }
 
 export async function saveDeliverySettingsAction(formData: FormData) {
@@ -74,6 +76,14 @@ export async function removeDeliveryNeighborhoodAction(formData: FormData) {
 }
 
 export type DeliveryActionState = { ok: boolean; message: string | null; error: string | null };
+export type DriverMobileAccessState = {
+  ok: boolean;
+  error: string | null;
+  email: string | null;
+  inviteUrl: string | null;
+  expiresAt: string | null;
+  phone: string | null;
+};
 
 function friendly(error: unknown) {
   const raw = error instanceof Error ? error.message : "Não foi possível concluir a operação de entrega.";
@@ -86,6 +96,8 @@ function friendly(error: unknown) {
     ["production must be ready", "O pedido precisa estar pronto antes de iniciar a entrega."],
     ["order is not assignable", "Este pedido não está disponível para atribuição."],
     ["not assigned to current driver", "Esta entrega não está atribuída ao seu usuário."],
+    ["team.manage", "Seu usuário não possui permissão para liberar acesso mobile."],
+    ["already possesses mobile access", "Este entregador já possui acesso mobile vinculado."],
   ];
   for (const [needle, message] of rules) if (lower.includes(needle)) return message;
   return raw;
@@ -102,6 +114,26 @@ export async function createDriverAction(_previous: DeliveryActionState, formDat
     return { ok: true, message: "Entregador cadastrado e disponível para receber entregas.", error: null };
   } catch (error) {
     return { ok: false, message: null, error: friendly(error) };
+  }
+}
+
+export async function createDriverMobileAccessAction(_previous: DriverMobileAccessState, formData: FormData): Promise<DriverMobileAccessState> {
+  try {
+    const result = await DriverMobileAccessService.createInvitation({
+      driverId: text(formData, "driverId"),
+      email: text(formData, "email"),
+    });
+    revalidatePath("/configuracoes/entregadores");
+    return {
+      ok: true,
+      error: null,
+      email: result.email,
+      inviteUrl: result.inviteUrl,
+      expiresAt: result.expiresAt,
+      phone: result.phone,
+    };
+  } catch (error) {
+    return { ok: false, error: friendly(error), email: null, inviteUrl: null, expiresAt: null, phone: null };
   }
 }
 
