@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { ThemeSelector } from "@/components/theme/theme-selector";
-import { signInAction } from "@/features/auth/actions";
+import { driverPinSignInAction } from "@/features/delivery/driver-pin-auth-actions";
 
 const loginErrors: Record<string, string> = {
-  session_expired: "Sua sessão expirou. Entre novamente para continuar.",
-  invalid_input: "Revise o e-mail e a senha informados.",
-  invalid_credentials: "Não foi possível entrar. Verifique o e-mail e a senha.",
-  auth_unavailable: "A autenticação está temporariamente indisponível. Tente novamente em instantes.",
+  invalid_input: "Revise o telefone e informe um PIN de 6 números.",
+  invalid_credentials: "Telefone ou PIN incorretos.",
+  temporarily_locked: "Muitas tentativas incorretas. Aguarde 15 minutos e tente novamente.",
+  access_unavailable: "Este acesso não está disponível no momento. Fale com a loja.",
 };
 
 export default async function DriverAccessPage({
@@ -24,33 +24,44 @@ export default async function DriverAccessPage({
   return (
     <AuthCard
       title="Acesso do entregador"
-      subtitle="Entre com o e-mail liberado pela loja para acessar somente suas entregas."
+      subtitle="Entre com seu telefone e PIN para abrir diretamente o seu roteiro."
     >
-      {params.error ? (
-        <Alert tone="danger">{loginErrors[params.error] ?? "Não foi possível entrar. Verifique os dados."}</Alert>
-      ) : null}
+      {params.error ? <Alert tone="danger">{loginErrors[params.error] ?? "Não foi possível entrar."}</Alert> : null}
 
-      <form action={signInAction} className={authStyles.form}>
-        <input type="hidden" name="next" value="/entregador" />
-        <input type="hidden" name="entry" value="driver" />
-        <Input label="E-mail" name="email" type="email" autoComplete="email" required />
-        <Input label="Senha" name="password" type="password" autoComplete="current-password" required minLength={8} />
-        <Button type="submit">Entrar como entregador</Button>
+      <form action={driverPinSignInAction} className={authStyles.form}>
+        <Input
+          label="Telefone"
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="(19) 99999-9999"
+          required
+        />
+        <Input
+          label="PIN de 6 números"
+          name="pin"
+          type="password"
+          inputMode="numeric"
+          autoComplete="current-password"
+          pattern="[0-9]{6}"
+          minLength={6}
+          maxLength={6}
+          required
+        />
+        <Button type="submit">Abrir meu roteiro</Button>
       </form>
 
       <p className={authStyles.note}>
-        Primeiro acesso? Use o link de convite enviado pela loja para criar e vincular sua conta.
+        Primeiro acesso? Abra o link enviado pela loja no WhatsApp e crie seu PIN uma única vez.
       </p>
       <p className={authStyles.note}>
-        Se o painel da loja já estiver aberto neste navegador, entrar aqui troca a sessão para a conta do entregador.
+        Depois de entrar, o celular permanece conectado normalmente até você sair da conta.
       </p>
       <div className={authStyles.links}>
-        <Link href="/recuperar-senha" className={authStyles.linkMuted}>Esqueci a senha</Link>
         <Link href="/login" className={authStyles.link}>Acesso da loja</Link>
       </div>
-      <div className={authStyles.appearance}>
-        <ThemeSelector />
-      </div>
+      <div className={authStyles.appearance}><ThemeSelector /></div>
     </AuthCard>
   );
 }

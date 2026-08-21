@@ -9,13 +9,13 @@ export default async function DriverSettingsPage() {
 
   return <section className={styles.page}>
     <header className={styles.header}>
-      <div><p className="muted">CONFIGURAÇÕES · ENTREGA</p><h1>Entregadores</h1><p className="muted">Cadastre entregadores, controle disponibilidade e libere o acesso pelo celular sem códigos técnicos.</p></div>
+      <div><p className="muted">CONFIGURAÇÕES · ENTREGA</p><h1>Entregadores</h1><p className="muted">Cadastre o telefone do entregador e libere um primeiro acesso simples pelo WhatsApp. Depois ele entra somente com telefone + PIN.</p></div>
       <div className={styles.headerActions}><Link href="/entregas" className={styles.secondaryLink}>Voltar às entregas</Link></div>
     </header>
 
     <section className={styles.driverSettings}>
       <h2 style={{ margin: 0 }}>Novo entregador</h2>
-      <p className="muted" style={{ margin: 0 }}>Novos cadastros entram ativos e em serviço para aparecerem imediatamente na lista de atribuição.</p>
+      <p className="muted" style={{ margin: 0 }}>Novos cadastros entram ativos e em serviço para aparecerem imediatamente na lista de atribuição. Informe o telefone para liberar o acesso mobile.</p>
       <DriverCreateForm />
     </section>
 
