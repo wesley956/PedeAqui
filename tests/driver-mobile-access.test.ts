@@ -7,44 +7,45 @@ const settings = read("src/app/(app)/configuracoes/entregadores/page.tsx");
 const accessForm = read("src/features/delivery/driver-mobile-access-form.tsx");
 const deliveryActions = read("src/features/delivery/actions.ts");
 const accessService = read("src/server/delivery/driver-mobile-access-service.ts");
-const inviteActions = read("src/features/team/actions.ts");
-const invitePage = read("src/app/convite/page.tsx");
-const signupPage = read("src/app/cadastro/page.tsx");
-const authActions = read("src/features/auth/actions.ts");
-const migration = read("supabase/sql/113_driver_mobile_access.sql");
+const pinService = read("src/server/delivery/driver-pin-auth-service.ts");
+const firstAccessPage = read("src/app/primeiro-acesso-entregador/page.tsx");
+const loginPage = read("src/app/acesso-entregador/page.tsx");
+const migration = read("supabase/sql/114_driver_phone_pin_access.sql");
 
 describe("driver mobile access", () => {
-  it("exposes a friendly access flow without technical user ids", () => {
+  it("lets the store generate a WhatsApp-first enrollment without email or technical ids", () => {
     expect(settings).toContain("DriverMobileAccessForm");
-    expect(settings).toContain("acesso mobile pendente");
-    expect(accessForm).toContain("Liberar acesso mobile");
+    expect(accessForm).toContain("Liberar acesso");
     expect(accessForm).toContain("Enviar no WhatsApp");
-    expect(accessForm).toContain("Enviar por e-mail");
-    expect(accessForm).not.toContain("userId");
+    expect(accessForm).toContain("Gerar novo link / redefinir PIN");
+    expect(accessForm).not.toContain("name=\"email\"");
     expect(accessForm).not.toContain("UUID");
-  });
-
-  it("creates a store-scoped driver role invitation and maps it to the driver", () => {
-    expect(accessService).toContain('.eq("key", "driver")');
-    expect(accessService).toContain("InvitationService.create");
-    expect(accessService).toContain('storeIds: [context.storeId]');
-    expect(accessService).toContain('from("driver_access_invitations")');
     expect(deliveryActions).toContain("createDriverMobileAccessAction");
+    expect(accessService).toContain("driver_pin_access");
   });
 
-  it("lets first-time drivers create an account and return to the invitation", () => {
-    expect(invitePage).toContain("Primeiro acesso · Criar conta");
-    expect(signupPage).toContain('name="next"');
-    expect(authActions).toContain("emailRedirectTo");
-    expect(authActions).toContain("encodeURIComponent(returnPath)");
+  it("uses a one-time hashed enrollment token and never stores the raw PIN in public tables", () => {
+    expect(accessService).toContain('createHash("sha256")');
+    expect(accessService).toContain("enrollment_token_hash");
+    expect(migration).toContain("enrollment_token_hash");
+    expect(migration).not.toContain("pin_hash");
+    expect(pinService).toContain("password: pin");
   });
 
-  it("links the authenticated user atomically and sends drivers to their mobile route", () => {
-    expect(migration).toContain("driver_access_invitations");
-    expect(migration).toContain("set user_id = actor_id");
-    expect(migration).toContain("driver access already linked to another user");
-    expect(migration).toContain("user already linked to another driver in this store");
-    expect(migration).toContain("next_path := '/entregador'");
-    expect(inviteActions).toContain("result.next_path");
+  it("gives the driver a six-digit first access and daily phone + PIN login", () => {
+    expect(firstAccessPage).toContain("Crie seu PIN de 6 números");
+    expect(firstAccessPage).toContain("Ativar e abrir meu roteiro");
+    expect(loginPage).toContain('name="phone"');
+    expect(loginPage).toContain('name="pin"');
+    expect(loginPage).toContain("Abrir meu roteiro");
+    expect(pinService).toContain("signInWithPassword({ phone, password: pin })");
+  });
+
+  it("locks brute-force attempts and keeps activation scoped to the driver store", () => {
+    expect(migration).toContain("failed_attempts");
+    expect(migration).toContain("locked_until");
+    expect(migration).toContain("interval '15 minutes'");
+    expect(migration).toContain("user_store_roles");
+    expect(migration).toContain("driver PIN cannot replace credentials of a non-driver account");
   });
 });
