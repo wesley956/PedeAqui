@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
@@ -139,6 +140,72 @@ export class PrintQueueService {
       .limit(Math.min(Math.max(limit, 1), 250));
     if (error) throw error;
     return { context, jobs: data ?? [] };
+  }
+
+  static async enqueueSetupTest(printerId: string) {
+    const context = await authorize(PERMISSIONS.PRINTING_MANAGE);
+    if (!context.storeId) throw new Error("An active store is required");
+    const storeId = context.storeId;
+    const admin = createAdminClient();
+    const id = uuid.parse(printerId);
+    const { data: printer, error: printerError } = await admin.from("printers")
+      .select("id, name, active, agent_id")
+      .eq("id", id)
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .maybeSingle();
+    if (printerError) throw printerError;
+    if (!printer?.active || !printer.agent_id) throw new Error("A impressora precisa estar ativa e conectada a um computador");
+
+    const { data: route, error: routeError } = await admin.from("station_printers")
+      .select("station_id")
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .eq("printer_id", printer.id)
+      .eq("active", true)
+      .order("priority", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (routeError) throw routeError;
+
+    const rendered = [
+      "PEDEAQUI",
+      "",
+      "IMPRESSORA CONFIGURADA COM SUCESSO",
+      "",
+      `Impressora: ${printer.name}`,
+      "",
+      "Se voce esta lendo este papel,",
+      "a conexao esta funcionando.",
+      "",
+      "Pode fechar a configuracao no painel.",
+    ].join("\n");
+    const { data: job, error } = await admin.from("print_jobs").insert({
+      organization_id: context.organizationId,
+      store_id: storeId,
+      order_id: null,
+      station_id: route?.station_id ?? null,
+      printer_id: printer.id,
+      document_type: "custom",
+      template_key: "setup_test_v1",
+      template_version: 1,
+      payload: { kind: "setup_test", printer_name: printer.name },
+      rendered_content: rendered,
+      status: "pending",
+      priority: 10,
+      copies: 1,
+      idempotency_key: `setup-test:${storeId}:${printer.id}:${randomUUID()}`,
+      source: "panel",
+      created_by: context.userId,
+    }).select("id").single();
+    if (error) throw error;
+    await AuditService.record(context, {
+      action: "print.setup_test_queued",
+      entityType: "print_job",
+      entityId: job.id,
+      after: { printerId: printer.id, printerName: printer.name },
+    });
+    return job.id;
   }
 
   static async retry(jobId: string) {
