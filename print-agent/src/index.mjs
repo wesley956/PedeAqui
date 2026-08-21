@@ -1,14 +1,16 @@
 import { printNetwork, probeNetwork } from "./escpos.mjs";
-import { printSystem, probeSystem } from "./system-print.mjs";
+import { listSystemPrinters, printSystem, probeSystem } from "./system-print.mjs";
 import { listSpool, removeSpool, saveSpool } from "./spool.mjs";
 
 const apiUrl = (process.env.PEDEAQUI_URL || "").replace(/\/$/, "");
 const token = process.env.PEDEAQUI_PRINT_AGENT_TOKEN || "";
 const pollMs = Math.max(1000, Number(process.env.PEDEAQUI_PRINT_POLL_MS || 2000));
 const heartbeatMs = Math.max(5000, Number(process.env.PEDEAQUI_PRINT_HEARTBEAT_MS || 15000));
-const version = "0.2.0";
+const version = "0.3.0";
 const printers = new Map();
 let heartbeatRunning = false;
+let lastDiscoveryAt = 0;
+let discoveredPrinters = [];
 
 if (!apiUrl || !token) {
   console.error("PEDEAQUI_URL and PEDEAQUI_PRINT_AGENT_TOKEN are required");
@@ -108,17 +110,34 @@ async function refreshPrinterHealth() {
   }
 }
 
+async function refreshDiscovery() {
+  if (process.platform !== "win32") {
+    discoveredPrinters = [];
+    return;
+  }
+  const now = Date.now();
+  if (now - lastDiscoveryAt < 60000) return;
+  lastDiscoveryAt = now;
+  try {
+    discoveredPrinters = await listSystemPrinters();
+  } catch (error) {
+    console.error("printer discovery failed", error);
+  }
+}
+
 async function heartbeat() {
   if (heartbeatRunning) return;
   heartbeatRunning = true;
   try {
-    await refreshPrinterHealth();
+    await Promise.all([refreshPrinterHealth(), refreshDiscovery()]);
     await post("/api/print-agent/heartbeat", {
       version,
       capabilities: {
         networkEscPos: true,
         windowsRawSpooler: process.platform === "win32",
         usbViaWindowsSpooler: process.platform === "win32",
+        autoDiscovery: process.platform === "win32",
+        discoveredPrinters,
         spool: true,
         healthProbe: true,
         paperWidthsMm: [58, 80],

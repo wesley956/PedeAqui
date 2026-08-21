@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { PrintAgentAdminService } from "@/server/printing/print-agent-admin-service";
 import { PrintConfigService } from "@/server/printing/print-config-service";
 import { PrintQueueService } from "@/server/printing/print-queue-service";
@@ -35,6 +36,22 @@ export async function createPrinterAction(formData: FormData) {
   refresh();
 }
 
+export async function quickSetupDetectedPrinterAction(formData: FormData) {
+  await PrintConfigService.quickSetupDetectedPrinter({
+    agentId: text(formData, "agentId"),
+    printerName: text(formData, "printerName"),
+    paperWidthMm: integer(formData, "paperWidthMm", 80) as 58 | 80,
+  });
+  refresh();
+  redirect("/configuracoes/impressoes?setup=printer_ready");
+}
+
+export async function enqueuePrinterTestAction(formData: FormData) {
+  await PrintQueueService.enqueueSetupTest(text(formData, "printerId"));
+  refresh();
+  redirect("/configuracoes/impressoes?test=queued");
+}
+
 export async function linkStationPrinterAction(formData: FormData) {
   await PrintConfigService.linkStationPrinter(
     text(formData, "stationId"), text(formData, "printerId"),
@@ -57,6 +74,16 @@ export async function createPrintAgentAction(_state: AgentCreationState, formDat
     return { token: result.token, name: result.name, error: null };
   } catch {
     return { token: null, name: null, error: "Não foi possível preparar este computador para impressão. Tente novamente." };
+  }
+}
+
+export async function reconnectPrintAgentAction(_state: AgentCreationState, formData: FormData): Promise<AgentCreationState> {
+  try {
+    const result = await PrintAgentAdminService.reconnect(text(formData, "agentId"));
+    refresh();
+    return { token: result.token, name: result.name, error: null };
+  } catch {
+    return { token: null, name: null, error: "Não foi possível reconectar este computador. Tente novamente." };
   }
 }
 

@@ -20,14 +20,35 @@ function runPowerShell(script, environment = {}) {
       env: { ...process.env, ...environment },
       stdio: ["ignore", "pipe", "pipe"],
     });
+    let stdout = "";
     let stderr = "";
+    child.stdout.on("data", (chunk) => { stdout += String(chunk); });
     child.stderr.on("data", (chunk) => { stderr += String(chunk); });
     child.once("error", reject);
     child.once("close", (code) => {
-      if (code === 0) resolve();
+      if (code === 0) resolve(stdout.trim());
       else reject(new Error(stderr.trim() || `Windows print command exited with code ${code}`));
     });
   });
+}
+
+export async function listSystemPrinters() {
+  requireWindows();
+  const output = await runPowerShell(
+    "$ErrorActionPreference='Stop'; Get-CimInstance Win32_Printer | Select-Object Name,Default,WorkOffline,PrinterStatus | ConvertTo-Json -Compress",
+  );
+  if (!output) return [];
+  const parsed = JSON.parse(output);
+  const rows = Array.isArray(parsed) ? parsed : [parsed];
+  return rows
+    .map((row) => ({
+      name: String(row?.Name || "").trim(),
+      isDefault: Boolean(row?.Default),
+      workOffline: Boolean(row?.WorkOffline),
+      status: Number(row?.PrinterStatus || 0),
+    }))
+    .filter((row) => row.name)
+    .slice(0, 100);
 }
 
 export async function probeSystem({ address }) {
