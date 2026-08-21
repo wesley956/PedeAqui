@@ -103,7 +103,7 @@ function InstallerCard({ state }: { state: AgentCreationState }) {
       <details>
         <summary style={{ cursor: "pointer", fontWeight: 800 }}>Configuração manual</summary>
         <div style={{ display: "grid", gap: 6, marginTop: 8 }}>
-          <span className="muted" style={{ fontSize: 12 }}>Use esta chave somente se precisar configurar o Print Agent manualmente. Ela será mostrada uma única vez.</span>
+          <span className="muted" style={{ fontSize: 12 }}>Use esta chave somente se precisar configurar o aplicativo de impressão manualmente. Ela será mostrada uma única vez.</span>
           <code style={{ overflowWrap: "anywhere", userSelect: "all" }}>{state.token}</code>
         </div>
       </details>
