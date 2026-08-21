@@ -2,11 +2,26 @@
 
 Agente local do PedeAqui. Ele roda no computador da unidade, busca jobs da fila persistente e envia ESC/POS para impressoras locais.
 
+## Instalação recomendada
+
+Para o usuário da loja, a instalação normal deve ser feita pelo painel em **Configurações > Impressões**:
+
+1. clicar em **Conectar este computador**;
+2. baixar **Instalador assistido (Windows)**;
+3. executar o arquivo no computador que ficará ligado junto à impressora;
+4. voltar ao painel e clicar em **Atualizar impressoras**;
+5. escolher **Usar esta impressora** e depois **Imprimir teste**.
+
+O instalador assistido prepara o runtime quando necessário, baixa o Print Agent, configura a URL/credencial específica daquele computador e o coloca para iniciar com o Windows. O operador não precisa usar terminal no fluxo normal.
+
+> O instalador atual é um instalador assistido `.cmd`, não um MSI/EXE assinado. O Windows pode pedir confirmação para executá-lo.
+
 ## Suporte atual
 
-- Node.js 22+
+- Node.js 22+ como runtime interno
 - impressoras ESC/POS de rede via TCP/IP
 - impressoras térmicas USB instaladas no Windows, usando o spooler RAW do próprio Windows
+- descoberta automática das impressoras instaladas no Windows
 - 58 mm e 80 mm
 - claim com lease no servidor
 - spool local antes da impressão
@@ -15,24 +30,26 @@ Agente local do PedeAqui. Ele roda no computador da unidade, busca jobs da fila 
 - heartbeat do agente e das impressoras
 - teste periódico de conectividade
 
-Para impressora de rede, cadastre o IP e normalmente a porta `9100`.
+Para USB/Windows, a impressora precisa estar instalada normalmente em **Configurações > Bluetooth e dispositivos > Impressoras e scanners**. O Print Agent passa a enviar a lista encontrada ao PedeAqui por meio do heartbeat autenticado; o painel pode então oferecer a escolha sem pedir que o operador digite o nome exato.
 
-Para USB/Windows, primeiro instale a impressora normalmente em **Configurações > Bluetooth e dispositivos > Impressoras e scanners**. No PedeAqui escolha **USB / instalada no Windows** e informe exatamente o nome exibido pelo Windows. O Print Agent envia o ESC/POS em modo RAW, sem transformar o pedido em página gráfica.
+Para impressora de rede, o modo avançado continua aceitando IP e normalmente a porta `9100`.
 
-## Configuração
+## Configuração manual / diagnóstico
+
+Este modo existe para suporte técnico. No uso comum, prefira o instalador do painel.
 
 ```bash
 PEDEAQUI_URL=https://seu-dominio.example \
 PEDEAQUI_PRINT_AGENT_TOKEN=token_exibido_uma_unica_vez \
-npm start
+node src/index.mjs
 ```
 
-No PowerShell do Windows, as mesmas variáveis podem ser definidas assim:
+No PowerShell do Windows:
 
 ```powershell
 $env:PEDEAQUI_URL="https://seu-dominio.example"
 $env:PEDEAQUI_PRINT_AGENT_TOKEN="token_exibido_uma_unica_vez"
-npm start
+node src/index.mjs
 ```
 
 O token é uma credencial específica do agente. **Nunca** configure `SUPABASE_SERVICE_ROLE_KEY` neste processo.
@@ -43,7 +60,7 @@ Variáveis opcionais:
 - `PEDEAQUI_PRINT_HEARTBEAT_MS` (padrão 15000)
 - `PEDEAQUI_PRINT_SPOOL` (diretório do spool)
 
-O heartbeat consulta `/api/print-agent/config`, testa as impressoras atribuídas e reporta `online`/`offline`. Bluetooth continua fora do transporte atual e permanece como capacidade futura, sem simular teste de hardware.
+O heartbeat consulta `/api/print-agent/config`, testa as impressoras atribuídas, descobre as impressoras instaladas no Windows e reporta `online`/`offline`. Bluetooth continua fora do transporte atual e permanece como capacidade futura, sem simular teste de hardware.
 
 ## Limite de exatamente-uma-vez
 
