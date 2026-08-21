@@ -77,6 +77,16 @@ export async function createPrintAgentAction(_state: AgentCreationState, formDat
   }
 }
 
+export async function reconnectPrintAgentAction(_state: AgentCreationState, formData: FormData): Promise<AgentCreationState> {
+  try {
+    const result = await PrintAgentAdminService.reconnect(text(formData, "agentId"));
+    refresh();
+    return { token: result.token, name: result.name, error: null };
+  } catch {
+    return { token: null, name: null, error: "Não foi possível reconectar este computador. Tente novamente." };
+  }
+}
+
 export async function retryPrintJobAction(formData: FormData) {
   await PrintQueueService.retry(text(formData, "jobId"));
   refresh();
