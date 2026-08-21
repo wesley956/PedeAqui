@@ -1,7 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
-import { createPrintAgentAction, type AgentCreationState } from "@/features/printing/actions";
+import {
+  createPrintAgentAction,
+  reconnectPrintAgentAction,
+  type AgentCreationState,
+} from "@/features/printing/actions";
 
 const initialState: AgentCreationState = { token: null, name: null, error: null };
 const RAW_BASE = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent/src";
@@ -75,23 +79,40 @@ exit /b 1\r
 `;
 }
 
+function downloadAssistedInstaller(token: string) {
+  const content = assistedInstaller(token, window.location.origin);
+  const blob = new Blob([content], { type: "application/x-msdos-program;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "Instalar-PedeAqui-Impressao.cmd";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+function InstallerCard({ state }: { state: AgentCreationState }) {
+  if (!state.token) return null;
+  return (
+    <div style={{ padding: 14, borderRadius: 14, background: "var(--surface-2)", border: "1px solid var(--border)", display: "grid", gap: 10 }}>
+      <strong>Computador preparado: {state.name}</strong>
+      <span className="muted" style={{ fontSize: 13 }}>Baixe e execute o instalador abaixo neste computador. Ele faz a conexão automaticamente e inicia junto com o Windows.</span>
+      <button type="button" onClick={() => downloadAssistedInstaller(state.token!)} style={buttonStyle}>Baixar instalador assistido (Windows)</button>
+      <span className="muted" style={{ fontSize: 12 }}>O Windows pode pedir confirmação para executar o arquivo. Depois, volte para esta tela e atualize a lista de impressoras.</span>
+      <details>
+        <summary style={{ cursor: "pointer", fontWeight: 800 }}>Configuração manual</summary>
+        <div style={{ display: "grid", gap: 6, marginTop: 8 }}>
+          <span className="muted" style={{ fontSize: 12 }}>Use esta chave somente se precisar configurar o Print Agent manualmente. Ela será mostrada uma única vez.</span>
+          <code style={{ overflowWrap: "anywhere", userSelect: "all" }}>{state.token}</code>
+        </div>
+      </details>
+    </div>
+  );
+}
+
 export function AgentTokenCreator() {
   const [state, action, pending] = useActionState(createPrintAgentAction, initialState);
-
-  function downloadInstaller() {
-    if (!state.token) return;
-    const content = assistedInstaller(state.token, window.location.origin);
-    const blob = new Blob([content], { type: "application/x-msdos-program;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "Instalar-PedeAqui-Impressao.cmd";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
-  }
-
   return (
     <div style={{ display: "grid", gap: 10 }}>
       <form action={action} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -99,24 +120,25 @@ export function AgentTokenCreator() {
         <button type="submit" disabled={pending} style={buttonStyle}>{pending ? "Preparando…" : "Conectar este computador"}</button>
       </form>
       {state.error ? <div style={{ color: "#f97066", fontSize: 13 }}>{state.error}</div> : null}
-      {state.token ? (
-        <div style={{ padding: 14, borderRadius: 14, background: "var(--surface-2)", border: "1px solid var(--border)", display: "grid", gap: 10 }}>
-          <strong>Computador preparado: {state.name}</strong>
-          <span className="muted" style={{ fontSize: 13 }}>Baixe e execute o instalador abaixo neste computador. Ele faz a conexão automaticamente e inicia junto com o Windows.</span>
-          <button type="button" onClick={downloadInstaller} style={buttonStyle}>Baixar instalador assistido (Windows)</button>
-          <span className="muted" style={{ fontSize: 12 }}>O Windows pode pedir confirmação para executar o arquivo. Depois, volte para esta tela e atualize a lista de impressoras.</span>
-          <details>
-            <summary style={{ cursor: "pointer", fontWeight: 800 }}>Configuração manual</summary>
-            <div style={{ display: "grid", gap: 6, marginTop: 8 }}>
-              <span className="muted" style={{ fontSize: 12 }}>Use esta chave somente se precisar configurar o Print Agent manualmente. Ela será mostrada uma única vez.</span>
-              <code style={{ overflowWrap: "anywhere", userSelect: "all" }}>{state.token}</code>
-            </div>
-          </details>
-        </div>
-      ) : null}
+      <InstallerCard state={state} />
+    </div>
+  );
+}
+
+export function AgentReconnectInstaller({ agentId }: { agentId: string }) {
+  const [state, action, pending] = useActionState(reconnectPrintAgentAction, initialState);
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      <form action={action}>
+        <input type="hidden" name="agentId" value={agentId} />
+        <button type="submit" disabled={pending} style={secondaryButtonStyle}>{pending ? "Preparando…" : "Atualizar conexão"}</button>
+      </form>
+      {state.error ? <div style={{ color: "#f97066", fontSize: 13 }}>{state.error}</div> : null}
+      <InstallerCard state={state} />
     </div>
   );
 }
 
 const inputStyle: React.CSSProperties = { minHeight: 42, flex: "1 1 220px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "9px 11px" };
 const buttonStyle: React.CSSProperties = { minHeight: 42, border: 0, borderRadius: 10, background: "var(--accent)", color: "#fff", fontWeight: 850, padding: "9px 13px", cursor: "pointer" };
+const secondaryButtonStyle: React.CSSProperties = { minHeight: 38, border: "1px solid var(--border)", borderRadius: 10, background: "var(--surface-2)", color: "var(--text)", fontWeight: 800, padding: "8px 11px", cursor: "pointer" };
