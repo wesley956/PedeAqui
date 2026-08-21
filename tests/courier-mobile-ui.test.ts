@@ -15,9 +15,11 @@ describe("courier mobile journey", () => {
     expect(page).toContain('item.order.fulfillment_status !== "delivered"');
   });
 
-  it("shows only the operational information needed for the route", () => {
-    for (const text of ["Destino", "Abrir rota", "Ligar para cliente", "Próxima ação", "DeliverySla"]) expect(page).toContain(text);
-    for (const financial of ["delivery_fee_cents", "total_cents", "payment_status", "cash_change"]) expect(page).not.toContain(financial);
+  it("shows the complete operational information needed on the street", () => {
+    for (const text of ["O que levar", "Pagamento", "Destino", "Abrir rota", "WhatsApp do cliente", "Ligar para cliente", "Próxima ação", "Histórico recente", "DeliverySla"]) expect(page).toContain(text);
+    for (const field of ["total_cents", "payment_status", "payment_method_snapshot", "cash_change_for_cents", "product_name_snapshot", "line_total_cents"]) expect(service).toContain(field);
+    expect(page).toContain("Aguardando retirada na loja");
+    expect(page).not.toContain("Aguardando retirada no restaurante");
   });
 
   it("keeps the existing linear delivery transitions", () => {
