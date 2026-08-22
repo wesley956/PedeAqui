@@ -78,6 +78,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
             <div className={styles.grid2}>
               <MoneyInput label="Custo" name="cost" defaultValue={moneyValue(product.cost_cents)} />
               <QuantityInput label="Preparo (min)" name="preparationTimeMinutes" min={0} max={1440} defaultValue={product.preparation_time_minutes} />
+              <QuantityInput label="Ordem no cardápio" name="sortOrder" min={0} max={10000} defaultValue={product.sort_order} />
             </div>
             <div className={styles.grid2}>
               <Input label="SKU" name="sku" maxLength={64} defaultValue={product.sku ?? ""} />

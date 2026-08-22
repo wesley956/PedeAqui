@@ -4,11 +4,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createCartToken, hashCartToken } from "@/server/cart/cart-token";
 import { addCartItemSchema, type AddCartItemInput, type GasSaleMode } from "@/server/cart/schemas";
 import { PricingError, PricingService, type PricingProduct } from "@/server/pricing/pricing-service";
+import { isOpenAt } from "@/server/menu/schedule";
 
 const CART_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 type AdminClient = ReturnType<typeof createAdminClient>;
-type StoreRef = { id: string; organization_id: string; slug: string; name: string; business_type: string };
+type StoreRef = { id: string; organization_id: string; slug: string; name: string; business_type: string; status: string; timezone: string; accepting_orders: boolean };
 type GasSaleContext = { exchange_enabled: boolean; container_sale_enabled: boolean; require_container_choice: boolean; container_surcharge_cents: number };
 
 export type CartPriceChange = { itemId: string; productName: string; kind: "price_changed" | "unavailable" | "invalid_modifiers" };
@@ -16,14 +17,33 @@ export type CartPriceChange = { itemId: string; productName: string; kind: "pric
 export class CartService {
   private static async resolveStore(admin: AdminClient, slug: string): Promise<StoreRef> {
     const { data: store, error } = await admin.from("stores")
-      .select("id, organization_id, slug, name, status, business_type")
+      .select("id, organization_id, slug, name, status, business_type, timezone")
       .ilike("slug", slug).in("status", ["active", "temporarily_closed"]).maybeSingle();
     if (error) throw error;
     if (!store) throw new Error("Store not found");
-    const { data: settings, error: settingsError } = await admin.from("store_menu_settings").select("active").eq("store_id", store.id).maybeSingle();
+    const { data: settings, error: settingsError } = await admin.from("store_menu_settings").select("active, accepting_orders").eq("store_id", store.id).maybeSingle();
     if (settingsError) throw settingsError;
     if (settings && settings.active === false) throw new Error("Menu is unavailable");
-    return { id: store.id, organization_id: store.organization_id, slug: store.slug, name: store.name, business_type: store.business_type ?? "restaurant" };
+    return { id: store.id, organization_id: store.organization_id, slug: store.slug, name: store.name, business_type: store.business_type ?? "restaurant", status: store.status, timezone: store.timezone, accepting_orders: settings?.accepting_orders ?? true };
+  }
+
+  private static async assertAcceptingOrders(admin: AdminClient, store: StoreRef) {
+    if (store.status !== "active" || !store.accepting_orders) {
+      throw new PricingError("store_unavailable", "A loja não está aceitando pedidos agora");
+    }
+    const { data: hours, error } = await admin.from("store_hours")
+      .select("weekday, opens_at, closes_at, closes_next_day")
+      .eq("organization_id", store.organization_id).eq("store_id", store.id).eq("active", true);
+    if (error) throw error;
+    const schedule = (hours ?? []).map((period) => ({
+      weekday: period.weekday,
+      opens_at: String(period.opens_at).slice(0, 5),
+      closes_at: String(period.closes_at).slice(0, 5),
+      closes_next_day: period.closes_next_day,
+    }));
+    if (!isOpenAt(schedule, store.timezone)) {
+      throw new PricingError("store_unavailable", "A loja está fora do horário de atendimento");
+    }
   }
 
   private static async loadGasSaleContext(admin: AdminClient, store: StoreRef, productId: string): Promise<GasSaleContext | null> {
@@ -84,7 +104,10 @@ export class CartService {
     const values = addCartItemSchema.parse(input);
     const admin = createAdminClient();
     const store = await this.resolveStore(admin, values.storeSlug);
-    const product = await this.loadPricingProduct(admin, store, values.productId);
+    const [, product] = await Promise.all([
+      this.assertAcceptingOrders(admin, store),
+      this.loadPricingProduct(admin, store, values.productId),
+    ]);
     if (!product) throw new PricingError("product_unavailable", "Produto indisponível");
     const gasContext = await this.loadGasSaleContext(admin, store, product.id);
     this.assertGasSaleMode(gasContext, values.gasSaleMode);

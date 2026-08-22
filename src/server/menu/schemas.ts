@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { publicDeliverySummarySchema } from "@/server/delivery/schemas";
+import { BUSINESS_TYPES } from "@/modules/module-catalog";
 
 export const hexColorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
 
@@ -89,6 +90,7 @@ export const publicMenuSchema = z.object({
     state: z.string().nullable(),
     timezone: z.string(),
     status: z.enum(["active", "temporarily_closed"]),
+    business_type: z.enum(BUSINESS_TYPES),
   }),
   settings: z.object({
     theme: z.string(),
@@ -118,7 +120,15 @@ export const publicProductSchema = z.object({
     name: z.string(),
     slug: z.string(),
     status: z.enum(["active", "temporarily_closed"]),
+    timezone: z.string(),
+    business_type: z.enum(BUSINESS_TYPES),
   }),
+  settings: z.object({
+    active: z.boolean(),
+    accepting_orders: z.boolean(),
+    pause_reason: z.string().nullable(),
+  }),
+  hours: z.array(publicHourSchema),
   product: publicProductSummarySchema.extend({
     modifier_groups: z.array(publicModifierGroupSchema),
   }),

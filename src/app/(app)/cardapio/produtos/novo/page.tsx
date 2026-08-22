@@ -90,6 +90,7 @@ export default async function NewProductPage() {
             <div className={styles.grid2}>
               <MoneyInput label="Custo" name="cost" placeholder="12,50" />
               <QuantityInput label="Preparo (min)" name="preparationTimeMinutes" min={0} max={1440} defaultValue={0} />
+              <QuantityInput label="Ordem no cardápio" name="sortOrder" min={0} max={10000} defaultValue={0} />
             </div>
             <div className={styles.grid2}>
               <Input label="SKU" name="sku" maxLength={64} />

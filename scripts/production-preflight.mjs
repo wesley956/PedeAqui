@@ -18,11 +18,13 @@ function ok(message) {
 }
 
 async function checkStaticContracts() {
-  const [nextConfig, storageContract, imageService, imagePolicy] = await Promise.all([
+  const [nextConfig, vercelConfig, storageContract, imageService, imagePolicy, imageOptimizer] = await Promise.all([
     readFile("next.config.ts", "utf8"),
+    readFile("vercel.json", "utf8"),
     readFile("supabase/sql/09_catalog_storage.sql", "utf8"),
     readFile("src/server/catalog/catalog-image-service.ts", "utf8"),
     readFile("src/server/catalog/catalog-image-policy.ts", "utf8"),
+    readFile("src/server/catalog/catalog-image-optimizer.ts", "utf8"),
   ]);
 
   const bodyLimitMatch = nextConfig.match(/bodySizeLimit:\s*["'](\d+)mb["']/i);
@@ -30,6 +32,10 @@ async function checkStaticContracts() {
   const bodyLimitMb = Number(bodyLimitMatch[1]);
   if (!Number.isFinite(bodyLimitMb) || bodyLimitMb < MIN_SERVER_ACTION_LIMIT_MB) {
     fail(`serverActions.bodySizeLimit precisa ser >= ${MIN_SERVER_ACTION_LIMIT_MB} MB; encontrado ${bodyLimitMb || "inválido"}.`);
+  }
+  const parsedVercelConfig = JSON.parse(vercelConfig);
+  if (JSON.stringify(parsedVercelConfig.regions) !== JSON.stringify(["gru1"])) {
+    fail("Vercel Functions precisam permanecer na região única gru1, próxima ao banco sa-east-1.");
   }
 
   for (const requiredText of [
@@ -50,8 +56,11 @@ async function checkStaticContracts() {
   if (!imagePolicy.includes("4 * 1024 * 1024")) {
     fail("CatalogImageService não reserva margem abaixo do limite de payload da Vercel.");
   }
+  if (!imageOptimizer.includes('.webp({ quality: OPTIMIZED_CATALOG_IMAGE_QUALITY') || !imageOptimizer.includes('resize({ width: maximumWidth(purpose)')) {
+    fail("Uploads de catálogo precisam ser redimensionados e convertidos para WebP.");
+  }
 
-  ok(`contratos estáticos válidos (Server Actions ${bodyLimitMb} MB; imagem individual 4 MiB).`);
+  ok(`contratos estáticos válidos (Server Actions ${bodyLimitMb} MB; entrada 4 MiB; saída WebP redimensionada).`);
 }
 
 function hasLiveCredentials() {

@@ -10,6 +10,7 @@ import {
   MAX_CATALOG_IMAGE_BYTES,
   validateCatalogImage,
 } from "@/server/catalog/catalog-image-policy";
+import { optimizeCatalogImage } from "@/server/catalog/catalog-image-optimizer";
 
 export { ALLOWED_CATALOG_IMAGE_TYPES, MAX_CATALOG_IMAGE_BYTES, validateCatalogImage };
 
@@ -54,10 +55,11 @@ export class CatalogImageService {
     const context = await authorize(options?.permission ?? PERMISSIONS.PRODUCTS_EDIT);
     if (!context.storeId) throw new Error("É necessário selecionar uma unidade para enviar imagens.");
 
-    const path = buildCatalogImagePath(context.organizationId, context.storeId, file.type, options?.purpose);
+    const optimized = await optimizeCatalogImage(file, options?.purpose);
+    const path = buildCatalogImagePath(context.organizationId, context.storeId, optimized.contentType, options?.purpose);
     const admin = createAdminClient();
-    const { error } = await admin.storage.from(CATALOG_MEDIA_BUCKET).upload(path, file, {
-      contentType: file.type,
+    const { error } = await admin.storage.from(CATALOG_MEDIA_BUCKET).upload(path, optimized.data, {
+      contentType: optimized.contentType,
       cacheControl: "31536000",
       upsert: false,
     });
