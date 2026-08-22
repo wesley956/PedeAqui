@@ -24,5 +24,11 @@ export function friendlyOrderActionError(error: unknown) {
   if (message.includes("Order not found")) {
     return "Pedido não encontrado nesta unidade.";
   }
+  if (message.includes("Only confirmed orders can be routed to printing")) {
+    return "Aceite o pedido antes de solicitar a impressão.";
+  }
+  if (message.includes("No active print routes")) {
+    return "Nenhuma rota de impressão ativa atende aos itens deste pedido. Revise estações e impressoras.";
+  }
   return "Não foi possível concluir esta ação. Confira a situação atual e tente novamente.";
 }

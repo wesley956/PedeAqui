@@ -21,6 +21,7 @@ export type PlatformWhatsAppManualErrorCode =
   | "platform_token_missing"
   | "app_secret_missing"
   | "graph_version_missing"
+  | "webhook_verify_token_missing"
   | "duplicate_phone"
   | "phone_not_in_waba"
   | "permanent_token_invalid"
@@ -41,6 +42,7 @@ function manualEnvironmentStatus() {
   if (!process.env.META_SYSTEM_USER_ACCESS_TOKEN?.trim()) missing.push("META_SYSTEM_USER_ACCESS_TOKEN");
   if (!process.env.WHATSAPP_APP_SECRET?.trim()) missing.push("WHATSAPP_APP_SECRET");
   if (!process.env.WHATSAPP_GRAPH_API_VERSION?.trim()) missing.push("WHATSAPP_GRAPH_API_VERSION");
+  if (!process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN?.trim()) missing.push("WHATSAPP_WEBHOOK_VERIFY_TOKEN");
   return { ready: missing.length === 0, missing };
 }
 
@@ -60,6 +62,9 @@ function permanentToken() {
   }
   if (!process.env.WHATSAPP_GRAPH_API_VERSION?.trim()) {
     throw new PlatformWhatsAppManualError("graph_version_missing", "A versão da Graph API ainda não está configurada no servidor.");
+  }
+  if (!process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN?.trim()) {
+    throw new PlatformWhatsAppManualError("webhook_verify_token_missing", "O token de verificação do webhook ainda não está configurado no servidor.");
   }
   void env;
   void resolveWhatsAppAppSecret("WHATSAPP_APP_SECRET");
@@ -166,11 +171,14 @@ export class PlatformWhatsAppManualService {
       : settings?.access_token_secret_ref
         ? "legacy"
         : "missing";
+    const lastHealthCheck = settings?.last_health_check_at ? new Date(settings.last_health_check_at) : null;
+    const healthIsRecent = Boolean(lastHealthCheck && Date.now() - lastHealthCheck.getTime() <= 24 * 60 * 60 * 1000);
     return {
       store,
       organization,
       settings,
       credentialMode,
+      healthIsRecent,
       environment: manualEnvironmentStatus(),
     } as const;
   }

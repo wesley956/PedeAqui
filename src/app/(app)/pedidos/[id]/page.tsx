@@ -25,6 +25,19 @@ const fulfillmentLabels: Record<string, string> = {
 const printStatusLabels: Record<string, string> = { pending: "Pendente", processing: "Imprimindo", printed: "Impresso", failed: "Falhou", cancelled: "Cancelado" };
 const printDocumentLabels: Record<string, string> = { kitchen: "Cozinha", expedition: "Expedição", counter: "Balcão", receipt: "Recibo", custom: "Personalizado" };
 const historyDomainLabels: Record<string, string> = { order: "Pedido", production: "Produção", fulfillment: "Entrega/retirada", payment: "Pagamento" };
+const historySourceLabels: Record<string, string> = { panel: "Painel", checkout: "Cardápio", system: "Sistema", integration: "Integração", automation: "Automação", pdv: "PDV" };
+
+function dateTime(value: string, timeZone: string) {
+  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone }).format(new Date(value));
+}
+function historyState(domain: string, state: string | null) {
+  if (!state) return "início";
+  if (domain === "order") return orderStatusLabels[state as keyof typeof orderStatusLabels] ?? state;
+  if (domain === "production") return productionStatusLabels[state as keyof typeof productionStatusLabels] ?? state;
+  if (domain === "payment") return paymentStatusLabels[state] ?? state;
+  if (domain === "fulfillment") return fulfillmentLabels[state] ?? state;
+  return state;
+}
 
 function toneForOrder(status: string): StatusTone {
   if (["canceled", "rejected"].includes(status)) return "danger";
@@ -53,7 +66,7 @@ function toneForFulfillment(status: string): StatusTone {
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { context, order, items, history, printJobs } = await OrderService.get(id);
+  const { context, order, items, history, printJobs, timeZone } = await OrderService.get(id);
   if (!context.storeId) throw new Error("An active store is required");
 
   const fulfillmentComplete = ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status);
@@ -77,7 +90,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <div>
             <p className={styles.eyebrow}>{channelLabel} · {fulfillmentTypeLabel}</p>
             <h1 className={styles.title}>Pedido #{order.display_number}</h1>
-            <p className={styles.meta}>{order.customer_name_snapshot} · {new Date(order.created_at).toLocaleString("pt-BR")}</p>
+            <p className={styles.meta}>{order.customer_name_snapshot} · {dateTime(order.created_at, timeZone)}</p>
+            {order.scheduled_for ? <p className={styles.meta}><strong>Agendado para {dateTime(order.scheduled_for, timeZone)}</strong></p> : null}
           </div>
           <div className={styles.total}>{money(order.total_cents)}</div>
         </div>
@@ -88,6 +102,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <StatusItem label="Produção" value={productionStatusLabels[order.production_status as keyof typeof productionStatusLabels]} tone={toneForProduction(order.production_status)} />
           <StatusItem label="Entrega/retirada" value={fulfillmentLabels[order.fulfillment_status] ?? order.fulfillment_status} tone={toneForFulfillment(order.fulfillment_status)} />
         </div>
+        {order.cancel_reason ? <p className={styles.completionHint}><strong>Motivo do cancelamento:</strong> {order.cancel_reason}</p> : null}
 
         <div className={styles.nextAction}>
           <div>
@@ -126,13 +141,16 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             ))}
             <div className={styles.summaryList}>
               <Summary label="Subtotal" value={money(order.subtotal_cents)} />
-              {Number(order.discount_cents) > 0 ? <Summary label="Desconto" value={`-${money(order.discount_cents)}`} /> : null}
+              {Number(order.coupon_discount_cents) > 0 ? <Summary label={`Cupom${order.coupon_code_snapshot ? ` ${order.coupon_code_snapshot}` : ""}`} value={`-${money(order.coupon_discount_cents)}`} /> : null}
+              {Number(order.cashback_discount_cents) > 0 ? <Summary label="Cashback" value={`-${money(order.cashback_discount_cents)}`} /> : null}
+              {Number(order.loyalty_discount_cents) > 0 ? <Summary label="Fidelidade" value={`-${money(order.loyalty_discount_cents)}`} /> : null}
+              {Number(order.discount_cents) > 0 && Number(order.coupon_discount_cents) + Number(order.cashback_discount_cents) + Number(order.loyalty_discount_cents) === 0 ? <Summary label="Desconto" value={`-${money(order.discount_cents)}`} /> : null}
               <Summary label="Entrega" value={money(order.delivery_fee_cents)} />
               <Summary label="Total" value={money(order.total_cents)} strong />
             </div>
           </article>
 
-          <PaymentPanel orderId={order.id} />
+          <PaymentPanel orderId={order.id} timeZone={timeZone} />
         </div>
 
         <div className={styles.stack}>
@@ -141,11 +159,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <div className={styles.infoGrid}>
               <Info label="Cliente" value={order.customer_name_snapshot} full />
               <Info label="Telefone" value={order.customer_phone_snapshot ?? "Não informado"} />
+              <Info label="E-mail" value={order.customer_email_snapshot ?? "Não informado"} />
               <Info label="Modalidade" value={fulfillmentTypeLabel} />
               {order.fulfillment_type === "delivery" ? <>
                 <Info label="Endereço" value={[order.address_street_snapshot, order.address_number_snapshot].filter(Boolean).join(", ") || "Não informado"} full />
+                {order.address_complement_snapshot ? <Info label="Complemento" value={order.address_complement_snapshot} full /> : null}
                 <Info label="Bairro" value={order.address_district_snapshot ?? "—"} />
                 <Info label="Cidade" value={[order.address_city_snapshot, order.address_state_snapshot].filter(Boolean).join("/") || "—"} />
+                <Info label="CEP" value={order.address_postal_code_snapshot ?? "—"} />
                 {order.address_reference_snapshot ? <Info label="Referência" value={order.address_reference_snapshot} full /> : null}
               </> : null}
             </div>
@@ -168,9 +189,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <div className={styles.detailsBody}>
             {history.length === 0 ? <p className={styles.small}>Nenhuma movimentação registrada.</p> : history.map((entry) => (
               <div key={entry.id} className={styles.historyEntry}>
-                <strong>{historyDomainLabels[entry.state_domain] ?? "Atualização"}: {entry.from_state ?? "início"} → {entry.to_state}</strong>
+                <strong>{historyDomainLabels[entry.state_domain] ?? "Atualização"}: {historyState(entry.state_domain, entry.from_state)} → {historyState(entry.state_domain, entry.to_state)}</strong>
                 {entry.reason ? <div className={styles.small}>{entry.reason}</div> : null}
-                <div className={styles.small}>{new Date(entry.created_at).toLocaleString("pt-BR")} · {entry.source}</div>
+                <div className={styles.small}>{dateTime(entry.created_at, timeZone)} · {historySourceLabels[entry.source] ?? "Sistema"}</div>
               </div>
             ))}
           </div>
@@ -179,11 +200,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <details>
           <summary>Impressões ({printJobs.length})</summary>
           <div className={styles.detailsBody}>
+            {order.order_status === "confirmed" ? <OrderActionForm orderId={order.id} intent="print" label="Imprimir pedido agora" tone="secondary" compact /> : null}
             {printJobs.length === 0 ? <p className={styles.small}>Nenhuma via roteada para este pedido.</p> : printJobs.map((job) => (
               <div key={job.id} className={styles.printEntry}>
                 <strong>{printDocumentLabels[job.document_type] ?? job.document_type}{job.is_reprint ? " · Reimpressão" : ""}</strong>
                 <div className={styles.small}>{job.station_name} → {job.printer_name} · {printStatusLabels[job.status] ?? job.status} · {job.copies} cópia(s)</div>
-                {job.last_error ? <div className={styles.error}>{job.last_error}</div> : null}
+                <div className={styles.small}>Solicitada em {dateTime(job.created_at, timeZone)}{job.printed_at ? ` · impressa em ${dateTime(job.printed_at, timeZone)}` : ""}</div>
+                {job.last_error ? <div className={styles.error}>Falha ao imprimir. Verifique o agente e a impressora antes de tentar novamente.</div> : null}
                 {["printed", "failed"].includes(job.status) ? <OrderActionForm orderId={order.id} intent="reprint" printJobId={job.id} label="Reimprimir via" tone="secondary" reasonLabel="Motivo da reimpressão" reasonPlaceholder="Ex.: via danificada" compact /> : null}
               </div>
             ))}
@@ -202,6 +225,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </div>
         </section>
       ) : null}
+      <p className={styles.small}>Última atualização: {dateTime(order.updated_at, timeZone)}</p>
     </section>
   );
 }

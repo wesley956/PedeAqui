@@ -127,11 +127,28 @@ export class OrderService {
     if (error) throw error;
     if (!order) throw new Error("Order not found");
 
-    const { data: items, error: itemsError } = await admin.from("order_items")
-      .select("id, product_name_snapshot, product_image_url_snapshot, quantity, note, unit_base_price_cents, unit_modifiers_price_cents, unit_total_price_cents, line_total_cents")
-      .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("order_id", id)
-      .order("created_at");
-    if (itemsError) throw itemsError;
+    const [storeResult, itemsResult, historyResult, printResult] = await Promise.all([
+      admin.from("stores").select("timezone").eq("id", storeId).eq("organization_id", context.organizationId).maybeSingle(),
+      admin.from("order_items")
+        .select("id, product_name_snapshot, product_image_url_snapshot, quantity, note, unit_base_price_cents, unit_modifiers_price_cents, unit_total_price_cents, line_total_cents")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("order_id", id)
+        .order("created_at"),
+      admin.from("order_state_history")
+        .select("id, state_domain, from_state, to_state, reason, source, actor_user_id, created_at")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("order_id", id)
+        .order("created_at"),
+      admin.from("print_jobs")
+        .select("id, document_type, status, printer_id, station_id, attempts, max_attempts, copies, is_reprint, reprint_reason, created_at, printed_at, last_error")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("order_id", id)
+        .order("created_at", { ascending: false }),
+    ]);
+    if (storeResult.error) throw storeResult.error;
+    if (itemsResult.error) throw itemsResult.error;
+    if (historyResult.error) throw historyResult.error;
+    if (printResult.error) throw printResult.error;
+    const items = itemsResult.data ?? [];
+    const history = historyResult.data ?? [];
+    const printJobs = printResult.data ?? [];
 
     const itemIds = (items ?? []).map((item) => item.id);
     const modifiersResult = itemIds.length > 0
@@ -143,20 +160,8 @@ export class OrderService {
     if (modifiersResult.error) throw modifiersResult.error;
     const modifiersByItem = groupOrderModifiers((modifiersResult.data ?? []) as OrderModifierRow[]);
 
-    const { data: history, error: historyError } = await admin.from("order_state_history")
-      .select("id, state_domain, from_state, to_state, reason, source, actor_user_id, created_at")
-      .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("order_id", id)
-      .order("created_at");
-    if (historyError) throw historyError;
-
-    const { data: printJobs, error: printError } = await admin.from("print_jobs")
-      .select("id, document_type, status, printer_id, station_id, attempts, max_attempts, copies, is_reprint, reprint_reason, created_at, printed_at, last_error")
-      .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("order_id", id)
-      .order("created_at", { ascending: false });
-    if (printError) throw printError;
-
-    const printerIds = [...new Set((printJobs ?? []).map((job) => job.printer_id))];
-    const stationIds = [...new Set((printJobs ?? []).map((job) => job.station_id).filter((value): value is string => Boolean(value)))];
+    const printerIds = [...new Set(printJobs.map((job) => job.printer_id))];
+    const stationIds = [...new Set(printJobs.map((job) => job.station_id).filter((value): value is string => Boolean(value)))];
     const [printersResult, stationsResult] = await Promise.all([
       printerIds.length
         ? admin.from("printers").select("id, name").eq("organization_id", context.organizationId).eq("store_id", storeId).in("id", printerIds)
@@ -172,13 +177,14 @@ export class OrderService {
 
     return {
       context,
+      timeZone: storeResult.data?.timezone || "America/Sao_Paulo",
       order,
-      items: (items ?? []).map((item) => ({
+      items: items.map((item) => ({
         ...item,
         modifiers: modifiersByItem.get(item.id) ?? [],
       })),
-      history: history ?? [],
-      printJobs: (printJobs ?? []).map((job) => ({
+      history,
+      printJobs: printJobs.map((job) => ({
         ...job,
         printer_name: printerNames.get(job.printer_id) ?? "Impressora",
         station_name: job.station_id ? stationNames.get(job.station_id) ?? "Estação" : "Sem estação",

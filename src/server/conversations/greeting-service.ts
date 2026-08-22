@@ -2,7 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildPublicMenuUrl, renderGreetingTemplate } from "@/server/conversations/greeting";
-import { WhatsAppCloudProvider, resolveWhatsAppAccessToken } from "@/server/conversations/provider";
+import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import { recordFailure } from "@/server/observability/failure";
 
 type IngestResult = {
@@ -119,7 +119,7 @@ export class ConversationGreetingService {
           p_external_message_id: null,
           p_status: "failed",
           p_error_code: "provider_error",
-          p_error_message: error instanceof Error ? error.message.slice(0, 300) : "Falha no provider",
+          p_error_message: safeWhatsAppFailureMessage(error),
         });
       }
     }

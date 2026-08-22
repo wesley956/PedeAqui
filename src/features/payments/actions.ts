@@ -7,6 +7,7 @@ import { paymentMethodSchema } from "@/server/checkout/schemas";
 import { parseMoneyToCents } from "@/server/catalog/money";
 import { PaymentService } from "@/server/payments/payment-service";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
+import { friendlyPaymentActionError } from "@/features/payments/payment-action-error";
 
 export async function savePaymentMethodsAction(formData: FormData) {
   const methods = formData.getAll("method").map((value) => paymentMethodSchema.parse(String(value)));
@@ -51,13 +52,6 @@ function refresh(orderId: string) {
   revalidatePath("/caixa");
 }
 
-function friendly(error: unknown) {
-  const raw = error instanceof Error ? error.message.toLocaleLowerCase("pt-BR") : "";
-  if (raw.includes("open cash session required for cash payment")) return "Abra o caixa antes de movimentar um pagamento em dinheiro.";
-  if (raw.includes("cash outflow exceeds expected balance")) return "O caixa aberto não possui saldo físico esperado suficiente para este estorno.";
-  return error instanceof Error ? error.message : "Não foi possível atualizar o pagamento.";
-}
-
 export async function paymentAction(
   _previousState: PaymentActionState,
   formData: FormData,
@@ -90,6 +84,7 @@ export async function paymentAction(
     refresh(orderId);
     return { ok: true, message: "Tentativa de pagamento marcada como falha.", error: null };
   } catch (error) {
-    return { ok: false, message: null, error: friendly(error) };
+    refresh(orderId);
+    return { ok: false, message: null, error: friendlyPaymentActionError(error) };
   }
 }
