@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 import { SearchInput, SelectField } from "@/components/ui/form-controls";
 import { SemanticStatus } from "@/components/ui/status";
 import { ProductService } from "@/server/catalog/product-service";
 import { CategoryService } from "@/server/catalog/category-service";
 import { formatCents } from "@/server/catalog/money";
-import { duplicateProductAction, setProductAvailabilityAction } from "@/features/catalog/actions";
+import { duplicateProductAction, removeProductAction, setProductAvailabilityAction } from "@/features/catalog/actions";
+import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import styles from "../catalog-management.module.css";
 
 const labels = {
@@ -113,6 +115,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     {product.image_url ? <span className={styles.metaChip}>Imagem cadastrada</span> : null}
                   </div>
                   <div className={styles.productActions}>
+                    <Link href={`/cardapio/produtos/${product.id}`}>Editar</Link>
                     <form action={setProductAvailabilityAction}>
                       <input type="hidden" name="productId" value={product.id} />
                       <input type="hidden" name="availability" value={product.availability === "available" ? "sold_out" : "available"} />
@@ -124,6 +127,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       <input type="hidden" name="productId" value={product.id} />
                       <Button type="submit" tone="secondary">Duplicar</Button>
                     </form>
+                    <ResilientMutationForm action={removeProductAction}>
+                      <input type="hidden" name="productId" value={product.id} />
+                      <ConfirmSubmitButton confirmation="Remover este produto do catálogo? Pedidos e histórico serão preservados.">Remover</ConfirmSubmitButton>
+                    </ResilientMutationForm>
                   </div>
                 </div>
                 <div className={styles.productPrice}>{formatCents(product.promotional_price_cents ?? product.price_cents)}</div>
