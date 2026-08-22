@@ -23,6 +23,7 @@ export const productInputSchema = z.object({
   sku: z.string().trim().max(64).nullable().optional(),
   barcode: z.string().trim().max(64).nullable().optional(),
   preparationTimeMinutes: z.number().int().min(0).max(1440).default(0),
+  sortOrder: z.number().int().min(0).max(10000).default(0),
   active: z.boolean().default(true),
   availability: productAvailabilitySchema.default("available"),
 }).superRefine((value, ctx) => {

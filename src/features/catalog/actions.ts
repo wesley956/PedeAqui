@@ -65,6 +65,7 @@ function productInput(formData: FormData, imageUrl: string | null) {
     sku: optionalString(formData.get("sku")),
     barcode: optionalString(formData.get("barcode")),
     preparationTimeMinutes: integer(formData.get("preparationTimeMinutes")),
+    sortOrder: integer(formData.get("sortOrder")),
     active: formData.get("active") === "on",
     availability: productAvailabilitySchema.parse(formData.get("availability") ?? "available"),
   };
@@ -107,6 +108,7 @@ const safeCatalogMessages = new Set([
   "Escolha uma imagem JPEG, PNG ou WebP.",
   "É necessário selecionar uma unidade para enviar imagens.",
   "Não foi possível enviar a imagem. Tente novamente.",
+  "Não foi possível processar a imagem. Escolha outro arquivo.",
 ]);
 
 function catalogActionMessage(error: unknown, fallback: string) {

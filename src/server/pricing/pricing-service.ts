@@ -34,7 +34,7 @@ export type PricedModifierSnapshot = {
 };
 
 export class PricingError extends Error {
-  constructor(public readonly code: "product_unavailable" | "invalid_modifiers" | "invalid_quantity" | "unsafe_total", message: string) {
+  constructor(public readonly code: "product_unavailable" | "store_unavailable" | "invalid_modifiers" | "invalid_quantity" | "unsafe_total", message: string) {
     super(message);
     this.name = "PricingError";
   }

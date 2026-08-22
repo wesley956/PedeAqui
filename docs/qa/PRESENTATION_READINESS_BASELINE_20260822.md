@@ -14,7 +14,7 @@ Este documento registra as evidências das issues `PA-DIAG-001`–`PA-DIAG-005`
 | Redirecionamento | `https://pedeaqui.pp.ua` redireciona para `www` |
 | URL antiga Vercel | `pedeaqui-cruzjade080-4490s-projects.vercel.app` exige Vercel SSO; não usar na apresentação |
 | Supabase | projeto `zsbsczjhiujnhdznrzck`, `ACTIVE_HEALTHY`, `sa-east-1`, PostgreSQL 17 |
-| Banco | 115 migrations de produção; migration de equipe aplicada em 22/08/2026 |
+| Banco | 116 migrations de produção; prontidão do cardápio público aplicada em 22/08/2026 |
 | Aplicação | Next.js 16.2.12, React 19.2.8, Node >= 22 |
 
 O conector Vercel disponível lista o time, mas não enxerga projetos. O domínio público e
@@ -44,18 +44,18 @@ pendências de índices que pertencem ao lote de desempenho.
 
 | Gate | Resultado |
 | --- | --- |
-| Testes | 149 arquivos, 892 testes aprovados |
+| Testes | 150 arquivos, 897 testes aprovados |
 | E2E contextual | 1 arquivo, 7 testes aprovados |
 | TypeScript | aprovado, zero erro |
-| ESLint | zero erro e 6 warnings |
+| ESLint | zero erro e 4 warnings |
 | Build Next.js | aprovado, 66 superfícies reportadas pelo build |
 | Rotas no código | 74 pages + 13 route handlers |
 | Server Actions | 35 arquivos de actions |
 | Serviços de servidor | 152 arquivos em `src/server` |
-| Drift local | 115 migrations alinhadas ao snapshot de produção |
+| Drift local | 116 migrations alinhadas ao snapshot de produção |
 | Preflight estático | Server Actions 16 MiB; imagens limitadas a 4 MiB na aplicação e 5 MiB no bucket |
 
-Warnings atuais: cinco usos de `<img>` fora do pipeline `next/image` e uma variável não
+Warnings atuais: três usos de `<img>` fora do pipeline `next/image` e uma variável não
 utilizada em `recipe-form.tsx`. Não bloqueiam o build, mas entram no diagnóstico visual e
 de desempenho.
 

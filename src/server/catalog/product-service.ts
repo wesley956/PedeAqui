@@ -24,11 +24,11 @@ export class ProductService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data, error } = await admin.from("products")
-      .select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, active, availability, created_at, updated_at")
+      .select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, sort_order, active, availability, created_at, updated_at")
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
       .is("deleted_at", null)
-      .order("name");
+      .order("sort_order").order("name");
     if (error) throw error;
     return data ?? [];
   }
@@ -61,11 +61,12 @@ export class ProductService {
       sku: values.sku ?? null,
       barcode: values.barcode ?? null,
       preparation_time_minutes: values.preparationTimeMinutes,
+      sort_order: values.sortOrder,
       active,
       availability,
       created_by: context.userId,
       updated_by: context.userId,
-    }).select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, active, availability").single();
+    }).select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, sort_order, active, availability").single();
     if (error) throw error;
 
     await AuditService.record(context, { action: "product.created", entityType: "product", entityId: data.id, after: data });
@@ -78,7 +79,7 @@ export class ProductService {
     const context = await authorize(PERMISSIONS.PRODUCTS_VIEW);
     const storeId = requireStoreId(context.storeId);
     const { data, error } = await createAdminClient().from("products")
-      .select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, active, availability")
+      .select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, sort_order, active, availability")
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId)
       .is("deleted_at", null).single();
     if (error) throw error;
@@ -100,7 +101,7 @@ export class ProductService {
     }
 
     const { data: before, error: beforeError } = await admin.from("products")
-      .select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, active, availability")
+      .select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, sort_order, active, availability")
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
     if (beforeError) throw beforeError;
 
@@ -115,6 +116,7 @@ export class ProductService {
       sku: values.sku ?? null,
       barcode: values.barcode ?? null,
       preparation_time_minutes: values.preparationTimeMinutes,
+      sort_order: values.sortOrder,
       active: values.active,
       availability: values.active ? values.availability : "inactive",
       updated_by: context.userId,
@@ -123,7 +125,7 @@ export class ProductService {
 
     const { data: after, error } = await admin.from("products").update(patch)
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId)
-      .select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, active, availability").single();
+      .select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, sort_order, active, availability").single();
     if (error) throw error;
 
     await AuditService.record(context, { action: "product.updated", entityType: "product", entityId: id, before, after });
@@ -175,7 +177,7 @@ export class ProductService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data: source, error: sourceError } = await admin.from("products")
-      .select("category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, active, availability")
+      .select("category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, sort_order, active, availability")
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
     if (sourceError) throw sourceError;
 

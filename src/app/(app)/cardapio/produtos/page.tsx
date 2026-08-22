@@ -113,6 +113,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     <span className={styles.metaChip}>{categoryNames.get(product.category_id ?? "") ?? "Sem categoria"}</span>
                     <span className={styles.metaChip}>{product.sku ? `SKU ${product.sku}` : "Sem SKU"}</span>
                     {product.image_url ? <span className={styles.metaChip}>Imagem cadastrada</span> : null}
+                    <span className={styles.metaChip}>Ordem {product.sort_order}</span>
                   </div>
                   <div className={styles.productActions}>
                     <Link href={`/cardapio/produtos/${product.id}`}>Editar</Link>

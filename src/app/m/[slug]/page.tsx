@@ -35,7 +35,15 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
           {menu.settings.minimum_order_cents > 0 ? <span className={styles.pill}>Pedido mínimo {money(menu.settings.minimum_order_cents)}</span> : null}
           {deliveryAvailable && menu.delivery.free_delivery_over_cents !== null ? <span className={styles.pill}>Frete grátis acima de {money(menu.delivery.free_delivery_over_cents)}</span> : null}
         </div>
-        <MenuBrowser menu={menu} />
+        <MenuBrowser menu={{
+          store: { slug: menu.store.slug },
+          settings: {
+            show_search: menu.settings.show_search,
+            show_categories: menu.settings.show_categories,
+            show_product_images: menu.settings.show_product_images,
+          },
+          categories: menu.categories,
+        }} canOrder={menu.operational.canOrder} />
       </div>
       <footer className={styles.signature} aria-label="PedeAqui — Seu pedido começa aqui"><PedeAquiLogo size="xs" decorative /><span>Seu pedido começa aqui.</span></footer>
     </div>

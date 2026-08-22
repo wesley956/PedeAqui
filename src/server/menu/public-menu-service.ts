@@ -2,7 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createPublicClient } from "@/lib/supabase/public";
-import { isBusinessType, type BusinessType } from "@/modules/module-catalog";
+import type { BusinessType } from "@/modules/module-catalog";
 import { isOpenAt } from "@/server/menu/schedule";
 import { publicMenuSchema, publicProductSchema, type PublicMenu, type PublicProduct } from "@/server/menu/schemas";
 
@@ -28,13 +28,26 @@ export type PublicGasProductOption = {
 export type PublicProductState = PublicProduct & {
   businessType: BusinessType;
   gas: PublicGasProductOption | null;
+  operational: PublicMenuState["operational"];
 };
 
-async function businessTypeForStore(storeId: string): Promise<BusinessType> {
-  const admin = createAdminClient();
-  const { data, error } = await admin.from("stores").select("business_type").eq("id", storeId).maybeSingle();
-  if (error) throw error;
-  return data?.business_type && isBusinessType(data.business_type) ? data.business_type : "restaurant";
+function operationalState({
+  status,
+  acceptingOrders,
+  hours,
+  timeZone,
+  now,
+}: {
+  status: "active" | "temporarily_closed";
+  acceptingOrders: boolean;
+  hours: PublicMenu["hours"];
+  timeZone: string;
+  now: Date;
+}) {
+  const scheduleOpen = status === "active" && isOpenAt(hours, timeZone, now);
+  const canOrder = scheduleOpen && acceptingOrders;
+  const label = (!acceptingOrders ? "paused" : scheduleOpen ? "open" : "closed") as "open" | "closed" | "paused";
+  return { scheduleOpen, acceptingOrders, canOrder, label };
 }
 
 async function publicGasOption(organizationStoreId: string, productId: string): Promise<PublicGasProductOption | null> {
@@ -78,16 +91,19 @@ export class PublicMenuService {
     if (!data) return null;
 
     const menu = publicMenuSchema.parse(data);
-    const businessType = await businessTypeForStore(menu.store.id);
-    const scheduleOpen = menu.store.status === "active" && isOpenAt(menu.hours, menu.store.timezone, now);
-    const acceptingOrders = menu.settings.accepting_orders;
-    const canOrder = scheduleOpen && acceptingOrders;
-    const label = !acceptingOrders ? "paused" : scheduleOpen ? "open" : "closed";
+    const businessType = menu.store.business_type;
+    const operational = operationalState({
+      status: menu.store.status,
+      acceptingOrders: menu.settings.accepting_orders,
+      hours: menu.hours,
+      timeZone: menu.store.timezone,
+      now,
+    });
 
-    return { ...menu, businessType, operational: { scheduleOpen, acceptingOrders, canOrder, label } };
+    return { ...menu, businessType, operational };
   }
 
-  static async getProduct(slug: string, productId: string): Promise<PublicProductState | null> {
+  static async getProduct(slug: string, productId: string, now = new Date()): Promise<PublicProductState | null> {
     const supabase = createPublicClient();
     const { data, error } = await supabase.rpc("get_public_product", {
       p_store_slug: slug,
@@ -96,8 +112,15 @@ export class PublicMenuService {
     if (error) throw error;
     if (!data) return null;
     const parsed = publicProductSchema.parse(data);
-    const businessType = await businessTypeForStore(parsed.store.id);
+    const businessType = parsed.store.business_type;
+    const operational = operationalState({
+      status: parsed.store.status,
+      acceptingOrders: parsed.settings.accepting_orders,
+      hours: parsed.hours,
+      timeZone: parsed.store.timezone,
+      now,
+    });
     const gas = businessType === "gas" ? await publicGasOption(parsed.store.id, parsed.product.id) : null;
-    return { ...parsed, businessType, gas };
+    return { ...parsed, businessType, gas, operational };
   }
 }
