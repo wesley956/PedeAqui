@@ -53,6 +53,26 @@ export async function saveCheckoutFulfillmentAction(formData: FormData) {
   redirect(`/m/${storeSlug}/checkout`);
 }
 
+export async function saveCheckoutScheduleAction(formData: FormData) {
+  const storeSlug = String(formData.get("storeSlug") ?? "");
+  const token = await tokenFor(storeSlug);
+  if (!token) redirect(`/m/${storeSlug}/carrinho`);
+  const mode = String(formData.get("mode") ?? "") as "asap" | "scheduled";
+  try {
+    await CheckoutService.saveSchedule(
+      storeSlug,
+      token,
+      mode === "scheduled"
+        ? { mode, localDateTime: String(formData.get("localDateTime") ?? "") }
+        : { mode: "asap" },
+    );
+  } catch (error) {
+    if (error instanceof CheckoutError) errorRedirect(storeSlug, error);
+    throw error;
+  }
+  redirect(`/m/${storeSlug}/checkout`);
+}
+
 export async function saveCheckoutAddressAction(formData: FormData) {
   const storeSlug = String(formData.get("storeSlug") ?? "");
   const token = await tokenFor(storeSlug);

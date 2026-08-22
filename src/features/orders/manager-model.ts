@@ -12,6 +12,7 @@ export type OrderManagerRow = {
   fulfillment_status: FulfillmentStatus;
   customer_name_snapshot: string;
   total_cents: number | string;
+  scheduled_for?: string | null;
   created_at: string;
   updated_at: string;
 };

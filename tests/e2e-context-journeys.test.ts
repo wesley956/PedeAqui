@@ -42,6 +42,7 @@ describe("E2E context journeys [317]", () => {
       paymentMethod: "pix" as const,
       enabledPaymentMethods: ["pix", "cash"] as const,
       cashChangeForCents: null,
+      scheduledFor: null,
     };
     expect(reviewCheckout({ ...base, fulfillmentType: "delivery", deliveryQuoteStatus: "valid", enabledPaymentMethods: [...base.enabledPaymentMethods] }).ready).toBe(true);
     expect(reviewCheckout({ ...base, fulfillmentType: "pickup", deliveryQuoteStatus: "not_required", enabledPaymentMethods: [...base.enabledPaymentMethods] }).ready).toBe(true);

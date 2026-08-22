@@ -13,14 +13,14 @@ export class PublicOrderService {
     const id = uuidSchema.parse(orderId);
     const admin = createAdminClient();
     const { data: store, error: storeError } = await admin.from("stores")
-      .select("id, organization_id, name, slug, business_type")
+      .select("id, organization_id, name, slug, business_type, timezone")
       .ilike("slug", storeSlug).maybeSingle();
     if (storeError) throw storeError;
     if (!store) return null;
 
     const [orderResult, itemsResult] = await Promise.all([
       admin.from("orders")
-        .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, address_street_snapshot, address_number_snapshot, address_complement_snapshot, address_district_snapshot, address_city_snapshot, address_state_snapshot, subtotal_cents, discount_cents, delivery_fee_cents, total_cents, payment_method_snapshot, cash_change_for_cents, delivery_estimated_min_minutes, delivery_estimated_max_minutes, confirmed_at, completed_at, canceled_at, cancel_reason, created_at, updated_at")
+        .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, address_street_snapshot, address_number_snapshot, address_complement_snapshot, address_district_snapshot, address_city_snapshot, address_state_snapshot, subtotal_cents, discount_cents, delivery_fee_cents, total_cents, payment_method_snapshot, cash_change_for_cents, scheduled_for, delivery_estimated_min_minutes, delivery_estimated_max_minutes, confirmed_at, completed_at, canceled_at, cancel_reason, created_at, updated_at")
         .eq("id", id).eq("organization_id", store.organization_id).eq("store_id", store.id)
         .eq("public_access_token_hash", hashOrderAccessToken(accessToken)).maybeSingle(),
       admin.from("order_items")

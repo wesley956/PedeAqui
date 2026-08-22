@@ -31,7 +31,7 @@ const fulfillmentLabels: Record<string, string> = {
   awaiting_pickup: "Aguardando retirada", picked_up_by_customer: "Retirado", served: "Servido",
   canceled: "Fulfillment cancelado", not_required: "Sem fulfillment",
 };
-const channelLabels: Record<string, string> = { menu: "Cardápio", pdv: "PDV", dining: "Salão", whatsapp: "WhatsApp", manual: "Manual" };
+const channelLabels: Record<string, string> = { menu: "Cardápio", digital_menu: "Cardápio", pdv: "PDV", dining: "Salão", whatsapp: "WhatsApp", manual: "Manual" };
 
 function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
@@ -40,7 +40,7 @@ function money(cents: number | string) {
 function fulfillmentTypeLabel(type: string) {
   if (type === "delivery") return "Entrega";
   if (type === "pickup") return "Retirada";
-  if (type === "dine_in") return "Mesa";
+  if (type === "dine_in" || type === "table") return "Mesa";
   return type;
 }
 
@@ -222,6 +222,9 @@ function OrderCard({ order, now, bucket }: { order: OrderManagerRow; now: number
   const blockers = completionBlockers(order);
   const status = statusForOrder(order, bucket);
   const late = isOrderAttentionLate(order, now);
+  const scheduledLabel = order.scheduled_for
+    ? new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(order.scheduled_for))
+    : null;
 
   return (
     <article className={styles.orderCard} data-bucket={bucket} data-late={late || undefined}>
@@ -245,6 +248,7 @@ function OrderCard({ order, now, bucket }: { order: OrderManagerRow; now: number
         <Tag>{channelLabels[order.channel] ?? order.channel}</Tag>
         <Tag>{fulfillmentTypeLabel(order.fulfillment_type)}</Tag>
         <Tag>{paymentLabels[order.payment_status] ?? order.payment_status}</Tag>
+        {scheduledLabel ? <Tag>Agendado {scheduledLabel}</Tag> : null}
       </div>
 
       <div className={styles.stateLine}>
