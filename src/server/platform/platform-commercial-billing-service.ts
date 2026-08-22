@@ -18,6 +18,18 @@ const planSchema = commonSchema.extend({
 
 const trialSchema = planSchema.extend({ trialEndsAt: z.string().datetime() });
 const graceSchema = commonSchema.extend({ graceEndsAt: z.string().datetime() });
+const commercialTermsSchema = commonSchema.extend({
+  agreedPriceCents: z.number().int().min(0).max(100_000_000),
+  priceLocked: z.boolean(),
+  priceLockReason: z.string().trim().max(500).nullable(),
+  billingDueDay: z.number().int().min(1).max(28).nullable(),
+  nextDueAt: z.string().datetime().nullable(),
+  paymentStatus: z.enum(["not_started", "pending", "paid", "overdue", "waived"]),
+}).superRefine((value, context) => {
+  if (value.priceLocked && (!value.priceLockReason || value.priceLockReason.length < 5)) {
+    context.addIssue({ code: "custom", path: ["priceLockReason"], message: "Informe o motivo do valor vitalício." });
+  }
+});
 
 const subscriptionLabels: Record<string, string> = {
   trialing: "Em período de teste",
@@ -28,6 +40,7 @@ const subscriptionLabels: Record<string, string> = {
 };
 
 const intervalLabels: Record<string, string> = { month: "Mensal", year: "Anual", manual: "Manual" };
+const paymentLabels: Record<string, string> = { not_started: "Cobrança ainda não iniciada", pending: "Pagamento pendente", paid: "Pago", overdue: "Em atraso", waived: "Isento neste vencimento" };
 const successfulBilling = new Set(["processed", "completed", "success", "succeeded"]);
 const failedBilling = new Set(["failed", "error", "rejected"]);
 
@@ -65,7 +78,7 @@ async function currentSubscription(organizationId: string) {
 
 export class PlatformCommercialBillingService {
   static async load() {
-    const base = await PlatformAdminService.load();
+    const base = await PlatformAdminService.loadCommercial();
     const admin = createAdminClient();
     const [history, receipts] = await Promise.all([
       admin.from("subscription_history").select("id,organization_id,subscription_id,from_status,to_status,event_type,metadata,created_at").order("created_at", { ascending: false }).limit(300),
@@ -85,6 +98,9 @@ export class PlatformCommercialBillingService {
         name: plan.name,
         description: plan.description,
         active: plan.active,
+        monthlyPriceCents: plan.monthly_price_cents,
+        yearlyPriceCents: plan.yearly_price_cents,
+        currency: plan.currency,
         features: enabled.map((item) => ({
           name: featureById.get(item.feature_id)?.name ?? "Recurso",
           limitLabel: item.limit_value === null ? "Incluído" : `Até ${item.limit_value}`,
@@ -107,6 +123,15 @@ export class PlatformCommercialBillingService {
       graceEndsAt: item.grace_ends_at,
       cancelAtPeriodEnd: item.cancel_at_period_end,
       hasProvider: Boolean(item.billing_provider_key),
+      agreedPriceCents: item.agreed_price_cents,
+      priceCurrency: item.price_currency,
+      priceLocked: item.price_locked,
+      priceLockedAt: item.price_locked_at,
+      priceLockReason: item.price_lock_reason,
+      billingDueDay: item.billing_due_day,
+      nextDueAt: item.next_due_at,
+      paymentStatus: item.payment_status,
+      paymentStatusLabel: paymentLabels[item.payment_status] ?? "Não informado",
       updatedAt: item.updated_at,
     }));
 
@@ -169,6 +194,29 @@ export class PlatformCommercialBillingService {
       protocol: values.protocol,
       idempotencyKey: values.idempotencyKey,
     });
+  }
+
+  static async updateCommercialTerms(input: z.input<typeof commercialTermsSchema>) {
+    const values = commercialTermsSchema.parse(input);
+    const access = await requireSuperAdmin();
+    const current = await currentSubscription(values.organizationId);
+    if (!current) throw new Error("Crie ou ative a assinatura antes de definir os termos comerciais.");
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("subscription_terms_update_internal", {
+      p_organization_id: values.organizationId,
+      p_agreed_price_cents: values.agreedPriceCents,
+      p_price_locked: values.priceLocked,
+      p_price_lock_reason: values.priceLockReason,
+      p_billing_due_day: values.billingDueDay,
+      p_next_due_at: values.nextDueAt,
+      p_payment_status: values.paymentStatus,
+      p_reason: values.reason,
+      p_protocol: values.protocol,
+      p_idempotency_key: values.idempotencyKey,
+      p_actor_user_id: access.user.id,
+    });
+    if (error) throw error;
+    return data;
   }
 
   static async activateOrChangePlan(input: z.input<typeof planSchema>) {

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import {
   supportAcceptingOrdersAction,
   supportDeliveryAction,
@@ -39,7 +40,7 @@ export async function SupportActionsPanel({ organizationId, storeId }: { organiz
           <form action={supportStoreStatusAction} className={styles.detailsBody}>
             <Common organizationId={organizationId} storeId={storeId} />
             <label>Situação desejada<select className={styles.field} name="status" defaultValue={config.storeStatus}><option value="active">Ativa</option><option value="temporarily_closed">Fechada temporariamente</option><option value="inactive">Inativa</option></select></label>
-            <button className={styles.button}>Aplicar alteração auditada</button>
+            <PendingSubmitButton className={styles.button}>Aplicar alteração auditada</PendingSubmitButton>
           </form>
         </Action>
 
@@ -47,7 +48,7 @@ export async function SupportActionsPanel({ organizationId, storeId }: { organiz
           <form action={supportMenuPublishedAction} className={styles.detailsBody}>
             <Common organizationId={organizationId} storeId={storeId} />
             <label>Alterar para<select className={styles.field} name="active" defaultValue={config.menu?.active ? "true" : "false"}><option value="true">Publicado</option><option value="false">Despublicado</option></select></label>
-            <button className={styles.button}>Aplicar alteração auditada</button>
+            <PendingSubmitButton className={styles.button}>Aplicar alteração auditada</PendingSubmitButton>
           </form>
         </Action>
 
@@ -56,7 +57,7 @@ export async function SupportActionsPanel({ organizationId, storeId }: { organiz
             <Common organizationId={organizationId} storeId={storeId} />
             <label>Alterar para<select className={styles.field} name="accepting" defaultValue={config.menu?.accepting_orders ? "true" : "false"}><option value="true">Aceitar pedidos</option><option value="false">Pausar pedidos</option></select></label>
             <label>Motivo da pausa, quando aplicável<input className={styles.field} name="pauseReason" defaultValue={config.menu?.pause_reason ?? ""} maxLength={240} /></label>
-            <button className={styles.button}>Aplicar alteração auditada</button>
+            <PendingSubmitButton className={styles.button}>Aplicar alteração auditada</PendingSubmitButton>
           </form>
         </Action>
 
@@ -65,7 +66,7 @@ export async function SupportActionsPanel({ organizationId, storeId }: { organiz
             <Common organizationId={organizationId} storeId={storeId} />
             <label><input type="checkbox" name="allowDelivery" defaultChecked={Boolean(config.menu?.allow_delivery)} /> Permitir entrega</label>
             <label><input type="checkbox" name="allowPickup" defaultChecked={Boolean(config.menu?.allow_pickup)} /> Permitir retirada</label>
-            <button className={styles.button}>Aplicar alteração auditada</button>
+            <PendingSubmitButton className={styles.button}>Aplicar alteração auditada</PendingSubmitButton>
           </form>
         </Action>
 
@@ -74,7 +75,7 @@ export async function SupportActionsPanel({ organizationId, storeId }: { organiz
             <Common organizationId={organizationId} storeId={storeId} />
             <label>Meio<select className={styles.field} name="method" defaultValue="cash"><option value="cash">Dinheiro</option><option value="pix">PIX</option><option value="credit_card">Cartão de crédito</option><option value="debit_card">Cartão de débito</option></select></label>
             <label>Ação<select className={styles.field} name="enabled" defaultValue="true"><option value="true">Habilitar</option><option value="false">Desabilitar</option></select></label>
-            <button className={styles.button}>Aplicar alteração auditada</button>
+            <PendingSubmitButton className={styles.button}>Aplicar alteração auditada</PendingSubmitButton>
           </form>
         </Action>
 
@@ -84,7 +85,7 @@ export async function SupportActionsPanel({ organizationId, storeId }: { organiz
             <label>Dia<select className={styles.field} name="weekday" defaultValue="1">{weekdays.map((day, index) => <option key={day} value={index}>{day}</option>)}</select></label>
             <div className={styles.formGrid}><label>Abertura<input className={styles.field} name="opensAt" type="time" required /></label><label>Fechamento<input className={styles.field} name="closesAt" type="time" required /></label></div>
             <label><input type="checkbox" name="closesNextDay" /> Fecha no dia seguinte</label>
-            <button className={styles.button}>Adicionar horário confirmado</button>
+            <PendingSubmitButton className={styles.button}>Adicionar horário confirmado</PendingSubmitButton>
           </form>
         </Action>
 
@@ -96,7 +97,7 @@ export async function SupportActionsPanel({ organizationId, storeId }: { organiz
             <label>Taxa padrão (R$)<input className={styles.field} name="defaultFeeReais" type="number" min="0" step="0.01" defaultValue={((config.delivery?.default_fee_cents ?? 0) / 100).toFixed(2)} required /></label>
             <div className={styles.formGrid}><label>Prazo mínimo<input className={styles.field} name="estimatedMinMinutes" type="number" min="0" max="1440" defaultValue={config.delivery?.estimated_min_minutes ?? 30} required /></label><label>Prazo máximo<input className={styles.field} name="estimatedMaxMinutes" type="number" min="0" max="1440" defaultValue={config.delivery?.estimated_max_minutes ?? 60} required /></label></div>
             <label><input type="checkbox" name="requireNeighborhoodMatch" defaultChecked={config.delivery?.require_neighborhood_match ?? true} /> Exigir bairro/região cadastrada</label>
-            <button className={styles.button}>Aplicar valores confirmados</button>
+            <PendingSubmitButton className={styles.button}>Aplicar valores confirmados</PendingSubmitButton>
           </form>
         </Action>
       </div>

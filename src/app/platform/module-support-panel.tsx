@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { supportModuleAction } from "@/features/platform-support/actions";
 import { PlatformSupportReadService } from "@/server/platform/platform-support-read-service";
 import styles from "./platform.module.css";
@@ -32,7 +33,7 @@ export async function ModuleSupportPanel({ organizationId, storeId }: { organiza
         <label>Ação<select className={styles.field} name="enabled" defaultValue="true"><option value="true">Ativar</option><option value="false">Desativar</option></select></label>
         <label>Motivo da intervenção<input className={styles.field} name="reason" minLength={5} maxLength={500} required placeholder="Ex.: configuração confirmada pelo responsável da unidade" /></label>
         <label>Protocolo/chamado<input className={styles.field} name="protocol" minLength={3} maxLength={120} required placeholder="Ex.: SUP-2026-001" /></label>
-        <button className={styles.button}>Pré-validar e aplicar alteração</button>
+        <PendingSubmitButton className={styles.button}>Pré-validar e aplicar alteração</PendingSubmitButton>
       </form>
     </div>
   </section>;

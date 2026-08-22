@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { isModuleKey } from "@/modules/module-catalog";
+import { isCommercialModuleProfile, isModuleKey } from "@/modules/module-catalog";
 import {
   ModuleConfigurationConflictError,
   ModuleConfigurationError,
@@ -40,4 +40,16 @@ export async function applyModulePresetAction(formData: FormData) {
   }
   revalidatePath("/", "layout");
   redirect("/configuracoes/modulos?success=preset_updated");
+}
+
+export async function applyCommercialModuleProfileAction(formData: FormData) {
+  const profile = String(formData.get("profile") ?? "");
+  if (!isCommercialModuleProfile(profile)) redirect("/configuracoes/modulos?error=invalid_profile");
+  try {
+    await ModuleConfigurationService.applyCommercialProfile({ profile });
+  } catch (error) {
+    redirect(`/configuracoes/modulos?error=${errorCode(error)}`);
+  }
+  revalidatePath("/", "layout");
+  redirect("/configuracoes/modulos?success=profile_updated");
 }

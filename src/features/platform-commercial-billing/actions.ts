@@ -20,6 +20,10 @@ function refresh() {
   revalidatePath("/platform/assinaturas");
 }
 
+function optional(form: FormData, key: string) {
+  return text(form, key) || null;
+}
+
 export async function startOrExtendTrialAction(form: FormData) {
   await PlatformCommercialBillingService.startOrExtendTrial({
     ...common(form),
@@ -62,6 +66,22 @@ export async function applyGracePeriodAction(form: FormData) {
   await PlatformCommercialBillingService.applyGracePeriod({
     ...common(form),
     graceEndsAt: new Date(text(form, "graceEndsAt")).toISOString(),
+  });
+  refresh();
+}
+
+export async function updateCommercialTermsAction(form: FormData) {
+  const price = Number(text(form, "agreedPrice"));
+  const dueDay = Number(text(form, "billingDueDay"));
+  const nextDue = optional(form, "nextDueAt");
+  await PlatformCommercialBillingService.updateCommercialTerms({
+    ...common(form),
+    agreedPriceCents: Number.isFinite(price) ? Math.round(price * 100) : -1,
+    priceLocked: form.get("priceLocked") === "on",
+    priceLockReason: optional(form, "priceLockReason"),
+    billingDueDay: Number.isInteger(dueDay) && dueDay > 0 ? dueDay : null,
+    nextDueAt: nextDue ? new Date(nextDue).toISOString() : null,
+    paymentStatus: text(form, "paymentStatus") as "not_started" | "pending" | "paid" | "overdue" | "waived",
   });
   refresh();
 }

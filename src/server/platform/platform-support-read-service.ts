@@ -1,11 +1,11 @@
 import "server-only";
 
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MODULE_CATALOG, MODULE_KEYS, isBusinessType, moduleLabel, profileSupportsModule } from "@/modules/module-catalog";
 import { PlatformAdminService } from "@/server/platform/platform-admin-service";
 
-export class PlatformSupportReadService {
-  static async load(organizationId: string, storeId: string) {
+const loadPlatformSupportState = cache(async (organizationId: string, storeId: string) => {
     const access = await PlatformAdminService.access();
     if (access.role !== "super_admin") return { role: access.role, config: null } as const;
     const admin = createAdminClient();
@@ -55,5 +55,10 @@ export class PlatformSupportReadService {
         payments: payments.data ?? [],
       },
     } as const;
+});
+
+export class PlatformSupportReadService {
+  static async load(organizationId: string, storeId: string) {
+    return loadPlatformSupportState(organizationId, storeId);
   }
 }

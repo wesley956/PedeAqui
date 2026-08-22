@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { applyModuleChangeAction, applyModulePresetAction } from "@/features/modules/actions";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
+import { applyCommercialModuleProfileAction, applyModuleChangeAction, applyModulePresetAction } from "@/features/modules/actions";
 import { businessVocabulary } from "@/modules/business-vocabulary";
-import { CORE_MODULE_KEYS, MODULE_CATALOG, MODULE_KEYS, isModuleKey, moduleLabel } from "@/modules/module-catalog";
+import { COMMERCIAL_PROFILE_LABELS, CORE_MODULE_KEYS, MODULE_CATALOG, MODULE_KEYS, isCommercialModuleProfile, isModuleKey, moduleLabel } from "@/modules/module-catalog";
 import { ModuleConfigurationService } from "@/server/modules/module-configuration-service";
 import { ModuleAccessService } from "@/server/modules/module-access-service";
 
@@ -15,7 +16,7 @@ const errorMessages: Record<string, string> = {
   failed: "Não foi possível alterar os módulos agora.",
 };
 
-export default async function ModulesSettingsPage({ searchParams }: { searchParams: Promise<{ module?: string; target?: string; preset?: string; error?: string; success?: string }> }) {
+export default async function ModulesSettingsPage({ searchParams }: { searchParams: Promise<{ module?: string; target?: string; preset?: string; profile?: string; error?: string; success?: string }> }) {
   const params = await searchParams;
   const snapshot = await ModuleAccessService.load();
   const vocabulary = businessVocabulary(snapshot.businessType);
@@ -26,6 +27,8 @@ export default async function ModulesSettingsPage({ searchParams }: { searchPara
     : null;
   const requestedPreset = params.preset === "essential" || params.preset === "complete" ? params.preset : null;
   const presetPreview = requestedPreset ? await ModuleConfigurationService.previewPreset({ preset: requestedPreset }) : null;
+  const requestedProfile = params.profile && isCommercialModuleProfile(params.profile) ? params.profile : null;
+  const profilePreview = requestedProfile ? await ModuleConfigurationService.previewCommercialProfile({ profile: requestedProfile }) : null;
 
   return (
     <section style={{ display: "grid", gap: 20 }}>
@@ -49,6 +52,9 @@ export default async function ModulesSettingsPage({ searchParams }: { searchPara
           <p className="muted">Se preferir, o PedeAqui pode ajustar um conjunto de ferramentas para o seu tipo de negócio. Você verá tudo o que será alterado antes de confirmar.</p>
         </div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <Link href="/configuracoes/modulos?profile=menu_basic">Cardápio básico</Link>
+          <Link href="/configuracoes/modulos?profile=delivery">Delivery</Link>
+          <Link href="/configuracoes/modulos?profile=delivery_whatsapp">Delivery + WhatsApp</Link>
           <Link href="/configuracoes/modulos?preset=essential">Usar configuração Essencial</Link>
           <Link href="/configuracoes/modulos?preset=complete">Usar configuração Completa</Link>
         </div>
@@ -59,7 +65,17 @@ export default async function ModulesSettingsPage({ searchParams }: { searchPara
         {presetPreview.changes.length > 0 ? <p className="muted">{presetPreview.changes.map((change) => `${moduleLabel(change.moduleKey, snapshot.businessType)}: ${change.enabled ? "ativar" : "desativar"}`).join(" · ")}</p> : null}
         {presetPreview.blockers.map((blocker) => <p role="alert" key={`${blocker.code}:${blocker.moduleKey}`}>Antes de continuar, resolva: {moduleLabel(blocker.moduleKey, snapshot.businessType)}.</p>)}
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-          {presetPreview.blockers.length === 0 && presetPreview.changes.length > 0 ? <form action={applyModulePresetAction}><input type="hidden" name="preset" value={presetPreview.preset} /><button type="submit">Confirmar configuração</button></form> : null}
+          {presetPreview.blockers.length === 0 && presetPreview.changes.length > 0 ? <form action={applyModulePresetAction}><input type="hidden" name="preset" value={presetPreview.preset} /><PendingSubmitButton pendingLabel="Aplicando configuração…">Confirmar configuração</PendingSubmitButton></form> : null}
+          <Link href="/configuracoes/modulos">Cancelar</Link>
+        </div>
+      </PreviewCard> : null}
+
+      {profilePreview ? <PreviewCard title={`Aplicar ${COMMERCIAL_PROFILE_LABELS[profilePreview.profile]}`} ready={profilePreview.blockers.length === 0}>
+        <p>{profilePreview.changes.length === 0 ? "Sua unidade já está com este perfil." : `${profilePreview.changes.length} ferramenta(s) serão ajustadas.`}</p>
+        {profilePreview.changes.length > 0 ? <p className="muted">{profilePreview.changes.map((change) => `${moduleLabel(change.moduleKey, snapshot.businessType)}: ${change.enabled ? "ativar" : "desativar"}`).join(" · ")}</p> : null}
+        {profilePreview.blockers.map((blocker) => <p role="alert" key={`${blocker.code}:${blocker.moduleKey}`}>Antes de continuar, resolva: {moduleLabel(blocker.moduleKey, snapshot.businessType)}.</p>)}
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          {profilePreview.blockers.length === 0 && profilePreview.changes.length > 0 ? <form action={applyCommercialModuleProfileAction}><input type="hidden" name="profile" value={profilePreview.profile} /><PendingSubmitButton pendingLabel="Aplicando perfil…">Confirmar perfil</PendingSubmitButton></form> : null}
           <Link href="/configuracoes/modulos">Cancelar</Link>
         </div>
       </PreviewCard> : null}
@@ -122,7 +138,7 @@ export default async function ModulesSettingsPage({ searchParams }: { searchPara
                     <form action={applyModuleChangeAction}>
                       <input type="hidden" name="moduleKey" value={key} />
                       <input type="hidden" name="enabled" value={String(selectedTarget)} />
-                      <button type="submit">{selectedTarget ? "Confirmar ativação" : "Confirmar desativação"}</button>
+                      <PendingSubmitButton pendingLabel={selectedTarget ? "Ativando…" : "Desativando…"}>{selectedTarget ? "Confirmar ativação" : "Confirmar desativação"}</PendingSubmitButton>
                     </form>
                   ) : null}
                   <Link href="/configuracoes/modulos">Cancelar</Link>
