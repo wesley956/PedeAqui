@@ -11,6 +11,7 @@ import { realtimeStoreScope } from "@/lib/supabase/realtime";
 const nextConfig = readFileSync("next.config.ts", "utf8");
 const catalogActions = readFileSync("src/features/catalog/actions.ts", "utf8");
 const catalogImageService = readFileSync("src/server/catalog/catalog-image-service.ts", "utf8");
+const catalogImagePolicy = readFileSync("src/server/catalog/catalog-image-policy.ts", "utf8");
 const categoryPage = readFileSync("src/app/(app)/cardapio/categorias/page.tsx", "utf8");
 const productPage = readFileSync("src/app/(app)/cardapio/produtos/novo/page.tsx", "utf8");
 const appErrorBoundary = readFileSync("src/app/(app)/error.tsx", "utf8");
@@ -21,9 +22,10 @@ const kitchenRealtime = readFileSync("src/features/kitchen/kitchen-board.tsx", "
 const ciWorkflow = readFileSync(".github/workflows/ci.yml", "utf8");
 
 describe("catalog resilience contracts", () => {
-  it("keeps enough aggregate envelope for multiple valid images", () => {
+  it("keeps an aggregate envelope while respecting the Vercel request limit", () => {
     expect(nextConfig).toContain('bodySizeLimit: "16mb"');
-    expect(catalogImageService).toContain("MAX_CATALOG_IMAGE_BYTES = 5 * 1024 * 1024");
+    expect(catalogImagePolicy).toContain("MAX_CATALOG_IMAGE_BYTES = 4 * 1024 * 1024");
+    expect(catalogImagePolicy).toContain("Vercel Functions cap");
   });
 
   it("rolls back a newly uploaded image when persistence fails", () => {
