@@ -51,7 +51,7 @@ async function rollbackCatalogImage(uploaded: CatalogImageUpload | null) {
 }
 
 const safeCatalogMessages = new Set([
-  "A imagem deve ter no máximo 5 MB.",
+  "A imagem deve ter no máximo 4 MB.",
   "Escolha uma imagem JPEG, PNG ou WebP.",
   "É necessário selecionar uma unidade para enviar imagens.",
   "Não foi possível enviar a imagem. Tente novamente.",
