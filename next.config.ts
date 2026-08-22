@@ -40,8 +40,8 @@ const nextConfig: NextConfig = {
     : {
         experimental: {
           serverActions: {
-            // Individual catalog images stay capped at 5 MiB. This envelope leaves
-            // room for forms that legitimately submit two images plus text fields.
+            // The application caps each image at 4 MiB to stay below the Vercel
+            // request limit; this envelope also covers multi-image local forms.
             bodySizeLimit: "16mb",
             ...(isDevelopment ? { allowedOrigins: ["*.app.github.dev"] } : {}),
           },
