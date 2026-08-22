@@ -34,7 +34,10 @@ export default async function DeliverySettingsPage() {
           </label>
           <Input label="Taxa padrão" name="defaultFee" inputMode="decimal" defaultValue={(settings.default_fee_cents / 100).toFixed(2).replace(".", ",")} />
           <Input label="Frete grátis acima de" name="freeDeliveryOver" inputMode="decimal" defaultValue={settings.free_delivery_over_cents === null ? "" : (settings.free_delivery_over_cents / 100).toFixed(2).replace(".", ",")} />
-          <Input label="Distância máxima (km)" name="maxDistanceKm" inputMode="decimal" defaultValue={settings.max_distance_km === null ? "" : String(settings.max_distance_km)} />
+          <div role="note" style={{ display: "grid", gap: 6, padding: 12, border: "1px solid var(--border)", borderRadius: 10 }}>
+            <strong style={{ fontSize: 14 }}>Cobertura validada por bairro</strong>
+            <span className="muted" style={{ fontSize: 12 }}>O checkout não usa distância sem geocodificação. Cadastre os bairros atendidos para não aceitar um endereço fora da área.</span>
+          </div>
           <Input label="Prazo mínimo (min)" name="estimatedMinMinutes" type="number" min={0} defaultValue={settings.estimated_min_minutes} />
           <Input label="Prazo máximo (min)" name="estimatedMaxMinutes" type="number" min={0} defaultValue={settings.estimated_max_minutes} />
         </div>

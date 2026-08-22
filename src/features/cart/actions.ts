@@ -6,6 +6,7 @@ import { CartService } from "@/server/cart/cart-service";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { addCartItemSchema, cartItemQuantitySchema, removeCartItemSchema } from "@/server/cart/schemas";
 import { PricingError } from "@/server/pricing/pricing-service";
+import { logger } from "@/server/observability/logger";
 
 function selectedModifierIds(formData: FormData) {
   const ids: string[] = [];
@@ -20,16 +21,28 @@ function safeInteger(value: FormDataEntryValue | null) {
   return Number(value);
 }
 
+function safePublicPath(storeSlug: string, suffix = "") {
+  return /^[a-z0-9][a-z0-9-]{1,62}$/.test(storeSlug) ? `/m/${storeSlug}${suffix}` : "/";
+}
+
 export async function addToCartAction(formData: FormData) {
+  const rawStoreSlug = String(formData.get("storeSlug") ?? "");
+  const rawProductId = String(formData.get("productId") ?? "");
   const gasSaleModeRaw = formData.get("gasSaleMode");
-  const values = addCartItemSchema.parse({
-    storeSlug: String(formData.get("storeSlug") ?? ""),
-    productId: String(formData.get("productId") ?? ""),
+  const parsed = addCartItemSchema.safeParse({
+    storeSlug: rawStoreSlug,
+    productId: rawProductId,
     quantity: safeInteger(formData.get("quantity")),
     note: typeof formData.get("note") === "string" ? String(formData.get("note")) : null,
     modifierIds: selectedModifierIds(formData),
     gasSaleMode: typeof gasSaleModeRaw === "string" && gasSaleModeRaw ? gasSaleModeRaw : null,
   });
+  if (!parsed.success) {
+    const safeSlug = /^[a-z0-9][a-z0-9-]{1,62}$/.test(rawStoreSlug) ? rawStoreSlug : null;
+    const safeProduct = /^[0-9a-f-]{36}$/i.test(rawProductId) ? rawProductId : null;
+    redirect(safeSlug && safeProduct ? `/m/${safeSlug}/produto/${safeProduct}?erro=invalid_item` : "/");
+  }
+  const values = parsed.data;
   const cookieName = cartCookieName(values.storeSlug);
   const cookieStore = await cookies();
   const existingToken = cookieStore.get(cookieName)?.value ?? null;
@@ -41,7 +54,8 @@ export async function addToCartAction(formData: FormData) {
     if (error instanceof PricingError) {
       redirect(`/m/${values.storeSlug}/produto/${values.productId}?erro=${error.code}`);
     }
-    throw error;
+    logger.error("public_cart_add_failed", { errorType: error instanceof Error ? error.name : "unknown" });
+    redirect(`/m/${values.storeSlug}/produto/${values.productId}?erro=cart_add_failed`);
   }
 
   if (!existingToken) {
@@ -58,24 +72,44 @@ export async function addToCartAction(formData: FormData) {
 }
 
 export async function updateCartQuantityAction(formData: FormData) {
-  const values = cartItemQuantitySchema.parse({
-    storeSlug: String(formData.get("storeSlug") ?? ""),
+  const rawStoreSlug = String(formData.get("storeSlug") ?? "");
+  const parsed = cartItemQuantitySchema.safeParse({
+    storeSlug: rawStoreSlug,
     itemId: String(formData.get("itemId") ?? ""),
     quantity: safeInteger(formData.get("quantity")),
   });
+  if (!parsed.success) {
+    redirect(safePublicPath(rawStoreSlug, "/carrinho?erro=invalid_quantity"));
+  }
+  const values = parsed.data;
   const token = (await cookies()).get(cartCookieName(values.storeSlug))?.value;
   if (!token) redirect(`/m/${values.storeSlug}`);
-  await CartService.updateQuantity(values.storeSlug, token, values.itemId, values.quantity);
+  try {
+    await CartService.updateQuantity(values.storeSlug, token, values.itemId, values.quantity);
+  } catch (error) {
+    logger.error("public_cart_quantity_failed", { errorType: error instanceof Error ? error.name : "unknown" });
+    redirect(`/m/${values.storeSlug}/carrinho?erro=cart_update_failed`);
+  }
   redirect(`/m/${values.storeSlug}/carrinho`);
 }
 
 export async function removeCartItemAction(formData: FormData) {
-  const values = removeCartItemSchema.parse({
-    storeSlug: String(formData.get("storeSlug") ?? ""),
+  const rawStoreSlug = String(formData.get("storeSlug") ?? "");
+  const parsed = removeCartItemSchema.safeParse({
+    storeSlug: rawStoreSlug,
     itemId: String(formData.get("itemId") ?? ""),
   });
+  if (!parsed.success) {
+    redirect(safePublicPath(rawStoreSlug, "/carrinho?erro=cart_remove_failed"));
+  }
+  const values = parsed.data;
   const token = (await cookies()).get(cartCookieName(values.storeSlug))?.value;
   if (!token) redirect(`/m/${values.storeSlug}`);
-  await CartService.removeItem(values.storeSlug, token, values.itemId);
+  try {
+    await CartService.removeItem(values.storeSlug, token, values.itemId);
+  } catch (error) {
+    logger.error("public_cart_remove_failed", { errorType: error instanceof Error ? error.name : "unknown" });
+    redirect(`/m/${values.storeSlug}/carrinho?erro=cart_remove_failed`);
+  }
   redirect(`/m/${values.storeSlug}/carrinho`);
 }

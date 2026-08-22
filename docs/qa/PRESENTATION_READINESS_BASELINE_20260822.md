@@ -44,7 +44,7 @@ pendências de índices que pertencem ao lote de desempenho.
 
 | Gate | Resultado |
 | --- | --- |
-| Testes | 150 arquivos, 897 testes aprovados |
+| Testes | 151 arquivos, 905 testes aprovados |
 | E2E contextual | 1 arquivo, 7 testes aprovados |
 | TypeScript | aprovado, zero erro |
 | ESLint | zero erro e 4 warnings |

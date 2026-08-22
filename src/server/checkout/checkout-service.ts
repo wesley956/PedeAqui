@@ -32,6 +32,11 @@ export class CheckoutError extends Error {
 }
 
 export class CheckoutService {
+  private static parseInput<T>(result: { success: true; data: T } | { success: false }, code: string, message: string) {
+    if (!result.success) throw new CheckoutError(code, message);
+    return result.data;
+  }
+
   private static async requireCart(storeSlug: string, token: string) {
     const result = await CartService.getCart(storeSlug, token);
     const cart = result.cart;
@@ -82,7 +87,11 @@ export class CheckoutService {
   }
 
   static async saveIdentity(storeSlug: string, token: string, input: CheckoutIdentityInput) {
-    const values = checkoutIdentitySchema.parse(input);
+    const values = this.parseInput(
+      checkoutIdentitySchema.safeParse(input),
+      "invalid_identity",
+      "Confira seu nome, WhatsApp e e-mail",
+    );
     const cartResult = await this.requireCart(storeSlug, token);
     const admin = createAdminClient();
     const phoneNormalized = normalizePhone(values.phone);
@@ -112,9 +121,15 @@ export class CheckoutService {
   }
 
   static async saveFulfillment(storeSlug: string, token: string, fulfillment: FulfillmentType) {
-    const type = fulfillmentTypeSchema.parse(fulfillment);
-    const cartResult = await this.requireCart(storeSlug, token);
-    const menu = await PublicMenuService.getMenu(storeSlug);
+    const type = this.parseInput(
+      fulfillmentTypeSchema.safeParse(fulfillment),
+      "invalid_fulfillment",
+      "Escolha entrega ou retirada",
+    );
+    const [cartResult, menu] = await Promise.all([
+      this.requireCart(storeSlug, token),
+      PublicMenuService.getMenu(storeSlug),
+    ]);
     if (!menu) throw new CheckoutError("menu_unavailable", "Cardápio indisponível");
 
     if (type === "pickup" && !menu.settings.allow_pickup) {
@@ -149,7 +164,11 @@ export class CheckoutService {
   }
 
   static async saveAddress(storeSlug: string, token: string, input: CheckoutAddressInput) {
-    const address = checkoutAddressSchema.parse(input);
+    const address = this.parseInput(
+      checkoutAddressSchema.safeParse(input),
+      "invalid_address",
+      "Confira CEP, rua, número, bairro, cidade e UF",
+    );
     const cartResult = await this.requireCart(storeSlug, token);
     const admin = createAdminClient();
     const session = await this.getSession(admin, cartResult.cart.id);
@@ -227,14 +246,20 @@ export class CheckoutService {
   }
 
   static async savePayment(storeSlug: string, token: string, input: CheckoutPaymentInput) {
-    const values = checkoutPaymentSchema.parse(input);
+    const values = this.parseInput(
+      checkoutPaymentSchema.safeParse(input),
+      "invalid_payment",
+      "Escolha uma forma de pagamento válida",
+    );
     const cartResult = await this.requireCart(storeSlug, token);
     const admin = createAdminClient();
-    const session = values.method === "pix" ? await this.getSession(admin, cartResult.cart.id) : null;
+    const [session, methods] = await Promise.all([
+      values.method === "pix" ? this.getSession(admin, cartResult.cart.id) : Promise.resolve(null),
+      StorePaymentMethodService.listForStore(cartResult.store.organization_id, cartResult.store.id),
+    ]);
     if (values.method === "pix" && !session?.customer_email) {
       throw new CheckoutError("pix_email_required", "Informe seu e-mail em Seus dados para gerar o Pix online");
     }
-    const methods = await StorePaymentMethodService.listForStore(cartResult.store.organization_id, cartResult.store.id);
     if (!methods.some((item) => item.method === values.method && item.enabled)) {
       throw new CheckoutError("payment_unavailable", "Forma de pagamento indisponível");
     }

@@ -58,7 +58,6 @@ export class DeliveryService {
       free_delivery_over_cents: values.freeDeliveryOverCents ?? null,
       estimated_min_minutes: values.estimatedMinMinutes,
       estimated_max_minutes: values.estimatedMaxMinutes,
-      max_distance_km: values.maxDistanceKm ?? null,
       require_neighborhood_match: values.requireNeighborhoodMatch,
       updated_at: new Date().toISOString(),
     }, { onConflict: "store_id" }).select("enabled, fee_mode, default_fee_cents, free_delivery_over_cents, estimated_min_minutes, estimated_max_minutes, max_distance_km, require_neighborhood_match").single();
