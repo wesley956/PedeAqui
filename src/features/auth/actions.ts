@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { safeInternalPath } from "@/lib/auth/safe-return-path";
+import { normalizeAppUrl } from "@/lib/app-url";
 import { createClient } from "@/lib/supabase/server";
 import { StartRouteService } from "@/server/access/start-route-service";
 
@@ -19,7 +20,7 @@ function getCredentials(formData: FormData) {
 }
 
 function getAppUrl() {
-  return process.env.APP_URL ?? "http://localhost:3000";
+  return normalizeAppUrl(process.env.APP_URL, "http://localhost:3000");
 }
 
 function loginErrorPath(error: string, returnPath: string | null, entry: string | null) {
