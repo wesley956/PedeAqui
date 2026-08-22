@@ -21,6 +21,14 @@ describe("operational start route", () => {
     expect(resolveOperationalStartRoute(["delivery"], [item("driver", "/entregador")])).toBe("/entregador");
   });
 
+  it("sends the financial role to finance before generic administration", () => {
+    expect(resolveOperationalStartRoute(["administrative"], [
+      item("dashboard", "/dashboard", "secondary"),
+      item("catalog", "/cardapio/produtos"),
+      item("finance", "/financeiro", "secondary"),
+    ])).toBe("/financeiro");
+  });
+
   it("uses deterministic specialist precedence for multi-role users", () => {
     const items = [item("dashboard", "/dashboard"), item("pdv", "/pdv"), item("dining", "/salao")];
     expect(resolveOperationalStartRoute(["management", "cashier"], items)).toBe("/pdv");
