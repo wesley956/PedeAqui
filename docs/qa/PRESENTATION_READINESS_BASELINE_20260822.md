@@ -49,7 +49,7 @@ pendências de índices que pertencem ao lote de desempenho.
 | TypeScript | aprovado, zero erro |
 | ESLint | zero erro e 4 warnings |
 | Build Next.js | aprovado, 66 superfícies reportadas pelo build |
-| Rotas no código | 74 pages + 13 route handlers |
+| Rotas no código | 75 pages + 13 route handlers |
 | Server Actions | 35 arquivos de actions |
 | Serviços de servidor | 152 arquivos em `src/server` |
 | Drift local | 116 migrations alinhadas ao snapshot de produção |
@@ -87,7 +87,7 @@ O gap inicial de `team` foi encerrado no lote PA-DIAG-011–015 com a criação 
 
 ### Painel do Proprietário
 
-`/platform`, `/platform/demo`, `/platform/novo-restaurante`, `/platform/assinaturas`,
+`/platform`, `/platform/apresentacao`, `/platform/demo`, `/platform/novo-restaurante`, `/platform/assinaturas`,
 `/platform/alertas`, `/platform/incidentes`, `/platform/integracoes`,
 `/platform/integridade`, `/platform/operacao`, `/platform/operacao/pedidos/[orderId]`,
 `/platform/suporte`, `/platform/suporte/modo`, `/platform/restaurantes/[storeId]`,

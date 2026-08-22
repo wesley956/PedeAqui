@@ -13,6 +13,7 @@ const loginErrors: Record<string, string> = {
   invalid_input: "Revise o e-mail e a senha informados.",
   invalid_credentials: "Não foi possível entrar. Verifique o e-mail e a senha.",
   auth_unavailable: "A autenticação está temporariamente indisponível. Tente novamente em instantes.",
+  too_many_attempts: "Muitas tentativas seguidas. Aguarde 15 minutos antes de tentar novamente.",
 };
 
 export default async function LoginPage({

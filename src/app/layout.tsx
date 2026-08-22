@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { ConnectivityGuard } from "@/components/resilience/connectivity-guard";
 import "./globals.css";
 import "./shell.css";
 import "./mobile.css";
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body>{children}</body>
+      <body><ConnectivityGuard />{children}</body>
       <Script id="pedeaqui-theme" strategy="beforeInteractive">{`
         (() => {
           const key = "pedeaqui-theme";

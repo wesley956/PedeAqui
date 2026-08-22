@@ -1,10 +1,13 @@
 "use server";
 
+import { createHmac } from "node:crypto";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { safeInternalPath } from "@/lib/auth/safe-return-path";
 import { normalizeAppUrl } from "@/lib/app-url";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { StartRouteService } from "@/server/access/start-route-service";
 
 const credentialsSchema = z.object({
@@ -37,15 +40,34 @@ function signupPath(error: string | null, returnPath: string | null) {
   return `/cadastro${query ? `?${query}` : ""}`;
 }
 
+async function loginGuardKey(email: string) {
+  const requestHeaders = await headers();
+  const forwarded = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const secret = process.env.LOGIN_GUARD_SECRET ?? process.env.SUPPORT_MODE_SECRET ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret) throw new Error("Login guard secret unavailable");
+  return createHmac("sha256", secret).update(`${email.trim().toLowerCase()}:${forwarded}`).digest("hex");
+}
+
 export async function signInAction(formData: FormData) {
   const parsed = getCredentials(formData);
   const returnPath = safeInternalPath(typeof formData.get("next") === "string" ? String(formData.get("next")) : null);
   const entry = formData.get("entry") === "driver" ? "driver" : null;
   if (!parsed.success) redirect(loginErrorPath("invalid_input", returnPath, entry));
 
+  const guardKey = await loginGuardKey(parsed.data.email);
+  const admin = createAdminClient();
+  const guard = await admin.rpc("auth_login_guard_internal", { p_key_hash: guardKey });
+  if (guard.error) redirect(loginErrorPath("auth_unavailable", returnPath, entry));
+  if (guard.data?.allowed === false) redirect(loginErrorPath("too_many_attempts", returnPath, entry));
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) redirect(loginErrorPath("invalid_credentials", returnPath, entry));
+  if (error) {
+    const failure = await admin.rpc("auth_login_failure_internal", { p_key_hash: guardKey });
+    if (failure.data?.allowed === false) redirect(loginErrorPath("too_many_attempts", returnPath, entry));
+    redirect(loginErrorPath("invalid_credentials", returnPath, entry));
+  }
+  await admin.rpc("auth_login_success_internal", { p_key_hash: guardKey });
 
   // Explicit internal deep links win. Only a generic login uses the operational start route.
   redirect(returnPath ?? await StartRouteService.resolve());
