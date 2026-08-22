@@ -20,7 +20,9 @@ O inventário live, a classificação funcional, o mapa de rotas/módulos/papéi
 de massa demonstrativa isolada estão em:
 
 - `qa/PRESENTATION_READINESS_BASELINE_20260822.md`;
-- `qa/PRESENTATION_TEST_DATA_20260822.md`.
+- `qa/PRESENTATION_TEST_DATA_20260822.md`;
+- `qa/PRESENTATION_DIAGNOSTICS_006_010_20260822.md`;
+- `qa/PRESENTATION_RELEASE_GATE_20260822.md`.
 
 Esse addendum registra o estado observado antes dos lotes de diagnóstico iniciados no
 master GitHub #539. O domínio público canônico para a demonstração é
