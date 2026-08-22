@@ -16,6 +16,7 @@ import { PaymentService } from "@/server/payments/payment-service";
 import { PrintQueueService } from "@/server/printing/print-queue-service";
 import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
 import type { FulfillmentStatus, ProductionStatus } from "@/server/orders/state-machines";
+import { friendlyOrderActionError } from "@/features/orders/order-action-error";
 
 export async function createOrderFromCheckoutAction(formData: FormData) {
   const storeSlug = String(formData.get("storeSlug") ?? "");
@@ -145,7 +146,8 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
       complete: "Pedido concluído.", reprint: "Reimpressão solicitada.",
     };
     return { ok: true, message: labels[parsed.data], error: null };
-  } catch {
-    return { ok: false, message: null, error: "Não foi possível concluir esta ação. Atualize a página e tente novamente." };
+  } catch (error) {
+    refreshOrder(orderId);
+    return { ok: false, message: null, error: friendlyOrderActionError(error) };
   }
 }

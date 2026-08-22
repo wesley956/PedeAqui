@@ -49,7 +49,7 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
           : productionStatus === "ready" ? fulfillmentType === "delivery" ? `${vocabulary.readyLabel} para sair` : `${vocabulary.readyLabel} para retirada`
             : productionStatus === "preparing" || productionStatus === "queued" ? productionStatusLabelForBusiness(productionStatus, businessType)
               : orderStatusLabels[orderStatus];
-  const updatedAt = new Date(order.updated_at).toLocaleString("pt-BR");
+  const updatedAt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: store.timezone || "America/Sao_Paulo" }).format(new Date(order.updated_at));
   const estimate = order.delivery_estimated_min_minutes !== null && order.delivery_estimated_max_minutes !== null
     ? `${order.delivery_estimated_min_minutes}–${order.delivery_estimated_max_minutes} min`
     : fulfillmentType === "pickup" ? "Retirada no local" : null;
