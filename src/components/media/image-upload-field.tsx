@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import styles from "./image-upload-field.module.css";
 
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const ACCEPT = "image/jpeg,image/png,image/webp";
 
@@ -12,7 +12,7 @@ export function ImageUploadField({
   label,
   currentUrl = null,
   removeName,
-  hint = "JPEG, PNG ou WebP, até 5 MB.",
+  hint = "JPEG, PNG ou WebP, até 4 MB.",
 }: {
   name: string;
   label: string;
@@ -70,7 +70,7 @@ export function ImageUploadField({
     }
     if (file.size <= 0 || file.size > MAX_IMAGE_BYTES) {
       event.target.value = "";
-      setError("A imagem deve ter no máximo 5 MB.");
+      setError("A imagem deve ter no máximo 4 MB.");
       return;
     }
 
