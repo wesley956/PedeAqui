@@ -23,16 +23,29 @@ export class PlatformAdminService{
   static async load(){
     const { user,admin,role }=await requirePlatformAdmin(false);
     const [plans,features,planFeatures,organizations,subscriptions,catalog,webhooks]=await Promise.all([
-      admin.from("plans").select("id,key,name,description,active,position,updated_at").order("position"),
+      admin.from("plans").select("id,key,name,description,active,position,monthly_price_cents,yearly_price_cents,currency,updated_at").order("position"),
       admin.from("features").select("id,key,name,value_type,active").order("key"),
       admin.from("plan_features").select("plan_id,feature_id,enabled,limit_value,config"),
       admin.from("organizations").select("id,name,status,created_at").order("created_at",{ ascending:false }).limit(200),
-      admin.from("organization_subscriptions").select("id,organization_id,plan_id,status,billing_interval,current_period_start,current_period_end,trial_ends_at,grace_ends_at,cancel_at_period_end,billing_provider_key,updated_at").order("updated_at",{ ascending:false }).limit(300),
+      admin.from("organization_subscriptions").select("id,organization_id,plan_id,status,billing_interval,current_period_start,current_period_end,trial_ends_at,grace_ends_at,cancel_at_period_end,billing_provider_key,agreed_price_cents,price_currency,price_locked,price_locked_at,price_lock_reason,billing_due_day,next_due_at,payment_status,updated_at").order("updated_at",{ ascending:false }).limit(300),
       admin.from("integration_catalog").select("id,adapter_key,kind,display_name,description,capabilities,active,position").order("position"),
       admin.from("billing_webhook_receipts").select("id,provider_key,external_event_id,status,error_message,created_at,processed_at").order("created_at",{ ascending:false }).limit(100),
     ]);
     for(const result of [plans,features,planFeatures,organizations,subscriptions,catalog,webhooks]) if(result.error) throw result.error;
     return { user,role,plans:plans.data??[],features:features.data??[],planFeatures:planFeatures.data??[],organizations:organizations.data??[],subscriptions:subscriptions.data??[],catalog:catalog.data??[],webhooks:webhooks.data??[] };
+  }
+
+  static async loadCommercial(){
+    const { user,admin,role }=await requirePlatformAdmin(false);
+    const [plans,features,planFeatures,organizations,subscriptions]=await Promise.all([
+      admin.from("plans").select("id,key,name,description,active,position,monthly_price_cents,yearly_price_cents,currency,updated_at").order("position"),
+      admin.from("features").select("id,key,name,value_type,active").order("key"),
+      admin.from("plan_features").select("plan_id,feature_id,enabled,limit_value,config"),
+      admin.from("organizations").select("id,name,status,created_at").order("created_at",{ ascending:false }).limit(200),
+      admin.from("organization_subscriptions").select("id,organization_id,plan_id,status,billing_interval,current_period_start,current_period_end,trial_ends_at,grace_ends_at,cancel_at_period_end,billing_provider_key,agreed_price_cents,price_currency,price_locked,price_locked_at,price_lock_reason,billing_due_day,next_due_at,payment_status,updated_at").order("updated_at",{ ascending:false }).limit(300),
+    ]);
+    for(const result of [plans,features,planFeatures,organizations,subscriptions]) if(result.error) throw result.error;
+    return { user,role,plans:plans.data??[],features:features.data??[],planFeatures:planFeatures.data??[],organizations:organizations.data??[],subscriptions:subscriptions.data??[] };
   }
 
   static async applySubscription(input:{ organizationId:string;planKey:string;status:"trialing"|"active"|"past_due"|"cancelled"|"expired";billingInterval:"month"|"year"|"manual";periodEnd?:string|null;trialEndsAt?:string|null;graceEndsAt?:string|null;cancelAtPeriodEnd:boolean;reason:string;protocol?:string|null;idempotencyKey:string }){

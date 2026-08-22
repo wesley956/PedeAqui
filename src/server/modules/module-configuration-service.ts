@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { MODULE_CATALOG, MODULE_KEYS, isBusinessType, modulesForPreset, type ModuleKey, type ModulePreset } from "@/modules/module-catalog";
+import { MODULE_CATALOG, MODULE_KEYS, isBusinessType, modulesForCommercialProfile, modulesForPreset, type CommercialModuleProfile, type ModuleKey, type ModulePreset } from "@/modules/module-catalog";
 import { planModuleChange, type ModuleLifecyclePlan } from "@/modules/module-lifecycle";
 import { authorize } from "@/server/access/authorize";
 import { getAccessContext, type AccessContext } from "@/server/access/context";
@@ -161,6 +161,39 @@ export class ModuleConfigurationService {
       throw error;
     }
     return { ...preview, changed: preview.changes.length > 0 || preview.snapshot.preset !== preview.preset };
+  }
+
+  static async previewCommercialProfile(input: { profile: CommercialModuleProfile; existingContext?: AccessContext }) {
+    const { context, snapshot } = await authorizedSnapshot(input.existingContext);
+    if (!context.storeId) throw new Error("Module configuration requires an active store");
+    const target = new Set(modulesForCommercialProfile(snapshot.businessType, input.profile));
+    const changes = MODULE_KEYS.filter((key) => snapshot.enabledModuleKeys.has(key) !== target.has(key)).map((moduleKey) => ({ moduleKey, enabled: target.has(moduleKey) }));
+    const blockers: Array<{ code: "not_in_plan" | "operational_blocker"; moduleKey: ModuleKey; detail?: string }> = [];
+    for (const key of target) if (snapshot.entitlementAllowedByModule.get(key) === false) blockers.push({ code: "not_in_plan", moduleKey: key });
+    for (const change of changes.filter((entry) => !entry.enabled)) {
+      for (const detail of await operationalBlockers(context.organizationId, context.storeId, change.moduleKey)) blockers.push({ code: "operational_blocker", moduleKey: change.moduleKey, detail });
+    }
+    return { context, snapshot, profile: input.profile, targetModuleKeys: [...target], changes, blockers };
+  }
+
+  static async applyCommercialProfile(input: { profile: CommercialModuleProfile; existingContext?: AccessContext }) {
+    const preview = await this.previewCommercialProfile(input);
+    if (preview.blockers.length > 0) throw new ModulePresetConfigurationError(preview.blockers);
+    if (!preview.context.storeId) throw new Error("Module configuration requires an active store");
+    const admin = createAdminClient();
+    const { error } = await admin.rpc("set_store_module_preset_internal", {
+      p_organization_id: preview.context.organizationId,
+      p_store_id: preview.context.storeId,
+      p_module_preset: "custom",
+      p_enabled_modules: preview.targetModuleKeys,
+      p_actor_user_id: preview.context.userId,
+      p_expected_revision: preview.snapshot.configRevision,
+    });
+    if (error) {
+      if (/module configuration revision conflict/i.test(error.message ?? "")) throw new ModuleConfigurationConflictError();
+      throw error;
+    }
+    return { ...preview, changed: preview.changes.length > 0 || preview.snapshot.preset !== "custom" };
   }
 
   static async supportPreview(input: { organizationId: string; storeId: string; moduleKey: ModuleKey; enabled: boolean }) {

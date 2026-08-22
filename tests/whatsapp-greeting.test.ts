@@ -56,7 +56,8 @@ describe("WhatsApp greeting automation contracts [326]", () => {
     expect(service).toContain("conversation.status !== \"bot\"");
     expect(service).toContain("p_target_state: \"waiting_agent\"");
     expect(service).toContain("Cardápio indisponível para saudação automática");
-    expect(service).toContain("menuSettings?.accepting_orders");
+    expect(service).toContain("menuSettings?.active");
+    expect(service).not.toContain("menuSettings?.accepting_orders");
   });
 
   it("keeps greeting configuration scoped and blocks manually supplied URLs", () => {

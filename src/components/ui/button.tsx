@@ -1,4 +1,7 @@
+"use client";
+
 import type { ButtonHTMLAttributes } from "react";
+import { useFormStatus } from "react-dom";
 import styles from "./button.module.css";
 
 export type ButtonTone = "primary" | "secondary" | "ghost" | "danger";
@@ -33,7 +36,10 @@ export function Button({
   children,
   ...props
 }: ButtonProps) {
-  const isDisabled = disabled || loading;
+  const formStatus = useFormStatus();
+  const formPending = props.type === "submit" && formStatus.pending;
+  const isLoading = loading || formPending;
+  const isDisabled = disabled || isLoading;
   const classes = [
     styles.button,
     styles[tone],
@@ -41,20 +47,20 @@ export function Button({
     iconOnly ? styles.iconOnly : null,
     className,
   ].filter(Boolean).join(" ");
-  const content = loading && loadingLabel && !iconOnly ? loadingLabel : children;
+  const content = isLoading && !iconOnly ? (loadingLabel ?? "Processando…") : children;
 
   return (
     <button
       {...props}
       className={classes}
       disabled={isDisabled}
-      aria-busy={loading || undefined}
+      aria-busy={isLoading || undefined}
       data-tone={tone}
       data-size={size}
       data-icon-only={iconOnly || undefined}
-      data-loading={loading || undefined}
+      data-loading={isLoading || undefined}
     >
-      {loading ? <span className={styles.spinner} aria-hidden="true" /> : null}
+      {isLoading ? <span className={styles.spinner} aria-hidden="true" /> : null}
       {content}
     </button>
   );

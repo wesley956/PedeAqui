@@ -7,6 +7,8 @@ export type BusinessType = (typeof BUSINESS_TYPES)[number];
 
 export const MODULE_PRESETS = ["essential", "complete", "custom"] as const;
 export type ModulePreset = (typeof MODULE_PRESETS)[number];
+export const COMMERCIAL_MODULE_PROFILES = ["menu_basic", "delivery", "delivery_whatsapp"] as const;
+export type CommercialModuleProfile = (typeof COMMERCIAL_MODULE_PROFILES)[number];
 
 export const MODULE_KEYS = [
   "dashboard",
@@ -184,6 +186,18 @@ const PROFILE_PRESETS: Record<BusinessType, Record<Exclude<ModulePreset, "custom
   },
 };
 
+const COMMERCIAL_PROFILE_MODULES: Record<CommercialModuleProfile, readonly ModuleKey[]> = {
+  menu_basic: [],
+  delivery: ["production", "deliveries", "driver"],
+  delivery_whatsapp: ["production", "deliveries", "driver", "conversations"],
+};
+
+export const COMMERCIAL_PROFILE_LABELS: Record<CommercialModuleProfile, string> = {
+  menu_basic: "Cardápio básico",
+  delivery: "Delivery",
+  delivery_whatsapp: "Delivery + WhatsApp",
+};
+
 export function isModuleKey(value: string): value is ModuleKey {
   return (MODULE_KEYS as readonly string[]).includes(value);
 }
@@ -194,6 +208,10 @@ export function isBusinessType(value: string): value is BusinessType {
 
 export function isModulePreset(value: string): value is ModulePreset {
   return (MODULE_PRESETS as readonly string[]).includes(value);
+}
+
+export function isCommercialModuleProfile(value: string): value is CommercialModuleProfile {
+  return (COMMERCIAL_MODULE_PROFILES as readonly string[]).includes(value);
 }
 
 export function profileSupportsModule(businessType: BusinessType, moduleKey: ModuleKey) {
@@ -229,6 +247,10 @@ export function modulesForPreset(
   }
 
   return MODULE_KEYS.filter((key) => selected.has(key));
+}
+
+export function modulesForCommercialProfile(businessType: BusinessType, profile: CommercialModuleProfile) {
+  return modulesForPreset(businessType, "custom", COMMERCIAL_PROFILE_MODULES[profile]);
 }
 
 export function validateModuleCatalog(): string[] {

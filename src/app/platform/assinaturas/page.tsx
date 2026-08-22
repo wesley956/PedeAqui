@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import {
   activateSubscriptionAction,
   applyGracePeriodAction,
@@ -6,11 +7,13 @@ import {
   changePlanAction,
   scheduleCancellationAction,
   startOrExtendTrialAction,
+  updateCommercialTermsAction,
 } from "@/features/platform-commercial-billing/actions";
 import { PlatformCommercialBillingService } from "@/server/platform/platform-commercial-billing-service";
 import styles from "../platform.module.css";
 
 const dateTime = (value: string | null) => value ? new Date(value).toLocaleString("pt-BR") : "Não definido";
+const money = (value: number | null) => value === null ? "Valor ainda não definido" : (value / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export default async function PlatformSubscriptionsPage() {
   const data = await PlatformCommercialBillingService.load();
@@ -44,6 +47,7 @@ export default async function PlatformSubscriptionsPage() {
             <article className={styles.planCard} key={plan.id}>
               <div className={styles.cardTop}><strong>{plan.name}</strong><span className={styles.pill} data-tone={plan.active ? "good" : "neutral"}>{plan.active ? "Disponível para novas vendas" : "Fora de venda"}</span></div>
               {plan.description ? <span className={styles.meta}>{plan.description}</span> : null}
+              <span className={styles.meta}>Referência: {plan.monthlyPriceCents === null ? "preço personalizado" : `${money(plan.monthlyPriceCents)} por mês`}</span>
               <div className={styles.featureList}>
                 {plan.features.slice(0, 8).map((feature) => <div className={styles.featureRow} key={`${plan.id}:${feature.name}`}><span>{feature.name}</span><strong>{feature.limitLabel}</strong></div>)}
                 {plan.features.length === 0 ? <div className={styles.empty}>Nenhum recurso comercial habilitado.</div> : null}
@@ -66,10 +70,30 @@ export default async function PlatformSubscriptionsPage() {
                   <span className={styles.pill} data-tone={subscription.status === "active" ? "good" : subscription.status === "past_due" ? "danger" : subscription.status === "trialing" ? "warn" : "neutral"}>{subscription.statusLabel}</span>
                 </div>
                 <p className={styles.meta}>Fim do período: {dateTime(subscription.currentPeriodEnd)}</p>
+                <p className={styles.meta}><strong>{money(subscription.agreedPriceCents)}</strong>{subscription.priceLocked ? " · valor vitalício bloqueado" : " · sujeito aos termos do plano"}</p>
+                <p className={styles.meta}>Vencimento: {subscription.billingDueDay ? `dia ${subscription.billingDueDay}` : "dia não definido"} · {subscription.paymentStatusLabel}</p>
+                {subscription.nextDueAt ? <p className={styles.meta}>Próximo vencimento: {dateTime(subscription.nextDueAt)}</p> : null}
                 {subscription.trialEndsAt ? <p className={styles.meta}>Teste até: {dateTime(subscription.trialEndsAt)}</p> : null}
                 {subscription.graceEndsAt ? <p className={styles.meta}>Tolerância até: {dateTime(subscription.graceEndsAt)}</p> : null}
                 {subscription.cancelAtPeriodEnd ? <p className={styles.advancedNote}>Cancelamento já agendado para o fim do período.</p> : null}
                 <p className={styles.meta}>Cobrança externa: {subscription.hasProvider ? "provider conectado" : "gestão manual/sem provider"}</p>
+
+                {data.canManage ? (
+                  <details className={styles.details}>
+                    <summary>Mensalidade, vencimento e pagamento</summary>
+                    <form action={updateCommercialTermsAction} className={styles.detailsBody}>
+                      <Common organizationId={subscription.organizationId} />
+                      <label>Valor acordado (R$)<input className={styles.field} name="agreedPrice" type="number" min="0" max="1000000" step="0.01" defaultValue={subscription.agreedPriceCents === null ? "79.90" : (subscription.agreedPriceCents / 100).toFixed(2)} required /></label>
+                      <label>Dia do vencimento<input className={styles.field} name="billingDueDay" type="number" min="1" max="28" defaultValue={subscription.billingDueDay ?? 10} /></label>
+                      <label>Próximo vencimento<input className={styles.field} name="nextDueAt" type="datetime-local" /></label>
+                      <label>Situação do pagamento<select className={styles.field} name="paymentStatus" defaultValue={subscription.paymentStatus}><option value="not_started">Cobrança não iniciada</option><option value="pending">Pendente</option><option value="paid">Pago</option><option value="overdue">Em atraso</option><option value="waived">Isento neste vencimento</option></select></label>
+                      <label><input name="priceLocked" type="checkbox" defaultChecked={subscription.priceLocked} /> Manter este valor para sempre</label>
+                      <label>Motivo do valor vitalício<input className={styles.field} name="priceLockReason" minLength={5} maxLength={500} defaultValue={subscription.priceLockReason ?? "Cliente fundador do PedeAqui"} placeholder="Ex.: um dos três primeiros clientes" /></label>
+                      <p className={styles.advancedNote}>Com o valor vitalício marcado, reajustes futuros do plano não alteram esta mensalidade. Uma mudança posterior exige nova ação, motivo e protocolo.</p>
+                      <PendingSubmitButton className={styles.button} pendingLabel="Salvando termos…">Salvar termos comerciais</PendingSubmitButton>
+                    </form>
+                  </details>
+                ) : null}
 
                 {data.canManage && ["trialing", "active", "past_due"].includes(subscription.status) ? (
                   <details className={styles.details}>
@@ -77,7 +101,7 @@ export default async function PlatformSubscriptionsPage() {
                     <form action={changePlanAction} className={styles.detailsBody}>
                       <Common organizationId={subscription.organizationId} />
                       <PlanFields plans={activePlans} selectedPlanId={subscription.planId} selectedInterval={subscription.billingInterval} />
-                      <button className={styles.button}>Aplicar mudança de plano</button>
+                      <PendingSubmitButton className={styles.button}>Aplicar mudança de plano</PendingSubmitButton>
                     </form>
                   </details>
                 ) : null}
@@ -89,7 +113,7 @@ export default async function PlatformSubscriptionsPage() {
                       <Common organizationId={subscription.organizationId} />
                       <PlanFields plans={activePlans} selectedPlanId={subscription.planId} selectedInterval={subscription.billingInterval} />
                       <label>Nova data final do teste<input className={styles.field} name="trialEndsAt" type="datetime-local" required /></label>
-                      <button className={styles.button}>Estender teste</button>
+                      <PendingSubmitButton className={styles.button}>Estender teste</PendingSubmitButton>
                     </form>
                   </details>
                 ) : null}
@@ -100,7 +124,7 @@ export default async function PlatformSubscriptionsPage() {
                     <form action={activateSubscriptionAction} className={styles.detailsBody}>
                       <Common organizationId={subscription.organizationId} />
                       <PlanFields plans={activePlans} selectedPlanId={subscription.planId} selectedInterval={subscription.billingInterval} />
-                      <button className={styles.button}>Ativar pelo fluxo oficial</button>
+                      <PendingSubmitButton className={styles.button}>Ativar pelo fluxo oficial</PendingSubmitButton>
                     </form>
                   </details>
                 ) : null}
@@ -112,7 +136,7 @@ export default async function PlatformSubscriptionsPage() {
                       <form action={applyGracePeriodAction} className={styles.detailsBody}>
                         <Common organizationId={subscription.organizationId} />
                         <label>Tolerância até<input className={styles.field} name="graceEndsAt" type="datetime-local" required /></label>
-                        <button className={styles.button}>Aplicar tolerância</button>
+                        <PendingSubmitButton className={styles.button}>Aplicar tolerância</PendingSubmitButton>
                       </form>
                     </details>
                     {!subscription.cancelAtPeriodEnd ? <details className={styles.details}>
@@ -120,7 +144,7 @@ export default async function PlatformSubscriptionsPage() {
                       <form action={scheduleCancellationAction} className={styles.detailsBody}>
                         <Common organizationId={subscription.organizationId} />
                         <p className={styles.advancedNote}>A assinatura continua válida até o fim do período atual. Nenhum encerramento imediato é feito por esta ação.</p>
-                        <button className={styles.button}>Agendar cancelamento</button>
+                        <PendingSubmitButton className={styles.button}>Agendar cancelamento</PendingSubmitButton>
                       </form>
                     </details> : null}
                     <details className={styles.details}>
@@ -129,7 +153,7 @@ export default async function PlatformSubscriptionsPage() {
                         <Common organizationId={subscription.organizationId} />
                         <label>Confirmação<input className={styles.field} name="cancelConfirmation" value="CANCELAR" readOnly /></label>
                         <p className={styles.advancedNote}>Use apenas quando a decisão comercial já estiver confirmada. A ação passa pela state machine e fica registrada no histórico.</p>
-                        <button className={styles.button}>Cancelar assinatura</button>
+                        <PendingSubmitButton className={styles.button} pendingLabel="Cancelando…">Cancelar assinatura</PendingSubmitButton>
                       </form>
                     </details>
                   </>
@@ -148,13 +172,13 @@ export default async function PlatformSubscriptionsPage() {
                 <NewSubscriptionCommon organizations={data.organizations} />
                 <PlanFields plans={activePlans} />
                 <label>Teste até<input className={styles.field} name="trialEndsAt" type="datetime-local" required /></label>
-                <button className={styles.button}>Iniciar teste</button>
+                <PendingSubmitButton className={styles.button}>Iniciar teste</PendingSubmitButton>
               </form>
               <form action={activateSubscriptionAction} className={styles.detailsBody}>
                 <strong>Ativar diretamente</strong>
                 <NewSubscriptionCommon organizations={data.organizations} />
                 <PlanFields plans={activePlans} />
-                <button className={styles.button}>Ativar assinatura</button>
+                <PendingSubmitButton className={styles.button}>Ativar assinatura</PendingSubmitButton>
               </form>
             </div>
           </details>
