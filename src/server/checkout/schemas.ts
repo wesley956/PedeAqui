@@ -3,6 +3,12 @@ import { z } from "zod";
 export const fulfillmentTypeSchema = z.enum(["delivery", "pickup"]);
 export type FulfillmentType = z.infer<typeof fulfillmentTypeSchema>;
 
+export const checkoutScheduleSchema = z.discriminatedUnion("mode", [
+  z.object({ mode: z.literal("asap"), localDateTime: z.string().nullable().optional() }),
+  z.object({ mode: z.literal("scheduled"), localDateTime: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/) }),
+]);
+export type CheckoutScheduleInput = z.infer<typeof checkoutScheduleSchema>;
+
 export const paymentMethodSchema = z.enum(["cash", "pix", "credit_card", "debit_card"]);
 export type PaymentMethod = z.infer<typeof paymentMethodSchema>;
 

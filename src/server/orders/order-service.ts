@@ -106,7 +106,7 @@ export class OrderService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data, error } = await admin.from("orders")
-      .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, created_at, updated_at")
+      .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
       .order("created_at", { ascending: false })

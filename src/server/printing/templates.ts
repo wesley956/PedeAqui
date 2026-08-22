@@ -28,7 +28,7 @@ export const printPayloadSchema = z.object({
     }).optional(),
     subtotal_cents: z.number(), discount_cents: z.number(), delivery_fee_cents: z.number(), total_cents: z.number(),
     payment_method: z.string().nullable().optional(), cash_change_for_cents: z.number().nullable().optional(),
-    created_at: z.string(), confirmed_at: z.string().nullable().optional(), timezone: z.string().optional(),
+    created_at: z.string(), confirmed_at: z.string().nullable().optional(), scheduled_for: z.string().nullable().optional(), timezone: z.string().optional(),
   }),
   station: z.object({ id: z.string(), name: z.string(), code: z.string(), kind: z.string() }),
   items: z.array(itemSchema),
@@ -60,6 +60,13 @@ function orderTime(payload: PrintPayload) {
     return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: payload.order.timezone ?? "America/Sao_Paulo" }).format(date);
   } catch { return date.toISOString().slice(11, 16); }
 }
+function scheduledTime(payload: PrintPayload) {
+  if (!payload.order.scheduled_for) return null;
+  const date = new Date(payload.order.scheduled_for);
+  try {
+    return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: payload.order.timezone ?? "America/Sao_Paulo" }).format(date);
+  } catch { return date.toISOString().slice(0, 16).replace("T", " "); }
+}
 function items(lines: string[], payload: PrintPayload, width: number, showPrice: boolean) {
   for (const item of payload.items) {
     const left = `${item.quantity}x ${item.name}`;
@@ -77,6 +84,8 @@ export function renderPrintDocument(input: unknown, documentType: PrintDocumentT
   out.push(center(`PEDIDO #${payload.order.display_number}`, width));
   out.push(center(payload.station.name.toUpperCase(), width));
   out.push(pair(orderTime(payload), payload.order.channel.toUpperCase(), width));
+  const requestedTime = scheduledTime(payload);
+  if (requestedTime) out.push(clip(`AGENDADO: ${requestedTime}`, width));
   out.push(line("-", width));
 
   if (documentType === "kitchen") {

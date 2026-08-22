@@ -9,14 +9,17 @@ import {
   saveCheckoutFulfillmentAction,
   saveCheckoutIdentityAction,
   saveCheckoutPaymentAction,
+  saveCheckoutScheduleAction,
   useSavedCheckoutAddressAction,
 } from "@/features/checkout/actions";
 import { CheckoutReviewState, FinalOrderOptions, paymentMethodHelp } from "@/features/checkout/final-order-options";
+import { SubmitOrderButton } from "@/features/checkout/submit-order-button";
 import { applyCheckoutBenefitsAction, clearCheckoutBenefitsAction } from "@/features/growth/actions";
 import { createOrderFromCheckoutAction } from "@/features/orders/actions";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { CheckoutService } from "@/server/checkout/checkout-service";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
+import { localDateTimeInputValue } from "@/server/checkout/scheduling";
 import { customerRecognitionCookieName } from "@/server/customers/recognition-token";
 import { GrowthService } from "@/server/growth/growth-service";
 import styles from "./checkout.module.css";
@@ -32,6 +35,7 @@ const errorMessages: Record<string, string> = {
   invalid_fulfillment: "Escolha entrega ou retirada.",
   invalid_address: "Confira CEP, rua, número, bairro, cidade e UF.",
   invalid_payment: "Escolha uma forma de pagamento válida.",
+  invalid_schedule: "Escolha um horário entre 15 minutos e 7 dias a partir de agora.",
   pickup_disabled: "Retirada não está disponível nesta loja.",
   delivery_disabled: "Entrega não está disponível nesta loja.",
   delivery_not_selected: "Escolha entrega antes de informar o endereço.",
@@ -90,6 +94,15 @@ export default async function CheckoutPage({
   const fulfillmentSummary = deliverySelected ? "Entrega" : session?.fulfillment_type === "pickup" ? "Retirada no local" : "Escolha como receber";
   const addressSummary = session?.address_street && session?.address_number ? `${session.address_street}, ${session.address_number}` : "Informe o endereço";
   const paymentSummary = selectedPayment ? paymentMethodLabels[selectedPayment as keyof typeof paymentMethodLabels] : "Escolha a forma de pagamento";
+  const storeTimeZone = menu.store.timezone || "America/Sao_Paulo";
+  const scheduledFor = session?.scheduled_for ?? null;
+  const scheduleSummary = scheduledFor
+    ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: storeTimeZone }).format(new Date(scheduledFor))
+    : "Assim que possível";
+  const scheduleNow = new Date();
+  const minimumScheduleDate = new Date(Math.ceil((scheduleNow.getTime() + 15 * 60_000) / 60_000) * 60_000);
+  const minimumSchedule = localDateTimeInputValue(minimumScheduleDate, storeTimeZone);
+  const maximumSchedule = localDateTimeInputValue(new Date(scheduleNow.getTime() + 7 * 24 * 60 * 60_000), storeTimeZone);
 
   return (
     <main className={styles.root}>
@@ -207,6 +220,36 @@ export default async function CheckoutPage({
         ) : null}
 
         {paymentComplete ? (
+          <details className={styles.optional} open={Boolean(scheduledFor)}>
+            <summary>Quando receber? · {scheduleSummary}</summary>
+            <div className={styles.optionalBody}>
+              <p className="muted">O horário é interpretado no fuso da loja. O estabelecimento confirmará a disponibilidade ao aceitar o pedido.</p>
+              <form action={saveCheckoutScheduleAction} className={styles.form}>
+                <input type="hidden" name="storeSlug" value={slug} />
+                <input type="hidden" name="mode" value="scheduled" />
+                <Field
+                  label="Agendar para"
+                  name="localDateTime"
+                  type="datetime-local"
+                  min={minimumSchedule}
+                  max={maximumSchedule}
+                  defaultValue={scheduledFor ? localDateTimeInputValue(new Date(scheduledFor), storeTimeZone) : minimumSchedule}
+                  required
+                />
+                <ActionButton>Salvar agendamento</ActionButton>
+              </form>
+              {scheduledFor ? (
+                <form action={saveCheckoutScheduleAction}>
+                  <input type="hidden" name="storeSlug" value={slug} />
+                  <input type="hidden" name="mode" value="asap" />
+                  <button type="submit" className={styles.secondary}>Receber assim que possível</button>
+                </form>
+              ) : null}
+            </div>
+          </details>
+        ) : null}
+
+        {paymentComplete ? (
           <details className={styles.optional} open={totalDiscount > 0}>
             <summary>Tenho cupom, cashback ou pontos{totalDiscount > 0 ? ` · economia ${money(totalDiscount)}` : ""}</summary>
             <div className={styles.optionalBody}>
@@ -240,6 +283,8 @@ export default async function CheckoutPage({
               deliveryMinutes={{ min: session?.delivery_estimated_min_minutes, max: session?.delivery_estimated_max_minutes }}
               paymentMethod={selectedPayment}
               cashChangeForCents={session?.cash_change_for_cents === null || session?.cash_change_for_cents === undefined ? null : Number(session.cash_change_for_cents)}
+              scheduledFor={scheduledFor}
+              timeZone={storeTimeZone}
             />
             <div className={styles.summaryRows}>
               <SummaryLine label="Subtotal" value={money(Number(cart.subtotal_cents))} />
@@ -253,7 +298,7 @@ export default async function CheckoutPage({
             {review?.ready ? (
               <form action={createOrderFromCheckoutAction}>
                 <input type="hidden" name="storeSlug" value={slug} />
-                <button type="submit" className={styles.finalAction}>Fazer pedido · {money(Number(cart.total_cents))}</button>
+                <SubmitOrderButton className={styles.finalAction} label={`Fazer pedido · ${money(Number(cart.total_cents))}`} />
               </form>
             ) : (
               <form action={reviewCheckoutAction}>

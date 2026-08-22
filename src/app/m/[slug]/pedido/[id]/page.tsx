@@ -53,6 +53,9 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
   const estimate = order.delivery_estimated_min_minutes !== null && order.delivery_estimated_max_minutes !== null
     ? `${order.delivery_estimated_min_minutes}–${order.delivery_estimated_max_minutes} min`
     : fulfillmentType === "pickup" ? "Retirada no local" : null;
+  const scheduledLabel = order.scheduled_for
+    ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: store.timezone || "America/Sao_Paulo" }).format(new Date(order.scheduled_for))
+    : null;
   const heroTitle = terminalProblem ? "Não foi possível concluir este pedido" : completedFulfillment || orderStatus === "completed" ? "Pedido concluído!" : "Pedido recebido!";
   const heroMessage = terminalProblem
     ? `Confira o motivo abaixo. Se precisar, entre em contato com a ${vocabulary.unitLabel}.`
@@ -69,6 +72,7 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
         <span className={styles.store}>{store.name}</span><h1>{heroTitle}</h1><p className={styles.heroMessage}>{heroMessage}</p>
         <span className={`${styles.status} ${terminalProblem ? styles.terminalProblem : completedFulfillment || orderStatus === "completed" ? styles.terminalSuccess : ""}`}>{currentLabel}</span>
         {estimate && !terminalProblem ? <div className={styles.estimate}><span>{fulfillmentType === "delivery" ? "Previsão registrada" : "Recebimento"}</span><strong>{estimate}</strong></div> : null}
+        {scheduledLabel && !terminalProblem ? <div className={styles.estimate}><span>Horário solicitado</span><strong>{scheduledLabel}</strong></div> : null}
         <div className={styles.updated}>Pedido #{order.display_number} · atualizado em {updatedAt}</div>
       </header>
 
@@ -119,6 +123,7 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
           <Summary label="Entrega" value={Number(order.delivery_fee_cents) > 0 ? money(Number(order.delivery_fee_cents)) : fulfillmentType === "delivery" ? "Grátis" : "Não aplicável"} />
           <Summary label="Total" value={money(Number(order.total_cents))} strong />
           <Summary label="Pagamento" value={paymentMethodLabels[order.payment_method_snapshot as keyof typeof paymentMethodLabels] ?? order.payment_method_snapshot} />
+          <Summary label="Quando" value={scheduledLabel ?? "Assim que possível"} />
           {order.cash_change_for_cents ? <Summary label="Troco para" value={money(Number(order.cash_change_for_cents))} /> : null}
         </div></div>
       </details>

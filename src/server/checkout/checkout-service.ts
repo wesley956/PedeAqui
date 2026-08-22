@@ -12,17 +12,20 @@ import {
   checkoutAddressSchema,
   checkoutIdentitySchema,
   checkoutPaymentSchema,
+  checkoutScheduleSchema,
   fulfillmentTypeSchema,
   type CheckoutAddressInput,
   type CheckoutIdentityInput,
   type CheckoutPaymentInput,
+  type CheckoutScheduleInput,
   type FulfillmentType,
 } from "@/server/checkout/schemas";
 import { reviewCheckout } from "@/server/checkout/review";
+import { assertScheduledWindow, zonedLocalDateTimeToUtc } from "@/server/checkout/scheduling";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 
-type StoreRef = { id: string; organization_id: string; slug: string; name: string };
+type StoreRef = { id: string; organization_id: string; slug: string; name: string; timezone?: string };
 
 export class CheckoutError extends Error {
   constructor(public code: string, message: string) {
@@ -49,7 +52,7 @@ export class CheckoutService {
 
   private static async getSession(admin: AdminClient, cartId: string) {
     const { data, error } = await admin.from("checkout_sessions")
-      .select("id, customer_id, customer_name, customer_phone, customer_phone_normalized, customer_email, fulfillment_type, address_postal_code, address_street, address_number, address_complement, address_district, address_city, address_state, address_reference, delivery_quote_status, delivery_fee_cents, delivery_estimated_min_minutes, delivery_estimated_max_minutes, payment_method, cash_change_for_cents, reviewed_at, updated_at")
+      .select("id, customer_id, customer_name, customer_phone, customer_phone_normalized, customer_email, fulfillment_type, scheduled_for, address_postal_code, address_street, address_number, address_complement, address_district, address_city, address_state, address_reference, delivery_quote_status, delivery_fee_cents, delivery_estimated_min_minutes, delivery_estimated_max_minutes, payment_method, cash_change_for_cents, reviewed_at, updated_at")
       .eq("cart_id", cartId)
       .maybeSingle();
     if (error) throw error;
@@ -57,16 +60,40 @@ export class CheckoutService {
   }
 
   private static async upsertSession(admin: AdminClient, store: StoreRef, cartId: string, patch: Record<string, unknown>) {
-    const { data, error } = await admin.from("checkout_sessions").upsert({
+    const updatedAt = new Date().toISOString();
+    const values = { ...patch, reviewed_at: null, updated_at: updatedAt };
+    const { data: updated, error: updateError } = await admin.from("checkout_sessions")
+      .update(values)
+      .eq("organization_id", store.organization_id)
+      .eq("store_id", store.id)
+      .eq("cart_id", cartId)
+      .select("id")
+      .maybeSingle();
+    if (updateError) throw updateError;
+    if (updated) return updated.id;
+
+    const { data: inserted, error: insertError } = await admin.from("checkout_sessions").insert({
       organization_id: store.organization_id,
       store_id: store.id,
       cart_id: cartId,
-      ...patch,
-      reviewed_at: null,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "cart_id" }).select("id").single();
-    if (error) throw error;
-    return data.id;
+      ...values,
+    }).select("id").single();
+    if (!insertError) return inserted.id;
+
+    // Two simultaneous first writes may race on the unique cart session. The
+    // losing request retries as a scoped partial update without clearing fields.
+    if (insertError.code === "23505") {
+      const { data: retried, error: retryError } = await admin.from("checkout_sessions")
+        .update(values)
+        .eq("organization_id", store.organization_id)
+        .eq("store_id", store.id)
+        .eq("cart_id", cartId)
+        .select("id")
+        .single();
+      if (retryError) throw retryError;
+      return retried.id;
+    }
+    throw insertError;
   }
 
   static async load(storeSlug: string, token: string, recognitionToken: string | null = null) {
@@ -151,6 +178,26 @@ export class CheckoutService {
       p_estimated_max_minutes: null,
     });
     if (error) throw error;
+  }
+
+  static async saveSchedule(storeSlug: string, token: string, input: CheckoutScheduleInput) {
+    const values = this.parseInput(
+      checkoutScheduleSchema.safeParse(input),
+      "invalid_schedule",
+      "Escolha um horário válido",
+    );
+    const cartResult = await this.requireCart(storeSlug, token);
+    let scheduledFor: string | null = null;
+    if (values.mode === "scheduled") {
+      try {
+        const timezone = cartResult.store.timezone || "America/Sao_Paulo";
+        scheduledFor = assertScheduledWindow(zonedLocalDateTimeToUtc(values.localDateTime, timezone)).toISOString();
+      } catch {
+        throw new CheckoutError("invalid_schedule", "Escolha um horário entre 15 minutos e 7 dias a partir de agora");
+      }
+    }
+    const admin = createAdminClient();
+    await this.upsertSession(admin, cartResult.store, cartResult.cart.id, { scheduled_for: scheduledFor });
   }
 
   private static quoteDelivery(admin: AdminClient, store: StoreRef, subtotalCents: number, address: CheckoutAddressInput) {
@@ -328,6 +375,7 @@ export class CheckoutService {
       paymentMethod: session?.payment_method ?? null,
       enabledPaymentMethods: enabledMethods,
       cashChangeForCents: session?.cash_change_for_cents === null || session?.cash_change_for_cents === undefined ? null : Number(session.cash_change_for_cents),
+      scheduledFor: session?.scheduled_for ?? null,
     });
 
     if (result.ready && session) {

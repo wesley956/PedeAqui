@@ -12,6 +12,8 @@ export type CheckoutReviewInput = {
   paymentMethod: PaymentMethod | null;
   enabledPaymentMethods: ReadonlyArray<PaymentMethod>;
   cashChangeForCents: number | null;
+  scheduledFor: string | null;
+  now?: Date;
 };
 
 export type CheckoutBlockerCode =
@@ -23,7 +25,8 @@ export type CheckoutBlockerCode =
   | "delivery_not_ready"
   | "payment_missing"
   | "payment_unavailable"
-  | "invalid_change";
+  | "invalid_change"
+  | "schedule_invalid";
 
 export type CheckoutBlocker = { code: CheckoutBlockerCode; message: string };
 
@@ -47,6 +50,15 @@ export function reviewCheckout(input: CheckoutReviewInput) {
   }
   if (input.paymentMethod === "cash" && input.cashChangeForCents !== null && input.cashChangeForCents < input.totalCents) {
     blockers.push({ code: "invalid_change", message: "O valor para troco deve ser igual ou maior que o total do pedido." });
+  }
+  if (input.scheduledFor) {
+    const scheduledAt = new Date(input.scheduledFor).getTime();
+    const now = (input.now ?? new Date()).getTime();
+    // Saving requires 15 minutes. Review allows five minutes of elapsed time
+    // so a customer is not invalidated while finishing the last checkout step.
+    if (!Number.isFinite(scheduledAt) || scheduledAt < now + 10 * 60_000) {
+      blockers.push({ code: "schedule_invalid", message: "Escolha novamente o horário agendado." });
+    }
   }
   return { ready: blockers.length === 0, blockers };
 }
