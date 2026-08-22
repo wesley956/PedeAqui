@@ -1,9 +1,7 @@
 import Link from "next/link";
-import { cancelOrderAction } from "@/features/orders/actions";
 import { OrderActionForm } from "@/features/orders/order-action-form";
 import { OrderRealtime } from "@/features/orders/order-realtime";
 import { PaymentPanel } from "@/features/payments/payment-panel";
-import { Button } from "@/components/ui/button";
 import { SemanticStatus, type StatusTone } from "@/components/ui/status";
 import { OrderService } from "@/server/orders/order-service";
 import { orderStatusLabels, productionStatusLabels } from "@/server/orders/state-machines";
@@ -59,10 +57,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   if (!context.storeId) throw new Error("An active store is required");
 
   const fulfillmentComplete = ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status);
-  const canComplete = order.order_status === "confirmed" && order.payment_status === "paid" && fulfillmentComplete;
+  const canComplete = order.order_status === "confirmed" && ["paid", "partially_refunded", "refunded"].includes(order.payment_status) && fulfillmentComplete;
   const canCancel = !["completed", "canceled", "rejected"].includes(order.order_status)
     && !["delivered", "picked_up_by_customer", "served"].includes(order.fulfillment_status);
-  const fulfillmentTypeLabel = order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "counter" ? "Balcão" : "Retirada";
+  const fulfillmentTypeLabel = order.fulfillment_type === "delivery" ? "Entrega"
+    : order.fulfillment_type === "counter" ? "Balcão"
+      : ["table", "dine_in"].includes(order.fulfillment_type) ? "Mesa" : "Retirada";
+  const channelLabel = order.channel === "digital_menu" || order.channel === "menu" ? "Cardápio"
+    : order.channel === "table_qr" || order.channel === "dining" ? "Salão"
+      : order.channel === "pdv" ? "PDV" : order.channel;
 
   return (
     <section className={styles.page}>
@@ -72,7 +75,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       <article className={styles.hero}>
         <div className={styles.heroTop}>
           <div>
-            <p className={styles.eyebrow}>{order.channel} · {fulfillmentTypeLabel}</p>
+            <p className={styles.eyebrow}>{channelLabel} · {fulfillmentTypeLabel}</p>
             <h1 className={styles.title}>Pedido #{order.display_number}</h1>
             <p className={styles.meta}>{order.customer_name_snapshot} · {new Date(order.created_at).toLocaleString("pt-BR")}</p>
           </div>
@@ -194,14 +197,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <h2 id="order-admin-heading" className={styles.sectionHeading}>Ações administrativas</h2>
             <p className={styles.sectionHint}>Use cancelamento somente quando necessário; a regra de autorização permanece no servidor.</p>
           </div>
-          <form action={cancelOrderAction} className={styles.cancelForm}>
-            <input type="hidden" name="orderId" value={order.id} />
-            <label className={styles.cancelField}>
-              <strong>Motivo do cancelamento</strong>
-              <input name="reason" required minLength={3} maxLength={240} />
-            </label>
-            <Button tone="danger" type="submit">Cancelar pedido</Button>
-          </form>
+          <div className={styles.cancelForm}>
+            <OrderActionForm orderId={order.id} intent="cancel" label="Cancelar pedido" tone="danger" reasonLabel="Motivo do cancelamento" reasonPlaceholder="Ex.: cliente solicitou cancelamento" />
+          </div>
         </section>
       ) : null}
     </section>

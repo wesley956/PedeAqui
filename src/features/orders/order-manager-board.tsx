@@ -9,6 +9,7 @@ import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { StatusBadge, type OperationalStatusKey } from "@/components/ui/status";
 import { OrderActionForm } from "@/features/orders/order-action-form";
+import { playOrderAlertTone } from "@/features/orders/order-alert-tone";
 import {
   canCompleteFromManager,
   completionBlockers,
@@ -55,27 +56,6 @@ function statusForOrder(order: OrderManagerRow, bucket: OperationalOrderBucket):
   return { status: "order_confirmed" };
 }
 
-async function playAlertTone() {
-  const AudioContextCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!AudioContextCtor) return;
-  const context = new AudioContextCtor();
-  await context.resume();
-  const gain = context.createGain();
-  gain.gain.setValueAtTime(0.0001, context.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.55);
-  gain.connect(context.destination);
-  for (const [index, frequency] of [660, 880].entries()) {
-    const oscillator = context.createOscillator();
-    oscillator.type = "sine";
-    oscillator.frequency.value = frequency;
-    oscillator.connect(gain);
-    oscillator.start(context.currentTime + index * 0.18);
-    oscillator.stop(context.currentTime + index * 0.18 + 0.22);
-  }
-  window.setTimeout(() => void context.close(), 900);
-}
-
 export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders: OrderManagerRow[] }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -84,19 +64,16 @@ export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders
   const [now, setNow] = useState(() => Date.now());
   const seen = useRef(new Set(orders.map((order) => order.id)));
   const soundEnabledRef = useRef(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const enabled = window.localStorage.getItem(`pedeaqui:orders:sound:${storeId}`) === "on";
-      setSoundEnabled(enabled);
-      soundEnabledRef.current = enabled;
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [storeId]);
-
-  useEffect(() => {
-    soundEnabledRef.current = soundEnabled;
-  }, [soundEnabled]);
+    return () => {
+      soundEnabledRef.current = false;
+      const context = audioContextRef.current;
+      audioContextRef.current = null;
+      if (context && context.state !== "closed") void context.close();
+    };
+  }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 15_000);
@@ -116,7 +93,13 @@ export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders
             seen.current.add(row.id);
             if (row.order_status === "pending_confirmation") {
               setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
-              if (soundEnabledRef.current) void playAlertTone();
+              if (soundEnabledRef.current && audioContextRef.current) {
+                void playOrderAlertTone(audioContextRef.current).catch(() => {
+                  soundEnabledRef.current = false;
+                  setSoundEnabled(false);
+                  setNotice("Novo pedido recebido. O navegador bloqueou o som; toque em Ativar som novamente.");
+                });
+              }
             }
           }
           router.refresh();
@@ -159,11 +142,31 @@ export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders
   const lateCount = useMemo(() => filtered.filter((order) => isOrderAttentionLate(order, now)).length, [filtered, now]);
 
   async function toggleSound() {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    soundEnabledRef.current = next;
-    window.localStorage.setItem(`pedeaqui:orders:sound:${storeId}`, next ? "on" : "off");
-    if (next) await playAlertTone();
+    if (soundEnabled) {
+      soundEnabledRef.current = false;
+      setSoundEnabled(false);
+      const context = audioContextRef.current;
+      audioContextRef.current = null;
+      if (context && context.state !== "closed") await context.close();
+      return;
+    }
+    const AudioContextCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextCtor) {
+      setNotice("Este navegador não oferece aviso sonoro. O alerta visual continuará ativo.");
+      return;
+    }
+    try {
+      const context = new AudioContextCtor();
+      await context.resume();
+      audioContextRef.current = context;
+      soundEnabledRef.current = true;
+      setSoundEnabled(true);
+      await playOrderAlertTone(context);
+    } catch {
+      soundEnabledRef.current = false;
+      setSoundEnabled(false);
+      setNotice("Não foi possível ativar o som neste navegador. O alerta visual continuará ativo.");
+    }
   }
 
   return (

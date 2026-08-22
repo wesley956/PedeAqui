@@ -14,10 +14,9 @@ describe("order detail operational hierarchy", () => {
   });
 
   it("keeps every existing order transition intent wired through OrderActionForm", () => {
-    for (const intent of ["accept", "reject", "start_production", "mark_ready", "await_pickup", "customer_picked_up", "await_courier", "courier_assigned", "courier_picked_up", "out_for_delivery", "delivered", "served", "complete", "reprint"]) {
+    for (const intent of ["accept", "reject", "cancel", "start_production", "mark_ready", "await_pickup", "customer_picked_up", "await_courier", "courier_assigned", "courier_picked_up", "out_for_delivery", "delivered", "served", "complete", "reprint"]) {
       expect(page).toContain(`intent=\"${intent}\"`);
     }
-    expect(page).toContain("cancelOrderAction");
   });
 
   it("uses semantic status language and hides technical order id from the visible layout", () => {
