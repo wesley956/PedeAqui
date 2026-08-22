@@ -28,6 +28,10 @@ function money(cents: number) {
 const errorMessages: Record<string, string> = {
   cart_empty: "Seu carrinho está vazio.",
   invalid_phone: "Informe um WhatsApp válido.",
+  invalid_identity: "Confira seu nome, WhatsApp e e-mail.",
+  invalid_fulfillment: "Escolha entrega ou retirada.",
+  invalid_address: "Confira CEP, rua, número, bairro, cidade e UF.",
+  invalid_payment: "Escolha uma forma de pagamento válida.",
   pickup_disabled: "Retirada não está disponível nesta loja.",
   delivery_disabled: "Entrega não está disponível nesta loja.",
   delivery_not_selected: "Escolha entrega antes de informar o endereço.",
@@ -35,6 +39,7 @@ const errorMessages: Record<string, string> = {
   neighborhood_not_served: "Este bairro ainda não é atendido pela loja.",
   payment_unavailable: "A forma de pagamento selecionada não está disponível.",
   invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.",
+  pix_email_required: "Informe seu e-mail em Seus dados para gerar o Pix online.",
   checkout_not_ready: "Confira o pedido novamente antes de finalizar.",
   benefit_invalid: "Não foi possível aplicar esses benefícios. Confira o cupom e tente novamente.",
   saved_address_invalid: "Este endereço salvo não está mais disponível.",
@@ -56,11 +61,16 @@ export default async function CheckoutPage({
   if (!token) redirect(`/m/${slug}/carrinho`);
 
   const recognitionToken = cookieStore.get(customerRecognitionCookieName(slug))?.value ?? null;
-  const reviewed = query.revisar === "1" ? await CheckoutService.review(slug, token, recognitionToken) : null;
-  const data = reviewed ?? await CheckoutService.load(slug, token, recognitionToken);
-  const benefits = await GrowthService.loadCheckoutBenefits(slug, token);
+  const [data, benefits] = await Promise.all([
+    query.revisar === "1"
+      ? CheckoutService.review(slug, token, recognitionToken)
+      : CheckoutService.load(slug, token, recognitionToken),
+    GrowthService.loadCheckoutBenefits(slug, token),
+  ]);
   const { cart, session, menu, recognizedCustomer } = data;
-  const review = reviewed?.review ?? null;
+  const review = "review" in data
+    ? (data as Awaited<ReturnType<typeof CheckoutService.review>>).review
+    : null;
   const enabledMethods = data.paymentMethods.filter((item) => item.enabled);
   const selectedPayment = session?.payment_method ?? null;
   const totalDiscount = Number(cart.discount_cents);

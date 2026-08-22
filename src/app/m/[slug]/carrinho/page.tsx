@@ -9,8 +9,15 @@ import styles from "./cart.module.css";
 function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
 const changeText = { price_changed: "O preço deste item mudou e foi atualizado.", unavailable: "Este item ficou indisponível e não entra mais no total.", invalid_modifiers: "As opções deste item mudaram. Remova-o e monte novamente." } as const;
 
-export default async function PublicCartPage({ params }: { params: Promise<{ slug: string }> }) {
+const cartErrorMessages: Record<string, string> = {
+  invalid_quantity: "Informe uma quantidade entre 1 e 99.",
+  cart_update_failed: "Não foi possível atualizar a quantidade. Tente novamente.",
+  cart_remove_failed: "Não foi possível remover o item. Tente novamente.",
+};
+
+export default async function PublicCartPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ erro?: string }> }) {
   const { slug } = await params;
+  const query = await searchParams;
   const token = (await cookies()).get(cartCookieName(slug))?.value;
   const result = await CartService.getCart(slug, token);
   const cart = result.cart;
@@ -24,6 +31,8 @@ export default async function PublicCartPage({ params }: { params: Promise<{ slu
   return <main className={styles.root}><div className={styles.container}>
     <div className={styles.topbar}><Link href={`/m/${slug}`} className={styles.back}>← Continuar comprando</Link><PedeAquiLogo size="xs" decorative /></div>
     <header className={styles.header}><h1>Seu carrinho</h1><p className="muted">Preços, disponibilidade e benefícios são validados novamente no servidor sempre que o carrinho é aberto.</p></header>
+
+    {query.erro ? <section role="alert" className={`card ${styles.changes}`}>{cartErrorMessages[query.erro] ?? "Não foi possível alterar o carrinho. Tente novamente."}</section> : null}
 
     {result.changes.length > 0 ? <section role="status" className={`card ${styles.changes}`}><strong>Atualizamos seu carrinho</strong>{result.changes.map((change) => <div key={`${change.itemId}-${change.kind}`} className={styles.change}><strong>{change.productName}:</strong> {changeText[change.kind]}</div>)}</section> : null}
 

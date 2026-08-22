@@ -16,12 +16,6 @@ function integer(value: FormDataEntryValue | null, fallback = 0) {
   if (!Number.isInteger(parsed)) throw new Error("Expected an integer");
   return parsed;
 }
-function optionalNumber(value: FormDataEntryValue | null) {
-  if (typeof value !== "string" || value.trim() === "") return null;
-  const parsed = Number(value.replace(",", "."));
-  if (!Number.isFinite(parsed)) throw new Error("Expected a number");
-  return parsed;
-}
 function text(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
@@ -49,7 +43,6 @@ export async function saveDeliverySettingsAction(formData: FormData) {
     freeDeliveryOverCents: optionalMoney(formData.get("freeDeliveryOver")),
     estimatedMinMinutes: integer(formData.get("estimatedMinMinutes"), 30),
     estimatedMaxMinutes: integer(formData.get("estimatedMaxMinutes"), 60),
-    maxDistanceKm: optionalNumber(formData.get("maxDistanceKm")),
     requireNeighborhoodMatch: formData.get("requireNeighborhoodMatch") === "on",
   });
   refreshSettings();
