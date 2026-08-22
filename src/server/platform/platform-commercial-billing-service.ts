@@ -31,6 +31,53 @@ const commercialTermsSchema = commonSchema.extend({
   }
 });
 
+const planSaveSchema = z.object({
+  planId: z.string().uuid().nullable(),
+  key: z.string().trim().regex(/^[a-z0-9][a-z0-9._-]{1,79}$/),
+  name: z.string().trim().min(2).max(120),
+  description: z.string().trim().max(1000).nullable(),
+  monthlyPriceCents: z.number().int().min(0).max(100_000_000).nullable(),
+  yearlyPriceCents: z.number().int().min(0).max(100_000_000).nullable(),
+  active: z.boolean(),
+  position: z.number().int().min(0).max(10_000),
+  featureIds: z.array(z.string().uuid()).max(200),
+  reason: z.string().trim().min(5).max(500),
+  protocol: z.string().trim().min(3).max(120),
+});
+
+const adjustmentSchema = commonSchema.omit({ idempotencyKey: true }).extend({
+  kind: z.enum(["discount_percent", "discount_amount", "credit"]),
+  amountCents: z.number().int().min(1).max(100_000_000).nullable(),
+  percentage: z.number().positive().max(100).nullable(),
+  startsAt: z.string().datetime(),
+  endsAt: z.string().datetime(),
+}).superRefine((value, context) => {
+  if (new Date(value.endsAt) <= new Date(value.startsAt)) context.addIssue({ code: "custom", path: ["endsAt"], message: "O desconto precisa ter uma data final posterior ao início." });
+  if (value.kind === "discount_percent" && value.percentage === null) context.addIssue({ code: "custom", path: ["percentage"], message: "Informe o percentual." });
+  if (value.kind !== "discount_percent" && value.amountCents === null) context.addIssue({ code: "custom", path: ["amountCents"], message: "Informe o valor." });
+});
+
+const adjustmentCancelSchema = z.object({
+  adjustmentId: z.string().uuid(), reason: z.string().trim().min(5).max(500), protocol: z.string().trim().min(3).max(120),
+});
+
+const invoiceSchema = commonSchema.extend({
+  referenceMonth: z.string().date(),
+  baseAmountCents: z.number().int().min(0).max(100_000_000),
+  discountAmountCents: z.number().int().min(0).max(100_000_000),
+  dueAt: z.string().datetime(),
+  status: z.enum(["pending", "paid", "overdue", "cancelled", "waived"]),
+});
+
+const paymentSchema = z.object({
+  invoiceId: z.string().uuid(), amountCents: z.number().int().min(1).max(100_000_000),
+  method: z.enum(["manual", "pix", "boleto", "card"]), status: z.enum(["pending", "paid", "failed", "refunded", "cancelled"]),
+  reason: z.string().trim().min(5).max(500), protocol: z.string().trim().min(3).max(120), idempotencyKey: z.string().trim().min(8).max(160),
+});
+
+const accessSchema = commonSchema.omit({ idempotencyKey: true }).extend({ suspended: z.boolean() });
+const founderSchema = commonSchema.omit({ idempotencyKey: true });
+
 const subscriptionLabels: Record<string, string> = {
   trialing: "Em período de teste",
   active: "Ativa",
@@ -41,6 +88,7 @@ const subscriptionLabels: Record<string, string> = {
 
 const intervalLabels: Record<string, string> = { month: "Mensal", year: "Anual", manual: "Manual" };
 const paymentLabels: Record<string, string> = { not_started: "Cobrança ainda não iniciada", pending: "Pagamento pendente", paid: "Pago", overdue: "Em atraso", waived: "Isento neste vencimento" };
+const invoiceLabels: Record<string, string> = { pending: "Pendente", paid: "Paga", overdue: "Em atraso", cancelled: "Cancelada", waived: "Isenta" };
 const successfulBilling = new Set(["processed", "completed", "success", "succeeded"]);
 const failedBilling = new Set(["failed", "error", "rejected"]);
 
@@ -80,12 +128,17 @@ export class PlatformCommercialBillingService {
   static async load() {
     const base = await PlatformAdminService.loadCommercial();
     const admin = createAdminClient();
-    const [history, receipts] = await Promise.all([
+    const [history, receipts, versions, adjustments, invoices, payments, notifications, financialAudit] = await Promise.all([
       admin.from("subscription_history").select("id,organization_id,subscription_id,from_status,to_status,event_type,metadata,created_at").order("created_at", { ascending: false }).limit(300),
       admin.from("billing_webhook_receipts").select("id,provider_key,status,error_message,created_at,processed_at").order("created_at", { ascending: false }).limit(100),
+      admin.from("plan_versions").select("id,plan_id,version,monthly_price_cents,yearly_price_cents,effective_at,reason,protocol").order("created_at", { ascending: false }).limit(300),
+      admin.from("subscription_billing_adjustments").select("id,organization_id,subscription_id,kind,amount_cents,percentage,starts_at,ends_at,cancelled_at,reason,protocol,created_at").order("created_at", { ascending: false }).limit(300),
+      admin.from("subscription_invoices").select("id,organization_id,subscription_id,plan_version_id,reference_month,base_amount_cents,discount_amount_cents,total_amount_cents,due_at,status,paid_at,cancelled_at,reason,protocol,created_at,updated_at").order("reference_month", { ascending: false }).limit(500),
+      admin.from("subscription_payments").select("id,organization_id,invoice_id,amount_cents,method,status,paid_at,reason,protocol,created_at").order("created_at", { ascending: false }).limit(500),
+      admin.from("subscription_billing_notifications").select("id,organization_id,subscription_id,invoice_id,channel,kind,status,scheduled_at,sent_at,last_error,created_at").order("created_at", { ascending: false }).limit(300),
+      admin.from("platform_financial_audit").select("id,organization_id,action,entity_type,entity_id,reason,protocol,created_at").order("created_at", { ascending: false }).limit(300),
     ]);
-    if (history.error) throw history.error;
-    if (receipts.error) throw receipts.error;
+    for (const result of [history, receipts, versions, adjustments, invoices, payments, notifications, financialAudit]) if (result.error) throw result.error;
 
     const planById = new Map(base.plans.map((plan) => [plan.id, plan]));
     const orgById = new Map(base.organizations.map((org) => [org.id, org]));
@@ -95,12 +148,15 @@ export class PlatformCommercialBillingService {
       const enabled = base.planFeatures.filter((item) => item.plan_id === plan.id && item.enabled);
       return {
         id: plan.id,
+        key: plan.key,
         name: plan.name,
         description: plan.description,
         active: plan.active,
         monthlyPriceCents: plan.monthly_price_cents,
         yearlyPriceCents: plan.yearly_price_cents,
         currency: plan.currency,
+        position: plan.position,
+        currentVersionId: plan.current_version_id,
         features: enabled.map((item) => ({
           name: featureById.get(item.feature_id)?.name ?? "Recurso",
           limitLabel: item.limit_value === null ? "Incluído" : `Até ${item.limit_value}`,
@@ -132,6 +188,11 @@ export class PlatformCommercialBillingService {
       nextDueAt: item.next_due_at,
       paymentStatus: item.payment_status,
       paymentStatusLabel: paymentLabels[item.payment_status] ?? "Não informado",
+      planVersionId: item.plan_version_id,
+      founderSlot: item.founder_slot,
+      gracePeriodDays: item.grace_period_days,
+      accessSuspendedAt: item.access_suspended_at,
+      accessSuspensionReason: item.access_suspension_reason,
       updatedAt: item.updated_at,
     }));
 
@@ -158,20 +219,68 @@ export class PlatformCommercialBillingService {
       processedAt: item.processed_at,
     }));
 
+    const invoiceRows = (invoices.data ?? []).map((item) => ({
+      id: item.id,
+      organizationId: item.organization_id,
+      organizationName: orgById.get(item.organization_id)?.name ?? "Empresa indisponível",
+      referenceMonth: item.reference_month,
+      baseAmountCents: item.base_amount_cents,
+      discountAmountCents: item.discount_amount_cents,
+      totalAmountCents: item.total_amount_cents,
+      dueAt: item.due_at,
+      status: item.status,
+      statusLabel: invoiceLabels[item.status] ?? "Em análise",
+      paidAt: item.paid_at,
+      protocol: item.protocol,
+      updatedAt: item.updated_at,
+    }));
+    const paymentRows = (payments.data ?? []).map((item) => ({
+      id: item.id, invoiceId: item.invoice_id, organizationId: item.organization_id,
+      organizationName: orgById.get(item.organization_id)?.name ?? "Empresa indisponível",
+      amountCents: item.amount_cents, method: item.method, status: item.status, paidAt: item.paid_at,
+      protocol: item.protocol, createdAt: item.created_at,
+    }));
+    const adjustmentRows = (adjustments.data ?? []).map((item) => ({
+      id: item.id, organizationId: item.organization_id,
+      organizationName: orgById.get(item.organization_id)?.name ?? "Empresa indisponível",
+      kind: item.kind, amountCents: item.amount_cents, percentage: item.percentage === null ? null : Number(item.percentage),
+      startsAt: item.starts_at, endsAt: item.ends_at, cancelledAt: item.cancelled_at,
+      reason: item.reason, protocol: item.protocol,
+    }));
+    const projectedRevenueCents = subscriptions.filter((item) => item.status === "active").reduce((total, item) => {
+      if (item.agreedPriceCents !== null) return total + item.agreedPriceCents;
+      return total + (planById.get(item.planId)?.monthly_price_cents ?? 0);
+    }, 0);
+    const overdueAmountCents = invoiceRows.filter((item) => item.status === "overdue").reduce((total, item) => total + item.totalAmountCents, 0);
+    const now = Date.now();
+    const dueSoon = invoiceRows.filter((item) => item.status === "pending" && new Date(item.dueAt).getTime() >= now && new Date(item.dueAt).getTime() <= now + 7 * 86_400_000).length;
+
     return {
       role: base.role,
       canManage: base.role === "super_admin",
       organizations: base.organizations.map((org) => ({ id: org.id, name: org.name, status: org.status })),
+      features: base.features.map((feature) => ({ id: feature.id, name: feature.name, active: feature.active })),
+      planFeatures: base.planFeatures,
       plans,
       subscriptions,
       history: historyRows,
       billingEvents,
+      planVersions: versions.data ?? [],
+      adjustments: adjustmentRows,
+      invoices: invoiceRows,
+      payments: paymentRows,
+      notifications: notifications.data ?? [],
+      financialAudit: financialAudit.data ?? [],
       metrics: {
         active: subscriptions.filter((item) => item.status === "active").length,
         trials: subscriptions.filter((item) => item.status === "trialing").length,
         attention: subscriptions.filter((item) => item.status === "past_due").length,
         scheduledCancellation: subscriptions.filter((item) => item.cancelAtPeriodEnd).length,
         billingFailures: billingEvents.filter((item) => item.status === "attention").length,
+        projectedRevenueCents,
+        overdueAmountCents,
+        dueSoon,
+        founderSlotsUsed: subscriptions.filter((item) => item.founderSlot !== null).length,
       },
     };
   }
@@ -214,6 +323,113 @@ export class PlatformCommercialBillingService {
       p_protocol: values.protocol,
       p_idempotency_key: values.idempotencyKey,
       p_actor_user_id: access.user.id,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async savePlan(input: z.input<typeof planSaveSchema>) {
+    const values = planSaveSchema.parse(input);
+    const access = await requireSuperAdmin();
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("platform_plan_save_internal", {
+      p_plan_id: values.planId,
+      p_key: values.key,
+      p_name: values.name,
+      p_description: values.description,
+      p_monthly_price_cents: values.monthlyPriceCents,
+      p_yearly_price_cents: values.yearlyPriceCents,
+      p_active: values.active,
+      p_position: values.position,
+      p_feature_ids: values.featureIds,
+      p_actor_user_id: access.user.id,
+      p_reason: values.reason,
+      p_protocol: values.protocol,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async applyAdjustment(input: z.input<typeof adjustmentSchema>) {
+    const values = adjustmentSchema.parse(input);
+    const access = await requireSuperAdmin();
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("subscription_adjustment_apply_internal", {
+      p_organization_id: values.organizationId,
+      p_kind: values.kind,
+      p_amount_cents: values.kind === "discount_percent" ? null : values.amountCents,
+      p_percentage: values.kind === "discount_percent" ? values.percentage : null,
+      p_starts_at: values.startsAt,
+      p_ends_at: values.endsAt,
+      p_actor_user_id: access.user.id,
+      p_reason: values.reason,
+      p_protocol: values.protocol,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async cancelAdjustment(input: z.input<typeof adjustmentCancelSchema>) {
+    const values = adjustmentCancelSchema.parse(input);
+    const access = await requireSuperAdmin();
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("subscription_adjustment_cancel_internal", {
+      p_adjustment_id: values.adjustmentId, p_actor_user_id: access.user.id, p_reason: values.reason, p_protocol: values.protocol,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async saveInvoice(input: z.input<typeof invoiceSchema>) {
+    const values = invoiceSchema.parse(input);
+    const access = await requireSuperAdmin();
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("subscription_invoice_save_internal", {
+      p_organization_id: values.organizationId,
+      p_reference_month: values.referenceMonth,
+      p_base_amount_cents: values.baseAmountCents,
+      p_discount_amount_cents: values.discountAmountCents,
+      p_due_at: values.dueAt,
+      p_status: values.status,
+      p_actor_user_id: access.user.id,
+      p_reason: values.reason,
+      p_protocol: values.protocol,
+      p_idempotency_key: values.idempotencyKey,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async recordPayment(input: z.input<typeof paymentSchema>) {
+    const values = paymentSchema.parse(input);
+    const access = await requireSuperAdmin();
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("subscription_payment_record_internal", {
+      p_invoice_id: values.invoiceId, p_amount_cents: values.amountCents, p_method: values.method, p_status: values.status,
+      p_actor_user_id: access.user.id, p_reason: values.reason, p_protocol: values.protocol, p_idempotency_key: values.idempotencyKey,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async setAccess(input: z.input<typeof accessSchema>) {
+    const values = accessSchema.parse(input);
+    const access = await requireSuperAdmin();
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("subscription_access_set_internal", {
+      p_organization_id: values.organizationId, p_suspended: values.suspended, p_actor_user_id: access.user.id,
+      p_reason: values.reason, p_protocol: values.protocol,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async assignFounder(input: z.input<typeof founderSchema>) {
+    const values = founderSchema.parse(input);
+    const access = await requireSuperAdmin();
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("subscription_founder_assign_internal", {
+      p_organization_id: values.organizationId, p_actor_user_id: access.user.id, p_reason: values.reason, p_protocol: values.protocol,
     });
     if (error) throw error;
     return data;
