@@ -8,7 +8,7 @@ Base: `agent/foundation-001-016`
 
 - [017] Categorias: domínio, validação, serviço, UI inicial, auditoria/eventos e soft delete.
 - [018] Produtos: domínio, preço em centavos, custo, SKU, barcode, preparo, serviço e UI inicial.
-- [019] Imagens: serviço server-only, limite de 5 MB, JPEG/PNG/WebP e contrato do bucket.
+- [019] Imagens: serviço server-only, limite de aplicação de 4 MB, JPEG/PNG/WebP e bucket com teto de 5 MB.
 - [020] Grupos de adicionais: regras min/max/obrigatório, serviço e UI inicial.
 - [021] Adicionais: preço adicional, status, serviço e UI inicial.
 - [022] Produto ↔ grupos de adicionais: vínculo tenant/store-safe e ordenação.
@@ -23,7 +23,7 @@ Em 10/08/2026 o banco legado foi resetado com autorização explícita e a funda
 
 ## Storage
 
-O Storage antigo contém zero objetos. Dois buckets vazios legados permanecem temporariamente porque o conector não expõe remoção via Storage API. O contrato do futuro `catalog-media` está documentado em `supabase/sql/09_catalog_storage.sql` sem mutação direta do schema gerenciado.
+Em 22/08/2026 o bucket público `catalog-media` está ativo no Supabase oficial, com limite de 5 MiB e MIME types JPEG, PNG e WebP. A aplicação aceita até 4 MiB para manter a requisição completa abaixo do limite de 4,5 MB das Vercel Functions. A verificação live encontrou quatro objetos no bucket; nenhum foi alterado pelo diagnóstico.
 
 ## CI
 
