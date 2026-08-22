@@ -26,6 +26,7 @@ const errorMessages: Record<PlatformWhatsAppManualErrorCode | "unexpected", stri
   platform_token_missing: "Falta configurar o token técnico permanente do PedeAqui na Meta.",
   app_secret_missing: "Falta configurar o App Secret do WhatsApp no servidor.",
   graph_version_missing: "Falta configurar a versão da Graph API no servidor.",
+  webhook_verify_token_missing: "Falta configurar o token de verificação do webhook no servidor.",
   duplicate_phone: "Este Phone Number ID já está ligado a outra unidade.",
   phone_not_in_waba: "O Phone Number ID não pertence à WABA informada.",
   permanent_token_invalid: "A Meta recusou o token técnico permanente do PedeAqui.",
@@ -71,6 +72,11 @@ export default async function PlatformManualWhatsAppPage({
   const settings = data.settings;
   const currentIds = Boolean(settings?.whatsapp_business_account_id && settings?.whatsapp_phone_number_id);
   const connected = settings?.connection_status === "connected" && settings?.whatsapp_enabled;
+  const operational = connected && data.environment.ready && data.healthIsRecent;
+  const operationalLabel = operational ? "Pronto para uso"
+    : connected && !data.environment.ready ? "Infraestrutura incompleta"
+      : connected ? "Revalidar conexão"
+        : connectionLabel(settings?.connection_status);
   const errorCode = query.error && query.error in errorMessages
     ? query.error as keyof typeof errorMessages
     : null;
@@ -90,7 +96,7 @@ export default async function PlatformManualWhatsAppPage({
           <p>{data.organization?.name ?? "Empresa"} · configuração técnica do WhatsApp Cloud API.</p>
         </div>
         <div className={styles.heroBadges}>
-          <span className={styles.pill} data-tone={connected ? "good" : "warn"}>{connectionLabel(settings?.connection_status)}</span>
+          <span className={styles.pill} data-tone={operational ? "good" : "warn"}>{operationalLabel}</span>
           <span className={styles.pill} data-tone={data.credentialMode === "permanent" ? "good" : "warn"}>{credentialLabel(data.credentialMode)}</span>
         </div>
       </header>
@@ -110,16 +116,17 @@ export default async function PlatformManualWhatsAppPage({
           <Info title="Nome verificado" value={settings?.verified_name ?? "Ainda não consultado"} />
           <Info title="Qualidade" value={settings?.quality_rating ?? "Ainda não consultada"} />
           <Info title="Último health check" value={settings?.last_health_check_at ? dateTime.format(new Date(settings.last_health_check_at)) : "Ainda não executado"} />
+          <Info title="Prontidão" value={operational ? "Verificado nas últimas 24 horas" : connected && !data.environment.ready ? "Infraestrutura incompleta" : connected ? "Revalidar antes de usar" : "Aguardando conexão"} />
         </div>
       </section>
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <div><h2>Infraestrutura do PedeAqui</h2><p>O modo manual não depende do Embedded Signup, mas exige o token técnico permanente da plataforma.</p></div>
+          <div><h2>Infraestrutura do PedeAqui</h2><p>O modo manual exige credencial permanente, assinatura da Meta e challenge do webhook.</p></div>
           <span className={styles.pill} data-tone={data.environment.ready ? "good" : "danger"}>{data.environment.ready ? "Pronta" : "Configuração pendente"}</span>
         </div>
         {data.environment.ready ? (
-          <p className={styles.meta}>Token técnico, App Secret e versão da Graph API estão disponíveis no servidor. Os valores nunca são enviados ao navegador.</p>
+          <p className={styles.meta}>Token técnico, App Secret, versão da Graph API e token de verificação do webhook estão disponíveis no servidor. Os valores nunca são enviados ao navegador.</p>
         ) : (
           <div className={styles.operationPanel}>
             <strong>Falta configuração server-side</strong>

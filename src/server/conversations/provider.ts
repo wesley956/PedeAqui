@@ -42,6 +42,11 @@ export class WhatsAppProviderError extends Error {
   }
 }
 
+export function safeWhatsAppFailureMessage(error: unknown) {
+  if (error instanceof WhatsAppProviderError) return error.message;
+  return "Não foi possível enviar a mensagem pelo WhatsApp. Tente novamente ou revalide a conexão.";
+}
+
 function requireSecretReference(reference: string | null | undefined, fallbackName: string) {
   const envName = reference?.trim() || fallbackName;
   if (!/^[A-Z][A-Z0-9_]{2,100}$/.test(envName)) {
@@ -71,8 +76,12 @@ export function resolveWhatsAppAccessToken(reference?: string | null) {
 function providerError(response: Response, payload: { error?: { message?: string; code?: number; type?: string } } | null) {
   const code = payload?.error?.code === undefined ? null : String(payload.error.code);
   const retryable = response.status === 408 || response.status === 429 || response.status >= 500;
-  const detail = payload?.error?.message?.slice(0, 240) || `HTTP ${response.status}`;
-  return new WhatsAppProviderError(`WhatsApp Cloud API indisponível ou rejeitou a solicitação: ${detail}`, response.status, code, retryable);
+  const message = retryable
+    ? "A Meta está temporariamente indisponível. Tente novamente em alguns instantes."
+    : response.status === 401 || response.status === 403
+      ? "A conexão com o WhatsApp precisa ser revalidada pelo suporte do PedeAqui."
+      : "A Meta rejeitou o envio. Revise a conexão do WhatsApp ou o modelo de mensagem aprovado.";
+  return new WhatsAppProviderError(message, response.status, code, retryable);
 }
 
 const PROVIDER_TIMEOUT_MS = 8_000;

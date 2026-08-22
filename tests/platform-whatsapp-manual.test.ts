@@ -29,6 +29,9 @@ describe("platform manual WhatsApp connection", () => {
     expect(service).toContain("inspectPhoneNumber");
     expect(service).toContain('connection_status: "connected"');
     expect(service).toContain('onboarding_status: "completed"');
+    expect(service).toContain("WHATSAPP_WEBHOOK_VERIFY_TOKEN");
+    expect(page).toContain("Prontidão");
+    expect(page).toContain("Revalidar antes de usar");
   });
 
   it("prevents one Phone Number ID from being attached to two stores", () => {

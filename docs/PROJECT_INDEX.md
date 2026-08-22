@@ -28,6 +28,7 @@ de massa demonstrativa isolada estão em:
 - `qa/PRESENTATION_DIAGNOSTICS_026_030_20260822.md`;
 - `qa/PRESENTATION_DIAGNOSTICS_031_035_20260822.md`;
 - `qa/PRESENTATION_DIAGNOSTICS_036_040_20260822.md`;
+- `qa/PRESENTATION_DIAGNOSTICS_041_045_20260822.md`;
 - `qa/PRESENTATION_RELEASE_GATE_20260822.md`.
 
 Esse addendum registra o estado observado antes dos lotes de diagnóstico iniciados no

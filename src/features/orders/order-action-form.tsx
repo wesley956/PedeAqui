@@ -22,6 +22,7 @@ export type ManagerIntent =
   | "delivered"
   | "served"
   | "complete"
+  | "print"
   | "reprint";
 
 const routedDeliveryIntents = new Set<ManagerIntent>(["courier_assigned", "courier_picked_up", "out_for_delivery", "delivered"]);

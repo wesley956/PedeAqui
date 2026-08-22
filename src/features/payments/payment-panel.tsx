@@ -23,8 +23,11 @@ function money(cents: number | string) {
 function moneyInput(cents: number | string) {
   return (Number(cents) / 100).toFixed(2).replace(".", ",");
 }
+function when(value: string, timeZone: string) {
+  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone }).format(new Date(value));
+}
 
-export async function PaymentPanel({ orderId }: { orderId: string }) {
+export async function PaymentPanel({ orderId, timeZone }: { orderId: string; timeZone: string }) {
   let ledger: Awaited<ReturnType<typeof PaymentService.listForOrder>>;
   try {
     ledger = await PaymentService.listForOrder(orderId);
@@ -62,9 +65,9 @@ export async function PaymentPanel({ orderId }: { orderId: string }) {
             {payment.reference ? <div className="muted" style={{ fontSize: 12 }}>Referência: {payment.reference}</div> : null}
             {payment.method === "cash" && payment.cash_tendered_cents ? <div className="muted" style={{ fontSize: 12 }}>Recebido/troco para: {money(payment.cash_tendered_cents)}</div> : null}
             {payment.method === "cash" && payment.change_due_cents !== null ? <div className="muted" style={{ fontSize: 12 }}>Troco devido: {money(payment.change_due_cents)}</div> : null}
-            {payment.paid_at ? <div className="muted" style={{ fontSize: 11 }}>Confirmado em {new Date(payment.paid_at).toLocaleString("pt-BR")}</div> : null}
-            {payment.failed_at ? <div className="muted" style={{ fontSize: 11 }}>Falhou em {new Date(payment.failed_at).toLocaleString("pt-BR")}</div> : null}
-            {payment.refunded_at ? <div className="muted" style={{ fontSize: 11 }}>Estornado em {new Date(payment.refunded_at).toLocaleString("pt-BR")}</div> : null}
+            {payment.paid_at ? <div className="muted" style={{ fontSize: 11 }}>Confirmado em {when(payment.paid_at, timeZone)}</div> : null}
+            {payment.failed_at ? <div className="muted" style={{ fontSize: 11 }}>Falhou em {when(payment.failed_at, timeZone)}</div> : null}
+            {payment.refunded_at ? <div className="muted" style={{ fontSize: 11 }}>Estornado em {when(payment.refunded_at, timeZone)}</div> : null}
 
             {open ? (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>

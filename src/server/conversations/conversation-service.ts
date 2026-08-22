@@ -6,7 +6,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { messagePreview, type ConversationStatus } from "@/server/conversations/model";
 import { inboxFilterSchema, conversationReplyInputSchema, conversationTransitionInputSchema, type ConversationReplyInput, type ConversationTransitionInput } from "@/server/conversations/schemas";
-import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, resolveWhatsAppAppSecret } from "@/server/conversations/provider";
+import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, resolveWhatsAppAppSecret, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import type { WhatsAppWebhookEvent } from "@/server/conversations/whatsapp-webhook";
 
 function requireStoreId(storeId: string | null) {
@@ -210,7 +210,7 @@ export class ConversationService {
       if (error) throw error;
       return data;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Falha desconhecida no provider.";
+      const message = safeWhatsAppFailureMessage(error);
       await admin.rpc("conversation_mark_outbound_result_internal", {
         p_message_id: pending.id,
         p_external_message_id: null,
@@ -218,7 +218,7 @@ export class ConversationService {
         p_error_code: "provider_error",
         p_error_message: message,
       });
-      throw error;
+      throw new Error(message);
     }
   }
 

@@ -14,6 +14,7 @@ import { OrderService } from "@/server/orders/order-service";
 import { logger } from "@/server/observability/logger";
 import { PaymentService } from "@/server/payments/payment-service";
 import { PrintQueueService } from "@/server/printing/print-queue-service";
+import { PrintService } from "@/server/printing/print-service";
 import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
 import type { FulfillmentStatus, ProductionStatus } from "@/server/orders/state-machines";
 import { friendlyOrderActionError } from "@/features/orders/order-action-error";
@@ -106,7 +107,7 @@ export async function transitionFulfillmentAction(formData: FormData) {
 
 const managerIntentSchema = z.enum([
   "accept", "reject", "cancel", "start_production", "mark_ready", "mark_paid",
-  "await_pickup", "customer_picked_up", "await_courier", "served", "complete", "reprint",
+  "await_pickup", "customer_picked_up", "await_courier", "served", "complete", "print", "reprint",
 ]);
 
 export type OrderManagerActionState = { ok: boolean; message: string | null; error: string | null };
@@ -117,6 +118,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
   if (!parsed.success) return { ok: false, message: null, error: "Esta ação não está disponível para o pedido." };
 
   try {
+    let message: string | null = null;
     switch (parsed.data) {
       case "accept": await OrderService.confirm(orderId); break;
       case "reject": await OrderService.reject(orderId, String(formData.get("reason") ?? "")); break;
@@ -129,6 +131,12 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
       case "await_courier": await DeliveryOperationsService.markWaiting(orderId); break;
       case "served": await OrderService.setFulfillment(orderId, "served"); break;
       case "complete": await OrderService.complete(orderId); break;
+      case "print": {
+        const jobsCreated = await PrintService.enqueueConfirmedOrder(orderId);
+        if (jobsCreated === 0) throw new Error("No active print routes");
+        message = jobsCreated === 1 ? "1 via enviada para impressão." : `${jobsCreated} vias enviadas para impressão.`;
+        break;
+      }
       case "reprint": {
         const printJobId = String(formData.get("printJobId") ?? "");
         const reason = String(formData.get("reason") ?? "");
@@ -136,16 +144,16 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
         break;
       }
     }
-    if (parsed.data !== "reprint") scheduleOrderWhatsAppNotifications(`order_manager.${parsed.data}`);
+    if (parsed.data !== "print" && parsed.data !== "reprint") scheduleOrderWhatsAppNotifications(`order_manager.${parsed.data}`);
     refreshOrder(orderId);
     const labels: Record<z.infer<typeof managerIntentSchema>, string> = {
       accept: "Pedido aceito.", reject: "Pedido rejeitado.", cancel: "Pedido cancelado.", start_production: "Produção iniciada.",
       mark_ready: "Pedido marcado como pronto.", mark_paid: "Pagamento confirmado.",
       await_pickup: "Pedido liberado para retirada.", customer_picked_up: "Retirada confirmada.",
       await_courier: "Pedido enviado para a central de entregas.", served: "Atendimento de balcão concluído.",
-      complete: "Pedido concluído.", reprint: "Reimpressão solicitada.",
+      complete: "Pedido concluído.", print: "Pedido enviado para impressão.", reprint: "Reimpressão solicitada.",
     };
-    return { ok: true, message: labels[parsed.data], error: null };
+    return { ok: true, message: message ?? labels[parsed.data], error: null };
   } catch (error) {
     refreshOrder(orderId);
     return { ok: false, message: null, error: friendlyOrderActionError(error) };
