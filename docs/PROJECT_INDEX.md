@@ -14,6 +14,19 @@ Este documento é a **fonte canônica para retomar o projeto PedeAqui**. Antes d
 - Supabase oficial: project ref `zsbsczjhiujnhdznrzck`, região `sa-east-1`
 - Observação: o display name do projeto Supabase ainda aparece como `Cruz`; isso é somente um rótulo administrativo legado. **Não recriar o projeto nem trocar o project ref por causa desse nome.**
 
+## Ciclo de prontidão comercial — 22/08/2026
+
+O inventário live, a classificação funcional, o mapa de rotas/módulos/papéis e a política
+de massa demonstrativa isolada estão em:
+
+- `qa/PRESENTATION_READINESS_BASELINE_20260822.md`;
+- `qa/PRESENTATION_TEST_DATA_20260822.md`.
+
+Esse addendum registra o estado observado antes dos lotes de diagnóstico iniciados no
+master GitHub #539. O domínio público canônico para a demonstração é
+`https://www.pedeaqui.pp.ua`; a URL antiga `vercel.app` protegida por SSO não deve ser
+usada com clientes.
+
 ## Objetivo do produto
 
 Construir um SaaS multiempresa/multiunidade para restaurantes e operações de alimentação, centralizando cardápio digital, pedidos, PDV, produção/KDS, impressão, salão, delivery, pagamentos, caixa, clientes/CRM, fidelidade, estoque, compras, financeiro, fiscal, relatórios, marketing, integrações e escala SaaS.
