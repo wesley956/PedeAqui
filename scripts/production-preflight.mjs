@@ -18,10 +18,11 @@ function ok(message) {
 }
 
 async function checkStaticContracts() {
-  const [nextConfig, storageContract, imageService] = await Promise.all([
+  const [nextConfig, storageContract, imageService, imagePolicy] = await Promise.all([
     readFile("next.config.ts", "utf8"),
     readFile("supabase/sql/09_catalog_storage.sql", "utf8"),
     readFile("src/server/catalog/catalog-image-service.ts", "utf8"),
+    readFile("src/server/catalog/catalog-image-policy.ts", "utf8"),
   ]);
 
   const bodyLimitMatch = nextConfig.match(/bodySizeLimit:\s*["'](\d+)mb["']/i);
@@ -46,11 +47,11 @@ async function checkStaticContracts() {
   if (!imageService.includes('CATALOG_MEDIA_BUCKET = "catalog-media"')) {
     fail("CatalogImageService não aponta para o bucket catalog-media.");
   }
-  if (!imageService.includes("5 * 1024 * 1024")) {
-    fail("CatalogImageService não mantém o limite individual de 5 MiB.");
+  if (!imagePolicy.includes("4 * 1024 * 1024")) {
+    fail("CatalogImageService não reserva margem abaixo do limite de payload da Vercel.");
   }
 
-  ok(`contratos estáticos válidos (Server Actions ${bodyLimitMb} MB; imagem individual 5 MiB).`);
+  ok(`contratos estáticos válidos (Server Actions ${bodyLimitMb} MB; imagem individual 4 MiB).`);
 }
 
 function hasLiveCredentials() {
