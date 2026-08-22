@@ -57,6 +57,18 @@ export class CategoryService {
     return data;
   }
 
+  static async get(categoryId: string) {
+    const id = uuidSchema.parse(categoryId);
+    const context = await authorize(PERMISSIONS.PRODUCTS_VIEW);
+    const storeId = requireStoreId(context.storeId);
+    const { data, error } = await createAdminClient().from("categories")
+      .select("id, name, description, image_url, sort_order, active")
+      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId)
+      .is("deleted_at", null).single();
+    if (error) throw error;
+    return data;
+  }
+
   static async update(categoryId: string, input: CategoryInput) {
     const id = uuidSchema.parse(categoryId);
     const values = categoryInputSchema.parse(input);

@@ -44,12 +44,12 @@ pendências de índices que pertencem ao lote de desempenho.
 
 | Gate | Resultado |
 | --- | --- |
-| Testes | 145 arquivos, 873 testes aprovados |
+| Testes | 149 arquivos, 892 testes aprovados |
 | E2E contextual | 1 arquivo, 7 testes aprovados |
 | TypeScript | aprovado, zero erro |
 | ESLint | zero erro e 6 warnings |
-| Build Next.js | aprovado, 65 superfícies reportadas pelo build |
-| Rotas no código | 73 pages + 13 route handlers |
+| Build Next.js | aprovado, 66 superfícies reportadas pelo build |
+| Rotas no código | 74 pages + 13 route handlers |
 | Server Actions | 35 arquivos de actions |
 | Serviços de servidor | 152 arquivos em `src/server` |
 | Drift local | 115 migrations alinhadas ao snapshot de produção |
@@ -69,7 +69,7 @@ de desempenho.
 ### Painel autenticado do estabelecimento
 
 `/acesso-negado`, `/recurso-indisponivel`, `/dashboard`, `/pedidos`, `/pedidos/[id]`,
-`/cardapio/categorias`, `/cardapio/produtos`, `/cardapio/produtos/novo`,
+`/cardapio/categorias`, `/cardapio/produtos`, `/cardapio/produtos/novo`, `/cardapio/produtos/[id]`,
 `/cardapio/adicionais`, `/pdv`, `/caixa`, `/salao`, `/salao/[tableId]`, `/producao`,
 `/entregas`, `/entregador`, `/clientes`, `/clientes/[id]`, `/conversas`, `/estoque`,
 `/estoque/fichas`, `/fornecedores`, `/compras`, `/financeiro`, `/fiscal`, `/crescimento`,

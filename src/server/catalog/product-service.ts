@@ -73,6 +73,18 @@ export class ProductService {
     return data;
   }
 
+  static async get(productId: string) {
+    const id = uuidSchema.parse(productId);
+    const context = await authorize(PERMISSIONS.PRODUCTS_VIEW);
+    const storeId = requireStoreId(context.storeId);
+    const { data, error } = await createAdminClient().from("products")
+      .select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, active, availability")
+      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId)
+      .is("deleted_at", null).single();
+    if (error) throw error;
+    return data;
+  }
+
   static async update(productId: string, input: ProductInput) {
     const id = uuidSchema.parse(productId);
     const values = productInputSchema.parse(input);

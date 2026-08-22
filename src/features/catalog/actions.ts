@@ -10,7 +10,7 @@ import {
 } from "@/server/catalog/catalog-image-service";
 import { parseMoneyToCents } from "@/server/catalog/money";
 import { productAvailabilitySchema } from "@/server/catalog/schemas";
-import { PERMISSIONS } from "@/server/access/permissions";
+import { PERMISSIONS, type PermissionKey } from "@/server/access/permissions";
 import { logger } from "@/server/observability/logger";
 
 function optionalString(value: FormDataEntryValue | null) {
@@ -31,13 +31,65 @@ function integer(value: FormDataEntryValue | null, fallback = 0) {
 async function uploadNewCatalogImage(
   value: FormDataEntryValue | null,
   purpose: "product" | "category",
+  permission: PermissionKey = PERMISSIONS.PRODUCTS_CREATE,
 ): Promise<CatalogImageUpload | null> {
   const file = optionalFile(value);
   if (!file) return null;
   return CatalogImageService.upload(file, {
-    permission: PERMISSIONS.PRODUCTS_CREATE,
+    permission,
     purpose,
   });
+}
+
+function categoryInput(formData: FormData, imageUrl: string | null) {
+  return {
+    name: String(formData.get("name") ?? ""),
+    description: optionalString(formData.get("description")),
+    imageUrl,
+    sortOrder: integer(formData.get("sortOrder")),
+    active: formData.get("active") === "on",
+  };
+}
+
+function productInput(formData: FormData, imageUrl: string | null) {
+  const promotional = formData.get("promotionalPrice");
+  const cost = formData.get("cost");
+  return {
+    categoryId: optionalString(formData.get("categoryId")),
+    name: String(formData.get("name") ?? ""),
+    description: optionalString(formData.get("description")),
+    imageUrl,
+    priceCents: parseMoneyToCents(formData.get("price")),
+    promotionalPriceCents: typeof promotional === "string" && promotional.trim() ? parseMoneyToCents(promotional) : null,
+    costCents: typeof cost === "string" && cost.trim() ? parseMoneyToCents(cost) : null,
+    sku: optionalString(formData.get("sku")),
+    barcode: optionalString(formData.get("barcode")),
+    preparationTimeMinutes: integer(formData.get("preparationTimeMinutes")),
+    active: formData.get("active") === "on",
+    availability: productAvailabilitySchema.parse(formData.get("availability") ?? "available"),
+  };
+}
+
+function modifierGroupInput(formData: FormData) {
+  return {
+    name: String(formData.get("name") ?? ""),
+    description: optionalString(formData.get("description")),
+    minSelection: integer(formData.get("minSelection")),
+    maxSelection: integer(formData.get("maxSelection"), 1),
+    required: formData.get("required") === "on",
+    sortOrder: integer(formData.get("sortOrder")),
+    active: formData.get("active") === "on",
+  };
+}
+
+function modifierInput(formData: FormData) {
+  return {
+    modifierGroupId: String(formData.get("modifierGroupId") ?? ""),
+    name: String(formData.get("name") ?? ""),
+    priceCents: parseMoneyToCents(formData.get("price")),
+    sortOrder: integer(formData.get("sortOrder")),
+    active: formData.get("active") === "on",
+  };
 }
 
 async function rollbackCatalogImage(uploaded: CatalogImageUpload | null) {
@@ -71,26 +123,44 @@ function logCatalogMutationFailure(operation: string, error: unknown) {
 }
 
 export async function createCategoryAction(formData: FormData) {
-  const input = {
-    name: String(formData.get("name") ?? ""),
-    description: optionalString(formData.get("description")),
-    sortOrder: integer(formData.get("sortOrder")),
-    active: formData.get("active") === "on",
-  };
-
   let uploaded: CatalogImageUpload | null = null;
   try {
     uploaded = await uploadNewCatalogImage(formData.get("imageFile"), "category");
-    await CategoryService.create({
-      ...input,
-      imageUrl: uploaded?.publicUrl ?? null,
-    });
+    await CategoryService.create(categoryInput(formData, uploaded?.publicUrl ?? null));
   } catch (error) {
     await rollbackCatalogImage(uploaded);
     throw error;
   }
 
   revalidatePath("/cardapio/categorias");
+}
+
+export async function updateCategoryFormAction(formData: FormData) {
+  let uploaded: CatalogImageUpload | null = null;
+  try {
+    const categoryId = String(formData.get("categoryId") ?? "");
+    const current = await CategoryService.get(categoryId);
+    uploaded = await uploadNewCatalogImage(formData.get("imageFile"), "category", PERMISSIONS.PRODUCTS_EDIT);
+    const imageUrl = uploaded?.publicUrl ?? (formData.get("removeImage") === "on" ? null : current.image_url);
+    await CategoryService.update(categoryId, categoryInput(formData, imageUrl));
+    revalidatePath("/cardapio/categorias");
+    return { ok: true, message: "Categoria atualizada com sucesso." };
+  } catch (error) {
+    await rollbackCatalogImage(uploaded);
+    logCatalogMutationFailure("update_category", error);
+    return { ok: false, message: catalogActionMessage(error, "Não foi possível atualizar a categoria.") };
+  }
+}
+
+export async function removeCategoryAction(formData: FormData) {
+  try {
+    await CategoryService.remove(String(formData.get("categoryId") ?? ""));
+    revalidatePath("/cardapio/categorias");
+    return { ok: true, message: "Categoria removida do catálogo." };
+  } catch (error) {
+    logCatalogMutationFailure("remove_category", error);
+    return { ok: false, message: "Não foi possível remover a categoria. Produtos e histórico foram preservados." };
+  }
 }
 
 export async function createCategoryFormAction(formData: FormData) {
@@ -110,35 +180,45 @@ export async function createCategoryFormAction(formData: FormData) {
 }
 
 export async function createProductAction(formData: FormData) {
-  const promotional = formData.get("promotionalPrice");
-  const cost = formData.get("cost");
-  const input = {
-    categoryId: optionalString(formData.get("categoryId")),
-    name: String(formData.get("name") ?? ""),
-    description: optionalString(formData.get("description")),
-    priceCents: parseMoneyToCents(formData.get("price")),
-    promotionalPriceCents: typeof promotional === "string" && promotional.trim() ? parseMoneyToCents(promotional) : null,
-    costCents: typeof cost === "string" && cost.trim() ? parseMoneyToCents(cost) : null,
-    sku: optionalString(formData.get("sku")),
-    barcode: optionalString(formData.get("barcode")),
-    preparationTimeMinutes: integer(formData.get("preparationTimeMinutes")),
-    active: formData.get("active") === "on",
-    availability: productAvailabilitySchema.parse(formData.get("availability") ?? "available"),
-  };
-
   let uploaded: CatalogImageUpload | null = null;
   try {
     uploaded = await uploadNewCatalogImage(formData.get("imageFile"), "product");
-    await ProductService.create({
-      ...input,
-      imageUrl: uploaded?.publicUrl ?? null,
-    });
+    await ProductService.create(productInput(formData, uploaded?.publicUrl ?? null));
   } catch (error) {
     await rollbackCatalogImage(uploaded);
     throw error;
   }
 
   revalidatePath("/cardapio/produtos");
+}
+
+export async function updateProductFormAction(formData: FormData) {
+  let uploaded: CatalogImageUpload | null = null;
+  try {
+    const productId = String(formData.get("productId") ?? "");
+    const current = await ProductService.get(productId);
+    uploaded = await uploadNewCatalogImage(formData.get("imageFile"), "product", PERMISSIONS.PRODUCTS_EDIT);
+    const imageUrl = uploaded?.publicUrl ?? (formData.get("removeImage") === "on" ? null : current.image_url);
+    await ProductService.update(productId, productInput(formData, imageUrl));
+    revalidatePath("/cardapio/produtos");
+    revalidatePath(`/cardapio/produtos/${productId}`);
+    return { ok: true, message: "Produto atualizado com sucesso." };
+  } catch (error) {
+    await rollbackCatalogImage(uploaded);
+    logCatalogMutationFailure("update_product", error);
+    return { ok: false, message: catalogActionMessage(error, "Não foi possível atualizar o produto.") };
+  }
+}
+
+export async function removeProductAction(formData: FormData) {
+  try {
+    await ProductService.remove(String(formData.get("productId") ?? ""));
+    revalidatePath("/cardapio/produtos");
+    return { ok: true, message: "Produto removido do catálogo." };
+  } catch (error) {
+    logCatalogMutationFailure("remove_product", error);
+    return { ok: false, message: "Não foi possível remover o produto. Pedidos e histórico foram preservados." };
+  }
 }
 
 export async function createProductFormAction(formData: FormData) {
@@ -170,36 +250,107 @@ export async function duplicateProductAction(formData: FormData) {
 }
 
 export async function createModifierGroupAction(formData: FormData) {
-  await ModifierService.createGroup({
-    name: String(formData.get("name") ?? ""),
-    description: optionalString(formData.get("description")),
-    minSelection: integer(formData.get("minSelection")),
-    maxSelection: integer(formData.get("maxSelection"), 1),
-    required: formData.get("required") === "on",
-    sortOrder: integer(formData.get("sortOrder")),
-    active: formData.get("active") === "on",
-  });
+  await ModifierService.createGroup(modifierGroupInput(formData));
   revalidatePath("/cardapio/adicionais");
+}
+
+export async function createModifierGroupFormAction(formData: FormData) {
+  try {
+    await createModifierGroupAction(formData);
+    return { ok: true, message: "Grupo criado com sucesso." };
+  } catch (error) {
+    logCatalogMutationFailure("create_modifier_group", error);
+    return { ok: false, message: "Não foi possível criar o grupo. Confira mínimo, máximo e obrigatoriedade." };
+  }
+}
+
+export async function updateModifierGroupFormAction(formData: FormData) {
+  try {
+    await ModifierService.updateGroup(String(formData.get("modifierGroupId") ?? ""), modifierGroupInput(formData));
+    revalidatePath("/cardapio/adicionais");
+    return { ok: true, message: "Grupo atualizado com sucesso." };
+  } catch (error) {
+    logCatalogMutationFailure("update_modifier_group", error);
+    return { ok: false, message: "Não foi possível atualizar o grupo. Confira mínimo, máximo e obrigatoriedade." };
+  }
+}
+
+export async function removeModifierGroupAction(formData: FormData) {
+  try {
+    await ModifierService.removeGroup(String(formData.get("modifierGroupId") ?? ""));
+    revalidatePath("/cardapio/adicionais");
+    return { ok: true, message: "Grupo removido do catálogo." };
+  } catch (error) {
+    logCatalogMutationFailure("remove_modifier_group", error);
+    return { ok: false, message: "Não foi possível remover o grupo. Produtos e pedidos foram preservados." };
+  }
 }
 
 export async function createModifierAction(formData: FormData) {
-  await ModifierService.createModifier({
-    modifierGroupId: String(formData.get("modifierGroupId") ?? ""),
-    name: String(formData.get("name") ?? ""),
-    priceCents: parseMoneyToCents(formData.get("price")),
-    sortOrder: integer(formData.get("sortOrder")),
-    active: formData.get("active") === "on",
-  });
+  await ModifierService.createModifier(modifierInput(formData));
   revalidatePath("/cardapio/adicionais");
 }
 
+export async function createModifierFormAction(formData: FormData) {
+  try {
+    await createModifierAction(formData);
+    return { ok: true, message: "Adicional criado com sucesso." };
+  } catch (error) {
+    logCatalogMutationFailure("create_modifier", error);
+    return { ok: false, message: "Não foi possível criar o adicional. Confira nome, grupo e preço." };
+  }
+}
+
+export async function updateModifierFormAction(formData: FormData) {
+  try {
+    await ModifierService.updateModifier(String(formData.get("modifierId") ?? ""), modifierInput(formData));
+    revalidatePath("/cardapio/adicionais");
+    return { ok: true, message: "Adicional atualizado com sucesso." };
+  } catch (error) {
+    logCatalogMutationFailure("update_modifier", error);
+    return { ok: false, message: "Não foi possível atualizar o adicional. Confira nome, grupo e preço." };
+  }
+}
+
+export async function removeModifierAction(formData: FormData) {
+  try {
+    await ModifierService.removeModifier(String(formData.get("modifierId") ?? ""));
+    revalidatePath("/cardapio/adicionais");
+    return { ok: true, message: "Adicional removido do catálogo." };
+  } catch (error) {
+    logCatalogMutationFailure("remove_modifier", error);
+    return { ok: false, message: "Não foi possível remover o adicional. Pedidos foram preservados." };
+  }
+}
+
 export async function linkModifierGroupAction(formData: FormData) {
-  await ModifierService.linkGroupToProduct(
-    String(formData.get("productId") ?? ""),
-    String(formData.get("modifierGroupId") ?? ""),
-    integer(formData.get("sortOrder")),
-  );
-  revalidatePath("/cardapio/produtos");
+  const productId = String(formData.get("productId") ?? "");
+  try {
+    await ModifierService.linkGroupToProduct(
+      productId,
+      String(formData.get("modifierGroupId") ?? ""),
+      integer(formData.get("sortOrder")),
+    );
+    revalidatePath("/cardapio/produtos");
+    revalidatePath(`/cardapio/produtos/${productId}`);
+    return { ok: true, message: "Grupo vinculado ao produto." };
+  } catch (error) {
+    logCatalogMutationFailure("link_modifier_group", error);
+    return { ok: false, message: "Não foi possível vincular o grupo a este produto." };
+  }
+}
+
+export async function unlinkModifierGroupAction(formData: FormData) {
+  const productId = String(formData.get("productId") ?? "");
+  try {
+    await ModifierService.unlinkGroupFromProduct(productId, String(formData.get("modifierGroupId") ?? ""));
+    revalidatePath("/cardapio/produtos");
+    revalidatePath(`/cardapio/produtos/${productId}`);
+    return { ok: true, message: "Grupo desvinculado do produto." };
+  } catch (error) {
+    logCatalogMutationFailure("unlink_modifier_group", error);
+    return { ok: false, message: "Não foi possível desvincular o grupo deste produto." };
+  }
 }
 
 export async function uploadCatalogImageAction(formData: FormData) {
