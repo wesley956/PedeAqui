@@ -104,7 +104,7 @@ export async function transitionFulfillmentAction(formData: FormData) {
 }
 
 const managerIntentSchema = z.enum([
-  "accept", "reject", "start_production", "mark_ready", "mark_paid",
+  "accept", "reject", "cancel", "start_production", "mark_ready", "mark_paid",
   "await_pickup", "customer_picked_up", "await_courier", "served", "complete", "reprint",
 ]);
 
@@ -119,6 +119,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
     switch (parsed.data) {
       case "accept": await OrderService.confirm(orderId); break;
       case "reject": await OrderService.reject(orderId, String(formData.get("reason") ?? "")); break;
+      case "cancel": await OrderService.cancel(orderId, String(formData.get("reason") ?? "")); break;
       case "start_production": await OrderService.startProduction(orderId); break;
       case "mark_ready": await OrderService.setProduction(orderId, "ready"); break;
       case "mark_paid": await PaymentService.confirmDefaultForOrder(orderId); break;
@@ -137,7 +138,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
     if (parsed.data !== "reprint") scheduleOrderWhatsAppNotifications(`order_manager.${parsed.data}`);
     refreshOrder(orderId);
     const labels: Record<z.infer<typeof managerIntentSchema>, string> = {
-      accept: "Pedido aceito.", reject: "Pedido rejeitado.", start_production: "Produção iniciada.",
+      accept: "Pedido aceito.", reject: "Pedido rejeitado.", cancel: "Pedido cancelado.", start_production: "Produção iniciada.",
       mark_ready: "Pedido marcado como pronto.", mark_paid: "Pagamento confirmado.",
       await_pickup: "Pedido liberado para retirada.", customer_picked_up: "Retirada confirmada.",
       await_courier: "Pedido enviado para a central de entregas.", served: "Atendimento de balcão concluído.",

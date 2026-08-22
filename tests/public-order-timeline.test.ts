@@ -30,6 +30,14 @@ describe("public order timeline", () => {
     expect(timeline.find((step) => step.key === "pickup")?.state).toBe("current");
   });
 
+  it("shows an explicit terminal step for rejected and canceled orders", () => {
+    const rejected = buildPublicOrderTimeline({ fulfillmentType: "pickup", orderStatus: "rejected", productionStatus: "canceled", fulfillmentStatus: "canceled" });
+    expect(rejected.map((step) => [step.key, step.state])).toEqual([["received", "done"], ["rejected", "current"]]);
+    expect(rejected.at(-1)?.label).toBe("Pedido recusado");
+    const canceled = buildPublicOrderTimeline({ fulfillmentType: "delivery", orderStatus: "canceled", productionStatus: "canceled", fulfillmentStatus: "canceled" });
+    expect(canceled.at(-1)).toMatchObject({ key: "canceled", label: "Pedido cancelado", state: "current" });
+  });
+
   it("avoids refresh polling while the tab is hidden", () => {
     const refresh = readFileSync("src/features/orders/public-order-refresh.tsx", "utf8");
     expect(refresh).toContain('document.visibilityState === "visible"');

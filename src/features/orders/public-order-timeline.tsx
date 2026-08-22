@@ -32,6 +32,19 @@ export function buildPublicOrderTimeline(input: { fulfillmentType: FulfillmentTy
   const delivered = input.fulfillmentStatus === "delivered";
   const pickedUp = input.fulfillmentStatus === "picked_up_by_customer";
 
+  if (input.orderStatus === "rejected" || input.orderStatus === "canceled") {
+    return [
+      { key: "received", label: "Pedido recebido", detail: "Seu pedido entrou no PedeAqui", reached: true, state: "done" as const },
+      {
+        key: input.orderStatus,
+        label: input.orderStatus === "rejected" ? "Pedido recusado" : "Pedido cancelado",
+        detail: orderStatusLabels[input.orderStatus],
+        reached: true,
+        state: "current" as const,
+      },
+    ];
+  }
+
   const steps: TimelineStep[] = [
     { key: "received", label: "Pedido recebido", detail: "Seu pedido entrou no PedeAqui", reached: true },
     { key: "confirmed", label: "Confirmado", detail: orderStatusLabels[input.orderStatus], reached: confirmed },
