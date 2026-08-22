@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
+import { normalizeAppUrl } from "@/lib/app-url";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PlatformAdminService, PlatformAuthorizationError } from "@/server/platform/platform-admin-service";
 
@@ -31,7 +32,7 @@ function slugBase(value: string) {
 }
 
 function appUrl() {
-  return (process.env.APP_URL?.trim() || "https://pedeaqui.pp.ua").replace(/\/$/, "");
+  return normalizeAppUrl(process.env.APP_URL, "https://www.pedeaqui.pp.ua");
 }
 
 async function requireSuperAdmin() {
