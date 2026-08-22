@@ -8,13 +8,14 @@ const menuPage = readFileSync("src/app/(app)/configuracoes/cardapio/page.tsx", "
 const catalogActions = readFileSync("src/features/catalog/actions.ts", "utf8");
 const menuActions = readFileSync("src/features/menu/actions.ts", "utf8");
 const mediaService = readFileSync("src/server/catalog/catalog-image-service.ts", "utf8");
+const mediaPolicy = readFileSync("src/server/catalog/catalog-image-policy.ts", "utf8");
 const nextConfig = readFileSync("next.config.ts", "utf8");
 
 describe("device image upload UI", () => {
   it("uses a reusable local file picker with preview validation", () => {
     expect(picker).toContain('type="file"');
     expect(picker).toContain("image/jpeg,image/png,image/webp");
-    expect(picker).toContain("5 * 1024 * 1024");
+    expect(picker).toContain("4 * 1024 * 1024");
     expect(picker).toContain("URL.createObjectURL");
     expect(picker).toContain("Trocar imagem");
     expect(picker).toContain("Remover");
@@ -48,6 +49,6 @@ describe("device image upload UI", () => {
 
   it("allows multiple validated image payloads through the Server Action envelope", () => {
     expect(nextConfig).toContain('bodySizeLimit: "16mb"');
-    expect(mediaService).toContain("MAX_CATALOG_IMAGE_BYTES = 5 * 1024 * 1024");
+    expect(mediaPolicy).toContain("MAX_CATALOG_IMAGE_BYTES = 4 * 1024 * 1024");
   });
 });
