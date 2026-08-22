@@ -19,7 +19,7 @@ const startPreferences: Record<OperationalContext, readonly string[]> = {
   cashier: ["pdv", "cash", "orders"],
   service: ["conversations", "orders", "customers"],
   manager: ["orders", "dining", "dashboard"],
-  administrative: ["catalog", "inventory", "settings", "dashboard"],
+  administrative: ["finance", "catalog", "inventory", "settings", "dashboard"],
   management: ["dashboard", "orders", "cash", "finance"],
 };
 
