@@ -14,7 +14,7 @@ Este documento registra as evidências das issues `PA-DIAG-001`–`PA-DIAG-005`
 | Redirecionamento | `https://pedeaqui.pp.ua` redireciona para `www` |
 | URL antiga Vercel | `pedeaqui-cruzjade080-4490s-projects.vercel.app` exige Vercel SSO; não usar na apresentação |
 | Supabase | projeto `zsbsczjhiujnhdznrzck`, `ACTIVE_HEALTHY`, `sa-east-1`, PostgreSQL 17 |
-| Banco | 114 migrations de produção registradas em 21/08/2026 |
+| Banco | 115 migrations de produção; migration de equipe aplicada em 22/08/2026 |
 | Aplicação | Next.js 16.2.12, React 19.2.8, Node >= 22 |
 
 O conector Vercel disponível lista o time, mas não enxerga projetos. O domínio público e
@@ -49,11 +49,11 @@ pendências de índices que pertencem ao lote de desempenho.
 | TypeScript | aprovado, zero erro |
 | ESLint | zero erro e 6 warnings |
 | Build Next.js | aprovado, 65 superfícies reportadas pelo build |
-| Rotas no código | 72 pages + 13 route handlers |
+| Rotas no código | 73 pages + 13 route handlers |
 | Server Actions | 35 arquivos de actions |
 | Serviços de servidor | 152 arquivos em `src/server` |
-| Drift local | 114 migrations alinhadas ao snapshot de produção |
-| Preflight estático | Server Actions 16 MiB e imagens de catálogo até 5 MiB |
+| Drift local | 115 migrations alinhadas ao snapshot de produção |
+| Preflight estático | Server Actions 16 MiB; imagens limitadas a 4 MiB na aplicação e 5 MiB no bucket |
 
 Warnings atuais: cinco usos de `<img>` fora do pipeline `next/image` e uma variável não
 utilizada em `recipe-form.tsx`. Não bloqueiam o build, mas entram no diagnóstico visual e
@@ -73,12 +73,12 @@ de desempenho.
 `/cardapio/adicionais`, `/pdv`, `/caixa`, `/salao`, `/salao/[tableId]`, `/producao`,
 `/entregas`, `/entregador`, `/clientes`, `/clientes/[id]`, `/conversas`, `/estoque`,
 `/estoque/fichas`, `/fornecedores`, `/compras`, `/financeiro`, `/fiscal`, `/crescimento`,
-`/escala`, `/vasilhames`, `/configuracoes`, `/configuracoes/cardapio`,
+`/escala`, `/vasilhames`, `/equipe`, `/configuracoes`, `/configuracoes/cardapio`,
 `/configuracoes/caixa`, `/configuracoes/conversas`, `/configuracoes/entrega`,
 `/configuracoes/entregadores`, `/configuracoes/horarios`, `/configuracoes/impressoes`,
 `/configuracoes/modulos`, `/configuracoes/pagamentos`, `/configuracoes/salao`.
 
-Gap confirmado: o módulo `team` declara `/equipe`, mas essa page ainda não existe.
+O gap inicial de `team` foi encerrado no lote PA-DIAG-011–015 com a criação de `/equipe`.
 
 ### Cardápio, checkout e acompanhamento públicos
 
@@ -112,7 +112,7 @@ Gap confirmado: o módulo `team` declara `/equipe`, mas essa page ainda não exi
 | `orders` | core | — | implementado e testado |
 | `conversations` | opcional | — | implementado; canal WhatsApp real precisa homologação |
 | `dining` | segmentado | `orders`, `catalog` | implementado para restaurante |
-| `catalog` | core | — | implementado; upload real com foto precisa reproduzir o bug relatado |
+| `catalog` | core | — | implementado; limite de foto corrigido para o transporte da Vercel |
 | `pdv` | opcional | `orders`, `catalog` | implementado e testado |
 | `cash` | opcional | `orders` | implementado e testado |
 | `finance` | opcional | — | financeiro do restaurante implementado |
@@ -127,7 +127,7 @@ Gap confirmado: o módulo `team` declara `/equipe`, mas essa page ainda não exi
 | `customers` | core | — | implementado e testado |
 | `growth` | opcional | `customers`, `orders` | implementado; sem campanhas live |
 | `scale` | opcional | — | implementado e testado |
-| `team` | opcional | — | parcial: autorização existe, page `/equipe` ausente |
+| `team` | opcional | — | CRUD seguro implementado; aceite externo de convite ainda requer homologação |
 | `settings` | core | — | implementado e testado |
 
 Camadas obrigatórias de disponibilidade: perfil do negócio, flag da unidade, dependências,
@@ -157,11 +157,10 @@ não é derivado dos papéis de uma unidade, e ações comerciais/mutações cro
 - **Parcial:** catálogo com upload real, WhatsApp real, impressão física e desempenho live.
 - **Estrutura pronta, sem operação:** billing SaaS possui tabelas/tela/state machine, mas zero assinatura.
 - **Fornecedor pendente:** PIX online e fiscal não possuem configuração live comprovada.
-- **Gap funcional:** `/equipe` não existe apesar do módulo e da permissão.
+- **Gap funcional encerrado:** `/equipe` implementa convite, leitura, suspensão e cancelamento auditado.
 - **Bloqueio de observabilidade:** conta Vercel conectada não possui acesso ao projeto publicado.
 
 ## 8. Dados isolados
 
 A política e a massa segura estão em `PRESENTATION_TEST_DATA_20260822.md`. Nenhuma
 credencial, token, telefone ou informação pessoal foi adicionada ao repositório.
-

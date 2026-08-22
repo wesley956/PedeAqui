@@ -5,11 +5,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS, type PermissionKey } from "@/server/access/permissions";
 import { logger } from "@/server/observability/logger";
+import {
+  ALLOWED_CATALOG_IMAGE_TYPES,
+  MAX_CATALOG_IMAGE_BYTES,
+  validateCatalogImage,
+} from "@/server/catalog/catalog-image-policy";
+
+export { ALLOWED_CATALOG_IMAGE_TYPES, MAX_CATALOG_IMAGE_BYTES, validateCatalogImage };
 
 export const CATALOG_MEDIA_BUCKET = "catalog-media";
-export const MAX_CATALOG_IMAGE_BYTES = 5 * 1024 * 1024;
-export const ALLOWED_CATALOG_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-
 const extensions: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -20,15 +24,6 @@ export type CatalogImageUpload = {
   path: string;
   publicUrl: string;
 };
-
-export function validateCatalogImage(file: Pick<File, "size" | "type">) {
-  if (file.size <= 0 || file.size > MAX_CATALOG_IMAGE_BYTES) {
-    throw new Error("A imagem deve ter no máximo 5 MB.");
-  }
-  if (!ALLOWED_CATALOG_IMAGE_TYPES.has(file.type)) {
-    throw new Error("Escolha uma imagem JPEG, PNG ou WebP.");
-  }
-}
 
 function safePurpose(value: string | undefined) {
   if (!value) return null;
