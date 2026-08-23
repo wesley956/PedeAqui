@@ -12,7 +12,7 @@ export function ImageUploadField({
   label,
   currentUrl = null,
   removeName,
-  hint = "JPEG, PNG ou WebP, até 4 MB.",
+  hint = "JPEG, PNG ou WebP, até 4 MB. Para melhor nitidez, envie a foto original com pelo menos 1200 px no lado maior.",
 }: {
   name: string;
   label: string;
