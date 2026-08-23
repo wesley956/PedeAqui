@@ -10,6 +10,7 @@ export const operationalSettingsSchema = z.object({
   ordersWorkflowMode: z.enum(["standard", "simplified"]),
   deliveriesAutoCreateWhenReady: z.boolean(),
   deliveriesDriverTrackingEnabled: z.boolean(),
+  deliveriesDriverSelfClaimEnabled: z.boolean(),
   deliveriesStationaryAlertMinutes: z.number().int().min(5).max(120),
   deliveriesTrackingRetentionDays: z.number().int().min(1).max(30),
   growthCampaignsEnabled: z.boolean(),
@@ -27,6 +28,7 @@ export const LEGACY_OPERATIONAL_SETTINGS: OperationalSettings = {
   ordersWorkflowMode: "standard",
   deliveriesAutoCreateWhenReady: false,
   deliveriesDriverTrackingEnabled: false,
+  deliveriesDriverSelfClaimEnabled: false,
   deliveriesStationaryAlertMinutes: 15,
   deliveriesTrackingRetentionDays: 7,
   growthCampaignsEnabled: false,
@@ -38,6 +40,7 @@ type SettingsRow = {
   orders_workflow_mode: string;
   deliveries_auto_create_when_ready: boolean;
   deliveries_driver_tracking_enabled: boolean;
+  deliveries_driver_self_claim_enabled: boolean;
   deliveries_stationary_alert_minutes: number;
   deliveries_tracking_retention_days: number;
   growth_campaigns_enabled: boolean;
@@ -51,6 +54,7 @@ function fromRow(row: SettingsRow | null): OperationalSettings {
     ordersWorkflowMode: row.orders_workflow_mode,
     deliveriesAutoCreateWhenReady: row.deliveries_auto_create_when_ready,
     deliveriesDriverTrackingEnabled: row.deliveries_driver_tracking_enabled,
+    deliveriesDriverSelfClaimEnabled: row.deliveries_driver_self_claim_enabled,
     deliveriesStationaryAlertMinutes: Number(row.deliveries_stationary_alert_minutes),
     deliveriesTrackingRetentionDays: Number(row.deliveries_tracking_retention_days),
     growthCampaignsEnabled: row.growth_campaigns_enabled,
@@ -60,7 +64,7 @@ function fromRow(row: SettingsRow | null): OperationalSettings {
 
 async function read(organizationId: string, storeId: string) {
   const admin = createAdminClient();
-  const { data, error } = await admin.from("store_operational_settings").select("orders_auto_accept,orders_workflow_mode,deliveries_auto_create_when_ready,deliveries_driver_tracking_enabled,deliveries_stationary_alert_minutes,deliveries_tracking_retention_days,growth_campaigns_enabled,campaign_rate_per_minute")
+  const { data, error } = await admin.from("store_operational_settings").select("orders_auto_accept,orders_workflow_mode,deliveries_auto_create_when_ready,deliveries_driver_tracking_enabled,deliveries_driver_self_claim_enabled,deliveries_stationary_alert_minutes,deliveries_tracking_retention_days,growth_campaigns_enabled,campaign_rate_per_minute")
     .eq("organization_id", organizationId).eq("store_id", storeId).maybeSingle();
   if (error) throw error;
   return fromRow(data as SettingsRow | null);
@@ -98,6 +102,7 @@ export class OperationalSettingsService {
         orders_workflow_mode: settings.ordersWorkflowMode,
         deliveries_auto_create_when_ready: settings.deliveriesAutoCreateWhenReady,
         deliveries_driver_tracking_enabled: settings.deliveriesDriverTrackingEnabled,
+        deliveries_driver_self_claim_enabled: settings.deliveriesDriverSelfClaimEnabled,
         deliveries_stationary_alert_minutes: settings.deliveriesStationaryAlertMinutes,
         deliveries_tracking_retention_days: settings.deliveriesTrackingRetentionDays,
         growth_campaigns_enabled: settings.growthCampaignsEnabled,
