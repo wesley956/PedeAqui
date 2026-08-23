@@ -83,7 +83,11 @@ function friendly(error: unknown) {
   const raw = error instanceof Error ? error.message : "Não foi possível concluir a operação de entrega.";
   const lower = raw.toLocaleLowerCase("pt-BR");
   const rules: Array<[string, string]> = [
-    ["driver capacity reached", "O entregador atingiu a capacidade configurada."],
+    ["delivery already claimed", "Este pedido já foi pego por outro entregador."],
+    ["order is not available for self claim", "Este pedido não está mais disponível."],
+    ["driver self claim is disabled", "A retirada livre de pedidos está desativada nesta loja."],
+    ["current user is not a driver", "Seu acesso não está vinculado a um entregador desta loja."],
+    ["driver capacity reached", "Você atingiu sua capacidade simultânea de entregas."],
     ["driver is not available", "O entregador está fora de serviço ou inativo."],
     ["driver has active deliveries", "Finalize ou reatribua as entregas ativas antes de tirar este entregador de serviço."],
     ["reassignment reason required", "Informe o motivo da reatribuição."],
@@ -154,6 +158,12 @@ export async function deliveryOperationAction(_previous: DeliveryActionState, fo
       scheduleOrderWhatsAppNotifications("delivery.waiting");
       refreshOperations();
       return { ok: true, message: "Pedido enviado para a fila de entregas.", error: null };
+    }
+    if (intent === "claim") {
+      await DeliveryOperationsService.selfClaim(text(formData, "orderId"), text(formData, "idempotencyKey"));
+      scheduleOrderWhatsAppNotifications("delivery.assigned");
+      refreshOperations();
+      return { ok: true, message: "Pedido adicionado às suas entregas.", error: null };
     }
     if (intent === "assign") {
       await DeliveryOperationsService.assign(text(formData, "orderId"), text(formData, "driverId"), optional(formData, "reason"), text(formData, "idempotencyKey"));
