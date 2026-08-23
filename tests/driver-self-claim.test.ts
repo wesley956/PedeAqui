@@ -10,6 +10,9 @@ const page = read("src/app/(app)/entregador/page.tsx");
 const form = read("src/features/delivery/operation-forms.tsx");
 const settings = read("src/features/platform/operational-settings-form.tsx");
 const courierCss = read("src/features/delivery/courier.module.css");
+const appShell = read("src/components/layout/app-shell.tsx");
+const topbar = read("src/components/layout/operation-topbar.tsx");
+const mobileCss = read("src/app/mobile.css");
 
 describe("driver self-claim delivery mode", () => {
   it("is opt-in and keeps manual assignment as the default", () => {
@@ -56,5 +59,15 @@ describe("driver self-claim delivery mode", () => {
     expect(courierCss).toContain(".contactRow{grid-template-columns:minmax(0,1fr)}");
     expect(courierCss).toContain("overflow-wrap:anywhere");
     expect(courierCss).toContain("@media(max-width:380px)");
+  });
+
+  it("removes restaurant-admin noise from the driver-only mobile header", () => {
+    expect(appShell).toContain('operationalContexts.length === 1 && operationalContexts[0] === "delivery"');
+    expect(appShell).toContain("driverOnly={driverOnly}");
+    expect(topbar).toContain('data-driver-only={driverOnly}');
+    expect(topbar).toContain('className="app-experience-toggle"');
+    expect(mobileCss).toContain('.app-topbar[data-driver-only="true"] .app-topbar-signals');
+    expect(mobileCss).toContain('.app-topbar[data-driver-only="true"] .app-experience-toggle');
+    expect(mobileCss).toContain("text-overflow: ellipsis");
   });
 });
