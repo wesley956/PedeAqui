@@ -78,13 +78,21 @@ export class DeliveryOperationsService {
     if (driverError) throw driverError;
     if (!driver) throw new Error("Seu usuário não está vinculado a um cadastro de entregador nesta unidade");
 
-    const { data: deliveries, error } = await admin.from("deliveries")
-      .select("id,order_id,driver_id,promised_by_at,assigned_at,picked_up_at,out_for_delivery_at,delivered_at")
-      .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("driver_id", driver.id)
-      .order("updated_at", { ascending: false }).limit(50);
-    if (error) throw error;
+    const [deliveriesResult, settingsResult] = await Promise.all([
+      admin.from("deliveries")
+        .select("id,order_id,driver_id,promised_by_at,assigned_at,picked_up_at,out_for_delivery_at,delivered_at")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("driver_id", driver.id)
+        .order("updated_at", { ascending: false }).limit(50),
+      admin.from("store_operational_settings")
+        .select("deliveries_driver_self_claim_enabled")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
+    ]);
+    if (deliveriesResult.error) throw deliveriesResult.error;
+    if (settingsResult.error) throw settingsResult.error;
+    const deliveries = deliveriesResult.data ?? [];
+    const selfClaimEnabled = Boolean(settingsResult.data?.deliveries_driver_self_claim_enabled);
 
-    const orderIds = (deliveries ?? []).map((item) => item.order_id);
+    const orderIds = deliveries.map((item) => item.order_id);
     const ordersResult = orderIds.length
       ? await admin.from("orders")
         .select("id,display_number,customer_name_snapshot,customer_phone_snapshot,address_street_snapshot,address_number_snapshot,address_complement_snapshot,address_district_snapshot,address_city_snapshot,address_state_snapshot,address_reference_snapshot,total_cents,payment_method_snapshot,payment_status,cash_change_for_cents,fulfillment_status,production_status,delivery_estimated_min_minutes,delivery_estimated_max_minutes,created_at")
@@ -121,12 +129,28 @@ export class DeliveryOperationsService {
       order.id,
       { ...order, items: itemsByOrder.get(order.id) ?? [] },
     ]));
+    const enrichedDeliveries = deliveries.map((item) => ({ ...item, order: orderMap.get(item.order_id) ?? null }))
+      .filter((item) => item.order && ["assigned","picked_up","out_for_delivery","delivered"].includes(item.order.fulfillment_status));
+    const activeDeliveryCount = enrichedDeliveries.filter((item) => item.order && ["assigned","picked_up","out_for_delivery"].includes(item.order.fulfillment_status)).length;
+
+    const availableResult = selfClaimEnabled && driver.active && driver.on_duty
+      ? await admin.from("orders")
+        .select("id,display_number,address_district_snapshot,address_city_snapshot,total_cents,delivery_estimated_min_minutes,delivery_estimated_max_minutes,created_at")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId)
+        .eq("fulfillment_type", "delivery").eq("order_status", "confirmed")
+        .in("production_status", ["ready", "not_required"])
+        .in("fulfillment_status", ["pending", "awaiting_assignment"])
+        .order("created_at", { ascending: true }).limit(50)
+      : { data: [], error: null };
+    if (availableResult.error) throw availableResult.error;
 
     return {
       context,
       driver,
-      deliveries: (deliveries ?? []).map((item) => ({ ...item, order: orderMap.get(item.order_id) ?? null }))
-        .filter((item) => item.order && ["assigned","picked_up","out_for_delivery","delivered"].includes(item.order.fulfillment_status)),
+      selfClaimEnabled,
+      activeDeliveryCount,
+      availableDeliveries: availableResult.data ?? [],
+      deliveries: enrichedDeliveries,
     };
   }
 
@@ -203,6 +227,26 @@ export class DeliveryOperationsService {
       p_order_id: order,
       p_driver_id: driver,
       p_reason: reason?.trim() || null,
+      p_idempotency_key: safeKey,
+      p_actor_user_id: context.userId,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async selfClaim(orderId: string, key: string = randomUUID()) {
+    const order = uuid.parse(orderId);
+    const safeKey = idempotency.parse(key);
+    const context = await authorize(PERMISSIONS.DELIVERY_UPDATE);
+    const storeId = requireStore(context.storeId);
+    const admin = createAdminClient();
+    const { data: scoped, error: scopedError } = await admin.from("orders").select("id")
+      .eq("id", order).eq("organization_id", context.organizationId).eq("store_id", storeId)
+      .eq("fulfillment_type", "delivery").maybeSingle();
+    if (scopedError) throw scopedError;
+    if (!scoped) throw new Error("Pedido de entrega não encontrado");
+    const { data, error } = await admin.rpc("delivery_self_claim_internal", {
+      p_order_id: order,
       p_idempotency_key: safeKey,
       p_actor_user_id: context.userId,
     });

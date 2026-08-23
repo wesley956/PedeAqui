@@ -39,6 +39,19 @@ function deliveredAt(value: string | null | undefined) {
   return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
 }
 
+function availableRegion(order: { address_district_snapshot: string | null; address_city_snapshot: string | null }) {
+  return [order.address_district_snapshot, order.address_city_snapshot].filter(Boolean).join(" · ") || "Região não informada";
+}
+
+function deliveryEstimate(order: { delivery_estimated_min_minutes: number | null; delivery_estimated_max_minutes: number | null }) {
+  const min = order.delivery_estimated_min_minutes;
+  const max = order.delivery_estimated_max_minutes;
+  if (min && max) return `${min}–${max} min`;
+  if (max) return `até ${max} min`;
+  if (min) return `a partir de ${min} min`;
+  return null;
+}
+
 const statusLabel: Record<string, string> = {
   assigned: "Aguardando retirada na loja",
   picked_up: "Pedido retirado",
@@ -53,6 +66,7 @@ export default async function DriverPage() {
   const routeRecoveryDelivery = !tracking.sessionId
     ? active.find((item) => item.order?.fulfillment_status === "out_for_delivery") ?? null
     : null;
+  const atCapacity = data.activeDeliveryCount >= data.driver.max_active_deliveries;
 
   return <section className={styles.page}>
     <header className={styles.header}>
@@ -64,6 +78,29 @@ export default async function DriverPage() {
     </header>
 
     {!data.driver.active || !data.driver.on_duty ? <article className={styles.offDuty}><strong>Você está fora de serviço.</strong><p>Entregas já atribuídas continuam visíveis, mas novas atribuições ficam bloqueadas pela operação até seu status ser alterado.</p></article> : null}
+
+    {data.selfClaimEnabled ? <section className={styles.availableSection} aria-labelledby="available-deliveries-title">
+      <div className={styles.sectionHeading}>
+        <div><span className={styles.label}>FILA LIVRE</span><h2 id="available-deliveries-title">Pedidos disponíveis</h2></div>
+        <strong className={styles.capacity} data-full={atCapacity}>{data.activeDeliveryCount}/{data.driver.max_active_deliveries} em uso</strong>
+      </div>
+      {data.availableDeliveries.length === 0 ? <div className={styles.availableEmpty}>Nenhum pedido disponível agora.</div> : <div className={styles.availableList}>
+        {data.availableDeliveries.map((order) => {
+          const estimate = deliveryEstimate(order);
+          return <article key={order.id} className={styles.availableCard}>
+            <div className={styles.availableInfo}>
+              <strong>Pedido #{order.display_number}</strong>
+              <span className={styles.availableRegion}>{availableRegion(order)}</span>
+              <span className={styles.availableMeta}>{money(order.total_cents)}{estimate ? ` · ${estimate}` : ""}</span>
+            </div>
+            <div className={styles.availableAction}>
+              <DeliveryOperationForm intent="claim" orderId={order.id} disabled={atCapacity || !data.driver.active || !data.driver.on_duty} disabledLabel={atCapacity ? "Limite atingido" : "Indisponível"} />
+            </div>
+          </article>;
+        })}
+      </div>}
+      <small className={styles.privacyNote}>Endereço completo, telefone e dados do cliente aparecem somente depois que você pegar o pedido.</small>
+    </section> : null}
 
     {tracking.enabled && tracking.sessionId ? <article className={styles.tracking}>
       <strong>Rota iniciada</strong>
@@ -77,7 +114,12 @@ export default async function DriverPage() {
       <DriverRouteStartForm deliveryId={routeRecoveryDelivery.id} />
     </article> : null}
 
-    {active.length === 0 ? <article className={styles.empty}><strong>Nenhuma entrega ativa.</strong><p>Quando uma entrega for atribuída a você, ela aparecerá aqui automaticamente.</p></article> : <div className={styles.list}>{active.map((item) => {
+    <div className={styles.sectionHeading}>
+      <div><span className={styles.label}>MINHA CARGA</span><h2>Entregas assumidas</h2></div>
+      <strong className={styles.capacity}>{data.activeDeliveryCount}/{data.driver.max_active_deliveries}</strong>
+    </div>
+
+    {active.length === 0 ? <article className={styles.empty}><strong>Nenhuma entrega ativa.</strong><p>{data.selfClaimEnabled ? "Pegue um pedido disponível acima quando estiver pronto para sair." : "Quando uma entrega for atribuída a você, ela aparecerá aqui automaticamente."}</p></article> : <div className={styles.list}>{active.map((item) => {
       const order = item.order!;
       const destination = address(order) || "Endereço não informado";
       const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}`;
