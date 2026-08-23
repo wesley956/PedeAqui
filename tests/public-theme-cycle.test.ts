@@ -10,7 +10,9 @@ describe("public theme cycle", () => {
     expect(rootLayout).toContain('const key = "pedeaqui-theme"');
     expect(rootLayout).toContain('preference === "light" || preference === "dark" || preference === "system"');
     expect(component).toContain('const STORAGE_KEY = "pedeaqui-theme"');
-    expect(component).toContain('const cycleOrder: ThemePreference[] = ["system", "light", "dark"]');
+    expect(component).toContain('if (preference === "system") return "light"');
+    expect(component).toContain('if (preference === "light") return "dark"');
+    expect(component).toContain('return "system"');
     expect(component).toContain("root.dataset.themePreference = preference");
     expect(component).toContain('root.dataset.theme = preference === "system" ? systemTheme() : preference');
   });
