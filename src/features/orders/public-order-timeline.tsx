@@ -14,7 +14,7 @@ const fulfillmentLabels: Record<FulfillmentStatus, string> = {
   picked_up: "Pedido retirado pelo entregador",
   out_for_delivery: "Saiu para entrega",
   delivered: "Entregue",
-  awaiting_pickup: "Aguardando retirada",
+  awaiting_pickup: "Pronto para retirada",
   picked_up_by_customer: "Retirado pelo cliente",
   served: "Servido",
   canceled: "Cancelado",
@@ -24,17 +24,17 @@ const fulfillmentLabels: Record<FulfillmentStatus, string> = {
 export function buildPublicOrderTimeline(input: { fulfillmentType: FulfillmentType; orderStatus: OrderStatus; productionStatus: ProductionStatus; fulfillmentStatus: FulfillmentStatus; businessType?: BusinessType }) {
   const businessType = input.businessType ?? "restaurant";
   const vocabulary = businessVocabulary(businessType);
-  const confirmed = input.orderStatus === "confirmed" || input.orderStatus === "completed";
   const productionRequired = input.productionStatus !== "not_required";
   const preparing = input.productionStatus === "queued" || input.productionStatus === "preparing" || input.productionStatus === "ready";
   const ready = input.productionStatus === "ready";
   const deliveryOut = input.fulfillmentStatus === "out_for_delivery" || input.fulfillmentStatus === "delivered";
   const delivered = input.fulfillmentStatus === "delivered";
+  const awaitingPickup = input.fulfillmentStatus === "awaiting_pickup" || input.fulfillmentStatus === "picked_up_by_customer";
   const pickedUp = input.fulfillmentStatus === "picked_up_by_customer";
 
   if (input.orderStatus === "rejected" || input.orderStatus === "canceled") {
     return [
-      { key: "received", label: "Pedido recebido", detail: "Seu pedido entrou no PedeAqui", reached: true, state: "done" as const },
+      { key: "received", label: "Pedido recebido", detail: "O pedido foi registrado pelo estabelecimento", reached: true, state: "done" as const },
       {
         key: input.orderStatus,
         label: input.orderStatus === "rejected" ? "Pedido recusado" : "Pedido cancelado",
@@ -46,17 +46,26 @@ export function buildPublicOrderTimeline(input: { fulfillmentType: FulfillmentTy
   }
 
   const steps: TimelineStep[] = [
-    { key: "received", label: "Pedido recebido", detail: "Seu pedido entrou no PedeAqui", reached: true },
-    { key: "confirmed", label: "Confirmado", detail: orderStatusLabels[input.orderStatus], reached: confirmed },
+    { key: "received", label: "Pedido recebido", detail: input.orderStatus === "draft" || input.orderStatus === "pending" ? "Aguardando confirmação do estabelecimento" : "Pedido confirmado pelo estabelecimento", reached: true },
   ];
+
   if (productionRequired) {
     steps.push({ key: "preparing", label: vocabulary.productionLabel, detail: productionStatusLabelForBusiness(input.productionStatus, businessType), reached: preparing });
-    steps.push({ key: "ready", label: vocabulary.readyLabel, detail: ready ? (input.fulfillmentType === "delivery" ? `${vocabulary.readyLabel} para seguir com a entrega` : `${vocabulary.readyLabel} para retirada`) : `Aguardando conclusão da ${vocabulary.productionLabel.toLowerCase()}`, reached: ready });
+    steps.push({
+      key: "ready",
+      label: input.fulfillmentType === "pickup" ? "Pronto para retirada" : vocabulary.readyLabel,
+      detail: ready
+        ? input.fulfillmentType === "delivery" ? `${vocabulary.readyLabel} para seguir com a entrega` : "Seu pedido está pronto para você retirar"
+        : `Aguardando conclusão da ${vocabulary.productionLabel.toLowerCase()}`,
+      reached: ready || awaitingPickup,
+    });
   }
+
   if (input.fulfillmentType === "delivery") {
     steps.push({ key: "out", label: "Saiu para entrega", detail: fulfillmentLabels[input.fulfillmentStatus], reached: deliveryOut });
     steps.push({ key: "delivered", label: "Entregue", detail: fulfillmentLabels[input.fulfillmentStatus], reached: delivered });
   } else {
+    if (!productionRequired) steps.push({ key: "ready", label: "Pronto para retirada", detail: fulfillmentLabels[input.fulfillmentStatus], reached: awaitingPickup || pickedUp });
     steps.push({ key: "pickup", label: "Retirado", detail: fulfillmentLabels[input.fulfillmentStatus], reached: pickedUp });
   }
 
