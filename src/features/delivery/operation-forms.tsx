@@ -14,21 +14,24 @@ function Feedback({ state }: { state: DeliveryActionState }) {
 }
 
 export function DeliveryOperationForm({
-  intent, orderId, deliveryId, drivers = [], currentDriverId = null, prominent = false, paymentPending = false,
+  intent, orderId, deliveryId, drivers = [], currentDriverId = null, prominent = false, paymentPending = false, disabled = false, disabledLabel = null,
 }: {
-  intent: "waiting" | "assign" | "picked_up" | "out_for_delivery" | "delivered";
+  intent: "waiting" | "claim" | "assign" | "picked_up" | "out_for_delivery" | "delivered";
   orderId?: string;
   deliveryId?: string;
   drivers?: Array<{ id: string; name: string; active: boolean; on_duty: boolean; max_active_deliveries: number; activeDeliveries: number }>;
   currentDriverId?: string | null;
   prominent?: boolean;
   paymentPending?: boolean;
+  disabled?: boolean;
+  disabledLabel?: string | null;
 }) {
   const serverAction = intent === "delivered" ? confirmDeliveryWithPaymentAction : deliveryOperationAction;
   const [state, action, pending] = useActionState(serverAction, initial);
   const key = useMemo(() => crypto.randomUUID(), []);
-  const labels = { waiting: "Enviar para entregas", assign: currentDriverId ? "Reatribuir" : "Atribuir", picked_up: "Confirmar retirada", out_for_delivery: "Iniciar rota", delivered: "Confirmar entrega" };
+  const labels = { waiting: "Enviar para entregas", claim: "Pegar pedido", assign: currentDriverId ? "Reatribuir" : "Atribuir", picked_up: "Confirmar retirada", out_for_delivery: "Iniciar rota", delivered: "Confirmar entrega" };
   const available = drivers.filter((driver) => driver.active && driver.on_duty && (driver.activeDeliveries < driver.max_active_deliveries || driver.id === currentDriverId));
+  const isDisabled = disabled || (intent === "assign" && available.length === 0);
 
   return (
     <form action={action} className={styles.form}>
@@ -58,7 +61,7 @@ export function DeliveryOperationForm({
         />
         <div className={styles.driverMeta}>Por padrão, confirmar a entrega também confirma o pagamento pendente. Se houver problema, selecione “Não recebi” e registre a observação.</div>
       </div> : null}
-      <button type="submit" disabled={pending || (intent === "assign" && available.length === 0)} className={`${styles.button} ${prominent ? styles.prominentButton : ""}`}>{pending ? "Processando…" : labels[intent]}</button>
+      <button type="submit" disabled={pending || isDisabled} className={`${styles.button} ${prominent ? styles.prominentButton : ""}`}>{isDisabled ? (disabledLabel ?? labels[intent]) : pending ? "Processando…" : labels[intent]}</button>
       <Feedback state={state} />
     </form>
   );
