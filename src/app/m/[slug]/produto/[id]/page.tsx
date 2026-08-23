@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { addToCartAction } from "@/features/cart/actions";
+import { ComplementCategorySection } from "@/features/menu/complement-category-section";
 import { ModifierGroupSelector } from "@/features/menu/modifier-group-selector";
 import { businessVocabulary } from "@/modules/business-vocabulary";
+import { ComplementCategoryService, type PublicComplementCategory } from "@/server/menu/complement-category-service";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
 
 function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
@@ -20,6 +22,15 @@ export default async function PublicProductPage({ params, searchParams }: { para
   const orderUnavailable = soldOut || !operational.canOrder;
   const timeLabel = businessType === "restaurant" ? "Preparo estimado" : businessType === "gas" ? "Separação estimada" : "Prazo estimado";
   const notePlaceholder = businessType === "restaurant" ? "Ex.: sem cebola, molho separado..." : businessType === "gas" ? "Ex.: tocar a campainha, referência da entrega..." : "Alguma observação para este item?";
+
+  let complements: PublicComplementCategory[] = [];
+  try {
+    complements = await ComplementCategoryService.loadPublic(store.slug, product.id);
+  } catch {
+    // Cross-sell is optional merchandising. Its failure must never block the main product flow.
+    complements = [];
+  }
+  const complementTargetId = complements.length > 0 ? "complementos" : undefined;
 
   return <main style={{ minHeight: "100vh", background: "#fffdf9", color: "#181818", padding: "18px 12px 64px" }}>
     <form action={addToCartAction} style={{ width: "min(720px, 100%)", margin: "0 auto", display: "grid", gap: 16 }}>
@@ -43,7 +54,9 @@ export default async function PublicProductPage({ params, searchParams }: { para
         {gas.containerSaleEnabled ? <label style={{ display: "flex", gap: 10, alignItems: "start", padding: 12, border: "1px solid #eee7df", borderRadius: 14, cursor: "pointer" }}><input type="radio" name="gasSaleMode" value="with_container" required={gas.requireContainerChoice} /><span><strong>Produto + vasilhame</strong><br /><small style={{ color: "#716b64" }}>Inclui o casco. Acréscimo: {money(gas.containerSurchargeCents)}.</small></span></label> : null}
       </fieldset> : null}
 
-      {product.modifier_groups.map((group) => <ModifierGroupSelector key={group.id} group={group} disabled={orderUnavailable} />)}
+      {product.modifier_groups.map((group, index) => <ModifierGroupSelector key={group.id} group={group} disabled={orderUnavailable} complementTargetId={index === product.modifier_groups.length - 1 ? complementTargetId : undefined} />)}
+
+      <ComplementCategorySection categories={complements} storeSlug={store.slug} businessType={businessType} disabled={orderUnavailable} />
 
       <section style={{ background: "#fff", border: "1px solid #eee7df", borderRadius: 18, padding: 18, display: "grid", gap: 14 }}>
         <label style={{ display: "grid", gap: 6 }}><strong>Observação</strong><textarea name="note" maxLength={500} placeholder={notePlaceholder} disabled={orderUnavailable} style={{ minHeight: 88, resize: "vertical", padding: 12, borderRadius: 12, border: "1px solid #e5ded6", background: "#fff", color: "#181818" }} /></label>
