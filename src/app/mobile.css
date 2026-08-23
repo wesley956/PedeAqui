@@ -11,10 +11,52 @@
   }
 }
 
+@media (max-width: 640px) {
+  .app-topbar[data-driver-only="true"] {
+    min-height: 56px;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+  .app-topbar[data-driver-only="true"] .app-topbar-context {
+    flex: 1 1 0;
+    min-width: 0;
+    display: block;
+  }
+  .app-topbar[data-driver-only="true"] .app-topbar-context > strong {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .app-topbar[data-driver-only="true"] .app-topbar-signals,
+  .app-topbar[data-driver-only="true"] .app-experience-toggle,
+  .app-topbar[data-driver-only="true"] .app-user-email {
+    display: none;
+  }
+  .app-topbar[data-driver-only="true"] .app-topbar-actions {
+    flex: 0 0 auto;
+    min-width: 0;
+    gap: var(--space-2);
+  }
+  .app-topbar[data-driver-only="true"] .theme-selector-compact .theme-selector-select {
+    min-height: 40px;
+    width: 40px;
+    max-width: 40px;
+  }
+  .app-topbar[data-driver-only="true"] .app-topbar-actions button {
+    min-height: 40px;
+    padding-inline: var(--space-3);
+  }
+}
+
 @media (max-width: 480px) {
   .app-topbar { align-items: flex-start; gap: var(--space-2); }
   .app-topbar-context { flex: 1 1 0; overflow-wrap: anywhere; }
   .app-topbar-actions { flex: 0 0 auto; }
   .app-topbar-signals span { white-space: normal; text-align: left; }
   .mobile-more-panel { max-height: min(52dvh, 440px); }
+
+  .app-topbar[data-driver-only="true"] { align-items: center; }
 }
