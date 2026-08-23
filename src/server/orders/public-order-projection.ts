@@ -2,6 +2,7 @@ export type PublicOrderModifierProjection = {
   order_item_id: string;
   modifier_name_snapshot: string;
   unit_price_cents: number;
+  quantity: number;
 };
 
 export function groupPublicOrderModifiers(rows: PublicOrderModifierProjection[]) {
