@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { addSimpleComplementAction } from "@/features/menu/complement-actions";
 import type { PublicComplementCategory } from "@/server/menu/complement-category-service";
 
@@ -15,12 +15,19 @@ function categoryTitle(name: string, businessType: string) {
 export function ComplementCategorySection({ categories, storeSlug, businessType, disabled = false }: { categories: PublicComplementCategory[]; storeSlug: string; businessType: string; disabled?: boolean }) {
   const [pending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
+  const inFlight = useRef(new Set<string>());
   if (categories.length === 0) return null;
   function add(productId: string) {
+    if (inFlight.current.has(productId)) return;
+    inFlight.current.add(productId);
     setFeedback(null);
     startTransition(async () => {
-      const result = await addSimpleComplementAction(storeSlug, productId);
-      setFeedback(result.message);
+      try {
+        const result = await addSimpleComplementAction(storeSlug, productId);
+        setFeedback(result.message);
+      } finally {
+        inFlight.current.delete(productId);
+      }
     });
   }
   return <section id="complementos" aria-labelledby="complementos-titulo" style={{ display: "grid", gap: 16, scrollMarginTop: 20 }}>
