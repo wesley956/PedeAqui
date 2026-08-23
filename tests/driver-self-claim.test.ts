@@ -5,7 +5,9 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 const sql = read("supabase/sql/131_driver_self_claim.sql");
+const permissionHotfix = read("supabase/sql/132_driver_self_claim_permission_boundary.sql");
 const service = read("src/server/delivery/delivery-operations-service.ts");
+const actions = read("src/features/delivery/actions.ts");
 const page = read("src/app/(app)/entregador/page.tsx");
 const form = read("src/features/delivery/operation-forms.tsx");
 const settings = read("src/features/platform/operational-settings-form.tsx");
@@ -26,6 +28,22 @@ describe("driver self-claim delivery mode", () => {
     expect(sql).toContain("raise exception 'delivery already claimed'");
     expect(sql).toContain("public.delivery_assign_internal");
     expect(sql).toContain("claim_mode','self_service'");
+  });
+
+  it("keeps private module helpers closed while allowing the backend claim RPC", () => {
+    expect(permissionHotfix).toContain("language plpgsql security invoker set search_path=''");
+    expect(permissionHotfix).toContain("from public.store_modules sm");
+    expect(permissionHotfix).toContain("sm.module_key='deliveries'");
+    expect(permissionHotfix).toContain("sm.module_key='driver'");
+    expect(permissionHotfix).not.toContain("private.store_module_enabled(");
+    expect(permissionHotfix).toContain("revoke all on function public.delivery_self_claim_internal(uuid,text,uuid) from public,anon,authenticated");
+    expect(permissionHotfix).toContain("grant execute on function public.delivery_self_claim_internal(uuid,text,uuid) to service_role");
+  });
+
+  it("surfaces PostgREST object errors instead of masking the database cause", () => {
+    expect(actions).toContain('error && typeof error === "object" && "message" in error');
+    expect(actions).toContain('(error as { message?: unknown }).message');
+    expect(actions).toContain('typeof message === "string" && message.trim()');
   });
 
   it("reuses canonical driver capacity checks instead of trusting the UI", () => {
