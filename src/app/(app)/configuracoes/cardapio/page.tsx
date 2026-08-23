@@ -12,7 +12,7 @@ export default async function MenuSettingsPage() {
     StoreMenuService.getSettings(),
     PublicMenuLinkService.getCurrentStore(),
   ]);
-  const publicMenuUrl = PublicMenuLinkService.buildUrl(store.slug);
+  const publicMenuPath = PublicMenuLinkService.buildPath(store.slug);
 
   return (
     <section style={{ display: "grid", gap: 20, maxWidth: 900 }}>
@@ -22,7 +22,7 @@ export default async function MenuSettingsPage() {
         <p className="muted" style={{ margin: 0 }}>Identidade, canais e disponibilidade pública da unidade atual.</p>
       </header>
 
-      <PublicMenuLinkCard url={publicMenuUrl} storeName={store.name} />
+      <PublicMenuLinkCard path={publicMenuPath} storeName={store.name} />
 
       <article className="card" style={{ padding: 20, display: "grid", gap: 14 }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
