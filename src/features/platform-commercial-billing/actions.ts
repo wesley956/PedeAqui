@@ -172,3 +172,32 @@ export async function assignFounderPlanAction(form: FormData) {
   });
   refresh();
 }
+
+export async function createSubscriptionChangeQuoteAction(form: FormData) {
+  const featurePrice = optional(form, "featurePrice");
+  await PlatformCommercialBillingService.createChangeQuote({
+    organizationId: text(form, "organizationId"),
+    changeType: text(form, "changeType") as "add_on" | "remove_addon" | "upgrade" | "downgrade",
+    targetPlanId: optional(form, "targetPlanId"),
+    featureId: optional(form, "featureId"),
+    featurePriceCents: featurePrice === null ? null : cents(form, "featurePrice"),
+    effectiveAt: iso(form, "effectiveAt"),
+    reason: text(form, "reason"),
+    protocol: text(form, "protocol"),
+  });
+  refresh();
+}
+
+export async function acceptSubscriptionChangeAction(form: FormData) {
+  await PlatformCommercialBillingService.acceptChange({
+    changeId: text(form, "changeId"), reason: text(form, "reason"), protocol: text(form, "protocol"),
+  });
+  refresh();
+}
+
+export async function applyScheduledSubscriptionChangeAction(form: FormData) {
+  await PlatformCommercialBillingService.applyScheduledChange({
+    changeId: text(form, "changeId"), reason: text(form, "reason"), protocol: text(form, "protocol"),
+  });
+  refresh();
+}
