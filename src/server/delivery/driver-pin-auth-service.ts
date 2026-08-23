@@ -24,6 +24,14 @@ function tokenHash(rawToken: string) {
   return createHash("sha256").update(rawToken).digest("hex");
 }
 
+// O telefone continua sendo o identificador informado pelo entregador, mas não é
+// usado como provider do Supabase Auth. Assim o acesso por PIN não depende de
+// habilitar Phone Auth, SMS ou um provedor externo. O e-mail técnico nunca é
+// exibido ao usuário e é determinístico por cadastro de entregador.
+function driverCredentialEmail(driverId: string) {
+  return `driver-${driverId}@auth.pedeaqui.invalid`;
+}
+
 export type DriverEnrollmentPreview = {
   driverName: string;
   storeName: string;
@@ -75,6 +83,7 @@ export class DriverPinAuthService {
       .maybeSingle();
     if (driverError || !driver) throw new Error("Entregador não encontrado");
 
+    const credentialEmail = driverCredentialEmail(driver.id);
     const existingUserId = access.user_id ?? driver.user_id;
     let userId = existingUserId;
     let createdUser = false;
@@ -93,23 +102,23 @@ export class DriverPinAuthService {
         }
       }
       const { data, error } = await admin.auth.admin.updateUserById(existingUserId, {
-        phone: access.phone_e164,
+        email: credentialEmail,
+        email_confirm: true,
         password: pin,
-        phone_confirm: true,
         user_metadata: { driver_name: driver.name, driver_id: driver.id },
       });
       if (error || !data.user) throw new Error(error?.message ?? "Não foi possível preparar o acesso do entregador");
       userId = data.user.id;
     } else {
       const { data, error } = await admin.auth.admin.createUser({
-        phone: access.phone_e164,
+        email: credentialEmail,
         password: pin,
-        phone_confirm: true,
+        email_confirm: true,
         user_metadata: { driver_name: driver.name, driver_id: driver.id },
       });
       if (error || !data.user) {
         const message = error?.message?.toLocaleLowerCase("pt-BR") ?? "";
-        if (message.includes("already") || message.includes("registered")) throw new Error("Este telefone já pertence a outra conta");
+        if (message.includes("already") || message.includes("registered")) throw new Error("Este entregador já possui outra credencial de acesso");
         throw new Error(error?.message ?? "Não foi possível criar o acesso do entregador");
       }
       userId = data.user.id;
@@ -129,7 +138,7 @@ export class DriverPinAuthService {
 
     const supabase = await createClient();
     const { data: sessionData, error: signInError } = await supabase.auth.signInWithPassword({
-      phone: access.phone_e164,
+      email: credentialEmail,
       password: pin,
     });
     if (signInError || !sessionData.user) throw new Error("Acesso criado. Entre com seu telefone e PIN para continuar");
@@ -146,7 +155,7 @@ export class DriverPinAuthService {
     const pin = validateDriverPin(pinInput);
     const admin = createAdminClient();
     const { data: access } = await admin.from("driver_pin_access")
-      .select("user_id,organization_id,store_id,enabled,locked_until")
+      .select("driver_id,user_id,organization_id,store_id,enabled,locked_until")
       .eq("phone_e164", phone)
       .maybeSingle();
 
@@ -154,7 +163,10 @@ export class DriverPinAuthService {
     if (access.locked_until && new Date(access.locked_until).getTime() > Date.now()) throw new Error("temporarily_locked");
 
     const supabase = await createClient();
-    const { data, error } = await supabase.auth.signInWithPassword({ phone, password: pin });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: driverCredentialEmail(access.driver_id),
+      password: pin,
+    });
     if (error || !data.user || data.user.id !== access.user_id) {
       if (data.user && data.user.id !== access.user_id) await supabase.auth.signOut();
       const { data: lockedUntil } = await admin.rpc("register_driver_pin_failure", { p_phone: phone });
