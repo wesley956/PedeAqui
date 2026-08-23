@@ -6,6 +6,7 @@ const links = [
   { label: "Produtos", href: "/cardapio/produtos", hint: "Preço, imagem e disponibilidade" },
   { label: "Categorias", href: "/cardapio/categorias", hint: "Ordem e organização do menu" },
   { label: "Adicionais", href: "/cardapio/adicionais", hint: "Grupos, opções e complementos" },
+  { label: "Sugestões", href: "/cardapio/sugestoes", hint: "Bebidas e categorias para acompanhar" },
 ] as const;
 
 export default function CatalogLayout({ children }: { children: ReactNode }) {
