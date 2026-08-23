@@ -21,8 +21,7 @@ export class PublicMenuLinkService {
     return data;
   }
 
-  static buildUrl(slug: string) {
-    const baseUrl = (process.env.PUBLIC_APP_URL || process.env.APP_URL || "https://cruz-iota.vercel.app").replace(/\/+$/, "");
-    return `${baseUrl}/m/${encodeURIComponent(slug)}`;
+  static buildPath(slug: string) {
+    return `/m/${encodeURIComponent(slug)}`;
   }
 }
