@@ -184,7 +184,11 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
         <Button type="button" tone="secondary" onClick={() => void toggleSound()} aria-pressed={soundEnabled}>
           {soundEnabled ? "Som ativo ✓" : "Ativar som"}
         </Button>
-        <div className={styles.toolbarMeta}>{activeCount} ativo(s) · {lateCount} atrasado(s) · {grouped.history.length} no histórico</div>
+        <div className={styles.toolbarMeta}>
+          {workflowMode === "simplified"
+            ? `${activeCount} ativo(s) · ${lateCount} atrasado(s)`
+            : `${activeCount} ativo(s) · ${lateCount} atrasado(s) · ${grouped.history.length} no histórico`}
+        </div>
       </div>
 
       <div className={styles.noticeSlot} aria-live="polite">
@@ -195,7 +199,6 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
         {([
           { key: "start", label: "Iniciar", orders: [...grouped.new, ...grouped.queued, ...grouped.preparing] },
           { key: "ready", label: "Pronto", orders: grouped.ready },
-          { key: "completed", label: "Finalizados", orders: grouped.history },
         ] as const).map((column) => <section key={column.key} aria-label={column.label} className={styles.lane} data-bucket={column.key}>
           <header className={styles.laneHeader}><strong>{column.label}</strong><span className={styles.laneCount}>{column.orders.length}</span></header>
           <div className={styles.laneBody}>{column.orders.map((order) => <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} />)}{column.orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
