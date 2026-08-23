@@ -40,14 +40,14 @@ describe("public menu readiness PA-DIAG-021 to PA-DIAG-025", () => {
     expect(read("vercel.json")).toContain('"gru1"');
   });
 
-  it("converts a large upload to a bounded WebP", async () => {
+  it("converts a large upload to a bounded high-quality WebP", async () => {
     const input = await sharp({ create: { width: 2400, height: 1800, channels: 3, background: "#ff6b00" } }).png().toBuffer();
     const optimized = await optimizeCatalogImage(new File([Uint8Array.from(input)], "catalog.png", { type: "image/png" }), "product");
     const metadata = await sharp(optimized.data).metadata();
     expect(optimized.contentType).toBe("image/webp");
     expect(metadata.format).toBe("webp");
-    expect(metadata.width).toBe(1600);
-    expect(metadata.height).toBe(1200);
+    expect(metadata.width).toBe(1920);
+    expect(metadata.height).toBe(1440);
     expect(optimized.data.length).toBeLessThan(input.length);
   });
 
