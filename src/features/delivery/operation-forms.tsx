@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo } from "react";
 import { createDriverAction, deliveryOperationAction, updateDriverAction, type DeliveryActionState } from "@/features/delivery/actions";
+import { confirmDeliveryWithPaymentAction } from "@/features/delivery/delivery-confirmation-actions";
 import styles from "@/features/delivery/delivery.module.css";
 
 const initial: DeliveryActionState = { ok: false, message: null, error: null };
@@ -13,7 +14,7 @@ function Feedback({ state }: { state: DeliveryActionState }) {
 }
 
 export function DeliveryOperationForm({
-  intent, orderId, deliveryId, drivers = [], currentDriverId = null, prominent = false,
+  intent, orderId, deliveryId, drivers = [], currentDriverId = null, prominent = false, paymentPending = false,
 }: {
   intent: "waiting" | "assign" | "picked_up" | "out_for_delivery" | "delivered";
   orderId?: string;
@@ -21,8 +22,10 @@ export function DeliveryOperationForm({
   drivers?: Array<{ id: string; name: string; active: boolean; on_duty: boolean; max_active_deliveries: number; activeDeliveries: number }>;
   currentDriverId?: string | null;
   prominent?: boolean;
+  paymentPending?: boolean;
 }) {
-  const [state, action, pending] = useActionState(deliveryOperationAction, initial);
+  const serverAction = intent === "delivered" ? confirmDeliveryWithPaymentAction : deliveryOperationAction;
+  const [state, action, pending] = useActionState(serverAction, initial);
   const key = useMemo(() => crypto.randomUUID(), []);
   const labels = { waiting: "Enviar para entregas", assign: currentDriverId ? "Reatribuir" : "Atribuir", picked_up: "Confirmar retirada", out_for_delivery: "Iniciar rota", delivered: "Confirmar entrega" };
   const available = drivers.filter((driver) => driver.active && driver.on_duty && (driver.activeDeliveries < driver.max_active_deliveries || driver.id === currentDriverId));
@@ -40,6 +43,21 @@ export function DeliveryOperationForm({
         </select>
         {currentDriverId ? <input name="reason" minLength={3} maxLength={500} placeholder="Motivo da reatribuição" className={styles.input} /> : null}
       </> : null}
+      {intent === "delivered" && paymentPending ? <div className={styles.form}>
+        <label className={styles.driverMeta} htmlFor={`payment-outcome-${key}`}>PAGAMENTO NA ENTREGA</label>
+        <select id={`payment-outcome-${key}`} name="paymentOutcome" defaultValue="received" className={styles.select}>
+          <option value="received">Pagamento recebido</option>
+          <option value="not_received">Não recebi / houve problema</option>
+        </select>
+        <textarea
+          name="paymentNote"
+          maxLength={500}
+          placeholder="Se não recebeu, explique rapidamente o que aconteceu. Ex.: cliente sem dinheiro, pagamento combinado para depois..."
+          className={styles.input}
+          rows={3}
+        />
+        <div className={styles.driverMeta}>Por padrão, confirmar a entrega também confirma o pagamento pendente. Se houver problema, selecione “Não recebi” e registre a observação.</div>
+      </div> : null}
       <button type="submit" disabled={pending || (intent === "assign" && available.length === 0)} className={`${styles.button} ${prominent ? styles.prominentButton : ""}`}>{pending ? "Processando…" : labels[intent]}</button>
       <Feedback state={state} />
     </form>
