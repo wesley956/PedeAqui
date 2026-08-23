@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { addToCartAction } from "@/features/cart/actions";
+import { PublicCartBar } from "@/features/cart/public-cart-bar";
 import { ComplementCategorySection } from "@/features/menu/complement-category-section";
 import { ModifierGroupSelector } from "@/features/menu/modifier-group-selector";
 import { businessVocabulary } from "@/modules/business-vocabulary";
@@ -35,7 +36,7 @@ export default async function PublicProductPage({ params, searchParams }: { para
   return <main style={{ minHeight: "100vh", background: "#fffdf9", color: "#181818", padding: "18px 12px 64px" }}>
     <form action={addToCartAction} style={{ width: "min(720px, 100%)", margin: "0 auto", display: "grid", gap: 16 }}>
       <input type="hidden" name="storeSlug" value={store.slug} /><input type="hidden" name="productId" value={product.id} />
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}><Link href={`/m/${store.slug}`} style={{ color: "#6f675f", fontWeight: 700 }}>← Voltar para {store.name}</Link><Link href={`/m/${store.slug}/carrinho`} style={{ color: "#FF6B00", fontWeight: 900 }}>Ver carrinho →</Link></div>
+      <div style={{ display: "flex", gap: 12, alignItems: "center" }}><Link href={`/m/${store.slug}`} style={{ color: "#6f675f", fontWeight: 700 }}>← Voltar para {store.name}</Link></div>
       {query.erro ? <div role="alert" style={{ padding: 14, borderRadius: 14, background: "#fee4e2", color: "#912018", fontWeight: 700 }}>{query.erro === "store_unavailable" ? "A loja não está aceitando pedidos agora. Você ainda pode consultar o cardápio." : query.erro === "invalid_item" ? "Confira a quantidade, as opções e a observação antes de adicionar." : query.erro === "cart_add_failed" ? "Não foi possível atualizar o carrinho agora. Tente novamente." : "Não foi possível adicionar o item. Revise as opções obrigatórias e tente novamente."}</div> : null}
       {!operational.canOrder ? <div role="status" style={{ padding: 14, borderRadius: 14, background: "#fff3d6", color: "#704b00", fontWeight: 700 }}>{operational.label === "paused" ? "Pedidos temporariamente pausados. O cardápio continua disponível para consulta." : "Cardápio fechado agora. Você pode consultar os produtos e voltar no horário de atendimento."}</div> : null}
       <article style={{ background: "#fff", border: "1px solid #eee7df", borderRadius: 22, overflow: "hidden" }}>
@@ -64,5 +65,6 @@ export default async function PublicProductPage({ params, searchParams }: { para
         <small style={{ color: "#8a837b" }}>O valor exibido aqui é informativo. O PedeAqui recalcula produto e adicionais no servidor, incluindo opções do segmento quando existirem.</small>
       </section>
     </form>
+    <PublicCartBar storeSlug={store.slug} />
   </main>;
 }

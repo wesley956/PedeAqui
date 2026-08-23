@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
+import { PublicCartBar } from "@/features/cart/public-cart-bar";
 import { MenuBrowser } from "@/features/menu/menu-browser";
 import { RestaurantBrand, restaurantBrandVars } from "@/features/menu/public-brand";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
@@ -25,7 +25,6 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
           <p className={styles.brandDetail}>{detail}{menu.settings.pause_reason && menu.operational.label === "paused" ? ` — ${menu.settings.pause_reason}` : ""}</p>
           {(menu.store.city || menu.store.state) ? <p className={styles.location}>{[menu.store.city, menu.store.state].filter(Boolean).join(" - ")}</p> : null}
         </RestaurantBrand>
-        <Link href={`/m/${menu.store.slug}/carrinho`} className={styles.cart}>Ver carrinho</Link>
       </header>
       <div className={styles.content}>
         <div className={styles.serviceSummary} aria-label="Opções do pedido">
@@ -47,5 +46,6 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
       </div>
       <footer className={styles.signature} aria-label="PedeAqui — Seu pedido começa aqui"><PedeAquiLogo size="xs" decorative /><span>Seu pedido começa aqui.</span></footer>
     </div>
+    <PublicCartBar storeSlug={menu.store.slug} />
   </main>;
 }
