@@ -155,6 +155,7 @@ export default async function CheckoutPage({
                       <button type="submit" className={styles.choice}>
                         <strong>{address.isDefault ? "📍 Endereço principal" : `📍 ${address.label}`}</strong>
                         <span className={styles.choiceDetail}>{address.street}, {address.number}{address.complement ? ` · ${address.complement}` : ""}<br />{address.district} · {address.city}/{address.state}</span>
+                        <span className={styles.choiceDetail}><strong>Usar este endereço →</strong></span>
                       </button>
                     </form>
                   ))}
