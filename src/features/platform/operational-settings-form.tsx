@@ -21,6 +21,7 @@ export function OperationalSettingsForm({ organizationId, storeId, settings, mod
   modules: Set<string>;
 }) {
   const trackingAvailable = modules.has("deliveries") && modules.has("driver");
+  const selfClaimAvailable = modules.has("deliveries") && modules.has("driver");
   const campaignsAvailable = modules.has("growth") && modules.has("customers") && modules.has("conversations");
 
   return <form action={saveOperationalSettingsAction} className={styles.supportCard} style={{ gap: 14 }}>
@@ -51,6 +52,11 @@ export function OperationalSettingsForm({ organizationId, storeId, settings, mod
         <input type="checkbox" name="deliveriesAutoCreateWhenReady" defaultChecked={settings.deliveriesAutoCreateWhenReady} />
         Enviar delivery pronto automaticamente para Entregas
       </label>
+      <label style={checkStyle} title={selfClaimAvailable ? undefined : "Ative os módulos Entregas e Entregador para usar retirada livre"}>
+        <input type="checkbox" name="deliveriesDriverSelfClaimEnabled" defaultChecked={settings.deliveriesDriverSelfClaimEnabled} disabled={!selfClaimAvailable} />
+        Entregadores podem pegar pedidos disponíveis
+      </label>
+      {selfClaimAvailable ? <small>Quando ligado, pedidos prontos ficam disponíveis no portal dos motoboys. Cada entregador pode pegar vários pedidos até sua capacidade simultânea. A atribuição manual continua disponível como alternativa.</small> : <small>Retirada livre indisponível enquanto o módulo Entregador estiver desligado.</small>}
       <label style={checkStyle} title={trackingAvailable ? undefined : "Ative os módulos Entregas e Entregador para usar rastreamento"}>
         <input type="checkbox" name="deliveriesDriverTrackingEnabled" defaultChecked={settings.deliveriesDriverTrackingEnabled} disabled={!trackingAvailable} />
         Rastreamento do entregador durante rota ativa
