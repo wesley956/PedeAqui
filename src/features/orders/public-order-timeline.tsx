@@ -46,7 +46,7 @@ export function buildPublicOrderTimeline(input: { fulfillmentType: FulfillmentTy
   }
 
   const steps: TimelineStep[] = [
-    { key: "received", label: "Pedido recebido", detail: input.orderStatus === "draft" || input.orderStatus === "pending" ? "Aguardando confirmação do estabelecimento" : "Pedido confirmado pelo estabelecimento", reached: true },
+    { key: "received", label: "Pedido recebido", detail: input.orderStatus === "pending_confirmation" ? "Aguardando confirmação do estabelecimento" : "Pedido confirmado pelo estabelecimento", reached: true },
   ];
 
   if (productionRequired) {
