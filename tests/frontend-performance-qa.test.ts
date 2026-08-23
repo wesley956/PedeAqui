@@ -32,7 +32,8 @@ describe("frontend performance QA [316]", () => {
 
   it("keeps cart thumbnails out of the critical loading path", () => {
     const cart = read("src/app/m/[slug]/carrinho/page.tsx");
-    expect(cart).toContain('width={80} height={80} loading="lazy" decoding="async"');
+    expect(cart).toMatch(/width=\{\d+\} height=\{\d+\} loading="lazy" decoding="async"/);
+    expect(cart).not.toContain('fetchPriority="high"');
   });
 
   it("records a before/after baseline without inventing browser timings", () => {
