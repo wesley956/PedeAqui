@@ -55,11 +55,16 @@ function QuantityModifierGroup({ group, disabled }: { group: Group; disabled: bo
   const total = Object.values(quantities).reduce((sum, quantity) => sum + quantity, 0);
   const complete = total >= minimum && total <= group.max_selection;
   const maxReached = total >= group.max_selection;
+  const allOptionsSelected = group.modifiers.length > 0 && group.modifiers.every((modifier) => (quantities[modifier.id] ?? 0) > 0);
 
   useEffect(() => {
-    if (!validationInput.current) return;
-    validationInput.current.setCustomValidity(disabled || complete ? "" : minimum > 0 && total < minimum ? `Selecione pelo menos ${minimum} unidade(s) em ${group.name}.` : `O máximo é ${group.max_selection} unidade(s) em ${group.name}.`);
-  }, [complete, disabled, group.max_selection, group.name, minimum, total]);
+    if (validationInput.current) {
+      validationInput.current.setCustomValidity(disabled || complete ? "" : minimum > 0 && total < minimum ? `Selecione pelo menos ${minimum} unidade(s) em ${group.name}.` : `O máximo é ${group.max_selection} unidade(s) em ${group.name}.`);
+    }
+    window.dispatchEvent(new CustomEvent("pedeaqui:quantity-group-state", {
+      detail: { groupId: group.id, valid: disabled ? false : complete, allOptionsSelected, total },
+    }));
+  }, [allOptionsSelected, complete, disabled, group.id, group.max_selection, group.name, minimum, total]);
 
   function change(modifierId: string, delta: number) {
     setQuantities((current) => {
