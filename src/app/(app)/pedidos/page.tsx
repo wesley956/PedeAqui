@@ -16,7 +16,7 @@ export default async function OrdersPage() {
           <h1>Pedidos</h1>
           <p className={styles.pageHint}>
             {workflowMode === "simplified"
-              ? "Acompanhe somente os pedidos em andamento. Ao finalizar, o pedido sai deste quadro e vai para o histórico."
+              ? "Iniciar → Pronto → Finalizados. Ao iniciar a rota, o pedido vai para Finalizados aguardando a confirmação da entrega. Depois de entregue e liquidado, sai do quadro e fica no histórico."
               : "Acompanhe os pedidos ativos por prioridade e consulte finalizados, cancelados e recusados no histórico."}
           </p>
         </div>
