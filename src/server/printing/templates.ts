@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const modifierSchema = z.object({ group: z.string().nullable().optional(), name: z.string(), unit_price_cents: z.number().optional() });
+const modifierSchema = z.object({ group: z.string().nullable().optional(), name: z.string(), unit_price_cents: z.number().optional(), quantity: z.number().int().positive().default(1) });
 const itemSchema = z.object({
   order_item_id: z.string().optional(),
   product_id: z.string().nullable().optional(),
@@ -71,7 +71,7 @@ function items(lines: string[], payload: PrintPayload, width: number, showPrice:
   for (const item of payload.items) {
     const left = `${item.quantity}x ${item.name}`;
     lines.push(showPrice && item.line_total_cents !== undefined ? pair(left, money(item.line_total_cents), width) : clip(left, width));
-    for (const modifier of item.modifiers) lines.push(clip(`  + ${modifier.name}`, width));
+    for (const modifier of item.modifiers) lines.push(clip(`  + ${modifier.quantity > 1 ? `${modifier.quantity}x ` : ""}${modifier.name}`, width));
     if (item.note) lines.push(clip(`  OBS: ${item.note}`, width));
   }
 }
