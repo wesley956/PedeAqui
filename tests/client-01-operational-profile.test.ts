@@ -74,19 +74,24 @@ describe("client 01 configurable operational profile", () => {
 });
 
 describe("client 01 product surfaces", () => {
-  it("keeps the simplified board focused on active work and moves terminal orders to history", () => {
+  it("uses Finalizados as delivery-in-route stage and removes truly completed orders from the live board", () => {
     const board = read("src/features/orders/order-manager-board.tsx");
     const service = read("src/server/orders/order-service.ts");
     const page = read("src/app/(app)/pedidos/page.tsx");
     const history = read("src/app/(app)/pedidos/historico/page.tsx");
+    const deliverySql = read("supabase/sql/53_delivery_operations.sql");
     expect(board).toContain('workflowMode === "simplified"');
     expect(board).toContain('{ key: "start", label: "Iniciar"');
     expect(board).toContain('{ key: "ready", label: "Pronto"');
-    expect(board).not.toContain('{ key: "completed", label: "Finalizados"');
+    expect(board).toContain('{ key: "completed", label: "Finalizados"');
+    expect(board).toContain('["out_for_delivery", "delivered"].includes(order.fulfillment_status)');
+    expect(board).toContain("Aguardando confirmação de entrega");
     expect(service).toContain('.not("order_status", "in", "(completed,rejected,canceled)")');
     expect(service).toContain("static async listHistory");
     expect(page).toContain('href="/pedidos/historico"');
     expect(history).toContain("Finalizados, cancelados e recusados ficam aqui");
+    expect(deliverySql).toContain("p_to_state='delivered' and v_order.payment_status='paid' and v_order.order_status='confirmed'");
+    expect(deliverySql).toContain("'order','completed'");
   });
 
   it("keeps the driver mobile portal minimal and location sharing transparent", () => {
