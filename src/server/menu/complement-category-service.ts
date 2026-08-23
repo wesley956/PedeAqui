@@ -124,7 +124,7 @@ export class ComplementCategoryService {
         imageUrl: product.image_url,
         priceCents: Number(product.price_cents),
         promotionalPriceCents: product.promotional_price_cents === null ? null : Number(product.promotional_price_cents),
-        requiresConfiguration: configuredIds.has(product.id),
+        requiresConfiguration: store.business_type === "gas" || configuredIds.has(product.id),
       }));
       return categoryProducts.length > 0 ? [{ id: category.id, name: category.name, products: categoryProducts }] : [];
     });
