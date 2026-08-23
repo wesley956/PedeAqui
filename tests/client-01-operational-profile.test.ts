@@ -8,6 +8,7 @@ const sql = read("supabase/sql/124_client_01_operational_profile.sql");
 const hardeningSql = read("supabase/sql/125_client_01_route_campaign_hardening.sql");
 const concurrencySql = read("supabase/sql/126_client_01_campaign_concurrency_hardening.sql");
 const providerStatusSql = read("supabase/sql/127_client_01_campaign_provider_status.sql");
+const schedulerSql = read("supabase/sql/128_internal_job_scheduler.sql");
 
 describe("client 01 configurable operational profile", () => {
   it("keeps every new behavior opt-in and reversible", () => {
@@ -33,7 +34,7 @@ describe("client 01 configurable operational profile", () => {
     expect(sql).toContain("heartbeat rate limit exceeded");
     expect(sql).toContain("route session does not belong to current driver");
     expect(sql).toContain("cleanup_driver_route_points_internal");
-    expect(read("src/app/api/internal/route-retention/route.ts")).toContain("CRON_SECRET");
+    expect(read("src/app/api/internal/route-retention/route.ts")).toContain('authorizeInternalJob(request, "route_retention")');
     expect(sql).toContain("where s.status='active'");
     expect(hardeningSql).toContain("v_order.fulfillment_status<>'out_for_delivery'");
     expect(hardeningSql).toContain("route can only start after delivery is out for delivery");
@@ -106,13 +107,23 @@ describe("client 01 product surfaces", () => {
     expect(page).toContain("Template aprovado da Meta");
     expect(page).toContain("includeCustomerNameParameter");
     expect(page).toContain("Cancelar campanha");
-    expect(route).toContain("CRON_SECRET");
+    expect(route).toContain('authorizeInternalJob(request, "campaign_messages")');
     expect(worker).toContain("WhatsAppCloudProvider");
     expect(worker).toContain('preference.data?.status !== "consented"');
     expect(worker).toContain("approvedParameters");
     expect(worker).toContain("Releitura imediatamente antes do provider");
     expect(worker).toContain("result[status] += 1");
     expect(read("src/server/conversations/conversation-service.ts")).toContain("campaign_update_delivery_internal");
+  });
+
+  it("runs recovery and retention independently of hosting cron secrets", () => {
+    expect(schedulerSql).toContain("create extension if not exists pg_net");
+    expect(schedulerSql).toContain("vault.create_secret");
+    expect(schedulerSql).toContain("authorize_internal_job_internal");
+    expect(schedulerSql).toContain("pedeaqui-campaign-message-recovery");
+    expect(schedulerSql).toContain("*/5 * * * *");
+    expect(schedulerSql).toContain("pedeaqui-route-retention");
+    expect(read("vercel.json")).not.toContain('"crons"');
   });
 
   it("exposes auditable per-store controls only in the platform panel", () => {
