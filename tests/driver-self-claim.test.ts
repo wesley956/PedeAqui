@@ -37,7 +37,8 @@ describe("driver self-claim delivery mode", () => {
     expect(availableQuery).toContain("address_district_snapshot,address_city_snapshot,total_cents");
     expect(availableQuery).not.toContain("customer_phone_snapshot");
     expect(page).toContain("Pedidos disponíveis");
-    expect(page).toContain("Pegar pedido");
+    expect(page).toContain('intent="claim"');
+    expect(form).toContain('claim: "Pegar pedido"');
     expect(page).toContain("dados do cliente aparecem somente depois que você pegar o pedido");
   });
 
