@@ -1,3 +1,5 @@
+export type ModifierSelectionMode = "distinct_choices" | "quantity_per_option";
+
 export type PricingModifier = {
   id: string;
   groupId: string;
@@ -12,6 +14,7 @@ export type PricingModifierGroup = {
   minSelection: number;
   maxSelection: number;
   required: boolean;
+  selectionMode?: ModifierSelectionMode;
   modifiers: PricingModifier[];
 };
 
@@ -25,12 +28,18 @@ export type PricingProduct = {
   modifierGroups: PricingModifierGroup[];
 };
 
+export type ModifierSelection = {
+  modifierId: string;
+  quantity: number;
+};
+
 export type PricedModifierSnapshot = {
   group_id: string;
   group_name: string;
   modifier_id: string;
   modifier_name: string;
   unit_price_cents: number;
+  quantity: number;
 };
 
 export class PricingError extends Error {
@@ -47,8 +56,22 @@ function assertCents(value: number) {
   return value;
 }
 
+function normalizeSelections(input: string[] | ModifierSelection[]): ModifierSelection[] {
+  const selections = input.map((entry) => typeof entry === "string" ? { modifierId: entry, quantity: 1 } : entry);
+  const ids = selections.map((selection) => selection.modifierId);
+  if (new Set(ids).size !== ids.length) {
+    throw new PricingError("invalid_modifiers", "Duplicate modifier selection");
+  }
+  for (const selection of selections) {
+    if (!Number.isInteger(selection.quantity) || selection.quantity < 1 || selection.quantity > 100) {
+      throw new PricingError("invalid_modifiers", "Invalid modifier quantity");
+    }
+  }
+  return selections;
+}
+
 export class PricingService {
-  static priceItem(product: PricingProduct, selectedModifierIds: string[], quantity: number) {
+  static priceItem(product: PricingProduct, selectedModifiers: string[] | ModifierSelection[], quantity: number) {
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
       throw new PricingError("invalid_quantity", "Quantity must be between 1 and 99");
     }
@@ -56,36 +79,46 @@ export class PricingService {
       throw new PricingError("product_unavailable", "Product is unavailable");
     }
 
-    const uniqueSelected = [...new Set(selectedModifierIds)];
-    if (uniqueSelected.length !== selectedModifierIds.length) {
-      throw new PricingError("invalid_modifiers", "Duplicate modifier selection");
-    }
-
+    const selections = normalizeSelections(selectedModifiers);
     const allowedIds = new Set(product.modifierGroups.flatMap((group) => group.modifiers.map((modifier) => modifier.id)));
-    if (uniqueSelected.some((id) => !allowedIds.has(id))) {
+    if (selections.some((selection) => !allowedIds.has(selection.modifierId))) {
       throw new PricingError("invalid_modifiers", "Modifier does not belong to this product");
     }
+    const selectionById = new Map(selections.map((selection) => [selection.modifierId, selection]));
 
     const snapshots: PricedModifierSnapshot[] = [];
     for (const group of product.modifierGroups) {
-      const selected = group.modifiers.filter((modifier) => uniqueSelected.includes(modifier.id));
+      const mode = group.selectionMode ?? "distinct_choices";
+      const selected = group.modifiers.flatMap((modifier) => {
+        const selection = selectionById.get(modifier.id);
+        return selection ? [{ modifier, quantity: selection.quantity }] : [];
+      });
       const minimum = group.required ? Math.max(1, group.minSelection) : group.minSelection;
-      if (selected.length < minimum || selected.length > group.maxSelection) {
+      const selectionCount = mode === "quantity_per_option"
+        ? selected.reduce((sum, selection) => sum + selection.quantity, 0)
+        : selected.length;
+      if (mode === "distinct_choices" && selected.some((selection) => selection.quantity !== 1)) {
+        throw new PricingError("invalid_modifiers", `Invalid quantity for ${group.name}`);
+      }
+      if (selectionCount < minimum || selectionCount > group.maxSelection) {
         throw new PricingError("invalid_modifiers", `Invalid selection for ${group.name}`);
       }
-      for (const modifier of selected) {
+      for (const { modifier, quantity: modifierQuantity } of selected) {
         snapshots.push({
           group_id: group.id,
           group_name: group.name,
           modifier_id: modifier.id,
           modifier_name: modifier.name,
           unit_price_cents: assertCents(modifier.priceCents),
+          quantity: modifierQuantity,
         });
       }
     }
 
     const baseUnitPriceCents = assertCents(product.promotionalPriceCents ?? product.priceCents);
-    const modifiersUnitPriceCents = assertCents(snapshots.reduce((sum, modifier) => sum + modifier.unit_price_cents, 0));
+    const modifiersUnitPriceCents = assertCents(snapshots.reduce((sum, modifier) => {
+      return assertCents(sum + assertCents(modifier.unit_price_cents * modifier.quantity));
+    }, 0));
     const unitTotalPriceCents = assertCents(baseUnitPriceCents + modifiersUnitPriceCents);
     const lineTotalCents = assertCents(unitTotalPriceCents * quantity);
 

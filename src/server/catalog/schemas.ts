@@ -28,13 +28,11 @@ export const productInputSchema = z.object({
   availability: productAvailabilitySchema.default("available"),
 }).superRefine((value, ctx) => {
   if (value.promotionalPriceCents !== null && value.promotionalPriceCents !== undefined && value.promotionalPriceCents > value.priceCents) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["promotionalPriceCents"],
-      message: "Promotional price cannot be greater than regular price",
-    });
+    ctx.addIssue({ code: "custom", path: ["promotionalPriceCents"], message: "Promotional price cannot be greater than regular price" });
   }
 });
+
+export const modifierSelectionModeSchema = z.enum(["distinct_choices", "quantity_per_option"]);
 
 export const modifierGroupInputSchema = z.object({
   name: z.string().trim().min(2).max(100),
@@ -42,6 +40,7 @@ export const modifierGroupInputSchema = z.object({
   minSelection: z.number().int().min(0).max(100).default(0),
   maxSelection: z.number().int().min(1).max(100).default(1),
   required: z.boolean().default(false),
+  selectionMode: modifierSelectionModeSchema.default("distinct_choices"),
   sortOrder: z.number().int().min(0).max(10000).default(0),
   active: z.boolean().default(true),
 }).superRefine((value, ctx) => {
@@ -70,5 +69,6 @@ export const productModifierGroupLinkSchema = z.object({
 export type CategoryInput = z.input<typeof categoryInputSchema>;
 export type ProductInput = z.input<typeof productInputSchema>;
 export type ProductAvailability = z.infer<typeof productAvailabilitySchema>;
+export type ModifierSelectionMode = z.infer<typeof modifierSelectionModeSchema>;
 export type ModifierGroupInput = z.input<typeof modifierGroupInputSchema>;
 export type ModifierInput = z.input<typeof modifierInputSchema>;

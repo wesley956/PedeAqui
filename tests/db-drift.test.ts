@@ -7,7 +7,12 @@ import { describe, expect, it } from "vitest";
 type Baseline = { migrations: [string, string][] };
 const root = process.cwd();
 const script = path.join(root, "scripts/check-db-drift.mjs");
-const baseline = JSON.parse(fs.readFileSync(path.join(root, "supabase/production-migrations.json"), "utf8")) as Baseline;
+const base = JSON.parse(fs.readFileSync(path.join(root, "supabase/production-migrations.json"), "utf8")) as Baseline;
+const tailPath = path.join(root, "supabase/production-migrations-tail.json");
+const tail = fs.existsSync(tailPath)
+  ? JSON.parse(fs.readFileSync(tailPath, "utf8")) as Baseline
+  : { migrations: [] as [string, string][] };
+const baseline: Baseline = { migrations: [...base.migrations, ...tail.migrations] };
 
 function writeRemote(entries: [string, string][]) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pedeaqui-drift-"));
@@ -24,7 +29,7 @@ function run(remote: [string, string][]) {
 }
 
 describe("database drift checker", () => {
-  it("accepts the reconciled baseline", () => {
+  it("accepts the reconciled append-only baseline", () => {
     const output = execFileSync(process.execPath, [script, "--remote-file", writeRemote(baseline.migrations)], {
       cwd: root,
       encoding: "utf8",
@@ -33,7 +38,7 @@ describe("database drift checker", () => {
   });
 
   it("detects a migration present remotely but absent from the Git baseline", () => {
-    const result = run([...baseline.migrations, ["20260814010101", "controlled_remote_only"]]);
+    const result = run([...baseline.migrations, ["20991231235959", "controlled_remote_only"]]);
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("existe no remoto e falta no baseline Git");
     expect(result.stderr).not.toContain("SUPABASE_DB_URL");

@@ -11,9 +11,20 @@ import { logger } from "@/server/observability/logger";
 function selectedModifierIds(formData: FormData) {
   const ids: string[] = [];
   for (const [key, value] of formData.entries()) {
-    if (key.startsWith("modifier_") && typeof value === "string" && value) ids.push(value);
+    if (key.startsWith("modifier_") && !key.startsWith("modifier_qty_") && typeof value === "string" && value) ids.push(value);
   }
   return ids;
+}
+
+function quantityModifierSelections(formData: FormData) {
+  const selections: Array<{ modifierId: string; quantity: number }> = [];
+  for (const [key, value] of formData.entries()) {
+    if (!key.startsWith("modifier_qty_") || typeof value !== "string") continue;
+    const modifierId = key.slice("modifier_qty_".length);
+    const quantity = Number(value);
+    if (quantity > 0) selections.push({ modifierId, quantity });
+  }
+  return selections;
 }
 
 function safeInteger(value: FormDataEntryValue | null) {
@@ -29,12 +40,17 @@ export async function addToCartAction(formData: FormData) {
   const rawStoreSlug = String(formData.get("storeSlug") ?? "");
   const rawProductId = String(formData.get("productId") ?? "");
   const gasSaleModeRaw = formData.get("gasSaleMode");
+  const legacyModifierIds = selectedModifierIds(formData);
   const parsed = addCartItemSchema.safeParse({
     storeSlug: rawStoreSlug,
     productId: rawProductId,
     quantity: safeInteger(formData.get("quantity")),
     note: typeof formData.get("note") === "string" ? String(formData.get("note")) : null,
-    modifierIds: selectedModifierIds(formData),
+    modifierIds: legacyModifierIds,
+    modifierSelections: [
+      ...legacyModifierIds.map((modifierId) => ({ modifierId, quantity: 1 })),
+      ...quantityModifierSelections(formData),
+    ],
     gasSaleMode: typeof gasSaleModeRaw === "string" && gasSaleModeRaw ? gasSaleModeRaw : null,
   });
   if (!parsed.success) {
@@ -78,9 +94,7 @@ export async function updateCartQuantityAction(formData: FormData) {
     itemId: String(formData.get("itemId") ?? ""),
     quantity: safeInteger(formData.get("quantity")),
   });
-  if (!parsed.success) {
-    redirect(safePublicPath(rawStoreSlug, "/carrinho?erro=invalid_quantity"));
-  }
+  if (!parsed.success) redirect(safePublicPath(rawStoreSlug, "/carrinho?erro=invalid_quantity"));
   const values = parsed.data;
   const token = (await cookies()).get(cartCookieName(values.storeSlug))?.value;
   if (!token) redirect(`/m/${values.storeSlug}`);
@@ -95,13 +109,8 @@ export async function updateCartQuantityAction(formData: FormData) {
 
 export async function removeCartItemAction(formData: FormData) {
   const rawStoreSlug = String(formData.get("storeSlug") ?? "");
-  const parsed = removeCartItemSchema.safeParse({
-    storeSlug: rawStoreSlug,
-    itemId: String(formData.get("itemId") ?? ""),
-  });
-  if (!parsed.success) {
-    redirect(safePublicPath(rawStoreSlug, "/carrinho?erro=cart_remove_failed"));
-  }
+  const parsed = removeCartItemSchema.safeParse({ storeSlug: rawStoreSlug, itemId: String(formData.get("itemId") ?? "") });
+  if (!parsed.success) redirect(safePublicPath(rawStoreSlug, "/carrinho?erro=cart_remove_failed"));
   const values = parsed.data;
   const token = (await cookies()).get(cartCookieName(values.storeSlug))?.value;
   if (!token) redirect(`/m/${values.storeSlug}`);
