@@ -74,12 +74,19 @@ describe("client 01 configurable operational profile", () => {
 });
 
 describe("client 01 product surfaces", () => {
-  it("renders exactly three operational columns in simplified mode", () => {
+  it("keeps the simplified board focused on active work and moves terminal orders to history", () => {
     const board = read("src/features/orders/order-manager-board.tsx");
+    const service = read("src/server/orders/order-service.ts");
+    const page = read("src/app/(app)/pedidos/page.tsx");
+    const history = read("src/app/(app)/pedidos/historico/page.tsx");
     expect(board).toContain('workflowMode === "simplified"');
     expect(board).toContain('{ key: "start", label: "Iniciar"');
     expect(board).toContain('{ key: "ready", label: "Pronto"');
-    expect(board).toContain('{ key: "completed", label: "Finalizados"');
+    expect(board).not.toContain('{ key: "completed", label: "Finalizados"');
+    expect(service).toContain('.not("order_status", "in", "(completed,rejected,canceled)")');
+    expect(service).toContain("static async listHistory");
+    expect(page).toContain('href="/pedidos/historico"');
+    expect(history).toContain("Finalizados, cancelados e recusados ficam aqui");
   });
 
   it("keeps the driver mobile portal minimal and location sharing transparent", () => {
