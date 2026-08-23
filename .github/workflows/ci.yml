@@ -71,8 +71,15 @@ jobs:
       - name: Test
         run: npm run test
 
-      - name: E2E context journeys
-        run: npm run test:e2e
+      - name: Public UX final homologation contracts
+        run: npm run test:public-ux
+
+      - name: E2E context journeys — 3 consecutive passes
+        run: |
+          for attempt in 1 2 3; do
+            echo "PUBLIC_UX_JOURNEY_PASS=${attempt}/3"
+            npm run test:e2e
+          done
 
       - name: Validate Print Agent
         run: |
