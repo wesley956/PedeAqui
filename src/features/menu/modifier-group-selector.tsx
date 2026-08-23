@@ -7,8 +7,16 @@ import styles from "./modifier-group-selector.module.css";
 type Group = PublicProduct["product"]["modifier_groups"][number];
 function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
 
-export function ModifierGroupSelector({ group, disabled = false }: { group: Group; disabled?: boolean }) {
-  if (group.selection_mode === "quantity_per_option") return <QuantityModifierGroup group={group} disabled={disabled} />;
+function scrollToTarget(targetId: string) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  target.querySelector<HTMLElement>("button, a, input, select, textarea, [tabindex]")?.focus({ preventScroll: true });
+}
+
+export function ModifierGroupSelector({ group, disabled = false, complementTargetId }: { group: Group; disabled?: boolean; complementTargetId?: string }) {
+  if (group.selection_mode === "quantity_per_option") return <QuantityModifierGroup group={group} disabled={disabled} complementTargetId={complementTargetId} />;
   return <DistinctModifierGroup group={group} disabled={disabled} />;
 }
 
@@ -48,23 +56,18 @@ function DistinctModifierGroup({ group, disabled }: { group: Group; disabled: bo
   </fieldset>;
 }
 
-function QuantityModifierGroup({ group, disabled }: { group: Group; disabled: boolean }) {
+function QuantityModifierGroup({ group, disabled, complementTargetId }: { group: Group; disabled: boolean; complementTargetId?: string }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const validationInput = useRef<HTMLInputElement | null>(null);
   const minimum = group.required ? Math.max(1, group.min_selection) : group.min_selection;
   const total = Object.values(quantities).reduce((sum, quantity) => sum + quantity, 0);
   const complete = total >= minimum && total <= group.max_selection;
   const maxReached = total >= group.max_selection;
-  const allOptionsSelected = group.modifiers.length > 0 && group.modifiers.every((modifier) => (quantities[modifier.id] ?? 0) > 0);
 
   useEffect(() => {
-    if (validationInput.current) {
-      validationInput.current.setCustomValidity(disabled || complete ? "" : minimum > 0 && total < minimum ? `Selecione pelo menos ${minimum} unidade(s) em ${group.name}.` : `O máximo é ${group.max_selection} unidade(s) em ${group.name}.`);
-    }
-    window.dispatchEvent(new CustomEvent("pedeaqui:quantity-group-state", {
-      detail: { groupId: group.id, valid: disabled ? false : complete, allOptionsSelected, total },
-    }));
-  }, [allOptionsSelected, complete, disabled, group.id, group.max_selection, group.name, minimum, total]);
+    if (!validationInput.current) return;
+    validationInput.current.setCustomValidity(disabled || complete ? "" : minimum > 0 && total < minimum ? `Selecione pelo menos ${minimum} unidade(s) em ${group.name}.` : `O máximo é ${group.max_selection} unidade(s) em ${group.name}.`);
+  }, [complete, disabled, group.max_selection, group.name, minimum, total]);
 
   function change(modifierId: string, delta: number) {
     setQuantities((current) => {
@@ -98,6 +101,7 @@ function QuantityModifierGroup({ group, disabled }: { group: Group; disabled: bo
         </div>
       </div>;
     })}</div>
+    {complementTargetId && complete ? <button type="button" onClick={() => scrollToTarget(complementTargetId)} style={{ justifySelf: "start", border: 0, background: "transparent", color: "#9a4a00", fontWeight: 900, padding: "6px 0", cursor: "pointer" }}>Pronto, ver complementos →</button> : null}
   </fieldset>;
 }
 
