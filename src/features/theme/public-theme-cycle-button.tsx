@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "./public-theme-cycle-button.module.css";
 
 type ThemePreference = "system" | "light" | "dark";
@@ -28,6 +28,12 @@ function systemTheme(): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+function currentThemePreference(): ThemePreference {
+  if (typeof document === "undefined") return "system";
+  const current = document.documentElement.dataset.themePreference;
+  return isThemePreference(current) ? current : "system";
+}
+
 function applyTheme(preference: ThemePreference) {
   const root = document.documentElement;
   root.dataset.themePreference = preference;
@@ -40,12 +46,7 @@ function applyTheme(preference: ThemePreference) {
 }
 
 export function PublicThemeCycleButton() {
-  const [preference, setPreference] = useState<ThemePreference>("system");
-
-  useEffect(() => {
-    const current = document.documentElement.dataset.themePreference;
-    setPreference(isThemePreference(current) ? current : "system");
-  }, []);
+  const [preference, setPreference] = useState<ThemePreference>(currentThemePreference);
 
   function cycleTheme() {
     const currentIndex = cycleOrder.indexOf(preference);
