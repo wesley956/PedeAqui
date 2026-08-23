@@ -6,7 +6,6 @@ import styles from "./public-theme-cycle-button.module.css";
 type ThemePreference = "system" | "light" | "dark";
 
 const STORAGE_KEY = "pedeaqui-theme";
-const cycleOrder: ThemePreference[] = ["system", "light", "dark"];
 
 const labels: Record<ThemePreference, string> = {
   system: "Automático",
@@ -22,6 +21,12 @@ const icons: Record<ThemePreference, string> = {
 
 function isThemePreference(value: string | undefined | null): value is ThemePreference {
   return value === "system" || value === "light" || value === "dark";
+}
+
+function nextTheme(preference: ThemePreference): ThemePreference {
+  if (preference === "system") return "light";
+  if (preference === "light") return "dark";
+  return "system";
 }
 
 function systemTheme(): "light" | "dark" {
@@ -49,13 +54,12 @@ export function PublicThemeCycleButton() {
   const [preference, setPreference] = useState<ThemePreference>(currentThemePreference);
 
   function cycleTheme() {
-    const currentIndex = cycleOrder.indexOf(preference);
-    const next = cycleOrder[(currentIndex + 1) % cycleOrder.length];
+    const next = nextTheme(preference);
     applyTheme(next);
     setPreference(next);
   }
 
-  const next = cycleOrder[(cycleOrder.indexOf(preference) + 1) % cycleOrder.length];
+  const next = nextTheme(preference);
   const label = `Tema: ${labels[preference]}. Toque para mudar para ${labels[next]}.`;
 
   return (
