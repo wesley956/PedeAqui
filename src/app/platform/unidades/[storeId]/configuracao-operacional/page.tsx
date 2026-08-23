@@ -9,7 +9,8 @@ import styles from "@/app/platform/platform.module.css";
 
 export default async function OperationalConfigurationPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
-  await PlatformAdminService.access();
+  const access = await PlatformAdminService.access();
+  if (access.role !== "super_admin") notFound();
 
   const admin = createAdminClient();
   const { data: store, error } = await admin
