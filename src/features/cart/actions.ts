@@ -11,9 +11,20 @@ import { logger } from "@/server/observability/logger";
 function selectedModifierIds(formData: FormData) {
   const ids: string[] = [];
   for (const [key, value] of formData.entries()) {
-    if (key.startsWith("modifier_") && typeof value === "string" && value) ids.push(value);
+    if (key.startsWith("modifier_") && !key.startsWith("modifier_qty_") && typeof value === "string" && value) ids.push(value);
   }
   return ids;
+}
+
+function modifierSelections(formData: FormData) {
+  const selections: Array<{ modifierId: string; quantity: number }> = [];
+  for (const [key, value] of formData.entries()) {
+    if (!key.startsWith("modifier_qty_") || typeof value !== "string") continue;
+    const modifierId = key.slice("modifier_qty_".length);
+    const quantity = Number(value);
+    if (quantity > 0) selections.push({ modifierId, quantity });
+  }
+  return selections;
 }
 
 function safeInteger(value: FormDataEntryValue | null) {
@@ -35,6 +46,7 @@ export async function addToCartAction(formData: FormData) {
     quantity: safeInteger(formData.get("quantity")),
     note: typeof formData.get("note") === "string" ? String(formData.get("note")) : null,
     modifierIds: selectedModifierIds(formData),
+    modifierSelections: modifierSelections(formData),
     gasSaleMode: typeof gasSaleModeRaw === "string" && gasSaleModeRaw ? gasSaleModeRaw : null,
   });
   if (!parsed.success) {
