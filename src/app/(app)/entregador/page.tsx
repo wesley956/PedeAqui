@@ -4,6 +4,7 @@ import { DeliverySla } from "@/features/delivery/delivery-sla";
 import { DeliveryOperationForm } from "@/features/delivery/operation-forms";
 import styles from "@/features/delivery/courier.module.css";
 import { DriverLocationTracker } from "@/features/delivery/driver-location-tracker";
+import { DriverRouteStartForm } from "@/features/delivery/driver-route-start-form";
 import { RouteTrackingService } from "@/server/delivery/route-tracking-service";
 
 function address(order: NonNullable<Awaited<ReturnType<typeof DeliveryOperationsService.loadDriverView>>["deliveries"][number]["order"]>) {
@@ -49,6 +50,9 @@ export default async function DriverPage() {
   if (!data.context.storeId) throw new Error("Uma unidade ativa é necessária");
   const active = data.deliveries.filter((item) => item.order && item.order.fulfillment_status !== "delivered");
   const history = data.deliveries.filter((item) => item.order?.fulfillment_status === "delivered").slice(0, 10);
+  const routeRecoveryDelivery = !tracking.sessionId
+    ? active.find((item) => item.order?.fulfillment_status === "out_for_delivery") ?? null
+    : null;
 
   return <section className={styles.page}>
     <header className={styles.header}>
@@ -61,7 +65,17 @@ export default async function DriverPage() {
 
     {!data.driver.active || !data.driver.on_duty ? <article className={styles.offDuty}><strong>Você está fora de serviço.</strong><p>Entregas já atribuídas continuam visíveis, mas novas atribuições ficam bloqueadas pela operação até seu status ser alterado.</p></article> : null}
 
-    {tracking.enabled && tracking.sessionId ? <article className={styles.tracking}><DriverLocationTracker sessionId={tracking.sessionId} /></article> : null}
+    {tracking.enabled && tracking.sessionId ? <article className={styles.tracking}>
+      <strong>Rota iniciada</strong>
+      <p>Compartilhe a localização para a loja acompanhar o trajeto enquanto a entrega estiver em andamento.</p>
+      <DriverLocationTracker sessionId={tracking.sessionId} />
+    </article> : null}
+
+    {tracking.enabled && routeRecoveryDelivery ? <article className={styles.tracking}>
+      <strong>Rota em andamento · rastreamento pendente</strong>
+      <p>O pedido já saiu para entrega, mas a sessão de localização não foi iniciada. Ative abaixo para a loja acompanhar o trajeto.</p>
+      <DriverRouteStartForm deliveryId={routeRecoveryDelivery.id} />
+    </article> : null}
 
     {active.length === 0 ? <article className={styles.empty}><strong>Nenhuma entrega ativa.</strong><p>Quando uma entrega for atribuída a você, ela aparecerá aqui automaticamente.</p></article> : <div className={styles.list}>{active.map((item) => {
       const order = item.order!;
