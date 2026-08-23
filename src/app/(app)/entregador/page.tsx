@@ -77,7 +77,7 @@ export default async function DriverPage() {
           : `Pagamento pendente · ${paymentMethod} · ${money(order.total_cents)}`;
       const nextAction = order.fulfillment_status === "assigned" ? <DeliveryOperationForm intent="picked_up" deliveryId={item.id} prominent />
         : order.fulfillment_status === "picked_up" ? <DeliveryOperationForm intent="out_for_delivery" deliveryId={item.id} prominent />
-          : order.fulfillment_status === "out_for_delivery" ? <DeliveryOperationForm intent="delivered" deliveryId={item.id} prominent /> : null;
+          : order.fulfillment_status === "out_for_delivery" ? <DeliveryOperationForm intent="delivered" deliveryId={item.id} paymentPending={!paid} prominent /> : null;
 
       return <article key={item.id} className={styles.card}>
         <div className={styles.cardHeader}>

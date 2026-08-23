@@ -21,6 +21,7 @@ type DeliveryRow = {
   delivery_fee_cents: number;
   delivery_estimated_min_minutes: number | null;
   delivery_estimated_max_minutes: number | null;
+  payment_status: string;
   production_status: string;
   fulfillment_status: string;
   delivery: { id: string; driver_id: string | null; promised_by_at: string | null; delivered_at: string | null } | null;
@@ -112,7 +113,7 @@ function DeliveryCard({ order, drivers, driverNames, now }: { order: DeliveryRow
       {canAssign ? <DeliveryOperationForm intent="assign" orderId={order.id} drivers={drivers} currentDriverId={delivery?.driver_id ?? null} /> : null}
       {order.fulfillment_status === "assigned" && delivery ? <DeliveryOperationForm intent="picked_up" deliveryId={delivery.id} /> : null}
       {order.fulfillment_status === "picked_up" && delivery ? <DeliveryOperationForm intent="out_for_delivery" deliveryId={delivery.id} /> : null}
-      {order.fulfillment_status === "out_for_delivery" && delivery ? <DeliveryOperationForm intent="delivered" deliveryId={delivery.id} /> : null}
+      {order.fulfillment_status === "out_for_delivery" && delivery ? <DeliveryOperationForm intent="delivered" deliveryId={delivery.id} paymentPending={order.payment_status !== "paid"} /> : null}
     </div>
   </article>;
 }

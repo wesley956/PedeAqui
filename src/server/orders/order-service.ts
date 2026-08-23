@@ -105,16 +105,43 @@ export class OrderService {
     const context = await authorize(PERMISSIONS.ORDERS_VIEW);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const [{ data, error }, settingsResult] = await Promise.all([admin.from("orders")
+    const settingsResult = await admin.from("store_operational_settings")
+      .select("orders_workflow_mode")
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .maybeSingle();
+    if (settingsResult.error) throw settingsResult.error;
+
+    const workflowMode = settingsResult.data?.orders_workflow_mode === "simplified" ? "simplified" as const : "standard" as const;
+    let query = admin.from("orders")
+      .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId);
+
+    if (workflowMode === "simplified") {
+      query = query.not("order_status", "in", "(completed,rejected,canceled)");
+    }
+
+    const { data, error } = await query
+      .order("created_at", { ascending: false })
+      .limit(Math.min(Math.max(limit, 1), 250));
+    if (error) throw error;
+    return { context, orders: data ?? [], workflowMode };
+  }
+
+  static async listHistory(limit = 250) {
+    const context = await authorize(PERMISSIONS.ORDERS_VIEW);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const { data, error } = await admin.from("orders")
       .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
-      .order("created_at", { ascending: false })
-      .limit(Math.min(Math.max(limit, 1), 250)),
-    admin.from("store_operational_settings").select("orders_workflow_mode").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle()]);
+      .in("order_status", ["completed", "rejected", "canceled"])
+      .order("updated_at", { ascending: false })
+      .limit(Math.min(Math.max(limit, 1), 250));
     if (error) throw error;
-    if (settingsResult.error) throw settingsResult.error;
-    return { context, orders: data ?? [], workflowMode: settingsResult.data?.orders_workflow_mode === "simplified" ? "simplified" as const : "standard" as const };
+    return { context, orders: data ?? [] };
   }
 
   static async get(orderId: string) {
@@ -189,7 +216,7 @@ export class OrderService {
       printJobs: printJobs.map((job) => ({
         ...job,
         printer_name: printerNames.get(job.printer_id) ?? "Impressora",
-        station_name: job.station_id ? stationNames.get(job.station_id) ?? "Estação" : "Sem estação",
+        station_name: job.station_id ? printerNames.get(job.printer_id) ?? "Estação" : "Sem estação",
       })),
     };
   }

@@ -9,6 +9,7 @@ const hardeningSql = read("supabase/sql/125_client_01_route_campaign_hardening.s
 const concurrencySql = read("supabase/sql/126_client_01_campaign_concurrency_hardening.sql");
 const providerStatusSql = read("supabase/sql/127_client_01_campaign_provider_status.sql");
 const schedulerSql = read("supabase/sql/128_internal_job_scheduler.sql");
+const driverPaymentSql = read("supabase/sql/130_driver_delivery_payment_confirmation.sql");
 
 describe("client 01 configurable operational profile", () => {
   it("keeps every new behavior opt-in and reversible", () => {
@@ -74,12 +75,40 @@ describe("client 01 configurable operational profile", () => {
 });
 
 describe("client 01 product surfaces", () => {
-  it("renders exactly three operational columns in simplified mode", () => {
+  it("uses Finalizados as delivery-in-route stage and removes truly completed orders from the live board", () => {
     const board = read("src/features/orders/order-manager-board.tsx");
+    const service = read("src/server/orders/order-service.ts");
+    const page = read("src/app/(app)/pedidos/page.tsx");
+    const history = read("src/app/(app)/pedidos/historico/page.tsx");
+    const deliverySql = read("supabase/sql/53_delivery_operations.sql");
     expect(board).toContain('workflowMode === "simplified"');
     expect(board).toContain('{ key: "start", label: "Iniciar"');
     expect(board).toContain('{ key: "ready", label: "Pronto"');
     expect(board).toContain('{ key: "completed", label: "Finalizados"');
+    expect(board).toContain('["out_for_delivery", "delivered"].includes(order.fulfillment_status)');
+    expect(board).toContain("Aguardando confirmação de entrega");
+    expect(service).toContain('.not("order_status", "in", "(completed,rejected,canceled)")');
+    expect(service).toContain("static async listHistory");
+    expect(page).toContain('href="/pedidos/historico"');
+    expect(history).toContain("Finalizados, cancelados e recusados ficam aqui");
+    expect(deliverySql).toContain("p_to_state='delivered' and v_order.payment_status='paid' and v_order.order_status='confirmed'");
+    expect(deliverySql).toContain("'order','completed'");
+  });
+
+  it("lets the driver settle payment atomically with delivery or record a payment exception", () => {
+    const form = read("src/features/delivery/operation-forms.tsx");
+    const action = read("src/features/delivery/delivery-confirmation-actions.ts");
+    const service = read("src/server/delivery/driver-delivery-confirmation-service.ts");
+    expect(form).toContain("Pagamento recebido");
+    expect(form).toContain("Não recebi / houve problema");
+    expect(form).toContain("paymentNote");
+    expect(action).toContain("DriverDeliveryConfirmationService.confirm");
+    expect(service).toContain("delivery_confirm_with_payment_internal");
+    expect(driverPaymentSql).toContain("public.payment_confirm_internal");
+    expect(driverPaymentSql).toContain("public.delivery_transition_internal");
+    expect(driverPaymentSql).toContain("payment_not_received");
+    expect(driverPaymentSql).toContain("payment exception note is required");
+    expect(driverPaymentSql).toContain("grant execute on function public.delivery_confirm_with_payment_internal");
   });
 
   it("keeps the driver mobile portal minimal and location sharing transparent", () => {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { OrderManagerBoard } from "@/features/orders/order-manager-board";
 import styles from "@/features/orders/order-manager.module.css";
 import type { OrderManagerRow } from "@/features/orders/manager-model";
@@ -13,9 +14,15 @@ export default async function OrdersPage() {
         <div className={styles.pageHeading}>
           <p className={styles.pageEyebrow}>Operação em tempo real</p>
           <h1>Pedidos</h1>
-          <p className={styles.pageHint}>Acompanhe os pedidos ativos por prioridade e consulte finalizados, cancelados e recusados no histórico.</p>
+          <p className={styles.pageHint}>
+            {workflowMode === "simplified"
+              ? "Iniciar → Pronto → Finalizados. Ao iniciar a rota, o pedido vai para Finalizados aguardando a confirmação da entrega. Depois de entregue e liquidado, sai do quadro e fica no histórico."
+              : "Acompanhe os pedidos ativos por prioridade e consulte finalizados, cancelados e recusados no histórico."}
+          </p>
         </div>
-        <p className={styles.pageHint}>A tela é atualizada automaticamente enquanto a operação estiver aberta.</p>
+        {workflowMode === "simplified"
+          ? <Link href="/pedidos/historico" className={styles.detailsLink}>Ver histórico</Link>
+          : <p className={styles.pageHint}>A tela é atualizada automaticamente enquanto a operação estiver aberta.</p>}
       </header>
 
       <OrderManagerBoard storeId={context.storeId} orders={orders as OrderManagerRow[]} workflowMode={workflowMode} />

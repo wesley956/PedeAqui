@@ -45,15 +45,21 @@ function fulfillmentTypeLabel(type: string) {
   return type;
 }
 
-function statusForOrder(order: OrderManagerRow, bucket: OperationalOrderBucket): { status: OperationalStatusKey; label?: string } {
+function statusForOrder(order: OrderManagerRow, bucket: OperationalOrderBucket, labelOverride?: string): { status: OperationalStatusKey; label?: string } {
   if (order.order_status === "completed") return { status: "order_completed" };
   if (order.order_status === "rejected") return { status: "order_cancelled", label: "Recusado" };
   if (order.order_status === "canceled") return { status: "order_cancelled" };
-  if (order.fulfillment_status === "out_for_delivery") return { status: "order_out_for_delivery" };
+  if (order.fulfillment_status === "out_for_delivery" || labelOverride) return { status: "order_out_for_delivery", label: labelOverride };
   if (bucket === "new") return { status: "order_new" };
   if (bucket === "preparing") return { status: "order_preparing" };
   if (bucket === "ready") return { status: "order_ready" };
   return { status: "order_confirmed" };
+}
+
+function isSimplifiedDeliveryFinalized(order: OrderManagerRow) {
+  return order.order_status === "confirmed"
+    && order.fulfillment_type === "delivery"
+    && ["out_for_delivery", "delivered"].includes(order.fulfillment_status);
 }
 
 export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }: { storeId: string; orders: OrderManagerRow[]; workflowMode?: "standard" | "simplified" }) {
@@ -138,6 +144,19 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
     return result;
   }, [filtered]);
 
+  const simplifiedFinalized = useMemo(
+    () => filtered.filter(isSimplifiedDeliveryFinalized),
+    [filtered],
+  );
+  const simplifiedFinalizedIds = useMemo(
+    () => new Set(simplifiedFinalized.map((order) => order.id)),
+    [simplifiedFinalized],
+  );
+  const simplifiedReady = useMemo(
+    () => grouped.ready.filter((order) => !simplifiedFinalizedIds.has(order.id)),
+    [grouped.ready, simplifiedFinalizedIds],
+  );
+
   const activeCount = activeBuckets.reduce((total, bucket) => total + grouped[bucket].length, 0);
   const lateCount = useMemo(() => filtered.filter((order) => isOrderAttentionLate(order, now)).length, [filtered, now]);
 
@@ -184,7 +203,11 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
         <Button type="button" tone="secondary" onClick={() => void toggleSound()} aria-pressed={soundEnabled}>
           {soundEnabled ? "Som ativo ✓" : "Ativar som"}
         </Button>
-        <div className={styles.toolbarMeta}>{activeCount} ativo(s) · {lateCount} atrasado(s) · {grouped.history.length} no histórico</div>
+        <div className={styles.toolbarMeta}>
+          {workflowMode === "simplified"
+            ? `${activeCount} em acompanhamento · ${lateCount} atrasado(s)`
+            : `${activeCount} ativo(s) · ${lateCount} atrasado(s) · ${grouped.history.length} no histórico`}
+        </div>
       </div>
 
       <div className={styles.noticeSlot} aria-live="polite">
@@ -194,11 +217,21 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
       {workflowMode === "simplified" ? <div className={styles.activeGrid} aria-label="Pedidos em fluxo simplificado" data-mode="simplified">
         {([
           { key: "start", label: "Iniciar", orders: [...grouped.new, ...grouped.queued, ...grouped.preparing] },
-          { key: "ready", label: "Pronto", orders: grouped.ready },
-          { key: "completed", label: "Finalizados", orders: grouped.history },
+          { key: "ready", label: "Pronto", orders: simplifiedReady },
+          { key: "completed", label: "Finalizados", orders: simplifiedFinalized },
         ] as const).map((column) => <section key={column.key} aria-label={column.label} className={styles.lane} data-bucket={column.key}>
           <header className={styles.laneHeader}><strong>{column.label}</strong><span className={styles.laneCount}>{column.orders.length}</span></header>
-          <div className={styles.laneBody}>{column.orders.map((order) => <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} />)}{column.orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
+          <div className={styles.laneBody}>
+            {column.orders.map((order) => {
+              const finalDeliveryLabel = column.key === "completed"
+                ? order.fulfillment_status === "delivered"
+                  ? "Entrega confirmada · aguardando pagamento"
+                  : "Aguardando confirmação de entrega"
+                : undefined;
+              return <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} statusLabelOverride={finalDeliveryLabel} />;
+            })}
+            {column.orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}
+          </div>
         </section>)}
       </div> : <><div className={styles.activeGrid} aria-label="Pedidos ativos">
         {activeBuckets.map((bucket) => (
@@ -229,10 +262,10 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
   );
 }
 
-function OrderCard({ order, now, bucket }: { order: OrderManagerRow; now: number; bucket: OperationalOrderBucket }) {
+function OrderCard({ order, now, bucket, statusLabelOverride }: { order: OrderManagerRow; now: number; bucket: OperationalOrderBucket; statusLabelOverride?: string }) {
   const lane = deriveOrderLane(order);
   const blockers = completionBlockers(order);
-  const status = statusForOrder(order, bucket);
+  const status = statusForOrder(order, bucket, statusLabelOverride);
   const late = isOrderAttentionLate(order, now);
   const scheduledLabel = order.scheduled_for
     ? new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(order.scheduled_for))
