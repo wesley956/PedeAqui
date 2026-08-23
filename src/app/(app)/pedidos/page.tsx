@@ -4,7 +4,7 @@ import type { OrderManagerRow } from "@/features/orders/manager-model";
 import { OrderService } from "@/server/orders/order-service";
 
 export default async function OrdersPage() {
-  const { context, orders } = await OrderService.list(200);
+  const { context, orders, workflowMode } = await OrderService.list(200);
   if (!context.storeId) throw new Error("An active store is required");
 
   return (
@@ -18,7 +18,7 @@ export default async function OrdersPage() {
         <p className={styles.pageHint}>A tela é atualizada automaticamente enquanto a operação estiver aberta.</p>
       </header>
 
-      <OrderManagerBoard storeId={context.storeId} orders={orders as OrderManagerRow[]} />
+      <OrderManagerBoard storeId={context.storeId} orders={orders as OrderManagerRow[]} workflowMode={workflowMode} />
     </section>
   );
 }

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { parseMoneyToCents } from "@/server/catalog/money";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { GrowthService } from "@/server/growth/growth-service";
+import { scheduleCampaignWorker } from "@/server/growth/campaign-dispatch";
 
 function optional(formData: FormData, key: string) {
   const value = String(formData.get(key) ?? "").trim();
@@ -86,8 +87,34 @@ export async function createCampaignAction(formData: FormData) {
     channel: String(formData.get("channel") ?? "internal") as "internal" | "whatsapp" | "email",
     content: String(formData.get("content") ?? ""),
     segmentId: optional(formData, "segmentId"),
+    templateName: optional(formData, "templateName"),
+    templateLanguage: optional(formData, "templateLanguage") ?? "pt_BR",
+    includeCustomerNameParameter: formData.get("includeCustomerNameParameter") === "on",
   });
   revalidatePath("/crescimento");
+}
+
+export async function enqueueCampaignAction(formData: FormData) {
+  await GrowthService.enqueueCampaign(String(formData.get("campaignId") ?? ""));
+  scheduleCampaignWorker("campaign_enqueued");
+  revalidatePath("/crescimento");
+  revalidatePath("/crescimento/campanhas");
+}
+
+export async function cancelCampaignAction(formData: FormData) {
+  await GrowthService.cancelCampaign(
+    String(formData.get("campaignId") ?? ""),
+    String(formData.get("reason") ?? "Cancelada manualmente pelo gestor."),
+  );
+  revalidatePath("/crescimento");
+  revalidatePath("/crescimento/campanhas");
+}
+
+export async function setMarketingPreferenceAction(formData: FormData) {
+  const status = String(formData.get("status") ?? "not_consented");
+  if (!["consented", "opted_out", "not_consented"].includes(status)) throw new Error("Preferência inválida.");
+  await GrowthService.setMarketingPreference(String(formData.get("customerId") ?? ""), status as "consented" | "opted_out" | "not_consented");
+  revalidatePath("/crescimento/campanhas");
 }
 
 export async function createAutomationAction(formData: FormData) {

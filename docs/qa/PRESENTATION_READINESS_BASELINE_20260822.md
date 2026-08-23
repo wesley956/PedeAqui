@@ -72,7 +72,7 @@ de desempenho.
 `/cardapio/categorias`, `/cardapio/produtos`, `/cardapio/produtos/novo`, `/cardapio/produtos/[id]`,
 `/cardapio/adicionais`, `/pdv`, `/caixa`, `/salao`, `/salao/[tableId]`, `/producao`,
 `/entregas`, `/entregador`, `/clientes`, `/clientes/[id]`, `/conversas`, `/estoque`,
-`/estoque/fichas`, `/fornecedores`, `/compras`, `/financeiro`, `/fiscal`, `/crescimento`,
+`/estoque/fichas`, `/fornecedores`, `/compras`, `/financeiro`, `/fiscal`, `/crescimento`, `/crescimento/campanhas`,
 `/escala`, `/vasilhames`, `/equipe`, `/configuracoes`, `/configuracoes/cardapio`,
 `/configuracoes/caixa`, `/configuracoes/conversas`, `/configuracoes/entrega`,
 `/configuracoes/entregadores`, `/configuracoes/horarios`, `/configuracoes/impressoes`,
@@ -98,7 +98,7 @@ O gap inicial de `team` foi encerrado no lote PA-DIAG-011–015 com a criação 
 
 ### APIs, webhooks e agentes
 
-`/api/health`, `/api/internal/order-notifications`, `/api/print-agent/ack`,
+`/api/health`, `/api/internal/order-notifications`, `/api/internal/campaign-messages`, `/api/internal/route-retention`, `/api/print-agent/ack`,
 `/api/print-agent/claim`, `/api/print-agent/config`, `/api/print-agent/fail`,
 `/api/print-agent/heartbeat`, `/api/webhooks/billing/[providerKey]`,
 `/api/webhooks/fiscal/[integrationId]`,

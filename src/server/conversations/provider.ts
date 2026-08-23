@@ -151,6 +151,10 @@ export class WhatsAppCloudProvider implements ConversationProvider {
   async sendTemplate(input: ProviderSendTemplateInput): Promise<ProviderSendResult> {
     if (!/^[a-z0-9_]{1,512}$/.test(input.templateName)) throw new Error("Nome de template do WhatsApp inválido.");
     if (!/^[a-z]{2}_[A-Z]{2}$/.test(input.languageCode)) throw new Error("Idioma do template do WhatsApp inválido.");
+    const components = input.bodyParameters.length > 0 ? [{
+      type: "body",
+      parameters: input.bodyParameters.map((text) => ({ type: "text", text })),
+    }] : undefined;
     return this.sendMessage(input.phoneNumberId, {
       messaging_product: "whatsapp",
       recipient_type: "individual",
@@ -159,12 +163,7 @@ export class WhatsAppCloudProvider implements ConversationProvider {
       template: {
         name: input.templateName,
         language: { code: input.languageCode },
-        components: [
-          {
-            type: "body",
-            parameters: input.bodyParameters.map((text) => ({ type: "text", text })),
-          },
-        ],
+        ...(components ? { components } : {}),
       },
     });
   }

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PlatformRestaurant360Service } from "@/server/platform/platform-restaurant-360-service";
+import { OperationalSettingsForm } from "@/features/platform/operational-settings-form";
+import { OperationalSettingsService } from "@/server/stores/operational-settings-service";
 import styles from "@/app/platform/platform.module.css";
 
 const dateTime = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" });
@@ -28,7 +30,10 @@ function presetLabel(preset: string) {
 
 export default async function Restaurant360Page({ params }: { params: Promise<{ organizationId: string; storeId: string }> }) {
   const { organizationId, storeId } = await params;
-  const data = await PlatformRestaurant360Service.load(organizationId, storeId);
+  const [data, operationalSettings] = await Promise.all([
+    PlatformRestaurant360Service.load(organizationId, storeId),
+    OperationalSettingsService.loadPlatform(organizationId, storeId),
+  ]);
   if (!data) notFound();
 
   const readinessTone = data.readiness.ready ? "good" : "danger";
@@ -100,6 +105,7 @@ export default async function Restaurant360Page({ params }: { params: Promise<{ 
           <InfoCard title="Assinatura" lines={[data.subscription?.planName ?? "Sem plano identificado", data.subscription ? `Situação: ${data.subscription.status}` : "Sem assinatura encontrada", data.subscription?.current_period_end ? `Período até ${dateTime.format(new Date(data.subscription.current_period_end))}` : "Período não informado"]} />
           <InfoCard title="Equipe" lines={[`${data.access.activeMembers} membro(s) ativo(s)`, `${data.access.pendingInvites} convite(s) pendente(s)`, "Detalhes de acesso ficam restritos ao suporte autorizado"]} />
           <InfoCard title="Identificação" lines={[`Slug público: ${data.store.slug}`, `Fuso: ${data.store.timezone}`, data.store.is_primary ? "Unidade principal" : "Unidade adicional"]} />
+          <OperationalSettingsForm organizationId={organizationId} storeId={storeId} settings={operationalSettings} modules={new Set(data.modules.active.map((module) => module.key))} />
         </div>
       </section>
 

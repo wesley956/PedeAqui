@@ -105,14 +105,16 @@ export class OrderService {
     const context = await authorize(PERMISSIONS.ORDERS_VIEW);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const { data, error } = await admin.from("orders")
+    const [{ data, error }, settingsResult] = await Promise.all([admin.from("orders")
       .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
       .order("created_at", { ascending: false })
-      .limit(Math.min(Math.max(limit, 1), 250));
+      .limit(Math.min(Math.max(limit, 1), 250)),
+    admin.from("store_operational_settings").select("orders_workflow_mode").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle()]);
     if (error) throw error;
-    return { context, orders: data ?? [] };
+    if (settingsResult.error) throw settingsResult.error;
+    return { context, orders: data ?? [], workflowMode: settingsResult.data?.orders_workflow_mode === "simplified" ? "simplified" as const : "standard" as const };
   }
 
   static async get(orderId: string) {

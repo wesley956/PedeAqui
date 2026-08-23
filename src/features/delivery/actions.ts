@@ -6,6 +6,7 @@ import { scheduleOrderWhatsAppNotifications } from "@/server/conversations/order
 import { DeliveryService } from "@/server/delivery/delivery-service";
 import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
 import { DriverMobileAccessService } from "@/server/delivery/driver-mobile-access-service";
+import { RouteTrackingService } from "@/server/delivery/route-tracking-service";
 
 function optionalMoney(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.trim() ? parseMoneyToCents(value) : null;
@@ -162,6 +163,9 @@ export async function deliveryOperationAction(_previous: DeliveryActionState, fo
     }
     if (["picked_up", "out_for_delivery", "delivered"].includes(intent)) {
       await DeliveryOperationsService.advance(text(formData, "deliveryId"), intent as "picked_up" | "out_for_delivery" | "delivered", text(formData, "idempotencyKey"));
+      if (intent === "out_for_delivery") {
+        try { await RouteTrackingService.startForDelivery(text(formData, "deliveryId")); } catch { /* Telemetria opcional nunca bloqueia a rota. */ }
+      }
       scheduleOrderWhatsAppNotifications(`delivery.${intent}`);
       refreshOperations();
       return { ok: true, message: intent === "delivered" ? "Entrega concluída." : "Status da entrega atualizado.", error: null };
