@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { CartService } from "@/server/cart/cart-service";
+import { CartItemEditService } from "@/server/cart/cart-item-edit-service";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { addCartItemSchema, cartItemQuantitySchema, removeCartItemSchema } from "@/server/cart/schemas";
 import { PricingError } from "@/server/pricing/pricing-service";
@@ -36,9 +37,16 @@ function safePublicPath(storeSlug: string, suffix = "") {
   return /^[a-z0-9][a-z0-9-]{1,62}$/.test(storeSlug) ? `/m/${storeSlug}${suffix}` : "/";
 }
 
+function safeUuid(value: FormDataEntryValue | null) {
+  if (typeof value !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)) return null;
+  return value;
+}
+
 export async function addToCartAction(formData: FormData) {
   const rawStoreSlug = String(formData.get("storeSlug") ?? "");
   const rawProductId = String(formData.get("productId") ?? "");
+  const rawCartItemId = formData.get("cartItemId");
+  const editItemId = rawCartItemId ? safeUuid(rawCartItemId) : null;
   const gasSaleModeRaw = formData.get("gasSaleMode");
   const legacyModifierIds = selectedModifierIds(formData);
   const parsed = addCartItemSchema.safeParse({
@@ -53,7 +61,7 @@ export async function addToCartAction(formData: FormData) {
     ],
     gasSaleMode: typeof gasSaleModeRaw === "string" && gasSaleModeRaw ? gasSaleModeRaw : null,
   });
-  if (!parsed.success) {
+  if (!parsed.success || (rawCartItemId && !editItemId)) {
     const safeSlug = /^[a-z0-9][a-z0-9-]{1,62}$/.test(rawStoreSlug) ? rawStoreSlug : null;
     const safeProduct = /^[0-9a-f-]{36}$/i.test(rawProductId) ? rawProductId : null;
     redirect(safeSlug && safeProduct ? `/m/${safeSlug}/produto/${safeProduct}?erro=invalid_item` : "/");
@@ -62,6 +70,20 @@ export async function addToCartAction(formData: FormData) {
   const cookieName = cartCookieName(values.storeSlug);
   const cookieStore = await cookies();
   const existingToken = cookieStore.get(cookieName)?.value ?? null;
+
+  if (editItemId) {
+    if (!existingToken) redirect(`/m/${values.storeSlug}/carrinho?erro=cart_edit_failed`);
+    try {
+      await CartItemEditService.replaceItem(values, existingToken, editItemId);
+    } catch (error) {
+      if (error instanceof PricingError) {
+        redirect(`/m/${values.storeSlug}/produto/${values.productId}?editar=${editItemId}&erro=${error.code}`);
+      }
+      logger.error("public_cart_edit_failed", { errorType: error instanceof Error ? error.name : "unknown" });
+      redirect(`/m/${values.storeSlug}/produto/${values.productId}?editar=${editItemId}&erro=cart_edit_failed`);
+    }
+    redirect(`/m/${values.storeSlug}/carrinho`);
+  }
 
   let result: Awaited<ReturnType<typeof CartService.addItem>>;
   try {
