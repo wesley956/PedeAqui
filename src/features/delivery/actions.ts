@@ -79,8 +79,17 @@ export type DriverMobileAccessState = {
   linked: boolean;
 };
 
+function errorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object" && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim()) return message;
+  }
+  return "Não foi possível concluir a operação de entrega.";
+}
+
 function friendly(error: unknown) {
-  const raw = error instanceof Error ? error.message : "Não foi possível concluir a operação de entrega.";
+  const raw = errorMessage(error);
   const lower = raw.toLocaleLowerCase("pt-BR");
   const rules: Array<[string, string]> = [
     ["delivery already claimed", "Este pedido já foi pego por outro entregador."],
