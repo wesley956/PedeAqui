@@ -12,6 +12,7 @@ import {
   saveCheckoutScheduleAction,
   useSavedCheckoutAddressAction,
 } from "@/features/checkout/actions";
+import { CashChangeFields } from "@/features/checkout/cash-change-fields";
 import { CheckoutReviewState, FinalOrderOptions, paymentMethodHelp } from "@/features/checkout/final-order-options";
 import { SubmitOrderButton } from "@/features/checkout/submit-order-button";
 import { applyCheckoutBenefitsAction, clearCheckoutBenefitsAction } from "@/features/growth/actions";
@@ -89,7 +90,7 @@ export default async function CheckoutPage({
   const identityPhone = session?.customer_phone ?? recognizedCustomer?.customer.phone ?? "";
   const identityEmail = session?.customer_email ?? recognizedCustomer?.customer.email ?? "";
   const totalSteps = deliverySelected ? 5 : 4;
-  const completedSteps = [identityComplete, fulfillmentComplete, ...(deliverySelected ? [addressComplete] : []), paymentComplete, reviewComplete].filter(Boolean).length;
+  const completedSteps = [fulfillmentComplete, ...(deliverySelected ? [addressComplete] : []), identityComplete, paymentComplete, reviewComplete].filter(Boolean).length;
   const progress = Math.round((completedSteps / totalSteps) * 100);
   const fulfillmentSummary = deliverySelected ? "Entrega" : session?.fulfillment_type === "pickup" ? "Retirada no local" : "Escolha como receber";
   const addressSummary = session?.address_street && session?.address_number ? `${session.address_street}, ${session.address_number}` : "Informe o endereço";
@@ -103,6 +104,7 @@ export default async function CheckoutPage({
   const minimumScheduleDate = new Date(Math.ceil((scheduleNow.getTime() + 15 * 60_000) / 60_000) * 60_000);
   const minimumSchedule = localDateTimeInputValue(minimumScheduleDate, storeTimeZone);
   const maximumSchedule = localDateTimeInputValue(new Date(scheduleNow.getTime() + 7 * 24 * 60 * 60_000), storeTimeZone);
+  const changeForValue = session?.cash_change_for_cents ? (Number(session.cash_change_for_cents) / 100).toFixed(2).replace(".", ",") : "";
 
   return (
     <main className={styles.root}>
@@ -114,49 +116,34 @@ export default async function CheckoutPage({
 
         <header className={styles.header}>
           <p className={styles.eyebrow}>{menu.store.name}</p>
-          <h1>Vamos finalizar seu pedido</h1>
-          <p>É rápido: confirme seus dados, escolha como receber e a forma de pagamento.</p>
+          <h1>Finalizar pedido</h1>
+          <p>Escolha como vai receber. O PedeAqui mostra só o que for necessário para concluir.</p>
           <div className={styles.progressHeader}><strong>{completedSteps} de {totalSteps} etapas</strong><span>{progress}%</span></div>
           <div className={styles.progressTrack} aria-label={`${progress}% do checkout concluído`}><div className={styles.progressFill} style={{ width: `${progress}%` }} /></div>
         </header>
 
         {query.erro ? <div role="alert" className={`card ${styles.alert}`}>{errorMessages[query.erro] ?? "Não foi possível continuar. Confira os dados e tente novamente."}</div> : null}
 
-        <Step number="1" title="Seus dados" summary={identityComplete ? `${session?.customer_name} · ${session?.customer_phone}` : "Nome e WhatsApp"} complete={identityComplete}>
-          {recognizedCustomer && !identityComplete ? <p className="muted">Já encontramos dados usados anteriormente neste dispositivo. Confira antes de continuar.</p> : null}
-          <form action={saveCheckoutIdentityAction} className={styles.form}>
+        <Step number="1" title="Como vai receber?" summary={fulfillmentSummary} complete={fulfillmentComplete}>
+          <form action={saveCheckoutFulfillmentAction} className={styles.choices}>
             <input type="hidden" name="storeSlug" value={slug} />
-            <div className={styles.grid2}>
-              <Field label="Nome" name="name" autoComplete="name" defaultValue={identityName} required />
-              <Field label="WhatsApp" name="phone" type="tel" inputMode="tel" autoComplete="tel" defaultValue={identityPhone ?? ""} placeholder="(19) 99999-9999" required />
-            </div>
-            <Field label="E-mail (opcional)" name="email" type="email" autoComplete="email" defaultValue={identityEmail ?? ""} />
-            <ActionButton>Continuar</ActionButton>
+            {menu.settings.allow_delivery && menu.delivery.enabled ? (
+              <button type="submit" name="fulfillmentType" value="delivery" className={`${styles.choice} ${deliverySelected ? styles.choiceSelected : ""}`}>
+                <strong>🛵 Entrega</strong>
+                <span className={styles.choiceDetail}>Receba em casa · previsão de {menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span>
+              </button>
+            ) : null}
+            {menu.settings.allow_pickup ? (
+              <button type="submit" name="fulfillmentType" value="pickup" className={`${styles.choice} ${session?.fulfillment_type === "pickup" ? styles.choiceSelected : ""}`}>
+                <strong>🛍️ Retirada</strong>
+                <span className={styles.choiceDetail}>Você busca no estabelecimento · sem taxa de entrega</span>
+              </button>
+            ) : null}
           </form>
         </Step>
 
-        {identityComplete ? (
-          <Step number="2" title="Como quer receber?" summary={fulfillmentSummary} complete={fulfillmentComplete}>
-            <form action={saveCheckoutFulfillmentAction} className={styles.choices}>
-              <input type="hidden" name="storeSlug" value={slug} />
-              {menu.settings.allow_delivery && menu.delivery.enabled ? (
-                <button type="submit" name="fulfillmentType" value="delivery" className={`${styles.choice} ${deliverySelected ? styles.choiceSelected : ""}`}>
-                  <strong>🛵 Entrega</strong>
-                  <span className={styles.choiceDetail}>Receba em casa · previsão de {menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span>
-                </button>
-              ) : null}
-              {menu.settings.allow_pickup ? (
-                <button type="submit" name="fulfillmentType" value="pickup" className={`${styles.choice} ${session?.fulfillment_type === "pickup" ? styles.choiceSelected : ""}`}>
-                  <strong>🛍️ Retirar no local</strong>
-                  <span className={styles.choiceDetail}>Você busca no estabelecimento · sem taxa de entrega</span>
-                </button>
-              ) : null}
-            </form>
-          </Step>
-        ) : null}
-
-        {identityComplete && fulfillmentComplete && deliverySelected ? (
-          <Step number="3" title="Endereço de entrega" summary={addressComplete ? addressSummary : "Informe onde devemos entregar"} complete={addressComplete}>
+        {fulfillmentComplete && deliverySelected ? (
+          <Step number="2" title="Onde entregar?" summary={addressComplete ? addressSummary : "Informe onde devemos entregar"} complete={addressComplete}>
             {recognizedForSession && recognizedCustomer && recognizedCustomer.addresses.length > 0 ? (
               <div className={styles.form}>
                 <p className="muted">Você já pediu aqui. Pode usar um endereço salvo:</p>
@@ -168,13 +155,14 @@ export default async function CheckoutPage({
                       <button type="submit" className={styles.choice}>
                         <strong>{address.isDefault ? "📍 Endereço principal" : `📍 ${address.label}`}</strong>
                         <span className={styles.choiceDetail}>{address.street}, {address.number}{address.complement ? ` · ${address.complement}` : ""}<br />{address.district} · {address.city}/{address.state}</span>
+                        <span className={styles.choiceDetail}><strong>Usar este endereço →</strong></span>
                       </button>
                     </form>
                   ))}
                 </div>
                 <p className="muted">Ou informe outro endereço:</p>
               </div>
-            ) : recognizedCustomer && identityComplete && !recognizedForSession ? <div className={styles.deliveryError}>Por segurança, confirme o endereço novamente para este WhatsApp.</div> : null}
+            ) : recognizedCustomer && !identityComplete ? <div className={styles.identityHint}>Se quiser reutilizar um endereço salvo, confirme seu nome e WhatsApp no bloco “Seus dados”. Por segurança, os endereços não são exibidos antes dessa confirmação.</div> : recognizedCustomer && identityComplete && !recognizedForSession ? <div className={styles.deliveryError}>Por segurança, confirme o endereço novamente para este WhatsApp.</div> : null}
 
             <form action={saveCheckoutAddressAction} className={styles.form}>
               <input type="hidden" name="storeSlug" value={slug} />
@@ -194,7 +182,25 @@ export default async function CheckoutPage({
               <Field label="Referência (opcional)" name="reference" defaultValue={session?.address_reference ?? ""} placeholder="Ex.: portão preto" />
               {session?.delivery_quote_status === "valid" ? <div className={styles.deliveryOk}><strong>Entrega disponível</strong><br />{money(Number(session.delivery_fee_cents))} · previsão de {session.delivery_estimated_min_minutes}–{session.delivery_estimated_max_minutes} min</div> : null}
               {session?.delivery_quote_status === "unserviceable" ? <div className={styles.deliveryError}>Ainda não entregamos neste endereço. Você pode editar os dados ou escolher retirada.</div> : null}
-              <ActionButton>{recognizedForSession ? "Usar este endereço" : "Continuar"}</ActionButton>
+              <ActionButton>Salvar endereço</ActionButton>
+            </form>
+          </Step>
+        ) : null}
+
+        {fulfillmentComplete ? (
+          <Step number={deliverySelected ? "3" : "2"} title="Seus dados" summary={identityComplete ? `${session?.customer_name} · ${session?.customer_phone}` : "Nome e WhatsApp"} complete={identityComplete} forceOpen={query.erro === "pix_email_required"}>
+            {recognizedCustomer && !identityComplete ? <p className="muted">Já encontramos dados usados anteriormente neste dispositivo. Confira antes de continuar.</p> : null}
+            <form action={saveCheckoutIdentityAction} className={styles.form}>
+              <input type="hidden" name="storeSlug" value={slug} />
+              <div className={styles.grid2}>
+                <Field label="Nome" name="name" autoComplete="name" defaultValue={identityName} required />
+                <Field label="WhatsApp" name="phone" type="tel" inputMode="tel" autoComplete="tel" defaultValue={identityPhone ?? ""} placeholder="(19) 99999-9999" required />
+              </div>
+              <details className={styles.inlineOptional} open={Boolean(identityEmail) || query.erro === "pix_email_required"}>
+                <summary>E-mail {query.erro === "pix_email_required" ? "· necessário para o Pix selecionado" : "· opcional"}</summary>
+                <div className={styles.inlineOptionalBody}><Field label="E-mail" name="email" type="email" autoComplete="email" defaultValue={identityEmail ?? ""} required={query.erro === "pix_email_required"} /></div>
+              </details>
+              <ActionButton>Salvar dados</ActionButton>
             </form>
           </Step>
         ) : null}
@@ -213,8 +219,8 @@ export default async function CheckoutPage({
                   ))}
                 </div>
               )}
-              {selectedPayment === "cash" ? <Field label="Troco para (opcional)" name="changeFor" inputMode="decimal" defaultValue={session?.cash_change_for_cents ? (Number(session.cash_change_for_cents) / 100).toFixed(2).replace(".", ",") : ""} placeholder="Ex.: 100,00" /> : null}
-              {enabledMethods.length > 0 ? <ActionButton>Continuar</ActionButton> : null}
+              {selectedPayment === "cash" ? <CashChangeFields defaultChangeFor={changeForValue} inputClassName={styles.input} fieldClassName={styles.field} choicesClassName={styles.cashChoices} choiceClassName={styles.cashChoice} selectedClassName={styles.cashChoiceSelected} /> : null}
+              {enabledMethods.length > 0 ? <ActionButton>Salvar pagamento</ActionButton> : null}
             </form>
           </Step>
         ) : null}
@@ -227,15 +233,7 @@ export default async function CheckoutPage({
               <form action={saveCheckoutScheduleAction} className={styles.form}>
                 <input type="hidden" name="storeSlug" value={slug} />
                 <input type="hidden" name="mode" value="scheduled" />
-                <Field
-                  label="Agendar para"
-                  name="localDateTime"
-                  type="datetime-local"
-                  min={minimumSchedule}
-                  max={maximumSchedule}
-                  defaultValue={scheduledFor ? localDateTimeInputValue(new Date(scheduledFor), storeTimeZone) : minimumSchedule}
-                  required
-                />
+                <Field label="Agendar para" name="localDateTime" type="datetime-local" min={minimumSchedule} max={maximumSchedule} defaultValue={scheduledFor ? localDateTimeInputValue(new Date(scheduledFor), storeTimeZone) : minimumSchedule} required />
                 <ActionButton>Salvar agendamento</ActionButton>
               </form>
               {scheduledFor ? (
@@ -273,7 +271,7 @@ export default async function CheckoutPage({
         {paymentComplete ? (
           <section className={`card ${styles.review}`}>
             <div className={styles.reviewTop}>
-              <p className={styles.eyebrow}>Quase pronto</p>
+              <p className={styles.eyebrow}>{deliverySelected ? "5. Confirmar" : "4. Confirmar"}</p>
               <h2>Confira seu pedido</h2>
               <p>Veja os principais dados antes de enviar para {menu.store.name}.</p>
             </div>
@@ -298,7 +296,7 @@ export default async function CheckoutPage({
             {review?.ready ? (
               <form action={createOrderFromCheckoutAction}>
                 <input type="hidden" name="storeSlug" value={slug} />
-                <SubmitOrderButton className={styles.finalAction} label={`Fazer pedido · ${money(Number(cart.total_cents))}`} />
+                <SubmitOrderButton className={styles.finalAction} label={`Confirmar pedido · ${money(Number(cart.total_cents))}`} />
               </form>
             ) : (
               <form action={reviewCheckoutAction}>
@@ -311,15 +309,15 @@ export default async function CheckoutPage({
       </div>
 
       <div className={styles.stickySummary} aria-hidden="true">
-        <div className={styles.stickyInner}><span>Seu pedido</span><strong>{money(Number(cart.total_cents))}</strong></div>
+        <div className={styles.stickyInner}><span>Total atual</span><strong>{money(Number(cart.total_cents))}</strong></div>
       </div>
     </main>
   );
 }
 
-function Step({ number, title, summary, complete, children }: { number: string; title: string; summary: string; complete: boolean; children: ReactNode }) {
+function Step({ number, title, summary, complete, forceOpen = false, children }: { number: string; title: string; summary: string; complete: boolean; forceOpen?: boolean; children: ReactNode }) {
   return (
-    <details className={`${styles.step} ${complete ? styles.stepComplete : ""}`} open={!complete}>
+    <details className={`${styles.step} ${complete ? styles.stepComplete : ""}`} open={forceOpen || !complete}>
       <summary className={styles.stepSummary}>
         <span className={styles.stepBadge}>{complete ? "✓" : number}</span>
         <span className={styles.stepCopy}><strong>{title}</strong><span>{summary}</span></span>
