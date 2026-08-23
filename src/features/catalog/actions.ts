@@ -9,7 +9,7 @@ import {
   type CatalogImageUpload,
 } from "@/server/catalog/catalog-image-service";
 import { parseMoneyToCents } from "@/server/catalog/money";
-import { productAvailabilitySchema } from "@/server/catalog/schemas";
+import { modifierSelectionModeSchema, productAvailabilitySchema } from "@/server/catalog/schemas";
 import { PERMISSIONS, type PermissionKey } from "@/server/access/permissions";
 import { logger } from "@/server/observability/logger";
 
@@ -35,10 +35,7 @@ async function uploadNewCatalogImage(
 ): Promise<CatalogImageUpload | null> {
   const file = optionalFile(value);
   if (!file) return null;
-  return CatalogImageService.upload(file, {
-    permission,
-    purpose,
-  });
+  return CatalogImageService.upload(file, { permission, purpose });
 }
 
 function categoryInput(formData: FormData, imageUrl: string | null) {
@@ -78,6 +75,7 @@ function modifierGroupInput(formData: FormData) {
     minSelection: integer(formData.get("minSelection")),
     maxSelection: integer(formData.get("maxSelection"), 1),
     required: formData.get("required") === "on",
+    selectionMode: modifierSelectionModeSchema.parse(formData.get("selectionMode") ?? "distinct_choices"),
     sortOrder: integer(formData.get("sortOrder")),
     active: formData.get("active") === "on",
   };
@@ -95,12 +93,7 @@ function modifierInput(formData: FormData) {
 
 async function rollbackCatalogImage(uploaded: CatalogImageUpload | null) {
   if (!uploaded) return;
-  try {
-    await CatalogImageService.remove(uploaded.path);
-  } catch {
-    // CatalogImageService already emits a technical rollback log. The original
-    // mutation error must remain the one reported to the caller.
-  }
+  try { await CatalogImageService.remove(uploaded.path); } catch { /* logged by service */ }
 }
 
 const safeCatalogMessages = new Set([
@@ -133,7 +126,6 @@ export async function createCategoryAction(formData: FormData) {
     await rollbackCatalogImage(uploaded);
     throw error;
   }
-
   revalidatePath("/cardapio/categorias");
 }
 
@@ -171,13 +163,7 @@ export async function createCategoryFormAction(formData: FormData) {
     return { ok: true, message: "Categoria criada com sucesso." };
   } catch (error) {
     logCatalogMutationFailure("create_category", error);
-    return {
-      ok: false,
-      message: catalogActionMessage(
-        error,
-        "Não foi possível criar a categoria. Seus dados foram mantidos; tente novamente.",
-      ),
-    };
+    return { ok: false, message: catalogActionMessage(error, "Não foi possível criar a categoria. Seus dados foram mantidos; tente novamente.") };
   }
 }
 
@@ -190,7 +176,6 @@ export async function createProductAction(formData: FormData) {
     await rollbackCatalogImage(uploaded);
     throw error;
   }
-
   revalidatePath("/cardapio/produtos");
 }
 
@@ -229,13 +214,7 @@ export async function createProductFormAction(formData: FormData) {
     return { ok: true, message: "Produto criado com sucesso." };
   } catch (error) {
     logCatalogMutationFailure("create_product", error);
-    return {
-      ok: false,
-      message: catalogActionMessage(
-        error,
-        "Não foi possível salvar o produto. Seus dados foram mantidos; tente novamente.",
-      ),
-    };
+    return { ok: false, message: catalogActionMessage(error, "Não foi possível salvar o produto. Seus dados foram mantidos; tente novamente.") };
   }
 }
 
@@ -262,7 +241,7 @@ export async function createModifierGroupFormAction(formData: FormData) {
     return { ok: true, message: "Grupo criado com sucesso." };
   } catch (error) {
     logCatalogMutationFailure("create_modifier_group", error);
-    return { ok: false, message: "Não foi possível criar o grupo. Confira mínimo, máximo e obrigatoriedade." };
+    return { ok: false, message: "Não foi possível criar o grupo. Confira modo, mínimo, máximo e obrigatoriedade." };
   }
 }
 
@@ -273,7 +252,7 @@ export async function updateModifierGroupFormAction(formData: FormData) {
     return { ok: true, message: "Grupo atualizado com sucesso." };
   } catch (error) {
     logCatalogMutationFailure("update_modifier_group", error);
-    return { ok: false, message: "Não foi possível atualizar o grupo. Confira mínimo, máximo e obrigatoriedade." };
+    return { ok: false, message: "Não foi possível atualizar o grupo. Confira modo, mínimo, máximo e obrigatoriedade." };
   }
 }
 
@@ -328,11 +307,7 @@ export async function removeModifierAction(formData: FormData) {
 export async function linkModifierGroupAction(formData: FormData) {
   const productId = String(formData.get("productId") ?? "");
   try {
-    await ModifierService.linkGroupToProduct(
-      productId,
-      String(formData.get("modifierGroupId") ?? ""),
-      integer(formData.get("sortOrder")),
-    );
+    await ModifierService.linkGroupToProduct(productId, String(formData.get("modifierGroupId") ?? ""), integer(formData.get("sortOrder")));
     revalidatePath("/cardapio/produtos");
     revalidatePath(`/cardapio/produtos/${productId}`);
     return { ok: true, message: "Grupo vinculado ao produto." };
