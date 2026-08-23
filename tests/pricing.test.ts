@@ -110,7 +110,7 @@ describe("PricingService", () => {
   it.each([1, 7, 13])("accepts aggregate quantity %s without requiring the maximum", (total) => {
     const result = PricingService.priceItem(cupProduct, [{ modifierId: coxinhaId, quantity: total }], 1);
     expect(result.modifiers[0]?.quantity).toBe(total);
-    expect(result.lineTotalPriceCents ?? result.lineTotalCents).toBe(1800);
+    expect(result.lineTotalCents).toBe(1800);
   });
 
   it("accepts 5 Coxinhas + 2 Kibes and prices paid flavor quantities", () => {
