@@ -14,6 +14,7 @@ export async function saveOperationalSettingsAction(formData: FormData) {
       ordersWorkflowMode: formData.get("ordersWorkflowMode") === "simplified" ? "simplified" : "standard",
       deliveriesAutoCreateWhenReady: formData.get("deliveriesAutoCreateWhenReady") === "on",
       deliveriesDriverTrackingEnabled: formData.get("deliveriesDriverTrackingEnabled") === "on",
+      deliveriesDriverSelfClaimEnabled: formData.get("deliveriesDriverSelfClaimEnabled") === "on",
       deliveriesStationaryAlertMinutes: Number(formData.get("deliveriesStationaryAlertMinutes") ?? 15),
       deliveriesTrackingRetentionDays: Number(formData.get("deliveriesTrackingRetentionDays") ?? 7),
       growthCampaignsEnabled: formData.get("growthCampaignsEnabled") === "on",
