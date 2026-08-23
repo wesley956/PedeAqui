@@ -45,7 +45,7 @@ export class PublicOrderService {
     const items = itemsResult.data ?? [];
     const itemIds = items.map((item) => item.id);
     const [modifiersResult, gasResult] = itemIds.length > 0 ? await Promise.all([
-      admin.from("order_item_modifiers").select("order_item_id, modifier_name_snapshot, unit_price_cents").eq("organization_id", store.organization_id).eq("store_id", store.id).in("order_item_id", itemIds).order("created_at"),
+      admin.from("order_item_modifiers").select("order_item_id, modifier_name_snapshot, unit_price_cents, quantity").eq("organization_id", store.organization_id).eq("store_id", store.id).in("order_item_id", itemIds).order("created_at"),
       admin.from("order_item_gas_options").select("order_item_id,sale_mode,container_code_snapshot,container_name_snapshot,unit_container_price_cents").eq("organization_id", store.organization_id).eq("store_id", store.id).in("order_item_id", itemIds),
     ]) : [{ data: [], error: null }, { data: [], error: null }];
     if (modifiersResult.error) throw modifiersResult.error;
