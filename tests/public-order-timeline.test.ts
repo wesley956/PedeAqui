@@ -8,6 +8,7 @@ describe("public order timeline", () => {
     expect(timeline.find((step) => step.key === "ready")?.state).toBe("current");
     expect(timeline.find((step) => step.key === "out")?.state).toBe("upcoming");
     expect(timeline.find((step) => step.key === "delivered")?.state).toBe("upcoming");
+    expect(timeline.some((step) => step.key === "confirmed")).toBe(false);
   });
 
   it("marks departure and delivery only from authoritative fulfillment states", () => {
@@ -19,14 +20,15 @@ describe("public order timeline", () => {
 
   it("uses a pickup journey without delivery-only steps", () => {
     const timeline = buildPublicOrderTimeline({ fulfillmentType: "pickup", orderStatus: "confirmed", productionStatus: "ready", fulfillmentStatus: "awaiting_pickup" });
-    expect(timeline.some((step) => step.key === "out")).toBe(false);
-    expect(timeline.find((step) => step.key === "ready")?.state).toBe("current");
+    expect(timeline.some((step) => step.key === "out" || step.key === "delivered")).toBe(false);
+    expect(timeline.find((step) => step.key === "ready")).toMatchObject({ label: "Pronto para retirada", state: "current" });
     expect(timeline.find((step) => step.key === "pickup")?.state).toBe("upcoming");
   });
 
-  it("skips production milestones when production is explicitly not required", () => {
+  it("skips production milestones when production is explicitly not required while preserving pickup milestones", () => {
     const timeline = buildPublicOrderTimeline({ fulfillmentType: "pickup", orderStatus: "confirmed", productionStatus: "not_required", fulfillmentStatus: "picked_up_by_customer" });
-    expect(timeline.some((step) => step.key === "preparing" || step.key === "ready")).toBe(false);
+    expect(timeline.some((step) => step.key === "preparing")).toBe(false);
+    expect(timeline.find((step) => step.key === "ready")?.label).toBe("Pronto para retirada");
     expect(timeline.find((step) => step.key === "pickup")?.state).toBe("current");
   });
 
