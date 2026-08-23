@@ -5,6 +5,7 @@ import type { PublicProduct } from "@/server/menu/schemas";
 import styles from "./modifier-group-selector.module.css";
 
 type Group = PublicProduct["product"]["modifier_groups"][number];
+type InitialSelections = Record<string, number>;
 function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
 
 function scrollToTarget(targetId: string) {
@@ -15,13 +16,13 @@ function scrollToTarget(targetId: string) {
   target.querySelector<HTMLElement>("button, a, input, select, textarea, [tabindex]")?.focus({ preventScroll: true });
 }
 
-export function ModifierGroupSelector({ group, disabled = false, complementTargetId }: { group: Group; disabled?: boolean; complementTargetId?: string }) {
-  if (group.selection_mode === "quantity_per_option") return <QuantityModifierGroup group={group} disabled={disabled} complementTargetId={complementTargetId} />;
-  return <DistinctModifierGroup group={group} disabled={disabled} />;
+export function ModifierGroupSelector({ group, disabled = false, complementTargetId, initialSelections = {} }: { group: Group; disabled?: boolean; complementTargetId?: string; initialSelections?: InitialSelections }) {
+  if (group.selection_mode === "quantity_per_option") return <QuantityModifierGroup group={group} disabled={disabled} complementTargetId={complementTargetId} initialSelections={initialSelections} />;
+  return <DistinctModifierGroup group={group} disabled={disabled} initialSelections={initialSelections} />;
 }
 
-function DistinctModifierGroup({ group, disabled }: { group: Group; disabled: boolean }) {
-  const [selected, setSelected] = useState<string[]>([]);
+function DistinctModifierGroup({ group, disabled, initialSelections }: { group: Group; disabled: boolean; initialSelections: InitialSelections }) {
+  const [selected, setSelected] = useState<string[]>(() => group.modifiers.filter((modifier) => (initialSelections[modifier.id] ?? 0) > 0).map((modifier) => modifier.id));
   const firstInput = useRef<HTMLInputElement | null>(null);
   const single = group.max_selection === 1;
   const count = selected.length;
@@ -56,8 +57,8 @@ function DistinctModifierGroup({ group, disabled }: { group: Group; disabled: bo
   </fieldset>;
 }
 
-function QuantityModifierGroup({ group, disabled, complementTargetId }: { group: Group; disabled: boolean; complementTargetId?: string }) {
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
+function QuantityModifierGroup({ group, disabled, complementTargetId, initialSelections }: { group: Group; disabled: boolean; complementTargetId?: string; initialSelections: InitialSelections }) {
+  const [quantities, setQuantities] = useState<Record<string, number>>(() => Object.fromEntries(group.modifiers.map((modifier) => [modifier.id, Math.max(0, Number(initialSelections[modifier.id] ?? 0))])));
   const validationInput = useRef<HTMLInputElement | null>(null);
   const minimum = group.required ? Math.max(1, group.min_selection) : group.min_selection;
   const total = Object.values(quantities).reduce((sum, quantity) => sum + quantity, 0);
