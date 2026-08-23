@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export function PublicMenuLinkCard({ url, storeName }: { url: string; storeName: string }) {
+export function PublicMenuLinkCard({ path, storeName }: { path: string; storeName: string }) {
   const [copied, setCopied] = useState(false);
+  const [url, setUrl] = useState(path);
+
+  useEffect(() => {
+    setUrl(new URL(path, window.location.origin).toString());
+  }, [path]);
 
   async function copyLink() {
     await navigator.clipboard.writeText(url);
