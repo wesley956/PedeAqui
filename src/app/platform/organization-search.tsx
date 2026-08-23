@@ -75,18 +75,19 @@ export function OrganizationSearch({ organizations, units }: { organizations: Pl
         <div className={styles.searchGroupTitle}><strong>Unidades</strong><span>{filteredUnits.length}</span></div>
         <div className={styles.orgGrid}>
           {filteredUnits.map((unit) => (
-            <Link key={unit.id} className={styles.orgCardLink} href={`/platform/unidades/${unit.id}`}>
-              <article className={styles.orgCard}>
-                <div className={styles.cardTop}>
-                  <strong>{unit.name}</strong>
-                  <span className={styles.pill} data-tone={unit.tone}>{unit.statusLabel}</span>
-                </div>
-                <span className={styles.meta}>{unit.organizationName}</span>
-                <span className={styles.meta}>{unit.locationLabel}</span>
-                <span className={styles.meta}>{unit.recentOrders > 0 ? `Atividade recente detectada · ${unit.lastOrderLabel}` : unit.lastOrderLabel}</span>
-                <span className={styles.open360}>Abrir visão 360° →</span>
-              </article>
-            </Link>
+            <article key={unit.id} className={styles.orgCard}>
+              <div className={styles.cardTop}>
+                <strong>{unit.name}</strong>
+                <span className={styles.pill} data-tone={unit.tone}>{unit.statusLabel}</span>
+              </div>
+              <span className={styles.meta}>{unit.organizationName}</span>
+              <span className={styles.meta}>{unit.locationLabel}</span>
+              <span className={styles.meta}>{unit.recentOrders > 0 ? `Atividade recente detectada · ${unit.lastOrderLabel}` : unit.lastOrderLabel}</span>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
+                <Link className={styles.open360} href={`/platform/unidades/${unit.id}`}>Abrir visão 360° →</Link>
+                <Link className={styles.open360} href={`/platform/unidades/${unit.id}/configuracao-operacional`}>Configurar operação →</Link>
+              </div>
+            </article>
           ))}
         </div>
         {filteredUnits.length === 0 ? <div className={styles.empty}>Nenhuma unidade encontrada.</div> : null}
