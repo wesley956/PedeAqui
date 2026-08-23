@@ -52,7 +52,7 @@ As opções são subordinadas aos módulos existentes. Módulo desligado prevale
 - Retenção de rota é configurável entre 1 e 30 dias; `cleanup_driver_route_points_internal` elimina sessões vencidas e seus pontos por cascata.
 - Campanha revalida consentimento e telefone imediatamente antes do envio.
 - Somente WhatsApp Cloud API e templates aprovados são usados; não há WhatsApp Web, scraping ou mecanismo de evasão.
-- O primeiro processamento ocorre em `after()` no servidor, em lotes limitados; um cron diário de recuperação e o endpoint protegido cobrem itens pendentes sem exceder os dois crons permitidos no plano Hobby.
+- O primeiro processamento ocorre em `after()` no servidor, em lotes limitados; o Supabase executa a recuperação a cada cinco minutos com `pg_cron` + `pg_net`, usando tokens rotativos guardados no Vault. A retenção de rotas roda diariamente pelo mesmo mecanismo, sem depender de `CRON_SECRET` ou dos limites de cron da hospedagem.
 
 ## Rollback
 
