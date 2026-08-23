@@ -56,7 +56,13 @@ async function checkStaticContracts() {
   if (!imagePolicy.includes("4 * 1024 * 1024")) {
     fail("CatalogImageService não reserva margem abaixo do limite de payload da Vercel.");
   }
-  if (!imageOptimizer.includes('.webp({ quality: OPTIMIZED_CATALOG_IMAGE_QUALITY') || !imageOptimizer.includes('resize({ width: maximumWidth(purpose)')) {
+
+  const resizesCatalogImages = imageOptimizer.includes(".resize({")
+    && imageOptimizer.includes("width: maximumWidth(purpose)")
+    && imageOptimizer.includes("withoutEnlargement: true");
+  const convertsCatalogImagesToWebp = imageOptimizer.includes(".webp({")
+    && imageOptimizer.includes("OPTIMIZED_CATALOG_IMAGE_QUALITY");
+  if (!resizesCatalogImages || !convertsCatalogImagesToWebp) {
     fail("Uploads de catálogo precisam ser redimensionados e convertidos para WebP.");
   }
 
