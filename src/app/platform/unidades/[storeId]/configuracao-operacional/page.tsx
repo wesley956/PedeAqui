@@ -67,6 +67,7 @@ export default async function OperationalConfigurationPage({ params }: { params:
           <article className={styles.supportCard}>
             <strong>Entregas</strong>
             <span>{settings.deliveriesAutoCreateWhenReady ? "Pedido pronto vai automaticamente para Entregas" : "Envio para Entregas segue o fluxo padrão"}</span>
+            <span>{settings.deliveriesDriverSelfClaimEnabled ? "Entregadores podem pegar pedidos disponíveis" : "Atribuição pelo restaurante"}</span>
             <span>{activeModules.has("driver") ? "Módulo de entregador disponível" : "Módulo de entregador não habilitado"}</span>
           </article>
           <article className={styles.supportCard}>
