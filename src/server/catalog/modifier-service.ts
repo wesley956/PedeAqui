@@ -25,7 +25,7 @@ export class ModifierService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data, error } = await admin.from("modifier_groups")
-      .select("id, name, description, min_selection, max_selection, required, sort_order, active, created_at, updated_at")
+      .select("id, name, description, min_selection, max_selection, required, selection_mode, sort_order, active, created_at, updated_at")
       .eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null)
       .order("sort_order").order("name");
     if (error) throw error;
@@ -58,11 +58,12 @@ export class ModifierService {
       min_selection: values.minSelection,
       max_selection: values.maxSelection,
       required: values.required,
+      selection_mode: values.selectionMode,
       sort_order: values.sortOrder,
       active: values.active,
       created_by: context.userId,
       updated_by: context.userId,
-    }).select("id, name, min_selection, max_selection, required, sort_order, active").single();
+    }).select("id, name, min_selection, max_selection, required, selection_mode, sort_order, active").single();
     if (error) throw error;
     await AuditService.record(context, { action: "modifier_group.created", entityType: "modifier_group", entityId: data.id, after: data });
     await EventService.enqueue(context, { type: "modifier_group.created", entityType: "modifier_group", entityId: data.id, payload: { name: data.name } });
@@ -76,7 +77,7 @@ export class ModifierService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data: before, error: beforeError } = await admin.from("modifier_groups")
-      .select("id, name, description, min_selection, max_selection, required, sort_order, active")
+      .select("id, name, description, min_selection, max_selection, required, selection_mode, sort_order, active")
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
     if (beforeError) throw beforeError;
     const { data: after, error } = await admin.from("modifier_groups").update({
@@ -85,12 +86,13 @@ export class ModifierService {
       min_selection: values.minSelection,
       max_selection: values.maxSelection,
       required: values.required,
+      selection_mode: values.selectionMode,
       sort_order: values.sortOrder,
       active: values.active,
       updated_by: context.userId,
       updated_at: new Date().toISOString(),
     }).eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId)
-      .select("id, name, description, min_selection, max_selection, required, sort_order, active").single();
+      .select("id, name, description, min_selection, max_selection, required, selection_mode, sort_order, active").single();
     if (error) throw error;
     await AuditService.record(context, { action: "modifier_group.updated", entityType: "modifier_group", entityId: id, before, after });
     return after;
@@ -145,10 +147,8 @@ export class ModifierService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const [{ data: group, error: groupError }, { data: before, error: beforeError }] = await Promise.all([
-      admin.from("modifier_groups").select("id")
-        .eq("id", values.modifierGroupId).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).maybeSingle(),
-      admin.from("modifiers").select("id, modifier_group_id, name, price_cents, sort_order, active")
-        .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single(),
+      admin.from("modifier_groups").select("id").eq("id", values.modifierGroupId).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).maybeSingle(),
+      admin.from("modifiers").select("id, modifier_group_id, name, price_cents, sort_order, active").eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single(),
     ]);
     if (groupError) throw groupError;
     if (!group) throw new Error("Modifier group does not belong to the active store");
@@ -161,8 +161,7 @@ export class ModifierService {
       active: values.active,
       updated_by: context.userId,
       updated_at: new Date().toISOString(),
-    }).eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId)
-      .select("id, modifier_group_id, name, price_cents, sort_order, active").single();
+    }).eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).select("id, modifier_group_id, name, price_cents, sort_order, active").single();
     if (error) throw error;
     await AuditService.record(context, { action: "modifier.updated", entityType: "modifier", entityId: id, before, after });
     return after;
@@ -173,14 +172,10 @@ export class ModifierService {
     const context = await authorize(PERMISSIONS.PRODUCTS_DELETE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const { data: before, error: beforeError } = await admin.from("modifiers")
-      .select("id, name, active, deleted_at")
-      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
+    const { data: before, error: beforeError } = await admin.from("modifiers").select("id, name, active, deleted_at").eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
     if (beforeError) throw beforeError;
     const deletedAt = new Date().toISOString();
-    const { error } = await admin.from("modifiers")
-      .update({ active: false, deleted_at: deletedAt, updated_by: context.userId, updated_at: deletedAt })
-      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId);
+    const { error } = await admin.from("modifiers").update({ active: false, deleted_at: deletedAt, updated_by: context.userId, updated_at: deletedAt }).eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId);
     if (error) throw error;
     await AuditService.record(context, { action: "modifier.deleted", entityType: "modifier", entityId: id, before, after: { ...before, active: false, deleted_at: deletedAt } });
   }
@@ -190,11 +185,9 @@ export class ModifierService {
     const context = await authorize(PERMISSIONS.PRODUCTS_EDIT);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const { data: before, error: beforeError } = await admin.from("modifiers").select("id, active")
-      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
+    const { data: before, error: beforeError } = await admin.from("modifiers").select("id, active").eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
     if (beforeError) throw beforeError;
-    const { data: after, error } = await admin.from("modifiers").update({ active, updated_by: context.userId, updated_at: new Date().toISOString() })
-      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).select("id, active").single();
+    const { data: after, error } = await admin.from("modifiers").update({ active, updated_by: context.userId, updated_at: new Date().toISOString() }).eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).select("id, active").single();
     if (error) throw error;
     await AuditService.record(context, { action: "modifier.availability_changed", entityType: "modifier", entityId: id, before, after });
     return after;
@@ -205,7 +198,6 @@ export class ModifierService {
     const context = await authorize(PERMISSIONS.PRODUCTS_EDIT);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-
     const [{ data: product, error: productError }, { data: group, error: groupError }] = await Promise.all([
       admin.from("products").select("id").eq("id", values.productId).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).maybeSingle(),
       admin.from("modifier_groups").select("id").eq("id", values.modifierGroupId).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).maybeSingle(),
@@ -213,14 +205,7 @@ export class ModifierService {
     if (productError) throw productError;
     if (groupError) throw groupError;
     if (!product || !group) throw new Error("Product and modifier group must belong to the active store");
-
-    const { data, error } = await admin.from("product_modifier_groups").upsert({
-      organization_id: context.organizationId,
-      store_id: storeId,
-      product_id: values.productId,
-      modifier_group_id: values.modifierGroupId,
-      sort_order: values.sortOrder,
-    }, { onConflict: "product_id,modifier_group_id" }).select("product_id, modifier_group_id, sort_order").single();
+    const { data, error } = await admin.from("product_modifier_groups").upsert({ organization_id: context.organizationId, store_id: storeId, product_id: values.productId, modifier_group_id: values.modifierGroupId, sort_order: values.sortOrder }, { onConflict: "product_id,modifier_group_id" }).select("product_id, modifier_group_id, sort_order").single();
     if (error) throw error;
     await AuditService.record(context, { action: "product.modifier_group_linked", entityType: "product", entityId: values.productId, after: data });
     await EventService.enqueue(context, { type: "product.modifier_group_linked", entityType: "product", entityId: values.productId, payload: { modifier_group_id: values.modifierGroupId } });
@@ -232,14 +217,10 @@ export class ModifierService {
     const context = await authorize(PERMISSIONS.PRODUCTS_VIEW);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const { data: ownedProduct, error: productError } = await admin.from("products").select("id")
-      .eq("id", product).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).maybeSingle();
+    const { data: ownedProduct, error: productError } = await admin.from("products").select("id").eq("id", product).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).maybeSingle();
     if (productError) throw productError;
     if (!ownedProduct) throw new Error("Product does not belong to the active store");
-    const { data, error } = await admin.from("product_modifier_groups")
-      .select("modifier_group_id, sort_order")
-      .eq("product_id", product).eq("organization_id", context.organizationId).eq("store_id", storeId)
-      .order("sort_order");
+    const { data, error } = await admin.from("product_modifier_groups").select("modifier_group_id, sort_order").eq("product_id", product).eq("organization_id", context.organizationId).eq("store_id", storeId).order("sort_order");
     if (error) throw error;
     return data ?? [];
   }
@@ -250,9 +231,7 @@ export class ModifierService {
     const context = await authorize(PERMISSIONS.PRODUCTS_EDIT);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const { error } = await admin.from("product_modifier_groups").delete()
-      .eq("product_id", product).eq("modifier_group_id", group)
-      .eq("organization_id", context.organizationId).eq("store_id", storeId);
+    const { error } = await admin.from("product_modifier_groups").delete().eq("product_id", product).eq("modifier_group_id", group).eq("organization_id", context.organizationId).eq("store_id", storeId);
     if (error) throw error;
     await AuditService.record(context, { action: "product.modifier_group_unlinked", entityType: "product", entityId: product, before: { modifierGroupId: group } });
   }
