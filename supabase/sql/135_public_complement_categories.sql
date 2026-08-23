@@ -49,3 +49,60 @@ create trigger store_complement_categories_scope
 before insert or update of organization_id, store_id, category_id
 on public.store_complement_categories
 for each row execute function private.enforce_complement_category_scope();
+
+-- Bootstrap controlado: somente restaurantes que possuem exatamente UMA categoria
+-- ativa chamada Bebidas recebem o relacionamento persistido. Depois disso o runtime
+-- trabalha exclusivamente com category_id; o label não vira regra permanente.
+insert into public.store_complement_categories(organization_id, store_id, category_id, sort_order)
+select c.organization_id, c.store_id, c.id, 0
+from public.categories c
+join public.stores s on s.id=c.store_id and s.organization_id=c.organization_id
+where s.business_type='restaurant'
+  and c.active=true
+  and c.deleted_at is null
+  and lower(trim(c.name))='bebidas'
+  and 1=(select count(*) from public.categories c2 where c2.store_id=c.store_id and c2.organization_id=c.organization_id and c2.active=true and c2.deleted_at is null and lower(trim(c2.name))='bebidas')
+on conflict(store_id, category_id) do nothing;
+
+-- Substitui a configuração da loja em uma única transação. O browser envia IDs e
+-- ordem; o banco revalida o escopo antes de persistir.
+create or replace function public.replace_complement_categories_internal(
+  p_organization_id uuid,
+  p_store_id uuid,
+  p_rows jsonb,
+  p_actor_user_id uuid
+) returns integer
+language plpgsql
+security definer
+set search_path=''
+as $$
+declare
+  r jsonb;
+  v_category_id uuid;
+  v_sort_order integer;
+  v_count integer:=0;
+begin
+  if jsonb_typeof(coalesce(p_rows,'[]'::jsonb))<>'array' then raise exception 'invalid complement categories'; end if;
+  if not exists(select 1 from public.stores s where s.id=p_store_id and s.organization_id=p_organization_id) then raise exception 'store unavailable'; end if;
+
+  delete from public.store_complement_categories
+  where organization_id=p_organization_id and store_id=p_store_id;
+
+  for r in select value from jsonb_array_elements(coalesce(p_rows,'[]'::jsonb)) loop
+    v_category_id:=(r->>'category_id')::uuid;
+    v_sort_order:=coalesce((r->>'sort_order')::integer,0);
+    if v_sort_order<0 or v_sort_order>10000 then raise exception 'invalid complement category order'; end if;
+    if not exists(
+      select 1 from public.categories c
+      where c.id=v_category_id and c.organization_id=p_organization_id and c.store_id=p_store_id and c.deleted_at is null
+    ) then raise exception 'complement category does not belong to store'; end if;
+    insert into public.store_complement_categories(organization_id,store_id,category_id,sort_order,created_by)
+    values(p_organization_id,p_store_id,v_category_id,v_sort_order,p_actor_user_id);
+    v_count:=v_count+1;
+  end loop;
+  return v_count;
+end;
+$$;
+
+revoke all on function public.replace_complement_categories_internal(uuid,uuid,jsonb,uuid) from public,anon,authenticated;
+grant execute on function public.replace_complement_categories_internal(uuid,uuid,jsonb,uuid) to service_role;
