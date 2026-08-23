@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const migration = readFileSync("supabase/sql/135_public_complement_categories.sql", "utf8");
+const security = readFileSync("supabase/sql/136_public_complement_categories_security.sql", "utf8");
 const service = readFileSync("src/server/menu/complement-category-service.ts", "utf8");
 const actions = readFileSync("src/features/menu/complement-actions.ts", "utf8");
 const productPage = readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8");
@@ -15,6 +16,14 @@ describe("public complementary categories", () => {
     expect(migration).toContain("c.organization_id = new.organization_id");
     expect(migration).toContain("c.store_id = new.store_id");
     expect(migration).toContain("replace_complement_categories_internal");
+  });
+
+  it("denies direct browser access even though the service role can manage configuration", () => {
+    expect(migration).toContain("revoke all on table public.store_complement_categories from anon, authenticated");
+    expect(security).toContain("store_complement_categories_deny_direct");
+    expect(security).toContain("to anon, authenticated");
+    expect(security).toContain("using (false)");
+    expect(security).toContain("with check (false)");
   });
 
   it("bootstraps Bebidas only for restaurants with one unambiguous category", () => {
@@ -35,6 +44,13 @@ describe("public complementary categories", () => {
     expect(actions).toContain("CartService.addItem");
     expect(actions).toContain("modifierSelections: []");
     expect(actions).not.toContain("priceCents:");
+  });
+
+  it("blocks duplicate UI submissions while a complement request is in flight", () => {
+    expect(section).toContain("useRef(new Set<string>())");
+    expect(section).toContain("inFlight.current.has(productId)");
+    expect(section).toContain("inFlight.current.add(productId)");
+    expect(section).toContain("inFlight.current.delete(productId)");
   });
 
   it("renders complements inside the product journey without making them mandatory", () => {
