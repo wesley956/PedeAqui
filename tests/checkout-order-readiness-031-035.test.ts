@@ -26,10 +26,10 @@ describe("presentation diagnostics 031–035", () => {
     expect(compatibilityMigration).toContain("'created',false");
   });
 
-  it("shows order number, items, values, payment and requested schedule after confirmation", () => {
-    expect(publicOrderPage).toContain("Pedido recebido!");
+  it("shows confirmation, order number, collapsible items, values, payment and requested schedule", () => {
+    expect(publicOrderPage).toContain("Pedido confirmado");
     expect(publicOrderPage).toContain("Pedido #{order.display_number}");
-    expect(publicOrderPage).toContain("Ver itens do pedido");
+    expect(publicOrderPage).toContain("Ver detalhes do pedido");
     expect(publicOrderPage).toContain("Valores e pagamento");
     expect(publicOrderPage).toContain('label="Quando"');
   });
