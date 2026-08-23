@@ -5,3 +5,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 ## Painel do Proprietário
 
 - `/platform/unidades/[storeId]/configuracao-operacional` — tela dedicada, exclusiva de `super_admin`, para configurar o comportamento operacional dos módulos já habilitados em uma unidade. Não ativa módulos nem altera contrato comercial.
+
+## Operação de pedidos
+
+- `/pedidos/historico` — histórico separado de pedidos finalizados, cancelados e recusados. No fluxo simplificado, pedidos terminais deixam o quadro operacional imediatamente e permanecem consultáveis nesta tela.
