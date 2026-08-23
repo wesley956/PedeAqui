@@ -5,6 +5,7 @@ import { DeliveryOperationForm } from "@/features/delivery/operation-forms";
 import styles from "@/features/delivery/courier.module.css";
 import { DriverLocationTracker } from "@/features/delivery/driver-location-tracker";
 import { DriverRouteStartForm } from "@/features/delivery/driver-route-start-form";
+import { DriverHistoryPolicyService } from "@/server/delivery/driver-history-policy-service";
 import { RouteTrackingService } from "@/server/delivery/route-tracking-service";
 
 function address(order: NonNullable<Awaited<ReturnType<typeof DeliveryOperationsService.loadDriverView>>["deliveries"][number]["order"]>) {
@@ -59,10 +60,16 @@ const statusLabel: Record<string, string> = {
 };
 
 export default async function DriverPage() {
-  const [data, tracking] = await Promise.all([DeliveryOperationsService.loadDriverView(), RouteTrackingService.loadForDriver()]);
+  const [data, tracking, historyVisible] = await Promise.all([
+    DeliveryOperationsService.loadDriverView(),
+    RouteTrackingService.loadForDriver(),
+    DriverHistoryPolicyService.get(),
+  ]);
   if (!data.context.storeId) throw new Error("Uma unidade ativa é necessária");
   const active = data.deliveries.filter((item) => item.order && item.order.fulfillment_status !== "delivered");
-  const history = data.deliveries.filter((item) => item.order?.fulfillment_status === "delivered").slice(0, 10);
+  const history = historyVisible
+    ? data.deliveries.filter((item) => item.order?.fulfillment_status === "delivered").slice(0, 10)
+    : [];
   const routeRecoveryDelivery = !tracking.sessionId
     ? active.find((item) => item.order?.fulfillment_status === "out_for_delivery") ?? null
     : null;
@@ -170,7 +177,7 @@ export default async function DriverPage() {
       </article>;
     })}</div>}
 
-    {history.length > 0 ? <details className={styles.history}>
+    {historyVisible && history.length > 0 ? <details className={styles.history}>
       <summary>Histórico recente · {history.length}</summary>
       <div className={styles.historyList}>{history.map((item) => item.order ? <div key={item.id} className={styles.historyRow}>
         <div><strong>Pedido #{item.order.display_number}</strong><span>{item.order.customer_name_snapshot}</span></div>

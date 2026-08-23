@@ -1,13 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createDeliveryNeighborhoodAction, removeDeliveryNeighborhoodAction, saveDeliverySettingsAction, toggleDeliveryNeighborhoodAction } from "@/features/delivery/actions";
+import { saveDriverHistoryVisibilityAction } from "@/features/delivery/driver-history-actions";
 import { DeliveryService } from "@/server/delivery/delivery-service";
+import { DriverHistoryPolicyService } from "@/server/delivery/driver-history-policy-service";
 import { formatCents } from "@/server/catalog/money";
 
 export default async function DeliverySettingsPage() {
-  const [settings, neighborhoods] = await Promise.all([
+  const [settings, neighborhoods, driverHistoryVisible] = await Promise.all([
     DeliveryService.getSettings(),
     DeliveryService.listNeighborhoods(),
+    DriverHistoryPolicyService.get(),
   ]);
 
   return (
@@ -48,6 +51,18 @@ export default async function DeliverySettingsPage() {
         </div>
 
         <div><Button type="submit">Salvar entrega</Button></div>
+      </form>
+
+      <form action={saveDriverHistoryVisibilityAction} className="card" style={{ padding: 20, display: "grid", gap: 14 }}>
+        <div>
+          <h2 style={{ margin: 0 }}>Portal do entregador</h2>
+          <p className="muted" style={{ marginBottom: 0 }}>A loja decide se entregadores podem consultar pedidos que já concluíram. Quando desativado, somente entregas ativas aparecem no portal.</p>
+        </div>
+        <label style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <input type="checkbox" name="driverHistoryVisible" defaultChecked={driverHistoryVisible} style={{ marginTop: 3 }} />
+          <span><strong>Mostrar histórico de entregas concluídas ao entregador</strong><br /><span className="muted" style={{ fontSize: 12 }}>O histórico continua disponível para o restaurante mesmo quando esta opção estiver desligada.</span></span>
+        </label>
+        <div><Button type="submit">Salvar acesso do entregador</Button></div>
       </form>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(300px, 390px) minmax(0,1fr)", gap: 18, alignItems: "start" }}>
