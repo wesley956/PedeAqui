@@ -42,6 +42,8 @@ export const PERMISSIONS = {
   DELIVERY_MANAGE: "delivery.manage",
   DELIVERY_ASSIGN: "delivery.assign",
   DELIVERY_UPDATE: "delivery.update",
+  DELIVERY_TRACKING_VIEW: "delivery.tracking_view",
+  DELIVERY_TRACKING_UPDATE: "delivery.tracking_update",
   INVENTORY_VIEW: "inventory.view",
   INVENTORY_MANAGE: "inventory.manage",
   INVENTORY_ADJUST: "inventory.adjust",

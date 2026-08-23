@@ -56,7 +56,7 @@ function statusForOrder(order: OrderManagerRow, bucket: OperationalOrderBucket):
   return { status: "order_confirmed" };
 }
 
-export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders: OrderManagerRow[] }) {
+export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }: { storeId: string; orders: OrderManagerRow[]; workflowMode?: "standard" | "simplified" }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(false);
@@ -191,7 +191,16 @@ export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders
         {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}
       </div>
 
-      <div className={styles.activeGrid} aria-label="Pedidos ativos">
+      {workflowMode === "simplified" ? <div className={styles.activeGrid} aria-label="Pedidos em fluxo simplificado" data-mode="simplified">
+        {([
+          { key: "start", label: "Iniciar", orders: [...grouped.new, ...grouped.queued, ...grouped.preparing] },
+          { key: "ready", label: "Pronto", orders: grouped.ready },
+          { key: "completed", label: "Finalizados", orders: grouped.history },
+        ] as const).map((column) => <section key={column.key} aria-label={column.label} className={styles.lane} data-bucket={column.key}>
+          <header className={styles.laneHeader}><strong>{column.label}</strong><span className={styles.laneCount}>{column.orders.length}</span></header>
+          <div className={styles.laneBody}>{column.orders.map((order) => <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} />)}{column.orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
+        </section>)}
+      </div> : <><div className={styles.activeGrid} aria-label="Pedidos ativos">
         {activeBuckets.map((bucket) => (
           <section key={bucket} aria-label={operationalBucketLabels[bucket]} className={styles.lane} data-bucket={bucket}>
             <header className={styles.laneHeader}>
@@ -215,7 +224,7 @@ export function OrderManagerBoard({ storeId, orders }: { storeId: string; orders
           {grouped.history.map((order) => <OrderCard key={order.id} order={order} now={now} bucket="history" />)}
           {grouped.history.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido no histórico carregado.</div> : null}
         </div>
-      </details>
+      </details></>}
     </div>
   );
 }

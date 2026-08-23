@@ -270,6 +270,14 @@ export class ConversationService {
       p_error_message: event.errorMessage,
     });
     if (error) throw error;
+    const { error: campaignError } = await admin.rpc("campaign_update_delivery_internal", {
+      p_store_id: settings.store_id,
+      p_provider_message_id: event.externalMessageId,
+      p_status: event.status,
+      p_error_code: event.errorCode,
+      p_reason: event.errorMessage,
+    });
+    if (campaignError) throw campaignError;
     return data;
   }
 

@@ -46,6 +46,9 @@ export const campaignInputSchema = z.object({
   channel: z.enum(["internal", "whatsapp", "email"]),
   content: z.string().trim().max(4000),
   segmentId: z.string().uuid().nullable(),
+  templateName: z.string().trim().regex(/^[a-z0-9_]{1,512}$/, "Nome de template inválido.").nullable().optional(),
+  templateLanguage: z.string().trim().regex(/^[a-z]{2}_[A-Z]{2}$/, "Idioma de template inválido.").default("pt_BR"),
+  includeCustomerNameParameter: z.boolean().default(false),
 });
 
 export const automationInputSchema = z.object({

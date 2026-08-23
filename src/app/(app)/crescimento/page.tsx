@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   createAutomationAction,
   createCampaignAction,
@@ -64,7 +65,7 @@ export default async function GrowthPage() {
       </section>
 
       <nav className={styles.nav} aria-label="Áreas de crescimento">
-        <a href="#fidelidade">Fidelidade</a><a href="#cupons">Cupons</a><a href="#clientes">Clientes</a><a href="#campanhas">Campanhas</a><a href="#automacoes">Automações</a>
+        <a href="#fidelidade">Fidelidade</a><a href="#cupons">Cupons</a><a href="#clientes">Clientes</a><a href="#campanhas">Campanhas</a><Link href="/crescimento/campanhas">Envio WhatsApp</Link><a href="#automacoes">Automações</a>
       </nav>
 
       <section id="fidelidade" className={styles.section}>

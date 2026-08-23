@@ -1,3 +1,7 @@
 {
-  "regions": ["gru1"]
+  "regions": ["gru1"],
+  "crons": [
+    { "path": "/api/internal/campaign-messages", "schedule": "5 3 * * *" },
+    { "path": "/api/internal/route-retention", "schedule": "17 3 * * *" }
+  ]
 }

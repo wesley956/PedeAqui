@@ -4,6 +4,8 @@ import { DeliveryRealtime } from "@/features/delivery/delivery-realtime";
 import { DeliverySla } from "@/features/delivery/delivery-sla";
 import styles from "@/features/delivery/delivery.module.css";
 import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
+import { RouteTrackingService } from "@/server/delivery/route-tracking-service";
+import { RouteTrackingPanel } from "@/features/delivery/route-tracking-panel";
 
 function address(order: Awaited<ReturnType<typeof DeliveryOperationsService.loadOperations>>["deliveries"][number]) {
   const line = [order.address_street_snapshot, order.address_number_snapshot].filter(Boolean).join(", ");
@@ -11,7 +13,7 @@ function address(order: Awaited<ReturnType<typeof DeliveryOperationsService.load
 }
 
 export default async function DeliveryOperationsPage() {
-  const data = await DeliveryOperationsService.loadOperations();
+  const [data, tracking] = await Promise.all([DeliveryOperationsService.loadOperations(), RouteTrackingService.loadOwnerPanel()]);
   if (!data.context.storeId) throw new Error("Uma unidade ativa é necessária");
 
   const open = data.deliveries.filter((item) => item.fulfillment_status !== "delivered");
@@ -49,6 +51,8 @@ export default async function DeliveryOperationsPage() {
     </div>
 
     <DeliveryBoard deliveries={boardDeliveries} drivers={driversForForm} driverNames={driverNames} />
+
+    <RouteTrackingPanel data={tracking} />
 
     <details className={styles.completed}>
       <summary>Entregues recentes ({delivered.length})</summary>

@@ -3,6 +3,8 @@ import { DeliveryRealtime } from "@/features/delivery/delivery-realtime";
 import { DeliverySla } from "@/features/delivery/delivery-sla";
 import { DeliveryOperationForm } from "@/features/delivery/operation-forms";
 import styles from "@/features/delivery/courier.module.css";
+import { DriverLocationTracker } from "@/features/delivery/driver-location-tracker";
+import { RouteTrackingService } from "@/server/delivery/route-tracking-service";
 
 function address(order: NonNullable<Awaited<ReturnType<typeof DeliveryOperationsService.loadDriverView>>["deliveries"][number]["order"]>) {
   const line = [order.address_street_snapshot, order.address_number_snapshot].filter(Boolean).join(", ");
@@ -43,7 +45,7 @@ const statusLabel: Record<string, string> = {
 };
 
 export default async function DriverPage() {
-  const data = await DeliveryOperationsService.loadDriverView();
+  const [data, tracking] = await Promise.all([DeliveryOperationsService.loadDriverView(), RouteTrackingService.loadForDriver()]);
   if (!data.context.storeId) throw new Error("Uma unidade ativa é necessária");
   const active = data.deliveries.filter((item) => item.order && item.order.fulfillment_status !== "delivered");
   const history = data.deliveries.filter((item) => item.order?.fulfillment_status === "delivered").slice(0, 10);
@@ -58,6 +60,8 @@ export default async function DriverPage() {
     </header>
 
     {!data.driver.active || !data.driver.on_duty ? <article className={styles.offDuty}><strong>Você está fora de serviço.</strong><p>Entregas já atribuídas continuam visíveis, mas novas atribuições ficam bloqueadas pela operação até seu status ser alterado.</p></article> : null}
+
+    {tracking.enabled && tracking.sessionId ? <article className={styles.tracking}><DriverLocationTracker sessionId={tracking.sessionId} /></article> : null}
 
     {active.length === 0 ? <article className={styles.empty}><strong>Nenhuma entrega ativa.</strong><p>Quando uma entrega for atribuída a você, ela aparecerá aqui automaticamente.</p></article> : <div className={styles.list}>{active.map((item) => {
       const order = item.order!;
