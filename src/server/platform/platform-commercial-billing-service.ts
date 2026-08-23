@@ -78,6 +78,30 @@ const paymentSchema = z.object({
 const accessSchema = commonSchema.omit({ idempotencyKey: true }).extend({ suspended: z.boolean() });
 const founderSchema = commonSchema.omit({ idempotencyKey: true });
 
+const changeQuoteSchema = commonSchema.omit({ idempotencyKey: true }).extend({
+  changeType: z.enum(["add_on", "remove_addon", "upgrade", "downgrade"]),
+  targetPlanId: z.string().uuid().nullable(),
+  featureId: z.string().uuid().nullable(),
+  featurePriceCents: z.number().int().min(1).max(100_000_000).nullable(),
+  effectiveAt: z.string().datetime(),
+}).superRefine((value, context) => {
+  if (["upgrade", "downgrade"].includes(value.changeType) && value.targetPlanId === null) {
+    context.addIssue({ code: "custom", path: ["targetPlanId"], message: "Selecione o plano de destino." });
+  }
+  if (["add_on", "remove_addon"].includes(value.changeType) && value.featureId === null) {
+    context.addIssue({ code: "custom", path: ["featureId"], message: "Selecione o módulo." });
+  }
+  if (value.changeType === "add_on" && value.featurePriceCents === null) {
+    context.addIssue({ code: "custom", path: ["featurePriceCents"], message: "Informe o valor do módulo adicional." });
+  }
+});
+
+const changeDecisionSchema = z.object({
+  changeId: z.string().uuid(),
+  reason: z.string().trim().min(5).max(500),
+  protocol: z.string().trim().min(3).max(120),
+});
+
 const subscriptionLabels: Record<string, string> = {
   trialing: "Em período de teste",
   active: "Ativa",
@@ -128,7 +152,7 @@ export class PlatformCommercialBillingService {
   static async load() {
     const base = await PlatformAdminService.loadCommercial();
     const admin = createAdminClient();
-    const [history, receipts, versions, adjustments, invoices, payments, notifications, financialAudit] = await Promise.all([
+    const [history, receipts, versions, adjustments, invoices, payments, notifications, financialAudit, addons, changeRequests] = await Promise.all([
       admin.from("subscription_history").select("id,organization_id,subscription_id,from_status,to_status,event_type,metadata,created_at").order("created_at", { ascending: false }).limit(300),
       admin.from("billing_webhook_receipts").select("id,provider_key,status,error_message,created_at,processed_at").order("created_at", { ascending: false }).limit(100),
       admin.from("plan_versions").select("id,plan_id,version,monthly_price_cents,yearly_price_cents,effective_at,reason,protocol").order("created_at", { ascending: false }).limit(300),
@@ -137,8 +161,10 @@ export class PlatformCommercialBillingService {
       admin.from("subscription_payments").select("id,organization_id,invoice_id,amount_cents,method,status,paid_at,reason,protocol,created_at").order("created_at", { ascending: false }).limit(500),
       admin.from("subscription_billing_notifications").select("id,organization_id,subscription_id,invoice_id,channel,kind,status,scheduled_at,sent_at,last_error,created_at").order("created_at", { ascending: false }).limit(300),
       admin.from("platform_financial_audit").select("id,organization_id,action,entity_type,entity_id,reason,protocol,created_at").order("created_at", { ascending: false }).limit(300),
+      admin.from("subscription_addons").select("id,organization_id,subscription_id,feature_id,feature_name_snapshot,unit_price_cents,quantity,status,starts_at,ends_at,accepted_at,accepted_by,reason,protocol,created_at").order("created_at", { ascending: false }).limit(500),
+      admin.from("subscription_change_requests").select("id,organization_id,subscription_id,change_type,status,current_plan_id,target_plan_id,feature_id,feature_name_snapshot,current_base_price_cents,current_addons_price_cents,proposed_base_price_cents,proposed_addons_price_cents,proposed_total_price_cents,effective_at,accepted_at,accepted_by,applied_at,cancelled_at,reason,protocol,created_at").order("created_at", { ascending: false }).limit(500),
     ]);
-    for (const result of [history, receipts, versions, adjustments, invoices, payments, notifications, financialAudit]) if (result.error) throw result.error;
+    for (const result of [history, receipts, versions, adjustments, invoices, payments, notifications, financialAudit, addons, changeRequests]) if (result.error) throw result.error;
 
     const planById = new Map(base.plans.map((plan) => [plan.id, plan]));
     const orgById = new Map(base.organizations.map((org) => [org.id, org]));
@@ -247,10 +273,60 @@ export class PlatformCommercialBillingService {
       startsAt: item.starts_at, endsAt: item.ends_at, cancelledAt: item.cancelled_at,
       reason: item.reason, protocol: item.protocol,
     }));
-    const projectedRevenueCents = subscriptions.filter((item) => item.status === "active").reduce((total, item) => {
+    const addonRows = (addons.data ?? []).map((item) => ({
+      id: item.id, organizationId: item.organization_id,
+      organizationName: orgById.get(item.organization_id)?.name ?? "Empresa indisponível",
+      subscriptionId: item.subscription_id, featureId: item.feature_id, featureName: item.feature_name_snapshot,
+      unitPriceCents: item.unit_price_cents, quantity: item.quantity, status: item.status,
+      startsAt: item.starts_at, endsAt: item.ends_at, acceptedAt: item.accepted_at,
+      reason: item.reason, protocol: item.protocol, createdAt: item.created_at,
+    }));
+    const addonsBySubscription: Record<string, typeof addonRows> = {};
+    for (const addon of addonRows) {
+      (addonsBySubscription[addon.subscriptionId] ??= []).push(addon);
+    }
+    const changeRows = (changeRequests.data ?? []).map((item) => ({
+      id: item.id, organizationId: item.organization_id,
+      organizationName: orgById.get(item.organization_id)?.name ?? "Empresa indisponível",
+      subscriptionId: item.subscription_id, changeType: item.change_type, status: item.status,
+      currentPlanName: planById.get(item.current_plan_id)?.name ?? "Plano anterior",
+      targetPlanName: item.target_plan_id ? (planById.get(item.target_plan_id)?.name ?? "Plano de destino") : null,
+      featureId: item.feature_id, featureName: item.feature_name_snapshot,
+      currentBasePriceCents: item.current_base_price_cents, currentAddonsPriceCents: item.current_addons_price_cents,
+      proposedBasePriceCents: item.proposed_base_price_cents, proposedAddonsPriceCents: item.proposed_addons_price_cents,
+      proposedTotalPriceCents: item.proposed_total_price_cents, effectiveAt: item.effective_at,
+      isDue: new Date(item.effective_at).getTime() <= Date.now(),
+      acceptedAt: item.accepted_at, appliedAt: item.applied_at, cancelledAt: item.cancelled_at,
+      reason: item.reason, protocol: item.protocol, createdAt: item.created_at,
+    }));
+    const projectedBaseRevenueCents = subscriptions.filter((item) => item.status === "active").reduce((total, item) => {
       if (item.agreedPriceCents !== null) return total + item.agreedPriceCents;
       return total + (planById.get(item.planId)?.monthly_price_cents ?? 0);
     }, 0);
+    const projectedAddonRevenueCents = addonRows.filter((item) => item.status === "active").reduce((total, item) => total + item.unitPriceCents * item.quantity, 0);
+    const projectedRevenueCents = projectedBaseRevenueCents + projectedAddonRevenueCents;
+    const planRevenue = new Map<string, { subscriptions: number; amountCents: number }>();
+    for (const subscription of subscriptions) {
+      if (subscription.status !== "active") continue;
+      const plan = planById.get(subscription.planId);
+      const current = planRevenue.get(subscription.planId) ?? { subscriptions: 0, amountCents: 0 };
+      current.subscriptions += 1;
+      current.amountCents += subscription.agreedPriceCents ?? plan?.monthly_price_cents ?? 0;
+      planRevenue.set(subscription.planId, current);
+    }
+    const revenueByPlan = plans.flatMap((plan) => {
+      const revenue = planRevenue.get(plan.id);
+      return revenue ? [{ id: plan.id, name: plan.name, ...revenue }] : [];
+    });
+    const moduleRevenue = new Map<string, { id: string; name: string; subscriptions: number; amountCents: number }>();
+    for (const addon of addonRows) {
+      if (addon.status !== "active") continue;
+      const current = moduleRevenue.get(addon.featureId) ?? { id: addon.featureId, name: addon.featureName, subscriptions: 0, amountCents: 0 };
+      current.subscriptions += 1;
+      current.amountCents += addon.unitPriceCents * addon.quantity;
+      moduleRevenue.set(addon.featureId, current);
+    }
+    const revenueByModule = [...moduleRevenue.values()];
     const overdueAmountCents = invoiceRows.filter((item) => item.status === "overdue").reduce((total, item) => total + item.totalAmountCents, 0);
     const now = Date.now();
     const dueSoon = invoiceRows.filter((item) => item.status === "pending" && new Date(item.dueAt).getTime() >= now && new Date(item.dueAt).getTime() <= now + 7 * 86_400_000).length;
@@ -271,6 +347,11 @@ export class PlatformCommercialBillingService {
       payments: paymentRows,
       notifications: notifications.data ?? [],
       financialAudit: financialAudit.data ?? [],
+      addons: addonRows,
+      addonsBySubscription,
+      changeRequests: changeRows,
+      revenueByPlan,
+      revenueByModule,
       metrics: {
         active: subscriptions.filter((item) => item.status === "active").length,
         trials: subscriptions.filter((item) => item.status === "trialing").length,
@@ -278,11 +359,49 @@ export class PlatformCommercialBillingService {
         scheduledCancellation: subscriptions.filter((item) => item.cancelAtPeriodEnd).length,
         billingFailures: billingEvents.filter((item) => item.status === "attention").length,
         projectedRevenueCents,
+        projectedBaseRevenueCents,
+        projectedAddonRevenueCents,
         overdueAmountCents,
         dueSoon,
         founderSlotsUsed: subscriptions.filter((item) => item.founderSlot !== null).length,
       },
     };
+  }
+
+  static async createChangeQuote(input: z.input<typeof changeQuoteSchema>) {
+    const values = changeQuoteSchema.parse(input);
+    const access = await requireSuperAdmin();
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("subscription_change_quote_internal", {
+      p_organization_id: values.organizationId, p_change_type: values.changeType,
+      p_target_plan_id: values.targetPlanId, p_feature_id: values.featureId,
+      p_feature_price_cents: values.featurePriceCents, p_effective_at: values.effectiveAt,
+      p_actor_user_id: access.user.id, p_reason: values.reason, p_protocol: values.protocol,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async acceptChange(input: z.input<typeof changeDecisionSchema>) {
+    const values = changeDecisionSchema.parse(input);
+    const access = await requireSuperAdmin();
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("subscription_change_accept_internal", {
+      p_change_id: values.changeId, p_actor_user_id: access.user.id, p_reason: values.reason, p_protocol: values.protocol,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async applyScheduledChange(input: z.input<typeof changeDecisionSchema>) {
+    const values = changeDecisionSchema.parse(input);
+    const access = await requireSuperAdmin();
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("subscription_change_apply_internal", {
+      p_change_id: values.changeId, p_actor_user_id: access.user.id, p_reason: values.reason, p_protocol: values.protocol,
+    });
+    if (error) throw error;
+    return data;
   }
 
   static async startOrExtendTrial(input: z.input<typeof trialSchema>) {

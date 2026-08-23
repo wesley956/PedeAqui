@@ -39,7 +39,10 @@ export default async function PresentationPage() {
     <section className={styles.section}>
       <div className={styles.sectionHeader}><div><h2>QR Code e endereço curto</h2><p>O QR contém somente o endereço público do cardápio demonstrativo, sem credenciais.</p></div></div>
       <div className={styles.operationGrid}>
-        <div className={styles.operationPanel}>{/* eslint-disable-next-line @next/next/no-img-element -- QR is a tiny remote-generated public URL, not catalog media. */}<img src={qrUrl} width="260" height="260" alt="QR Code do cardápio demonstrativo" /></div>
+        <div className={styles.operationPanel}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- QR is a tiny remote-generated public URL, not catalog media. */}
+          <img src={qrUrl} width="260" height="260" alt="QR Code do cardápio demonstrativo" />
+        </div>
         <div className={styles.operationPanel}><strong>Endereço para compartilhar</strong><p className={styles.meta} style={{ overflowWrap: "anywhere" }}>{menuUrl}</p><Link className={styles.button} href={menuUrl} target="_blank">Testar endereço agora</Link><p className={styles.advancedNote}>Se o QR externo não carregar, mostre ou envie este endereço. O cardápio continua independente do gerador do QR.</p></div>
       </div>
     </section>
