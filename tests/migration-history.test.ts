@@ -8,6 +8,12 @@ const prefix = (name: string) => Number(name.match(/^(\d+)_/)?.[1]);
 const files = fs.readdirSync(sqlDir).filter((name) => name.endsWith(".sql")).sort((a, b) => prefix(a) - prefix(b) || a.localeCompare(b));
 const prefixes = files.map(prefix);
 function read(relativePath: string) { return fs.readFileSync(path.join(root, relativePath), "utf8"); }
+function baselineMigrations() {
+  const base = JSON.parse(read("supabase/production-migrations.json")) as { migrations: [string, string][] };
+  const tailPath = path.join(root, "supabase/production-migrations-tail.json");
+  const tail = fs.existsSync(tailPath) ? JSON.parse(fs.readFileSync(tailPath, "utf8")) as { migrations: [string, string][] } : { migrations: [] as [string, string][] };
+  return [...base.migrations, ...tail.migrations];
+}
 
 describe("canonical Supabase SQL history", () => {
   it("keeps historical numbering anomalies explicit instead of rewriting applied history", () => {
@@ -18,7 +24,12 @@ describe("canonical Supabase SQL history", () => {
   });
 
   it("preserves historical migrations and advances only by append", () => {
-    expect(files.at(-1)).toBe("133_driver_history_restaurant_control.sql");
+    const migrations = baselineMigrations();
+    const lastMigration = migrations.at(-1);
+    if (!lastMigration) throw new Error("baseline precisa conter migrations");
+    const maxPrefix = Math.max(...prefixes);
+    expect(files.at(-1)).toBe(`${maxPrefix}_${lastMigration[1]}.sql`);
+    expect(files).toContain("133_driver_history_restaurant_control.sql");
     for (const file of [
       "90_onboarding_role_permission_conflict_hotfix.sql","91_customer_recognition.sql","92_whatsapp_greeting.sql","93_printing_private_execution_grants.sql","94_finance_effect_sign_integer_compat_hotfix.sql","95_public_menu_anon_security_definer.sql","96_platform_incidents.sql","97_order_payment_providers.sql","98_order_whatsapp_notifications.sql","99_order_whatsapp_template_support.sql","100_whatsapp_embedded_signup.sql","101_platform_commercial_onboarding.sql","102_new_user_guide.sql","103_order_completion_refund_states.sql","104_user_guides_rls_initplan_hardening.sql","105_modular_foundation.sql","106_modular_experience.sql","107_gas_segment_domain.sql","108_gas_segment_integrations.sql","109_gas_cart_reprice.sql","110_gas_segment_security_hardening.sql","111_gas_segment_fk_indexes.sql","112_delivery_driver_registration_ux.sql","113_driver_mobile_access.sql","114_driver_phone_pin_access.sql","115_team_management.sql","116_public_menu_readiness.sql","117_checkout_scheduling.sql","118_checkout_order_growth_gas_compatibility.sql","119_subscription_commercial_terms.sql","120_platform_saas_billing.sql","121_platform_saas_billing_fk_indexes.sql","122_auth_login_rate_limit.sql","123_subscription_addons_contract_changes.sql","124_client_01_operational_profile.sql","125_client_01_route_campaign_hardening.sql","126_client_01_campaign_concurrency_hardening.sql","127_client_01_campaign_provider_status.sql","128_internal_job_scheduler.sql","129_cash_payment_module_boundary.sql","130_driver_delivery_payment_confirmation.sql","131_driver_self_claim.sql","132_driver_self_claim_permission_boundary.sql","133_driver_history_restaurant_control.sql",
     ]) expect(files).toContain(file);
