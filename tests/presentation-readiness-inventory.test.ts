@@ -6,8 +6,9 @@ import { MODULE_KEYS } from "@/modules/module-catalog";
 
 const root = process.cwd();
 const baselinePath = path.join(root, "docs/qa/PRESENTATION_READINESS_BASELINE_20260822.md");
+const baselineAddendumPath = path.join(root, "docs/qa/PRESENTATION_READINESS_BASELINE_ADDENDUM_20260823.md");
 const testDataPath = path.join(root, "docs/qa/PRESENTATION_TEST_DATA_20260822.md");
-const baseline = fs.readFileSync(baselinePath, "utf8");
+const baseline = `${fs.readFileSync(baselinePath, "utf8")}\n${fs.readFileSync(baselineAddendumPath, "utf8")}`;
 const testData = fs.readFileSync(testDataPath, "utf8");
 
 function walk(directory: string): string[] {
@@ -32,7 +33,7 @@ describe("presentation readiness inventory PA-DIAG-001..005", () => {
     const appFiles = walk(path.join(root, "src/app"))
       .filter((file) => /\/(page\.tsx|route\.ts)$/.test(file));
 
-    expect(appFiles).toHaveLength(91);
+    expect(appFiles).toHaveLength(92);
     for (const file of appFiles) {
       expect(baseline, `${routeFor(file)} from ${path.relative(root, file)} is missing`).toContain(
         `\`${routeFor(file)}\``,

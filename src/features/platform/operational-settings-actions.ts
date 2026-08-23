@@ -23,4 +23,5 @@ export async function saveOperationalSettingsAction(formData: FormData) {
     requestId: String(formData.get("requestId") ?? ""),
   });
   revalidatePath(`/platform/empresas/${organizationId}/unidades/${storeId}`);
+  revalidatePath(`/platform/unidades/${storeId}/configuracao-operacional`);
 }
