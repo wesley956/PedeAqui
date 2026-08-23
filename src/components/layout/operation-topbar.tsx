@@ -11,7 +11,7 @@ function storeStatusLabel(status: string | null) {
   return null;
 }
 
-export function OperationTopbar({ email, data, experienceMode = "standard" }: { email: string | null; data: OperationHeaderData; experienceMode?: ExperienceMode }) {
+export function OperationTopbar({ email, data, experienceMode = "standard", driverOnly = false }: { email: string | null; data: OperationHeaderData; experienceMode?: ExperienceMode; driverOnly?: boolean }) {
   const storeLabel = data.storeName ?? "Operação";
   const storeStatus = storeStatusLabel(data.storeStatus);
   const cashLabel = data.cashStatus === "open"
@@ -20,7 +20,7 @@ export function OperationTopbar({ email, data, experienceMode = "standard" }: { 
   const nextExperienceMode: ExperienceMode = experienceMode === "easy" ? "standard" : "easy";
 
   return (
-    <header className="app-topbar">
+    <header className="app-topbar" data-driver-only={driverOnly}>
       <div className="app-topbar-context">
         <strong>{storeLabel}</strong>
         <div className="app-topbar-signals" aria-label="Estado da operação">
@@ -30,7 +30,7 @@ export function OperationTopbar({ email, data, experienceMode = "standard" }: { 
         </div>
       </div>
       <div className="app-topbar-actions">
-        <form action={setExperienceModeAction}>
+        <form action={setExperienceModeAction} className="app-experience-toggle">
           <input type="hidden" name="mode" value={nextExperienceMode} />
           <Button tone="ghost" type="submit" aria-label={experienceMode === "easy" ? "Voltar ao modo padrão" : "Ativar modo fácil"}>
             {experienceMode === "easy" ? "Modo padrão" : "Modo fácil"}

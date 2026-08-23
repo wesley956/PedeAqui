@@ -17,6 +17,7 @@ export function AppShell({ children, email, branding, navigationItems, operation
     ...(branding.secondaryColor ? { "--accent-strong": branding.secondaryColor } : {}),
   } as CSSProperties;
   const usesPlatformDefault = branding.productName === "PedeAqui" && !branding.logoUrl;
+  const driverOnly = operationalContexts.length === 1 && operationalContexts[0] === "delivery";
 
   return (
     <div className="app-shell" style={style} data-experience={experienceMode}>
@@ -31,7 +32,7 @@ export function AppShell({ children, email, branding, navigationItems, operation
         <DesktopNavigation items={navigationItems} experienceMode={experienceMode} />
       </aside>
       <div className="app-main">
-        <OperationTopbar email={email} data={operationHeader} experienceMode={experienceMode} />
+        <OperationTopbar email={email} data={operationHeader} experienceMode={experienceMode} driverOnly={driverOnly} />
         <main id="main-content" className="app-content" tabIndex={-1}>{children}</main>
         {!branding.hidePedeAquiBranding && !usesPlatformDefault ? <footer className="platform-footer" aria-label="Tecnologia PedeAqui"><span>Tecnologia</span><PedeAquiLogo size="xs" decorative /></footer> : null}
       </div>
