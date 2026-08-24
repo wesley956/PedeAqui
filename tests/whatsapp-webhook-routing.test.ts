@@ -11,9 +11,11 @@ describe("WhatsApp webhook routing", () => {
   it("validates the Meta signature before ingesting any routed event", () => {
     const route = read("src/app/api/webhooks/whatsapp/route.ts");
     const signatureCheck = route.indexOf("verifyMetaWebhookSignature");
-    const ingest = route.indexOf("ConversationService.ingestWhatsAppEvent");
+    const normalIngest = route.indexOf("ConversationService.ingestWhatsAppEvent");
+    const coexistenceIngest = route.indexOf("WhatsAppCoexistenceService.ingest");
     expect(signatureCheck).toBeGreaterThan(-1);
-    expect(ingest).toBeGreaterThan(signatureCheck);
+    expect(normalIngest).toBeGreaterThan(signatureCheck);
+    expect(coexistenceIngest).toBeGreaterThan(signatureCheck);
   });
 
   it("acknowledges signed Meta test events without persisting an unknown Phone Number ID", () => {
@@ -21,7 +23,16 @@ describe("WhatsApp webhook routing", () => {
     const routing = read("src/server/conversations/webhook-routing.ts");
     expect(routing).toContain("resolveWhatsAppAppSecret()");
     expect(route).toContain("configuredPhoneNumberIds.has(event.phoneNumberId)");
-    expect(route).toContain("ignored: events.length - processed");
+    expect(route).toContain("let ignored = 0");
+    expect(route).toContain("ignored += 1");
+    expect(route).toContain("{ ok: true, processed, ignored, requestId: requestContext.requestId }");
+  });
+
+  it("routes coexistence echoes and sync events separately from normal inbound messages", () => {
+    const route = read("src/app/api/webhooks/whatsapp/route.ts");
+    expect(route).toContain('event.kind === "echo" || event.kind === "sync"');
+    expect(route).toContain("WhatsAppCoexistenceService.ingest(event)");
+    expect(route.indexOf("WhatsAppCoexistenceService.ingest(event)")).toBeLessThan(route.indexOf("ConversationService.ingestWhatsAppEvent(event)"));
   });
 
   it("keeps real configured numbers scoped by the existing store channel settings", () => {

@@ -95,6 +95,24 @@ describe("[329] persistence and safety contracts", () => {
     expect(templateMigration).toContain("order_notification_template_language");
   });
 
+  it("does not create a stale backlog when a Meta template is not configured", () => {
+    const templateGate = worker.indexOf("if (!canSendFreeForm && !settings.order_notification_template_name)");
+    const outboundCreate = worker.indexOf('admin.rpc("conversation_create_outbound_internal"');
+    expect(templateGate).toBeGreaterThan(0);
+    expect(templateGate).toBeLessThan(outboundCreate);
+    expect(worker.slice(templateGate, outboundCreate)).toContain('status: "skipped"');
+    expect(worker.slice(templateGate, outboundCreate)).not.toContain("retryAfterSeconds");
+  });
+
+  it("revalidates channel health at dispatch and never lets WhatsApp block an order", () => {
+    expect(worker).toContain("connection_status");
+    expect(worker).toContain('settings.connection_status === "action_required"');
+    expect(worker).toContain('settings.connection_status === "temporarily_unavailable"');
+    expect(worker).toContain('errorCode: "whatsapp_action_required"');
+    expect(worker).toContain('errorCode: "whatsapp_temporarily_unavailable"');
+    expect(worker).not.toContain("order_transition_internal");
+  });
+
   it("keeps tracking context service-role only and out of notification payloads", () => {
     expect(migration).toContain("revoke all on table public.order_notification_contexts from public, anon, authenticated");
     expect(migration).toContain("grant select, insert, update, delete on table public.order_notification_contexts to service_role");

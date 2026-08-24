@@ -1,0 +1,87 @@
+PEDEAQUI / WHATSAPP
+
+NOVO RESTAURANTE
+  |
+  +--> Configurações > Conversas e WhatsApp
+         |
+         +--> Continuar usando WhatsApp Business no celular
+         |      mode=coexistence
+         |
+         +--> Usar número dedicado
+                mode=cloud_api
+
+         Embedded Signup oficial Meta
+                |
+                v
+         sessão server-side vinculada a
+         organization + store + user + mode
+                |
+                v
+         troca do code no servidor
+                |
+                v
+         validar WABA
+                |
+                v
+         resolver/validar Phone Number ID
+                |
+                +--> já usado em outra unidade? BLOQUEAR
+                |
+                v
+         associar System User PedeAqui
+                |
+                v
+         subscribed_apps
+                |
+                +--> cloud_api -> register + PIN protegido
+                |
+                +--> coexistence -> não repetir register
+                |
+                v
+         health check real
+                |
+          +-----+-----+
+          |           |
+        VERDE       FALHA
+          |           |
+      connected     action_required /
+                    temporarily_unavailable
+
+CLIENTE FINAL
+  WhatsApp
+     |
+     v
+  Meta webhook
+     |
+  validar assinatura
+     |
+  metadata.phone_number_id
+     |
+  resolver tenant/unidade
+     |
+  conversa correta
+     |
+  saudação + link cardápio
+     |
+     v
+  PEDEAQUI
+  cardápio -> carrinho -> checkout -> dinheiro/cartão/ meios ativos -> pedido
+     |
+     v
+  eventos reais do pedido
+     |
+     v
+  regras de automação + módulos + saúde do canal
+     |
+     +--> janela aberta -> texto permitido
+     |
+     +--> fora da janela -> template aprovado
+     |
+     +--> sem template -> SKIP, nunca backlog antigo
+     |
+     v
+  WhatsApp do cliente
+
+REGRA CENTRAL
+WhatsApp nunca cria, altera, confirma ou desfaz pedido.
+Falha do WhatsApp nunca bloqueia PedeAqui.

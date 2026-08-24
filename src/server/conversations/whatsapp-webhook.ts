@@ -1,6 +1,8 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { normalizeWhatsAppIdentifier } from "@/server/conversations/model";
 
+export type WhatsAppContentType = "text" | "image" | "audio" | "video" | "document" | "location" | "template" | "interactive" | "unsupported";
+
 export type WhatsAppInboundEvent = {
   kind: "message";
   phoneNumberId: string;
@@ -9,9 +11,28 @@ export type WhatsAppInboundEvent = {
   contactName: string | null;
   externalMessageId: string;
   body: string;
-  contentType: "text" | "image" | "audio" | "video" | "document" | "location" | "template" | "interactive" | "unsupported";
+  contentType: WhatsAppContentType;
   providerTimestamp: string | null;
   metadata: Record<string, string | number | boolean | null>;
+};
+
+export type WhatsAppEchoEvent = {
+  kind: "echo";
+  phoneNumberId: string;
+  externalContactId: string;
+  phoneNormalized: string | null;
+  externalMessageId: string;
+  body: string;
+  contentType: WhatsAppContentType;
+  providerTimestamp: string | null;
+  metadata: Record<string, string | number | boolean | null>;
+};
+
+export type WhatsAppSyncEvent = {
+  kind: "sync";
+  phoneNumberId: string;
+  syncType: "history" | "smb_app_state_sync";
+  itemCount: number;
 };
 
 export type WhatsAppStatusEvent = {
@@ -24,6 +45,8 @@ export type WhatsAppStatusEvent = {
 };
 
 export type WhatsAppWebhookEvent = WhatsAppInboundEvent | WhatsAppStatusEvent;
+export type WhatsAppCoexistenceEvent = WhatsAppEchoEvent | WhatsAppSyncEvent;
+export type WhatsAppParsedEvent = WhatsAppWebhookEvent | WhatsAppCoexistenceEvent;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -63,15 +86,15 @@ function extractBody(message: UnknownRecord, type: string) {
   return `[${type || "mensagem"}]`;
 }
 
-function normalizeContentType(value: string | null): WhatsAppInboundEvent["contentType"] {
+function normalizeContentType(value: string | null): WhatsAppContentType {
   if (value === "text" || value === "image" || value === "audio" || value === "video" || value === "document" || value === "location" || value === "template" || value === "interactive") return value;
   return "unsupported";
 }
 
-export function parseWhatsAppWebhook(payload: unknown): WhatsAppWebhookEvent[] {
+export function parseWhatsAppWebhook(payload: unknown): WhatsAppParsedEvent[] {
   const root = record(payload);
   if (!root) return [];
-  const events: WhatsAppWebhookEvent[] = [];
+  const events: WhatsAppParsedEvent[] = [];
 
   for (const entryValue of array(root.entry)) {
     const entry = record(entryValue);
@@ -81,7 +104,35 @@ export function parseWhatsAppWebhook(payload: unknown): WhatsAppWebhookEvent[] {
       const value = record(change?.value);
       const metadata = record(value?.metadata);
       const phoneNumberId = text(metadata?.phone_number_id);
+      const field = text(change?.field);
       if (!value || !phoneNumberId) continue;
+
+      if (field === "smb_message_echoes") {
+        for (const echoValue of array(value.message_echoes)) {
+          const echo = record(echoValue);
+          if (!echo) continue;
+          const externalMessageId = text(echo.id);
+          const to = text(echo.to);
+          if (!externalMessageId || !to) continue;
+          const rawType = text(echo.type) ?? "unsupported";
+          events.push({
+            kind: "echo",
+            phoneNumberId,
+            externalContactId: to,
+            phoneNormalized: normalizeWhatsAppIdentifier(to),
+            externalMessageId,
+            body: extractBody(echo, rawType).slice(0, 16000),
+            contentType: normalizeContentType(rawType),
+            providerTimestamp: timestamp(echo.timestamp),
+            metadata: { whatsapp_type: rawType, source: "whatsapp_business_app" },
+          });
+        }
+      }
+
+      if (field === "history" || field === "smb_app_state_sync") {
+        const items = field === "history" ? array(value.history) : array(value.state_sync);
+        events.push({ kind: "sync", phoneNumberId, syncType: field, itemCount: items.length });
+      }
 
       const contactNames = new Map<string, string>();
       for (const contactValue of array(value.contacts)) {
@@ -144,6 +195,6 @@ export function verifyMetaWebhookSignature(rawBody: string, signatureHeader: str
   return expected.length === provided.length && timingSafeEqual(expected, provided);
 }
 
-export function webhookPhoneNumberIds(events: readonly WhatsAppWebhookEvent[]) {
+export function webhookPhoneNumberIds(events: readonly WhatsAppParsedEvent[]) {
   return [...new Set(events.map((event) => event.phoneNumberId))];
 }

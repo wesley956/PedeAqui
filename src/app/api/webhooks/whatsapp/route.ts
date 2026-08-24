@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { ConversationService } from "@/server/conversations/conversation-service";
+import { WhatsAppCoexistenceService } from "@/server/conversations/coexistence-service";
 import { ConversationGreetingService } from "@/server/conversations/greeting-service";
 import { resolveWhatsAppWebhookRouting } from "@/server/conversations/webhook-routing";
 import { parseWhatsAppWebhook, verifyMetaWebhookSignature, webhookPhoneNumberIds } from "@/server/conversations/whatsapp-webhook";
@@ -50,8 +51,20 @@ export async function POST(request: Request) {
     }
 
     let processed = 0;
+    let ignored = 0;
     for (const event of events) {
-      if (!routing.configuredPhoneNumberIds.has(event.phoneNumberId)) continue;
+      if (!routing.configuredPhoneNumberIds.has(event.phoneNumberId)) {
+        ignored += 1;
+        continue;
+      }
+
+      if (event.kind === "echo" || event.kind === "sync") {
+        const result = await WhatsAppCoexistenceService.ingest(event);
+        if (result && typeof result === "object" && "ignored" in result && result.ignored) ignored += 1;
+        else processed += 1;
+        continue;
+      }
+
       const result = await ConversationService.ingestWhatsAppEvent(event);
       processed += 1;
       if (event.kind === "message") {
@@ -64,7 +77,7 @@ export async function POST(request: Request) {
     }
 
     return Response.json(
-      { ok: true, processed, ignored: events.length - processed, requestId: requestContext.requestId },
+      { ok: true, processed, ignored, requestId: requestContext.requestId },
       { headers: responseHeaders },
     );
   } catch (error) {
