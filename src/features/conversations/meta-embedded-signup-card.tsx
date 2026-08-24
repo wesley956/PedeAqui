@@ -7,11 +7,18 @@ import {
   disconnectWhatsAppAction,
   startWhatsAppEmbeddedSignupAction,
 } from "@/features/conversations/meta-embedded-signup-actions";
+import {
+  embeddedSignupFeatureType,
+  parseEmbeddedSignupResult,
+  type MetaEmbeddedSignupResult,
+  type WhatsAppConnectionMode,
+} from "@/features/conversations/whatsapp-connection-model";
 
 type Status = {
   connection_status: string;
   onboarding_status: string;
   whatsapp_enabled: boolean;
+  connection_mode: WhatsAppConnectionMode;
   display_phone_number: string | null;
   verified_name: string | null;
   quality_rating: string | null;
@@ -20,8 +27,6 @@ type Status = {
   last_connection_error_kind: string | null;
   meta_billing_mode: string;
 };
-
-type MetaSessionInfo = { wabaId: string; phoneNumberId: string; businessId: string | null };
 type FacebookLoginResponse = { authResponse?: { code?: string } };
 type FacebookSdk = {
   init(input: { appId: string; cookie: boolean; xfbml: boolean; version: string }): void;
@@ -62,8 +67,8 @@ function loadFacebookSdk(appId: string, version: string) {
   return sdkPromise;
 }
 
-function waitForEmbeddedSignupResult() {
-  return new Promise<MetaSessionInfo>((resolve, reject) => {
+function waitForEmbeddedSignupResult(mode: WhatsAppConnectionMode) {
+  return new Promise<MetaEmbeddedSignupResult>((resolve, reject) => {
     const timeout = window.setTimeout(() => {
       window.removeEventListener("message", onMessage);
       reject(new Error("A conexão com a Meta demorou demais. Tente novamente."));
@@ -74,26 +79,23 @@ function waitForEmbeddedSignupResult() {
       let payload: unknown = event.data;
       if (typeof payload === "string") { try { payload = JSON.parse(payload); } catch { return; } }
       if (!payload || typeof payload !== "object") return;
-      const data = payload as { type?: string; event?: string; data?: Record<string, unknown> };
+      const data = payload as { type?: string; event?: string };
       if (data.type !== "WA_EMBEDDED_SIGNUP") return;
       if (data.event === "CANCEL" || data.event === "ERROR") {
-        done(); reject(new Error(data.event === "CANCEL" ? "Conexão cancelada na Meta." : "A Meta não concluiu a conexão.")); return;
+        done();
+        reject(new Error(data.event === "CANCEL" ? "Conexão cancelada na Meta." : "A Meta não concluiu a conexão."));
+        return;
       }
-      if (data.event !== "FINISH") return;
-      const wabaId = String(data.data?.waba_id ?? "");
-      const phoneNumberId = String(data.data?.phone_number_id ?? "");
-      const businessIdValue = data.data?.business_id ?? data.data?.business_manager_id ?? null;
-      if (!/^\d{3,40}$/.test(wabaId) || !/^\d{3,40}$/.test(phoneNumberId)) {
-        done(); reject(new Error("A Meta concluiu sem informar os ativos necessários. Tente novamente.")); return;
-      }
+      const result = parseEmbeddedSignupResult(payload, mode);
+      if (!result) return;
       done();
-      resolve({ wabaId, phoneNumberId, businessId: businessIdValue && /^\d{3,40}$/.test(String(businessIdValue)) ? String(businessIdValue) : null });
+      resolve(result);
     }
     window.addEventListener("message", onMessage);
   });
 }
 
-function loginWithEmbeddedSignup(fb: FacebookSdk, configId: string) {
+function loginWithEmbeddedSignup(fb: FacebookSdk, configId: string, mode: WhatsAppConnectionMode, sessionInfoVersion: string) {
   return new Promise<string>((resolve, reject) => {
     fb.login((response) => {
       const code = response.authResponse?.code;
@@ -102,7 +104,11 @@ function loginWithEmbeddedSignup(fb: FacebookSdk, configId: string) {
       config_id: configId,
       response_type: "code",
       override_default_response_type: true,
-      extras: { setup: {}, featureType: "", sessionInfoVersion: "3" },
+      extras: {
+        setup: {},
+        featureType: embeddedSignupFeatureType(mode),
+        sessionInfoVersion,
+      },
     });
   });
 }
@@ -116,22 +122,34 @@ function humanStatus(status: Status) {
   return "WhatsApp não conectado";
 }
 
+function connectionModeLabel(mode: WhatsAppConnectionMode) {
+  return mode === "coexistence" ? "WhatsApp Business + PedeAqui" : "Número dedicado ao PedeAqui";
+}
+
 export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Status; platformReady: boolean }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const connected = status.connection_status === "connected" && status.whatsapp_enabled;
 
-  function connect() {
+  function connect(mode: WhatsAppConnectionMode) {
     setMessage(null);
     startTransition(async () => {
       try {
-        const session = await startWhatsAppEmbeddedSignupAction();
+        const session = await startWhatsAppEmbeddedSignupAction(mode);
         if (!session.appId || !session.configId || !session.graphVersion) throw new Error("A integração da Meta ainda não está pronta.");
         const fb = await loadFacebookSdk(session.appId, session.graphVersion);
-        const [metaResult, code] = await Promise.all([waitForEmbeddedSignupResult(), loginWithEmbeddedSignup(fb, session.configId)]);
+        const [metaResult, code] = await Promise.all([
+          waitForEmbeddedSignupResult(mode),
+          loginWithEmbeddedSignup(fb, session.configId, mode, session.sessionInfoVersion),
+        ]);
         const result = await completeWhatsAppEmbeddedSignupAction({
-          sessionId: session.sessionId, stateToken: session.stateToken, code,
-          wabaId: metaResult.wabaId, phoneNumberId: metaResult.phoneNumberId, businessId: metaResult.businessId,
+          sessionId: session.sessionId,
+          stateToken: session.stateToken,
+          code,
+          wabaId: metaResult.wabaId,
+          phoneNumberId: metaResult.phoneNumberId,
+          businessId: metaResult.businessId,
+          mode,
         });
         setMessage(result.displayPhoneNumber ? `WhatsApp ${result.displayPhoneNumber} conectado com sucesso.` : "WhatsApp conectado com sucesso.");
         window.location.reload();
@@ -156,19 +174,34 @@ export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Stat
         <div><p className="muted" style={{ margin: 0, fontSize: 12 }}>Conexão oficial da Meta</p><strong style={{ fontSize: 18 }}>{humanStatus(status)}</strong></div>
         {connected ? <span style={{ fontSize: 12, fontWeight: 800, color: "var(--accent)" }}>Pronto para atender</span> : null}
       </div>
+
       {connected ? <div style={{ display: "grid", gap: 4, fontSize: 13 }}>
         {status.verified_name ? <span>Nome verificado: <strong>{status.verified_name}</strong></span> : null}
         {status.display_phone_number ? <span>Número: <strong>{status.display_phone_number}</strong></span> : null}
+        <span>Modo: <strong>{connectionModeLabel(status.connection_mode)}</strong></span>
         {status.quality_rating ? <span>Qualidade: <strong>{status.quality_rating}</strong></span> : null}
-      </div> : <p className="muted" style={{ margin: 0, fontSize: 13 }}>O proprietário autoriza o próprio WhatsApp em uma janela oficial da Meta. O PedeAqui configura número, webhook e conexão automaticamente.</p>}
+      </div> : <div style={{ display: "grid", gap: 10 }}>
+        <p className="muted" style={{ margin: 0, fontSize: 13 }}>O proprietário autoriza o próprio WhatsApp em uma janela oficial da Meta. O PedeAqui configura o restante automaticamente.</p>
+        <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+          <button type="button" onClick={() => connect("coexistence")} disabled={pending || !platformReady} style={{ textAlign: "left", padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", cursor: pending || !platformReady ? "not-allowed" : "pointer" }}>
+            <strong>Continuar usando no celular</strong>
+            <span className="muted" style={{ display: "block", marginTop: 4, fontSize: 12 }}>Para quem já usa o WhatsApp Business e quer manter o aplicativo funcionando junto com o PedeAqui.</span>
+          </button>
+          <button type="button" onClick={() => connect("cloud_api")} disabled={pending || !platformReady} style={{ textAlign: "left", padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", cursor: pending || !platformReady ? "not-allowed" : "pointer" }}>
+            <strong>Usar número dedicado</strong>
+            <span className="muted" style={{ display: "block", marginTop: 4, fontSize: 12 }}>Para um número que ficará conectado diretamente à infraestrutura oficial do PedeAqui.</span>
+          </button>
+        </div>
+      </div>}
+
       {!platformReady ? <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>O recurso está preparado no PedeAqui, mas a configuração de Embedded Signup do app Meta ainda precisa ser concluída.</p> : null}
       {status.last_connection_error_kind ? <p className="muted" style={{ margin: 0, fontSize: 12 }}>A última tentativa precisa de atenção. Você pode iniciar a conexão novamente.</p> : null}
       {status.meta_billing_mode === "unconfigured" && connected ? <p className="muted" style={{ margin: 0, fontSize: 12 }}>A conexão técnica está ativa. O modelo de cobrança da mensageria Meta ainda precisa ser definido antes da liberação comercial ampla.</p> : null}
       {message ? <p role="status" style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>{message}</p> : null}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Button type="button" onClick={connect} disabled={pending || !platformReady}>{pending ? "Conectando…" : connected ? "Reconectar WhatsApp" : "Conectar meu WhatsApp"}</Button>
-        {connected ? <Button type="button" tone="secondary" onClick={disconnect} disabled={pending}>Desconectar</Button> : null}
-      </div>
+      {connected ? <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <Button type="button" onClick={() => connect(status.connection_mode)} disabled={pending || !platformReady}>{pending ? "Conectando…" : "Reconectar WhatsApp"}</Button>
+        <Button type="button" tone="secondary" onClick={disconnect} disabled={pending}>Desconectar</Button>
+      </div> : pending ? <p role="status" style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>Conectando com a Meta…</p> : null}
     </div>
   );
 }
