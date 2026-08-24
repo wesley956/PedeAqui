@@ -158,17 +158,10 @@ async function createTemplate(wabaId: string) {
 async function persistTemplateReference(storeId: string, actorUserId: string, status: string) {
   const admin = createAdminClient();
   const now = new Date().toISOString();
-  const approved = status === APPROVED;
   const { error } = await admin.from("store_conversation_settings")
     .update({
-      order_notification_template_name: TEMPLATE_NAME,
+      order_notification_template_name: status === APPROVED ? TEMPLATE_NAME : null,
       order_notification_template_language: TEMPLATE_LANGUAGE,
-      order_notifications_enabled: approved,
-      notify_order_received: true,
-      notify_payment_paid: true,
-      notify_pickup_ready: true,
-      notify_out_for_delivery: true,
-      notify_delivered: true,
       updated_by: actorUserId,
       updated_at: now,
     })
@@ -181,12 +174,6 @@ async function persistTestWindowMode(storeId: string, actorUserId: string) {
   const now = new Date().toISOString();
   const { error } = await admin.from("store_conversation_settings")
     .update({
-      order_notifications_enabled: true,
-      notify_order_received: true,
-      notify_payment_paid: true,
-      notify_pickup_ready: true,
-      notify_out_for_delivery: true,
-      notify_delivered: true,
       order_notification_template_name: null,
       order_notification_template_language: TEMPLATE_LANGUAGE,
       updated_by: actorUserId,
@@ -201,7 +188,7 @@ function normalizeState(
   notificationsEnabled: boolean,
   accountName: string | null,
   testAccount: boolean,
-): OrderTemplateState {
+) {
   const windowOnly = testAccount && notificationsEnabled && !template;
   return {
     name: TEMPLATE_NAME,
@@ -213,7 +200,7 @@ function normalizeState(
     accountName,
     testAccount,
     windowOnly,
-  };
+  } satisfies OrderTemplateState;
 }
 
 export class PlatformWhatsAppOrderTemplateService {
@@ -239,16 +226,16 @@ export class PlatformWhatsAppOrderTemplateService {
         organization_id: store.organization_id,
         store_id: storeId,
         actor_user_id: user.id,
-        action: "platform.whatsapp_order_notifications_test_window_enabled",
+        action: "platform.whatsapp_order_notifications_test_window_prepared",
         entity_type: "store_conversation_settings",
         entity_id: storeId,
         after_data: {
           waba_name: waba.name ?? "Test WhatsApp Business Account",
           notification_mode: "customer_support_window_only",
-          order_notifications_enabled: true,
+          restaurant_flow_preserved: true,
         },
       });
-      return normalizeState(null, true, waba.name ?? null, true);
+      return normalizeState(null, Boolean(settings.order_notifications_enabled), waba.name ?? null, true);
     }
 
     let template = await getTemplate(settings.whatsapp_business_account_id!);
@@ -277,10 +264,10 @@ export class PlatformWhatsAppOrderTemplateService {
         template_language: TEMPLATE_LANGUAGE,
         template_status: template.status ?? "PENDING",
         template_category: template.category ?? TEMPLATE_CATEGORY,
-        notifications_enabled: template.status === APPROVED,
+        restaurant_flow_preserved: true,
       },
     });
 
-    return normalizeState(template, template.status === APPROVED, waba.name ?? null, false);
+    return normalizeState(template, Boolean(settings.order_notifications_enabled), waba.name ?? null, false);
   }
 }
