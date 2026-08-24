@@ -51,7 +51,7 @@ function DistinctModifierGroup({ group, disabled, initialSelections }: { group: 
       const maxReached = !single && count >= group.max_selection && !checked;
       return <label key={modifier.id} className={`${styles.option} ${maxReached ? styles.optionDisabled : ""}`}>
         <span className={styles.optionName}><input ref={index === 0 ? firstInput : undefined} type={single ? "radio" : "checkbox"} name={`modifier_${group.id}`} value={modifier.id} checked={checked} disabled={disabled || maxReached} required={single && group.required} onChange={(event) => toggle(modifier.id, event.target.checked)} /><span>{modifier.name}</span></span>
-        <strong>{modifier.price_cents > 0 ? `+ ${money(modifier.price_cents)}` : "Incluso"}</strong>
+        {modifier.price_cents > 0 ? <strong>+ {money(modifier.price_cents)}</strong> : null}
       </label>;
     })}</div>
   </fieldset>;
@@ -89,7 +89,7 @@ function QuantityModifierGroup({ group, disabled, complementTargetId, initialSel
     <div className={styles.options}>{group.modifiers.map((modifier) => {
       const quantity = quantities[modifier.id] ?? 0;
       return <div key={modifier.id} className={styles.option}>
-        <span className={styles.optionName}><span>{modifier.name}</span><strong className={styles.optionPrice}>{modifier.price_cents > 0 ? `+ ${money(modifier.price_cents)} cada` : "Incluso"}</strong></span>
+        <span className={styles.optionName}><span>{modifier.name}</span>{modifier.price_cents > 0 ? <strong className={styles.optionPrice}>+ {money(modifier.price_cents)} cada</strong> : null}</span>
         <div className={styles.stepper} role="group" aria-label={`Quantidade de ${modifier.name}`}>
           <button type="button" onClick={() => change(modifier.id, -1)} disabled={disabled || quantity <= 0} aria-label={`Remover uma unidade de ${modifier.name}`}>−</button>
           <output aria-live="polite" aria-label={`${quantity} unidade(s) de ${modifier.name}`}>{quantity}</output>
