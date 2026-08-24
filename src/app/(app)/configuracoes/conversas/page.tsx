@@ -40,7 +40,7 @@ export default async function ConversationSettingsPage() {
       <header>
         <p className="muted" style={{ margin: 0, fontSize: 13 }}>Atendimento</p>
         <h1 style={{ margin: "4px 0" }}>Conversas e WhatsApp</h1>
-        <p className="muted" style={{ margin: 0 }}>Conecte o WhatsApp da unidade e escolha como o PedeAqui conversa com seus clientes.</p>
+        <p className="muted" style={{ margin: 0 }}>Conecte o WhatsApp da loja, continue atendendo pelo celular se quiser e escolha como o PedeAqui conversa com seus clientes.</p>
       </header>
 
       <MetaEmbeddedSignupCard status={embeddedStatus} platformReady={platformConfig.ready} />
@@ -51,7 +51,7 @@ export default async function ConversationSettingsPage() {
           {connectionConfigured ? <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
             <input type="checkbox" name="whatsappEnabled" defaultChecked={Boolean(settings?.whatsapp_enabled)} />
             <span>Usar este WhatsApp no atendimento</span>
-          </label> : <p className="muted" style={{ margin: 0 }}>Use <strong>Conectar meu WhatsApp</strong> acima. A autorização acontece diretamente na Meta e o PedeAqui conclui a parte técnica.</p>}
+          </label> : <p className="muted" style={{ margin: 0 }}>Use a área <strong>Conecte o WhatsApp da loja</strong> acima. Você autoriza o número e o PedeAqui cuida da configuração automaticamente.</p>}
         </Card>
 
         <Card style={{ display: "grid", gap: 12 }}>
@@ -82,11 +82,11 @@ export default async function ConversationSettingsPage() {
             <strong>Envio seguro pelo WhatsApp</strong>
             <p className="muted" style={{ margin: 0, fontSize: 12 }}>
               {orderTemplateConfigured
-                ? "O modelo utilitário aprovado está configurado para avisos que precisem ser enviados fora da janela de atendimento."
-                : "Dentro da janela aberta pelo cliente, os avisos podem seguir normalmente. Para avisos fora dela, é necessário ter um modelo utilitário aprovado e configurado na Meta."}
+                ? "O modelo aprovado está configurado para avisos que precisem ser enviados fora da janela de atendimento."
+                : "Dentro da janela aberta pelo cliente, os avisos podem seguir normalmente. Para avisos fora dela, é necessário ter um modelo de mensagem aprovado pelo WhatsApp."}
             </p>
             {!orderTemplateConfigured && connectionConfigured ? <p style={{ margin: 0, fontSize: 12, fontWeight: 700 }}>Modelo para avisos fora da janela: pendente.</p> : null}
-            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Se o WhatsApp, a Meta ou um modelo ficarem indisponíveis, o pedido, a produção e a entrega continuam funcionando normalmente.</p>
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Se o WhatsApp ou um modelo ficarem indisponíveis, o pedido, a produção e a entrega continuam funcionando normalmente.</p>
           </div>
           <input type="hidden" name="orderNotificationTemplateName" value={settings?.order_notification_template_name ?? ""} />
           <input type="hidden" name="orderNotificationTemplateLanguage" value={settings?.order_notification_template_language ?? "pt_BR"} />
