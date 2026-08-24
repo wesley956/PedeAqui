@@ -48,7 +48,8 @@
   .sectionHeader{gap:2px}
   .sectionHeader h2{font-size:1.1875rem;line-height:1.2}
   .sectionHeader p{font-size:.8125rem;line-height:1.35}
-  .products{grid-template-columns:1fr;gap:10px}
+  .products{grid-template-columns:1fr}
+  .products{gap:10px}
   .product{min-height:128px;grid-template-columns:minmax(0,1fr) 108px;gap:12px;padding:10px;border-color:transparent;border-radius:16px;box-shadow:var(--shadow-sm)}
   .productNoImage{grid-template-columns:1fr}
   .productCopy{gap:8px}
