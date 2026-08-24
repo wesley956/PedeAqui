@@ -21,8 +21,6 @@ const cardSurface = {
   border: "var(--border-width) solid var(--border-default)",
 } as const;
 
-const secondaryText = { color: "var(--text-secondary)" } as const;
-
 export default async function PublicProductPage({ params, searchParams }: { params: Promise<{ slug: string; id: string }>; searchParams: Promise<{ erro?: string; editar?: string }> }) {
   const { slug, id } = await params;
   const query = await searchParams;
@@ -74,39 +72,39 @@ export default async function PublicProductPage({ params, searchParams }: { para
     : query.erro === "invalid_modifiers" ? "As opções deste produto mudaram. Revise a montagem antes de salvar."
     : query.erro ? "Não foi possível atualizar o item. Revise as opções obrigatórias e tente novamente." : null;
 
-  return <main className={styles.root} style={{ minHeight: "100vh", background: "var(--surface-0)", color: "var(--text-primary)", padding: "18px 12px 64px" }}>
-    <form action={addToCartAction} style={{ width: "min(720px, 100%)", margin: "0 auto", display: "grid", gap: 16 }}>
+  return <main className={styles.root}>
+    <form action={addToCartAction} className={styles.form}>
       <input type="hidden" name="storeSlug" value={store.slug} />
       <input type="hidden" name="productId" value={product.id} />
       {editItemId ? <input type="hidden" name="cartItemId" value={editItemId} /> : null}
 
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <Link href={editItemId ? `/m/${store.slug}/carrinho` : `/m/${store.slug}`} style={{ color: "var(--text-secondary)", fontWeight: 700 }}>{editItemId ? "← Voltar ao carrinho" : `← Voltar para ${store.name}`}</Link>
+        <Link className={styles.backLink} href={editItemId ? `/m/${store.slug}/carrinho` : `/m/${store.slug}`}>{editItemId ? "← Voltar ao carrinho" : `← Voltar para ${store.name}`}</Link>
       </div>
 
       {editItemId ? <div role="status" style={{ padding: 14, borderRadius: 14, background: "var(--state-warning-surface)", color: "var(--state-warning-text)", fontWeight: 800 }}>Editando este item. Se você voltar sem salvar, a montagem atual do carrinho permanece intacta.</div> : null}
       {errorMessage ? <div role="alert" style={{ padding: 14, borderRadius: 14, background: "var(--state-danger-surface)", color: "var(--state-danger-text)", fontWeight: 700 }}>{errorMessage}</div> : null}
       {!operational.canOrder ? <div role="status" style={{ padding: 14, borderRadius: 14, background: "var(--state-warning-surface)", color: "var(--state-warning-text)", fontWeight: 700 }}>{operational.label === "paused" ? "Pedidos temporariamente pausados. O cardápio continua disponível para consulta." : "Cardápio fechado agora. Você pode consultar os produtos e voltar no horário de atendimento."}</div> : null}
 
-      <article style={{ ...cardSurface, borderRadius: 22, overflow: "hidden" }}>
+      <article className={styles.productCard}>
         {product.image_url ? (
           // Catalog uploads are pre-sized WebP files; raw rendering preserves arbitrary legacy HTTPS URLs.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.image_url} alt={product.name} width={720} height={360} fetchPriority="high" decoding="async" style={{ display: "block", width: "100%", height: "min(42vw, 360px)", minHeight: 220, objectFit: "cover" }} />
-        ) : <div aria-hidden style={{ height: 220, background: "linear-gradient(135deg, var(--brand-primary), var(--brand-graphite-deep))", display: "grid", placeItems: "center", color: "var(--text-inverse)", fontSize: 52, fontWeight: 950 }}>P</div>}
-        <div style={{ padding: 20, display: "grid", gap: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "start" }}>
+          <img src={product.image_url} alt={product.name} width={720} height={360} fetchPriority="high" decoding="async" className={styles.productImage} />
+        ) : <div aria-hidden className={styles.productPlaceholder}>P</div>}
+        <div className={styles.productInfo}>
+          <div className={styles.productTop}>
             <div>
-              <h1 style={{ margin: 0, color: "var(--text-primary)" }}>{product.name}</h1>
-              {product.description ? <p style={{ ...secondaryText, lineHeight: 1.5 }}>{product.description}</p> : null}
+              <h1 className={styles.productTitle}>{product.name}</h1>
+              {product.description ? <p className={styles.productDescription}>{product.description}</p> : null}
             </div>
-            {soldOut ? <span style={{ background: "var(--state-danger-surface)", color: "var(--state-danger-text)", fontWeight: 900, borderRadius: 999, padding: "6px 9px", fontSize: "0.6875em" }}>ESGOTADO</span> : null}
+            {soldOut ? <span style={{ background: "var(--state-danger-surface)", color: "var(--state-danger-text)", fontWeight: 900, borderRadius: 999, padding: "5px 8px", fontSize: ".6875rem" }}>ESGOTADO</span> : null}
           </div>
-          <div style={{ display: "flex", gap: 9, alignItems: "baseline" }}>
-            <strong style={{ color: "var(--brand-primary)", fontSize: "1.5em" }}>{money(price)}</strong>
-            {product.promotional_price_cents !== null ? <span style={{ color: "var(--text-secondary)", textDecoration: "line-through" }}>{money(product.price_cents)}</span> : null}
+          <div className={styles.priceRow}>
+            <strong className={styles.productPrice}>{money(price)}</strong>
+            {product.promotional_price_cents !== null ? <span className={styles.oldPrice}>{money(product.price_cents)}</span> : null}
           </div>
-          {product.preparation_time_minutes > 0 ? <span style={{ color: "var(--text-secondary)", fontSize: "0.8125em" }}>{timeLabel}: {product.preparation_time_minutes} min</span> : null}
+          {product.preparation_time_minutes > 0 ? <span className={styles.meta}>{timeLabel}: {product.preparation_time_minutes} min</span> : null}
         </div>
       </article>
 
@@ -117,23 +115,40 @@ export default async function PublicProductPage({ params, searchParams }: { para
         {gas.containerSaleEnabled ? <label style={{ display: "flex", gap: 10, alignItems: "start", padding: 12, border: "var(--border-width) solid var(--border-default)", borderRadius: 14, cursor: "pointer", color: "var(--text-primary)" }}><input type="radio" name="gasSaleMode" value="with_container" required={gas.requireContainerChoice} defaultChecked={editGasSaleMode === "with_container"} /><span><strong>Produto + vasilhame</strong><br /><small style={{ color: "var(--text-secondary)" }}>Inclui o casco. Acréscimo: {money(gas.containerSurchargeCents)}.</small></span></label> : null}
       </fieldset> : null}
 
-      {product.modifier_groups.map((group, index) => <ModifierGroupSelector key={group.id} group={group} disabled={orderUnavailable} complementTargetId={index === product.modifier_groups.length - 1 ? complementTargetId : undefined} initialSelections={initialSelections} />)}
+      {product.modifier_groups.length > 0 ? <section className={styles.assemblyIntro} aria-labelledby="montagem-titulo">
+        <span className={styles.assemblyEyebrow}>Monte do seu jeito</span>
+        <h2 id="montagem-titulo" className={styles.assemblyTitle}>Escolha como você quer</h2>
+        <p className={styles.assemblyText}>Selecione as opções e quantidades que desejar dentro dos limites de cada grupo.</p>
+      </section> : null}
 
-      <ComplementCategorySection categories={complements} storeSlug={store.slug} businessType={businessType} disabled={orderUnavailable} />
+      {product.modifier_groups.map((group, index) => <div key={group.id} className={styles.stepBlock}>
+        <span className={styles.stepLabel}>Etapa {index + 1}</span>
+        <ModifierGroupSelector group={group} disabled={orderUnavailable} complementTargetId={index === product.modifier_groups.length - 1 ? complementTargetId : undefined} initialSelections={initialSelections} />
+      </div>)}
 
-      <section style={{ ...cardSurface, borderRadius: 18, padding: 18, display: "grid", gap: 14 }}>
+      {complements.length > 0 ? <div className={styles.stepBlock}>
+        <span className={styles.stepLabel}>Etapa {product.modifier_groups.length + 1} · Opcional</span>
+        <ComplementCategorySection categories={complements} storeSlug={store.slug} businessType={businessType} disabled={orderUnavailable} />
+      </div> : null}
+
+      <section className={styles.finalSection}>
+        <header className={styles.finalHeader}>
+          <span className={styles.stepLabel}>Finalizar item</span>
+          <h2 className={styles.finalTitle}>Tudo certo?</h2>
+          <p className={styles.finalText}>Se quiser, deixe uma observação e confirme a quantidade deste item.</p>
+        </header>
         <label style={{ display: "grid", gap: 6, color: "var(--text-primary)" }}>
           <strong>Observação</strong>
           <textarea name="note" maxLength={500} placeholder={notePlaceholder} defaultValue={editNote} disabled={orderUnavailable} style={{ minHeight: 88, resize: "vertical", padding: 12, borderRadius: 12, border: "var(--border-width) solid var(--border-default)", background: "var(--surface-2)", color: "var(--text-primary)" }} />
         </label>
-        <div style={{ display: "grid", gridTemplateColumns: "120px minmax(0,1fr)", gap: 12, alignItems: "end" }}>
+        <div className={styles.finalGrid}>
           <label style={{ display: "grid", gap: 6, color: "var(--text-primary)" }}>
             <strong>Quantidade</strong>
             <input name="quantity" type="number" min={1} max={99} defaultValue={editQuantity} required disabled={orderUnavailable} style={{ minHeight: 48, borderRadius: 12, border: "var(--border-width) solid var(--border-default)", padding: "10px 12px", background: "var(--surface-2)", color: "var(--text-primary)" }} />
           </label>
-          <button type="submit" disabled={orderUnavailable} style={{ minHeight: 50, border: 0, borderRadius: 14, padding: "12px 18px", background: orderUnavailable ? "var(--surface-3)" : "var(--brand-primary)", color: orderUnavailable ? "var(--text-secondary)" : "var(--text-on-brand)", fontWeight: 900, cursor: orderUnavailable ? "not-allowed" : "pointer" }}>{soldOut ? `${productLabel} esgotado` : operational.label === "paused" ? "Pedidos pausados" : operational.label === "closed" ? "Cardápio fechado" : editItemId ? "Salvar alterações" : "Adicionar ao carrinho"}</button>
+          <button className={styles.submitButton} type="submit" disabled={orderUnavailable} style={{ background: orderUnavailable ? "var(--surface-3)" : "var(--brand-primary)", color: orderUnavailable ? "var(--text-secondary)" : "var(--text-on-brand)", cursor: orderUnavailable ? "not-allowed" : "pointer" }}>{soldOut ? `${productLabel} esgotado` : operational.label === "paused" ? "Pedidos pausados" : operational.label === "closed" ? "Cardápio fechado" : editItemId ? "Salvar alterações" : "Adicionar ao carrinho"}</button>
         </div>
-        <small style={{ color: "var(--text-secondary)" }}>O valor exibido aqui é informativo. O PedeAqui recalcula produto e adicionais no servidor, incluindo opções do segmento quando existirem.</small>
+        <small className={styles.helper}>O total final é confirmado no carrinho. O PedeAqui recalcula produto e adicionais no servidor conforme as opções escolhidas.</small>
       </section>
     </form>
     <PublicCartBar storeSlug={store.slug} />

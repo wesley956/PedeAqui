@@ -2,47 +2,54 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const publicMenuCss = readFileSync("src/app/m/[slug]/public-menu.module.css", "utf8");
+const publicBrandCss = readFileSync("src/features/menu/public-brand.module.css", "utf8");
 const menuBrowserCss = readFileSync("src/features/menu/menu-browser.module.css", "utf8");
 const modifierCss = readFileSync("src/features/menu/modifier-group-selector.module.css", "utf8");
 const productCss = readFileSync("src/app/m/[slug]/produto/[id]/public-product.module.css", "utf8");
 const productPage = readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8");
+const productCard = readFileSync("src/features/menu/public-product-card.tsx", "utf8");
 const complements = readFileSync("src/features/menu/complement-category-section.tsx", "utf8");
-const cartBarCss = readFileSync("src/features/cart/public-cart-bar.module.css", "utf8");
 
-const scaledTokens = [
-  "--font-size-xs:calc(.75rem * .8)",
-  "--font-size-sm:calc(.875rem * .8)",
-  "--font-size-md:calc(1rem * .8)",
-  "--font-size-lg:calc(1.125rem * .8)",
-  "--font-size-xl:calc(1.25rem * .8)",
-  "--font-size-2xl:calc(1.5rem * .8)",
-  "--font-size-3xl:calc(2rem * .8)",
-  "--font-size-display:calc(2.5rem * .8)",
-];
-
-describe("public menu mobile typography density", () => {
-  it("scales inherited text and rem typography tokens by exactly 20% on mobile", () => {
-    expect(publicMenuCss).toContain("@media(max-width:640px){.root{font-size:80%");
-    expect(productCss).toContain("@media(max-width:640px){.root{font-size:80%");
-    for (const token of scaledTokens) {
-      expect(publicMenuCss).toContain(token);
-      expect(productCss).toContain(token);
-    }
-    expect(menuBrowserCss).not.toContain("calc(var(--font-size");
-    expect(modifierCss).not.toContain("calc(var(--font-size");
-    expect(productPage).toContain("className={styles.root}");
+describe("public menu mobile visual hierarchy", () => {
+  it("uses intentional readable sizes instead of uniformly shrinking the whole journey", () => {
+    expect(publicMenuCss).not.toContain("font-size:80%");
+    expect(productCss).not.toContain("font-size:80%");
+    expect(publicMenuCss).not.toContain("--font-size-xs:calc(.75rem * .8)");
+    expect(productCss).not.toContain("--font-size-xs:calc(.75rem * .8)");
+    expect(publicBrandCss).toContain("font-size:1.125rem;font-weight:900");
+    expect(menuBrowserCss).toContain(".productTitle{font-size:.9375rem");
+    expect(menuBrowserCss).toContain(".description{font-size:.8125rem");
+    expect(menuBrowserCss).toContain(".price{font-size:1rem}");
+    expect(productCss).toContain(".productTitle{font-size:1.25rem");
+    expect(modifierCss).toContain(".heading legend{font-size:1rem");
+    expect(modifierCss).toContain(".optionName{display:grid;gap:2px;font-size:.875rem");
   });
 
-  it("lets the fixed public cart bar inherit the page scale without shrinking its touch target", () => {
-    expect(cartBarCss).toContain(".items{font-size:.8125em");
-    expect(cartBarCss).toContain(".total{font-size:1.0625em");
-    expect(cartBarCss).toContain(".action{min-height:40px");
-    expect(cartBarCss).toContain("font-size:.8125em");
+  it("keeps categories available while the customer scrolls the catalog", () => {
+    expect(menuBrowserCss).toContain(".categories{position:sticky;top:0;z-index:60");
+    expect(menuBrowserCss).toContain(".categoryButton{min-height:38px");
+    expect(menuBrowserCss).toContain("scroll-margin-top:62px");
   });
 
-  it("keeps touch targets and +/- controls physically large", () => {
-    expect(modifierCss).toContain(".stepper button{min-width:42px;min-height:42px}");
-    expect(modifierCss).toContain("font-size:24px");
+  it("makes product cards more purchase-oriented without losing performance contracts", () => {
+    expect(menuBrowserCss).toContain("grid-template-columns:minmax(0,1fr) 108px");
+    expect(menuBrowserCss).toContain(".image,.placeholder{width:108px;height:108px");
+    expect(menuBrowserCss).toContain("border-color:transparent;border-radius:16px;box-shadow:var(--shadow-sm)");
+    expect(productCard).toContain("Ver opções →");
+    expect(productCard).toContain('width={104} height={104} loading="lazy" decoding="async"');
+  });
+
+  it("presents product configuration as a guided purchase flow while keeping server authority explicit", () => {
+    expect(productPage).toContain("Monte do seu jeito");
+    expect(productPage).toContain("Etapa {index + 1}");
+    expect(productPage).toContain("Finalizar item");
+    expect(productPage).toContain("Tudo certo?");
+    expect(productPage).toContain("O PedeAqui recalcula produto e adicionais no servidor");
+    expect(productCss).toContain(".stepBlock{display:grid;gap:7px;scroll-margin-top:64px}");
+  });
+
+  it("keeps touch targets physically large", () => {
+    expect(modifierCss).toContain(".stepper button{min-width:42px;min-height:42px;font-size:24px}");
     expect(complements).toContain("width: 44, minHeight: 44");
     expect(complements).toContain("fontSize: 24");
   });
