@@ -8,7 +8,10 @@ export const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  // Embedded Signup uses a Meta popup and postMessage back to PedeAqui.
+  // same-origin-allow-popups preserves opener communication without allowing
+  // arbitrary cross-origin documents to join the same browsing context group.
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
   {
     key: "Content-Security-Policy",
     value: [
@@ -17,11 +20,12 @@ export const securityHeaders = [
       "object-src 'none'",
       "frame-ancestors 'none'",
       "form-action 'self'",
-      `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""}`,
+      `script-src 'self' 'unsafe-inline' https://connect.facebook.net${isDevelopment ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       "connect-src 'self' https: wss:",
+      "frame-src 'self' https://www.facebook.com https://web.facebook.com",
     ].join("; "),
   },
 ] as const;
