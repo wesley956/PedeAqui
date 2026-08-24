@@ -82,10 +82,11 @@ export default async function ConversationSettingsPage() {
             <strong>Envio seguro pelo WhatsApp</strong>
             <p className="muted" style={{ margin: 0, fontSize: 12 }}>
               {orderTemplateConfigured
-                ? "O modelo utilitário da Meta está preparado para avisos fora da janela de atendimento."
-                : "Após a conexão, o PedeAqui prepara o modelo utilitário da Meta. Dentro da janela de atendimento aberta pelo cliente, os avisos podem seguir normalmente."}
+                ? "O modelo utilitário aprovado está configurado para avisos que precisem ser enviados fora da janela de atendimento."
+                : "Dentro da janela aberta pelo cliente, os avisos podem seguir normalmente. Para avisos fora dela, é necessário ter um modelo utilitário aprovado e configurado na Meta."}
             </p>
-            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Se o WhatsApp ou a Meta ficarem indisponíveis, o pedido, a produção e a entrega continuam funcionando normalmente.</p>
+            {!orderTemplateConfigured && connectionConfigured ? <p style={{ margin: 0, fontSize: 12, fontWeight: 700 }}>Modelo para avisos fora da janela: pendente.</p> : null}
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Se o WhatsApp, a Meta ou um modelo ficarem indisponíveis, o pedido, a produção e a entrega continuam funcionando normalmente.</p>
           </div>
           <input type="hidden" name="orderNotificationTemplateName" value={settings?.order_notification_template_name ?? ""} />
           <input type="hidden" name="orderNotificationTemplateLanguage" value={settings?.order_notification_template_language ?? "pt_BR"} />
