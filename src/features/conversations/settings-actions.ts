@@ -34,15 +34,27 @@ export async function saveConversationSettingsAction(formData: FormData) {
   const productionAvailable = modules.availability.production.available;
   const deliveriesAvailable = modules.availability.deliveries.available;
 
+  // Campos indisponíveis ficam desabilitados na UI e não são enviados pelo browser.
+  // Nesse caso preservamos a preferência anterior: módulo desligado suspende a
+  // automação, mas não apaga a escolha do restaurante. Presets continuam podendo
+  // registrar a preferência completa para ela voltar de forma segura na reativação.
   const selected = resolveOrderNotificationSelection(preset, {
     notifyOrderReceived: checked(formData, "notifyOrderReceived"),
     notifyOrderConfirmed: checked(formData, "notifyOrderConfirmed"),
-    notifyProductionPreparing: checked(formData, "notifyProductionPreparing"),
+    notifyProductionPreparing: productionAvailable
+      ? checked(formData, "notifyProductionPreparing")
+      : Boolean(current?.notify_production_preparing),
     notifyPaymentPaid: checked(formData, "notifyPaymentPaid"),
-    notifyPickupReady: checked(formData, "notifyPickupReady"),
+    notifyPickupReady: productionAvailable
+      ? checked(formData, "notifyPickupReady")
+      : Boolean(current?.notify_pickup_ready),
     notifyPickupCompleted: checked(formData, "notifyPickupCompleted"),
-    notifyOutForDelivery: checked(formData, "notifyOutForDelivery"),
-    notifyDelivered: checked(formData, "notifyDelivered"),
+    notifyOutForDelivery: deliveriesAvailable
+      ? checked(formData, "notifyOutForDelivery")
+      : Boolean(current?.notify_out_for_delivery),
+    notifyDelivered: deliveriesAvailable
+      ? checked(formData, "notifyDelivered")
+      : Boolean(current?.notify_delivered),
   });
 
   await ConversationSettingsService.save({
@@ -60,12 +72,12 @@ export async function saveConversationSettingsAction(formData: FormData) {
     orderNotificationPreset: preset,
     notifyOrderReceived: selected.notifyOrderReceived,
     notifyOrderConfirmed: selected.notifyOrderConfirmed,
-    notifyProductionPreparing: productionAvailable && selected.notifyProductionPreparing,
+    notifyProductionPreparing: selected.notifyProductionPreparing,
     notifyPaymentPaid: selected.notifyPaymentPaid,
-    notifyPickupReady: productionAvailable && selected.notifyPickupReady,
+    notifyPickupReady: selected.notifyPickupReady,
     notifyPickupCompleted: selected.notifyPickupCompleted,
-    notifyOutForDelivery: deliveriesAvailable && selected.notifyOutForDelivery,
-    notifyDelivered: deliveriesAvailable && selected.notifyDelivered,
+    notifyOutForDelivery: selected.notifyOutForDelivery,
+    notifyDelivered: selected.notifyDelivered,
     orderNotificationTemplateName: optional(formData, "orderNotificationTemplateName") ?? current?.order_notification_template_name ?? null,
     orderNotificationTemplateLanguage: optional(formData, "orderNotificationTemplateLanguage") ?? current?.order_notification_template_language ?? "pt_BR",
   });
