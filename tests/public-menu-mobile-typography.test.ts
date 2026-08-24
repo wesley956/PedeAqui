@@ -31,19 +31,20 @@ describe("public menu mobile visual hierarchy", () => {
     expect(menuBrowserCss).toContain("scroll-margin-top:62px");
   });
 
-  it("makes product cards more purchase-oriented without losing density", () => {
+  it("makes product cards more purchase-oriented without losing performance contracts", () => {
     expect(menuBrowserCss).toContain("grid-template-columns:minmax(0,1fr) 108px");
+    expect(menuBrowserCss).toContain(".image,.placeholder{width:108px;height:108px");
     expect(menuBrowserCss).toContain("border-color:transparent;border-radius:16px;box-shadow:var(--shadow-sm)");
-    expect(productCard).toContain("Escolher →");
-    expect(productCard).toContain("width={108} height={108}");
+    expect(productCard).toContain("Ver opções →");
+    expect(productCard).toContain('width={104} height={104} loading="lazy" decoding="async"');
   });
 
-  it("presents product configuration as a guided purchase flow", () => {
+  it("presents product configuration as a guided purchase flow while keeping server authority explicit", () => {
     expect(productPage).toContain("Monte do seu jeito");
     expect(productPage).toContain("Etapa {index + 1}");
     expect(productPage).toContain("Finalizar item");
     expect(productPage).toContain("Tudo certo?");
-    expect(productPage).toContain("O total final é confirmado no carrinho conforme as opções escolhidas.");
+    expect(productPage).toContain("O PedeAqui recalcula produto e adicionais no servidor");
     expect(productCss).toContain(".stepBlock{display:grid;gap:7px;scroll-margin-top:64px}");
   });
 
