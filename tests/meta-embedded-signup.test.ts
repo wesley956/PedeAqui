@@ -114,12 +114,18 @@ describe("[331] Meta Embedded Signup multitenant", () => {
     expect(client).toContain('response_type: "code"');
   });
 
-  it("gives the restaurant a self-service dedicated/coexistence/reconnect/disconnect experience", () => {
+  it("gives the restaurant a simple coexistence-first connection experience", () => {
     expect(page).toContain("MetaEmbeddedSignupCard");
-    expect(client).toContain("Continuar usando no celular");
-    expect(client).toContain("Usar número dedicado");
+    expect(client).toContain("Já uso WhatsApp Business no celular");
+    expect(client).toContain("RECOMENDADO");
+    expect(client).toContain("QR Code");
+    expect(client).toContain("Quero usar um número exclusivo no PedeAqui");
     expect(client).toContain("Reconectar WhatsApp");
     expect(client).toContain("Desconectar");
+    expect(client).toContain("Faça um teste rápido");
+    expect(client).toContain("Esse teste verifica somente o atendimento e não cria nem altera pedidos.");
+    expect(client).not.toContain("Conexão oficial da Meta");
+    expect(page).not.toContain("Embedded Signup");
     expect(service).toContain('connection_status: "disconnected"');
     expect(service).not.toContain('.delete().eq("conversation');
   });
