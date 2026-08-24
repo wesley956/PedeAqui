@@ -7,17 +7,37 @@ const modifierCss = readFileSync("src/features/menu/modifier-group-selector.modu
 const productCss = readFileSync("src/app/m/[slug]/produto/[id]/public-product.module.css", "utf8");
 const productPage = readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8");
 const complements = readFileSync("src/features/menu/complement-category-section.tsx", "utf8");
+const cartBarCss = readFileSync("src/features/cart/public-cart-bar.module.css", "utf8");
+
+const scaledTokens = [
+  "--font-size-xs:calc(.75rem * .8)",
+  "--font-size-sm:calc(.875rem * .8)",
+  "--font-size-md:calc(1rem * .8)",
+  "--font-size-lg:calc(1.125rem * .8)",
+  "--font-size-xl:calc(1.25rem * .8)",
+  "--font-size-2xl:calc(1.5rem * .8)",
+  "--font-size-3xl:calc(2rem * .8)",
+  "--font-size-display:calc(2.5rem * .8)",
+];
 
 describe("public menu mobile typography density", () => {
-  it("reduces public browsing and product typography by exactly 20% on mobile", () => {
-    expect(publicMenuCss).toContain("@media(max-width:640px){.root{font-size:80%}");
-    expect(productCss).toContain("@media(max-width:640px){.root{font-size:80%}}");
-    expect(menuBrowserCss).toContain("calc(var(--font-size-xl) * .8)");
-    expect(menuBrowserCss).toContain("calc(var(--font-size-md) * .8)");
-    expect(menuBrowserCss).toContain("calc(var(--font-size-sm) * .8)");
-    expect(menuBrowserCss).toContain("calc(var(--font-size-xs) * .8)");
-    expect(modifierCss).toContain("calc(var(--font-size-lg) * .8)");
+  it("scales inherited text and rem typography tokens by exactly 20% on mobile", () => {
+    expect(publicMenuCss).toContain("@media(max-width:640px){.root{font-size:80%");
+    expect(productCss).toContain("@media(max-width:640px){.root{font-size:80%");
+    for (const token of scaledTokens) {
+      expect(publicMenuCss).toContain(token);
+      expect(productCss).toContain(token);
+    }
+    expect(menuBrowserCss).not.toContain("calc(var(--font-size");
+    expect(modifierCss).not.toContain("calc(var(--font-size");
     expect(productPage).toContain("className={styles.root}");
+  });
+
+  it("lets the fixed public cart bar inherit the page scale without shrinking its touch target", () => {
+    expect(cartBarCss).toContain(".items{font-size:.8125em");
+    expect(cartBarCss).toContain(".total{font-size:1.0625em");
+    expect(cartBarCss).toContain(".action{min-height:40px");
+    expect(cartBarCss).toContain("font-size:.8125em");
   });
 
   it("keeps touch targets and +/- controls physically large", () => {
