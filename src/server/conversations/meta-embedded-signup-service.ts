@@ -89,14 +89,15 @@ async function exchangeEmbeddedSignupCode(code: string) {
   return payload.access_token;
 }
 
-async function resolveAuthorizedPhoneNumber(wabaId: string, suppliedPhoneNumberId: string | null | undefined, onboardingToken: string) {
+async function resolveAuthorizedPhoneNumber(wabaId: string, suppliedPhoneNumberId: string | null | undefined, onboardingToken: string): Promise<string> {
   const result = await graphRequest<{ data?: Array<{ id?: string }> }>(`${encodeURIComponent(wabaId)}/phone_numbers?fields=id`, onboardingToken);
   const ids = (result.data ?? []).map((item) => item.id).filter((id): id is string => Boolean(id && /^\d{3,40}$/.test(id)));
   if (suppliedPhoneNumberId) {
     if (!ids.includes(suppliedPhoneNumberId)) throw new MetaGraphError(409, "phone_waba_mismatch");
     return suppliedPhoneNumberId;
   }
-  if (ids.length === 1) return ids[0];
+  const onlyPhoneNumberId = ids[0];
+  if (ids.length === 1 && onlyPhoneNumberId) return onlyPhoneNumberId;
   if (ids.length === 0) throw new MetaGraphError(409, "waba_without_phone");
   throw new MetaGraphError(409, "phone_selection_ambiguous");
 }
