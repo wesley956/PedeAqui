@@ -35,7 +35,7 @@ function safeError(error: unknown) {
   if (error instanceof WhatsAppProviderError) {
     return {
       code: error.providerCode ? `provider_${error.providerCode}` : `provider_http_${error.status}`,
-      message: error.retryable ? "A Meta está temporariamente indisponível." : "A Meta rejeitou o envio. Revise a conexão do WhatsApp ou o template aprovado.",
+      message: error.retryable ? "A Meta está temporariamente indisponível." : "A Meta rejeitou o envio. Revise a conexão do WhatsApp ou o modelo aprovado.",
     };
   }
   return { code: "notification_error", message: "Não foi possível enviar a notificação do pedido." };
@@ -87,7 +87,7 @@ async function processOne(job: QueueRow, workerId: string) {
 
   const [settingsResult, storeResult, contextResult, customerResult, moduleRowsResult] = await Promise.all([
     admin.from("store_conversation_settings")
-      .select("whatsapp_enabled, whatsapp_phone_number_id, access_token_secret_ref, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, order_notification_template_name, order_notification_template_language")
+      .select("whatsapp_enabled, connection_status, whatsapp_phone_number_id, access_token_secret_ref, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, order_notification_template_name, order_notification_template_language")
       .eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
     admin.from("stores").select("name, slug, status")
       .eq("organization_id", job.organization_id).eq("id", job.store_id).maybeSingle(),
@@ -123,6 +123,14 @@ async function processOne(job: QueueRow, workerId: string) {
     await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "whatsapp_disabled", errorMessage: "WhatsApp desativado para esta unidade." });
     return "skipped" as const;
   }
+  if (settings.connection_status === "action_required" || settings.connection_status === "disconnected" || settings.connection_status === "revoked") {
+    await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "whatsapp_action_required", errorMessage: "A conexão do WhatsApp precisa ser revalidada. O pedido continua normalmente." });
+    return "skipped" as const;
+  }
+  if (settings.connection_status === "temporarily_unavailable") {
+    await finish({ notificationId: job.id, workerId, status: "failed", errorCode: "whatsapp_temporarily_unavailable", errorMessage: "O WhatsApp está temporariamente indisponível.", retryAfterSeconds: retryDelaySeconds(job.attempts) });
+    return "failed" as const;
+  }
   if (order.order_status === "canceled" || order.order_status === "rejected") {
     await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "order_terminal_problem", errorMessage: "Pedido cancelado ou rejeitado antes do envio." });
     return "skipped" as const;
@@ -156,8 +164,8 @@ async function processOne(job: QueueRow, workerId: string) {
     return "failed" as const;
   }
   if (!settings.whatsapp_phone_number_id || !settings.access_token_secret_ref) {
-    await finish({ notificationId: job.id, workerId, status: "failed", errorCode: "whatsapp_not_configured", errorMessage: "A conexão do WhatsApp precisa ser revisada.", retryAfterSeconds: Math.max(900, retryDelaySeconds(job.attempts)) });
-    return "failed" as const;
+    await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "whatsapp_not_configured", errorMessage: "A conexão do WhatsApp precisa ser revisada. O pedido continua normalmente." });
+    return "skipped" as const;
   }
 
   const appUrl = process.env.APP_URL;
@@ -197,6 +205,17 @@ async function processOne(job: QueueRow, workerId: string) {
   if (lastInboundError) throw lastInboundError;
   const canSendFreeForm = hasCustomerSupportWindow(lastInbound?.created_at);
 
+  if (!canSendFreeForm && !settings.order_notification_template_name) {
+    await finish({
+      notificationId: job.id,
+      workerId,
+      status: "skipped",
+      errorCode: "template_required",
+      errorMessage: "Aviso não enviado porque a Meta exige um modelo aprovado fora da janela de atendimento.",
+    });
+    return "skipped" as const;
+  }
+
   const { data: pending, error: pendingError } = await admin.rpc("conversation_create_outbound_internal", {
     p_conversation_id: conversation.conversation_id,
     p_body: body,
@@ -210,19 +229,6 @@ async function processOne(job: QueueRow, workerId: string) {
   if (["sent", "delivered", "read"].includes(String(pending.delivery_status))) {
     await finish({ notificationId: job.id, workerId, status: "sent", messageId: pending.id });
     return "sent" as const;
-  }
-
-  if (!canSendFreeForm && !settings.order_notification_template_name) {
-    const message = "Configure um template aprovado da Meta para enviar atualizações fora da janela de atendimento.";
-    await admin.rpc("conversation_mark_outbound_result_internal", {
-      p_message_id: pending.id,
-      p_external_message_id: null,
-      p_status: "failed",
-      p_error_code: "template_required",
-      p_error_message: message,
-    });
-    await finish({ notificationId: job.id, workerId, status: "failed", messageId: pending.id, errorCode: "template_required", errorMessage: message, retryAfterSeconds: 3600 });
-    return "failed" as const;
   }
 
   try {
@@ -255,7 +261,16 @@ async function processOne(job: QueueRow, workerId: string) {
       p_error_code: safe.code,
       p_error_message: safe.message,
     });
-    await finish({ notificationId: job.id, workerId, status: "failed", messageId: pending.id, errorCode: safe.code, errorMessage: safe.message, retryAfterSeconds: retryDelaySeconds(job.attempts) });
+    const retryable = error instanceof WhatsAppProviderError && error.retryable;
+    await finish({
+      notificationId: job.id,
+      workerId,
+      status: retryable ? "failed" : "skipped",
+      messageId: pending.id,
+      errorCode: safe.code,
+      errorMessage: safe.message,
+      retryAfterSeconds: retryable ? retryDelaySeconds(job.attempts) : null,
+    });
     recordFailure("whatsapp.order_notification.send_failed", error, {
       requestId: workerId,
       organizationId: job.organization_id,
@@ -263,7 +278,7 @@ async function processOne(job: QueueRow, workerId: string) {
       orderId: job.order_id,
       notificationType: job.notification_type,
     });
-    return "failed" as const;
+    return retryable ? "failed" as const : "skipped" as const;
   }
 }
 
