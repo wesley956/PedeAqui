@@ -24,7 +24,6 @@ const settingsSchema = z.object({
   if (!validateGreetingTemplate(value.greetingTemplate)) ctx.addIssue({ code: "custom", path: ["greetingTemplate"], message: "A saudação deve incluir o link do cardápio e não pode conter links externos digitados manualmente." });
   if (!validateGreetingFallback(value.greetingFallbackMessage)) ctx.addIssue({ code: "custom", path: ["greetingFallbackMessage"], message: "Revise a mensagem alternativa. Ela não pode conter links externos digitados manualmente." });
   if (value.orderNotificationsEnabled && !value.whatsappEnabled) ctx.addIssue({ code: "custom", path: ["orderNotificationsEnabled"], message: "Ative o WhatsApp antes das atualizações automáticas de pedido." });
-  if (value.orderNotificationsEnabled && !value.orderNotificationTemplateName) ctx.addIssue({ code: "custom", path: ["orderNotificationTemplateName"], message: "O modelo utilitário da Meta precisa estar aprovado antes de ativar as atualizações automáticas." });
 });
 export type ConversationSettingsInput = z.infer<typeof settingsSchema>;
 export type WhatsAppChannelHealth = { status: "disabled" | "misconfigured" | "connected" | "provider_unavailable" | "invalid_credentials"; message: string; displayPhoneNumber: string | null; verifiedName: string | null; qualityRating: string | null; graphVersion: string | null };
