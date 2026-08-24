@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/primitives";
 import { MetaEmbeddedSignupCard } from "@/features/conversations/meta-embedded-signup-card";
 import { saveConversationSettingsAction } from "@/features/conversations/settings-actions";
+import { WhatsAppAutomationSettings } from "@/features/conversations/whatsapp-automation-settings";
 import { DEFAULT_WHATSAPP_GREETING, DEFAULT_WHATSAPP_GREETING_FALLBACK } from "@/server/conversations/greeting";
 import { MetaEmbeddedSignupService } from "@/server/conversations/meta-embedded-signup-service";
+import { normalizeWhatsAppAutomationPreset } from "@/server/conversations/order-notification-model";
 import { ConversationSettingsService } from "@/server/conversations/settings-service";
+import { ModuleAccessService } from "@/server/modules/module-access-service";
 
 const fieldStyle = {
   minHeight: 44,
@@ -23,12 +26,14 @@ function greetingForEditor(value: string) {
 
 export default async function ConversationSettingsPage() {
   const platformConfig = MetaEmbeddedSignupService.publicConfig();
-  const [settings, embeddedStatus] = await Promise.all([
+  const [settings, embeddedStatus, modules] = await Promise.all([
     ConversationSettingsService.load(),
     MetaEmbeddedSignupService.currentStatus(),
+    ModuleAccessService.load(),
   ]);
   const connectionConfigured = Boolean(settings?.whatsapp_phone_number_id && settings?.access_token_secret_ref && settings?.app_secret_secret_ref);
   const orderTemplateConfigured = Boolean(settings?.order_notification_template_name);
+  const preset = normalizeWhatsAppAutomationPreset(settings?.order_notification_preset);
 
   return (
     <section style={{ display: "grid", gap: 18, maxWidth: 880 }}>
@@ -51,38 +56,39 @@ export default async function ConversationSettingsPage() {
 
         <Card style={{ display: "grid", gap: 12 }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: 18 }}>Atualizações automáticas do pedido</h2>
-            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>O PedeAqui avisa o cliente no WhatsApp sem alterar o andamento do pedido. Se a Meta estiver indisponível, a operação do restaurante continua normalmente.</p>
-          </div>
-          <label style={{ display: "flex", gap: 9, alignItems: "center", fontWeight: 700 }}>
-            <input type="checkbox" name="orderNotificationsEnabled" defaultChecked={Boolean(settings?.order_notifications_enabled)} disabled={!connectionConfigured} />
-            <span>Enviar atualizações do pedido pelo WhatsApp</span>
-          </label>
-          <div style={{ display: "grid", gap: 8, padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)" }}>
-            <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="notifyOrderReceived" defaultChecked={settings?.notify_order_received ?? true} disabled={!connectionConfigured} /><span>Pedido recebido + link de acompanhamento</span></label>
-            <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="notifyPaymentPaid" defaultChecked={Boolean(settings?.notify_payment_paid)} disabled={!connectionConfigured} /><span>Pagamento confirmado</span></label>
-            <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="notifyPickupReady" defaultChecked={settings?.notify_pickup_ready ?? true} disabled={!connectionConfigured} /><span>Pronto para retirada</span></label>
-            <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="notifyOutForDelivery" defaultChecked={settings?.notify_out_for_delivery ?? true} disabled={!connectionConfigured} /><span>Saiu para entrega</span></label>
-            <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="notifyDelivered" defaultChecked={Boolean(settings?.notify_delivered)} disabled={!connectionConfigured} /><span>Pedido entregue</span></label>
+            <h2 style={{ margin: 0, fontSize: 18 }}>Automações do pedido</h2>
+            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Escolha um fluxo pronto ou personalize as etapas. Os avisos são disparados somente por estados reais do pedido no PedeAqui e nunca mudam o andamento do pedido.</p>
           </div>
 
-          <div style={{ display: "grid", gap: 10, padding: 14, borderRadius: 10, border: "1px solid var(--border)" }}>
-            <div>
-              <strong>Modelo aprovado para avisos</strong>
-              <p className="muted" style={{ margin: "4px 0 0", fontSize: 12 }}>Quando o cliente não falou com a loja nas últimas 24 horas, o WhatsApp exige um modelo previamente aprovado pela Meta. Ele deve ter quatro campos, nesta ordem: restaurante, número do pedido, situação e link de acompanhamento.</p>
-            </div>
-            <label style={{ display: "grid", gap: 6 }}>
-              <span style={{ fontWeight: 700 }}>Nome do modelo aprovado</span>
-              <input name="orderNotificationTemplateName" defaultValue={settings?.order_notification_template_name ?? ""} placeholder="pedeaqui_atualizacao_pedido" style={fieldStyle} autoCapitalize="none" autoCorrect="off" />
-            </label>
-            <label style={{ display: "grid", gap: 6, maxWidth: 220 }}>
-              <span style={{ fontWeight: 700 }}>Idioma do modelo</span>
-              <select name="orderNotificationTemplateLanguage" defaultValue={settings?.order_notification_template_language ?? "pt_BR"} style={fieldStyle}>
-                <option value="pt_BR">Português (Brasil)</option><option value="en_US">English (US)</option><option value="es_ES">Español</option>
-              </select>
-            </label>
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: orderTemplateConfigured ? "var(--accent)" : "var(--muted)" }}>{orderTemplateConfigured ? "Modelo configurado para esta unidade." : "Falta informar o modelo aprovado antes de ativar os avisos."}</p>
+          <WhatsAppAutomationSettings
+            connected={connectionConfigured}
+            enabled={Boolean(settings?.order_notifications_enabled)}
+            preset={preset}
+            productionAvailable={modules.availability.production.available}
+            deliveriesAvailable={modules.availability.deliveries.available}
+            defaults={{
+              notifyOrderReceived: settings?.notify_order_received ?? true,
+              notifyOrderConfirmed: Boolean(settings?.notify_order_confirmed),
+              notifyProductionPreparing: Boolean(settings?.notify_production_preparing),
+              notifyPaymentPaid: Boolean(settings?.notify_payment_paid),
+              notifyPickupReady: settings?.notify_pickup_ready ?? true,
+              notifyPickupCompleted: Boolean(settings?.notify_pickup_completed),
+              notifyOutForDelivery: settings?.notify_out_for_delivery ?? true,
+              notifyDelivered: Boolean(settings?.notify_delivered),
+            }}
+          />
+
+          <div style={{ display: "grid", gap: 5, padding: 12, borderRadius: 10, border: "1px solid var(--border)" }}>
+            <strong>Envio seguro pelo WhatsApp</strong>
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>
+              {orderTemplateConfigured
+                ? "O modelo utilitário da Meta está preparado para avisos fora da janela de atendimento."
+                : "Após a conexão, o PedeAqui prepara o modelo utilitário da Meta. Dentro da janela de atendimento aberta pelo cliente, os avisos podem seguir normalmente."}
+            </p>
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Se o WhatsApp ou a Meta ficarem indisponíveis, o pedido, a produção e a entrega continuam funcionando normalmente.</p>
           </div>
+          <input type="hidden" name="orderNotificationTemplateName" value={settings?.order_notification_template_name ?? ""} />
+          <input type="hidden" name="orderNotificationTemplateLanguage" value={settings?.order_notification_template_language ?? "pt_BR"} />
           <p className="muted" style={{ margin: 0, fontSize: 12 }}>Cada aviso possui uma chave única por pedido. Reprocessamentos e eventos repetidos não criam uma segunda mensagem local.</p>
         </Card>
 
