@@ -6,6 +6,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { DEFAULT_WHATSAPP_GREETING, DEFAULT_WHATSAPP_GREETING_FALLBACK, validateGreetingFallback, validateGreetingTemplate } from "@/server/conversations/greeting";
+import { WHATSAPP_AUTOMATION_PRESETS } from "@/server/conversations/order-notification-model";
 import { WhatsAppCloudProvider, WhatsAppProviderError, resolveWhatsAppAccessToken, resolveWhatsAppAppSecret, resolveWhatsAppGraphVersion } from "@/server/conversations/provider";
 
 const templateNameSchema = z.string().trim().regex(/^[a-z0-9_]{1,512}$/).nullable();
@@ -15,13 +16,15 @@ const settingsSchema = z.object({
   whatsappEnabled: z.boolean(), phoneNumberId: z.string().trim().min(1).max(120).nullable(), businessAccountId: z.string().trim().min(1).max(120).nullable(),
   accessTokenSecretRef: z.string().trim().regex(/^[A-Z][A-Z0-9_]{2,100}$/).nullable(), appSecretSecretRef: z.string().trim().regex(/^[A-Z][A-Z0-9_]{2,100}$/).nullable(),
   botEnabled: z.boolean(), aiEnabled: z.boolean(), greetingEnabled: z.boolean(), greetingTemplate: z.string().trim(), greetingFallbackMessage: z.string().trim(),
-  orderNotificationsEnabled: z.boolean(), notifyOrderReceived: z.boolean(), notifyPaymentPaid: z.boolean(), notifyPickupReady: z.boolean(), notifyOutForDelivery: z.boolean(), notifyDelivered: z.boolean(),
+  orderNotificationsEnabled: z.boolean(), orderNotificationPreset: z.enum(WHATSAPP_AUTOMATION_PRESETS),
+  notifyOrderReceived: z.boolean(), notifyOrderConfirmed: z.boolean(), notifyProductionPreparing: z.boolean(), notifyPaymentPaid: z.boolean(),
+  notifyPickupReady: z.boolean(), notifyPickupCompleted: z.boolean(), notifyOutForDelivery: z.boolean(), notifyDelivered: z.boolean(),
   orderNotificationTemplateName: templateNameSchema, orderNotificationTemplateLanguage: templateLanguageSchema,
 }).superRefine((value, ctx) => {
   if (!validateGreetingTemplate(value.greetingTemplate)) ctx.addIssue({ code: "custom", path: ["greetingTemplate"], message: "A saudação deve incluir o link do cardápio e não pode conter links externos digitados manualmente." });
   if (!validateGreetingFallback(value.greetingFallbackMessage)) ctx.addIssue({ code: "custom", path: ["greetingFallbackMessage"], message: "Revise a mensagem alternativa. Ela não pode conter links externos digitados manualmente." });
   if (value.orderNotificationsEnabled && !value.whatsappEnabled) ctx.addIssue({ code: "custom", path: ["orderNotificationsEnabled"], message: "Ative o WhatsApp antes das atualizações automáticas de pedido." });
-  if (value.orderNotificationsEnabled && !value.orderNotificationTemplateName) ctx.addIssue({ code: "custom", path: ["orderNotificationTemplateName"], message: "Informe o template aprovado da Meta antes de ativar as atualizações automáticas." });
+  if (value.orderNotificationsEnabled && !value.orderNotificationTemplateName) ctx.addIssue({ code: "custom", path: ["orderNotificationTemplateName"], message: "O modelo utilitário da Meta precisa estar aprovado antes de ativar as atualizações automáticas." });
 });
 export type ConversationSettingsInput = z.infer<typeof settingsSchema>;
 export type WhatsAppChannelHealth = { status: "disabled" | "misconfigured" | "connected" | "provider_unavailable" | "invalid_credentials"; message: string; displayPhoneNumber: string | null; verifiedName: string | null; qualityRating: string | null; graphVersion: string | null };
@@ -31,7 +34,7 @@ const emptyHealth = (status: WhatsAppChannelHealth["status"], message: string, g
 export class ConversationSettingsService {
   static async load() {
     const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE); const storeId = requireStoreId(context.storeId); const admin = createAdminClient();
-    const { data, error } = await admin.from("store_conversation_settings").select("whatsapp_enabled, provider, whatsapp_phone_number_id, whatsapp_business_account_id, access_token_secret_ref, app_secret_secret_ref, default_bot_enabled, ai_enabled, greeting_enabled, greeting_template, greeting_fallback_message, order_notifications_enabled, notify_order_received, notify_payment_paid, notify_pickup_ready, notify_out_for_delivery, notify_delivered, order_notification_template_name, order_notification_template_language").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
+    const { data, error } = await admin.from("store_conversation_settings").select("whatsapp_enabled, provider, whatsapp_phone_number_id, whatsapp_business_account_id, access_token_secret_ref, app_secret_secret_ref, default_bot_enabled, ai_enabled, greeting_enabled, greeting_template, greeting_fallback_message, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, order_notification_template_name, order_notification_template_language").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (error) throw error; return data;
   }
   static async health(): Promise<WhatsAppChannelHealth> {
@@ -55,17 +58,21 @@ export class ConversationSettingsService {
       organization_id: context.organizationId, store_id: storeId, whatsapp_enabled: values.whatsappEnabled, provider: "meta_cloud", whatsapp_phone_number_id: values.phoneNumberId, whatsapp_business_account_id: values.businessAccountId,
       access_token_secret_ref: values.accessTokenSecretRef, app_secret_secret_ref: values.appSecretSecretRef, default_bot_enabled: values.botEnabled, ai_enabled: values.aiEnabled, greeting_enabled: values.greetingEnabled,
       greeting_template: values.greetingTemplate || DEFAULT_WHATSAPP_GREETING, greeting_fallback_message: values.greetingFallbackMessage || DEFAULT_WHATSAPP_GREETING_FALLBACK,
-      order_notifications_enabled: values.orderNotificationsEnabled, notify_order_received: values.notifyOrderReceived, notify_payment_paid: values.notifyPaymentPaid, notify_pickup_ready: values.notifyPickupReady,
+      order_notifications_enabled: values.orderNotificationsEnabled, order_notification_preset: values.orderNotificationPreset,
+      notify_order_received: values.notifyOrderReceived, notify_order_confirmed: values.notifyOrderConfirmed, notify_production_preparing: values.notifyProductionPreparing,
+      notify_payment_paid: values.notifyPaymentPaid, notify_pickup_ready: values.notifyPickupReady, notify_pickup_completed: values.notifyPickupCompleted,
       notify_out_for_delivery: values.notifyOutForDelivery, notify_delivered: values.notifyDelivered, order_notification_template_name: values.orderNotificationTemplateName,
       order_notification_template_language: values.orderNotificationTemplateLanguage, updated_by: context.userId, updated_at: new Date().toISOString(),
     };
-    const { data, error } = await admin.from("store_conversation_settings").upsert(row, { onConflict: "store_id" }).select("whatsapp_enabled, provider, whatsapp_phone_number_id, whatsapp_business_account_id, access_token_secret_ref, app_secret_secret_ref, default_bot_enabled, ai_enabled, greeting_enabled, greeting_template, greeting_fallback_message, order_notifications_enabled, notify_order_received, notify_payment_paid, notify_pickup_ready, notify_out_for_delivery, notify_delivered, order_notification_template_name, order_notification_template_language").single();
+    const { data, error } = await admin.from("store_conversation_settings").upsert(row, { onConflict: "store_id" }).select("whatsapp_enabled, provider, whatsapp_phone_number_id, whatsapp_business_account_id, access_token_secret_ref, app_secret_secret_ref, default_bot_enabled, ai_enabled, greeting_enabled, greeting_template, greeting_fallback_message, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, order_notification_template_name, order_notification_template_language").single();
     if (error) throw error;
     await AuditService.record(context, { action: "conversations.settings_updated", entityType: "store_conversation_settings", entityId: storeId, after: {
       whatsapp_enabled: data.whatsapp_enabled, provider: data.provider, whatsapp_phone_number_id: data.whatsapp_phone_number_id, whatsapp_business_account_id: data.whatsapp_business_account_id,
       access_token_secret_ref: data.access_token_secret_ref, app_secret_secret_ref: data.app_secret_secret_ref, default_bot_enabled: data.default_bot_enabled, ai_enabled: data.ai_enabled, greeting_enabled: data.greeting_enabled,
-      order_notifications_enabled: data.order_notifications_enabled, notify_order_received: data.notify_order_received, notify_payment_paid: data.notify_payment_paid, notify_pickup_ready: data.notify_pickup_ready,
-      notify_out_for_delivery: data.notify_out_for_delivery, notify_delivered: data.notify_delivered, order_notification_template_name: data.order_notification_template_name,
+      order_notifications_enabled: data.order_notifications_enabled, order_notification_preset: data.order_notification_preset, notify_order_received: data.notify_order_received,
+      notify_order_confirmed: data.notify_order_confirmed, notify_production_preparing: data.notify_production_preparing, notify_payment_paid: data.notify_payment_paid,
+      notify_pickup_ready: data.notify_pickup_ready, notify_pickup_completed: data.notify_pickup_completed, notify_out_for_delivery: data.notify_out_for_delivery,
+      notify_delivered: data.notify_delivered, order_notification_template_name: data.order_notification_template_name,
       order_notification_template_language: data.order_notification_template_language,
     } });
     return data;
