@@ -1,1 +1,1 @@
-.root{font-size:100%}@media(max-width:640px){.root{font-size:80%}}
+.root{font-size:100%}@media(max-width:640px){.root{font-size:80%;--font-size-xs:calc(.75rem * .8);--font-size-sm:calc(.875rem * .8);--font-size-md:calc(1rem * .8);--font-size-lg:calc(1.125rem * .8);--font-size-xl:calc(1.25rem * .8);--font-size-2xl:calc(1.5rem * .8);--font-size-3xl:calc(2rem * .8);--font-size-display:calc(2.5rem * .8)}}
