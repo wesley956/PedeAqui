@@ -148,7 +148,7 @@ export default async function PublicProductPage({ params, searchParams }: { para
           </label>
           <button className={styles.submitButton} type="submit" disabled={orderUnavailable} style={{ background: orderUnavailable ? "var(--surface-3)" : "var(--brand-primary)", color: orderUnavailable ? "var(--text-secondary)" : "var(--text-on-brand)", cursor: orderUnavailable ? "not-allowed" : "pointer" }}>{soldOut ? `${productLabel} esgotado` : operational.label === "paused" ? "Pedidos pausados" : operational.label === "closed" ? "Cardápio fechado" : editItemId ? "Salvar alterações" : "Adicionar ao carrinho"}</button>
         </div>
-        <small className={styles.helper}>O total final é confirmado no carrinho conforme as opções escolhidas.</small>
+        <small className={styles.helper}>O total final é confirmado no carrinho. O PedeAqui recalcula produto e adicionais no servidor conforme as opções escolhidas.</small>
       </section>
     </form>
     <PublicCartBar storeSlug={store.slug} />
