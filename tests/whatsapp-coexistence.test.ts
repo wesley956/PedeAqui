@@ -65,7 +65,7 @@ describe("WhatsApp Business App coexistence", () => {
     const service = read("src/server/conversations/coexistence-service.ts");
 
     expect(migration).toContain("conversation_receive_echo_internal");
-    expect(migration).toContain("on conflict (store_id, provider, external_message_id)");
+    expect(migration).toContain("on conflict (store_id,provider,external_message_id)");
     expect(migration).toContain("revoke all on function public.conversation_receive_echo_internal");
     expect(migration).toContain("grant execute on function public.conversation_receive_echo_internal");
     expect(migration).toContain("to service_role");
