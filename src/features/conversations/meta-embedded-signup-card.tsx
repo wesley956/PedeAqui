@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   completeWhatsAppEmbeddedSignupAction,
   disconnectWhatsAppAction,
+  getWhatsAppEmbeddedSignupBrowserConfigAction,
   startWhatsAppEmbeddedSignupAction,
 } from "@/features/conversations/meta-embedded-signup-actions";
 import {
@@ -26,6 +27,14 @@ type Status = {
   last_health_check_at: string | null;
   last_connection_error_kind: string | null;
 };
+type BrowserConfig = {
+  ready: boolean;
+  appId: string | null;
+  configId: string | null;
+  coexistenceConfigId: string | null;
+  graphVersion: string | null;
+  sessionInfoVersion: string;
+};
 type FacebookLoginResponse = { authResponse?: { code?: string } };
 type FacebookSdk = {
   init(input: { appId: string; cookie: boolean; xfbml: boolean; version: string }): void;
@@ -43,14 +52,18 @@ function loadFacebookSdk(appId: string, version: string) {
   if (sdkPromise) return sdkPromise;
   sdkPromise = new Promise<FacebookSdk>((resolve, reject) => {
     const existing = document.getElementById("facebook-jssdk") as HTMLScriptElement | null;
+    const fail = () => {
+      sdkPromise = null;
+      reject(new Error("Não foi possível carregar a conexão segura do WhatsApp."));
+    };
     const finish = () => {
-      if (!window.FB) return reject(new Error("Não foi possível carregar a conexão segura do WhatsApp."));
+      if (!window.FB) return fail();
       window.FB.init({ appId, cookie: true, xfbml: false, version });
       resolve(window.FB);
     };
     if (existing) {
       existing.addEventListener("load", finish, { once: true });
-      existing.addEventListener("error", () => reject(new Error("Não foi possível carregar a conexão segura do WhatsApp.")), { once: true });
+      existing.addEventListener("error", fail, { once: true });
       return;
     }
     const script = document.createElement("script");
@@ -60,19 +73,22 @@ function loadFacebookSdk(appId: string, version: string) {
     script.defer = true;
     script.crossOrigin = "anonymous";
     script.addEventListener("load", finish, { once: true });
-    script.addEventListener("error", () => reject(new Error("Não foi possível carregar a conexão segura do WhatsApp.")), { once: true });
+    script.addEventListener("error", fail, { once: true });
     document.body.appendChild(script);
   });
   return sdkPromise;
 }
 
-function waitForEmbeddedSignupResult(mode: WhatsAppConnectionMode) {
+function waitForEmbeddedSignupResult(mode: WhatsAppConnectionMode, signal: AbortSignal) {
   return new Promise<MetaEmbeddedSignupResult>((resolve, reject) => {
-    const timeout = window.setTimeout(() => {
+    function done() {
       window.removeEventListener("message", onMessage);
-      reject(new Error("A conexão demorou demais. Tente novamente."));
-    }, 10 * 60_000);
-    function done() { window.clearTimeout(timeout); window.removeEventListener("message", onMessage); }
+      signal.removeEventListener("abort", onAbort);
+    }
+    function onAbort() {
+      done();
+      reject(new Error("Conexão interrompida."));
+    }
     function onMessage(event: MessageEvent) {
       if (event.origin !== "https://www.facebook.com" && event.origin !== "https://web.facebook.com") return;
       let payload: unknown = event.data;
@@ -90,6 +106,7 @@ function waitForEmbeddedSignupResult(mode: WhatsAppConnectionMode) {
       done();
       resolve(result);
     }
+    signal.addEventListener("abort", onAbort, { once: true });
     window.addEventListener("message", onMessage);
   });
 }
@@ -98,7 +115,7 @@ function loginWithEmbeddedSignup(fb: FacebookSdk, configId: string, mode: WhatsA
   return new Promise<string>((resolve, reject) => {
     fb.login((response) => {
       const code = response.authResponse?.code;
-      if (!code) reject(new Error("A autorização do WhatsApp não foi concluída.")); else resolve(code);
+      if (!code) reject(new Error("A autorização da Meta foi encerrada antes da conexão do WhatsApp.")); else resolve(code);
     }, {
       config_id: configId,
       response_type: "code",
@@ -110,6 +127,18 @@ function loginWithEmbeddedSignup(fb: FacebookSdk, configId: string, mode: WhatsA
       },
     });
   });
+}
+
+function waitForMetaResultAfterLogin(promise: Promise<{ result: MetaEmbeddedSignupResult | null; error: Error | null }>) {
+  return Promise.race([
+    promise,
+    new Promise<{ result: null; error: Error }>((resolve) => {
+      window.setTimeout(() => resolve({
+        result: null,
+        error: new Error("A Meta autorizou o login, mas não concluiu a etapa do WhatsApp. Tente novamente; se persistir, a configuração do Cadastro Incorporado precisa ser revisada."),
+      }), 12_000);
+    }),
+  ]);
 }
 
 function humanStatus(status: Status) {
@@ -128,19 +157,58 @@ function connectionModeLabel(mode: WhatsAppConnectionMode) {
 export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Status; platformReady: boolean }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const [browserConfig, setBrowserConfig] = useState<BrowserConfig | null>(null);
+  const [sdkReady, setSdkReady] = useState(false);
+  const [sdkFailed, setSdkFailed] = useState(false);
   const connected = status.connection_status === "connected" && status.whatsapp_enabled;
+
+  useEffect(() => {
+    if (!platformReady) return;
+    let active = true;
+    getWhatsAppEmbeddedSignupBrowserConfigAction()
+      .then(async (config) => {
+        if (!config.ready || !config.appId || !config.configId || !config.graphVersion) throw new Error("Configuração da Meta incompleta.");
+        if (!active) return;
+        setBrowserConfig(config);
+        await loadFacebookSdk(config.appId, config.graphVersion);
+        if (active) setSdkReady(true);
+      })
+      .catch(() => {
+        if (!active) return;
+        setSdkFailed(true);
+        setMessage("Não foi possível preparar a conexão segura do WhatsApp. Atualize a página e tente novamente.");
+      });
+    return () => { active = false; };
+  }, [platformReady]);
 
   function connect(mode: WhatsAppConnectionMode) {
     setMessage(null);
+    const fb = window.FB;
+    const configId = mode === "coexistence"
+      ? browserConfig?.coexistenceConfigId || browserConfig?.configId
+      : browserConfig?.configId;
+    if (!sdkReady || !fb || !browserConfig?.appId || !browserConfig.graphVersion || !configId) {
+      setMessage("A conexão segura ainda está sendo preparada. Aguarde alguns segundos e tente novamente.");
+      return;
+    }
+
+    const controller = new AbortController();
+    const metaOutcomePromise = waitForEmbeddedSignupResult(mode, controller.signal).then(
+      (result) => ({ result, error: null as Error | null }),
+      (error: unknown) => ({ result: null, error: error instanceof Error ? error : new Error("Não foi possível concluir a conexão do WhatsApp.") }),
+    );
+
+    // FB.login must be invoked directly from the user's click. Do not await a
+    // Server Action before this call or browsers/Meta can lose the popup gesture.
+    const codePromise = loginWithEmbeddedSignup(fb, configId, mode, browserConfig.sessionInfoVersion);
+    const sessionPromise = startWhatsAppEmbeddedSignupAction(mode);
+
     startTransition(async () => {
       try {
-        const session = await startWhatsAppEmbeddedSignupAction(mode);
-        if (!session.appId || !session.configId || !session.graphVersion) throw new Error("A conexão do WhatsApp ainda não está disponível.");
-        const fb = await loadFacebookSdk(session.appId, session.graphVersion);
-        const [metaResult, code] = await Promise.all([
-          waitForEmbeddedSignupResult(mode),
-          loginWithEmbeddedSignup(fb, session.configId, mode, session.sessionInfoVersion),
-        ]);
+        const [session, code] = await Promise.all([sessionPromise, codePromise]);
+        const metaOutcome = await waitForMetaResultAfterLogin(metaOutcomePromise);
+        if (metaOutcome.error || !metaOutcome.result) throw metaOutcome.error ?? new Error("A Meta não devolveu os dados da conexão do WhatsApp.");
+        const metaResult = metaOutcome.result;
         const result = await completeWhatsAppEmbeddedSignupAction({
           sessionId: session.sessionId,
           stateToken: session.stateToken,
@@ -150,9 +218,11 @@ export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Stat
           businessId: metaResult.businessId,
           mode,
         });
+        controller.abort();
         setMessage(result.displayPhoneNumber ? `WhatsApp ${result.displayPhoneNumber} conectado com sucesso.` : "WhatsApp conectado com sucesso.");
         window.location.reload();
       } catch (error) {
+        controller.abort();
         setMessage(error instanceof Error ? error.message : "Não foi possível concluir a conexão do WhatsApp.");
       }
     });
@@ -166,6 +236,8 @@ export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Stat
       catch { setMessage("Não foi possível desconectar o WhatsApp agora."); }
     });
   }
+
+  const connectionDisabled = pending || !platformReady || !sdkReady || sdkFailed;
 
   return (
     <div style={{ display: "grid", gap: 14, padding: 16, border: "1px solid var(--border)", borderRadius: 12, background: "var(--surface-2)" }}>
@@ -201,8 +273,8 @@ export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Stat
         <button
           type="button"
           onClick={() => connect("coexistence")}
-          disabled={pending || !platformReady}
-          style={{ textAlign: "left", padding: 14, borderRadius: 12, border: "2px solid var(--accent)", background: "var(--surface)", color: "var(--text)", cursor: pending || !platformReady ? "not-allowed" : "pointer" }}
+          disabled={connectionDisabled}
+          style={{ textAlign: "left", padding: 14, borderRadius: 12, border: "2px solid var(--accent)", background: "var(--surface)", color: "var(--text)", cursor: connectionDisabled ? "not-allowed" : "pointer" }}
         >
           <span style={{ display: "inline-block", marginBottom: 7, padding: "3px 7px", borderRadius: 999, fontSize: 11, fontWeight: 800, background: "var(--surface-2)" }}>RECOMENDADO</span>
           <strong style={{ display: "block" }}>Já uso WhatsApp Business no celular</strong>
@@ -212,8 +284,8 @@ export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Stat
         <button
           type="button"
           onClick={() => connect("cloud_api")}
-          disabled={pending || !platformReady}
-          style={{ textAlign: "left", padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", cursor: pending || !platformReady ? "not-allowed" : "pointer" }}
+          disabled={connectionDisabled}
+          style={{ textAlign: "left", padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", cursor: connectionDisabled ? "not-allowed" : "pointer" }}
         >
           <strong>Quero usar um número exclusivo no PedeAqui</strong>
           <span className="muted" style={{ display: "block", marginTop: 4, fontSize: 12 }}>Escolha esta opção quando o número será dedicado ao atendimento pelo sistema.</span>
@@ -223,10 +295,11 @@ export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Stat
       </div>}
 
       {!platformReady ? <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>A conexão do WhatsApp está temporariamente indisponível nesta conta. Tente novamente mais tarde ou fale com o suporte.</p> : null}
+      {platformReady && !sdkReady && !sdkFailed ? <p className="muted" style={{ margin: 0, fontSize: 12 }}>Preparando a conexão segura com o WhatsApp…</p> : null}
       {status.last_connection_error_kind ? <p className="muted" style={{ margin: 0, fontSize: 12 }}>A última tentativa não foi concluída. Você pode iniciar a conexão novamente sem perder o histórico.</p> : null}
       {message ? <p role="status" style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>{message}</p> : null}
       {connected ? <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Button type="button" onClick={() => connect(status.connection_mode)} disabled={pending || !platformReady}>{pending ? "Conectando…" : "Reconectar WhatsApp"}</Button>
+        <Button type="button" onClick={() => connect(status.connection_mode)} disabled={connectionDisabled}>{pending ? "Conectando…" : "Reconectar WhatsApp"}</Button>
         <Button type="button" tone="secondary" onClick={disconnect} disabled={pending}>Desconectar</Button>
       </div> : pending ? <p role="status" style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>Conectando seu WhatsApp… siga as etapas na janela que foi aberta.</p> : null}
     </div>
