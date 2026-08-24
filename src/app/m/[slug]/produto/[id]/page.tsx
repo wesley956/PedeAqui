@@ -10,6 +10,7 @@ import { CartService } from "@/server/cart/cart-service";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { ComplementCategoryService, type PublicComplementCategory } from "@/server/menu/complement-category-service";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
+import styles from "./public-product.module.css";
 
 function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
 function validUuid(value?: string) { return Boolean(value && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)); }
@@ -73,7 +74,7 @@ export default async function PublicProductPage({ params, searchParams }: { para
     : query.erro === "invalid_modifiers" ? "As opções deste produto mudaram. Revise a montagem antes de salvar."
     : query.erro ? "Não foi possível atualizar o item. Revise as opções obrigatórias e tente novamente." : null;
 
-  return <main style={{ minHeight: "100vh", background: "var(--surface-0)", color: "var(--text-primary)", padding: "18px 12px 64px" }}>
+  return <main className={styles.root} style={{ minHeight: "100vh", background: "var(--surface-0)", color: "var(--text-primary)", padding: "18px 12px 64px" }}>
     <form action={addToCartAction} style={{ width: "min(720px, 100%)", margin: "0 auto", display: "grid", gap: 16 }}>
       <input type="hidden" name="storeSlug" value={store.slug} />
       <input type="hidden" name="productId" value={product.id} />
@@ -99,13 +100,13 @@ export default async function PublicProductPage({ params, searchParams }: { para
               <h1 style={{ margin: 0, color: "var(--text-primary)" }}>{product.name}</h1>
               {product.description ? <p style={{ ...secondaryText, lineHeight: 1.5 }}>{product.description}</p> : null}
             </div>
-            {soldOut ? <span style={{ background: "var(--state-danger-surface)", color: "var(--state-danger-text)", fontWeight: 900, borderRadius: 999, padding: "6px 9px", fontSize: 11 }}>ESGOTADO</span> : null}
+            {soldOut ? <span style={{ background: "var(--state-danger-surface)", color: "var(--state-danger-text)", fontWeight: 900, borderRadius: 999, padding: "6px 9px", fontSize: "0.6875em" }}>ESGOTADO</span> : null}
           </div>
           <div style={{ display: "flex", gap: 9, alignItems: "baseline" }}>
-            <strong style={{ color: "var(--brand-primary)", fontSize: 24 }}>{money(price)}</strong>
+            <strong style={{ color: "var(--brand-primary)", fontSize: "1.5em" }}>{money(price)}</strong>
             {product.promotional_price_cents !== null ? <span style={{ color: "var(--text-secondary)", textDecoration: "line-through" }}>{money(product.price_cents)}</span> : null}
           </div>
-          {product.preparation_time_minutes > 0 ? <span style={{ color: "var(--text-secondary)", fontSize: 13 }}>{timeLabel}: {product.preparation_time_minutes} min</span> : null}
+          {product.preparation_time_minutes > 0 ? <span style={{ color: "var(--text-secondary)", fontSize: "0.8125em" }}>{timeLabel}: {product.preparation_time_minutes} min</span> : null}
         </div>
       </article>
 
