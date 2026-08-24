@@ -25,24 +25,27 @@ describe("platform WhatsApp order template", () => {
     expect(service).toContain('"Saiu para entrega"');
   });
 
-  it("uses a safe 24h-only mode for Meta Test WhatsApp Business Accounts", () => {
+  it("uses a safe 24h-only mode for Meta Test WhatsApp Business Accounts without changing the restaurant flow", () => {
     expect(service).toContain('const TEST_WINDOW_ONLY = "TEST_WINDOW_ONLY"');
     expect(service).toContain("test whatsapp business account");
     expect(service).toContain("persistTestWindowMode");
-    expect(service).toContain("order_notifications_enabled: true");
     expect(service).toContain("order_notification_template_name: null");
+    expect(service).toContain("restaurant_flow_preserved: true");
+    expect(service).not.toContain("order_notifications_enabled: true");
     expect(page).toContain("Modo de homologação ativo");
     expect(page).toContain("Ativas por 24h");
   });
 
-  it("only enables unrestricted production mode after Meta reports APPROVED", () => {
+  it("stores an approved Meta template without forcing notification choices", () => {
     expect(service).toContain('const APPROVED = "APPROVED"');
-    expect(service).toContain("order_notifications_enabled: approved");
-    expect(service).toContain("notify_order_received: true");
-    expect(service).toContain("notify_payment_paid: true");
-    expect(service).toContain("notify_pickup_ready: true");
-    expect(service).toContain("notify_out_for_delivery: true");
-    expect(service).toContain("notify_delivered: true");
+    expect(service).toContain("status === APPROVED ? TEMPLATE_NAME : null");
+    expect(service).toContain("restaurant_flow_preserved: true");
+    expect(service).not.toContain("order_notifications_enabled: approved");
+    expect(service).not.toContain("notify_order_received: true");
+    expect(service).not.toContain("notify_payment_paid: true");
+    expect(service).not.toContain("notify_pickup_ready: true");
+    expect(service).not.toContain("notify_out_for_delivery: true");
+    expect(service).not.toContain("notify_delivered: true");
   });
 
   it("exposes only a server action and never asks the browser for Meta credentials", () => {
