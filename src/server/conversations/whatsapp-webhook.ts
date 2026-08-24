@@ -44,7 +44,9 @@ export type WhatsAppStatusEvent = {
   errorMessage: string | null;
 };
 
-export type WhatsAppWebhookEvent = WhatsAppInboundEvent | WhatsAppEchoEvent | WhatsAppSyncEvent | WhatsAppStatusEvent;
+export type WhatsAppWebhookEvent = WhatsAppInboundEvent | WhatsAppStatusEvent;
+export type WhatsAppCoexistenceEvent = WhatsAppEchoEvent | WhatsAppSyncEvent;
+export type WhatsAppParsedEvent = WhatsAppWebhookEvent | WhatsAppCoexistenceEvent;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -89,10 +91,10 @@ function normalizeContentType(value: string | null): WhatsAppContentType {
   return "unsupported";
 }
 
-export function parseWhatsAppWebhook(payload: unknown): WhatsAppWebhookEvent[] {
+export function parseWhatsAppWebhook(payload: unknown): WhatsAppParsedEvent[] {
   const root = record(payload);
   if (!root) return [];
-  const events: WhatsAppWebhookEvent[] = [];
+  const events: WhatsAppParsedEvent[] = [];
 
   for (const entryValue of array(root.entry)) {
     const entry = record(entryValue);
@@ -193,6 +195,6 @@ export function verifyMetaWebhookSignature(rawBody: string, signatureHeader: str
   return expected.length === provided.length && timingSafeEqual(expected, provided);
 }
 
-export function webhookPhoneNumberIds(events: readonly WhatsAppWebhookEvent[]) {
+export function webhookPhoneNumberIds(events: readonly WhatsAppParsedEvent[]) {
   return [...new Set(events.map((event) => event.phoneNumberId))];
 }
