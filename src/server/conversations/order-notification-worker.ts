@@ -97,7 +97,7 @@ async function processOne(job: QueueRow, workerId: string) {
       ? admin.from("customers").select("phone_normalized").eq("organization_id", job.organization_id).eq("id", order.customer_id).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
     admin.from("store_modules").select("module_key, enabled")
-      .eq("organization_id", job.organization_id).eq("store_id", job.store_id).in("module_key", ["production", "deliveries"]),
+      .eq("organization_id", job.organization_id).eq("store_id", job.store_id).in("module_key", ["conversations", "production", "deliveries"]),
   ]);
   if (settingsResult.error) throw settingsResult.error;
   if (storeResult.error) throw storeResult.error;
@@ -115,6 +115,10 @@ async function processOne(job: QueueRow, workerId: string) {
     await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "notification_disabled", errorMessage: "Notificação desativada para esta unidade." });
     return "skipped" as const;
   }
+  if (explicitlyDisabledModules.has("conversations")) {
+    await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "module_disabled", errorMessage: "Automação suspensa porque o módulo de Conversas está desativado." });
+    return "skipped" as const;
+  }
   if (!settings.whatsapp_enabled) {
     await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "whatsapp_disabled", errorMessage: "WhatsApp desativado para esta unidade." });
     return "skipped" as const;
@@ -124,11 +128,11 @@ async function processOne(job: QueueRow, workerId: string) {
     return "skipped" as const;
   }
   if ((job.notification_type === "production_preparing" || job.notification_type === "pickup_ready") && explicitlyDisabledModules.has("production")) {
-    await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "module_disabled", errorMessage: "Automação indisponível porque o módulo de produção está desativado." });
+    await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "module_disabled", errorMessage: "Automação suspensa porque o módulo de Produção está desativado." });
     return "skipped" as const;
   }
   if ((job.notification_type === "out_for_delivery" || job.notification_type === "delivered") && explicitlyDisabledModules.has("deliveries")) {
-    await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "module_disabled", errorMessage: "Automação indisponível porque o módulo de entregas está desativado." });
+    await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "module_disabled", errorMessage: "Automação suspensa porque o módulo de Entregas está desativado." });
     return "skipped" as const;
   }
   if ((job.notification_type === "pickup_ready" || job.notification_type === "pickup_completed") && order.fulfillment_type !== "pickup") {
@@ -217,26 +221,14 @@ async function processOne(job: QueueRow, workerId: string) {
       p_error_code: "template_required",
       p_error_message: message,
     });
-    await finish({
-      notificationId: job.id,
-      workerId,
-      status: "failed",
-      messageId: pending.id,
-      errorCode: "template_required",
-      errorMessage: message,
-      retryAfterSeconds: 3600,
-    });
+    await finish({ notificationId: job.id, workerId, status: "failed", messageId: pending.id, errorCode: "template_required", errorMessage: message, retryAfterSeconds: 3600 });
     return "failed" as const;
   }
 
   try {
     const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(settings.access_token_secret_ref));
     const sent = canSendFreeForm
-      ? await provider.sendText({
-          phoneNumberId: settings.whatsapp_phone_number_id,
-          recipient: conversation.external_id,
-          body,
-        })
+      ? await provider.sendText({ phoneNumberId: settings.whatsapp_phone_number_id, recipient: conversation.external_id, body })
       : await provider.sendTemplate({
           phoneNumberId: settings.whatsapp_phone_number_id,
           recipient: conversation.external_id,
@@ -263,15 +255,7 @@ async function processOne(job: QueueRow, workerId: string) {
       p_error_code: safe.code,
       p_error_message: safe.message,
     });
-    await finish({
-      notificationId: job.id,
-      workerId,
-      status: "failed",
-      messageId: pending.id,
-      errorCode: safe.code,
-      errorMessage: safe.message,
-      retryAfterSeconds: retryDelaySeconds(job.attempts),
-    });
+    await finish({ notificationId: job.id, workerId, status: "failed", messageId: pending.id, errorCode: safe.code, errorMessage: safe.message, retryAfterSeconds: retryDelaySeconds(job.attempts) });
     recordFailure("whatsapp.order_notification.send_failed", error, {
       requestId: workerId,
       organizationId: job.organization_id,
@@ -299,14 +283,7 @@ export async function runOrderWhatsAppNotificationWorker(options?: { workerId?: 
     } catch (error) {
       const safe = safeError(error);
       try {
-        await finish({
-          notificationId: job.id,
-          workerId,
-          status: "failed",
-          errorCode: safe.code,
-          errorMessage: safe.message,
-          retryAfterSeconds: retryDelaySeconds(job.attempts),
-        });
+        await finish({ notificationId: job.id, workerId, status: "failed", errorCode: safe.code, errorMessage: safe.message, retryAfterSeconds: retryDelaySeconds(job.attempts) });
       } catch {
         // O lease expira e torna o job recuperável; não bloquear os demais pedidos.
       }
