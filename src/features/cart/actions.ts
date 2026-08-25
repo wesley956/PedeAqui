@@ -9,10 +9,12 @@ import { addCartItemSchema, cartItemQuantitySchema, removeCartItemSchema } from 
 import { PricingError } from "@/server/pricing/pricing-service";
 import { logger } from "@/server/observability/logger";
 
+const legacyModifierFieldPattern = /^modifier_[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 function selectedModifierIds(formData: FormData) {
   const ids: string[] = [];
   for (const [key, value] of formData.entries()) {
-    if (key.startsWith("modifier_") && !key.startsWith("modifier_qty_") && typeof value === "string" && value) ids.push(value);
+    if (legacyModifierFieldPattern.test(key) && typeof value === "string" && value) ids.push(value);
   }
   return ids;
 }
