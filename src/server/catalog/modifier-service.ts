@@ -25,7 +25,7 @@ export class ModifierService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data, error } = await admin.from("modifier_groups")
-      .select("id, name, description, min_selection, max_selection, required, selection_mode, sort_order, active, created_at, updated_at")
+      .select("id, name, description, min_selection, max_selection, required, selection_mode, distribution_total, sort_order, active, created_at, updated_at")
       .eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null)
       .order("sort_order").order("name");
     if (error) throw error;
@@ -59,11 +59,12 @@ export class ModifierService {
       max_selection: values.maxSelection,
       required: values.required,
       selection_mode: values.selectionMode,
+      distribution_total: values.distributionTotal ?? null,
       sort_order: values.sortOrder,
       active: values.active,
       created_by: context.userId,
       updated_by: context.userId,
-    }).select("id, name, min_selection, max_selection, required, selection_mode, sort_order, active").single();
+    }).select("id, name, min_selection, max_selection, required, selection_mode, distribution_total, sort_order, active").single();
     if (error) throw error;
     await AuditService.record(context, { action: "modifier_group.created", entityType: "modifier_group", entityId: data.id, after: data });
     await EventService.enqueue(context, { type: "modifier_group.created", entityType: "modifier_group", entityId: data.id, payload: { name: data.name } });
@@ -77,7 +78,7 @@ export class ModifierService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data: before, error: beforeError } = await admin.from("modifier_groups")
-      .select("id, name, description, min_selection, max_selection, required, selection_mode, sort_order, active")
+      .select("id, name, description, min_selection, max_selection, required, selection_mode, distribution_total, sort_order, active")
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
     if (beforeError) throw beforeError;
     const { data: after, error } = await admin.from("modifier_groups").update({
@@ -87,12 +88,13 @@ export class ModifierService {
       max_selection: values.maxSelection,
       required: values.required,
       selection_mode: values.selectionMode,
+      distribution_total: values.distributionTotal ?? null,
       sort_order: values.sortOrder,
       active: values.active,
       updated_by: context.userId,
       updated_at: new Date().toISOString(),
     }).eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId)
-      .select("id, name, description, min_selection, max_selection, required, selection_mode, sort_order, active").single();
+      .select("id, name, description, min_selection, max_selection, required, selection_mode, distribution_total, sort_order, active").single();
     if (error) throw error;
     await AuditService.record(context, { action: "modifier_group.updated", entityType: "modifier_group", entityId: id, before, after });
     return after;
