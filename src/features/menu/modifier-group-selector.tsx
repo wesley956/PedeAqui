@@ -7,10 +7,6 @@ import styles from "./modifier-group-selector.module.css";
 type Group = PublicProduct["product"]["modifier_groups"][number];
 type InitialSelections = Record<string, number>;
 function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
-function normalize(value: string) { return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
-function isAutoDistributedFlavorGroup(group: Group) {
-  return group.selection_mode === "quantity_per_option" && group.max_selection > 1 && normalize(group.name).includes("sabor");
-}
 
 function scrollToTarget(targetId: string) {
   const target = document.getElementById(targetId);
@@ -21,7 +17,7 @@ function scrollToTarget(targetId: string) {
 }
 
 export function ModifierGroupSelector({ group, disabled = false, complementTargetId, initialSelections = {} }: { group: Group; disabled?: boolean; complementTargetId?: string; initialSelections?: InitialSelections }) {
-  if (isAutoDistributedFlavorGroup(group)) return <AutoDistributedFlavorGroup group={group} disabled={disabled} complementTargetId={complementTargetId} initialSelections={initialSelections} />;
+  if (group.selection_mode === "equal_split_options") return <EqualSplitModifierGroup group={group} disabled={disabled} complementTargetId={complementTargetId} initialSelections={initialSelections} />;
   if (group.selection_mode === "quantity_per_option") return <QuantityModifierGroup group={group} disabled={disabled} complementTargetId={complementTargetId} initialSelections={initialSelections} />;
   return <DistinctModifierGroup group={group} disabled={disabled} initialSelections={initialSelections} />;
 }
@@ -62,34 +58,36 @@ function DistinctModifierGroup({ group, disabled, initialSelections }: { group: 
   </fieldset>;
 }
 
-function AutoDistributedFlavorGroup({ group, disabled, complementTargetId, initialSelections }: { group: Group; disabled: boolean; complementTargetId?: string; initialSelections: InitialSelections }) {
+function EqualSplitModifierGroup({ group, disabled, complementTargetId, initialSelections }: { group: Group; disabled: boolean; complementTargetId?: string; initialSelections: InitialSelections }) {
   const [selected, setSelected] = useState<string[]>(() => group.modifiers.filter((modifier) => (initialSelections[modifier.id] ?? 0) > 0).map((modifier) => modifier.id));
   const validationInput = useRef<HTMLInputElement | null>(null);
   const selectedSet = new Set(selected);
   const selectedModifiers = group.modifiers.filter((modifier) => selectedSet.has(modifier.id));
-  const complete = !group.required || selectedModifiers.length > 0;
+  const minimum = group.required ? Math.max(1, group.min_selection) : group.min_selection;
+  const complete = selectedModifiers.length >= minimum && selectedModifiers.length <= group.max_selection;
   const base = selectedModifiers.length > 0 ? Math.floor(group.max_selection / selectedModifiers.length) : 0;
   const remainder = selectedModifiers.length > 0 ? group.max_selection % selectedModifiers.length : 0;
   const distribution = new Map(selectedModifiers.map((modifier, index) => [modifier.id, base + (index < remainder ? 1 : 0)]));
+  const maxReached = selectedModifiers.length >= group.max_selection;
 
   useEffect(() => {
     if (!validationInput.current) return;
-    validationInput.current.setCustomValidity(disabled || complete ? "" : `Escolha pelo menos um sabor em ${group.name}.`);
-  }, [complete, disabled, group.name]);
+    validationInput.current.setCustomValidity(disabled || complete ? "" : `Escolha pelo menos ${minimum} opção(ões) em ${group.name}.`);
+  }, [complete, disabled, group.name, minimum]);
 
-  function addFlavor(id: string) {
-    setSelected((current) => current.includes(id) ? current : [...current, id]);
+  function addOption(id: string) {
+    setSelected((current) => current.includes(id) || current.length >= group.max_selection ? current : [...current, id]);
   }
 
-  function removeFlavor(id: string) {
+  function removeOption(id: string) {
     setSelected((current) => current.filter((value) => value !== id));
   }
 
   return <fieldset disabled={disabled} className={styles.group}>
     <GroupHeading group={group} />
     <div className={styles.rule}>
-      <strong>Use + para adicionar e − para remover sabores</strong>
-      <span aria-live="polite">{selectedModifiers.length > 0 ? `${selectedModifiers.length} sabor(es) · ${group.max_selection} unidades divididas automaticamente` : `O PedeAqui dividirá as ${group.max_selection} unidades igualmente`}</span>
+      <strong>Use + para adicionar e − para remover opções</strong>
+      <span aria-live="polite">{selectedModifiers.length > 0 ? `${selectedModifiers.length} opção(ões) · ${group.max_selection} unidades divididas automaticamente` : `O PedeAqui dividirá as ${group.max_selection} unidades igualmente`}</span>
     </div>
     <input ref={validationInput} className={styles.validationInput} tabIndex={-1} aria-hidden="true" value={String(selectedModifiers.length)} onChange={() => undefined} />
     <div className={styles.options}>{group.modifiers.map((modifier) => {
@@ -100,10 +98,10 @@ function AutoDistributedFlavorGroup({ group, disabled, complementTargetId, initi
           <span>{modifier.name}</span>
           {modifier.price_cents > 0 ? <strong className={styles.optionPrice}>+ {money(modifier.price_cents)} cada</strong> : null}
         </span>
-        <div className={styles.stepper} role="group" aria-label={`Selecionar sabor ${modifier.name}`}>
-          <button type="button" onClick={() => removeFlavor(modifier.id)} disabled={disabled || !checked} aria-label={`Remover sabor ${modifier.name}`}>−</button>
+        <div className={styles.stepper} role="group" aria-label={`Selecionar opção ${modifier.name}`}>
+          <button type="button" onClick={() => removeOption(modifier.id)} disabled={disabled || !checked} aria-label={`Remover opção ${modifier.name}`}>−</button>
           <output aria-live="polite" aria-label={`${quantity} unidade(s) de ${modifier.name}`}>{quantity}</output>
-          <button type="button" onClick={() => addFlavor(modifier.id)} disabled={disabled || checked} aria-label={`Adicionar sabor ${modifier.name}`}>+</button>
+          <button type="button" onClick={() => addOption(modifier.id)} disabled={disabled || checked || maxReached} aria-label={`Adicionar opção ${modifier.name}`}>+</button>
           <input type="hidden" name={`modifier_qty_${modifier.id}`} value={checked ? 1 : 0} />
         </div>
       </div>;
