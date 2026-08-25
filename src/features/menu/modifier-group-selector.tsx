@@ -77,33 +77,36 @@ function AutoDistributedFlavorGroup({ group, disabled, complementTargetId, initi
     validationInput.current.setCustomValidity(disabled || complete ? "" : `Escolha pelo menos um sabor em ${group.name}.`);
   }, [complete, disabled, group.name]);
 
-  function toggle(id: string, checked: boolean) {
-    setSelected((current) => checked
-      ? current.includes(id) ? current : [...current, id]
-      : current.filter((value) => value !== id));
+  function addFlavor(id: string) {
+    setSelected((current) => current.includes(id) ? current : [...current, id]);
+  }
+
+  function removeFlavor(id: string) {
+    setSelected((current) => current.filter((value) => value !== id));
   }
 
   return <fieldset disabled={disabled} className={styles.group}>
     <GroupHeading group={group} />
     <div className={styles.rule}>
-      <strong>Escolha os sabores que deseja</strong>
+      <strong>Use + para adicionar e − para remover sabores</strong>
       <span aria-live="polite">{selectedModifiers.length > 0 ? `${selectedModifiers.length} sabor(es) · ${group.max_selection} unidades divididas automaticamente` : `O PedeAqui dividirá as ${group.max_selection} unidades igualmente`}</span>
     </div>
     <input ref={validationInput} className={styles.validationInput} tabIndex={-1} aria-hidden="true" value={String(selectedModifiers.length)} onChange={() => undefined} />
     <div className={styles.options}>{group.modifiers.map((modifier) => {
       const checked = selectedSet.has(modifier.id);
       const quantity = distribution.get(modifier.id) ?? 0;
-      return <label key={modifier.id} className={styles.option}>
+      return <div key={modifier.id} className={styles.option}>
         <span className={styles.optionName}>
-          <input type="checkbox" checked={checked} disabled={disabled} onChange={(event) => toggle(modifier.id, event.target.checked)} />
           <span>{modifier.name}</span>
+          {modifier.price_cents > 0 ? <strong className={styles.optionPrice}>+ {money(modifier.price_cents)} cada</strong> : null}
         </span>
-        <span style={{ display: "grid", justifyItems: "end", gap: 2 }}>
-          {checked ? <strong>{quantity} un.</strong> : null}
-          {modifier.price_cents > 0 ? <span className={styles.optionPrice}>+ {money(modifier.price_cents)} cada</span> : null}
-        </span>
-        <input type="hidden" name={`modifier_qty_${modifier.id}`} value={checked ? 1 : 0} />
-      </label>;
+        <div className={styles.stepper} role="group" aria-label={`Selecionar sabor ${modifier.name}`}>
+          <button type="button" onClick={() => removeFlavor(modifier.id)} disabled={disabled || !checked} aria-label={`Remover sabor ${modifier.name}`}>−</button>
+          <output aria-live="polite" aria-label={`${quantity} unidade(s) de ${modifier.name}`}>{quantity}</output>
+          <button type="button" onClick={() => addFlavor(modifier.id)} disabled={disabled || checked} aria-label={`Adicionar sabor ${modifier.name}`}>+</button>
+          <input type="hidden" name={`modifier_qty_${modifier.id}`} value={checked ? 1 : 0} />
+        </div>
+      </div>;
     })}</div>
     {selectedModifiers.length > 0 ? <div className={styles.rule}><strong>Divisão automática</strong><span>{selectedModifiers.map((modifier) => `${distribution.get(modifier.id)}x ${modifier.name}`).join(" · ")}</span></div> : null}
     {complementTargetId && complete ? <button type="button" onClick={() => scrollToTarget(complementTargetId)} style={{ justifySelf: "start", border: 0, background: "transparent", color: "#9a4a00", fontWeight: 900, padding: "6px 0", cursor: "pointer" }}>Pronto, ver complementos →</button> : null}
