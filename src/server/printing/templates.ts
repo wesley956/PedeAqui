@@ -54,6 +54,32 @@ function pair(left: string, right: string, width: number) {
   const spaces = Math.max(gap, width - a.length - right.length);
   return `${a}${" ".repeat(spaces)}${right}`;
 }
+function wrap(value: string, width: number) {
+  const text = value.replace(/\s+/g, " ").trim();
+  if (!text) return [];
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    if (!current) {
+      current = word;
+      continue;
+    }
+    if (`${current} ${word}`.length <= width) {
+      current = `${current} ${word}`;
+      continue;
+    }
+    lines.push(current.length <= width ? current : clip(current, width));
+    current = word;
+  }
+  if (current) lines.push(current.length <= width ? current : clip(current, width));
+  return lines;
+}
+function labeled(lines: string[], label: string, value: string | null | undefined, width: number) {
+  const clean = String(value ?? "").trim();
+  if (!clean) return;
+  lines.push(...wrap(`${label}: ${clean}`, width));
+}
 function orderTime(payload: PrintPayload) {
   const date = new Date(payload.order.confirmed_at ?? payload.order.created_at);
   try {
@@ -75,6 +101,25 @@ function items(lines: string[], payload: PrintPayload, width: number, showPrice:
     if (item.note) lines.push(clip(`  OBS: ${item.note}`, width));
   }
 }
+function deliveryBlock(lines: string[], payload: PrintPayload, width: number) {
+  if (payload.order.fulfillment_type !== "delivery") return;
+  const address = payload.order.address;
+  lines.push(line("=", width));
+  lines.push(center("DADOS PARA ENTREGA", width));
+  lines.push(line("=", width));
+  labeled(lines, "CLIENTE", payload.order.customer_name, width);
+  labeled(lines, "TELEFONE", payload.order.customer_phone, width);
+  if (address) {
+    const streetAndNumber = [address.street, address.number ? `Nº ${address.number}` : null].filter(Boolean).join(", ");
+    labeled(lines, "ENDERECO", streetAndNumber, width);
+    labeled(lines, "BAIRRO", address.district, width);
+    labeled(lines, "COMPLEMENTO", address.complement, width);
+    labeled(lines, "REFERENCIA", address.reference, width);
+    const cityState = [address.city, address.state].filter(Boolean).join("/");
+    labeled(lines, "CIDADE/UF", cityState, width);
+  }
+  lines.push(line("=", width));
+}
 
 export function renderPrintDocument(input: unknown, documentType: PrintDocumentType, paperWidthMm: number, reprint = false) {
   const payload = printPayloadSchema.parse(input);
@@ -91,12 +136,10 @@ export function renderPrintDocument(input: unknown, documentType: PrintDocumentT
   if (documentType === "kitchen") {
     items(out, payload, width, false);
   } else {
-    if (payload.order.customer_name) out.push(clip(`Cliente: ${payload.order.customer_name}`, width));
-    if (documentType === "expedition" && payload.order.fulfillment_type === "delivery" && payload.order.address) {
-      const address = payload.order.address;
-      out.push(clip(`${address.street ?? ""}, ${address.number ?? ""}${address.complement ? ` - ${address.complement}` : ""}`, width));
-      out.push(clip(`${address.district ?? ""} - ${address.city ?? ""}/${address.state ?? ""}`, width));
-      if (address.reference) out.push(clip(`Ref: ${address.reference}`, width));
+    if (payload.order.fulfillment_type === "delivery") {
+      deliveryBlock(out, payload, width);
+    } else if (payload.order.customer_name) {
+      out.push(clip(`Cliente: ${payload.order.customer_name}`, width));
     }
     out.push(line("-", width));
     items(out, payload, width, true);
