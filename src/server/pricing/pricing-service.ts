@@ -70,6 +70,23 @@ function normalizeSelections(input: string[] | ModifierSelection[]): ModifierSel
   return selections;
 }
 
+function normalizeLabel(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function autoDistributesFlavors(group: PricingModifierGroup) {
+  return (group.selectionMode ?? "distinct_choices") === "quantity_per_option"
+    && group.maxSelection > 1
+    && normalizeLabel(group.name).includes("sabor");
+}
+
+function distributeEqually<T extends { quantity: number }>(selected: T[], total: number): T[] {
+  if (selected.length === 0) return selected;
+  const base = Math.floor(total / selected.length);
+  const remainder = total % selected.length;
+  return selected.map((selection, index) => ({ ...selection, quantity: base + (index < remainder ? 1 : 0) }));
+}
+
 export class PricingService {
   static priceItem(product: PricingProduct, selectedModifiers: string[] | ModifierSelection[], quantity: number) {
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
@@ -89,20 +106,30 @@ export class PricingService {
     const snapshots: PricedModifierSnapshot[] = [];
     for (const group of product.modifierGroups) {
       const mode = group.selectionMode ?? "distinct_choices";
-      const selected = group.modifiers.flatMap((modifier) => {
+      let selected = group.modifiers.flatMap((modifier) => {
         const selection = selectionById.get(modifier.id);
         return selection ? [{ modifier, quantity: selection.quantity }] : [];
       });
-      const minimum = group.required ? Math.max(1, group.minSelection) : group.minSelection;
-      const selectionCount = mode === "quantity_per_option"
-        ? selected.reduce((sum, selection) => sum + selection.quantity, 0)
-        : selected.length;
-      if (mode === "distinct_choices" && selected.some((selection) => selection.quantity !== 1)) {
-        throw new PricingError("invalid_modifiers", `Invalid quantity for ${group.name}`);
+
+      if (autoDistributesFlavors(group)) {
+        const minimumDistinct = group.required ? 1 : 0;
+        if (selected.length < minimumDistinct) {
+          throw new PricingError("invalid_modifiers", `Invalid selection for ${group.name}`);
+        }
+        selected = distributeEqually(selected, group.maxSelection);
+      } else {
+        const minimum = group.required ? Math.max(1, group.minSelection) : group.minSelection;
+        const selectionCount = mode === "quantity_per_option"
+          ? selected.reduce((sum, selection) => sum + selection.quantity, 0)
+          : selected.length;
+        if (mode === "distinct_choices" && selected.some((selection) => selection.quantity !== 1)) {
+          throw new PricingError("invalid_modifiers", `Invalid quantity for ${group.name}`);
+        }
+        if (selectionCount < minimum || selectionCount > group.maxSelection) {
+          throw new PricingError("invalid_modifiers", `Invalid selection for ${group.name}`);
+        }
       }
-      if (selectionCount < minimum || selectionCount > group.maxSelection) {
-        throw new PricingError("invalid_modifiers", `Invalid selection for ${group.name}`);
-      }
+
       for (const { modifier, quantity: modifierQuantity } of selected) {
         snapshots.push({
           group_id: group.id,
