@@ -41,6 +41,7 @@ export const modifierGroupInputSchema = z.object({
   maxSelection: z.number().int().min(1).max(100).default(1),
   required: z.boolean().default(false),
   selectionMode: modifierSelectionModeSchema.default("distinct_choices"),
+  distributionTotal: z.number().int().min(1).max(100).nullable().optional(),
   sortOrder: z.number().int().min(0).max(10000).default(0),
   active: z.boolean().default(true),
 }).superRefine((value, ctx) => {
@@ -49,6 +50,12 @@ export const modifierGroupInputSchema = z.object({
   }
   if (value.required && value.minSelection < 1) {
     ctx.addIssue({ code: "custom", path: ["minSelection"], message: "Required groups must require at least one selection" });
+  }
+  if (value.selectionMode === "equal_split_options" && !value.distributionTotal) {
+    ctx.addIssue({ code: "custom", path: ["distributionTotal"], message: "Equal split groups require a distribution total" });
+  }
+  if (value.selectionMode !== "equal_split_options" && value.distributionTotal != null) {
+    ctx.addIssue({ code: "custom", path: ["distributionTotal"], message: "Distribution total is only valid for equal split groups" });
   }
 });
 
