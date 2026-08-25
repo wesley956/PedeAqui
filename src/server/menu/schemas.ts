@@ -40,6 +40,7 @@ export const publicModifierGroupSchema = z.object({
   max_selection: z.number().int().positive(),
   required: z.boolean(),
   selection_mode: z.enum(["distinct_choices", "quantity_per_option", "equal_split_options"]).default("distinct_choices"),
+  distribution_total: z.number().int().positive().nullable().default(null),
   modifiers: z.array(publicModifierSchema),
 });
 
