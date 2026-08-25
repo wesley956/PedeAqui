@@ -32,7 +32,7 @@ export const productInputSchema = z.object({
   }
 });
 
-export const modifierSelectionModeSchema = z.enum(["distinct_choices", "quantity_per_option"]);
+export const modifierSelectionModeSchema = z.enum(["distinct_choices", "quantity_per_option", "equal_split_options"]);
 
 export const modifierGroupInputSchema = z.object({
   name: z.string().trim().min(2).max(100),
