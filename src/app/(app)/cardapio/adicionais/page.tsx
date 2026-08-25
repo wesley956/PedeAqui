@@ -32,10 +32,18 @@ function SelectionModeField({ id, defaultValue = "distinct_choices" }: { id: str
     <span style={{ fontWeight: 700, fontSize: 14 }}>Como o cliente escolhe</span>
     <select id={id} name="selectionMode" defaultValue={defaultValue} style={selectStyle}>
       <option value="distinct_choices">Escolha simples ou múltipla</option>
-      <option value="quantity_per_option">Quantidade por opção (− / +)</option>
+      <option value="quantity_per_option">Quantidade manual por opção (− / +)</option>
+      <option value="equal_split_options">Dividir igualmente entre opções escolhidas (− / +)</option>
     </select>
-    <span className="muted" style={{ fontSize: 12 }}>Use quantidade por opção para sabores em que o cliente informa quantas unidades quer de cada um.</span>
+    <span className="muted" style={{ fontSize: 12 }}>Na divisão igual, o cliente escolhe as opções e o PedeAqui calcula automaticamente quantas unidades ficam em cada uma.</span>
   </label>;
+}
+
+function DistributionTotalField({ id, defaultValue }: { id: string; defaultValue?: number | null }) {
+  return <div style={{ display: "grid", gap: 4 }}>
+    <Input id={id} label="Total a distribuir (divisão igual)" name="distributionTotal" type="number" min={1} max={100} defaultValue={defaultValue ?? ""} />
+    <span className="muted" style={{ fontSize: 12 }}>Preencha somente no modo de divisão igual. Ex.: 50 para uma caixa com 50 unidades.</span>
+  </div>;
 }
 
 export default async function ModifiersPage() {
@@ -48,7 +56,7 @@ export default async function ModifiersPage() {
     <section style={{ display: "grid", gap: 20 }}>
       <div>
         <h1 style={{ margin: 0 }}>Adicionais, tamanhos e sabores</h1>
-        <p className="muted">Crie escolhas tradicionais ou grupos por quantidade, como sabores de um copo com limite total.</p>
+        <p className="muted">Configure cada grupo conforme a operação do restaurante: escolha comum, quantidade manual ou divisão automática.</p>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
@@ -58,9 +66,10 @@ export default async function ModifiersPage() {
           <Input id="new-group-description" label="Descrição" name="description" />
           <SelectionModeField id="new-group-selection-mode" />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <Input id="new-group-min" label="Mínimo total" name="minSelection" type="number" min={0} defaultValue={0} />
-            <Input id="new-group-max" label="Máximo total" name="maxSelection" type="number" min={1} defaultValue={1} />
+            <Input id="new-group-min" label="Mínimo de opções/unidades" name="minSelection" type="number" min={0} defaultValue={0} />
+            <Input id="new-group-max" label="Máximo de opções/unidades" name="maxSelection" type="number" min={1} defaultValue={1} />
           </div>
+          <DistributionTotalField id="new-group-distribution-total" />
           <Input id="new-group-order" label="Ordem" name="sortOrder" type="number" min={0} defaultValue={0} />
           <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input name="required" type="checkbox" /> Obrigatório</label>
           <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input name="active" type="checkbox" defaultChecked /> Ativo</label>
@@ -88,15 +97,18 @@ export default async function ModifiersPage() {
         {groups.map((group) => {
           const items = modifiers.filter((modifier) => modifier.modifier_group_id === group.id);
           const quantityMode = group.selection_mode === "quantity_per_option";
+          const equalSplitMode = group.selection_mode === "equal_split_options";
+          const pricedPerUnit = quantityMode || equalSplitMode;
           return (
             <article key={group.id} className="card" style={{ padding: 18, display: "grid", gap: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                 <div>
                   <strong>{group.name}</strong>
                   <div className="muted" style={{ fontSize: 13 }}>
-                    {group.required ? "Obrigatório" : "Opcional"} · {quantityMode ? `${group.min_selection}–${group.max_selection} unidades no total` : `${group.min_selection}–${group.max_selection} seleção(ões)`} · ordem {group.sort_order}
+                    {group.required ? "Obrigatório" : "Opcional"} · {equalSplitMode ? `${group.min_selection}–${group.max_selection} opção(ões) · divide ${group.distribution_total ?? "?"} unidades` : quantityMode ? `${group.min_selection}–${group.max_selection} unidades no total` : `${group.min_selection}–${group.max_selection} seleção(ões)`} · ordem {group.sort_order}
                   </div>
                   {quantityMode ? <div className="muted" style={{ fontSize: 12 }}>O máximo é um teto. O cliente pode continuar antes dele assim que o mínimo estiver atendido.</div> : null}
+                  {equalSplitMode ? <div className="muted" style={{ fontSize: 12 }}>O cliente escolhe entre o mínimo e o máximo de opções; o total configurado é repartido igualmente entre elas.</div> : null}
                 </div>
                 <span className="muted">{group.active ? "Ativo" : "Inativo"}</span>
               </div>
@@ -109,9 +121,10 @@ export default async function ModifiersPage() {
                   <Input id={`group-${group.id}-description`} label="Descrição" name="description" defaultValue={group.description ?? ""} />
                   <SelectionModeField id={`group-${group.id}-selection-mode`} defaultValue={group.selection_mode ?? "distinct_choices"} />
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <Input id={`group-${group.id}-min`} label="Mínimo total" name="minSelection" type="number" min={0} defaultValue={group.min_selection} />
-                    <Input id={`group-${group.id}-max`} label="Máximo total" name="maxSelection" type="number" min={1} defaultValue={group.max_selection} />
+                    <Input id={`group-${group.id}-min`} label="Mínimo de opções/unidades" name="minSelection" type="number" min={0} defaultValue={group.min_selection} />
+                    <Input id={`group-${group.id}-max`} label="Máximo de opções/unidades" name="maxSelection" type="number" min={1} defaultValue={group.max_selection} />
                   </div>
+                  <DistributionTotalField id={`group-${group.id}-distribution-total`} defaultValue={group.distribution_total} />
                   <Input id={`group-${group.id}-order`} label="Ordem" name="sortOrder" type="number" min={0} defaultValue={group.sort_order} />
                   <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input name="required" type="checkbox" defaultChecked={group.required} /> Obrigatório</label>
                   <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input name="active" type="checkbox" defaultChecked={group.active} /> Ativo</label>
@@ -129,7 +142,7 @@ export default async function ModifiersPage() {
                   <section key={item.id} style={{ display: "grid", gap: 10, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                       <span>{item.name} {!item.active ? <span className="muted">· inativo</span> : null}</span>
-                      <span className="muted">+ {formatCents(item.price_cents)}{quantityMode ? " por unidade" : ""}</span>
+                      <span className="muted">+ {formatCents(item.price_cents)}{pricedPerUnit ? " por unidade" : ""}</span>
                     </div>
                     <details>
                       <summary style={{ cursor: "pointer" }}>Editar opção</summary>
