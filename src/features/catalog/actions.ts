@@ -28,6 +28,13 @@ function integer(value: FormDataEntryValue | null, fallback = 0) {
   return parsed;
 }
 
+function optionalInteger(value: FormDataEntryValue | null) {
+  if (typeof value !== "string" || value.trim() === "") return null;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed)) throw new Error("Expected an integer");
+  return parsed;
+}
+
 async function uploadNewCatalogImage(
   value: FormDataEntryValue | null,
   purpose: "product" | "category",
@@ -69,13 +76,15 @@ function productInput(formData: FormData, imageUrl: string | null) {
 }
 
 function modifierGroupInput(formData: FormData) {
+  const selectionMode = modifierSelectionModeSchema.parse(formData.get("selectionMode") ?? "distinct_choices");
   return {
     name: String(formData.get("name") ?? ""),
     description: optionalString(formData.get("description")),
     minSelection: integer(formData.get("minSelection")),
     maxSelection: integer(formData.get("maxSelection"), 1),
     required: formData.get("required") === "on",
-    selectionMode: modifierSelectionModeSchema.parse(formData.get("selectionMode") ?? "distinct_choices"),
+    selectionMode,
+    distributionTotal: selectionMode === "equal_split_options" ? optionalInteger(formData.get("distributionTotal")) : null,
     sortOrder: integer(formData.get("sortOrder")),
     active: formData.get("active") === "on",
   };
@@ -241,7 +250,7 @@ export async function createModifierGroupFormAction(formData: FormData) {
     return { ok: true, message: "Grupo criado com sucesso." };
   } catch (error) {
     logCatalogMutationFailure("create_modifier_group", error);
-    return { ok: false, message: "Não foi possível criar o grupo. Confira modo, mínimo, máximo e obrigatoriedade." };
+    return { ok: false, message: "Não foi possível criar o grupo. Confira modo, mínimo, máximo e divisão automática." };
   }
 }
 
@@ -252,7 +261,7 @@ export async function updateModifierGroupFormAction(formData: FormData) {
     return { ok: true, message: "Grupo atualizado com sucesso." };
   } catch (error) {
     logCatalogMutationFailure("update_modifier_group", error);
-    return { ok: false, message: "Não foi possível atualizar o grupo. Confira modo, mínimo, máximo e obrigatoriedade." };
+    return { ok: false, message: "Não foi possível atualizar o grupo. Confira modo, mínimo, máximo e divisão automática." };
   }
 }
 
