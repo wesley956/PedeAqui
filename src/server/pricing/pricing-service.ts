@@ -1,4 +1,4 @@
-export type ModifierSelectionMode = "distinct_choices" | "quantity_per_option";
+export type ModifierSelectionMode = "distinct_choices" | "quantity_per_option" | "equal_split_options";
 
 export type PricingModifier = {
   id: string;
@@ -70,16 +70,6 @@ function normalizeSelections(input: string[] | ModifierSelection[]): ModifierSel
   return selections;
 }
 
-function normalizeLabel(value: string) {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
-
-function autoDistributesFlavors(group: PricingModifierGroup) {
-  return (group.selectionMode ?? "distinct_choices") === "quantity_per_option"
-    && group.maxSelection > 1
-    && normalizeLabel(group.name).includes("sabor");
-}
-
 function distributeEqually<T extends { quantity: number }>(selected: T[], total: number): T[] {
   if (selected.length === 0) return selected;
   const base = Math.floor(total / selected.length);
@@ -111,9 +101,9 @@ export class PricingService {
         return selection ? [{ modifier, quantity: selection.quantity }] : [];
       });
 
-      if (autoDistributesFlavors(group)) {
-        const minimumDistinct = group.required ? 1 : 0;
-        if (selected.length < minimumDistinct) {
+      if (mode === "equal_split_options") {
+        const minimumDistinct = group.required ? Math.max(1, group.minSelection) : group.minSelection;
+        if (selected.length < minimumDistinct || selected.length > group.maxSelection) {
           throw new PricingError("invalid_modifiers", `Invalid selection for ${group.name}`);
         }
         selected = distributeEqually(selected, group.maxSelection);
