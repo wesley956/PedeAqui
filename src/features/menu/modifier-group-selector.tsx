@@ -85,7 +85,7 @@ function QuantityModifierGroup({ group, disabled, complementTargetId, initialSel
   return <fieldset disabled={disabled} className={styles.group}>
     <GroupHeading group={group} />
     <div className={styles.rule}><strong>{instruction}</strong><span aria-live="polite">{total} unidade(s) selecionada(s) · máximo {group.max_selection}{complete ? " · ok" : minimum > 0 ? ` · mínimo ${minimum}` : ""}</span></div>
-    <input ref={validationInput} className={styles.validationInput} tabIndex={-1} aria-hidden="true" name={`modifier_group_total_${group.id}`} value={String(total)} onChange={() => undefined} />
+    <input ref={validationInput} className={styles.validationInput} tabIndex={-1} aria-hidden="true" value={String(total)} onChange={() => undefined} />
     <div className={styles.options}>{group.modifiers.map((modifier) => {
       const quantity = quantities[modifier.id] ?? 0;
       return <div key={modifier.id} className={styles.option}>

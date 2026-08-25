@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { renderPrintDocument } from "@/server/printing/templates";
 
 const migration = readFileSync("supabase/sql/134_modifier_quantity_selection.sql", "utf8");
+const cartActions = readFileSync("src/features/cart/actions.ts", "utf8");
+const modifierSelector = readFileSync("src/features/menu/modifier-group-selector.tsx", "utf8");
 
 describe("modifier quantity persistence contract", () => {
   it("is append-only with legacy defaults", () => {
@@ -20,6 +22,12 @@ describe("modifier quantity persistence contract", () => {
     expect(migration).toContain("cart_add_gas_item_internal");
     expect(migration).toContain("v_modifier_quantity");
     expect(migration).toContain("cart_item_gas_options");
+  });
+
+  it("keeps the quantity validation proxy out of submitted modifier ids", () => {
+    expect(modifierSelector).not.toContain('name={`modifier_group_total_${group.id}`}');
+    expect(cartActions).toContain("legacyModifierFieldPattern.test(key)");
+    expect(cartActions).not.toContain('key.startsWith("modifier_") && !key.startsWith("modifier_qty_")');
   });
 
   it("prints flavor quantities without changing the product quantity", () => {
