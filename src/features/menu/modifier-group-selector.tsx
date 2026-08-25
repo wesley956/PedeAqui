@@ -64,16 +64,18 @@ function EqualSplitModifierGroup({ group, disabled, complementTargetId, initialS
   const selectedSet = new Set(selected);
   const selectedModifiers = group.modifiers.filter((modifier) => selectedSet.has(modifier.id));
   const minimum = group.required ? Math.max(1, group.min_selection) : group.min_selection;
-  const complete = selectedModifiers.length >= minimum && selectedModifiers.length <= group.max_selection;
-  const base = selectedModifiers.length > 0 ? Math.floor(group.max_selection / selectedModifiers.length) : 0;
-  const remainder = selectedModifiers.length > 0 ? group.max_selection % selectedModifiers.length : 0;
+  const total = group.distribution_total ?? 0;
+  const validConfiguration = total >= 1;
+  const complete = validConfiguration && selectedModifiers.length >= minimum && selectedModifiers.length <= group.max_selection;
+  const base = selectedModifiers.length > 0 && validConfiguration ? Math.floor(total / selectedModifiers.length) : 0;
+  const remainder = selectedModifiers.length > 0 && validConfiguration ? total % selectedModifiers.length : 0;
   const distribution = new Map(selectedModifiers.map((modifier, index) => [modifier.id, base + (index < remainder ? 1 : 0)]));
   const maxReached = selectedModifiers.length >= group.max_selection;
 
   useEffect(() => {
     if (!validationInput.current) return;
-    validationInput.current.setCustomValidity(disabled || complete ? "" : `Escolha pelo menos ${minimum} opção(ões) em ${group.name}.`);
-  }, [complete, disabled, group.name, minimum]);
+    validationInput.current.setCustomValidity(disabled || complete ? "" : !validConfiguration ? `A configuração de divisão de ${group.name} está inválida.` : `Escolha pelo menos ${minimum} opção(ões) em ${group.name}.`);
+  }, [complete, disabled, group.name, minimum, validConfiguration]);
 
   function addOption(id: string) {
     setSelected((current) => current.includes(id) || current.length >= group.max_selection ? current : [...current, id]);
@@ -87,7 +89,7 @@ function EqualSplitModifierGroup({ group, disabled, complementTargetId, initialS
     <GroupHeading group={group} />
     <div className={styles.rule}>
       <strong>Use + para adicionar e − para remover opções</strong>
-      <span aria-live="polite">{selectedModifiers.length > 0 ? `${selectedModifiers.length} opção(ões) · ${group.max_selection} unidades divididas automaticamente` : `O PedeAqui dividirá as ${group.max_selection} unidades igualmente`}</span>
+      <span aria-live="polite">{selectedModifiers.length > 0 ? `${selectedModifiers.length} opção(ões) · ${total} unidades divididas automaticamente` : `O PedeAqui dividirá as ${total} unidades igualmente`}</span>
     </div>
     <input ref={validationInput} className={styles.validationInput} tabIndex={-1} aria-hidden="true" value={String(selectedModifiers.length)} onChange={() => undefined} />
     <div className={styles.options}>{group.modifiers.map((modifier) => {
@@ -101,7 +103,7 @@ function EqualSplitModifierGroup({ group, disabled, complementTargetId, initialS
         <div className={styles.stepper} role="group" aria-label={`Selecionar opção ${modifier.name}`}>
           <button type="button" onClick={() => removeOption(modifier.id)} disabled={disabled || !checked} aria-label={`Remover opção ${modifier.name}`}>−</button>
           <output aria-live="polite" aria-label={`${quantity} unidade(s) de ${modifier.name}`}>{quantity}</output>
-          <button type="button" onClick={() => addOption(modifier.id)} disabled={disabled || checked || maxReached} aria-label={`Adicionar opção ${modifier.name}`}>+</button>
+          <button type="button" onClick={() => addOption(modifier.id)} disabled={disabled || checked || maxReached || !validConfiguration} aria-label={`Adicionar opção ${modifier.name}`}>+</button>
           <input type="hidden" name={`modifier_qty_${modifier.id}`} value={checked ? 1 : 0} />
         </div>
       </div>;
