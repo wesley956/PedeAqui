@@ -37,6 +37,8 @@ export const printPayloadSchema = z.object({
 export type PrintPayload = z.infer<typeof printPayloadSchema>;
 export type PrintDocumentType = "kitchen" | "expedition" | "counter" | "receipt" | "custom";
 
+type PrintModifier = PrintPayload["items"][number]["modifiers"][number];
+
 function money(cents: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 }
@@ -80,6 +82,43 @@ function labeled(lines: string[], label: string, value: string | null | undefine
   if (!clean) return;
   lines.push(...wrap(`${label}: ${clean}`, width));
 }
+function normalize(value: string | null | undefined) {
+  return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+function isFlavorGroup(group: string | null | undefined) {
+  return normalize(group).includes("sabor");
+}
+function aggregateModifiers(modifiers: PrintModifier[]) {
+  const map = new Map<string, PrintModifier>();
+  for (const modifier of modifiers) {
+    const key = `${modifier.group ?? ""}\u0000${modifier.name}`;
+    const current = map.get(key);
+    if (current) {
+      map.set(key, { ...current, quantity: current.quantity + modifier.quantity });
+    } else {
+      map.set(key, { ...modifier });
+    }
+  }
+  return [...map.values()];
+}
+function printModifiers(lines: string[], modifiers: PrintModifier[], width: number) {
+  const aggregated = aggregateModifiers(modifiers);
+  const flavors = aggregated.filter((modifier) => isFlavorGroup(modifier.group));
+  const others = aggregated.filter((modifier) => !isFlavorGroup(modifier.group));
+
+  if (flavors.length > 0) {
+    lines.push(clip("  SABORES PARA FRITAR:", width));
+    for (const flavor of flavors) {
+      lines.push(...wrap(`    ${flavor.quantity}x ${flavor.name}`, width));
+    }
+    const total = flavors.reduce((sum, flavor) => sum + flavor.quantity, 0);
+    lines.push(clip(`  TOTAL PARA FRITAR: ${total}`, width));
+  }
+
+  for (const modifier of others) {
+    lines.push(...wrap(`  + ${modifier.quantity > 1 ? `${modifier.quantity}x ` : ""}${modifier.name}`, width));
+  }
+}
 function orderTime(payload: PrintPayload) {
   const date = new Date(payload.order.confirmed_at ?? payload.order.created_at);
   try {
@@ -97,8 +136,8 @@ function items(lines: string[], payload: PrintPayload, width: number, showPrice:
   for (const item of payload.items) {
     const left = `${item.quantity}x ${item.name}`;
     lines.push(showPrice && item.line_total_cents !== undefined ? pair(left, money(item.line_total_cents), width) : clip(left, width));
-    for (const modifier of item.modifiers) lines.push(clip(`  + ${modifier.quantity > 1 ? `${modifier.quantity}x ` : ""}${modifier.name}`, width));
-    if (item.note) lines.push(clip(`  OBS: ${item.note}`, width));
+    printModifiers(lines, item.modifiers, width);
+    if (item.note) lines.push(...wrap(`  OBS: ${item.note}`, width));
   }
 }
 function deliveryBlock(lines: string[], payload: PrintPayload, width: number) {
