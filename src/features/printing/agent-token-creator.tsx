@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useRouter } from "next/navigation";
 import {
   createPrintAgentAction,
   reconnectPrintAgentAction,
@@ -68,7 +69,7 @@ wscript.exe "%APP_DIR%\\launch.vbs"\r
 echo.\r
 echo ==============================================\r
 echo PedeAqui Impressao conectado com sucesso.\r
-echo Volte ao painel e toque em Atualizar impressoras.\r
+echo Volte ao painel e atualize o status.\r
 echo ==============================================\r
 timeout /t 5 >nul\r
 exit /b 0\r
@@ -114,7 +115,7 @@ function InstallerCard({ state }: { state: AgentCreationState }) {
       <strong>Computador preparado: {state.name}</strong>
       <span className="muted" style={{ fontSize: 13 }}>Baixe e execute o instalador abaixo neste computador. Ele faz a conexão automaticamente e inicia junto com o Windows.</span>
       <button type="button" onClick={() => downloadAssistedInstaller(state.token!)} style={buttonStyle}>Baixar instalador assistido (Windows)</button>
-      <span className="muted" style={{ fontSize: 12 }}>O Windows pode pedir confirmação para executar o arquivo. Depois, volte para esta tela e atualize a lista de impressoras.</span>
+      <span className="muted" style={{ fontSize: 12 }}>O Windows pode pedir confirmação para executar o arquivo. Depois, volte para esta tela e atualize o status.</span>
       <details>
         <summary style={{ cursor: "pointer", fontWeight: 800 }}>Configuração manual</summary>
         <div style={{ display: "grid", gap: 6, marginTop: 8 }}>
@@ -141,13 +142,20 @@ export function AgentTokenCreator() {
 }
 
 export function AgentReconnectInstaller({ agentId }: { agentId: string }) {
+  const router = useRouter();
   const [state, action, pending] = useActionState(reconnectPrintAgentAction, initialState);
   return (
     <div style={{ display: "grid", gap: 8 }}>
-      <form action={action}>
-        <input type="hidden" name="agentId" value={agentId} />
-        <button type="submit" disabled={pending} style={secondaryButtonStyle}>{pending ? "Preparando…" : "Atualizar conexão"}</button>
-      </form>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button type="button" onClick={() => router.refresh()} style={secondaryButtonStyle}>Atualizar status</button>
+        <form action={action}>
+          <input type="hidden" name="agentId" value={agentId} />
+          <button type="submit" disabled={pending} style={secondaryButtonStyle}>{pending ? "Preparando…" : "Reinstalar conexão"}</button>
+        </form>
+      </div>
+      <span className="muted" style={{ fontSize: 12 }}>
+        “Atualizar status” apenas consulta a situação atual. “Reinstalar conexão” gera uma nova chave e deve ser usado somente quando for necessário instalar ou reconectar este computador novamente.
+      </span>
       {state.error ? <div style={{ color: "#f97066", fontSize: 13 }}>{state.error}</div> : null}
       <InstallerCard state={state} />
     </div>
