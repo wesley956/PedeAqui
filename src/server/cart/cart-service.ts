@@ -62,14 +62,14 @@ export class CartService {
     const groupIds = (links ?? []).map((row) => row.modifier_group_id);
     if (groupIds.length === 0) return { id: product.id, name: product.name, imageUrl: product.image_url, priceCents: product.price_cents, promotionalPriceCents: product.promotional_price_cents, available: true, modifierGroups: [] };
     const [{ data: groups, error: groupsError }, { data: modifiers, error: modifiersError }] = await Promise.all([
-      admin.from("modifier_groups").select("id, name, min_selection, max_selection, required, selection_mode, active, deleted_at").eq("organization_id", store.organization_id).eq("store_id", store.id).in("id", groupIds),
+      admin.from("modifier_groups").select("id, name, min_selection, max_selection, required, selection_mode, distribution_total, active, deleted_at").eq("organization_id", store.organization_id).eq("store_id", store.id).in("id", groupIds),
       admin.from("modifiers").select("id, modifier_group_id, name, price_cents, active, deleted_at, sort_order").eq("organization_id", store.organization_id).eq("store_id", store.id).in("modifier_group_id", groupIds).order("sort_order"),
     ]);
     if (groupsError) throw groupsError;
     if (modifiersError) throw modifiersError;
     const groupMap = new Map((groups ?? []).filter((group) => group.active && !group.deleted_at).map((group) => [group.id, group]));
     const orderedGroups = groupIds.map((groupId) => groupMap.get(groupId)).filter((group): group is NonNullable<typeof group> => Boolean(group)).map((group) => ({
-      id: group.id, name: group.name, minSelection: group.min_selection, maxSelection: group.max_selection, required: group.required, selectionMode: group.selection_mode ?? "distinct_choices",
+      id: group.id, name: group.name, minSelection: group.min_selection, maxSelection: group.max_selection, required: group.required, selectionMode: group.selection_mode ?? "distinct_choices", distributionTotal: group.distribution_total ?? null,
       modifiers: (modifiers ?? []).filter((modifier) => modifier.modifier_group_id === group.id && modifier.active && !modifier.deleted_at).map((modifier) => ({ id: modifier.id, groupId: group.id, groupName: group.name, name: modifier.name, priceCents: modifier.price_cents })),
     }));
     return { id: product.id, name: product.name, imageUrl: product.image_url, priceCents: product.price_cents, promotionalPriceCents: product.promotional_price_cents, available: true, modifierGroups: orderedGroups };
