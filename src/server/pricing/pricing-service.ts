@@ -15,6 +15,7 @@ export type PricingModifierGroup = {
   maxSelection: number;
   required: boolean;
   selectionMode?: ModifierSelectionMode;
+  distributionTotal?: number | null;
   modifiers: PricingModifier[];
 };
 
@@ -103,10 +104,14 @@ export class PricingService {
 
       if (mode === "equal_split_options") {
         const minimumDistinct = group.required ? Math.max(1, group.minSelection) : group.minSelection;
+        const total = group.distributionTotal;
         if (selected.length < minimumDistinct || selected.length > group.maxSelection) {
           throw new PricingError("invalid_modifiers", `Invalid selection for ${group.name}`);
         }
-        selected = distributeEqually(selected, group.maxSelection);
+        if (!Number.isInteger(total) || !total || total < 1 || total > 100 || selected.length > total) {
+          throw new PricingError("invalid_modifiers", `Invalid equal split configuration for ${group.name}`);
+        }
+        selected = distributeEqually(selected, total);
       } else {
         const minimum = group.required ? Math.max(1, group.minSelection) : group.minSelection;
         const selectionCount = mode === "quantity_per_option"
