@@ -19,13 +19,17 @@ chcp 65001 >nul\r
 title PedeAqui Impressao - Instalacao\r
 set "APP_DIR=%LOCALAPPDATA%\\PedeAqui\\PrintAgent"\r
 set "SRC_DIR=%APP_DIR%\\src"\r
+set "DL_DIR=%TEMP%\\PedeAqui-PrintAgent-Download"\r
 echo.\r
 echo ==============================================\r
 echo       PedeAqui Impressao - Instalacao\r
 echo ==============================================\r
 echo.\r
 echo [1/4] Preparando o computador...\r
+if not exist "%APP_DIR%" mkdir "%APP_DIR%"\r
 if not exist "%SRC_DIR%" mkdir "%SRC_DIR%"\r
+if not exist "%DL_DIR%" mkdir "%DL_DIR%"\r
+icacls "%APP_DIR%" /inheritance:e /grant:r "%USERDOMAIN%\\%USERNAME%:(OI)(CI)F" /T /C >nul 2>&1\r
 where node >nul 2>&1\r
 if errorlevel 1 (\r
   echo O componente necessario sera instalado automaticamente.\r
@@ -38,8 +42,13 @@ for /f "delims=" %%N in ('where node 2^>nul') do if not defined NODE_EXE set "NO
 if not defined NODE_EXE if exist "%ProgramFiles%\\nodejs\\node.exe" set "NODE_EXE=%ProgramFiles%\\nodejs\\node.exe"\r
 if not defined NODE_EXE goto :node_manual\r
 echo [2/4] Baixando o PedeAqui Impressao...\r
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/index.mjs' -OutFile '%SRC_DIR%\\index.mjs'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/escpos.mjs' -OutFile '%SRC_DIR%\\escpos.mjs'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/system-print.mjs' -OutFile '%SRC_DIR%\\system-print.mjs'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/spool.mjs' -OutFile '%SRC_DIR%\\spool.mjs'"\r
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/index.mjs' -OutFile '%DL_DIR%\\index.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/escpos.mjs' -OutFile '%DL_DIR%\\escpos.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/system-print.mjs' -OutFile '%DL_DIR%\\system-print.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/spool.mjs' -OutFile '%DL_DIR%\\spool.download'"\r
 if errorlevel 1 goto :download_error\r
+copy /Y "%DL_DIR%\\index.download" "%SRC_DIR%\\index.mjs" >nul || goto :permission_error\r
+copy /Y "%DL_DIR%\\escpos.download" "%SRC_DIR%\\escpos.mjs" >nul || goto :permission_error\r
+copy /Y "%DL_DIR%\\system-print.download" "%SRC_DIR%\\system-print.mjs" >nul || goto :permission_error\r
+copy /Y "%DL_DIR%\\spool.download" "%SRC_DIR%\\spool.mjs" >nul || goto :permission_error\r
+del /Q "%DL_DIR%\\*.download" >nul 2>&1\r
 echo [3/4] Conectando com sua unidade...\r
 (\r
   echo @echo off\r
@@ -51,7 +60,7 @@ echo [3/4] Conectando com sua unidade...\r
   echo Set shell = CreateObject^("WScript.Shell"^)\r
   echo shell.Run Chr^(34^) ^& "%APP_DIR%\\run.cmd" ^& Chr^(34^), 0, False\r
 ) > "%APP_DIR%\\launch.vbs"\r
-icacls "%APP_DIR%" /inheritance:r /grant:r "%USERNAME%:(OI)(CI)F" /T >nul 2>&1\r
+icacls "%APP_DIR%" /inheritance:e /grant:r "%USERDOMAIN%\\%USERNAME%:(OI)(CI)F" /T /C >nul 2>&1\r
 set "STARTUP=%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup"\r
 copy /Y "%APP_DIR%\\launch.vbs" "%STARTUP%\\PedeAqui Impressao.vbs" >nul\r
 echo [4/4] Iniciando...\r
@@ -74,6 +83,12 @@ exit /b 1\r
 echo.\r
 echo Nao foi possivel baixar o PedeAqui Impressao.\r
 echo Confira a internet e execute este arquivo novamente.\r
+pause\r
+exit /b 1\r
+:permission_error\r
+echo.\r
+echo O Windows bloqueou a gravacao dos arquivos do PedeAqui Impressao.\r
+echo Feche o aplicativo, execute este instalador como administrador e tente novamente.\r
 pause\r
 exit /b 1\r
 `;
