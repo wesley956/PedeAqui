@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     template: "%s | PedeAqui",
   },
   description: "Gestão, pedidos e operação para estabelecimentos alimentícios.",
+  other: {
+    "facebook-domain-verification": "8w5tdx4ev5xhk7k4zjdd56i8crs05vr",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
