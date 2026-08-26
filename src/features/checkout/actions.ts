@@ -79,6 +79,7 @@ export async function saveCheckoutAddressAction(formData: FormData) {
   if (!token) redirect(`/m/${storeSlug}/carrinho`);
   try {
     await CheckoutService.saveAddress(storeSlug, token, {
+      neighborhoodId: optional(formData.get("neighborhoodId")),
       postalCode: String(formData.get("postalCode") ?? ""),
       street: String(formData.get("street") ?? ""),
       number: String(formData.get("number") ?? ""),
