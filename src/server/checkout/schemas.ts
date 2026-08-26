@@ -28,6 +28,7 @@ export const checkoutIdentitySchema = z.object({
 export type CheckoutIdentityInput = z.infer<typeof checkoutIdentitySchema>;
 
 export const checkoutAddressSchema = z.object({
+  neighborhoodId: z.string().uuid().nullable().optional(),
   postalCode: z.string().trim().min(8).max(12),
   street: z.string().trim().min(2).max(160),
   number: z.string().trim().min(1).max(30),
