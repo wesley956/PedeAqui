@@ -9,18 +9,17 @@ import {
   saveCheckoutFulfillmentAction,
   saveCheckoutIdentityAction,
   saveCheckoutPaymentAction,
-  saveCheckoutScheduleAction,
   useSavedCheckoutAddressAction,
 } from "@/features/checkout/actions";
-import { CashChangeFields } from "@/features/checkout/cash-change-fields";
 import { CheckoutReviewState, FinalOrderOptions, paymentMethodHelp } from "@/features/checkout/final-order-options";
+import { NeighborhoodSelect } from "@/features/checkout/neighborhood-select";
+import { PaymentMethodFields } from "@/features/checkout/payment-method-fields";
 import { SubmitOrderButton } from "@/features/checkout/submit-order-button";
 import { applyCheckoutBenefitsAction, clearCheckoutBenefitsAction } from "@/features/growth/actions";
 import { createOrderFromCheckoutAction } from "@/features/orders/actions";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { CheckoutService } from "@/server/checkout/checkout-service";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
-import { localDateTimeInputValue } from "@/server/checkout/scheduling";
 import { customerRecognitionCookieName } from "@/server/customers/recognition-token";
 import { GrowthService } from "@/server/growth/growth-service";
 import styles from "./checkout.module.css";
@@ -34,14 +33,14 @@ const errorMessages: Record<string, string> = {
   invalid_phone: "Informe um WhatsApp válido.",
   invalid_identity: "Confira seu nome, WhatsApp e e-mail.",
   invalid_fulfillment: "Escolha entrega ou retirada.",
-  invalid_address: "Confira CEP, rua, número, bairro, cidade e UF.",
+  invalid_address: "Confira CEP, rua, número e selecione um bairro atendido.",
   invalid_payment: "Escolha uma forma de pagamento válida.",
-  invalid_schedule: "Escolha um horário entre 15 minutos e 7 dias a partir de agora.",
+  invalid_schedule: "Escolha um horário válido.",
   pickup_disabled: "Retirada não está disponível nesta loja.",
   delivery_disabled: "Entrega não está disponível nesta loja.",
   delivery_not_selected: "Escolha entrega antes de informar o endereço.",
   delivery_minimum: "O pedido ainda não atingiu o mínimo exigido para este bairro.",
-  neighborhood_not_served: "Este bairro ainda não é atendido pela loja.",
+  neighborhood_not_served: "Selecione um bairro atendido pela loja.",
   payment_unavailable: "A forma de pagamento selecionada não está disponível.",
   invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.",
   pix_email_required: "Informe seu e-mail em Seus dados para gerar o Pix online.",
@@ -72,7 +71,7 @@ export default async function CheckoutPage({
       : CheckoutService.load(slug, token, recognitionToken),
     GrowthService.loadCheckoutBenefits(slug, token),
   ]);
-  const { cart, session, menu, recognizedCustomer } = data;
+  const { cart, session, menu, recognizedCustomer, deliveryNeighborhoods } = data;
   const review = "review" in data
     ? (data as Awaited<ReturnType<typeof CheckoutService.review>>).review
     : null;
@@ -97,14 +96,13 @@ export default async function CheckoutPage({
   const paymentSummary = selectedPayment ? paymentMethodLabels[selectedPayment as keyof typeof paymentMethodLabels] : "Escolha a forma de pagamento";
   const storeTimeZone = menu.store.timezone || "America/Sao_Paulo";
   const scheduledFor = session?.scheduled_for ?? null;
-  const scheduleSummary = scheduledFor
-    ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: storeTimeZone }).format(new Date(scheduledFor))
-    : "Assim que possível";
-  const scheduleNow = new Date();
-  const minimumScheduleDate = new Date(Math.ceil((scheduleNow.getTime() + 15 * 60_000) / 60_000) * 60_000);
-  const minimumSchedule = localDateTimeInputValue(minimumScheduleDate, storeTimeZone);
-  const maximumSchedule = localDateTimeInputValue(new Date(scheduleNow.getTime() + 7 * 24 * 60 * 60_000), storeTimeZone);
   const changeForValue = session?.cash_change_for_cents ? (Number(session.cash_change_for_cents) / 100).toFixed(2).replace(".", ",") : "";
+  const useRegisteredNeighborhoods = menu.delivery.fee_mode === "neighborhood" && deliveryNeighborhoods.length > 0;
+  const selectedNeighborhoodId = deliveryNeighborhoods.find((item) =>
+    item.neighborhoodName === session?.address_district
+    && item.city.toLocaleLowerCase("pt-BR") === (session?.address_city ?? "").toLocaleLowerCase("pt-BR")
+    && item.state.toUpperCase() === (session?.address_state ?? "").toUpperCase()
+  )?.id ?? "";
 
   return (
     <main className={styles.root}>
@@ -166,22 +164,35 @@ export default async function CheckoutPage({
 
             <form action={saveCheckoutAddressAction} className={styles.form}>
               <input type="hidden" name="storeSlug" value={slug} />
-              <div className={styles.grid2}>
-                <Field label="CEP" name="postalCode" inputMode="numeric" autoComplete="postal-code" defaultValue={session?.address_postal_code ?? ""} required />
-                <Field label="Bairro" name="district" autoComplete="address-level3" defaultValue={session?.address_district ?? ""} required />
-              </div>
+              <Field label="CEP" name="postalCode" inputMode="numeric" autoComplete="postal-code" defaultValue={session?.address_postal_code ?? ""} required />
+
+              {useRegisteredNeighborhoods ? (
+                <NeighborhoodSelect
+                  neighborhoods={deliveryNeighborhoods}
+                  defaultNeighborhoodId={selectedNeighborhoodId}
+                  inputClassName={styles.input}
+                  fieldClassName={styles.field}
+                  choicesClassName={styles.choices}
+                  choiceClassName={styles.choice}
+                  selectedClassName={styles.choiceSelected}
+                  detailClassName={styles.choiceDetail}
+                />
+              ) : (
+                <div className={styles.grid2}>
+                  <Field label="Bairro" name="district" autoComplete="address-level3" defaultValue={session?.address_district ?? ""} required />
+                  <Field label="Cidade" name="city" autoComplete="address-level2" defaultValue={session?.address_city ?? menu.store.city ?? ""} required />
+                  <Field label="UF" name="state" autoComplete="address-level1" defaultValue={session?.address_state ?? menu.store.state ?? ""} maxLength={2} required />
+                </div>
+              )}
+
               <div className={styles.addressRow}>
                 <Field label="Rua" name="street" autoComplete="street-address" defaultValue={session?.address_street ?? ""} required />
                 <Field label="Número" name="number" defaultValue={session?.address_number ?? ""} required />
               </div>
               <Field label="Complemento (opcional)" name="complement" defaultValue={session?.address_complement ?? ""} />
-              <div className={styles.grid2}>
-                <Field label="Cidade" name="city" autoComplete="address-level2" defaultValue={session?.address_city ?? menu.store.city ?? ""} required />
-                <Field label="UF" name="state" autoComplete="address-level1" defaultValue={session?.address_state ?? menu.store.state ?? ""} maxLength={2} required />
-              </div>
               <Field label="Referência (opcional)" name="reference" defaultValue={session?.address_reference ?? ""} placeholder="Ex.: portão preto" />
               {session?.delivery_quote_status === "valid" ? <div className={styles.deliveryOk}><strong>Entrega disponível</strong><br />{money(Number(session.delivery_fee_cents))} · previsão de {session.delivery_estimated_min_minutes}–{session.delivery_estimated_max_minutes} min</div> : null}
-              {session?.delivery_quote_status === "unserviceable" ? <div className={styles.deliveryError}>Ainda não entregamos neste endereço. Você pode editar os dados ou escolher retirada.</div> : null}
+              {session?.delivery_quote_status === "unserviceable" ? <div className={styles.deliveryError}>Ainda não entregamos neste endereço. Selecione outro bairro ou escolha retirada.</div> : null}
               <ActionButton>Salvar endereço</ActionButton>
             </form>
           </Step>
@@ -210,41 +221,29 @@ export default async function CheckoutPage({
             <form action={saveCheckoutPaymentAction} className={styles.form}>
               <input type="hidden" name="storeSlug" value={slug} />
               {enabledMethods.length === 0 ? <div className={styles.deliveryError}>Este estabelecimento não tem uma forma de pagamento disponível no momento.</div> : (
-                <div className={styles.choices}>
-                  {enabledMethods.map((item) => (
-                    <label key={item.method} className={`${styles.choice} ${selectedPayment === item.method ? styles.choiceSelected : ""}`}>
-                      <span className={styles.paymentChoice}><input type="radio" name="paymentMethod" value={item.method} defaultChecked={selectedPayment === item.method} required /><strong>{paymentMethodLabels[item.method]}</strong></span>
-                      <span className={styles.choiceDetail}>{paymentMethodHelp[item.method]}</span>
-                    </label>
-                  ))}
-                </div>
+                <PaymentMethodFields
+                  methods={enabledMethods.map((item) => ({
+                    method: item.method,
+                    label: paymentMethodLabels[item.method],
+                    help: paymentMethodHelp[item.method],
+                  }))}
+                  defaultMethod={selectedPayment}
+                  defaultChangeFor={changeForValue}
+                  choicesClassName={styles.choices}
+                  choiceClassName={styles.choice}
+                  selectedClassName={styles.choiceSelected}
+                  paymentChoiceClassName={styles.paymentChoice}
+                  detailClassName={styles.choiceDetail}
+                  inputClassName={styles.input}
+                  fieldClassName={styles.field}
+                  cashChoicesClassName={styles.cashChoices}
+                  cashChoiceClassName={styles.cashChoice}
+                  cashSelectedClassName={styles.cashChoiceSelected}
+                />
               )}
-              {selectedPayment === "cash" ? <CashChangeFields defaultChangeFor={changeForValue} inputClassName={styles.input} fieldClassName={styles.field} choicesClassName={styles.cashChoices} choiceClassName={styles.cashChoice} selectedClassName={styles.cashChoiceSelected} /> : null}
               {enabledMethods.length > 0 ? <ActionButton>Salvar pagamento</ActionButton> : null}
             </form>
           </Step>
-        ) : null}
-
-        {paymentComplete ? (
-          <details className={styles.optional} open={Boolean(scheduledFor)}>
-            <summary>Quando receber? · {scheduleSummary}</summary>
-            <div className={styles.optionalBody}>
-              <p className="muted">O horário é interpretado no fuso da loja. O estabelecimento confirmará a disponibilidade ao aceitar o pedido.</p>
-              <form action={saveCheckoutScheduleAction} className={styles.form}>
-                <input type="hidden" name="storeSlug" value={slug} />
-                <input type="hidden" name="mode" value="scheduled" />
-                <Field label="Agendar para" name="localDateTime" type="datetime-local" min={minimumSchedule} max={maximumSchedule} defaultValue={scheduledFor ? localDateTimeInputValue(new Date(scheduledFor), storeTimeZone) : minimumSchedule} required />
-                <ActionButton>Salvar agendamento</ActionButton>
-              </form>
-              {scheduledFor ? (
-                <form action={saveCheckoutScheduleAction}>
-                  <input type="hidden" name="storeSlug" value={slug} />
-                  <input type="hidden" name="mode" value="asap" />
-                  <button type="submit" className={styles.secondary}>Receber assim que possível</button>
-                </form>
-              ) : null}
-            </div>
-          </details>
         ) : null}
 
         {paymentComplete ? (
