@@ -27,13 +27,13 @@ export function FinalOrderOptions({ fulfillmentType, address, deliveryMinutes, p
   const destination = delivery ? [address?.street, address?.number, address?.district].filter(Boolean).join(", ") : "Retirada no estabelecimento";
   const deliveryDetail = delivery && deliveryMinutes?.min && deliveryMinutes?.max ? `${deliveryMinutes.min}–${deliveryMinutes.max} min após validação` : destination;
   const payment = paymentMethod ? paymentMethodLabels[paymentMethod] : "Não selecionado";
-  const paymentDetail = paymentMethod === "cash" ? cashChangeForCents ? `Troco para ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cashChangeForCents / 100)}` : "Sem troco informado" : paymentMethod ? paymentMethodHelp[paymentMethod] : "Escolha uma forma habilitada pela loja";
+  const paymentDetail = paymentMethod === "cash" ? cashChangeForCents ? `Troco para ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cashChangeForCents / 100)}` : "Sem troco" : paymentMethod ? paymentMethodHelp[paymentMethod] : "Escolha uma forma habilitada pela loja";
   const schedule = scheduledFor
     ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: timeZone ?? "America/Sao_Paulo" }).format(new Date(scheduledFor))
-    : "Assim que possível";
+    : null;
   return <div className={styles.summary} aria-label="Opções finais do pedido">
     <div className={styles.option}><span className={styles.label}>Recebimento</span><span className={styles.value}>{delivery ? "Entrega" : fulfillmentType === "pickup" ? "Retirada" : "Não selecionado"}</span><span className={styles.detail}>{delivery ? `${destination || "Endereço pendente"}${deliveryDetail !== destination ? ` · ${deliveryDetail}` : ""}` : destination}</span></div>
     <div className={styles.option}><span className={styles.label}>Pagamento</span><span className={styles.value}>{payment}</span><span className={styles.detail}>{paymentDetail}</span></div>
-    <div className={styles.option}><span className={styles.label}>Quando</span><span className={styles.value}>{schedule}</span><span className={styles.detail}>{scheduledFor ? "Horário solicitado; sujeito à confirmação da loja" : "Sem agendamento"}</span></div>
+    {schedule ? <div className={styles.option}><span className={styles.label}>Agendamento</span><span className={styles.value}>{schedule}</span><span className={styles.detail}>Horário solicitado em um fluxo compatível com agendamento.</span></div> : null}
   </div>;
 }
