@@ -30,7 +30,7 @@ export const storeProfileInputSchema = z.object({
 
 export type StoreProfileInput = z.infer<typeof storeProfileInputSchema>;
 
-const profileSelect = "id,name,slug,phone,email,postal_code,street,number,complement,district,city,state";
+const profileSelect = "id,name,slug,phone,email,postal_code,street,number,complement,district,city,state" as const;
 
 export class StoreProfileService {
   static async getProfile() {
