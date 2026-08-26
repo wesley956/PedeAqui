@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
   description: "Gestão, pedidos e operação para estabelecimentos alimentícios.",
   other: {
-    "facebook-domain-verification": "8w5tdx4ev5xhk7k4zjdd56i8crs05vr",
+    "facebook-domain-verification": "8w5tdx4ev5xhk7k4zjdd56i8crs05v",
   },
 };
 
