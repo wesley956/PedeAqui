@@ -1,12 +1,15 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getAccessContext, STORE_COOKIE } from "@/server/access/context";
+import { StoreProfileService } from "@/server/stores/store-profile-service";
 
 const storeIdSchema = z.string().uuid();
+const field = (formData: FormData, name: string) => String(formData.get(name) ?? "");
 
 export async function switchStoreAction(formData: FormData) {
   const parsed = storeIdSchema.safeParse(formData.get("storeId"));
@@ -33,4 +36,25 @@ export async function switchStoreAction(formData: FormData) {
   });
 
   redirect("/dashboard");
+}
+
+export async function saveStoreProfileAction(formData: FormData) {
+  const store = await StoreProfileService.updateProfile({
+    name: field(formData, "name"),
+    phone: field(formData, "phone"),
+    email: field(formData, "email"),
+    postalCode: field(formData, "postalCode"),
+    street: field(formData, "street"),
+    number: field(formData, "number"),
+    complement: field(formData, "complement"),
+    district: field(formData, "district"),
+    city: field(formData, "city"),
+    state: field(formData, "state"),
+  });
+
+  revalidatePath("/inicio");
+  revalidatePath("/configuracoes");
+  revalidatePath("/configuracoes/loja");
+  revalidatePath(`/m/${store.slug}`);
+  redirect("/inicio?guia=1");
 }

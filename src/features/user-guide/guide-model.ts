@@ -100,7 +100,7 @@ function ownerSetupSteps(byKey: Map<string, GuideNavigationItem>, businessType: 
       id: "store-profile",
       title: "Confira os dados da loja",
       description: "Nome, telefone e localização ajudam o cliente e deixam os próximos recursos funcionando com o contexto correto.",
-      href: "/configuracoes",
+      href: "/configuracoes/loja",
       actionLabel: "Revisar dados da loja",
       completionLabel: "Dados principais conferidos",
       tip: "Comece por aqui. O restante do PedeAqui usa esses dados como base.",
