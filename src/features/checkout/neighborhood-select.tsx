@@ -35,6 +35,12 @@ function normalize(value: string) {
     .trim();
 }
 
+function searchable(value: string) {
+  return normalize(value)
+    .replace(/^(jardim|jd|parque|pq|vila|vl|residencial|res|condominio|cond|avenida|av)\s+/, "")
+    .trim();
+}
+
 function money(cents: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 }
@@ -54,13 +60,17 @@ export function NeighborhoodSelect({
   const selected = neighborhoods.find((item) => item.id === selectedId) ?? null;
 
   const filtered = useMemo(() => {
-    const needle = normalize(query);
+    const needle = searchable(query);
     const sorted = [...neighborhoods].sort((a, b) =>
       `${a.city} ${a.neighborhoodName}`.localeCompare(`${b.city} ${b.neighborhoodName}`, "pt-BR"),
     );
     if (!needle) return selected ? [] : sorted.slice(0, 10);
     return sorted
-      .filter((item) => normalize(`${item.neighborhoodName} ${item.city} ${item.state}`).includes(needle))
+      .filter((item) => {
+        const official = searchable(item.neighborhoodName);
+        const full = searchable(`${item.neighborhoodName} ${item.city} ${item.state}`);
+        return official.includes(needle) || full.includes(needle) || needle.includes(official);
+      })
       .slice(0, 12);
   }, [neighborhoods, query, selected]);
 
