@@ -56,5 +56,5 @@ export async function saveStoreProfileAction(formData: FormData) {
   revalidatePath("/configuracoes");
   revalidatePath("/configuracoes/loja");
   revalidatePath(`/m/${store.slug}`);
-  redirect("/configuracoes/loja?salvo=1");
+  redirect("/inicio?guia=1");
 }
