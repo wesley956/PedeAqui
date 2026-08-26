@@ -7,6 +7,7 @@ import { StoreProfileService } from "@/server/stores/store-profile-service";
 export default async function StoreProfileSettingsPage() {
   const store = await StoreProfileService.getProfile();
   const publicHref = `/m/${store.slug}`;
+  const publicUrl = `https://pedeaqui.pp.ua${publicHref}`;
 
   return (
     <section style={{ display: "grid", gap: 20, maxWidth: 920 }}>
@@ -24,7 +25,7 @@ export default async function StoreProfileSettingsPage() {
           <p className="muted" style={{ marginBottom: 0 }}>Você pode trocar o nome da loja quando quiser sem alterar o endereço público do cardápio.</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
           <Input label="Nome da loja" name="name" defaultValue={store.name} required maxLength={120} autoComplete="organization" />
           <Input label="Telefone" name="phone" defaultValue={store.phone ?? ""} required type="tel" inputMode="tel" autoComplete="tel" />
           <Input label="E-mail" name="email" defaultValue={store.email ?? ""} type="email" autoComplete="email" />
@@ -36,11 +37,9 @@ export default async function StoreProfileSettingsPage() {
           <p className="muted" style={{ marginBottom: 0 }}>Cidade e estado são obrigatórios porque ajudam pedidos, entrega e informações públicas da unidade.</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(260px, 2fr) minmax(120px, 0.7fr)", gap: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
           <Input label="Rua / avenida" name="street" defaultValue={store.street ?? ""} autoComplete="street-address" />
           <Input label="Número" name="number" defaultValue={store.number ?? ""} />
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
           <Input label="Complemento" name="complement" defaultValue={store.complement ?? ""} />
           <Input label="Bairro" name="district" defaultValue={store.district ?? ""} />
           <Input label="Cidade" name="city" defaultValue={store.city ?? ""} required autoComplete="address-level2" />
@@ -55,7 +54,7 @@ export default async function StoreProfileSettingsPage() {
           <h2 style={{ margin: 0 }}>Link público do cardápio</h2>
           <p className="muted" style={{ margin: "6px 0 0" }}>Trocar o nome da loja não muda este link. Assim, links já enviados no WhatsApp ou Instagram continuam funcionando.</p>
         </div>
-        <code style={{ overflowWrap: "anywhere" }}>{publicHref}</code>
+        <code style={{ overflowWrap: "anywhere" }}>{publicUrl}</code>
         <div><Link href={publicHref} target="_blank" rel="noreferrer">Abrir cardápio público →</Link></div>
       </article>
 
