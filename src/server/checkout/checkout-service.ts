@@ -80,8 +80,6 @@ export class CheckoutService {
     }).select("id").single();
     if (!insertError) return inserted.id;
 
-    // Two simultaneous first writes may race on the unique cart session. The
-    // losing request retries as a scoped partial update without clearing fields.
     if (insertError.code === "23505") {
       const { data: retried, error: retryError } = await admin.from("checkout_sessions")
         .update(values)
@@ -96,10 +94,31 @@ export class CheckoutService {
     throw insertError;
   }
 
+  private static async listDeliveryNeighborhoods(admin: AdminClient, store: StoreRef) {
+    const { data, error } = await admin.from("delivery_neighborhoods")
+      .select("id, neighborhood_name, city, state, fee_cents, minimum_order_cents, additional_minutes")
+      .eq("organization_id", store.organization_id)
+      .eq("store_id", store.id)
+      .eq("active", true)
+      .is("deleted_at", null)
+      .order("city")
+      .order("neighborhood_name");
+    if (error) throw error;
+    return (data ?? []).map((item) => ({
+      id: item.id,
+      neighborhoodName: item.neighborhood_name,
+      city: item.city,
+      state: item.state,
+      feeCents: Number(item.fee_cents ?? 0),
+      minimumOrderCents: item.minimum_order_cents === null ? null : Number(item.minimum_order_cents),
+      additionalMinutes: Number(item.additional_minutes ?? 0),
+    }));
+  }
+
   static async load(storeSlug: string, token: string, recognitionToken: string | null = null) {
     const cartResult = await this.requireCart(storeSlug, token);
     const admin = createAdminClient();
-    const [session, methods, menu, recognizedCustomer] = await Promise.all([
+    const [session, methods, menu, recognizedCustomer, deliveryNeighborhoods] = await Promise.all([
       this.getSession(admin, cartResult.cart.id),
       StorePaymentMethodService.listForStore(cartResult.store.organization_id, cartResult.store.id),
       PublicMenuService.getMenu(storeSlug),
@@ -108,9 +127,10 @@ export class CheckoutService {
         cartResult.store.id,
         recognitionToken,
       ),
+      this.listDeliveryNeighborhoods(admin, cartResult.store),
     ]);
     if (!menu) throw new CheckoutError("menu_unavailable", "Cardápio indisponível");
-    return { ...cartResult, session, paymentMethods: methods, menu, recognizedCustomer };
+    return { ...cartResult, session, paymentMethods: methods, menu, recognizedCustomer, deliveryNeighborhoods };
   }
 
   static async saveIdentity(storeSlug: string, token: string, input: CheckoutIdentityInput) {
@@ -223,21 +243,41 @@ export class CheckoutService {
       throw new CheckoutError("delivery_not_selected", "Selecione entrega antes de informar o endereço");
     }
 
-    const quote = await this.quoteDelivery(admin, cartResult.store, Number(cartResult.cart.subtotal_cents), address);
+    let resolvedAddress = address;
+    if (address.neighborhoodId) {
+      const { data: neighborhood, error: neighborhoodError } = await admin.from("delivery_neighborhoods")
+        .select("id, neighborhood_name, city, state")
+        .eq("id", address.neighborhoodId)
+        .eq("organization_id", cartResult.store.organization_id)
+        .eq("store_id", cartResult.store.id)
+        .eq("active", true)
+        .is("deleted_at", null)
+        .maybeSingle();
+      if (neighborhoodError) throw neighborhoodError;
+      if (!neighborhood) throw new CheckoutError("neighborhood_not_served", "Selecione um bairro atendido pela loja");
+      resolvedAddress = {
+        ...address,
+        district: neighborhood.neighborhood_name,
+        city: neighborhood.city,
+        state: neighborhood.state.toUpperCase(),
+      };
+    }
+
+    const quote = await this.quoteDelivery(admin, cartResult.store, Number(cartResult.cart.subtotal_cents), resolvedAddress);
     const quoteStatus = quote.serviceable ? "valid" : "unserviceable";
     const { error } = await admin.rpc("checkout_set_fulfillment_internal", {
       p_store_id: cartResult.store.id,
       p_token_hash: hashCartToken(token),
       p_fulfillment_type: "delivery",
       p_address: {
-        postal_code: address.postalCode,
-        street: address.street,
-        number: address.number,
-        complement: address.complement ?? "",
-        district: address.district,
-        city: address.city,
-        state: address.state,
-        reference: address.reference ?? "",
+        postal_code: resolvedAddress.postalCode,
+        street: resolvedAddress.street,
+        number: resolvedAddress.number,
+        complement: resolvedAddress.complement ?? "",
+        district: resolvedAddress.district,
+        city: resolvedAddress.city,
+        state: resolvedAddress.state,
+        reference: resolvedAddress.reference ?? "",
       },
       p_delivery_quote_status: quoteStatus,
       p_delivery_fee_cents: quote.serviceable ? quote.feeCents : 0,
