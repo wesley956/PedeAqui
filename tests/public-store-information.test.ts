@@ -8,6 +8,7 @@ const sheet = read("src/features/menu/store-information-sheet.tsx");
 const sheetCss = read("src/features/menu/store-information-sheet.module.css");
 const settings = read("src/app/(app)/configuracoes/loja/page.tsx");
 const storeProfileService = read("src/server/stores/store-profile-service.ts");
+const migration = read("supabase/sql/144_public_store_information.sql");
 
 describe("PA-PUBLIC-UX-010 store information", () => {
   it("keeps the existing storefront and adds only the store information trigger", () => {
@@ -17,7 +18,7 @@ describe("PA-PUBLIC-UX-010 store information", () => {
     expect(sheet).toContain("Informações da loja");
   });
 
-  it("keeps new public RPC fields additive while the database migration rolls out", () => {
+  it("keeps new public RPC fields additive for existing menu payloads", () => {
     const parsed = publicMenuSchema.shape.store.parse({
       id: "00000000-0000-4000-8000-000000000001",
       name: "Loja",
@@ -34,9 +35,21 @@ describe("PA-PUBLIC-UX-010 store information", () => {
     expect(parsed.street).toBeNull();
   });
 
-  it("rejects unsafe public URLs in the profile contract and keeps administrative email separate", () => {
+  it("publishes only deliberate store metadata and keeps administrative fields out", () => {
+    for (const field of ["postal_code", "street", "number", "complement", "district", "public_whatsapp", "website_url", "instagram_url", "facebook_url", "tiktok_url"]) {
+      expect(migration).toContain(`'${field}'`);
+    }
+    expect(migration).not.toContain("s.email");
+    expect(migration).not.toContain("whatsapp_phone_number_id");
+    expect(migration).not.toContain("waba_id");
+    expect(migration).toContain("private.get_public_store_information");
+    expect(migration).toContain("jsonb_set(");
+  });
+
+  it("rejects unsafe public URLs in both application and database contracts", () => {
     expect(storeProfileService).toContain('protocol === "http:" || protocol === "https:"');
     expect(storeProfileService).toContain("Informe uma URL completa começando com http:// ou https://");
+    expect(migration).toContain("^https?://[^[:space:]]+$");
     expect(settings).toContain("Uso administrativo. Não é publicado automaticamente");
     expect(sheet).not.toContain("store.email");
   });
