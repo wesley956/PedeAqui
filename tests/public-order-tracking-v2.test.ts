@@ -20,6 +20,15 @@ describe("public order tracking V2", () => {
     expect(page).toContain("<PublicOrderTimeline");
   });
 
+  it("keeps the confirmation hero compact so tracking appears earlier", () => {
+    expect(styles).toContain(".hero{padding:var(--space-4)");
+    expect(styles).toContain("grid-template-columns:max-content max-content");
+    expect(styles).toContain(".successIcon{grid-column:1/-1;justify-self:center;width:44px;height:44px");
+    expect(styles).toContain(".status{grid-column:1;justify-self:end");
+    expect(styles).toContain(".estimate{grid-column:2;justify-self:start;display:flex");
+    expect(styles).toContain("@media(max-width:360px)");
+  });
+
   it("keeps Pix and refresh behavior without inventing a new payment or polling contract", () => {
     expect(page).toContain("<PublicOrderRefresh");
     expect(page).toContain("<PixCopyButton");
