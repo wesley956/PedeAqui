@@ -14,7 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "vitest run tests/e2e-context-journeys.test.ts",
-    "test:public-ux": "vitest run tests/public-ux-final-gate.test.ts tests/public-store-information.test.ts tests/modifier-quantity-contract.test.ts tests/public-complements.test.ts tests/public-cart-bar.test.ts tests/public-cart-edit.test.ts tests/progressive-checkout-ui.test.ts tests/public-order-tracking-v2.test.ts tests/access-isolation-contracts.test.ts tests/full-accessibility-qa.test.ts tests/mobile-full-layout-qa.test.ts",
+    "test:public-ux": "vitest run tests/public-ux-final-gate.test.ts tests/public-store-information.test.ts tests/modifier-quantity-contract.test.ts tests/public-complements.test.ts tests/public-cart-bar.test.ts tests/public-cart-edit.test.ts tests/progressive-checkout-ui.test.ts tests/public-checkout-simplification-798.test.ts tests/public-order-tracking-v2.test.ts tests/access-isolation-contracts.test.ts tests/full-accessibility-qa.test.ts tests/mobile-full-layout-qa.test.ts",
     "db:drift": "node scripts/check-db-drift.mjs",
     "preflight:production": "node scripts/production-preflight.mjs"
   },

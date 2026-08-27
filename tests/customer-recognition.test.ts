@@ -55,7 +55,9 @@ describe("[324] privacy and persistence contracts", () => {
     expect(checkout).toContain("CustomerRecognitionService.resolve");
     expect(checkout).toContain("recognized.customerId !== session.customer_id");
     expect(checkout).toContain("Por segurança, informe o endereço novamente neste dispositivo");
-    expect(page).toContain("recognizedCustomer && identityComplete && !recognizedForSession");
+    expect(page).toContain("fulfillmentComplete && identityComplete && deliverySelected");
+    expect(page).toContain("recognizedForSession && recognizedCustomer && recognizedCustomer.addresses.length > 0");
+    expect(page).toContain("recognizedCustomer && !recognizedForSession");
     expect(page).toContain("Por segurança, confirme o endereço novamente para este WhatsApp");
   });
 
@@ -63,7 +65,7 @@ describe("[324] privacy and persistence contracts", () => {
     expect(checkout).toContain("return this.saveAddress(storeSlug, token");
     expect(checkout).toContain("DeliveryQuoteService.quote");
     expect(page).toContain("useSavedCheckoutAddressAction");
-    expect(page).toContain("Pode usar um endereço salvo");
+    expect(page).toContain("Você pode reutilizar um endereço salvo");
     expect(page).toContain("Ou informe outro endereço");
     expect(page).toContain("Usar este endereço");
   });

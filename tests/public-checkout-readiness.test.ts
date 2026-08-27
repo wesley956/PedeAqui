@@ -11,10 +11,12 @@ const cartActions = readFileSync("src/features/cart/actions.ts", "utf8");
 const deliveryPage = readFileSync("src/app/(app)/configuracoes/entrega/page.tsx", "utf8");
 
 describe("public cart and checkout readiness [PA-DIAG-026-030]", () => {
-  it("rejects invalid cart, identity and address inputs at the boundary", () => {
+  it("rejects invalid cart and identity inputs while allowing an omitted CEP", () => {
     expect(cartItemQuantitySchema.safeParse({ storeSlug: "santa-rita", itemId: crypto.randomUUID(), quantity: 0 }).success).toBe(false);
     expect(checkoutIdentitySchema.safeParse({ name: "A", phone: "123", email: "not-an-email" }).success).toBe(false);
-    expect(checkoutAddressSchema.safeParse({ postalCode: "1", street: "R", number: "", district: "C", city: "N", state: "S" }).success).toBe(false);
+    expect(checkoutAddressSchema.safeParse({ postalCode: "1", street: "Rua A", number: "10", district: "Centro", city: "Nova Odessa", state: "SP" }).success).toBe(false);
+    expect(checkoutAddressSchema.safeParse({ postalCode: "", street: "Rua A", number: "10", district: "Centro", city: "Nova Odessa", state: "SP" }).success).toBe(true);
+    expect(checkoutAddressSchema.safeParse({ postalCode: null, street: "Rua A", number: "10", district: "Centro", city: "Nova Odessa", state: "SP" }).success).toBe(true);
     expect(() => parseMoneyToCents("dez reais")).toThrow("Invalid money value");
   });
 
@@ -28,10 +30,11 @@ describe("public cart and checkout readiness [PA-DIAG-026-030]", () => {
     expect(cartActions).toContain("cart_remove_failed");
   });
 
-  it("loads independent checkout data concurrently", () => {
-    expect(checkoutService).toContain("const [session, methods, menu, recognizedCustomer, deliveryNeighborhoods] = await Promise.all");
+  it("loads independent checkout data concurrently and resolves module state server-side", () => {
+    expect(checkoutService).toContain("const [session, methods, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled] = await Promise.all");
     expect(checkoutService).toContain("const [cartResult, menu] = await Promise.all");
-    expect(checkoutPage).toContain("const [data, benefits] = await Promise.all");
+    expect(checkoutService).toContain("StoreModuleStateService.isEnabled");
+    expect(checkoutPage).toContain("const data = await CheckoutService.load");
   });
 
   it("does not present distance as enforced without geocoding", () => {

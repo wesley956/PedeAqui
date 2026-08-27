@@ -27,7 +27,8 @@ describe("E2E context journeys [317]", () => {
     expect(read("src/app/m/[slug]/page.tsx")).toContain("MenuBrowser");
     expect(read("src/app/m/[slug]/produto/[id]/page.tsx")).toContain("addToCartAction");
     expect(read("src/app/m/[slug]/carrinho/page.tsx")).toContain("/checkout");
-    expect(read("src/app/m/[slug]/checkout/page.tsx")).toContain("createOrderFromCheckoutAction");
+    expect(read("src/app/m/[slug]/checkout/page.tsx")).toContain("confirmCheckoutOrderAction");
+    expect(read("src/features/checkout/confirm-order-action.ts")).toContain("createOrderFromCheckoutAction");
     expect(read("src/app/m/[slug]/pedido/[id]/page.tsx")).toContain("PublicOrderService");
   });
 
