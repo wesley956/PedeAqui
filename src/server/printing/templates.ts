@@ -40,7 +40,9 @@ export type PrintDocumentType = "kitchen" | "expedition" | "counter" | "receipt"
 type PrintModifier = PrintPayload["items"][number]["modifiers"][number];
 
 function money(cents: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
+    .format(cents / 100)
+    .replace(/[\u00a0\u202f]/g, " ");
 }
 function clip(value: string, width: number) { return value.length <= width ? value : `${value.slice(0, Math.max(0, width - 1))}…`; }
 function line(char: string, width: number) { return char.repeat(width); }
@@ -188,7 +190,11 @@ export function renderPrintDocument(input: unknown, documentType: PrintDocumentT
     if (payload.order.delivery_fee_cents > 0) out.push(pair("Entrega", money(payload.order.delivery_fee_cents), width));
     out.push(pair("TOTAL", money(payload.order.total_cents), width));
     if (payload.order.payment_method) out.push(clip(`Pagamento: ${payload.order.payment_method}`, width));
-    if (payload.order.cash_change_for_cents) out.push(pair("Troco para", money(payload.order.cash_change_for_cents), width));
+    if (payload.order.payment_method === "cash" && (payload.order.cash_change_for_cents ?? 0) > 0) {
+      const cashChangeForCents = payload.order.cash_change_for_cents ?? 0;
+      out.push(pair("Troco para", money(cashChangeForCents), width));
+      out.push(pair("Troco", money(Math.max(0, cashChangeForCents - payload.order.total_cents)), width));
+    }
   }
   out.push(line("-", width));
   out.push(center("PedeAqui", width));
