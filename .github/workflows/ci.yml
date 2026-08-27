@@ -69,7 +69,19 @@ jobs:
         run: npm run typecheck
 
       - name: Test
-        run: npm run test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test 2>&1 | tee test-output.txt
+
+      - name: Upload test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: test-output.txt
+          if-no-files-found: ignore
+          retention-days: 1
 
       - name: Public UX final homologation contracts
         run: npm run test:public-ux
