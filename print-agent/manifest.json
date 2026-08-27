@@ -1,0 +1,12 @@
+{
+  "version": "0.4.0",
+  "files": [
+    "src/index.mjs",
+    "src/escpos.mjs",
+    "src/system-print.mjs",
+    "src/spool.mjs",
+    "src/updater.mjs",
+    "manifest.json",
+    "package.json"
+  ]
+}
