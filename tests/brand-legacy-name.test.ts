@@ -6,6 +6,7 @@ const repositoryRoot = process.cwd();
 const legacyBrandPattern = /\bcruz\b/i;
 const scannedExtensions = new Set([".ts", ".tsx", ".js", ".mjs", ".cjs", ".json", ".md", ".css", ".html", ".txt"]);
 const ignoredDirectoryNames = new Set(["node_modules", ".next", "coverage", "dist", "build"]);
+const allowedLegalNameFiles = new Set(["src/lib/legal/company.ts"]);
 
 function collectFiles(root: string): string[] {
   const absoluteRoot = path.join(repositoryRoot, root);
@@ -35,7 +36,8 @@ function collectFiles(root: string): string[] {
 }
 
 function legacyBrandOccurrences(filePath: string): string[] {
-  const relativePath = path.relative(repositoryRoot, filePath);
+  const relativePath = path.relative(repositoryRoot, filePath).replaceAll(path.sep, "/");
+  if (allowedLegalNameFiles.has(relativePath)) return [];
   const lines = fs.readFileSync(filePath, "utf8").split(/\r?\n/);
 
   return lines.flatMap((line, index) => legacyBrandPattern.test(line)

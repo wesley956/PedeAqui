@@ -14,6 +14,19 @@ function requireStoreId(storeId: string | null) {
 
 const optionalText = (max: number) => z.string().trim().max(max).transform((value) => value || null);
 const optionalEmail = z.union([z.literal(""), z.string().trim().email("Informe um e-mail válido").max(160)]).transform((value) => value || null);
+const optionalWhatsapp = z.string().trim().max(40).refine((value) => {
+  if (!value) return true;
+  return /^[+()\d\s.-]+$/.test(value) && value.replace(/\D/g, "").length >= 10;
+}, "Informe um WhatsApp válido").transform((value) => value || null);
+const optionalPublicUrl = z.string().trim().max(500).refine((value) => {
+  if (!value) return true;
+  try {
+    const protocol = new URL(value).protocol;
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}, "Informe uma URL completa começando com http:// ou https://").transform((value) => value ? new URL(value).toString() : null);
 
 export const storeProfileInputSchema = z.object({
   name: z.string().trim().min(2, "Informe o nome da loja").max(120),
@@ -26,11 +39,16 @@ export const storeProfileInputSchema = z.object({
   district: optionalText(120),
   city: z.string().trim().min(2, "Informe a cidade").max(120),
   state: z.string().trim().min(2, "Informe o estado ou UF").max(120),
+  publicWhatsapp: optionalWhatsapp,
+  websiteUrl: optionalPublicUrl,
+  instagramUrl: optionalPublicUrl,
+  facebookUrl: optionalPublicUrl,
+  tiktokUrl: optionalPublicUrl,
 });
 
 export type StoreProfileInput = z.infer<typeof storeProfileInputSchema>;
 
-const profileSelect = "id,name,slug,phone,email,postal_code,street,number,complement,district,city,state" as const;
+const profileSelect = "id,name,slug,phone,email,postal_code,street,number,complement,district,city,state,public_whatsapp,website_url,instagram_url,facebook_url,tiktok_url" as const;
 
 export class StoreProfileService {
   static async getProfile() {
@@ -73,6 +91,11 @@ export class StoreProfileService {
       district: values.district,
       city: values.city,
       state: values.state,
+      public_whatsapp: values.publicWhatsapp,
+      website_url: values.websiteUrl,
+      instagram_url: values.instagramUrl,
+      facebook_url: values.facebookUrl,
+      tiktok_url: values.tiktokUrl,
       updated_at: new Date().toISOString(),
     };
 

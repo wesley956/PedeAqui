@@ -50,6 +50,11 @@ export async function saveStoreProfileAction(formData: FormData) {
     district: field(formData, "district"),
     city: field(formData, "city"),
     state: field(formData, "state"),
+    publicWhatsapp: field(formData, "publicWhatsapp"),
+    websiteUrl: field(formData, "websiteUrl"),
+    instagramUrl: field(formData, "instagramUrl"),
+    facebookUrl: field(formData, "facebookUrl"),
+    tiktokUrl: field(formData, "tiktokUrl"),
   });
 
   revalidatePath("/inicio");

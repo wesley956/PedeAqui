@@ -39,8 +39,8 @@ describe("thermal print templates", () => {
   it("renders expedition data and visibly marks reprints", () => {
     const text = renderPrintDocument(payload, "expedition", 58, true);
     expect(text).toContain("*** REIMPRESSAO ***");
-    expect(text).toContain("Cliente: Maria");
-    expect(text).toContain("Rua A, 10");
+    expect(text).toContain("CLIENTE: Maria");
+    expect(text).toContain("ENDERECO: Rua A, Nº 10");
     expect(text).toContain("Pagamento: pix");
     expect(text).toContain("TOTAL");
   });

@@ -1,0 +1,39 @@
+.trigger{width:fit-content;min-height:var(--control-height-sm);display:inline-flex;align-items:center;gap:var(--space-2);margin-top:var(--space-1);padding:0 var(--space-3);border:var(--border-width) solid var(--border-default);border-radius:var(--radius-pill);background:var(--surface-2);color:var(--text-secondary);font-size:var(--font-size-xs);font-weight:800;cursor:pointer;transition:background var(--motion-fast) var(--ease-standard),color var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard)}
+.trigger:hover{background:var(--surface-3);color:var(--text-primary);border-color:var(--border-strong)}
+.trigger:focus-visible,.close:focus-visible,.action:focus-visible,.links a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.dialog{width:min(620px,calc(100% - var(--space-6)));max-height:min(82vh,760px);padding:0;border:var(--border-width) solid var(--border-default);border-radius:var(--radius-2xl);background:var(--surface-1);color:var(--text-primary);box-shadow:var(--shadow-lg);overflow:hidden}
+.dialog::backdrop{background:rgba(0,0,0,.62);backdrop-filter:blur(3px)}
+.sheet{display:grid;grid-template-rows:auto minmax(0,1fr);max-height:min(82vh,760px)}
+.header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);padding:var(--space-5);border-bottom:var(--border-width) solid var(--border-default);background:var(--surface-1)}
+.header h2{margin:var(--space-1) 0 0;font-size:var(--font-size-xl);line-height:var(--line-height-snug)}
+.header p{margin:var(--space-1) 0 0;color:var(--text-secondary);font-size:var(--font-size-sm)}
+.eyebrow{color:var(--brand-primary);font-size:var(--font-size-xs);font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+.close{width:40px;height:40px;display:grid;place-items:center;flex:0 0 40px;border:var(--border-width) solid var(--border-default);border-radius:var(--radius-pill);background:var(--surface-2);color:var(--text-primary);font-size:1.5rem;line-height:1;cursor:pointer}
+.close:hover{background:var(--surface-3)}
+.content{display:grid;gap:var(--space-3);padding:var(--space-4);overflow-y:auto;overscroll-behavior:contain}
+.section{display:grid;gap:var(--space-3);padding:var(--space-4);border:var(--border-width) solid var(--border-default);border-radius:var(--radius-lg);background:var(--surface-2)}
+.section h3{margin:0;font-size:var(--font-size-md)}
+.address{display:grid;gap:2px;color:var(--text-secondary);font-style:normal;font-size:var(--font-size-sm)}
+.action,.links a{width:fit-content;min-height:var(--control-height-sm);display:inline-flex;align-items:center;padding:0 var(--space-3);border-radius:var(--radius-md);background:var(--surface-3);color:var(--text-primary);font-size:var(--font-size-sm);font-weight:800;text-decoration:none}
+.action:hover,.links a:hover{background:var(--brand-primary);color:var(--text-on-brand)}
+.contactRow{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
+.contactRow>span{min-width:0;display:grid;gap:2px}
+.contactRow small{color:var(--text-secondary)}
+.contactRow strong{overflow-wrap:anywhere}
+.hours{display:grid;gap:var(--space-2)}
+.hourRow{display:grid;grid-template-columns:minmax(88px,.7fr) minmax(0,1.3fr);gap:var(--space-3);align-items:start;font-size:var(--font-size-sm)}
+.hourRow span{color:var(--text-secondary)}
+.hourRow strong{text-align:right;font-weight:700;overflow-wrap:anywhere}
+.links{display:flex;gap:var(--space-2);flex-wrap:wrap}
+@media(max-width:640px){
+  .trigger{min-height:32px;padding:0 10px;font-size:.6875rem}
+  .dialog{width:100%;max-width:none;max-height:86dvh;margin:auto 0 0;border-width:var(--border-width) 0 0;border-radius:var(--radius-2xl) var(--radius-2xl) 0 0}
+  .sheet{max-height:86dvh;padding-bottom:env(safe-area-inset-bottom)}
+  .header{padding:var(--space-4)}
+  .header h2{font-size:var(--font-size-lg)}
+  .content{padding:var(--space-3)}
+  .section{padding:var(--space-3)}
+  .contactRow{align-items:flex-start;flex-direction:column}
+  .hourRow{grid-template-columns:82px minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){.trigger{transition:none}}

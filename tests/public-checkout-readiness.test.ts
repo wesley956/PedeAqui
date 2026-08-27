@@ -29,7 +29,7 @@ describe("public cart and checkout readiness [PA-DIAG-026-030]", () => {
   });
 
   it("loads independent checkout data concurrently", () => {
-    expect(checkoutService).toContain("const [session, methods, menu, recognizedCustomer] = await Promise.all");
+    expect(checkoutService).toContain("const [session, methods, menu, recognizedCustomer, deliveryNeighborhoods] = await Promise.all");
     expect(checkoutService).toContain("const [cartResult, menu] = await Promise.all");
     expect(checkoutPage).toContain("const [data, benefits] = await Promise.all");
   });
