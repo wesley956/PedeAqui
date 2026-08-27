@@ -10,6 +10,7 @@ const cp850: Record<string, number> = {
 export function encodeCp850(text: string) {
   const bytes: number[] = [];
   for (const char of text) {
+    if (char === "\u00a0" || char === "\u202f") { bytes.push(32); continue; }
     const mapped = cp850[char];
     if (mapped !== undefined) { bytes.push(mapped); continue; }
     const code = char.charCodeAt(0);
