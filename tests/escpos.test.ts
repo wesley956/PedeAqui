@@ -6,6 +6,12 @@ describe("ESC/POS encoder", () => {
     expect([...encodeCp850("çáé")]).toEqual([135, 160, 130]);
   });
 
+  it("normalizes non-breaking currency spaces instead of printing question marks", () => {
+    const encoded = encodeCp850("R$\u00a040,00 R$\u202f50,00");
+    expect(encoded.toString("ascii")).toBe("R$ 40,00 R$ 50,00");
+    expect([...encoded]).not.toContain(63);
+  });
+
   it("wraps content with initialization/codepage/cut commands", () => {
     const bytes = encodeEscPos("PEDIDO #42\n");
     expect([...bytes.subarray(0, 5)]).toEqual([0x1b, 0x40, 0x1b, 0x74, 0x02]);
