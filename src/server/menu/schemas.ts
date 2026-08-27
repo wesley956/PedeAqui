@@ -3,6 +3,14 @@ import { publicDeliverySummarySchema } from "@/server/delivery/schemas";
 import { BUSINESS_TYPES } from "@/modules/module-catalog";
 
 export const hexColorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
+const publicHttpUrlSchema = z.string().url().refine((value) => {
+  try {
+    const protocol = new URL(value).protocol;
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}, { message: "Invalid public URL" }).nullable();
 
 export const menuSettingsInputSchema = z.object({
   primaryColor: hexColorSchema.default("#FF6B00"),
@@ -54,8 +62,25 @@ export const publicHourSchema = z.object({ weekday: z.number().int().min(0).max(
 
 export const publicMenuSchema = z.object({
   store: z.object({
-    id: z.string().uuid(), name: z.string(), slug: z.string(), phone: z.string().nullable(), city: z.string().nullable(), state: z.string().nullable(),
-    timezone: z.string(), status: z.enum(["active", "temporarily_closed"]), business_type: z.enum(BUSINESS_TYPES),
+    id: z.string().uuid(),
+    name: z.string(),
+    slug: z.string(),
+    phone: z.string().nullable(),
+    postal_code: z.string().nullable(),
+    street: z.string().nullable(),
+    number: z.string().nullable(),
+    complement: z.string().nullable(),
+    district: z.string().nullable(),
+    city: z.string().nullable(),
+    state: z.string().nullable(),
+    public_whatsapp: z.string().nullable(),
+    website_url: publicHttpUrlSchema,
+    instagram_url: publicHttpUrlSchema,
+    facebook_url: publicHttpUrlSchema,
+    tiktok_url: publicHttpUrlSchema,
+    timezone: z.string(),
+    status: z.enum(["active", "temporarily_closed"]),
+    business_type: z.enum(BUSINESS_TYPES),
   }),
   settings: z.object({
     theme: z.string(), primary_color: hexColorSchema, logo_url: z.string().nullable(), cover_url: z.string().nullable(), show_search: z.boolean(),
