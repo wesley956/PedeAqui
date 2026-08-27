@@ -23,21 +23,23 @@ describe("public order tracking V2", () => {
   it("keeps the confirmation hero compact so tracking appears earlier", () => {
     expect(styles).toContain(".hero{padding:var(--space-4)");
     expect(styles).toContain("grid-template-columns:max-content max-content");
-    expect(styles).toContain(".successIcon{grid-column:1/-1;justify-self:center;width:44px;height:44px");
+    expect(styles).toContain(".orderIdentity{grid-column:1/-1;justify-self:center;display:inline-flex");
+    expect(styles).toContain(".successIcon{width:36px;height:36px");
     expect(styles).toContain(".status{grid-column:1;justify-self:end");
     expect(styles).toContain(".estimate{grid-column:2;justify-self:start;display:flex");
     expect(styles).toContain("@media(max-width:360px)");
   });
 
-  it("highlights the display number without creating another large card", () => {
-    expect(page).toContain("styles.orderNumber");
-    expect(page).toContain("PEDIDO");
-    expect(page).toContain("#{order.display_number}");
+  it("places the order number beside the green confirmation mark without a separate badge", () => {
+    expect(page).toContain("styles.orderIdentity");
+    expect(page).toContain("Pedido <strong>#{order.display_number}</strong>");
+    expect(page).toContain("styles.successIcon");
     expect(page).toContain("aria-label={`Número do pedido ${order.display_number}`}");
     expect(page).toContain("Atualizado em {updatedAt}");
-    expect(page).not.toContain("Pedido #{order.display_number} · atualizado em");
-    expect(styles).toContain(".orderNumber{grid-column:1/-1;justify-self:center;display:inline-flex");
-    expect(styles).toContain(".orderNumber strong{color:var(--brand-primary);font-size:clamp(1.45rem,4vw,1.75rem)");
+    expect(page).not.toContain("styles.orderNumber");
+    expect(page).not.toContain("<span>PEDIDO</span>");
+    expect(styles).not.toContain(".orderNumber{");
+    expect(styles).toContain(".orderIdentityText strong{color:var(--brand-primary)");
   });
 
   it("keeps Pix and refresh behavior without inventing a new payment or polling contract", () => {
