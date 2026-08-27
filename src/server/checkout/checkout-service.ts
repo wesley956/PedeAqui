@@ -7,6 +7,7 @@ import { normalizePhone } from "@/server/customers/phone";
 import { CustomerRecognitionService } from "@/server/customers/recognition-service";
 import { DeliveryQuoteService } from "@/server/delivery/delivery-quote-service";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
+import { StoreModuleStateService } from "@/server/modules/store-module-state-service";
 import { StorePaymentMethodService } from "@/server/payments/store-payment-method-service";
 import {
   checkoutAddressSchema,
@@ -118,7 +119,7 @@ export class CheckoutService {
   static async load(storeSlug: string, token: string, recognitionToken: string | null = null) {
     const cartResult = await this.requireCart(storeSlug, token);
     const admin = createAdminClient();
-    const [session, methods, menu, recognizedCustomer, deliveryNeighborhoods] = await Promise.all([
+    const [session, methods, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled] = await Promise.all([
       this.getSession(admin, cartResult.cart.id),
       StorePaymentMethodService.listForStore(cartResult.store.organization_id, cartResult.store.id),
       PublicMenuService.getMenu(storeSlug),
@@ -128,9 +129,10 @@ export class CheckoutService {
         recognitionToken,
       ),
       this.listDeliveryNeighborhoods(admin, cartResult.store),
+      StoreModuleStateService.isEnabled(cartResult.store.organization_id, cartResult.store.id, "growth"),
     ]);
     if (!menu) throw new CheckoutError("menu_unavailable", "Cardápio indisponível");
-    return { ...cartResult, session, paymentMethods: methods, menu, recognizedCustomer, deliveryNeighborhoods };
+    return { ...cartResult, session, paymentMethods: methods, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled };
   }
 
   static async saveIdentity(storeSlug: string, token: string, input: CheckoutIdentityInput) {
@@ -234,7 +236,7 @@ export class CheckoutService {
     const address = this.parseInput(
       checkoutAddressSchema.safeParse(input),
       "invalid_address",
-      "Confira CEP, rua, número, bairro, cidade e UF",
+      "Confira rua, número, bairro, cidade e UF",
     );
     const cartResult = await this.requireCart(storeSlug, token);
     const admin = createAdminClient();
@@ -365,9 +367,9 @@ export class CheckoutService {
     const admin = createAdminClient();
     let session = loaded.session;
 
-    if (session?.fulfillment_type === "delivery" && session.address_postal_code && session.address_street && session.address_number && session.address_district && session.address_city && session.address_state) {
+    if (session?.fulfillment_type === "delivery" && session.address_street && session.address_number && session.address_district && session.address_city && session.address_state) {
       const address = checkoutAddressSchema.parse({
-        postalCode: session.address_postal_code,
+        postalCode: session.address_postal_code ?? null,
         street: session.address_street,
         number: session.address_number,
         complement: session.address_complement,
