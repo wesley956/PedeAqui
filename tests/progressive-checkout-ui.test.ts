@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const page = readFileSync("src/app/m/[slug]/checkout/page.tsx", "utf8");
+const actions = readFileSync("src/features/checkout/actions.ts", "utf8");
+const service = readFileSync("src/server/checkout/checkout-service.ts", "utf8");
 const styles = readFileSync("src/app/m/[slug]/checkout/checkout.module.css", "utf8");
 
 describe("progressive checkout UI", () => {
@@ -26,23 +28,24 @@ describe("progressive checkout UI", () => {
     expect(page).toContain("{paymentComplete ? (");
   });
 
-  it("preserves every server action in the flow", () => {
+  it("preserves the server actions wired by the current checkout", () => {
     for (const action of [
       "saveCheckoutIdentityAction",
       "saveCheckoutFulfillmentAction",
       "saveCheckoutAddressAction",
       "saveCheckoutPaymentAction",
-      "saveCheckoutScheduleAction",
       "useSavedCheckoutAddressAction",
       "reviewCheckoutAction",
       "createOrderFromCheckoutAction",
     ]) expect(page).toContain(action);
+    expect(actions).toContain("saveCheckoutScheduleAction");
+    expect(service).toContain("static async saveSchedule");
   });
 
-  it("keeps benefits and scheduling optional instead of blocking the primary flow", () => {
+  it("keeps benefits optional without blocking the primary flow", () => {
     expect(page).toContain("Tenho cupom, cashback ou pontos");
-    expect(page).toContain("Quando receber?");
     expect(page).toContain("<details className={styles.optional}");
+    expect(page).toContain("applyCheckoutBenefitsAction");
   });
 
   it("collapses completed steps while allowing targeted error reopening", () => {
