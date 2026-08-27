@@ -16,7 +16,7 @@ describe("presentation diagnostics 041-045", () => {
   it("exposes manual printing and reports a missing route safely", () => {
     const actions = read("src/features/orders/actions.ts");
     const page = read("src/app/(app)/pedidos/[id]/page.tsx");
-    expect(actions).toContain("PrintService.enqueueConfirmedOrder(orderId)");
+    expect(actions).toContain("PrintService.requestConfirmedOrderPrint(orderId)");
     expect(actions).toContain("No active print routes");
     expect(page).toContain('intent="print"');
     expect(page).not.toContain("{job.last_error}</div>");

@@ -2,6 +2,16 @@
 
 Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies adicionadas posteriormente.
 
+## Institucional e jurídico
+
+- `/empresa` — página institucional pública do PedeAqui.
+- `/politica-de-privacidade` — política de privacidade pública.
+- `/termos-de-uso` — termos de uso públicos.
+
+## Configurações da unidade
+
+- `/configuracoes/loja` — perfil oficial da unidade para identificação, contato, endereço e metadados públicos autorizados. Mantém RBAC, isolamento por organização/unidade e não cria cadastro paralelo de endereço ou telefone.
+
 ## Painel do Proprietário
 
 - `/platform/unidades/[storeId]/configuracao-operacional` — tela dedicada, exclusiva de `super_admin`, para configurar o comportamento operacional dos módulos já habilitados em uma unidade. Não ativa módulos nem altera contrato comercial.

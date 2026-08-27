@@ -1,10 +1,12 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
+// Keep these assertions at the component/service boundary that owns each behavior.
 const page = readFileSync("src/app/m/[slug]/checkout/page.tsx", "utf8");
 const actions = readFileSync("src/features/checkout/actions.ts", "utf8");
 const service = readFileSync("src/server/checkout/checkout-service.ts", "utf8");
 const cash = readFileSync("src/features/checkout/cash-change-fields.tsx", "utf8");
+const paymentFields = readFileSync("src/features/checkout/payment-method-fields.tsx", "utf8");
 
 describe("refined public checkout", () => {
   it("starts with fulfillment and removes delivery address from pickup", () => {
@@ -29,7 +31,8 @@ describe("refined public checkout", () => {
   });
 
   it("asks about cash change before revealing the amount", () => {
-    expect(page).toContain("<CashChangeFields");
+    expect(paymentFields).toContain("<CashChangeFields");
+    expect(paymentFields).toContain('method === "cash"');
     expect(cash).toContain("Precisa de troco?");
     expect(cash).toContain("Troco para quanto?");
     expect(cash).toContain("needsChange ?");
@@ -37,7 +40,8 @@ describe("refined public checkout", () => {
   });
 
   it("preserves scheduling, benefits, review and server-side order creation", () => {
-    expect(page).toContain("saveCheckoutScheduleAction");
+    expect(actions).toContain("saveCheckoutScheduleAction");
+    expect(service).toContain("static async saveSchedule");
     expect(page).toContain("applyCheckoutBenefitsAction");
     expect(page).toContain("reviewCheckoutAction");
     expect(page).toContain("createOrderFromCheckoutAction");

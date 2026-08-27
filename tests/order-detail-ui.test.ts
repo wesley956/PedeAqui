@@ -24,7 +24,7 @@ describe("order detail operational hierarchy", () => {
       expect(page).toContain(detail);
     }
     expect(page).toContain("timeZone");
-    expect(page).toContain("Imprimir pedido agora");
+    expect(page).toContain('intent="print" label="Imprimir pedido"');
   });
 
   it("uses semantic status language and hides technical order id from the visible layout", () => {
