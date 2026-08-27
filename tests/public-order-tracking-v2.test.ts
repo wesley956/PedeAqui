@@ -29,6 +29,17 @@ describe("public order tracking V2", () => {
     expect(styles).toContain("@media(max-width:360px)");
   });
 
+  it("highlights the display number without creating another large card", () => {
+    expect(page).toContain("styles.orderNumber");
+    expect(page).toContain("PEDIDO");
+    expect(page).toContain("#{order.display_number}");
+    expect(page).toContain("aria-label={`Número do pedido ${order.display_number}`}");
+    expect(page).toContain("Atualizado em {updatedAt}");
+    expect(page).not.toContain("Pedido #{order.display_number} · atualizado em");
+    expect(styles).toContain(".orderNumber{grid-column:1/-1;justify-self:center;display:inline-flex");
+    expect(styles).toContain(".orderNumber strong{color:var(--brand-primary);font-size:clamp(1.45rem,4vw,1.75rem)");
+  });
+
   it("keeps Pix and refresh behavior without inventing a new payment or polling contract", () => {
     expect(page).toContain("<PublicOrderRefresh");
     expect(page).toContain("<PixCopyButton");
