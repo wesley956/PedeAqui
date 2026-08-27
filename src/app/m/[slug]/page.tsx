@@ -3,6 +3,7 @@ import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import { PublicCartBar } from "@/features/cart/public-cart-bar";
 import { MenuBrowser } from "@/features/menu/menu-browser";
 import { RestaurantBrand, restaurantBrandVars } from "@/features/menu/public-brand";
+import { StoreInformationSheet } from "@/features/menu/store-information-sheet";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
 import styles from "./public-menu.module.css";
 
@@ -24,6 +25,22 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
           <span className={`${styles.status} ${statusClass}`}>{status}</span>
           <p className={styles.brandDetail}>{detail}{menu.settings.pause_reason && menu.operational.label === "paused" ? ` — ${menu.settings.pause_reason}` : ""}</p>
           {(menu.store.city || menu.store.state) ? <p className={styles.location}>{[menu.store.city, menu.store.state].filter(Boolean).join(" - ")}</p> : null}
+          <StoreInformationSheet store={{
+            name: menu.store.name,
+            phone: menu.store.phone,
+            postal_code: menu.store.postal_code,
+            street: menu.store.street,
+            number: menu.store.number,
+            complement: menu.store.complement,
+            district: menu.store.district,
+            city: menu.store.city,
+            state: menu.store.state,
+            public_whatsapp: menu.store.public_whatsapp,
+            website_url: menu.store.website_url,
+            instagram_url: menu.store.instagram_url,
+            facebook_url: menu.store.facebook_url,
+            tiktok_url: menu.store.tiktok_url,
+          }} hours={menu.hours} />
         </RestaurantBrand>
       </header>
       <div className={styles.content}>
