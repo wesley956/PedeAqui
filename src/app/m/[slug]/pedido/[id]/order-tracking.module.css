@@ -3,15 +3,15 @@
 .topbar{display:flex;justify-content:space-between;gap:var(--space-3);align-items:center;min-height:44px}
 .back{color:var(--text-secondary);font-weight:800;text-decoration:none}
 .hero{padding:var(--space-4);display:grid;grid-template-columns:max-content max-content;justify-content:center;align-items:center;column-gap:var(--space-2);row-gap:6px;text-align:center;background:var(--surface-1);border:1px solid color-mix(in srgb,var(--brand-primary) 25%,var(--border-default));border-radius:20px;box-shadow:0 12px 28px rgb(0 0 0 / .06)}
-.successIcon{grid-column:1/-1;justify-self:center;width:44px;height:44px;border-radius:999px;display:grid;place-items:center;background:var(--state-success-surface);color:var(--state-success-text);font-size:24px;font-weight:950;margin-bottom:2px}
+.orderIdentity{grid-column:1/-1;justify-self:center;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:36px;max-width:100%;line-height:1}
+.orderIdentityText{color:var(--text-primary);font-size:var(--font-size-md);font-weight:850;letter-spacing:-.02em;white-space:nowrap}
+.orderIdentityText strong{color:var(--brand-primary);font-size:clamp(1.35rem,4vw,1.55rem);font-weight:950;letter-spacing:-.04em}
+.successIcon{width:36px;height:36px;border-radius:999px;display:grid;place-items:center;background:var(--state-success-surface);color:var(--state-success-text);font-size:20px;font-weight:950;flex:0 0 36px}
 .problemIcon{background:var(--state-danger-surface);color:var(--state-danger-text)}
 .store{grid-column:1/-1;color:var(--text-secondary);font-size:var(--font-size-xs);font-weight:800}
 .hero h1,.hero p,.card h2,.card p{margin:0}
 .hero h1{grid-column:1/-1;font-size:clamp(1.45rem,4.5vw,1.8rem);line-height:1.08;letter-spacing:-.035em}
 .heroMessage{grid-column:1/-1;color:var(--text-secondary);max-width:540px;font-size:var(--font-size-sm);line-height:1.4}
-.orderNumber{grid-column:1/-1;justify-self:center;display:inline-flex;align-items:baseline;gap:7px;padding:4px 11px;border:1px solid color-mix(in srgb,var(--brand-primary) 52%,var(--border-default));border-radius:12px;background:color-mix(in srgb,var(--brand-primary) 8%,var(--surface-2));line-height:1;max-width:100%}
-.orderNumber span{color:var(--text-secondary);font-size:10px;font-weight:900;letter-spacing:.09em}
-.orderNumber strong{color:var(--brand-primary);font-size:clamp(1.45rem,4vw,1.75rem);font-weight:950;letter-spacing:-.04em;overflow-wrap:anywhere}
 .status{grid-column:1;justify-self:end;padding:6px 10px;border-radius:999px;background:color-mix(in srgb,var(--brand-primary) 9%,var(--surface-2));color:var(--brand-primary);font-size:var(--font-size-xs);font-weight:900;white-space:nowrap}
 .terminalProblem{background:var(--state-danger-surface);color:var(--state-danger-text)}
 .terminalSuccess{background:var(--state-success-surface);color:var(--state-success-text)}
@@ -57,11 +57,12 @@
 @media(max-width:640px){
   .root{padding:var(--space-3) var(--space-2) var(--space-12)}
   .hero{padding:var(--space-3);grid-template-columns:minmax(0,max-content) minmax(0,max-content);column-gap:6px;row-gap:5px;border-radius:18px}
-  .successIcon{width:42px;height:42px;font-size:23px}
+  .orderIdentity{gap:8px;min-height:34px}
+  .orderIdentityText{font-size:var(--font-size-sm)}
+  .orderIdentityText strong{font-size:clamp(1.3rem,7vw,1.5rem)}
+  .successIcon{width:34px;height:34px;flex-basis:34px;font-size:19px}
   .hero h1{font-size:clamp(1.4rem,7vw,1.65rem)}
   .heroMessage{font-size:var(--font-size-xs);line-height:1.35}
-  .orderNumber{padding:4px 10px;gap:6px;border-radius:11px}
-  .orderNumber strong{font-size:clamp(1.4rem,7vw,1.65rem)}
   .status{padding:6px 9px}
   .estimate{gap:4px}
   .estimate span{display:none}
@@ -76,6 +77,7 @@
 }
 @media(max-width:360px){
   .hero{grid-template-columns:1fr}
-  .orderNumber,.status,.estimate,.estimate+.estimate{grid-column:1;justify-self:center}
+  .orderIdentity,.status,.estimate,.estimate+.estimate{grid-column:1;justify-self:center}
+  .orderIdentityText{white-space:normal}
   .status{white-space:normal}
 }
