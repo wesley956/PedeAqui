@@ -4,19 +4,18 @@ import { redirect } from "next/navigation";
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import {
-  reviewCheckoutAction,
   saveCheckoutAddressAction,
   saveCheckoutFulfillmentAction,
   saveCheckoutIdentityAction,
   saveCheckoutPaymentAction,
   useSavedCheckoutAddressAction,
 } from "@/features/checkout/actions";
-import { CheckoutReviewState, FinalOrderOptions, paymentMethodHelp } from "@/features/checkout/final-order-options";
+import { applyCheckoutBenefitsAction, clearCheckoutBenefitsAction } from "@/features/checkout/benefit-actions";
+import { confirmCheckoutOrderAction } from "@/features/checkout/confirm-order-action";
+import { FinalOrderOptions, paymentMethodHelp } from "@/features/checkout/final-order-options";
 import { NeighborhoodSelect } from "@/features/checkout/neighborhood-select";
 import { PaymentMethodFields } from "@/features/checkout/payment-method-fields";
 import { SubmitOrderButton } from "@/features/checkout/submit-order-button";
-import { applyCheckoutBenefitsAction, clearCheckoutBenefitsAction } from "@/features/growth/actions";
-import { createOrderFromCheckoutAction } from "@/features/orders/actions";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { CheckoutService } from "@/server/checkout/checkout-service";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
@@ -33,7 +32,7 @@ const errorMessages: Record<string, string> = {
   invalid_phone: "Informe um WhatsApp válido.",
   invalid_identity: "Confira seu nome, WhatsApp e e-mail.",
   invalid_fulfillment: "Escolha entrega ou retirada.",
-  invalid_address: "Confira CEP, rua, número e selecione um bairro atendido.",
+  invalid_address: "Confira rua, número e selecione um bairro atendido.",
   invalid_payment: "Escolha uma forma de pagamento válida.",
   invalid_schedule: "Escolha um horário válido.",
   pickup_disabled: "Retirada não está disponível nesta loja.",
@@ -44,8 +43,9 @@ const errorMessages: Record<string, string> = {
   payment_unavailable: "A forma de pagamento selecionada não está disponível.",
   invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.",
   pix_email_required: "Informe seu e-mail em Seus dados para gerar o Pix online.",
-  checkout_not_ready: "Confira o pedido novamente antes de finalizar.",
+  checkout_not_ready: "Algo mudou no pedido. Confira os dados destacados e tente confirmar novamente.",
   benefit_invalid: "Não foi possível aplicar esses benefícios. Confira o cupom e tente novamente.",
+  benefit_unavailable: "Benefícios não estão disponíveis nesta loja.",
   saved_address_invalid: "Este endereço salvo não está mais disponível.",
   recognition_required: "Por segurança, informe o endereço novamente neste dispositivo.",
   identity_required: "Confirme seu nome e WhatsApp antes de reutilizar um endereço.",
@@ -56,7 +56,7 @@ export default async function CheckoutPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ erro?: string; revisar?: string }>;
+  searchParams: Promise<{ erro?: string }>;
 }) {
   const { slug } = await params;
   const query = await searchParams;
@@ -65,16 +65,9 @@ export default async function CheckoutPage({
   if (!token) redirect(`/m/${slug}/carrinho`);
 
   const recognitionToken = cookieStore.get(customerRecognitionCookieName(slug))?.value ?? null;
-  const [data, benefits] = await Promise.all([
-    query.revisar === "1"
-      ? CheckoutService.review(slug, token, recognitionToken)
-      : CheckoutService.load(slug, token, recognitionToken),
-    GrowthService.loadCheckoutBenefits(slug, token),
-  ]);
-  const { cart, session, menu, recognizedCustomer, deliveryNeighborhoods } = data;
-  const review = "review" in data
-    ? (data as Awaited<ReturnType<typeof CheckoutService.review>>).review
-    : null;
+  const data = await CheckoutService.load(slug, token, recognitionToken);
+  const benefits = data.growthEnabled ? await GrowthService.loadCheckoutBenefits(slug, token) : null;
+  const { cart, session, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled } = data;
   const enabledMethods = data.paymentMethods.filter((item) => item.enabled);
   const selectedPayment = session?.payment_method ?? null;
   const totalDiscount = Number(cart.discount_cents);
@@ -83,13 +76,17 @@ export default async function CheckoutPage({
   const deliverySelected = session?.fulfillment_type === "delivery";
   const addressComplete = !deliverySelected || session?.delivery_quote_status === "valid";
   const paymentComplete = Boolean(selectedPayment);
-  const reviewComplete = Boolean(review?.ready);
   const recognizedForSession = Boolean(recognizedCustomer && session?.customer_id && session.customer_id === recognizedCustomer.customerId);
   const identityName = session?.customer_name ?? recognizedCustomer?.customer.name ?? "";
   const identityPhone = session?.customer_phone ?? recognizedCustomer?.customer.phone ?? "";
   const identityEmail = session?.customer_email ?? recognizedCustomer?.customer.email ?? "";
   const totalSteps = deliverySelected ? 5 : 4;
-  const completedSteps = [fulfillmentComplete, ...(deliverySelected ? [addressComplete] : []), identityComplete, paymentComplete, reviewComplete].filter(Boolean).length;
+  const completedSteps = [
+    fulfillmentComplete,
+    identityComplete,
+    ...(deliverySelected ? [addressComplete] : []),
+    paymentComplete,
+  ].filter(Boolean).length;
   const progress = Math.round((completedSteps / totalSteps) * 100);
   const fulfillmentSummary = deliverySelected ? "Entrega" : session?.fulfillment_type === "pickup" ? "Retirada no local" : "Escolha como receber";
   const addressSummary = session?.address_street && session?.address_number ? `${session.address_street}, ${session.address_number}` : "Informe o endereço";
@@ -115,7 +112,7 @@ export default async function CheckoutPage({
         <header className={styles.header}>
           <p className={styles.eyebrow}>{menu.store.name}</p>
           <h1>Finalizar pedido</h1>
-          <p>Escolha como vai receber. O PedeAqui mostra só o que for necessário para concluir.</p>
+          <p>Preencha somente o necessário. Cada etapa concluída fica resumida para você seguir rápido.</p>
           <div className={styles.progressHeader}><strong>{completedSteps} de {totalSteps} etapas</strong><span>{progress}%</span></div>
           <div className={styles.progressTrack} aria-label={`${progress}% do checkout concluído`}><div className={styles.progressFill} style={{ width: `${progress}%` }} /></div>
         </header>
@@ -140,11 +137,29 @@ export default async function CheckoutPage({
           </form>
         </Step>
 
-        {fulfillmentComplete && deliverySelected ? (
-          <Step number="2" title="Onde entregar?" summary={addressComplete ? addressSummary : "Informe onde devemos entregar"} complete={addressComplete}>
+        {fulfillmentComplete ? (
+          <Step number="2" title="Seus dados" summary={identityComplete ? `${session?.customer_name} · ${session?.customer_phone}` : "Nome e WhatsApp"} complete={identityComplete} forceOpen={query.erro === "pix_email_required"}>
+            {recognizedCustomer && !identityComplete ? <p className="muted">Que bom ter você de volta. Confira seus dados para continuar com segurança.</p> : null}
+            <form action={saveCheckoutIdentityAction} className={styles.form}>
+              <input type="hidden" name="storeSlug" value={slug} />
+              <div className={styles.grid2}>
+                <Field label="WhatsApp" name="phone" type="tel" inputMode="tel" autoComplete="tel" defaultValue={identityPhone ?? ""} placeholder="(19) 99999-9999" required />
+                <Field label="Nome" name="name" autoComplete="name" defaultValue={identityName} required />
+              </div>
+              <details className={styles.inlineOptional} open={Boolean(identityEmail) || query.erro === "pix_email_required"}>
+                <summary>E-mail {query.erro === "pix_email_required" ? "· necessário para o Pix selecionado" : "· opcional"}</summary>
+                <div className={styles.inlineOptionalBody}><Field label="E-mail" name="email" type="email" autoComplete="email" defaultValue={identityEmail ?? ""} required={query.erro === "pix_email_required"} /></div>
+              </details>
+              <ActionButton>Continuar</ActionButton>
+            </form>
+          </Step>
+        ) : null}
+
+        {fulfillmentComplete && identityComplete && deliverySelected ? (
+          <Step number="3" title="Onde entregar?" summary={addressComplete ? addressSummary : "Informe onde devemos entregar"} complete={addressComplete}>
             {recognizedForSession && recognizedCustomer && recognizedCustomer.addresses.length > 0 ? (
               <div className={styles.form}>
-                <p className="muted">Você já pediu aqui. Pode usar um endereço salvo:</p>
+                <p className="muted">Você pode reutilizar um endereço salvo:</p>
                 <div className={styles.choices}>
                   {recognizedCustomer.addresses.map((address, index) => (
                     <form action={useSavedCheckoutAddressAction} key={`${address.postalCode}-${address.street}-${address.number}-${index}`}>
@@ -160,11 +175,10 @@ export default async function CheckoutPage({
                 </div>
                 <p className="muted">Ou informe outro endereço:</p>
               </div>
-            ) : recognizedCustomer && !identityComplete ? <div className={styles.identityHint}>Se quiser reutilizar um endereço salvo, confirme seu nome e WhatsApp no bloco “Seus dados”. Por segurança, os endereços não são exibidos antes dessa confirmação.</div> : recognizedCustomer && identityComplete && !recognizedForSession ? <div className={styles.deliveryError}>Por segurança, confirme o endereço novamente para este WhatsApp.</div> : null}
+            ) : recognizedCustomer && !recognizedForSession ? <div className={styles.deliveryError}>Por segurança, confirme o endereço novamente para este WhatsApp.</div> : null}
 
             <form action={saveCheckoutAddressAction} className={styles.form}>
               <input type="hidden" name="storeSlug" value={slug} />
-              <Field label="CEP" name="postalCode" inputMode="numeric" autoComplete="postal-code" defaultValue={session?.address_postal_code ?? ""} required />
 
               {useRegisteredNeighborhoods ? (
                 <NeighborhoodSelect
@@ -176,6 +190,7 @@ export default async function CheckoutPage({
                   choiceClassName={styles.choice}
                   selectedClassName={styles.choiceSelected}
                   detailClassName={styles.choiceDetail}
+                  secondaryButtonClassName={styles.neighborhoodChange}
                 />
               ) : (
                 <div className={styles.grid2}>
@@ -191,27 +206,10 @@ export default async function CheckoutPage({
               </div>
               <Field label="Complemento (opcional)" name="complement" defaultValue={session?.address_complement ?? ""} />
               <Field label="Referência (opcional)" name="reference" defaultValue={session?.address_reference ?? ""} placeholder="Ex.: portão preto" />
+              <Field label="CEP (opcional)" name="postalCode" inputMode="numeric" autoComplete="postal-code" defaultValue={session?.address_postal_code ?? ""} />
               {session?.delivery_quote_status === "valid" ? <div className={styles.deliveryOk}><strong>Entrega disponível</strong><br />{money(Number(session.delivery_fee_cents))} · previsão de {session.delivery_estimated_min_minutes}–{session.delivery_estimated_max_minutes} min</div> : null}
               {session?.delivery_quote_status === "unserviceable" ? <div className={styles.deliveryError}>Ainda não entregamos neste endereço. Selecione outro bairro ou escolha retirada.</div> : null}
-              <ActionButton>Salvar endereço</ActionButton>
-            </form>
-          </Step>
-        ) : null}
-
-        {fulfillmentComplete ? (
-          <Step number={deliverySelected ? "3" : "2"} title="Seus dados" summary={identityComplete ? `${session?.customer_name} · ${session?.customer_phone}` : "Nome e WhatsApp"} complete={identityComplete} forceOpen={query.erro === "pix_email_required"}>
-            {recognizedCustomer && !identityComplete ? <p className="muted">Já encontramos dados usados anteriormente neste dispositivo. Confira antes de continuar.</p> : null}
-            <form action={saveCheckoutIdentityAction} className={styles.form}>
-              <input type="hidden" name="storeSlug" value={slug} />
-              <div className={styles.grid2}>
-                <Field label="Nome" name="name" autoComplete="name" defaultValue={identityName} required />
-                <Field label="WhatsApp" name="phone" type="tel" inputMode="tel" autoComplete="tel" defaultValue={identityPhone ?? ""} placeholder="(19) 99999-9999" required />
-              </div>
-              <details className={styles.inlineOptional} open={Boolean(identityEmail) || query.erro === "pix_email_required"}>
-                <summary>E-mail {query.erro === "pix_email_required" ? "· necessário para o Pix selecionado" : "· opcional"}</summary>
-                <div className={styles.inlineOptionalBody}><Field label="E-mail" name="email" type="email" autoComplete="email" defaultValue={identityEmail ?? ""} required={query.erro === "pix_email_required"} /></div>
-              </details>
-              <ActionButton>Salvar dados</ActionButton>
+              <ActionButton>Continuar</ActionButton>
             </form>
           </Step>
         ) : null}
@@ -241,12 +239,12 @@ export default async function CheckoutPage({
                   cashSelectedClassName={styles.cashChoiceSelected}
                 />
               )}
-              {enabledMethods.length > 0 ? <ActionButton>Salvar pagamento</ActionButton> : null}
+              {enabledMethods.length > 0 ? <ActionButton>Continuar</ActionButton> : null}
             </form>
           </Step>
         ) : null}
 
-        {paymentComplete ? (
+        {paymentComplete && growthEnabled && benefits ? (
           <details className={styles.optional} open={totalDiscount > 0}>
             <summary>Tenho cupom, cashback ou pontos{totalDiscount > 0 ? ` · economia ${money(totalDiscount)}` : ""}</summary>
             <div className={styles.optionalBody}>
@@ -270,9 +268,9 @@ export default async function CheckoutPage({
         {paymentComplete ? (
           <section className={`card ${styles.review}`}>
             <div className={styles.reviewTop}>
-              <p className={styles.eyebrow}>{deliverySelected ? "5. Confirmar" : "4. Confirmar"}</p>
-              <h2>Confira seu pedido</h2>
-              <p>Veja os principais dados antes de enviar para {menu.store.name}.</p>
+              <p className={styles.eyebrow}>{deliverySelected ? "5. Revisar e confirmar" : "4. Revisar e confirmar"}</p>
+              <h2>Revisar e confirmar</h2>
+              <p>Confira os principais dados. Ao confirmar, o PedeAqui valida tudo novamente antes de enviar para {menu.store.name}.</p>
             </div>
             <FinalOrderOptions
               fulfillmentType={session?.fulfillment_type}
@@ -290,26 +288,18 @@ export default async function CheckoutPage({
               <div className={styles.divider} />
               <SummaryLine label="Total" value={money(Number(cart.total_cents))} strong />
             </div>
-            <CheckoutReviewState reviewed={Boolean(review)} ready={Boolean(review?.ready)} />
-            {review && !review.ready ? <div className={styles.reviewError}><strong>Confira antes de continuar:</strong><div className={styles.blockers}>{review.blockers.map((blocker) => <span key={blocker.code}>• {blocker.message}</span>)}</div></div> : null}
-            {review?.ready ? (
-              <form action={createOrderFromCheckoutAction}>
-                <input type="hidden" name="storeSlug" value={slug} />
-                <SubmitOrderButton className={styles.finalAction} label={`Confirmar pedido · ${money(Number(cart.total_cents))}`} />
-              </form>
-            ) : (
-              <form action={reviewCheckoutAction}>
-                <input type="hidden" name="storeSlug" value={slug} />
-                <button type="submit" className={styles.finalAction}>Conferir pedido</button>
-              </form>
-            )}
           </section>
         ) : null}
       </div>
 
-      <div className={styles.stickySummary} aria-hidden="true">
-        <div className={styles.stickyInner}><span>Total atual</span><strong>{money(Number(cart.total_cents))}</strong></div>
-      </div>
+      {paymentComplete ? (
+        <div className={styles.stickySummary}>
+          <form action={confirmCheckoutOrderAction} className={styles.stickyForm}>
+            <input type="hidden" name="storeSlug" value={slug} />
+            <SubmitOrderButton className={styles.finalAction} label={`Confirmar pedido · ${money(Number(cart.total_cents))}`} />
+          </form>
+        </div>
+      ) : null}
     </main>
   );
 }
