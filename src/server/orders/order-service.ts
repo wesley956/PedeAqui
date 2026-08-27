@@ -216,7 +216,7 @@ export class OrderService {
       printJobs: printJobs.map((job) => ({
         ...job,
         printer_name: printerNames.get(job.printer_id) ?? "Impressora",
-        station_name: job.station_id ? printerNames.get(job.printer_id) ?? "Estação" : "Sem estação",
+        station_name: job.station_id ? stationNames.get(job.station_id) ?? "Estação" : "Sem estação",
       })),
     };
   }
