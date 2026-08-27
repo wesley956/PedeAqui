@@ -55,7 +55,7 @@ copy /Y "%DL_DIR%\\package.download" "%APP_DIR%\\package.json" >nul || goto :per
 copy /Y "%DL_DIR%\\manifest.download" "%APP_DIR%\\manifest.json" >nul || goto :permission_error\r
 del /Q "%DL_DIR%\\*.download" >nul 2>&1\r
 echo [3/4] Conectando com sua unidade...\r
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$needle=[IO.Path]::Combine($env:LOCALAPPDATA,'PedeAqui','PrintAgent','src','index.mjs'); Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -and $_.CommandLine.Contains($needle) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1\r
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$needle=[IO.Path]::Combine($env:LOCALAPPDATA,'PedeAqui','PrintAgent','src','index.mjs'); Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'node.exe' -and $_.CommandLine -and $_.CommandLine.Contains($needle) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1\r
 (\r
   echo @echo off\r
   echo setlocal EnableExtensions\r
