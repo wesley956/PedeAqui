@@ -76,9 +76,11 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
       <div className={styles.topbar}><Link href={`/m/${slug}`} className={styles.back}>← {vocabulary.catalogLabel}</Link><PedeAquiLogo size="xs" decorative /></div>
 
       <header className={`card ${styles.hero}`}>
-        <div className={`${styles.successIcon} ${terminalProblem ? styles.problemIcon : ""}`}>{terminalProblem ? "!" : "✓"}</div>
-        <span className={styles.store}>{store.name}</span><h1>{heroTitle}</h1><p className={styles.heroMessage}>{heroMessage}</p>
-        <div className={styles.orderNumber} aria-label={`Número do pedido ${order.display_number}`}><span>PEDIDO</span><strong>#{order.display_number}</strong></div>
+        <div className={styles.orderIdentity} aria-label={`Número do pedido ${order.display_number}`}>
+          <span className={styles.orderIdentityText}>Pedido <strong>#{order.display_number}</strong></span>
+          <span className={`${styles.successIcon} ${terminalProblem ? styles.problemIcon : ""}`} aria-hidden="true">{terminalProblem ? "!" : "✓"}</span>
+        </div>
+        <h1>{heroTitle}</h1><span className={styles.store}>{store.name}</span><p className={styles.heroMessage}>{heroMessage}</p>
         <span className={`${styles.status} ${terminalProblem ? styles.terminalProblem : completedFulfillment || orderStatus === "completed" ? styles.terminalSuccess : ""}`}>{currentLabel}</span>
         {estimate && !terminalProblem ? <div className={styles.estimate}><span>{fulfillmentType === "delivery" ? "Previsão registrada" : "Recebimento"}</span><strong>{estimate}</strong></div> : null}
         {scheduledLabel && !terminalProblem ? <div className={styles.estimate}><span>Horário solicitado</span><strong>{scheduledLabel}</strong></div> : null}
