@@ -54,7 +54,12 @@ function addressLines(store: StoreInformation) {
   return [street, district, city, store.postal_code ? `CEP ${store.postal_code}` : null].filter(Boolean) as string[];
 }
 
+function hasSpecificAddress(store: StoreInformation) {
+  return Boolean(store.street || store.number || store.district || store.postal_code);
+}
+
 function mapsHref(store: StoreInformation) {
+  if (!hasSpecificAddress(store)) return null;
   const query = [store.street, store.number, store.district, store.city, store.state, store.postal_code].filter(Boolean).join(", ");
   return query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : null;
 }
@@ -83,7 +88,7 @@ export function StoreInformationSheet({ store, hours }: Props) {
     { label: "TikTok", href: store.tiktok_url },
   ].filter((item): item is { label: string; href: string } => Boolean(item.href));
   const hasHours = hours.length > 0;
-  const hasInformation = address.length > 0 || Boolean(store.phone) || Boolean(store.public_whatsapp) || hasHours || socialLinks.length > 0;
+  const hasInformation = hasSpecificAddress(store) || Boolean(store.phone) || Boolean(store.public_whatsapp) || hasHours || socialLinks.length > 0;
 
   if (!hasInformation) return null;
 
@@ -112,7 +117,6 @@ export function StoreInformationSheet({ store, hours }: Props) {
       <div className={styles.sheet}>
         <header className={styles.header}>
           <div>
-            <span className={styles.eyebrow}>PedeAqui</span>
             <h2 id="store-information-title">Informações da loja</h2>
             <p>{store.name}</p>
           </div>
