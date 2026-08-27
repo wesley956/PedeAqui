@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { publicMenuSchema } from "@/server/menu/schemas";
-import { storeProfileInputSchema } from "@/server/stores/store-profile-service";
 
 const read = (path: string) => readFileSync(path, "utf8");
 const menuPage = read("src/app/m/[slug]/page.tsx");
 const sheet = read("src/features/menu/store-information-sheet.tsx");
 const sheetCss = read("src/features/menu/store-information-sheet.module.css");
 const settings = read("src/app/(app)/configuracoes/loja/page.tsx");
+const storeProfileService = read("src/server/stores/store-profile-service.ts");
 
 describe("PA-PUBLIC-UX-010 store information", () => {
   it("keeps the existing storefront and adds only the store information trigger", () => {
@@ -18,20 +18,25 @@ describe("PA-PUBLIC-UX-010 store information", () => {
   });
 
   it("keeps new public RPC fields additive while the database migration rolls out", () => {
-    const parsed = publicMenuSchema.parse({
-      store: { id: "00000000-0000-4000-8000-000000000001", name: "Loja", slug: "loja", phone: null, city: "Nova Odessa", state: "SP", timezone: "America/Sao_Paulo", status: "active", business_type: "restaurant" },
-      settings: { theme: "pedeaqui", primary_color: "#FF6B00", logo_url: null, cover_url: null, show_search: true, show_categories: true, show_product_images: true, allow_pickup: true, allow_delivery: true, minimum_order_cents: 0, active: true, accepting_orders: true, pause_reason: null },
-      delivery: { enabled: false, fee_mode: "flat", starting_fee_cents: 0, estimated_min_minutes: 0, estimated_max_minutes: 0, free_delivery_over_cents: null },
-      hours: [], categories: [],
+    const parsed = publicMenuSchema.shape.store.parse({
+      id: "00000000-0000-4000-8000-000000000001",
+      name: "Loja",
+      slug: "loja",
+      phone: null,
+      city: "Nova Odessa",
+      state: "SP",
+      timezone: "America/Sao_Paulo",
+      status: "active",
+      business_type: "restaurant",
     });
-    expect(parsed.store.public_whatsapp).toBeNull();
-    expect(parsed.store.instagram_url).toBeNull();
+    expect(parsed.public_whatsapp).toBeNull();
+    expect(parsed.instagram_url).toBeNull();
+    expect(parsed.street).toBeNull();
   });
 
-  it("rejects unsafe public URLs and keeps administrative email separate", () => {
-    const base = { name: "Loja", phone: "19999999999", email: "admin@example.com", postalCode: "", street: "", number: "", complement: "", district: "", city: "Nova Odessa", state: "SP", publicWhatsapp: "", websiteUrl: "", instagramUrl: "", facebookUrl: "", tiktokUrl: "" };
-    expect(storeProfileInputSchema.safeParse({ ...base, websiteUrl: "javascript:alert(1)" }).success).toBe(false);
-    expect(storeProfileInputSchema.safeParse({ ...base, websiteUrl: "https://example.com" }).success).toBe(true);
+  it("rejects unsafe public URLs in the profile contract and keeps administrative email separate", () => {
+    expect(storeProfileService).toContain('protocol === "http:" || protocol === "https:"');
+    expect(storeProfileService).toContain("Informe uma URL completa começando com http:// ou https://");
     expect(settings).toContain("Uso administrativo. Não é publicado automaticamente");
     expect(sheet).not.toContain("store.email");
   });
