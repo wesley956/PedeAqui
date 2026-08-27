@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
+// Keep these assertions at the component/service boundary that owns each behavior.
 const page = readFileSync("src/app/m/[slug]/checkout/page.tsx", "utf8");
 const actions = readFileSync("src/features/checkout/actions.ts", "utf8");
 const service = readFileSync("src/server/checkout/checkout-service.ts", "utf8");
