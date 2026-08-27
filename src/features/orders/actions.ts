@@ -132,9 +132,12 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
       case "served": await OrderService.setFulfillment(orderId, "served"); break;
       case "complete": await OrderService.complete(orderId); break;
       case "print": {
-        const jobsCreated = await PrintService.enqueueConfirmedOrder(orderId);
-        if (jobsCreated === 0) throw new Error("No active print routes");
-        message = jobsCreated === 1 ? "1 via enviada para impressão." : `${jobsCreated} vias enviadas para impressão.`;
+        const result = await PrintService.requestConfirmedOrderPrint(orderId);
+        if (result.kind === "no_route") throw new Error("No active print routes");
+        if (result.kind === "already_queued") message = "A impressão já está na fila.";
+        else if (result.kind === "retried") message = result.count === 1 ? "Impressão reenviada para a fila." : `${result.count} impressões reenviadas para a fila.`;
+        else if (result.kind === "reprinted") message = result.count === 1 ? "Reimpressão enviada para a fila." : `${result.count} reimpressões enviadas para a fila.`;
+        else message = result.count === 1 ? "1 via enviada para impressão." : `${result.count} vias enviadas para impressão.`;
         break;
       }
       case "reprint": {
