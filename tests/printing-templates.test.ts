@@ -43,5 +43,41 @@ describe("thermal print templates", () => {
     expect(text).toContain("ENDERECO: Rua A, Nº 10");
     expect(text).toContain("Pagamento: pix");
     expect(text).toContain("TOTAL");
+    expect(text).not.toContain("Troco para");
+    expect(text).not.toMatch(/\nTroco\s/);
+  });
+
+  it("prints BRL with thermal-safe spaces and calculates cash change", () => {
+    const cashPayload = {
+      ...payload,
+      order: {
+        ...payload.order,
+        payment_method: "cash",
+        cash_change_for_cents: 5000,
+      },
+    };
+    const text = renderPrintDocument(cashPayload, "expedition", 80);
+
+    expect(text).toContain("R$ 40,00");
+    expect(text).not.toContain("\u00a0");
+    expect(text).not.toContain("\u202f");
+    expect(text).toMatch(/Troco para\s+R\$ 50,00/);
+    expect(text).toMatch(/\nTroco\s+R\$ 10,00\n/);
+  });
+
+  it("does not print change data when cash change was not requested", () => {
+    const cashPayload = {
+      ...payload,
+      order: {
+        ...payload.order,
+        payment_method: "cash",
+        cash_change_for_cents: null,
+      },
+    };
+    const text = renderPrintDocument(cashPayload, "receipt", 80);
+
+    expect(text).toContain("Pagamento: cash");
+    expect(text).not.toContain("Troco para");
+    expect(text).not.toMatch(/\nTroco\s/);
   });
 });

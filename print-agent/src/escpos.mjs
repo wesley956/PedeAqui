@@ -9,6 +9,7 @@ const cp850 = new Map(Object.entries({
 function textBytes(text) {
   const bytes = [];
   for (const char of text) {
+    if (char === "\u00a0" || char === "\u202f") { bytes.push(32); continue; }
     if (cp850.has(char)) { bytes.push(cp850.get(char)); continue; }
     const code = char.charCodeAt(0);
     bytes.push((code >= 32 && code <= 126) || code === 10 || code === 13 ? code : 63);
