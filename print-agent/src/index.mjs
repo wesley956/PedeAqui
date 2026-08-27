@@ -6,15 +6,37 @@ const apiUrl = (process.env.PEDEAQUI_URL || "").replace(/\/$/, "");
 const token = process.env.PEDEAQUI_PRINT_AGENT_TOKEN || "";
 const pollMs = Math.max(1000, Number(process.env.PEDEAQUI_PRINT_POLL_MS || 2000));
 const heartbeatMs = Math.max(5000, Number(process.env.PEDEAQUI_PRINT_HEARTBEAT_MS || 15000));
-const version = "0.3.0";
+const updateCheckMs = Math.max(60000, Number(process.env.PEDEAQUI_PRINT_UPDATE_CHECK_MS || 6 * 60 * 60 * 1000));
+const watchdogEnabled = process.env.PEDEAQUI_AGENT_WATCHDOG === "1";
+const remoteManifestUrl = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent/manifest.json";
+const version = "0.4.0";
 const printers = new Map();
 let heartbeatRunning = false;
+let updateCheckRunning = false;
+let updateRequested = false;
+let lastUpdateCheckAt = 0;
 let lastDiscoveryAt = 0;
 let discoveredPrinters = [];
 
 if (!apiUrl || !token) {
   console.error("PEDEAQUI_URL and PEDEAQUI_PRINT_AGENT_TOKEN are required");
   process.exit(1);
+}
+
+function versionParts(value) {
+  const match = String(value || "").trim().match(/^(\d+)\.(\d+)\.(\d+)$/);
+  return match ? match.slice(1).map(Number) : null;
+}
+
+function isNewerVersion(remote, current) {
+  const left = versionParts(remote);
+  const right = versionParts(current);
+  if (!left || !right) return false;
+  for (let index = 0; index < 3; index += 1) {
+    if (left[index] > right[index]) return true;
+    if (left[index] < right[index]) return false;
+  }
+  return false;
 }
 
 async function post(path, body = {}) {
@@ -45,13 +67,13 @@ async function recoverSpool() {
   }
 }
 
-async function sendToPrinter(printer, content, copies) {
+async function sendToPrinter(printer, content, copies, jobId) {
   if (printer.connectionType === "network") {
     await printNetwork({ address: printer.address, port: printer.port }, content, copies);
     return;
   }
   if (printer.connectionType === "system" || printer.connectionType === "usb") {
-    await printSystem({ address: printer.address }, content, copies);
+    await printSystem({ address: printer.address }, content, copies, jobId);
     return;
   }
   throw new Error(`connection type ${printer.connectionType} is not implemented by this agent`);
@@ -63,7 +85,7 @@ async function deliver(job) {
   printers.set(printer.id, { id: printer.id, status: "online", error: null });
   try {
     await saveSpool(job, "printing");
-    await sendToPrinter(printer, job.renderedContent, job.copies);
+    await sendToPrinter(printer, job.renderedContent, job.copies, job.id);
     await saveSpool(job, "printed_unacked");
     await acknowledge(job.id);
     await removeSpool(job.id);
@@ -125,6 +147,31 @@ async function refreshDiscovery() {
   }
 }
 
+async function checkForUpdate(force = false) {
+  if (!watchdogEnabled || updateCheckRunning || updateRequested) return;
+  const now = Date.now();
+  if (!force && now - lastUpdateCheckAt < updateCheckMs) return;
+  lastUpdateCheckAt = now;
+  updateCheckRunning = true;
+  try {
+    const response = await fetch(`${remoteManifestUrl}?t=${now}`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) throw new Error(`manifest ${response.status}`);
+    const manifest = await response.json();
+    const remoteVersion = String(manifest?.version || "");
+    if (isNewerVersion(remoteVersion, version)) {
+      updateRequested = true;
+      console.log(`Print Agent update available: ${version} -> ${remoteVersion}`);
+    }
+  } catch (error) {
+    console.error("update check failed", error);
+  } finally {
+    updateCheckRunning = false;
+  }
+}
+
 async function heartbeat() {
   if (heartbeatRunning) return;
   heartbeatRunning = true;
@@ -140,10 +187,16 @@ async function heartbeat() {
         discoveredPrinters,
         spool: true,
         healthProbe: true,
+        autoRecovery: true,
+        windowsSpoolerRecovery: process.platform === "win32",
+        isolatedWindowsJobCleanup: process.platform === "win32",
+        watchdog: watchdogEnabled,
+        selfUpdate: watchdogEnabled,
         paperWidthsMm: [58, 80],
       },
       printers: [...printers.values()],
     });
+    void checkForUpdate();
   } catch (error) {
     console.error("heartbeat failed", error);
   } finally {
@@ -154,12 +207,18 @@ async function heartbeat() {
 async function loop() {
   await recoverSpool();
   void heartbeat();
+  void checkForUpdate(true);
   setInterval(() => void heartbeat(), heartbeatMs).unref();
   for (;;) {
     try {
       const { jobs = [] } = await post("/api/print-agent/claim", { limit: 5 });
       for (const job of jobs) await deliver(job);
     } catch (error) { console.error("claim failed", error); }
+
+    if (updateRequested && watchdogEnabled) {
+      console.log("Restarting Print Agent so the watchdog can install the available update.");
+      process.exit(75);
+    }
     await new Promise((resolve) => setTimeout(resolve, pollMs));
   }
 }

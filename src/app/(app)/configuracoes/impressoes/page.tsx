@@ -80,6 +80,11 @@ function supportsAutoDiscovery(capabilities: unknown) {
   return record(capabilities)?.autoDiscovery === true;
 }
 
+function supportsAutoRecovery(capabilities: unknown) {
+  const value = record(capabilities);
+  return value?.autoRecovery === true && value?.watchdog === true && value?.selfUpdate === true;
+}
+
 function isVirtualPrinter(name: string) {
   const value = name.toLowerCase();
   return ["pdf", "xps", "onenote", "fax", "microsoft print", "send to"].some((term) => value.includes(term));
@@ -165,14 +170,16 @@ export default async function PrintingSettingsPage({
           {config.agents.map((agent) => {
             const health = effectivePrintHealth(agent.status as PrintHealth, agent.last_seen_at);
             const modern = supportsAutoDiscovery(agent.capabilities);
+            const protectedAgent = supportsAutoRecovery(agent.capabilities);
             return (
               <div className={styles.computerRow} key={agent.id}>
                 <div className={styles.itemMain}>
                   <strong>{agent.name}</strong>
                   <Status health={health} text={`${healthLabels[health]}${agent.version ? ` · versão ${agent.version}` : ""}`} />
                   {!modern ? <span className={styles.hint}>Este computador ainda usa o modo antigo. Atualize a conexão para o PedeAqui encontrar as impressoras sozinho.</span> : null}
+                  {modern && !protectedAgent ? <span className={styles.warningText}>Atualização de estabilidade disponível: recuperação automática de travamentos, watchdog e atualização automática do agente.</span> : null}
                 </div>
-                {(!modern || health === "offline" || health === "unknown") ? <AgentReconnectInstaller agentId={agent.id} /> : null}
+                {(!modern || !protectedAgent || health === "offline" || health === "unknown") ? <AgentReconnectInstaller agentId={agent.id} upgrade={modern && !protectedAgent} /> : null}
               </div>
             );
           })}

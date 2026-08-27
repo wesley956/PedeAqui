@@ -9,7 +9,8 @@ import {
 } from "@/features/printing/actions";
 
 const initialState: AgentCreationState = { token: null, name: null, error: null };
-const RAW_BASE = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent/src";
+const RAW_ROOT = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent";
+const RAW_BASE = `${RAW_ROOT}/src`;
 
 function assistedInstaller(token: string, appUrl: string) {
   const safeToken = token.replaceAll("\"", "");
@@ -43,19 +44,29 @@ for /f "delims=" %%N in ('where node 2^>nul') do if not defined NODE_EXE set "NO
 if not defined NODE_EXE if exist "%ProgramFiles%\\nodejs\\node.exe" set "NODE_EXE=%ProgramFiles%\\nodejs\\node.exe"\r
 if not defined NODE_EXE goto :node_manual\r
 echo [2/4] Baixando o PedeAqui Impressao...\r
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/index.mjs' -OutFile '%DL_DIR%\\index.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/escpos.mjs' -OutFile '%DL_DIR%\\escpos.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/system-print.mjs' -OutFile '%DL_DIR%\\system-print.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/spool.mjs' -OutFile '%DL_DIR%\\spool.download'"\r
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/index.mjs' -OutFile '%DL_DIR%\\index.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/escpos.mjs' -OutFile '%DL_DIR%\\escpos.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/system-print.mjs' -OutFile '%DL_DIR%\\system-print.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/spool.mjs' -OutFile '%DL_DIR%\\spool.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_BASE}/updater.mjs' -OutFile '%DL_DIR%\\updater.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_ROOT}/package.json' -OutFile '%DL_DIR%\\package.download'; Invoke-WebRequest -UseBasicParsing -Uri '${RAW_ROOT}/manifest.json' -OutFile '%DL_DIR%\\manifest.download'"\r
 if errorlevel 1 goto :download_error\r
 copy /Y "%DL_DIR%\\index.download" "%SRC_DIR%\\index.mjs" >nul || goto :permission_error\r
 copy /Y "%DL_DIR%\\escpos.download" "%SRC_DIR%\\escpos.mjs" >nul || goto :permission_error\r
 copy /Y "%DL_DIR%\\system-print.download" "%SRC_DIR%\\system-print.mjs" >nul || goto :permission_error\r
 copy /Y "%DL_DIR%\\spool.download" "%SRC_DIR%\\spool.mjs" >nul || goto :permission_error\r
+copy /Y "%DL_DIR%\\updater.download" "%SRC_DIR%\\updater.mjs" >nul || goto :permission_error\r
+copy /Y "%DL_DIR%\\package.download" "%APP_DIR%\\package.json" >nul || goto :permission_error\r
+copy /Y "%DL_DIR%\\manifest.download" "%APP_DIR%\\manifest.json" >nul || goto :permission_error\r
 del /Q "%DL_DIR%\\*.download" >nul 2>&1\r
 echo [3/4] Conectando com sua unidade...\r
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$needle=[IO.Path]::Combine($env:LOCALAPPDATA,'PedeAqui','PrintAgent','src','index.mjs'); Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'node.exe' -and $_.CommandLine -and $_.CommandLine.Contains($needle) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1\r
 (\r
   echo @echo off\r
+  echo setlocal EnableExtensions\r
   echo set "PEDEAQUI_URL=${safeUrl}"\r
   echo set "PEDEAQUI_PRINT_AGENT_TOKEN=${safeToken}"\r
+  echo set "PEDEAQUI_AGENT_WATCHDOG=1"\r
+  echo :agent_loop\r
+  echo "%NODE_EXE%" "%LOCALAPPDATA%\\PedeAqui\\PrintAgent\\src\\updater.mjs"\r
   echo "%NODE_EXE%" "%LOCALAPPDATA%\\PedeAqui\\PrintAgent\\src\\index.mjs"\r
+  echo timeout /t 5 /nobreak ^>nul\r
+  echo goto agent_loop\r
 ) > "%APP_DIR%\\run.cmd"\r
 (\r
   echo Set shell = CreateObject^("WScript.Shell"^)\r
@@ -69,6 +80,7 @@ wscript.exe "%APP_DIR%\\launch.vbs"\r
 echo.\r
 echo ==============================================\r
 echo PedeAqui Impressao conectado com sucesso.\r
+echo Recuperacao automatica e watchdog ativados.\r
 echo Volte ao painel e atualize o status.\r
 echo ==============================================\r
 timeout /t 5 >nul\r
@@ -113,7 +125,7 @@ function InstallerCard({ state }: { state: AgentCreationState }) {
   return (
     <div style={{ padding: 14, borderRadius: 14, background: "var(--surface-2)", border: "1px solid var(--border)", display: "grid", gap: 10 }}>
       <strong>Computador preparado: {state.name}</strong>
-      <span className="muted" style={{ fontSize: 13 }}>Baixe e execute o instalador abaixo neste computador. Ele faz a conexão automaticamente e inicia junto com o Windows.</span>
+      <span className="muted" style={{ fontSize: 13 }}>Baixe e execute o instalador abaixo neste computador. Ele conecta a impressora, ativa recuperação automática, atualização automática e reinicia o agente sozinho se ele parar.</span>
       <button type="button" onClick={() => downloadAssistedInstaller(state.token!)} style={buttonStyle}>Baixar instalador assistido (Windows)</button>
       <span className="muted" style={{ fontSize: 12 }}>O Windows pode pedir confirmação para executar o arquivo. Depois, volte para esta tela e atualize o status.</span>
       <details>
@@ -141,7 +153,7 @@ export function AgentTokenCreator() {
   );
 }
 
-export function AgentReconnectInstaller({ agentId }: { agentId: string }) {
+export function AgentReconnectInstaller({ agentId, upgrade = false }: { agentId: string; upgrade?: boolean }) {
   const router = useRouter();
   const [state, action, pending] = useActionState(reconnectPrintAgentAction, initialState);
   return (
@@ -150,11 +162,13 @@ export function AgentReconnectInstaller({ agentId }: { agentId: string }) {
         <button type="button" onClick={() => router.refresh()} style={secondaryButtonStyle}>Atualizar status</button>
         <form action={action}>
           <input type="hidden" name="agentId" value={agentId} />
-          <button type="submit" disabled={pending} style={secondaryButtonStyle}>{pending ? "Preparando…" : "Reinstalar conexão"}</button>
+          <button type="submit" disabled={pending} style={secondaryButtonStyle}>{pending ? "Preparando…" : upgrade ? "Atualizar proteção automática" : "Reinstalar conexão"}</button>
         </form>
       </div>
       <span className="muted" style={{ fontSize: 12 }}>
-        “Atualizar status” apenas consulta a situação atual. “Reinstalar conexão” gera uma nova chave e deve ser usado somente quando for necessário instalar ou reconectar este computador novamente.
+        {upgrade
+          ? "Esta atualização é feita uma vez. Depois dela, o PedeAqui passa a recuperar travamentos e buscar novas versões do agente automaticamente."
+          : "“Atualizar status” apenas consulta a situação atual. “Reinstalar conexão” gera uma nova chave e deve ser usado somente quando for necessário instalar ou reconectar este computador novamente."}
       </span>
       {state.error ? <div style={{ color: "#f97066", fontSize: 13 }}>{state.error}</div> : null}
       <InstallerCard state={state} />
