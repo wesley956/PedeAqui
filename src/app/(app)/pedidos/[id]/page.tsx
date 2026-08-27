@@ -23,7 +23,6 @@ const fulfillmentLabels: Record<string, string> = {
   canceled: "Cancelado", not_required: "Não aplicável",
 };
 const printStatusLabels: Record<string, string> = { pending: "Pendente", processing: "Imprimindo", printed: "Impresso", failed: "Falhou", cancelled: "Cancelado" };
-const printDocumentLabels: Record<string, string> = { kitchen: "Cozinha", expedition: "Expedição", counter: "Balcão", receipt: "Recibo", custom: "Personalizado" };
 const historyDomainLabels: Record<string, string> = { order: "Pedido", production: "Produção", fulfillment: "Entrega/retirada", payment: "Pagamento" };
 const historySourceLabels: Record<string, string> = { panel: "Painel", checkout: "Cardápio", system: "Sistema", integration: "Integração", automation: "Automação", pdv: "PDV" };
 
@@ -200,11 +199,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <details>
           <summary>Impressões ({printJobs.length})</summary>
           <div className={styles.detailsBody}>
-            {order.order_status === "confirmed" ? <OrderActionForm orderId={order.id} intent="print" label="Imprimir pedido agora" tone="secondary" compact /> : null}
+            {order.order_status === "confirmed" ? <OrderActionForm orderId={order.id} intent="print" label="Imprimir pedido" tone="secondary" compact /> : null}
             {printJobs.length === 0 ? <p className={styles.small}>Nenhuma via roteada para este pedido.</p> : printJobs.map((job) => (
               <div key={job.id} className={styles.printEntry}>
-                <strong>{printDocumentLabels[job.document_type] ?? job.document_type}{job.is_reprint ? " · Reimpressão" : ""}</strong>
-                <div className={styles.small}>{job.station_name} → {job.printer_name} · {printStatusLabels[job.status] ?? job.status} · {job.copies} cópia(s)</div>
+                <strong>{job.station_name}{job.is_reprint ? " · Reimpressão" : ""}</strong>
+                <div className={styles.small}>{job.printer_name} · {printStatusLabels[job.status] ?? job.status} · {job.copies} cópia(s)</div>
                 <div className={styles.small}>Solicitada em {dateTime(job.created_at, timeZone)}{job.printed_at ? ` · impressa em ${dateTime(job.printed_at, timeZone)}` : ""}</div>
                 {job.last_error ? <div className={styles.error}>Falha ao imprimir. Verifique o agente e a impressora antes de tentar novamente.</div> : null}
                 {["printed", "failed"].includes(job.status) ? <OrderActionForm orderId={order.id} intent="reprint" printJobId={job.id} label="Reimprimir via" tone="secondary" reasonLabel="Motivo da reimpressão" reasonPlaceholder="Ex.: via danificada" compact /> : null}
