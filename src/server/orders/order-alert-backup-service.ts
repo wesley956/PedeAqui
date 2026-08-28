@@ -5,13 +5,18 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { AccessContext } from "@/server/access/context";
 
 const browserIdSchema = z.string().uuid();
-const cursorSchema = z.string().datetime({ offset: true });
+const cursorSchema = z.string().regex(/^\d+$/);
 const panelPresenceTtlMs = 90_000;
-const maxCursorAgeMs = 24 * 60 * 60 * 1000;
 
 export type NativeOrderAlertAgentContext = {
   organization_id: string;
   store_id: string;
+};
+
+type NativeOrderAlertRow = {
+  id: string;
+  displayNumber: number | null;
+  occurredAt: string;
 };
 
 export class OrderAlertBackupService {
@@ -69,47 +74,51 @@ export class OrderAlertBackupService {
     return { panelActive: Boolean(activePanel), nativeEnabled: Boolean(enabledPreference) };
   }
 
+  static async baselineCursor(agent: NativeOrderAlertAgentContext) {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("order_alert_events")
+      .select("id")
+      .eq("organization_id", agent.organization_id)
+      .eq("store_id", agent.store_id)
+      .order("id", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data?.id == null ? "0" : String(data.id);
+  }
+
   static async pollForAgent(agent: NativeOrderAlertAgentContext, cursor: string | null) {
-    const now = new Date();
-    const nextCursor = now.toISOString();
     const { panelActive, nativeEnabled } = await this.statusForAgent(agent);
 
     if (!cursor) {
       return {
-        cursor: nextCursor,
+        cursor: await this.baselineCursor(agent),
         panelActive,
         nativeEnabled,
-        orders: [] as Array<{ id: string; displayNumber: number | null; createdAt: string }>,
+        orders: [] as NativeOrderAlertRow[],
       };
     }
 
-    let since = new Date(cursorSchema.parse(cursor));
-    const oldestAllowed = new Date(now.getTime() - maxCursorAgeMs);
-    if (since < oldestAllowed) since = oldestAllowed;
-    if (since > now) since = now;
-
+    const safeCursor = cursorSchema.parse(cursor);
     const admin = createAdminClient();
     const { data, error } = await admin
-      .from("orders")
-      .select("id, display_number, created_at")
+      .from("order_alert_events")
+      .select("id, display_number, occurred_at")
       .eq("organization_id", agent.organization_id)
       .eq("store_id", agent.store_id)
-      .eq("order_status", "pending_confirmation")
-      .gt("created_at", since.toISOString())
-      .lte("created_at", nextCursor)
-      .order("created_at", { ascending: true })
+      .gt("id", safeCursor)
+      .order("id", { ascending: true })
       .limit(100);
     if (error) throw error;
 
-    return {
-      cursor: nextCursor,
-      panelActive,
-      nativeEnabled,
-      orders: (data ?? []).map((order) => ({
-        id: String(order.id),
-        displayNumber: order.display_number == null ? null : Number(order.display_number),
-        createdAt: String(order.created_at),
-      })),
-    };
+    const orders: NativeOrderAlertRow[] = (data ?? []).map((event) => ({
+      id: String(event.id),
+      displayNumber: event.display_number == null ? null : Number(event.display_number),
+      occurredAt: String(event.occurred_at),
+    }));
+    const nextCursor = orders.at(-1)?.id ?? safeCursor;
+
+    return { cursor: nextCursor, panelActive, nativeEnabled, orders };
   }
 }
