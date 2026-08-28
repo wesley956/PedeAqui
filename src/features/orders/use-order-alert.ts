@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   createOrderAlertAudio,
@@ -40,6 +41,7 @@ function showBackgroundNotification(displayNumber?: number) {
 }
 
 export function OrderAlertProvider({ children, storeId }: { children: ReactNode; storeId: string | null }) {
+  const pathname = usePathname();
   const [status, setStatus] = useState<OrderAlertStatus>("off");
   const statusRef = useRef<OrderAlertStatus>("off");
   const configuredRef = useRef(false);
@@ -151,7 +153,7 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
   }, [reproduceAndValidate]);
 
   useEffect(() => {
-    if (!storeId) return;
+    if (!storeId || pathname === "/pedidos" || pathname.startsWith("/pedidos/")) return;
     const supabase = createClient();
     const channel = supabase
       .channel(`global-order-alert:${storeId}`)
@@ -170,7 +172,7 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [notifyNewOrder, storeId]);
+  }, [notifyNewOrder, pathname, storeId]);
 
   const value = useMemo<OrderAlertContextValue>(() => ({
     status,
