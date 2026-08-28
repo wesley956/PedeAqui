@@ -82,7 +82,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
     const enabled = readOrderAlertPreference();
     audioRef.current = audio;
     soundEnabledRef.current = enabled;
-    setSoundEnabled(enabled);
+    const restoreTimer = window.setTimeout(() => setSoundEnabled(enabled), 0);
 
     const unlockPersistedSound = () => {
       if (!soundEnabledRef.current || !audioRef.current) return;
@@ -102,6 +102,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
     window.addEventListener("keydown", unlockPersistedSound, { once: true, capture: true });
 
     return () => {
+      window.clearTimeout(restoreTimer);
       window.removeEventListener("pointerdown", unlockPersistedSound, true);
       window.removeEventListener("keydown", unlockPersistedSound, true);
       audio.pause();
