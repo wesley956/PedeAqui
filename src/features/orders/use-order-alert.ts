@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -182,7 +182,7 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
     notifyNewOrder,
   }), [notifyNewOrder, status, test, toggle]);
 
-  return <OrderAlertContext.Provider value={value}>{children}</OrderAlertContext.Provider>;
+  return createElement(OrderAlertContext.Provider, { value }, children);
 }
 
 export function useOrderAlert(onMessage?: MessageHandler) {
