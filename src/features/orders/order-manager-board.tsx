@@ -67,7 +67,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
-  const seen = useRef(new Set(orders.map((order) => order.id));
+  const seen = useRef(new Set(orders.map((order) => order.id)));
   const { soundEnabled, primaryLabel, toggle, test, notifyNewOrder } = useOrderAlert(setNotice);
 
   useEffect(() => {
