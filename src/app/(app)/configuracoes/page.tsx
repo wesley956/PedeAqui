@@ -12,6 +12,7 @@ const storeSettings: readonly StoreSetting[] = [
   { group: "Estabelecimento", title: "Dados da loja", description: "Nome, telefone, e-mail, endereço, cidade e estado da unidade.", href: "/configuracoes/loja", permissions: [PERMISSIONS.STORES_VIEW] },
   { group: "Estabelecimento", title: "Cardápio e identidade", description: "Logo, capa, cor, publicação e pedido mínimo do cardápio público.", href: "/configuracoes/cardapio", permissions: [PERMISSIONS.STORES_VIEW], moduleKey: "catalog" },
   { group: "Estabelecimento", title: "Horários", description: "Períodos de funcionamento, inclusive após meia-noite.", href: "/configuracoes/horarios", permissions: [PERMISSIONS.STORES_VIEW] },
+  { group: "Operação", title: "Fluxo de pedidos", description: "Escolha um fluxo completo, simplificado ou personalize as etapas de entrega e retirada.", href: "/configuracoes/fluxo-pedidos", permissions: [PERMISSIONS.STORES_VIEW] },
   { group: "Operação", title: "Salão e mesas", description: "Estrutura de mesas, capacidade, áreas e QR do salão.", href: "/configuracoes/salao", permissions: [PERMISSIONS.DINING_MANAGE], moduleKey: "dining" },
   { group: "Operação", title: "Caixas", description: "Pontos físicos usados na abertura e fechamento dos turnos.", href: "/configuracoes/caixa", permissions: [PERMISSIONS.CASH_MANAGE], moduleKey: "cash" },
   { group: "Operação", title: "Entrega", description: "Prazo, taxa padrão, frete grátis e áreas atendidas.", href: "/configuracoes/entrega", permissions: [PERMISSIONS.STORES_VIEW], moduleKey: "deliveries" },
