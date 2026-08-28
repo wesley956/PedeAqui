@@ -67,6 +67,7 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
       userGuide={userGuide}
       guideSteps={guideSteps}
       experienceMode={navigationAccess.experienceMode}
+      storeId={navigationAccess.context.storeId}
     >
       {children}
     </AppShell>
