@@ -18,13 +18,12 @@ create index if not exists order_alert_events_store_id_idx
 alter table public.order_alert_events enable row level security;
 
 revoke all on table public.order_alert_events from public, anon, authenticated;
-grant select, insert, delete on table public.order_alert_events to service_role;
-grant usage, select on sequence public.order_alert_events_id_seq to service_role;
+grant select, delete on table public.order_alert_events to service_role;
 
-create or replace function public.capture_order_alert_event()
+create or replace function private.capture_order_alert_event()
 returns trigger
 language plpgsql
-security invoker
+security definer
 set search_path = ''
 as $$
 begin
@@ -48,10 +47,9 @@ begin
 end;
 $$;
 
-revoke all on function public.capture_order_alert_event() from public, anon, authenticated;
-grant execute on function public.capture_order_alert_event() to service_role;
+revoke all on function private.capture_order_alert_event() from public, anon, authenticated;
 
 drop trigger if exists trg_capture_order_alert_event on public.orders;
 create trigger trg_capture_order_alert_event
 after insert on public.orders
-for each row execute function public.capture_order_alert_event();
+for each row execute function private.capture_order_alert_event();
