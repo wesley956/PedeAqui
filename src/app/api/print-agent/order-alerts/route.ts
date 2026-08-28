@@ -4,7 +4,7 @@ import { authenticatePrintAgentRequest } from "@/server/printing/agent-api";
 import { OrderAlertBackupService } from "@/server/orders/order-alert-backup-service";
 
 const schema = z.object({
-  cursor: z.string().datetime({ offset: true }).nullable().optional(),
+  cursor: z.string().regex(/^\d+$/).nullable().optional(),
 });
 
 export async function POST(request: Request) {
