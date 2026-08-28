@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createClient } from "@/lib/supabase/client";
 import {
   createOrderAlertAudio,
   playOrderAlertTone,
@@ -9,8 +10,36 @@ import {
 } from "@/features/orders/order-alert-tone";
 
 export type OrderAlertStatus = "off" | "needs_activation" | "ready";
+type MessageHandler = (message: string) => void;
 
-export function useOrderAlert(onMessage?: (message: string) => void) {
+type OrderAlertContextValue = {
+  status: OrderAlertStatus;
+  soundEnabled: boolean;
+  primaryLabel: string;
+  toggle: (onMessage?: MessageHandler) => Promise<boolean>;
+  test: (onMessage?: MessageHandler) => Promise<boolean>;
+  notifyNewOrder: (displayNumber?: number, onMessage?: MessageHandler) => Promise<"disabled" | "needs_activation" | "blocked" | "played">;
+};
+
+const OrderAlertContext = createContext<OrderAlertContextValue | null>(null);
+
+function showBackgroundNotification(displayNumber?: number) {
+  if (typeof document === "undefined" || !document.hidden) return;
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+
+  const suffix = displayNumber ? ` #${displayNumber}` : "";
+  const notification = new Notification(`Novo pedido${suffix} · PedeAqui`, {
+    body: "Um novo pedido acabou de chegar. Abra o painel para conferir.",
+    icon: "/icon.svg",
+    tag: displayNumber ? `pedeaqui-order-${displayNumber}` : "pedeaqui-new-order",
+  });
+  notification.onclick = () => {
+    window.focus();
+    notification.close();
+  };
+}
+
+export function OrderAlertProvider({ children, storeId }: { children: ReactNode; storeId: string | null }) {
   const [status, setStatus] = useState<OrderAlertStatus>("off");
   const statusRef = useRef<OrderAlertStatus>("off");
   const configuredRef = useRef(false);
@@ -51,9 +80,14 @@ export function useOrderAlert(onMessage?: (message: string) => void) {
     }
   }, [updateStatus]);
 
-  const activate = useCallback(async () => {
+  const activate = useCallback(async (onMessage?: MessageHandler) => {
     configuredRef.current = true;
     writeOrderAlertPreference(true);
+
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      void Notification.requestPermission().catch(() => undefined);
+    }
+
     const played = await reproduceAndValidate();
     if (played) {
       onMessage?.("Aviso sonoro ativado e testado neste aparelho.");
@@ -61,9 +95,9 @@ export function useOrderAlert(onMessage?: (message: string) => void) {
       onMessage?.("O som ficou salvo, mas o navegador ainda bloqueou a reprodução. Verifique se a página está silenciada e toque em Liberar som.");
     }
     return played;
-  }, [onMessage, reproduceAndValidate]);
+  }, [reproduceAndValidate]);
 
-  const deactivate = useCallback(() => {
+  const deactivate = useCallback((onMessage?: MessageHandler) => {
     configuredRef.current = false;
     writeOrderAlertPreference(false);
     const audio = audioRef.current;
@@ -73,17 +107,17 @@ export function useOrderAlert(onMessage?: (message: string) => void) {
     }
     updateStatus("off");
     onMessage?.("Aviso sonoro desativado.");
-  }, [onMessage, updateStatus]);
+  }, [updateStatus]);
 
-  const toggle = useCallback(async () => {
+  const toggle = useCallback(async (onMessage?: MessageHandler) => {
     if (statusRef.current === "ready") {
-      deactivate();
+      deactivate(onMessage);
       return false;
     }
-    return activate();
+    return activate(onMessage);
   }, [activate, deactivate]);
 
-  const test = useCallback(async () => {
+  const test = useCallback(async (onMessage?: MessageHandler) => {
     const wasConfigured = configuredRef.current;
     const played = await reproduceAndValidate();
     if (!played) {
@@ -98,9 +132,10 @@ export function useOrderAlert(onMessage?: (message: string) => void) {
       onMessage?.("Teste de som reproduzido com sucesso. Para receber alertas de novos pedidos, ative o som.");
     }
     return true;
-  }, [onMessage, reproduceAndValidate, updateStatus]);
+  }, [reproduceAndValidate, updateStatus]);
 
-  const notifyNewOrder = useCallback(async () => {
+  const notifyNewOrder = useCallback(async (displayNumber?: number, onMessage?: MessageHandler) => {
+    showBackgroundNotification(displayNumber);
     if (!configuredRef.current) return "disabled" as const;
     if (statusRef.current !== "ready") {
       onMessage?.("Novo pedido recebido. O som está salvo, mas precisa ser liberado neste navegador.");
@@ -113,20 +148,52 @@ export function useOrderAlert(onMessage?: (message: string) => void) {
       return "blocked" as const;
     }
     return "played" as const;
-  }, [onMessage, reproduceAndValidate]);
+  }, [reproduceAndValidate]);
 
-  const primaryLabel = status === "ready"
-    ? "Som ativo ✓"
-    : status === "needs_activation"
-      ? "Liberar som"
-      : "Ativar som";
+  useEffect(() => {
+    if (!storeId) return;
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`global-order-alert:${storeId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
+        (payload) => {
+          const row = payload.new as { order_status?: string; display_number?: number };
+          if (row.order_status === "pending_confirmation") {
+            void notifyNewOrder(row.display_number);
+          }
+        },
+      )
+      .subscribe();
 
-  return {
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [notifyNewOrder, storeId]);
+
+  const value = useMemo<OrderAlertContextValue>(() => ({
     status,
     soundEnabled: status === "ready",
-    primaryLabel,
+    primaryLabel: status === "ready" ? "Som ativo ✓" : status === "needs_activation" ? "Liberar som" : "Ativar som",
     toggle,
     test,
     notifyNewOrder,
-  };
+  }), [notifyNewOrder, status, test, toggle]);
+
+  return <OrderAlertContext.Provider value={value}>{children}</OrderAlertContext.Provider>;
+}
+
+export function useOrderAlert(onMessage?: MessageHandler) {
+  const alert = useContext(OrderAlertContext);
+  if (!alert) throw new Error("useOrderAlert deve ser usado dentro de OrderAlertProvider");
+
+  return useMemo(() => ({
+    status: alert.status,
+    soundEnabled: alert.soundEnabled,
+    primaryLabel: alert.primaryLabel,
+    toggle: () => alert.toggle(onMessage),
+    test: () => alert.test(onMessage),
+    notifyNewOrder: (displayNumber?: number) => alert.notifyNewOrder(displayNumber, onMessage),
+  }), [alert, onMessage]);
 }
