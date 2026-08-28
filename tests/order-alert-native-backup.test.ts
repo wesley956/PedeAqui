@@ -9,7 +9,8 @@ const backupService = read("src/server/orders/order-alert-backup-service.ts");
 const agentIndex = read("print-agent/src/index.mjs");
 const agentAlert = read("print-agent/src/order-alert.mjs");
 const manifest = JSON.parse(read("print-agent/manifest.json")) as { version: string; files: string[] };
-const migration = read("supabase/sql/146_order_alert_native_backup.sql");
+const presenceMigration = read("supabase/sql/146_order_alert_native_backup.sql");
+const eventMigration = read("supabase/sql/147_order_alert_native_events.sql");
 
 describe("optional native new-order alert backup", () => {
   it("keeps the web sound independent from native presence failures", () => {
@@ -29,20 +30,33 @@ describe("optional native new-order alert backup", () => {
     expect(backupService).toContain("sound_enabled: soundEnabled");
   });
 
-  it("uses a service-role-only presence table with RLS", () => {
-    expect(migration).toContain("create table if not exists public.order_alert_panel_presence");
-    expect(migration).toContain("enable row level security");
-    expect(migration).toContain("revoke all on table public.order_alert_panel_presence from public, anon, authenticated");
-    expect(migration).toContain("sound_enabled boolean not null default false");
-    expect(migration).toContain("is_active boolean not null default true");
+  it("uses service-role-only alert tables with RLS", () => {
+    expect(presenceMigration).toContain("create table if not exists public.order_alert_panel_presence");
+    expect(presenceMigration).toContain("enable row level security");
+    expect(presenceMigration).toContain("revoke all on table public.order_alert_panel_presence from public, anon, authenticated");
+    expect(presenceMigration).toContain("sound_enabled boolean not null default false");
+    expect(presenceMigration).toContain("is_active boolean not null default true");
+    expect(eventMigration).toContain("create table if not exists public.order_alert_events");
+    expect(eventMigration).toContain("revoke all on table public.order_alert_events from public, anon, authenticated");
+  });
+
+  it("captures arrival as an immutable event so fast status changes do not lose the alert", () => {
+    expect(eventMigration).toContain("private.capture_order_alert_event()");
+    expect(eventMigration).toContain("security definer");
+    expect(eventMigration).toContain("if new.order_status = 'pending_confirmation'");
+    expect(eventMigration).toContain("after insert on public.orders");
+    expect(backupService).toContain('.from("order_alert_events")');
+    expect(backupService).toContain('.gt("id", safeCursor)');
+    expect(backupService).not.toContain('.eq("order_status", "pending_confirmation")');
   });
 
   it("lets the authenticated Print Agent poll without exposing the endpoint publicly", () => {
     expect(agentRoute).toContain("authenticatePrintAgentRequest(request)");
     expect(agentRoute).toContain('{ error: "unauthorized" }');
+    expect(agentRoute).toContain("/^\\d+$/");
     expect(backupService).toContain("panelActive");
     expect(backupService).toContain("nativeEnabled");
-    expect(backupService).toContain('.eq("order_status", "pending_confirmation")');
+    expect(backupService).toContain("baselineCursor");
   });
 
   it("plays the same PedeAqui MP3 on Windows only when the web panel is not active", () => {
