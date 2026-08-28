@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { OrderActionForm } from "@/features/orders/order-action-form";
 import { elapsedLabel, type OrderManagerRow } from "@/features/orders/manager-model";
+import { useOrderAlert } from "@/features/orders/use-order-alert";
 import {
   deliveryWorkflowStages,
   foldStageToVisible,
@@ -99,7 +102,10 @@ function FlowSection({ title, stages, orders, config, now }: { title: string; st
 export function CustomOrderWorkflowBoard({ storeId, orders, config }: { storeId: string; orders: OrderManagerRow[]; config: CustomWorkflowConfig }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const seen = useRef(new Set(orders.map((order) => order.id)));
+  const { soundEnabled, primaryLabel, toggle, test, notifyNewOrder } = useOrderAlert(setNotice);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 15_000);
@@ -109,10 +115,33 @@ export function CustomOrderWorkflowBoard({ storeId, orders, config }: { storeId:
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase.channel(`custom-order-manager:${storeId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` }, () => router.refresh())
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
+        (payload) => {
+          const row = payload.new as { id?: string; display_number?: number; order_status?: string };
+          if (row.id && !seen.current.has(row.id)) {
+            seen.current.add(row.id);
+            if (row.order_status === "pending_confirmation") {
+              setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
+              void notifyNewOrder();
+            }
+          }
+          router.refresh();
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
+        () => router.refresh(),
+      )
       .subscribe();
     return () => { void supabase.removeChannel(channel); };
-  }, [router, storeId]);
+  }, [notifyNewOrder, router, storeId]);
+
+  useEffect(() => {
+    for (const order of orders) seen.current.add(order.id);
+  }, [orders]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("pt-BR");
@@ -124,7 +153,15 @@ export function CustomOrderWorkflowBoard({ storeId, orders, config }: { storeId:
   const pickupOrders = filtered.filter((order) => order.fulfillment_type !== "delivery");
 
   return <div className={styles.board}>
-    <div className={styles.toolbar}><div className={styles.search}><Input label="Buscar pedido" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Número ou cliente" /></div><div className={styles.toolbarMeta}>Fluxo personalizado · {filtered.length} pedido(s)</div></div>
+    <div className={styles.toolbar}>
+      <div className={styles.search}><Input label="Buscar pedido" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Número ou cliente" /></div>
+      <Button type="button" tone="secondary" onClick={() => void toggle()} aria-pressed={soundEnabled}>{primaryLabel}</Button>
+      <Button type="button" tone="secondary" onClick={() => void test()}>Testar som</Button>
+      <div className={styles.toolbarMeta}>Fluxo personalizado · {filtered.length} pedido(s)</div>
+    </div>
+    <div className={styles.noticeSlot} aria-live="polite">
+      {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}
+    </div>
     <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} />
     <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} />
   </div>;
