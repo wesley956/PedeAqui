@@ -1,9 +1,46 @@
 import { mkdir, readdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const directory = process.env.PEDEAQUI_PRINT_SPOOL || join(process.cwd(), ".spool");
+const agentRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const directory = process.env.PEDEAQUI_PRINT_SPOOL || join(agentRoot, ".spool");
+const legacyDirectory = join(process.cwd(), ".spool");
+let legacyMigrationAttempted = false;
 
-async function ensure() { await mkdir(directory, { recursive: true }); }
+async function migrateLegacySpool() {
+  if (legacyMigrationAttempted || legacyDirectory === directory) return;
+  legacyMigrationAttempted = true;
+  let names;
+  try {
+    names = await readdir(legacyDirectory);
+  } catch (error) {
+    if (error?.code !== "ENOENT") console.error("legacy spool scan failed", error);
+    return;
+  }
+
+  await mkdir(directory, { recursive: true });
+  for (const name of names.filter((value) => value.endsWith(".json"))) {
+    const source = join(legacyDirectory, name);
+    const target = join(directory, name);
+    try {
+      const content = await readFile(source);
+      await writeFile(target, content, { flag: "wx" }).catch((error) => {
+        if (error?.code !== "EEXIST") throw error;
+      });
+      await unlink(source).catch((error) => {
+        if (error?.code !== "ENOENT") throw error;
+      });
+    } catch (error) {
+      console.error("legacy spool migration failed", name, error);
+    }
+  }
+}
+
+async function ensure() {
+  await mkdir(directory, { recursive: true });
+  await migrateLegacySpool();
+}
+
 function pathFor(id) { return join(directory, `${id}.json`); }
 
 export async function saveSpool(job, state, extra = {}) {
@@ -15,6 +52,7 @@ export async function saveSpool(job, state, extra = {}) {
 }
 
 export async function removeSpool(id) {
+  await ensure();
   await unlink(pathFor(id)).catch((error) => { if (error?.code !== "ENOENT") throw error; });
 }
 
