@@ -31,7 +31,6 @@ function showBackgroundNotification(displayNumber?: number) {
   const suffix = displayNumber ? ` #${displayNumber}` : "";
   const notification = new Notification(`Novo pedido${suffix} · PedeAqui`, {
     body: "Um novo pedido acabou de chegar. Abra o painel para conferir.",
-    icon: "/icon.svg",
     tag: displayNumber ? `pedeaqui-order-${displayNumber}` : "pedeaqui-new-order",
   });
   notification.onclick = () => {
