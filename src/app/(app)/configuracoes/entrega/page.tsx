@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createDeliveryNeighborhoodAction, removeDeliveryNeighborhoodAction, saveDeliverySettingsAction, toggleDeliveryNeighborhoodAction } from "@/features/delivery/actions";
+import { updateDeliveryNeighborhoodAction } from "@/features/delivery/neighborhood-actions";
 import { saveDriverHistoryVisibilityAction } from "@/features/delivery/driver-history-actions";
 import { DeliveryService } from "@/server/delivery/delivery-service";
 import { DriverHistoryPolicyService } from "@/server/delivery/driver-history-policy-service";
@@ -101,6 +102,23 @@ export default async function DeliverySettingsPage() {
                 {row.minimum_order_cents !== null ? `Mínimo ${formatCents(row.minimum_order_cents)} · ` : ""}
                 {row.additional_minutes > 0 ? `+${row.additional_minutes} min` : "Prazo padrão"}
               </div>
+
+              <details style={{ border: "1px solid var(--border)", borderRadius: 10, padding: "0 10px" }}>
+                <summary style={{ cursor: "pointer", padding: "10px 2px", fontWeight: 800, fontSize: 13 }}>Editar bairro</summary>
+                <form action={updateDeliveryNeighborhoodAction} style={{ display: "grid", gap: 10, padding: "2px 0 12px" }}>
+                  <input type="hidden" name="neighborhoodId" value={row.id} />
+                  <Input label="Bairro" name="neighborhoodName" defaultValue={row.neighborhood_name} required />
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 80px", gap: 10 }}>
+                    <Input label="Cidade" name="city" defaultValue={row.city} required />
+                    <Input label="UF" name="state" maxLength={2} defaultValue={row.state} required />
+                  </div>
+                  <Input label="Taxa" name="fee" inputMode="decimal" defaultValue={(row.fee_cents / 100).toFixed(2).replace(".", ",")} required />
+                  <Input label="Pedido mínimo do bairro" name="minimumOrder" inputMode="decimal" defaultValue={row.minimum_order_cents === null ? "" : (row.minimum_order_cents / 100).toFixed(2).replace(".", ",")} hint="Opcional; prevalece na cotação deste bairro." />
+                  <Input label="Minutos adicionais" name="additionalMinutes" type="number" min={0} defaultValue={row.additional_minutes} hint="Somados ao prazo padrão da loja." />
+                  <div><Button type="submit">Salvar alterações</Button></div>
+                </form>
+              </details>
+
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <form action={toggleDeliveryNeighborhoodAction}>
                   <input type="hidden" name="neighborhoodId" value={row.id} />

@@ -106,6 +106,37 @@ export class DeliveryService {
     return data;
   }
 
+  static async updateNeighborhood(neighborhoodId: string, input: Omit<DeliveryNeighborhoodInput, "active">) {
+    const id = uuidSchema.parse(neighborhoodId);
+    const values = deliveryNeighborhoodInputSchema.parse({ ...input, active: true });
+    const context = await authorize(PERMISSIONS.DELIVERY_MANAGE);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const { data: before, error: readError } = await admin.from("delivery_neighborhoods")
+      .select("id, neighborhood_name, city, state, fee_cents, minimum_order_cents, additional_minutes, active")
+      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
+    if (readError) throw readError;
+
+    const key = neighborhoodKey(values.neighborhoodName, values.city, values.state);
+    const { data, error } = await admin.from("delivery_neighborhoods").update({
+      neighborhood_name: values.neighborhoodName,
+      neighborhood_key: key,
+      city: values.city,
+      state: values.state,
+      fee_cents: values.feeCents,
+      minimum_order_cents: values.minimumOrderCents ?? null,
+      additional_minutes: values.additionalMinutes,
+      updated_by: context.userId,
+      updated_at: new Date().toISOString(),
+    }).eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null)
+      .select("id, neighborhood_name, city, state, fee_cents, minimum_order_cents, additional_minutes, active").single();
+    if (error) throw error;
+
+    await AuditService.record(context, { action: "delivery.neighborhood_updated", entityType: "delivery_neighborhood", entityId: id, before, after: data });
+    await EventService.enqueue(context, { type: "delivery.neighborhood_changed", entityType: "store", entityId: storeId, payload: { neighborhood_id: data.id } });
+    return data;
+  }
+
   static async setNeighborhoodActive(neighborhoodId: string, active: boolean) {
     const id = uuidSchema.parse(neighborhoodId);
     const context = await authorize(PERMISSIONS.DELIVERY_MANAGE);
