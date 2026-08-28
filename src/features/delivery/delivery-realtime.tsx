@@ -91,7 +91,7 @@ export function DeliveryRealtime({
     {displayStatus === "connected"
       ? "Atualização ao vivo"
       : displayStatus === "error"
-        ? "Reconectando atualizações · os dados serão conferidos automaticamente"
+        ? "Sem atualização ao vivo · reconectando e conferindo os dados automaticamente"
         : "Conectando atualizações…"}
   </span>;
 }
