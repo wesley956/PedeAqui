@@ -30,12 +30,12 @@ export default async function DeliveryOperationsPage() {
   const boardDeliveries = open.map((order) => ({ ...order, delivery_fee_cents: Number(order.delivery_fee_cents) }));
 
   return <section className={styles.page}>
-    <DeliveryRealtime storeId={data.context.storeId} />
     <header className={styles.header}>
       <div>
         <p className="muted">EXPEDIÇÃO E ÚLTIMA MILHA</p>
         <h1>Entregas</h1>
         <p className="muted">Priorize o que está aguardando, acompanhe o prazo gravado no pedido e avance cada entrega com o mínimo de cliques.</p>
+        <DeliveryRealtime storeId={data.context.storeId} showStatus />
       </div>
       <div className={styles.headerActions}>
         <Link href="/configuracoes/entrega" className={styles.secondaryLink}>Áreas e taxas</Link>
