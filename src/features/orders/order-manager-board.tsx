@@ -9,12 +9,7 @@ import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { StatusBadge, type OperationalStatusKey } from "@/components/ui/status";
 import { OrderActionForm } from "@/features/orders/order-action-form";
-import {
-  createOrderAlertAudio,
-  playOrderAlertTone,
-  readOrderAlertPreference,
-  writeOrderAlertPreference,
-} from "@/features/orders/order-alert-tone";
+import { useOrderAlert } from "@/features/orders/use-order-alert";
 import {
   canCompleteFromManager,
   completionBlockers,
@@ -70,46 +65,10 @@ function isSimplifiedDeliveryFinalized(order: OrderManagerRow) {
 export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }: { storeId: string; orders: OrderManagerRow[]; workflowMode?: "standard" | "simplified" }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [soundEnabled, setSoundEnabled] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const seen = useRef(new Set(orders.map((order) => order.id)));
-  const soundEnabledRef = useRef(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    const audio = createOrderAlertAudio();
-    const enabled = readOrderAlertPreference();
-    audioRef.current = audio;
-    soundEnabledRef.current = enabled;
-    const restoreTimer = window.setTimeout(() => setSoundEnabled(enabled), 0);
-
-    const unlockPersistedSound = () => {
-      if (!soundEnabledRef.current || !audioRef.current) return;
-      const currentAudio = audioRef.current;
-      currentAudio.muted = true;
-      void currentAudio.play()
-        .then(() => {
-          currentAudio.pause();
-          currentAudio.currentTime = 0;
-          currentAudio.muted = false;
-        })
-        .catch(() => {
-          currentAudio.muted = false;
-        });
-    };
-    window.addEventListener("pointerdown", unlockPersistedSound, { once: true, capture: true });
-    window.addEventListener("keydown", unlockPersistedSound, { once: true, capture: true });
-
-    return () => {
-      window.clearTimeout(restoreTimer);
-      window.removeEventListener("pointerdown", unlockPersistedSound, true);
-      window.removeEventListener("keydown", unlockPersistedSound, true);
-      audio.pause();
-      audio.currentTime = 0;
-      audioRef.current = null;
-    };
-  }, []);
+  const { soundEnabled, primaryLabel, toggle, test, notifyNewOrder } = useOrderAlert(setNotice);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 15_000);
@@ -129,11 +88,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
             seen.current.add(row.id);
             if (row.order_status === "pending_confirmation") {
               setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
-              if (soundEnabledRef.current && audioRef.current) {
-                void playOrderAlertTone(audioRef.current).catch(() => {
-                  setNotice("Novo pedido recebido. O navegador bloqueou apenas esta reprodução; o som continua ativado.");
-                });
-              }
+              void notifyNewOrder();
             }
           }
           router.refresh();
@@ -147,7 +102,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
       .subscribe();
 
     return () => { void supabase.removeChannel(channel); };
-  }, [router, storeId]);
+  }, [notifyNewOrder, router, storeId]);
 
   useEffect(() => {
     for (const order of orders) seen.current.add(order.id);
@@ -188,33 +143,6 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
   const activeCount = activeBuckets.reduce((total, bucket) => total + grouped[bucket].length, 0);
   const lateCount = useMemo(() => filtered.filter((order) => isOrderAttentionLate(order, now)).length, [filtered, now]);
 
-  async function toggleSound() {
-    if (soundEnabledRef.current) {
-      soundEnabledRef.current = false;
-      setSoundEnabled(false);
-      writeOrderAlertPreference(false);
-      const audio = audioRef.current;
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
-      setNotice("Aviso sonoro desativado.");
-      return;
-    }
-
-    const audio = audioRef.current ?? createOrderAlertAudio();
-    audioRef.current = audio;
-    try {
-      await playOrderAlertTone(audio);
-      soundEnabledRef.current = true;
-      setSoundEnabled(true);
-      writeOrderAlertPreference(true);
-      setNotice("Aviso sonoro ativado e salvo neste aparelho.");
-    } catch {
-      setNotice("O navegador impediu a ativação do som. Verifique se esta página está silenciada e tente novamente.");
-    }
-  }
-
   return (
     <div className={styles.board}>
       <div className={styles.toolbar}>
@@ -227,8 +155,11 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
             placeholder="Número, cliente, canal ou modalidade"
           />
         </div>
-        <Button type="button" tone="secondary" onClick={() => void toggleSound()} aria-pressed={soundEnabled}>
-          {soundEnabled ? "Som ativo ✓" : "Ativar som"}
+        <Button type="button" tone="secondary" onClick={() => void toggle()} aria-pressed={soundEnabled}>
+          {primaryLabel}
+        </Button>
+        <Button type="button" tone="secondary" onClick={() => void test()}>
+          Testar som
         </Button>
         <div className={styles.toolbarMeta}>
           {workflowMode === "simplified"
