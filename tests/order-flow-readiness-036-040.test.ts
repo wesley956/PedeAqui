@@ -12,41 +12,31 @@ const realtime = read("src/features/orders/order-realtime.tsx");
 const publicDetail = read("src/app/m/[slug]/pedido/[id]/page.tsx");
 
 describe("presentation diagnostics 036–040", () => {
-  it("requires a real user gesture for sound on every page load and keeps visual fallback", () => {
-    expect(manager).toContain("new AudioContextCtor()");
-    expect(manager).toContain("audioContextRef.current = context");
-    expect(manager).toContain("alerta visual continuará ativo");
-    expect(manager).not.toContain("localStorage");
+  it("persists the sound choice while keeping a visual fallback for blocked playback", () => {
+    expect(manager).toContain("createOrderAlertAudio()");
+    expect(manager).toContain("readOrderAlertPreference()");
+    expect(manager).toContain("writeOrderAlertPreference(true)");
+    expect(manager).toContain("o som continua ativado");
   });
 
-  it("plays the two-note alert through the context activated by the user", async () => {
-    const starts: number[] = [];
-    const stops: number[] = [];
-    const frequencies: number[] = [];
-    let resumes = 0;
-    const gain = {
-      gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} },
-      connect() {},
-    };
-    const context = {
-      state: "suspended",
-      currentTime: 10,
-      destination: {},
-      resume: async () => { resumes += 1; },
-      createGain: () => gain,
-      createOscillator: () => ({
-        type: "sine",
-        frequency: { set value(value: number) { frequencies.push(value); } },
-        connect() {},
-        start(value: number) { starts.push(value); },
-        stop(value: number) { stops.push(value); },
-      }),
-    } as unknown as AudioContext;
-    await playOrderAlertTone(context);
-    expect(resumes).toBe(1);
-    expect(frequencies).toEqual([660, 880]);
-    expect(starts).toEqual([10, 10.18]);
-    expect(stops).toEqual([10.22, 10.4]);
+  it("restarts the voice alert at full volume", async () => {
+    let pauses = 0;
+    let plays = 0;
+    const audio = {
+      currentTime: 12,
+      muted: true,
+      volume: 0.2,
+      pause() { pauses += 1; },
+      async play() { plays += 1; },
+    } as unknown as HTMLAudioElement;
+
+    await playOrderAlertTone(audio);
+
+    expect(pauses).toBe(1);
+    expect(plays).toBe(1);
+    expect(audio.currentTime).toBe(0);
+    expect(audio.muted).toBe(false);
+    expect(audio.volume).toBe(1);
   });
 
   it("supports friendly accept, reject and cancel actions with pending feedback", () => {

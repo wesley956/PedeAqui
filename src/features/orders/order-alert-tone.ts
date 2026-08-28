@@ -1,16 +1,33 @@
-export async function playOrderAlertTone(context: AudioContext) {
-  if (context.state === "suspended") await context.resume();
-  const gain = context.createGain();
-  gain.gain.setValueAtTime(0.0001, context.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.55);
-  gain.connect(context.destination);
-  for (const [index, frequency] of [660, 880].entries()) {
-    const oscillator = context.createOscillator();
-    oscillator.type = "sine";
-    oscillator.frequency.value = frequency;
-    oscillator.connect(gain);
-    oscillator.start(context.currentTime + index * 0.18);
-    oscillator.stop(context.currentTime + index * 0.18 + 0.22);
+const ORDER_ALERT_STORAGE_KEY = "pedeaqui:orders:sound-enabled";
+const ORDER_ALERT_AUDIO_PATH = "/audio/pedeaqui-pedido.mp3";
+
+export function createOrderAlertAudio() {
+  const audio = new Audio(ORDER_ALERT_AUDIO_PATH);
+  audio.preload = "auto";
+  audio.volume = 1;
+  return audio;
+}
+
+export function readOrderAlertPreference() {
+  try {
+    return window.localStorage.getItem(ORDER_ALERT_STORAGE_KEY) === "true";
+  } catch {
+    return false;
   }
+}
+
+export function writeOrderAlertPreference(enabled: boolean) {
+  try {
+    window.localStorage.setItem(ORDER_ALERT_STORAGE_KEY, String(enabled));
+  } catch {
+    // O armazenamento pode estar indisponível em navegação privada; o estado da sessão continua funcionando.
+  }
+}
+
+export async function playOrderAlertTone(audio: HTMLAudioElement) {
+  audio.pause();
+  audio.currentTime = 0;
+  audio.muted = false;
+  audio.volume = 1;
+  await audio.play();
 }
