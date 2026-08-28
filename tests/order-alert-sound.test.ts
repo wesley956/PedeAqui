@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const root = process.cwd();
 const toneSource = readFileSync(join(root, "src/features/orders/order-alert-tone.ts"), "utf8");
-const alertSource = readFileSync(join(root, "src/features/orders/use-order-alert.ts"), "utf8");
+const alertSource = readFileSync(join(root, "src/features/orders/use-order-alert.tsx"), "utf8");
 const boardSource = readFileSync(join(root, "src/features/orders/order-manager-board.tsx"), "utf8");
 const customBoardSource = readFileSync(join(root, "src/features/orders/custom-order-workflow-board.tsx"), "utf8");
 const shellSource = readFileSync(join(root, "src/components/layout/app-shell.tsx"), "utf8");
