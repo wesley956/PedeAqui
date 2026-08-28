@@ -15,22 +15,16 @@ export type NativeOrderAlertAgentContext = {
 };
 
 export class OrderAlertBackupService {
-  static async setPanelPresence(context: AccessContext, browserId: string, active: boolean) {
+  static async setPanelPresence(
+    context: AccessContext,
+    browserId: string,
+    active: boolean,
+    soundEnabled: boolean,
+  ) {
     if (!context.storeId) throw new Error("An active store is required");
     const safeBrowserId = browserIdSchema.parse(browserId);
     const admin = createAdminClient();
-
-    if (!active) {
-      const { error } = await admin
-        .from("order_alert_panel_presence")
-        .delete()
-        .eq("organization_id", context.organizationId)
-        .eq("store_id", context.storeId)
-        .eq("browser_id", safeBrowserId)
-        .eq("user_id", context.userId);
-      if (error) throw error;
-      return;
-    }
+    const now = new Date().toISOString();
 
     const { error } = await admin
       .from("order_alert_panel_presence")
@@ -39,33 +33,54 @@ export class OrderAlertBackupService {
         store_id: context.storeId,
         user_id: context.userId,
         browser_id: safeBrowserId,
-        last_seen_at: new Date().toISOString(),
+        is_active: active,
+        sound_enabled: soundEnabled,
+        last_seen_at: now,
       }, { onConflict: "store_id,browser_id" });
     if (error) throw error;
   }
 
-  static async hasActivePanel(agent: NativeOrderAlertAgentContext) {
+  static async statusForAgent(agent: NativeOrderAlertAgentContext) {
     const admin = createAdminClient();
     const cutoff = new Date(Date.now() - panelPresenceTtlMs).toISOString();
-    const { data, error } = await admin
-      .from("order_alert_panel_presence")
-      .select("browser_id")
-      .eq("organization_id", agent.organization_id)
-      .eq("store_id", agent.store_id)
-      .gte("last_seen_at", cutoff)
-      .limit(1)
-      .maybeSingle();
-    if (error) throw error;
-    return Boolean(data);
+
+    const [{ data: activePanel, error: activeError }, { data: enabledPreference, error: enabledError }] = await Promise.all([
+      admin
+        .from("order_alert_panel_presence")
+        .select("browser_id")
+        .eq("organization_id", agent.organization_id)
+        .eq("store_id", agent.store_id)
+        .eq("is_active", true)
+        .gte("last_seen_at", cutoff)
+        .limit(1)
+        .maybeSingle(),
+      admin
+        .from("order_alert_panel_presence")
+        .select("browser_id")
+        .eq("organization_id", agent.organization_id)
+        .eq("store_id", agent.store_id)
+        .eq("sound_enabled", true)
+        .limit(1)
+        .maybeSingle(),
+    ]);
+    if (activeError) throw activeError;
+    if (enabledError) throw enabledError;
+
+    return { panelActive: Boolean(activePanel), nativeEnabled: Boolean(enabledPreference) };
   }
 
   static async pollForAgent(agent: NativeOrderAlertAgentContext, cursor: string | null) {
     const now = new Date();
     const nextCursor = now.toISOString();
-    const panelActive = await this.hasActivePanel(agent);
+    const { panelActive, nativeEnabled } = await this.statusForAgent(agent);
 
     if (!cursor) {
-      return { cursor: nextCursor, panelActive, orders: [] as Array<{ id: string; displayNumber: number | null; createdAt: string }> };
+      return {
+        cursor: nextCursor,
+        panelActive,
+        nativeEnabled,
+        orders: [] as Array<{ id: string; displayNumber: number | null; createdAt: string }>,
+      };
     }
 
     let since = new Date(cursorSchema.parse(cursor));
@@ -89,6 +104,7 @@ export class OrderAlertBackupService {
     return {
       cursor: nextCursor,
       panelActive,
+      nativeEnabled,
       orders: (data ?? []).map((order) => ({
         id: String(order.id),
         displayNumber: order.display_number == null ? null : Number(order.display_number),
