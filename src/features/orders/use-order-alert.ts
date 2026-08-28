@@ -26,9 +26,12 @@ export function useOrderAlert(onMessage?: (message: string) => void) {
     const configured = readOrderAlertPreference();
     audioRef.current = audio;
     configuredRef.current = configured;
-    updateStatus(configured ? "needs_activation" : "off");
+    const restoreTimer = window.setTimeout(() => {
+      updateStatus(configured ? "needs_activation" : "off");
+    }, 0);
 
     return () => {
+      window.clearTimeout(restoreTimer);
       audio.pause();
       audio.currentTime = 0;
       audioRef.current = null;
