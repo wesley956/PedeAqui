@@ -30,11 +30,7 @@ export function DeliveryRealtime({
 
   useEffect(() => {
     const scope = realtimeStoreScope(storeId);
-    if (!scope) {
-      statusRef.current = "error";
-      setStatus("error");
-      return;
-    }
+    if (!scope) return;
 
     const supabase = createClient();
     const scheduleRefresh = () => {
