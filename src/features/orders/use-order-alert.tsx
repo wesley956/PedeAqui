@@ -23,6 +23,34 @@ type OrderAlertContextValue = {
 };
 
 const OrderAlertContext = createContext<OrderAlertContextValue | null>(null);
+const presenceBrowserKey = "pedeaqui:orders:alert-browser-id";
+const presenceHeartbeatMs = 20_000;
+
+function getPresenceBrowserId() {
+  try {
+    const existing = window.localStorage.getItem(presenceBrowserKey);
+    if (existing) return existing;
+    const created = window.crypto.randomUUID();
+    window.localStorage.setItem(presenceBrowserKey, created);
+    return created;
+  } catch {
+    return window.crypto.randomUUID();
+  }
+}
+
+function presencePayload(browserId: string, active: boolean, soundEnabled: boolean) {
+  return JSON.stringify({ browserId, active, soundEnabled });
+}
+
+async function reportPanelPresence(browserId: string, active: boolean, soundEnabled: boolean) {
+  await fetch("/api/order-alert/presence", {
+    method: "POST",
+    credentials: "same-origin",
+    keepalive: true,
+    headers: { "content-type": "application/json" },
+    body: presencePayload(browserId, active, soundEnabled),
+  }).catch(() => undefined);
+}
 
 function showBackgroundNotification(displayNumber?: number) {
   if (typeof document === "undefined" || !document.hidden) return;
@@ -45,11 +73,18 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
   const statusRef = useRef<OrderAlertStatus>("off");
   const configuredRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const browserIdRef = useRef<string | null>(null);
 
   const updateStatus = useCallback((next: OrderAlertStatus) => {
     statusRef.current = next;
     setStatus(next);
   }, []);
+
+  const syncPresence = useCallback((active = true) => {
+    const browserId = browserIdRef.current;
+    if (!browserId || !storeId) return;
+    void reportPanelPresence(browserId, active, configuredRef.current);
+  }, [storeId]);
 
   useEffect(() => {
     const audio = createOrderAlertAudio();
@@ -68,6 +103,35 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
     };
   }, [updateStatus]);
 
+  useEffect(() => {
+    if (!storeId) return;
+    const browserId = getPresenceBrowserId();
+    browserIdRef.current = browserId;
+
+    const heartbeat = () => {
+      void reportPanelPresence(browserId, true, configuredRef.current);
+    };
+    const closePresence = () => {
+      const body = presencePayload(browserId, false, configuredRef.current);
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon("/api/order-alert/presence", body);
+      } else {
+        void reportPanelPresence(browserId, false, configuredRef.current);
+      }
+    };
+
+    heartbeat();
+    const timer = window.setInterval(heartbeat, presenceHeartbeatMs);
+    window.addEventListener("pagehide", closePresence);
+
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("pagehide", closePresence);
+      void reportPanelPresence(browserId, false, configuredRef.current);
+      if (browserIdRef.current === browserId) browserIdRef.current = null;
+    };
+  }, [storeId]);
+
   const reproduceAndValidate = useCallback(async () => {
     const audio = audioRef.current ?? createOrderAlertAudio();
     audioRef.current = audio;
@@ -84,6 +148,7 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
   const activate = useCallback(async (onMessage?: MessageHandler) => {
     configuredRef.current = true;
     writeOrderAlertPreference(true);
+    syncPresence(true);
 
     if (typeof Notification !== "undefined" && Notification.permission === "default") {
       void Notification.requestPermission().catch(() => undefined);
@@ -96,11 +161,12 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
       onMessage?.("O som ficou salvo, mas o navegador ainda bloqueou a reprodução. Verifique se a página está silenciada e toque em Liberar som.");
     }
     return played;
-  }, [reproduceAndValidate]);
+  }, [reproduceAndValidate, syncPresence]);
 
   const deactivate = useCallback((onMessage?: MessageHandler) => {
     configuredRef.current = false;
     writeOrderAlertPreference(false);
+    syncPresence(true);
     const audio = audioRef.current;
     if (audio) {
       audio.pause();
@@ -108,7 +174,7 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
     }
     updateStatus("off");
     onMessage?.("Aviso sonoro desativado.");
-  }, [updateStatus]);
+  }, [syncPresence, updateStatus]);
 
   const toggle = useCallback(async (onMessage?: MessageHandler) => {
     if (statusRef.current === "ready") {
