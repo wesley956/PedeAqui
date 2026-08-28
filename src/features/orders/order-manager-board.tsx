@@ -9,7 +9,12 @@ import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { StatusBadge, type OperationalStatusKey } from "@/components/ui/status";
 import { OrderActionForm } from "@/features/orders/order-action-form";
-import { playOrderAlertTone } from "@/features/orders/order-alert-tone";
+import {
+  createOrderAlertAudio,
+  playOrderAlertTone,
+  readOrderAlertPreference,
+  writeOrderAlertPreference,
+} from "@/features/orders/order-alert-tone";
 import {
   canCompleteFromManager,
   completionBlockers,
@@ -70,14 +75,38 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
   const [now, setNow] = useState(() => Date.now());
   const seen = useRef(new Set(orders.map((order) => order.id)));
   const soundEnabledRef = useRef(false);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    const audio = createOrderAlertAudio();
+    const enabled = readOrderAlertPreference();
+    audioRef.current = audio;
+    soundEnabledRef.current = enabled;
+    setSoundEnabled(enabled);
+
+    const unlockPersistedSound = () => {
+      if (!soundEnabledRef.current || !audioRef.current) return;
+      const currentAudio = audioRef.current;
+      currentAudio.muted = true;
+      void currentAudio.play()
+        .then(() => {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+          currentAudio.muted = false;
+        })
+        .catch(() => {
+          currentAudio.muted = false;
+        });
+    };
+    window.addEventListener("pointerdown", unlockPersistedSound, { once: true, capture: true });
+    window.addEventListener("keydown", unlockPersistedSound, { once: true, capture: true });
+
     return () => {
-      soundEnabledRef.current = false;
-      const context = audioContextRef.current;
-      audioContextRef.current = null;
-      if (context && context.state !== "closed") void context.close();
+      window.removeEventListener("pointerdown", unlockPersistedSound, true);
+      window.removeEventListener("keydown", unlockPersistedSound, true);
+      audio.pause();
+      audio.currentTime = 0;
+      audioRef.current = null;
     };
   }, []);
 
@@ -99,11 +128,9 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
             seen.current.add(row.id);
             if (row.order_status === "pending_confirmation") {
               setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
-              if (soundEnabledRef.current && audioContextRef.current) {
-                void playOrderAlertTone(audioContextRef.current).catch(() => {
-                  soundEnabledRef.current = false;
-                  setSoundEnabled(false);
-                  setNotice("Novo pedido recebido. O navegador bloqueou o som; toque em Ativar som novamente.");
+              if (soundEnabledRef.current && audioRef.current) {
+                void playOrderAlertTone(audioRef.current).catch(() => {
+                  setNotice("Novo pedido recebido. O navegador bloqueou apenas esta reprodução; o som continua ativado.");
                 });
               }
             }
@@ -161,30 +188,29 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
   const lateCount = useMemo(() => filtered.filter((order) => isOrderAttentionLate(order, now)).length, [filtered, now]);
 
   async function toggleSound() {
-    if (soundEnabled) {
+    if (soundEnabledRef.current) {
       soundEnabledRef.current = false;
       setSoundEnabled(false);
-      const context = audioContextRef.current;
-      audioContextRef.current = null;
-      if (context && context.state !== "closed") await context.close();
+      writeOrderAlertPreference(false);
+      const audio = audioRef.current;
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      setNotice("Aviso sonoro desativado.");
       return;
     }
-    const AudioContextCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioContextCtor) {
-      setNotice("Este navegador não oferece aviso sonoro. O alerta visual continuará ativo.");
-      return;
-    }
+
+    const audio = audioRef.current ?? createOrderAlertAudio();
+    audioRef.current = audio;
     try {
-      const context = new AudioContextCtor();
-      await context.resume();
-      audioContextRef.current = context;
+      await playOrderAlertTone(audio);
       soundEnabledRef.current = true;
       setSoundEnabled(true);
-      await playOrderAlertTone(context);
+      writeOrderAlertPreference(true);
+      setNotice("Aviso sonoro ativado e salvo neste aparelho.");
     } catch {
-      soundEnabledRef.current = false;
-      setSoundEnabled(false);
-      setNotice("Não foi possível ativar o som neste navegador. O alerta visual continuará ativo.");
+      setNotice("O navegador impediu a ativação do som. Verifique se esta página está silenciada e tente novamente.");
     }
   }
 
