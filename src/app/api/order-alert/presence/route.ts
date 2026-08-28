@@ -7,6 +7,7 @@ import { OrderAlertBackupService } from "@/server/orders/order-alert-backup-serv
 const schema = z.object({
   browserId: z.string().uuid(),
   active: z.boolean().default(true),
+  soundEnabled: z.boolean().default(false),
 });
 
 export async function POST(request: Request) {
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
     const context = await authorize(PERMISSIONS.ORDERS_VIEW);
     if (!context.storeId) return NextResponse.json({ error: "active_store_required" }, { status: 400 });
     const input = schema.parse(await request.json());
-    await OrderAlertBackupService.setPanelPresence(context, input.browserId, input.active);
+    await OrderAlertBackupService.setPanelPresence(context, input.browserId, input.active, input.soundEnabled);
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof AuthorizationError) {
