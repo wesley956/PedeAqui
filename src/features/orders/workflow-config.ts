@@ -33,7 +33,10 @@ function orderedUnique<T extends string>(canonical: readonly T[]) {
       return;
     }
     const indexes = value.map((stage) => canonical.indexOf(stage));
-    if (indexes.some((index, position) => position > 0 && index <= indexes[position - 1])) {
+    if (indexes.some((index, position) => {
+      const previous = position > 0 ? indexes[position - 1] : undefined;
+      return previous !== undefined && index <= previous;
+    })) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "As etapas precisam seguir a ordem operacional." });
     }
   };
@@ -66,7 +69,7 @@ export function foldStageToVisible<T extends string>(stage: T, selected: readonl
   const currentIndex = canonical.indexOf(stage);
   for (let index = currentIndex - 1; index >= 0; index -= 1) {
     const candidate = canonical[index];
-    if (selected.includes(candidate)) return candidate;
+    if (candidate !== undefined && selected.includes(candidate)) return candidate;
   }
-  return selected[0] ?? canonical[0];
+  return selected[0] ?? canonical[0] ?? stage;
 }
