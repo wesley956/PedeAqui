@@ -6,7 +6,7 @@ import { friendlyOrderActionError } from "@/features/orders/order-action-error";
 const read = (path: string) => readFileSync(path, "utf8");
 const manager = read("src/features/orders/order-manager-board.tsx");
 const customManager = read("src/features/orders/custom-order-workflow-board.tsx");
-const soundAlert = read("src/features/orders/use-order-alert.ts");
+const soundAlert = read("src/features/orders/use-order-alert.tsx");
 const actions = read("src/features/orders/actions.ts");
 const detail = read("src/app/(app)/pedidos/[id]/page.tsx");
 const publicRefresh = read("src/features/orders/public-order-refresh.tsx");
