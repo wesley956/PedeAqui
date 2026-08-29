@@ -229,7 +229,6 @@ export class OrderPaymentProviderConfigService {
         last_health_status: input.status,
         last_health_checked_at: checkedAt,
         last_error_code: errorCode,
-        updated_at: checkedAt,
       })
       .eq("store_id", storeId)
       .eq("provider", "mercado_pago");
