@@ -1,8 +1,14 @@
 import { headers } from "next/headers";
 import { Button } from "@/components/ui/button";
-import { saveOnlinePixProviderAction, savePaymentMethodsAction } from "@/features/payments/actions";
+import {
+  disconnectMercadoPagoOAuthAction,
+  saveOnlinePixProviderAction,
+  savePaymentMethodsAction,
+  toggleOnlinePixProviderAction,
+} from "@/features/payments/actions";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
+import { isMercadoPagoOAuthConfigured } from "@/server/payments/providers/mercado-pago-oauth";
 import { StorePaymentMethodService } from "@/server/payments/store-payment-method-service";
 
 const paymentHints: Record<string, string> = {
@@ -24,11 +30,16 @@ export default async function PaymentSettingsPage() {
   const protocol = requestHeaders.get("x-forwarded-proto") ?? "https";
   const webhookPath = `/api/webhooks/payments/mercado-pago/${storeId}`;
   const webhookUrl = host ? `${protocol}://${host}${webhookPath}` : webhookPath;
+  const oauthAvailable = isMercadoPagoOAuthConfigured();
+  const oauthConnected = Boolean(config?.connectionMode === "oauth" && config.credentialsConfigured && !config.revokedAt);
   const statusText = !config?.credentialsConfigured
     ? "Ainda não conectado"
     : config.enabled
-      ? "Configurado e ativo"
-      : "Configurado, mas desativado";
+      ? "Conectado e Pix ativo"
+      : "Conectado, Pix desativado";
+  const accountLabel = config?.providerAccountId
+    ? `Conta Mercado Pago ••••${config.providerAccountId.slice(-4)}`
+    : "Conta Mercado Pago conectada";
 
   return (
     <section style={{ display: "grid", gap: 20, maxWidth: 820 }}>
@@ -55,50 +66,94 @@ export default async function PaymentSettingsPage() {
         <div style={{ marginTop: 8 }}><Button type="submit">Salvar formas de pagamento</Button></div>
       </form>
 
-      <form action={saveOnlinePixProviderAction} className="card" style={{ padding: 20, display: "grid", gap: 16 }}>
+      <div className="card" style={{ padding: 20, display: "grid", gap: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
           <div>
             <p className="muted" style={{ margin: 0, fontSize: 12 }}>Pix online</p>
             <h2 style={{ margin: "4px 0", fontSize: 20 }}>Mercado Pago</h2>
-            <p className="muted" style={{ margin: 0, fontSize: 13 }}>Gera QR Code com o valor exato e confirma o pagamento automaticamente pelo webhook.</p>
+            <p className="muted" style={{ margin: 0, fontSize: 13 }}>A conta do restaurante recebe o pagamento. O PedeAqui gera o QR e confirma pelo webhook.</p>
           </div>
           <strong style={{ fontSize: 13 }}>{statusText}</strong>
         </div>
 
-        <label style={{ display: "flex", justifyContent: "space-between", gap: 14, alignItems: "center", padding: 14, border: "1px solid var(--border)", borderRadius: 12 }}>
-          <div><strong>Receber Pix automaticamente</strong><div className="muted" style={{ fontSize: 12, marginTop: 3 }}>Só ative depois de informar as duas credenciais abaixo.</div></div>
-          <input type="checkbox" name="enabled" defaultChecked={config?.enabled ?? false} />
-        </label>
+        {oauthConnected ? (
+          <>
+            <div style={{ padding: 14, borderRadius: 12, background: "var(--surface-2)", border: "1px solid var(--border)", display: "grid", gap: 5 }}>
+              <strong>{accountLabel}</strong>
+              <span className="muted" style={{ fontSize: 12 }}>Conexão OAuth autorizada. Credenciais ficam somente no servidor.</span>
+              {config?.authorizedAt ? <span className="muted" style={{ fontSize: 12 }}>Autorizada em {new Date(config.authorizedAt).toLocaleString("pt-BR")}</span> : null}
+            </div>
 
-        <label style={{ display: "grid", gap: 6 }}>
-          <span style={{ fontWeight: 600 }}>Ambiente</span>
-          <select name="environment" defaultValue={config?.environment ?? "production"}>
-            <option value="production">Produção</option>
-            <option value="test">Teste</option>
-          </select>
-        </label>
+            <form action={toggleOnlinePixProviderAction} style={{ display: "grid", gap: 12 }}>
+              <label style={{ display: "flex", justifyContent: "space-between", gap: 14, alignItems: "center", padding: 14, border: "1px solid var(--border)", borderRadius: 12 }}>
+                <div>
+                  <strong>Receber Pix automaticamente</strong>
+                  <div className="muted" style={{ fontSize: 12, marginTop: 3 }}>Conectar a conta não ativa o Pix. A ativação é separada e vale só para esta unidade.</div>
+                </div>
+                <input type="checkbox" name="enabled" defaultChecked={config?.enabled ?? false} />
+              </label>
+              <div><Button type="submit">Salvar ativação do Pix</Button></div>
+            </form>
 
-        <label style={{ display: "grid", gap: 6 }}>
-          <span style={{ fontWeight: 600 }}>Access Token</span>
-          <input type="password" name="accessToken" autoComplete="off" placeholder={config?.credentialsConfigured ? "Deixe em branco para manter o atual" : "Cole o Access Token do Mercado Pago"} />
-          <span className="muted" style={{ fontSize: 12 }}>A credencial é enviada somente ao servidor e armazenada no cofre seguro do projeto.</span>
-        </label>
-
-        <label style={{ display: "grid", gap: 6 }}>
-          <span style={{ fontWeight: 600 }}>Chave secreta do webhook</span>
-          <input type="password" name="webhookSecret" autoComplete="off" placeholder={config?.credentialsConfigured ? "Deixe em branco para manter a atual" : "Cole a assinatura secreta do webhook"} />
-        </label>
+            <form action={disconnectMercadoPagoOAuthAction}>
+              <Button type="submit" variant="secondary">Desconectar Mercado Pago</Button>
+            </form>
+          </>
+        ) : (
+          <div style={{ display: "grid", gap: 10 }}>
+            <div>
+              <strong>Conexão recomendada</strong>
+              <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>O restaurante autoriza o PedeAqui no Mercado Pago sem copiar Access Token. A conexão começa com Pix desligado.</p>
+            </div>
+            {oauthAvailable ? (
+              <form action="/api/integrations/mercado-pago/oauth/start" method="get">
+                <Button type="submit">Conectar Mercado Pago</Button>
+              </form>
+            ) : (
+              <p className="muted" style={{ margin: 0, fontSize: 12 }}>A aplicação Mercado Pago do PedeAqui ainda precisa das credenciais globais e da Redirect URI no servidor para liberar este botão.</p>
+            )}
+          </div>
+        )}
 
         <div style={{ padding: 14, borderRadius: 12, background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-          <strong>URL do webhook</strong>
-          <p className="muted" style={{ margin: "5px 0 8px", fontSize: 12 }}>No Mercado Pago, configure o evento <b>Order (Mercado Pago)</b> usando esta URL:</p>
+          <strong>URL do webhook desta unidade</strong>
+          <p className="muted" style={{ margin: "5px 0 8px", fontSize: 12 }}>Endpoint que recebe eventos Order do Mercado Pago e reconcilia o pagamento antes de marcar como pago.</p>
           <code style={{ overflowWrap: "anywhere", fontSize: 12 }}>{webhookUrl}</code>
         </div>
 
-        {config?.healthStatus === "error" ? <p style={{ margin: 0 }}>A última verificação encontrou um problema. Revise as credenciais antes de usar o Pix online.</p> : null}
-        {config?.healthStatus === "unknown" && config.credentialsConfigured ? <p className="muted" style={{ margin: 0, fontSize: 12 }}>Credenciais armazenadas. A homologação final acontece com um Pix real de baixo valor.</p> : null}
-        <div><Button type="submit">Salvar Pix online</Button></div>
-      </form>
+        {config?.healthStatus === "error" && config.errorCode !== "oauth_disconnected" ? <p style={{ margin: 0 }}>A última verificação encontrou um problema. O Pix online fica isolado; dinheiro e cartões não dependem desta integração.</p> : null}
+        {config?.healthStatus === "unknown" && config.credentialsConfigured ? <p className="muted" style={{ margin: 0, fontSize: 12 }}>Conexão armazenada. A homologação final exige um Pix real de baixo valor antes do rollout.</p> : null}
+
+        {!oauthConnected ? (
+          <details style={{ borderTop: "1px solid var(--border)", paddingTop: 14 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 600 }}>Configuração manual avançada</summary>
+            <form action={saveOnlinePixProviderAction} style={{ display: "grid", gap: 14, marginTop: 14 }}>
+              <p className="muted" style={{ margin: 0, fontSize: 12 }}>Compatibilidade temporária para configuração manual. Prefira OAuth para restaurantes clientes.</p>
+              <label style={{ display: "flex", justifyContent: "space-between", gap: 14, alignItems: "center", padding: 14, border: "1px solid var(--border)", borderRadius: 12 }}>
+                <div><strong>Receber Pix automaticamente</strong><div className="muted" style={{ fontSize: 12, marginTop: 3 }}>Só ative depois de informar as credenciais.</div></div>
+                <input type="checkbox" name="enabled" defaultChecked={config?.enabled ?? false} />
+              </label>
+              <label style={{ display: "grid", gap: 6 }}>
+                <span style={{ fontWeight: 600 }}>Ambiente</span>
+                <select name="environment" defaultValue={config?.environment ?? "production"}>
+                  <option value="production">Produção</option>
+                  <option value="test">Teste</option>
+                </select>
+              </label>
+              <label style={{ display: "grid", gap: 6 }}>
+                <span style={{ fontWeight: 600 }}>Access Token</span>
+                <input type="password" name="accessToken" autoComplete="off" placeholder={config?.credentialsConfigured ? "Deixe em branco para manter o atual" : "Cole o Access Token do Mercado Pago"} />
+                <span className="muted" style={{ fontSize: 12 }}>A credencial é enviada somente ao servidor e armazenada no Vault.</span>
+              </label>
+              <label style={{ display: "grid", gap: 6 }}>
+                <span style={{ fontWeight: 600 }}>Chave secreta do webhook</span>
+                <input type="password" name="webhookSecret" autoComplete="off" placeholder={config?.credentialsConfigured ? "Deixe em branco para manter a atual" : "Cole a assinatura secreta do webhook"} />
+              </label>
+              <div><Button type="submit">Salvar configuração manual</Button></div>
+            </form>
+          </details>
+        ) : null}
+      </div>
     </section>
   );
 }
