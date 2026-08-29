@@ -40,3 +40,4 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 ## Registro de rollout
 
 - 29/08/2026 — novo gatilho de deploy de produção disparado após o merge do UX v3. Alteração exclusivamente documental, sem impacto funcional no painel.
+- 29/08/2026 — segundo gatilho de redeploy sem alteração funcional, usado apenas para testar a liberação da cota de builds da Vercel.
