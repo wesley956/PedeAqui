@@ -5,9 +5,14 @@ import { describe, expect, it } from "vitest";
 const read = (relative: string) => fs.readFileSync(path.join(process.cwd(), relative), "utf8");
 
 describe("desktop contextual navigation", () => {
-  it("groups the sidebar by the five canonical areas", () => {
+  it("keeps the owner sidebar focused on the approved daily priorities plus More", () => {
     const navigation = read("src/components/layout/desktop-navigation.tsx");
-    for (const label of ["Operação", "Gestão", "Suprimentos", "Relacionamento", "Administração"]) expect(navigation).toContain(label);
+    expect(navigation).toContain("Principal");
+    expect(navigation).toContain("Mais ferramentas");
+    expect(navigation).toContain("preferredPrimary");
+    expect(navigation).toContain("easyPrimary");
+    expect(navigation).not.toContain("Suprimentos");
+    expect(navigation).not.toContain("Relacionamento");
   });
 
   it("marks the current route and supports an expanded/compact mode", () => {
