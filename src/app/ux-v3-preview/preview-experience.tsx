@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import styles from "./preview.module.css";
 
 type Screen = "inicio" | "ferramentas" | "configuracoes" | "recursos" | "entregador-login" | "entregador-rota";
-
 type Resource = { name: string; description: string; active: boolean; locked?: boolean };
+type SettingItem = readonly [string, string, string];
+type ToolItem = readonly [string, string, string];
+type ToolGroup = readonly [string, readonly ToolItem[]];
 
 const INITIAL_RESOURCES: Resource[] = [
   { name: "Pedidos", description: "Receber e acompanhar pedidos", active: true, locked: true },
@@ -30,7 +32,7 @@ const SETTINGS = [
   ["💬", "WhatsApp", "Número conectado, atendimento e notificações."],
   ["🖨️", "Impressão automática", "Impressoras, setores e acompanhamento da fila."],
   ["👥", "Equipe e acessos", "Funcionários, permissões e entregadores."],
-] as const;
+] as const satisfies readonly SettingItem[];
 
 const TOOLS = [
   ["Operação", [["🍳", "Produção", "Fila da cozinha"], ["🚚", "Entregas", "Pedidos em rota"], ["🪑", "Salão e mesas", "Mesas e comandas"]]],
@@ -38,7 +40,7 @@ const TOOLS = [
   ["Estoque e compras", [["📦", "Estoque", "Saldos e movimentos"], ["🧾", "Compras", "Reposição e entrada"], ["🏭", "Fornecedores", "Cadastro e contatos"]]],
   ["Gestão", [["💰", "Financeiro", "Receitas e despesas"], ["🧮", "Fiscal", "Documentos fiscais"], ["📊", "Relatórios", "Visão do negócio"]]],
   ["Equipe", [["👥", "Equipe", "Funcionários e funções"], ["🗓️", "Escalas", "Organização da equipe"], ["🛵", "Entregadores", "Acesso e disponibilidade"]]],
-] as const;
+] as const satisfies readonly ToolGroup[];
 
 export function PreviewExperience() {
   const [screen, setScreen] = useState<Screen>("inicio");
@@ -46,14 +48,15 @@ export function PreviewExperience() {
   const [search, setSearch] = useState("");
   const [settingSearch, setSettingSearch] = useState("");
 
-  const filteredTools = useMemo(() => {
+  const filteredTools = useMemo<readonly ToolGroup[]>(() => {
     const query = search.trim().toLowerCase();
     if (!query) return TOOLS;
-    return TOOLS.map(([group, tools]) => [group, tools.filter(([, name, description]) => `${name} ${description}`.toLowerCase().includes(query))] as const)
+    return TOOLS
+      .map(([group, tools]) => [group, tools.filter(([, name, description]) => `${name} ${description}`.toLowerCase().includes(query))] as const)
       .filter(([, tools]) => tools.length > 0);
   }, [search]);
 
-  const filteredSettings = useMemo(() => {
+  const filteredSettings = useMemo<readonly SettingItem[]>(() => {
     const query = settingSearch.trim().toLowerCase();
     if (!query) return SETTINGS;
     const aliases: Record<string, string> = {
@@ -157,7 +160,7 @@ function HomeScreen({ go }: { go: (screen: Screen) => void }) {
   </section>;
 }
 
-function ToolsScreen({ query, setQuery, groups }: { query: string; setQuery: (value: string) => void; groups: readonly (readonly [string, readonly (readonly [string, string, string])[]])[] }) {
+function ToolsScreen({ query, setQuery, groups }: { query: string; setQuery: (value: string) => void; groups: readonly ToolGroup[] }) {
   return <section className={styles.screen}>
     <PageHeader title="Mais ferramentas" description="As funções menos usadas ficam organizadas, sem atrapalhar o dia a dia." badge="Só o que você pode usar" />
     <Search value={query} onChange={setQuery} placeholder="Procurar ferramenta: estoque, cliente, fornecedor..." />
@@ -169,7 +172,7 @@ function ToolsScreen({ query, setQuery, groups }: { query: string; setQuery: (va
   </section>;
 }
 
-function SettingsScreen({ query, setQuery, settings, go }: { query: string; setQuery: (value: string) => void; settings: typeof SETTINGS; go: (screen: Screen) => void }) {
+function SettingsScreen({ query, setQuery, settings, go }: { query: string; setQuery: (value: string) => void; settings: readonly SettingItem[]; go: (screen: Screen) => void }) {
   return <section className={styles.screen}>
     <PageHeader title="Configurações" description="Procure pelo que você quer fazer, não pelo nome técnico da função." badge="Modo simples" />
     <Search value={query} onChange={setQuery} placeholder="O que você quer configurar? Ex.: bairro, Pix, horário, WhatsApp..." />
@@ -241,7 +244,7 @@ function DeliveryCard({ number, customer, region, payment, action }: { number: s
   </article>;
 }
 
-function PageHeader({ title, description, badge, action }: { title: string; description: string; badge?: string; action?: React.ReactNode }) {
+function PageHeader({ title, description, badge, action }: { title: string; description: string; badge?: string; action?: ReactNode }) {
   return <header className={styles.pageHeader}><div><h1>{title}</h1><p>{description}</p></div>{action ?? (badge ? <span className={styles.headerBadge}>{badge}</span> : null)}</header>;
 }
 function SectionTitle({ title, description }: { title: string; description?: string }) { return <div className={styles.sectionTitle}><h2>{title}</h2>{description ? <p>{description}</p> : null}</div>; }
