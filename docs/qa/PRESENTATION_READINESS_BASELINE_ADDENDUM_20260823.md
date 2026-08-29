@@ -12,6 +12,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 
 - `/configuracoes/loja` — perfil oficial da unidade para identificação, contato, endereço e metadados públicos autorizados. Mantém RBAC, isolamento por organização/unidade e não cria cadastro paralelo de endereço ou telefone.
 - `/configuracoes/fluxo-pedidos` — configuração do fluxo operacional da unidade com modos completo, simplificado ou personalizado. No modo personalizado, entrega e retirada possuem checkpoints visuais independentes; ocultar um checkpoint não remove nem enfraquece as máquinas de estado internas de pedido, pagamento, produção ou fulfillment.
+- `/configuracoes/impressoes/formato` — configuração de vias e conteúdo do comprovante comercial. Mantém detalhes operacionais obrigatórios na impressão de cozinha e não permite ocultar campos fiscais obrigatórios.
 
 ## Painel do Proprietário
 
