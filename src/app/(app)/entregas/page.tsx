@@ -32,14 +32,14 @@ export default async function DeliveryOperationsPage() {
   return <section className={styles.page}>
     <header className={styles.header}>
       <div>
-        <p className="muted">EXPEDIÇÃO E ÚLTIMA MILHA</p>
+        <p className={styles.eyebrow}>OPERAÇÃO</p>
         <h1>Entregas</h1>
-        <p className="muted">Priorize o que está aguardando, acompanhe o prazo gravado no pedido e avance cada entrega com o mínimo de cliques.</p>
+        <p className="muted">Veja o que está aguardando, quem está levando cada pedido e o que precisa de atenção.</p>
         <DeliveryRealtime storeId={data.context.storeId} showStatus />
       </div>
       <div className={styles.headerActions}>
-        <Link href="/configuracoes/entrega" className={styles.secondaryLink}>Áreas e taxas</Link>
-        {data.canManageDrivers ? <Link href="/configuracoes/entregadores" className={styles.secondaryLink}>Entregadores</Link> : null}
+        <Link href="/configuracoes/entrega" className={styles.secondaryLink}>Configurar entrega</Link>
+        {data.canManageDrivers ? <Link href="/configuracoes/entregadores" className={styles.secondaryLink}>Gerenciar entregadores</Link> : null}
       </div>
     </header>
 
