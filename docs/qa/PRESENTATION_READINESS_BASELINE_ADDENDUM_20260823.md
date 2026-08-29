@@ -36,6 +36,8 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 
 - `/api/order-alert/presence` — heartbeat autenticado do painel para o fallback nativo distinguir painel ativo de navegador fechado e respeitar a preferência explícita de som.
 - `/api/print-agent/order-alerts` — endpoint autenticado pelo token do Print Agent para consumir eventos imutáveis de novos pedidos quando o painel não está ativo; não substitui nem bloqueia o alerta web.
+- `/api/integrations/mercado-pago/oauth/start` — inicia a autorização OAuth do Mercado Pago para a unidade autenticada, usando state e PKCE; conectar a conta não habilita Pix automaticamente.
+- `/api/integrations/mercado-pago/oauth/callback` — valida o retorno OAuth, reconfirma organização/unidade e persiste as credenciais somente no servidor/Vault, mantendo o Pix desativado até ativação explícita.
 
 ## Registro de rollout
 
