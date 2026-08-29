@@ -1,9 +1,18 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getUsableMercadoPagoCredentials } from "@/server/payments/mercado-pago-credential-service";
-import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
-import { MercadoPagoOrderProvider } from "@/server/payments/providers/mercado-pago-order-provider";
+import {
+  forceRefreshMercadoPagoCredentials,
+  getUsableMercadoPagoCredentials,
+} from "@/server/payments/mercado-pago-credential-service";
+import {
+  OrderPaymentProviderConfigService,
+  type OrderPaymentProviderHealthErrorCode,
+} from "@/server/payments/order-payment-provider-config-service";
+import {
+  MercadoPagoOrderProvider,
+  MercadoPagoProviderHttpError,
+} from "@/server/payments/providers/mercado-pago-order-provider";
 import type { OnlinePixProviderOrder } from "@/server/payments/providers/order-payment-provider";
 
 type ChargeRow = {
@@ -72,6 +81,60 @@ function assertProviderMatches(charge: ChargeRow, remote: OnlinePixProviderOrder
   if (remote.currency !== charge.currency) throw new Error("PIX provider currency mismatch");
 }
 
+function providerHealthErrorCode(error: unknown): OrderPaymentProviderHealthErrorCode {
+  if (error instanceof MercadoPagoProviderHttpError) {
+    if (error.status === 401 || error.status === 403) return "mercado_pago_auth_failed";
+    if (error.status === 429 || error.status >= 500) return "mercado_pago_provider_unavailable";
+  }
+  return "mercado_pago_request_failed";
+}
+
+async function recordHealthy(storeId: string) {
+  await OrderPaymentProviderConfigService.recordHealth(storeId, { status: "healthy" }).catch(() => undefined);
+}
+
+async function recordProviderError(storeId: string, error: unknown, override?: OrderPaymentProviderHealthErrorCode) {
+  await OrderPaymentProviderConfigService.recordHealth(storeId, {
+    status: "error",
+    errorCode: override ?? providerHealthErrorCode(error),
+  }).catch(() => undefined);
+}
+
+async function withMercadoPagoProvider<T>(
+  storeId: string,
+  operation: (provider: MercadoPagoOrderProvider) => Promise<T>,
+): Promise<T> {
+  const credentials = await getUsableMercadoPagoCredentials(storeId);
+  try {
+    const result = await operation(new MercadoPagoOrderProvider(credentials.access_token));
+    await recordHealthy(storeId);
+    return result;
+  } catch (error) {
+    const authRejected = error instanceof MercadoPagoProviderHttpError && (error.status === 401 || error.status === 403);
+    if (!authRejected || credentials.connection_mode !== "oauth") {
+      await recordProviderError(storeId, error);
+      throw error;
+    }
+
+    let refreshed;
+    try {
+      refreshed = await forceRefreshMercadoPagoCredentials(storeId);
+    } catch (refreshError) {
+      await recordProviderError(storeId, refreshError, "mercado_pago_auth_failed");
+      throw refreshError;
+    }
+
+    try {
+      const result = await operation(new MercadoPagoOrderProvider(refreshed.access_token));
+      await recordHealthy(storeId);
+      return result;
+    } catch (retryError) {
+      await recordProviderError(storeId, retryError);
+      throw retryError;
+    }
+  }
+}
+
 async function updateFromProvider(charge: ChargeRow, remote: OnlinePixProviderOrder) {
   assertProviderMatches(charge, remote);
   const admin = createAdminClient();
@@ -89,6 +152,7 @@ async function updateFromProvider(charge: ChargeRow, remote: OnlinePixProviderOr
     if (confirmError) throw confirmError;
   }
 
+  const now = new Date().toISOString();
   const nextStatus = charge.status === "paid" ? "paid" : remote.status;
   const { data, error } = await admin.from("order_payment_provider_charges").update({
     status: nextStatus,
@@ -98,18 +162,13 @@ async function updateFromProvider(charge: ChargeRow, remote: OnlinePixProviderOr
     qr_code_base64: remote.qrCodeBase64,
     ticket_url: remote.ticketUrl,
     expires_at: safeExpiry(remote.expiresAt),
-    last_reconciled_at: new Date().toISOString(),
+    last_reconciled_at: now,
     last_error_code: null,
-    updated_at: new Date().toISOString(),
+    updated_at: now,
   }).eq("id", charge.id).select("*").single();
   if (error) throw error;
 
   return data as ChargeRow;
-}
-
-async function loadProvider(storeId: string) {
-  const credentials = await getUsableMercadoPagoCredentials(storeId);
-  return new MercadoPagoOrderProvider(credentials.access_token);
 }
 
 export class OrderPixService {
@@ -173,15 +232,18 @@ export class OrderPixService {
     const charge = reserved as ChargeRow;
     if (charge.status === "pending" && charge.provider_order_id) return publicProjection(charge);
 
+    const request = {
+      amountCents: Number(charge.amount_cents),
+      currency: "BRL" as const,
+      externalReference: charge.external_reference,
+      idempotencyKey: charge.idempotency_key,
+      payerEmail: email,
+    };
+
     try {
-      const provider = await loadProvider(order.store_id);
-      const remote = await provider.createPixCharge({
-        amountCents: Number(charge.amount_cents),
-        currency: "BRL",
-        externalReference: charge.external_reference,
-        idempotencyKey: charge.idempotency_key,
-        payerEmail: email,
-      });
+      // If an OAuth token is rejected, withMercadoPagoProvider refreshes it once
+      // and retries this exact request, preserving the idempotency key.
+      const remote = await withMercadoPagoProvider(order.store_id, (provider) => provider.createPixCharge(request));
       return publicProjection(await updateFromProvider(charge, remote));
     } catch (error) {
       await admin.from("order_payment_provider_charges").update({
@@ -194,8 +256,7 @@ export class OrderPixService {
 
   static async reconcile(storeId: string, providerOrderId: string): Promise<PublicPixPayment | null> {
     const admin = createAdminClient();
-    const provider = await loadProvider(storeId);
-    const remote = await provider.getOrder(providerOrderId);
+    const remote = await withMercadoPagoProvider(storeId, (provider) => provider.getOrder(providerOrderId));
 
     const { data: direct, error: directError } = await admin.from("order_payment_provider_charges")
       .select("*")
