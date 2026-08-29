@@ -1,25 +1,14 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { CatalogNavigation } from "./catalog-navigation";
 import styles from "./catalog-management.module.css";
-
-const links = [
-  { label: "Produtos", href: "/cardapio/produtos", hint: "Preço, imagem e disponibilidade" },
-  { label: "Categorias", href: "/cardapio/categorias", hint: "Ordem e organização do menu" },
-  { label: "Adicionais", href: "/cardapio/adicionais", hint: "Grupos, opções e complementos" },
-  { label: "Sugestões", href: "/cardapio/sugestoes", hint: "Bebidas e categorias para acompanhar" },
-] as const;
 
 export default function CatalogLayout({ children }: { children: ReactNode }) {
   return (
     <div className={styles.shell}>
-      <nav className={`card ${styles.nav}`} aria-label="Gestão do cardápio">
-        {links.map(({ label, href, hint }) => (
-          <Link key={href} href={href} className={styles.navLink}>
-            <span className={styles.navTitle}>{label}</span>
-            <span className={styles.navHint}>{hint}</span>
-          </Link>
-        ))}
-      </nav>
+      <header className={styles.catalogHeader}>
+        <div><p className={styles.eyebrow}>CARDÁPIO</p><h1>Organize o que você vende</h1><p>Produtos, categorias, adicionais e sugestões em um só lugar.</p></div>
+      </header>
+      <CatalogNavigation />
       {children}
     </div>
   );
