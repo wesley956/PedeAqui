@@ -10,6 +10,13 @@ export type OrderPaymentProviderKey = z.infer<typeof orderPaymentProviderSchema>
 
 const environmentSchema = z.enum(["test", "production"]);
 const connectionModeSchema = z.enum(["manual", "oauth"]);
+const healthErrorCodeSchema = z.enum([
+  "mercado_pago_auth_failed",
+  "mercado_pago_provider_unavailable",
+  "mercado_pago_request_failed",
+  "reconciliation_failed",
+]);
+export type OrderPaymentProviderHealthErrorCode = z.infer<typeof healthErrorCodeSchema>;
 
 export type OnlinePixConfigView = {
   provider: OrderPaymentProviderKey;
@@ -206,5 +213,26 @@ export class OrderPaymentProviderConfigService {
     });
     if (error) throw error;
     return data;
+  }
+
+  static async recordHealth(storeId: string, input: {
+    status: "healthy" | "error";
+    errorCode?: OrderPaymentProviderHealthErrorCode | null;
+  }) {
+    const admin = createAdminClient();
+    const checkedAt = new Date().toISOString();
+    const errorCode = input.status === "healthy"
+      ? null
+      : healthErrorCodeSchema.parse(input.errorCode ?? "mercado_pago_request_failed");
+    const { error } = await admin.from("order_payment_provider_configs")
+      .update({
+        last_health_status: input.status,
+        last_health_checked_at: checkedAt,
+        last_error_code: errorCode,
+        updated_at: checkedAt,
+      })
+      .eq("store_id", storeId)
+      .eq("provider", "mercado_pago");
+    if (error) throw error;
   }
 }
