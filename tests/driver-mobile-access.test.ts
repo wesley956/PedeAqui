@@ -37,7 +37,7 @@ describe("driver mobile access", () => {
     expect(firstAccessPage).toContain("Ativar e abrir meu roteiro");
     expect(loginPage).toContain('name="phone"');
     expect(loginPage).toContain('name="pin"');
-    expect(loginPage).toContain("Abrir meu roteiro");
+    expect(loginPage).toContain("Entrar nas minhas entregas");
     expect(pinService).toContain('.eq("phone_e164", phone)');
     expect(pinService).toContain("driverCredentialEmail(access.driver_id)");
     expect(pinService).not.toContain("signInWithPassword({ phone, password: pin })");
