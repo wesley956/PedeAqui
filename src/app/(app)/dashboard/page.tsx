@@ -7,6 +7,9 @@ import { hourlyBarPercent, maxHourlySales, percentageDelta } from "@/server/dash
 import { OnboardingReadinessService } from "@/server/onboarding/onboarding-readiness-service";
 import styles from "./dashboard.module.css";
 
+type MetricTone = "positive" | "negative" | "attention" | "neutral";
+type MetricDefinition = { label: string; value: string; footer: string; tone: MetricTone };
+
 function localDateLabel(value: string) { const [year, month, day] = value.split("-"); return `${day}/${month}/${year}`; }
 function deltaLabel(current: number, previous: number) {
   const delta = percentageDelta(current, previous);
@@ -53,9 +56,9 @@ export default async function DashboardPage() {
     .map((key) => ({ item: itemFor(key), meta: actionMeta[key] }))
     .filter((entry): entry is { item: NonNullable<typeof entry.item>; meta: { title: string; note: string; icon: string } } => Boolean(entry.item && entry.meta));
 
-  const detailMetrics = [
-    { label: "Pedidos abertos", value: String(snapshot.open_orders), footer: "Pendentes ou em andamento", tone: snapshot.open_orders > 0 ? "attention" as const : "neutral" as const },
-    { label: "Cancelamentos", value: String(operations.cancellationsToday), footer: "Cancelados ou recusados hoje", tone: operations.cancellationsToday > 0 ? "negative" as const : "neutral" as const },
+  const detailMetrics: MetricDefinition[] = [
+    { label: "Pedidos abertos", value: String(snapshot.open_orders), footer: "Pendentes ou em andamento", tone: snapshot.open_orders > 0 ? "attention" : "neutral" },
+    { label: "Cancelamentos", value: String(operations.cancellationsToday), footer: "Cancelados ou recusados hoje", tone: operations.cancellationsToday > 0 ? "negative" : "neutral" },
     ...(moduleVisible("deliveries") ? [{ label: "Entregas atrasadas", value: String(operations.lateDeliveries), footer: "Prazo prometido já vencido", tone: operations.lateDeliveries > 0 ? "negative" as const : "neutral" as const }] : []),
     ...(moduleVisible("cash") ? [{ label: "Caixas abertos", value: String(operations.openCashSessions), footer: operations.openCashSessions > 0 ? "Turnos em andamento" : "Nenhum turno aberto", tone: operations.openCashSessions > 0 ? "positive" as const : "neutral" as const }] : []),
   ];
@@ -109,7 +112,7 @@ function SectionTitle({ title, description }: { title: string; description: stri
   return <div className={styles.sectionTitle}><div><h2>{title}</h2><p>{description}</p></div></div>;
 }
 
-function Metric({ label, value, footer, tone }: { label: string; value: string; footer: string; tone: "positive" | "negative" | "attention" | "neutral" }) {
+function Metric({ label, value, footer, tone }: MetricDefinition) {
   return <article className={styles.metric} data-tone={tone}><span className={styles.metricLabel}>{label}</span><strong className={styles.metricValue}>{value}</strong><span className={styles.metricFooter}>{footer}</span></article>;
 }
 
