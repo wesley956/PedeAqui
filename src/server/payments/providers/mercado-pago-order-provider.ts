@@ -41,6 +41,18 @@ const providerOrderSchema = z.object({
   }).passthrough().optional(),
 }).passthrough();
 
+export class MercadoPagoProviderHttpError extends Error {
+  readonly status: number;
+  readonly code: string;
+
+  constructor(status: number, code: string) {
+    super(`Mercado Pago request failed (${code})`);
+    this.name = "MercadoPagoProviderHttpError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 function centsToAmount(cents: number) {
   if (!Number.isSafeInteger(cents) || cents <= 0) throw new Error("Invalid PIX amount");
   return `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, "0")}`;
@@ -93,7 +105,7 @@ async function parseResponse(response: Response) {
   const body = await response.json().catch(() => null);
   if (!response.ok) {
     const code = body && typeof body === "object" && "code" in body ? String(body.code) : `http_${response.status}`;
-    throw new Error(`Mercado Pago request failed (${code})`);
+    throw new MercadoPagoProviderHttpError(response.status, code);
   }
   return body;
 }

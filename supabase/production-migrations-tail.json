@@ -95,6 +95,10 @@
     [
       "20260829175234",
       "mercado_pago_manual_fallback"
+    ],
+    [
+      "20260829191915",
+      "mercado_pago_reconciliation_scheduler"
     ]
   ]
 }
