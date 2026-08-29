@@ -54,11 +54,14 @@ describe("simple printing setup", () => {
 });
 
 describe("module settings clarity", () => {
-  it("keeps module shutdown as a direct two-step action", () => {
+  it("keeps module shutdown as a direct inline two-step action", () => {
     const page = read("src/app/(app)/configuracoes/modulos/page.tsx");
-    expect(page).toContain('{enabled ? "Desativar" : "Ativar"}');
-    expect(page).toContain("Confirmar desativação");
-    expect(page).toContain("Sempre ativo");
-    expect(page).not.toContain("Revisar desativação");
+    const client = read("src/app/(app)/configuracoes/modulos/resources-client.tsx");
+    expect(client).toContain('resource.enabled ? "Desativar" : "Ativar"');
+    expect(client).toContain('state.status === "confirm" ? "Confirmar"');
+    expect(client).toContain("Você permanece nesta mesma posição da página");
+    expect(client).toContain("Sempre ativo");
+    expect(page).toContain("desativar um recurso não apaga o histórico");
+    expect(client).not.toContain("Revisar desativação");
   });
 });
