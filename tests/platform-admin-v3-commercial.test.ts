@@ -24,9 +24,11 @@ describe("platform admin v3 commercial safety", () => {
   it("keeps module access guarded by RBAC, store configuration and entitlements", () => {
     const access = read("src/server/modules/module-access-service.ts");
     expect(access).toContain("entitlementAllowedByModule");
-    expect(access).toContain("permissionAllowedByModule");
+    expect(access).toContain("PermissionSnapshotService.load");
+    expect(access).toContain("grantedPermissions");
     expect(access).toContain("enabledModuleKeys");
-    expect(access).toContain("legacy restaurant missing a module row must never lose an existing surface during modular rollout");
+    expect(access).toContain("legacy restaurant with a missing row must");
+    expect(access).toContain("never lose an existing surface during the modular rollout");
   });
 
   it("keeps module disablement behind dependency and operational blockers", () => {
@@ -37,11 +39,13 @@ describe("platform admin v3 commercial safety", () => {
     expect(configuration).toContain("ModuleConfigurationError");
   });
 
-  it("routes legacy restaurant 360 links through the canonical unit resolver", () => {
+  it("keeps legacy WhatsApp navigation while onboarding opens the canonical unit 360", () => {
     const legacy = read("src/app/platform/restaurantes/[storeId]/page.tsx");
     const unit = read("src/app/platform/unidades/[storeId]/page.tsx");
-    expect(legacy).toContain("/platform/unidades/${storeId}");
+    const onboarding = read("src/app/platform/novo-restaurante/page.tsx");
+    expect(legacy).toContain("/platform/unidades/${storeId}/whatsapp");
     expect(unit).toContain("/platform/empresas/${data.organization_id}/unidades/${storeId}");
+    expect(onboarding).toContain("/platform/empresas/${organizationId}/unidades/${storeId}");
   });
 
   it("preserves immutable commercial history and protected pricing", () => {
