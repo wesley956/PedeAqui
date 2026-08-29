@@ -21,12 +21,12 @@ export default async function InventoryPage() {
 
   return <section className={styles.page}>
     <header className={styles.header}>
-      <div className={styles.headerCopy}><p className="muted">Gestão por unidade</p><h1>Estoque</h1><p className="muted">O saldo abaixo é uma projeção do ledger imutável. Toda correção acontece por movimento, contagem ou transferência — nunca por edição direta do saldo.</p></div>
+      <div className={styles.headerCopy}><p className="muted">ESTOQUE E COMPRAS</p><h1>Estoque</h1><p className="muted">Veja o que você tem, identifique o que precisa de reposição e registre entradas, perdas, contagens ou transferências.</p></div>
       <Link href="/estoque/fichas" className={styles.link}>Fichas técnicas →</Link>
     </header>
 
     <div className={styles.metrics}>
-      <Metric label="Insumos na unidade" value={configured.length} />
+      <Metric label="Insumos controlados" value={configured.length} />
       <Metric label="Abaixo do mínimo" value={low.length} warning={low.length > 0} />
       <Metric label="Saldo negativo" value={negative.length} warning={negative.length > 0} />
       <Metric label="Movimentos recentes" value={data.movements.length} />
@@ -42,25 +42,25 @@ export default async function InventoryPage() {
               <div className={styles.itemIdentity}><span className={styles.itemName}>{item.name}</span><span className={styles.itemMeta}>{item.sku ? `${item.sku} · ` : ""}{unitLabel(unit)}{config.active ? "" : " · inativo nesta unidade"}</span>{isNegative ? <SemanticStatus tone="danger" icon="!" label="Saldo negativo" /> : isLow ? <SemanticStatus tone="warning" icon="!" label="Estoque baixo" /> : <SemanticStatus tone="success" icon="✓" label="Estoque normal" />}</div>
               <div className={styles.balance}><span className={`${styles.balanceValue} ${isLow ? styles.balanceWarning : ""}`}>{formatQuantity(quantity, unit)}</span><span className={styles.minimum}>mínimo {formatQuantity(String(config.minimum_quantity), unit)}</span></div>
             </div>
-            {isLow ? <div className={styles.attention}><strong>Reposição necessária.</strong> O saldo atingiu ou ficou abaixo do mínimo configurado.</div> : null}
+            {isLow ? <div className={styles.attention}><strong>Reposição necessária.</strong> O saldo chegou ao mínimo configurado.</div> : null}
             <div className={styles.actions}>
-              {data.canAdjust && config.active ? <details><summary>Movimentar</summary><div className={styles.actionBody}><InventoryMovementForm itemId={item.id} baseUnit={unit} /></div></details> : null}
-              {data.canAdjust && config.active ? <details><summary>Contagem física</summary><div className={styles.actionBody}><InventoryReconcileForm itemId={item.id} /></div></details> : null}
+              {data.canAdjust && config.active ? <details><summary>Registrar movimento</summary><div className={styles.actionBody}><InventoryMovementForm itemId={item.id} baseUnit={unit} /></div></details> : null}
+              {data.canAdjust && config.active ? <details><summary>Fazer contagem</summary><div className={styles.actionBody}><InventoryReconcileForm itemId={item.id} /></div></details> : null}
               {data.canAdjust && config.active ? <details><summary>Transferir</summary><div className={styles.actionBody}><InventoryTransferForm itemId={item.id} stores={data.stores} currentStoreId={data.storeId} /></div></details> : null}
-              {data.canManage ? <details><summary>Configuração do insumo</summary><div className={styles.actionBody}><InventorySettingsForm itemId={item.id} baseUnit={unit} active={config.active} minimumQuantity={String(config.minimum_quantity)} allowNegative={config.allow_negative} costInput={costInput(config.average_cost_micros_per_base_unit, unit)} /></div></details> : null}
+              {data.canManage ? <details><summary>Configurar insumo</summary><div className={styles.actionBody}><InventorySettingsForm itemId={item.id} baseUnit={unit} active={config.active} minimumQuantity={String(config.minimum_quantity)} allowNegative={config.allow_negative} costInput={costInput(config.average_cost_micros_per_base_unit, unit)} /></div></details> : null}
             </div>
           </article>;
         })}
 
-        <div className={styles.sectionHeading}><h2 className={styles.sectionTitle}>Movimentos recentes</h2><span className="muted">Histórico operacional</span></div>
+        <div className={styles.sectionHeading}><h2 className={styles.sectionTitle}>Movimentos recentes</h2><span className="muted">Histórico da operação</span></div>
         <article className={`card ${styles.history}`}>
-          {data.movements.length === 0 ? <p className="muted">Nenhum movimento nesta unidade.</p> : data.movements.map((movement) => { const item = itemMap.get(movement.inventory_item_id); const unit = (item?.base_unit ?? "unit") as InventoryBaseUnit; const delta = Number(movement.quantity_delta); return <div key={movement.id} className={styles.movement}><div className={styles.movementCopy}><strong>{item?.name ?? "Insumo"} · {movementLabels[movement.movement_type] ?? movement.movement_type}</strong><span className={styles.movementMeta}>{movement.reason || movement.source_type || "Movimento operacional"} · {new Date(movement.created_at).toLocaleString("pt-BR")}</span></div><strong className={delta < 0 ? styles.deltaNegative : styles.deltaPositive}>{delta > 0 ? "+" : ""}{formatQuantity(String(movement.quantity_delta), unit)}</strong></div>; })}
+          {data.movements.length === 0 ? <p className="muted">Nenhum movimento nesta unidade.</p> : data.movements.map((movement) => { const item = itemMap.get(movement.inventory_item_id); const unit = (item?.base_unit ?? "unit") as InventoryBaseUnit; const delta = Number(movement.quantity_delta); return <div key={movement.id} className={styles.movement}><div className={styles.movementCopy}><strong>{item?.name ?? "Insumo"} · {movementLabels[movement.movement_type] ?? movement.movement_type}</strong><span className={styles.movementMeta}>{movement.reason || movement.source_type || "Movimento de estoque"} · {new Date(movement.created_at).toLocaleString("pt-BR")}</span></div><strong className={delta < 0 ? styles.deltaNegative : styles.deltaPositive}>{delta > 0 ? "+" : ""}{formatQuantity(String(movement.quantity_delta), unit)}</strong></div>; })}
         </article>
       </div>
 
       <aside className={styles.aside}>
-        {data.canManage ? <article className={`card ${styles.asideCard}`}><div><h2>Novo insumo</h2><p className="muted">Use g/ml como unidade-base; kg e litro são apenas formatos de entrada e exibição.</p></div><InventoryItemCreateForm /></article> : null}
-        {data.canManage && data.items.some((item) => !item.config) ? <article className={`card ${styles.asideCard}`}><div><h2>Insumos de outras unidades</h2><p className="muted">Habilite na unidade atual para usar em transferências e fichas.</p></div>{data.items.filter((item) => !item.config).map((item) => <div key={item.id}><strong>{item.name}</strong><EnableInventoryItemForm itemId={item.id} /></div>)}</article> : null}
+        {data.canManage ? <article className={`card ${styles.asideCard}`}><div><h2>Novo insumo</h2><p className="muted">Cadastre o item que você quer acompanhar no estoque.</p></div><InventoryItemCreateForm /></article> : null}
+        {data.canManage && data.items.some((item) => !item.config) ? <article className={`card ${styles.asideCard}`}><div><h2>Insumos de outras unidades</h2><p className="muted">Ative nesta unidade quando quiser usar o item em transferências ou fichas técnicas.</p></div>{data.items.filter((item) => !item.config).map((item) => <div key={item.id}><strong>{item.name}</strong><EnableInventoryItemForm itemId={item.id} /></div>)}</article> : null}
       </aside>
     </div>
   </section>;
