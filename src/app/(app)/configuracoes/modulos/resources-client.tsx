@@ -18,7 +18,7 @@ export type ResourceItem = {
 
 const initialState: ModuleInlineActionState = { status: "idle" };
 
-export function ResourcesClient({ resources }: { resources: readonly ResourceItem[] }) {
+export function ResourcesClient({ resources, focusKey = null }: { resources: readonly ResourceItem[]; focusKey?: string | null }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
   const normalized = query.trim().toLocaleLowerCase("pt-BR");
@@ -27,6 +27,13 @@ export function ResourcesClient({ resources }: { resources: readonly ResourceIte
     const matchesFilter = filter === "all" || (filter === "active" ? resource.enabled : !resource.enabled);
     return matchesQuery && matchesFilter;
   }), [resources, normalized, filter]);
+
+  useEffect(() => {
+    if (!focusKey) return;
+    const element = document.getElementById(`resource-${focusKey}`);
+    if (!element) return;
+    requestAnimationFrame(() => element.scrollIntoView({ behavior: "smooth", block: "center" }));
+  }, [focusKey]);
 
   return <>
     <div className={styles.controls}>
@@ -39,13 +46,13 @@ export function ResourcesClient({ resources }: { resources: readonly ResourceIte
     </div>
 
     <div className={styles.list}>
-      {visible.map((resource) => <ResourceRow resource={resource} key={`${resource.key}:${resource.enabled}`} />)}
+      {visible.map((resource) => <ResourceRow resource={resource} key={`${resource.key}:${resource.enabled}`} highlighted={resource.key === focusKey} />)}
     </div>
     {visible.length === 0 ? <div className={styles.empty}>Nenhum recurso encontrado com esse filtro.</div> : null}
   </>;
 }
 
-function ResourceRow({ resource }: { resource: ResourceItem }) {
+function ResourceRow({ resource, highlighted }: { resource: ResourceItem; highlighted: boolean }) {
   const router = useRouter();
   const [state, action, pending] = useActionState(applyModuleChangeInlineAction, initialState);
   const targetEnabled = !resource.enabled;
@@ -54,7 +61,7 @@ function ResourceRow({ resource }: { resource: ResourceItem }) {
     if (state.status === "success") router.refresh();
   }, [state.status, router]);
 
-  return <article className={styles.resource}>
+  return <article id={`resource-${resource.key}`} className={styles.resource} data-highlighted={highlighted || undefined}>
     <div className={styles.resourceMain}>
       <div className={styles.copy}><div className={styles.titleLine}><strong>{resource.label}</strong>{resource.core ? <span className={styles.locked}>Sempre ativo</span> : resource.enabled ? <span className={styles.active}>Ativo</span> : <span className={styles.inactive}>Inativo</span>}</div><p>{resource.description}</p>{resource.dependencies.length > 0 ? <small>Usa também: {resource.dependencies.join(", ")}</small> : null}</div>
       {!resource.core ? <form action={action} className={styles.actionForm}>
