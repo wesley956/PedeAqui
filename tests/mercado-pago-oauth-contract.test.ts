@@ -45,13 +45,15 @@ describe("Mercado Pago OAuth rollout contract", () => {
     expect(actions).toContain("disconnectOAuthCurrentStore");
   });
 
-  it("stores and rotates OAuth tokens only through server-side Vault RPCs", () => {
+  it("stores, rotates and consumes OAuth tokens through server-side paths", () => {
     const sql = read("supabase/sql/153_mercado_pago_oauth_connection.sql");
     const credentials = read("src/server/payments/mercado-pago-credential-service.ts");
+    const pix = read("src/server/payments/order-pix-service.ts");
     expect(sql).toContain("order_payment_provider_credentials_v2_internal");
     expect(sql).toContain("oauth credentials changed concurrently");
     expect(credentials).toContain("refreshMercadoPagoOAuthToken");
     expect(credentials).toContain("expectedUpdatedAt: current.updated_at");
     expect(credentials).toContain("latest.updated_at !== current.updated_at");
+    expect(pix).toContain("getUsableMercadoPagoCredentials(storeId)");
   });
 });
