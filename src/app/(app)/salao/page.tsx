@@ -4,7 +4,7 @@ import { DiningService } from "@/server/dining/dining-service";
 import { occupiedMinutes } from "@/server/dining/model";
 
 const money = (cents: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
-const statusLabel: Record<string, string> = { available: "Livre", occupied: "Ocupada", reserved: "Reservada", cleaning: "Limpeza", disabled: "Desativada" };
+const statusLabel: Record<string, string> = { available: "Livre", occupied: "Em atendimento", reserved: "Reservada", cleaning: "Limpeza", disabled: "Desativada" };
 
 export default async function DiningPage() {
   const { tables } = await DiningService.listTables();
@@ -14,17 +14,17 @@ export default async function DiningPage() {
   return <div className={styles.page}>
     <header className={styles.header}>
       <div>
-        <p className={styles.muted} style={{ margin: 0 }}>OPERAÇÃO DE SALÃO</p>
-        <h1>Mesas</h1>
-        <p className={styles.muted}>Veja rapidamente ocupação, tempo de sessão, consumo e mesas que já pediram a conta.</p>
+        <p className={styles.eyebrow}>OPERAÇÃO</p>
+        <h1>Salão e mesas</h1>
+        <p className={styles.muted}>Veja quais mesas estão livres, em atendimento ou esperando o fechamento da conta.</p>
       </div>
-      <Link href="/configuracoes/salao" className={styles.secondary}>Configurar mesas</Link>
+      <Link href="/configuracoes/salao" className={styles.secondary}>Configurar salão</Link>
     </header>
 
     <div className={styles.diningSummary} aria-label="Resumo do salão">
       <span><strong>{tables.length - active.length}</strong> livres</span>
       <span><strong>{active.length}</strong> em atendimento</span>
-      <span data-attention={settling.length > 0 ? "true" : undefined}><strong>{settling.length}</strong> com conta solicitada</span>
+      <span data-attention={settling.length > 0 ? "true" : undefined}><strong>{settling.length}</strong> aguardando fechamento</span>
     </div>
 
     <section className={styles.tableGrid} aria-label="Mesas da unidade">
