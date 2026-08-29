@@ -6,8 +6,9 @@ const recipes = readFileSync("src/app/(app)/estoque/fichas/page.tsx", "utf8");
 const styles = readFileSync("src/app/(app)/estoque/inventory-operations.module.css", "utf8");
 
 describe("inventory operations UI", () => {
-  it("keeps stock as a ledger projection with movement-based actions", () => {
-    expect(inventory).toContain("ledger imutável");
+  it("keeps stock movement-based while presenting it in owner language", () => {
+    expect(inventory).toContain("Movimentos recentes");
+    expect(inventory).toContain("Histórico da operação");
     expect(inventory).toContain("InventoryMovementForm");
     expect(inventory).toContain("InventoryReconcileForm");
     expect(inventory).toContain("InventoryTransferForm");
