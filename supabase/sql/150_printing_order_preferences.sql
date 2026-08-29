@@ -31,5 +31,13 @@ alter table public.store_print_preferences enable row level security;
 revoke all on table public.store_print_preferences from anon, authenticated;
 grant select, insert, update, delete on table public.store_print_preferences to service_role;
 
+drop policy if exists store_print_preferences_no_client_access on public.store_print_preferences;
+create policy store_print_preferences_no_client_access
+  on public.store_print_preferences
+  for all
+  to anon, authenticated
+  using (false)
+  with check (false);
+
 comment on table public.store_print_preferences is
   'Preferências da unidade para conteúdo de comprovantes operacionais; não altera documentos fiscais.';
