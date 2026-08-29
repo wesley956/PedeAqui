@@ -16,6 +16,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 
 ## Painel do Proprietário
 
+- `/mais-ferramentas` — hub das funções avançadas que saíram da navegação principal simplificada. Mantém acesso às superfícies permitidas por RBAC e disponibilidade de módulos sem remover funcionalidades do sistema.
 - `/platform/unidades/[storeId]/configuracao-operacional` — tela dedicada, exclusiva de `super_admin`, para configurar o comportamento operacional dos módulos já habilitados em uma unidade. Não ativa módulos nem altera contrato comercial.
 
 ## Gestão do cardápio
