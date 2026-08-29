@@ -25,14 +25,14 @@ const navigation = [
   {
     label: "Comercial",
     items: [
-      ["Assinaturas e cobrança", "/platform/assinaturas"],
+      ["Assinaturas", "/platform/assinaturas"],
       ["Produto e módulos", "/platform/produto"],
     ],
   },
   {
     label: "Operação",
     items: [
-      ["Operação da plataforma", "/platform/operacao"],
+      ["Operação", "/platform/operacao"],
       ["Integrações", "/platform/integracoes"],
       ["Incidentes", "/platform/incidentes"],
       ["Alertas", "/platform/alertas"],
