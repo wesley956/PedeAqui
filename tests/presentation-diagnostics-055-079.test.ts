@@ -61,6 +61,7 @@ describe("[PA-DIAG-067..079] módulos, perfis e bloqueio integral", () => {
   const navigation = read("src/server/access/navigation-access-service.ts");
   const layout = read("src/app/(app)/layout.tsx");
   const settings = read("src/app/(app)/configuracoes/modulos/page.tsx");
+  const resourceClient = read("src/app/(app)/configuracoes/modulos/resources-client.tsx");
   const support = read("src/server/platform/platform-module-support-service.ts");
 
   it("mantém um catálogo válido e perfis comerciais mínimos previsíveis", () => {
@@ -90,12 +91,14 @@ describe("[PA-DIAG-067..079] módulos, perfis e bloqueio integral", () => {
     expect(support).toContain("planned_changes");
   });
 
-  it("oferece perfis rápidos, prévia e personalização sem apagar dados", () => {
+  it("oferece perfis rápidos, prévia em lote e personalização inline sem apagar dados", () => {
     expect(settings).toContain("Cardápio básico");
     expect(settings).toContain("Delivery + WhatsApp");
     expect(settings).toContain("previewCommercialProfile");
-    expect(settings).toContain("Nada será alterado até você confirmar");
-    expect(settings).toContain("Desativar uma ferramenta nunca apaga o histórico");
+    expect(settings).toContain("Confira as mudanças e confirme quando estiver tudo certo.");
+    expect(settings).toContain("desativar um recurso não apaga o histórico");
+    expect(resourceClient).toContain("applyModuleChangeInlineAction");
+    expect(resourceClient).toContain("Você permanece nesta mesma posição da página");
     expect(access).toContain("configRevision");
   });
 });
