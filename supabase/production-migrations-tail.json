@@ -87,6 +87,14 @@
     [
       "20260829053956",
       "printing_order_preferences_scope_index"
+    ],
+    [
+      "20260829175220",
+      "mercado_pago_oauth_connection"
+    ],
+    [
+      "20260829175234",
+      "mercado_pago_manual_fallback"
     ]
   ]
 }

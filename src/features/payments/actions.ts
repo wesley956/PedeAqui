@@ -12,8 +12,7 @@ import { friendlyPaymentActionError } from "@/features/payments/payment-action-e
 export async function savePaymentMethodsAction(formData: FormData) {
   const methods = formData.getAll("method").map((value) => paymentMethodSchema.parse(String(value)));
   await StorePaymentMethodService.save(methods);
-  revalidatePath("/configuracoes/pagamentos");
-  revalidatePath("/m/[slug]/checkout", "page");
+  refreshPaymentSettings();
 }
 
 const onlinePixConfigSchema = z.object({
@@ -34,6 +33,20 @@ export async function saveOnlinePixProviderAction(formData: FormData) {
     accessToken: input.accessToken || null,
     webhookSecret: input.webhookSecret || null,
   });
+  refreshPaymentSettings();
+}
+
+export async function toggleOnlinePixProviderAction(formData: FormData) {
+  await OrderPaymentProviderConfigService.setCurrentStoreEnabled(formData.get("enabled") === "on");
+  refreshPaymentSettings();
+}
+
+export async function disconnectMercadoPagoOAuthAction() {
+  await OrderPaymentProviderConfigService.disconnectOAuthCurrentStore();
+  refreshPaymentSettings();
+}
+
+function refreshPaymentSettings() {
   revalidatePath("/configuracoes/pagamentos");
   revalidatePath("/m/[slug]/checkout", "page");
 }

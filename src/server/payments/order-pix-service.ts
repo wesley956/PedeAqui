@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getUsableMercadoPagoCredentials } from "@/server/payments/mercado-pago-credential-service";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
 import { MercadoPagoOrderProvider } from "@/server/payments/providers/mercado-pago-order-provider";
 import type { OnlinePixProviderOrder } from "@/server/payments/providers/order-payment-provider";
@@ -107,8 +108,7 @@ async function updateFromProvider(charge: ChargeRow, remote: OnlinePixProviderOr
 }
 
 async function loadProvider(storeId: string) {
-  const credentials = await OrderPaymentProviderConfigService.credentials(storeId, "mercado_pago");
-  if (!credentials?.enabled) throw new Error("Online PIX provider is disabled");
+  const credentials = await getUsableMercadoPagoCredentials(storeId);
   return new MercadoPagoOrderProvider(credentials.access_token);
 }
 
