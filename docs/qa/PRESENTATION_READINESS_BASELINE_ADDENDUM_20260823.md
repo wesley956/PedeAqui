@@ -36,3 +36,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 
 - `/api/order-alert/presence` — heartbeat autenticado do painel para o fallback nativo distinguir painel ativo de navegador fechado e respeitar a preferência explícita de som.
 - `/api/print-agent/order-alerts` — endpoint autenticado pelo token do Print Agent para consumir eventos imutáveis de novos pedidos quando o painel não está ativo; não substitui nem bloqueia o alerta web.
+
+## Registro de rollout
+
+- 29/08/2026 — novo gatilho de deploy de produção disparado após o merge do UX v3. Alteração exclusivamente documental, sem impacto funcional no painel.
