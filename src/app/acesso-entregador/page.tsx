@@ -23,8 +23,9 @@ export default async function DriverAccessPage({
 
   return (
     <AuthCard
-      title="Acesso do entregador"
-      subtitle="Entre com seu telefone e PIN para abrir diretamente o seu roteiro."
+      variant="driver"
+      title="Olá, entregador 👋"
+      subtitle="Entre com seu telefone e PIN para acessar suas entregas do dia."
     >
       {params.error ? <Alert tone="danger">{loginErrors[params.error] ?? "Não foi possível entrar."}</Alert> : null}
 
@@ -49,17 +50,17 @@ export default async function DriverAccessPage({
           maxLength={6}
           required
         />
-        <Button type="submit">Abrir meu roteiro</Button>
+        <Button type="submit">Entrar nas minhas entregas</Button>
       </form>
 
       <p className={authStyles.note}>
-        Primeiro acesso? Abra o link enviado pela loja no WhatsApp e crie seu PIN uma única vez.
+        <strong>Primeiro acesso?</strong> Abra o convite enviado pela loja no WhatsApp e crie seu PIN uma única vez.
       </p>
       <p className={authStyles.note}>
-        Depois de entrar, o celular permanece conectado normalmente até você sair da conta.
+        Depois de entrar, este celular permanece conectado normalmente até você sair da conta.
       </p>
       <div className={authStyles.links}>
-        <Link href="/login" className={authStyles.link}>Acesso da loja</Link>
+        <Link href="/login" className={authStyles.link}>Sou da loja → Acessar painel</Link>
       </div>
       <div className={authStyles.appearance}><ThemeSelector /></div>
     </AuthCard>
