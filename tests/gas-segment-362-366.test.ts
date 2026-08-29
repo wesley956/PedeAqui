@@ -91,7 +91,8 @@ describe("gas segment [362]-[366]", () => {
     const guide = read("src/features/user-guide/guide-model.ts");
     const layout = read("src/app/(app)/layout.tsx");
     expect(dashboard).toContain("moduleVisible");
-    expect(dashboard).toContain('experienceMode === "easy"');
+    expect(dashboard).toContain('data-experience={access.experienceMode}');
+    expect(dashboard).toContain('access.experienceMode === "standard"');
     expect(guide).toContain("businessType");
     expect(layout).toContain("navigationAccess.businessType");
   });
