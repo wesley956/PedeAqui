@@ -1,6 +1,9 @@
 import "server-only";
 
-import { OrderPaymentProviderConfigService, type OrderPaymentProviderCredentials } from "@/server/payments/order-payment-provider-config-service";
+import {
+  OrderPaymentProviderConfigService,
+  type OrderPaymentProviderCredentials,
+} from "@/server/payments/order-payment-provider-config-service";
 import { refreshMercadoPagoOAuthToken } from "@/server/payments/providers/mercado-pago-oauth";
 
 const REFRESH_SKEW_MS = 5 * 60 * 1000;
@@ -18,17 +21,14 @@ function assertUsable(credentials: OrderPaymentProviderCredentials | null) {
   return credentials;
 }
 
-export async function getUsableMercadoPagoCredentials(storeId: string) {
-  const current = assertUsable(await OrderPaymentProviderConfigService.credentials(storeId, "mercado_pago"));
-  if (current.connection_mode === "manual" || isAccessTokenFresh(current)) return current;
+async function refreshCredentials(storeId: string, current: OrderPaymentProviderCredentials) {
+  if (current.connection_mode !== "oauth") throw new Error("Mercado Pago manual credentials cannot be refreshed automatically");
   if (!current.refresh_token) throw new Error("Mercado Pago OAuth refresh token is missing");
 
   let token;
   try {
     token = await refreshMercadoPagoOAuthToken(current.refresh_token);
   } catch (error) {
-    // A parallel request may have refreshed and rotated the token first. Re-read
-    // before surfacing the provider error so serverless concurrency stays safe.
     const latest = assertUsable(await OrderPaymentProviderConfigService.credentials(storeId, "mercado_pago"));
     if (latest.updated_at !== current.updated_at && isAccessTokenFresh(latest)) return latest;
     throw error;
@@ -44,8 +44,6 @@ export async function getUsableMercadoPagoCredentials(storeId: string) {
       expectedUpdatedAt: current.updated_at,
     });
   } catch (error) {
-    // Optimistic concurrency in the RPC prevents an older refresh response from
-    // overwriting a newer rotated refresh token.
     const latest = assertUsable(await OrderPaymentProviderConfigService.credentials(storeId, "mercado_pago"));
     if (latest.updated_at !== current.updated_at && isAccessTokenFresh(latest)) return latest;
     throw error;
@@ -54,4 +52,15 @@ export async function getUsableMercadoPagoCredentials(storeId: string) {
   const refreshed = assertUsable(await OrderPaymentProviderConfigService.credentials(storeId, "mercado_pago"));
   if (!isAccessTokenFresh(refreshed)) throw new Error("Mercado Pago OAuth token refresh did not persist a usable token");
   return refreshed;
+}
+
+export async function getUsableMercadoPagoCredentials(storeId: string) {
+  const current = assertUsable(await OrderPaymentProviderConfigService.credentials(storeId, "mercado_pago"));
+  if (current.connection_mode === "manual" || isAccessTokenFresh(current)) return current;
+  return refreshCredentials(storeId, current);
+}
+
+export async function forceRefreshMercadoPagoCredentials(storeId: string) {
+  const current = assertUsable(await OrderPaymentProviderConfigService.credentials(storeId, "mercado_pago"));
+  return refreshCredentials(storeId, current);
 }
