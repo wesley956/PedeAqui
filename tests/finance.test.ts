@@ -19,7 +19,7 @@ describe("finance ledger contracts",()=>{
     expect(core).toContain("create table public.financial_transactions");
     expect(core).toContain("financial_transactions_immutable");
     expect(core).toContain("create table public.financial_account_balances");
-    expect(page).toContain("sem editar saldo diretamente");
+    expect(page).toContain("histórico anterior continua preservado");
     expect(page).not.toContain('name="balancecents"');
   });
 
