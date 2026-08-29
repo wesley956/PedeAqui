@@ -8,11 +8,16 @@ import { PrintQueueService } from "@/server/printing/print-queue-service";
 
 function text(formData: FormData, name: string) { return String(formData.get(name) ?? "").trim(); }
 function nullable(formData: FormData, name: string) { const value = text(formData, name); return value || null; }
+function checked(formData: FormData, name: string) { return formData.get(name) === "on"; }
 function integer(formData: FormData, name: string, fallback: number) {
   const value = Number(formData.get(name));
   return Number.isInteger(value) ? value : fallback;
 }
-function refresh() { revalidatePath("/configuracoes/impressoes"); }
+function refresh() {
+  revalidatePath("/configuracoes");
+  revalidatePath("/configuracoes/impressoes");
+  revalidatePath("/configuracoes/impressoes/formato");
+}
 
 export async function createPrintStationAction(formData: FormData) {
   await PrintConfigService.createStation({
@@ -32,6 +37,29 @@ export async function createPrinterAction(formData: FormData) {
     defaultCopies: integer(formData, "defaultCopies", 1),
     agentId: nullable(formData, "agentId"),
     fallbackPrinterId: nullable(formData, "fallbackPrinterId"),
+  });
+  refresh();
+}
+
+export async function updatePrinterCopiesAction(formData: FormData) {
+  await PrintConfigService.updatePrinterDefaultCopies(
+    text(formData, "printerId"),
+    integer(formData, "defaultCopies", 1),
+  );
+  refresh();
+}
+
+export async function saveOrderPrintPreferencesAction(formData: FormData) {
+  await PrintConfigService.saveOrderPrintPreferences({
+    show_customer_name: checked(formData, "showCustomerName"),
+    show_customer_phone: checked(formData, "showCustomerPhone"),
+    show_delivery_address: checked(formData, "showDeliveryAddress"),
+    show_item_modifiers: checked(formData, "showItemModifiers"),
+    show_item_notes: checked(formData, "showItemNotes"),
+    show_prices: checked(formData, "showPrices"),
+    show_payment: checked(formData, "showPayment"),
+    show_footer: checked(formData, "showFooter"),
+    footer_text: nullable(formData, "footerText"),
   });
   refresh();
 }
