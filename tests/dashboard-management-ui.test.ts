@@ -9,8 +9,8 @@ const css = readFileSync(join(process.cwd(), "src/app/(app)/dashboard/dashboard.
 const errorState = readFileSync(join(process.cwd(), "src/app/(app)/dashboard/error.tsx"), "utf8");
 
 describe("management dashboard", () => {
-  it("shows practical KPIs from named operational sources", () => {
-    for (const label of ["Vendas hoje", "Pedidos concluídos", "Ticket médio", "Pedidos abertos", "Cancelamentos", "Entregas atrasadas", "Caixas abertos", "Estoque crítico"]) {
+  it("shows the approved daily KPIs first and preserves the detailed operational view", () => {
+    for (const label of ["Vendas", "Pedidos", "Ticket médio", "Precisa de atenção", "Pedidos abertos", "Cancelamentos", "Entregas atrasadas", "Caixas abertos"]) {
       expect(page).toContain(label);
     }
     expect(page).toContain("Vendas por hora");
@@ -19,10 +19,10 @@ describe("management dashboard", () => {
     expect(vocabulary).toContain('productPlural: "produtos"');
   });
 
-  it("keeps revenue/order comparisons tied to the canonical dashboard snapshot", () => {
+  it("keeps revenue and order totals tied to the canonical dashboard snapshot", () => {
     expect(service).toContain('admin.rpc("dashboard_snapshot_internal"');
     expect(page).toContain("snapshot.previous_sales_cents");
-    expect(page).toContain("snapshot.previous_sales_count");
+    expect(page).toContain("snapshot.sales_count + snapshot.open_orders");
     expect(page).not.toContain("previousCancellations");
     expect(page).not.toContain("previousLateDeliveries");
   });
@@ -43,8 +43,8 @@ describe("management dashboard", () => {
     expect(service).toContain('["pending", "awaiting_assignment", "assigned", "picked_up", "out_for_delivery"]');
   });
 
-  it("links management signals back to their source modules", () => {
-    for (const href of ["/pedidos", "/entregas", "/caixa", "/estoque"]) expect(page).toContain(`href=\"${href}\"`);
+  it("links attention signals and daily actions back to their source modules", () => {
+    for (const href of ["/pedidos", "/entregas", "/estoque", "/mais-ferramentas"]) expect(page).toContain(href);
   });
 
   it("has responsive, empty and explicit failure states instead of estimated fallback metrics", () => {
