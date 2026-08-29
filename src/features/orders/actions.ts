@@ -12,6 +12,7 @@ import { CUSTOMER_RECOGNITION_MAX_AGE_SECONDS, customerRecognitionCookieName } f
 import { orderCookieName } from "@/server/orders/order-token";
 import { OrderService } from "@/server/orders/order-service";
 import { logger } from "@/server/observability/logger";
+import { scheduleOrderPixCharge } from "@/server/payments/order-pix-dispatch";
 import { PaymentService } from "@/server/payments/payment-service";
 import { PrintQueueService } from "@/server/printing/print-queue-service";
 import { PrintService } from "@/server/printing/print-service";
@@ -29,6 +30,7 @@ export async function createOrderFromCheckoutAction(formData: FormData) {
   const result = await OrderService.createFromCheckout(storeSlug, token);
   await OrderNotificationContextService.capture(result.order_id, result.accessToken);
   scheduleOrderWhatsAppNotifications("checkout.order_created");
+  scheduleOrderPixCharge(result.order_id);
   cookieStore.set(orderCookieName(storeSlug, result.order_id), result.accessToken, {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
     path: `/m/${storeSlug}/pedido/${result.order_id}`, maxAge: 30 * 24 * 60 * 60,
