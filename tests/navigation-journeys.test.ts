@@ -34,11 +34,12 @@ describe("navigation journeys [277]", () => {
     });
   }
 
-  it("management exposes secondary modules through More instead of losing them", () => {
+  it("management keeps the approved daily priorities visible and exposes the rest through More", () => {
     const navigation = contextualNavigation(["management"], allPermissions);
     const mobile = selectMobileNavigation(navigation, ["management"]);
-    expect(mobile.selected.map((item) => item.key)).toEqual(["dashboard", "orders", "cash", "finance"]);
-    expect(mobile.more.length).toBeGreaterThan(0);
+    expect(mobile.selected.map((item) => item.key)).toEqual(["dashboard", "orders", "catalog", "pdv"]);
+    expect(mobile.more.some((item) => item.key === "cash")).toBe(true);
+    expect(mobile.more.some((item) => item.key === "finance")).toBe(true);
     expect([...mobile.selected, ...mobile.more]).toHaveLength(navigation.length);
   });
 
