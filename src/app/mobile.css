@@ -52,11 +52,60 @@
 }
 
 @media (max-width: 480px) {
-  .app-topbar { align-items: flex-start; gap: var(--space-2); }
-  .app-topbar-context { flex: 1 1 0; overflow-wrap: anywhere; }
-  .app-topbar-actions { flex: 0 0 auto; }
-  .app-topbar-signals span { white-space: normal; text-align: left; }
+  .app-topbar {
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .app-topbar-context {
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 0;
+    overflow-wrap: normal;
+  }
+  .app-topbar-context > strong {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .app-topbar-actions {
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: var(--space-2);
+  }
+  .app-topbar-signals {
+    min-width: 0;
+  }
+  .app-topbar-signals span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+  }
+  .app-experience-toggle,
+  .app-experience-toggle button {
+    min-width: 0;
+  }
+  .app-experience-toggle button {
+    white-space: nowrap;
+  }
   .mobile-more-panel { max-height: min(52dvh, 440px); }
 
-  .app-topbar[data-driver-only="true"] { align-items: center; }
+  .app-topbar[data-driver-only="true"] {
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+  .app-topbar[data-driver-only="true"] .app-topbar-context {
+    flex: 1 1 0;
+    width: auto;
+  }
+  .app-topbar[data-driver-only="true"] .app-topbar-actions {
+    flex: 0 0 auto;
+    width: auto;
+  }
 }
