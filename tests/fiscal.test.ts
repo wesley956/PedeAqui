@@ -55,7 +55,7 @@ describe("fiscal security boundaries",()=>{
 
 describe("fiscal artifacts and UI",()=>{
   it("keeps artifacts in private storage with tenant-scoped paths",()=>{ expect(webhooks).toContain("'fiscal-artifacts','fiscal-artifacts',false"); expect(webhooks).toContain("invalid fiscal xml path scope"); expect(artifactService).toContain("createsignedurl"); expect(artifactService).toContain("authorize(permission(\"fiscal.view\"))"); expect(artifactService).toContain("${input.organizationid}/${input.storeid}/${input.fiscaldocumentid}"); });
-  it("exposes fiscal UI and granular permissions",()=>{ for(const key of ["fiscal.view","fiscal.manage","fiscal.issue","fiscal.cancel","integrations.view","integrations.manage"]) expect(permissions).toContain(key); expect(page).toContain("fiscal e integrações"); expect(page).toContain("documentos fiscais"); });
+  it("exposes fiscal UI and granular permissions",()=>{ for(const key of ["fiscal.view","fiscal.manage","fiscal.issue","fiscal.cancel","integrations.view","integrations.manage"]) expect(permissions).toContain(key); expect(page).toContain("pedidos aguardando documento"); expect(page).toContain("dados fiscais da unidade"); expect(page).toContain("dados fiscais dos produtos"); });
   it("covers foreign keys introduced by fiscal domain",()=>{ for(const name of ["fiscal_documents_integration_fk_idx","fiscal_items_order_item_fk_idx","fiscal_items_product_fk_idx","fiscal_jobs_integration_fk_idx","fiscal_webhook_receipts_integration_fk_idx"]) expect(indexes).toContain(name); });
 });
 
