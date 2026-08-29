@@ -96,7 +96,7 @@ export default async function PaymentSettingsPage() {
             </form>
 
             <form action={disconnectMercadoPagoOAuthAction}>
-              <Button type="submit" variant="secondary">Desconectar Mercado Pago</Button>
+              <Button type="submit" tone="secondary">Desconectar Mercado Pago</Button>
             </form>
           </>
         ) : (
