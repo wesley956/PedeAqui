@@ -8,8 +8,8 @@ const navigation = fs.readFileSync(path.join(process.cwd(), "src/components/layo
 describe("operation versus settings", () => {
   it("uses resolved access before showing administrative shortcuts", () => {
     expect(page).toContain("NavigationAccessService.load()");
-    expect(page).toContain("access.items.filter");
-    expect(page).toContain("access.permissionKeys");
+    expect(page).toContain("new Set(access.permissionKeys)");
+    expect(page).toContain('.filter((item) => item.key === "team" || item.key === "scale")');
   });
 
   it("keeps store, conversation and printing settings behind existing permission signals", () => {
@@ -24,8 +24,8 @@ describe("operation versus settings", () => {
     }
   });
 
-  it("keeps the existing settings URLs instead of renaming them", () => {
-    for (const href of ["/configuracoes/cardapio", "/configuracoes/horarios", "/configuracoes/entrega", "/configuracoes/pagamentos", "/configuracoes/conversas", "/configuracoes/impressoes"]) {
+  it("keeps the existing settings URLs and adds the printing-format subroute", () => {
+    for (const href of ["/configuracoes/cardapio", "/configuracoes/horarios", "/configuracoes/entrega", "/configuracoes/pagamentos", "/configuracoes/conversas", "/configuracoes/impressoes", "/configuracoes/impressoes/formato"]) {
       expect(page).toContain(href);
     }
   });
