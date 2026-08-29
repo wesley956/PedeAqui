@@ -67,7 +67,40 @@
   text-underline-offset: 3px;
 }
 
+.root[data-variant="driver"] {
+  background:
+    radial-gradient(circle at 20% 10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 34%),
+    var(--surface-0);
+}
+
+.root[data-variant="driver"] .card {
+  width: min(100%, 460px);
+  border-radius: 22px;
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border-default));
+  box-shadow: var(--shadow-lg);
+}
+
+.root[data-variant="driver"] .card::before {
+  content: "ENTREGADOR";
+  width: max-content;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-1));
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: .08em;
+}
+
+.root[data-variant="driver"] .title { font-size: clamp(1.7rem, 5vw, 2.15rem); }
+.root[data-variant="driver"] .subtitle { font-size: var(--font-size-md); }
+
 @media (max-width: 640px) {
   .root { padding: var(--space-3); }
   .card { padding: var(--space-5); }
+  .root[data-variant="driver"] { align-items: stretch; padding: 0; }
+  .root[data-variant="driver"] .card { min-height: 100vh; width: 100%; padding: 28px 20px 24px; border: 0; border-radius: 0; box-shadow: none; align-content: center; }
 }
