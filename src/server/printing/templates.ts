@@ -217,8 +217,14 @@ export function renderPrintDocument(
   out.push(line("-", width));
 
   if (documentType === "kitchen") {
-    // Cozinha continua sem preços, independentemente da preferência do comprovante.
-    items(out, payload, width, false, preferences);
+    // Instruções de produção são críticas: cozinha sempre recebe sabores/adicionais e observações,
+    // e continua sem preços, independentemente das preferências do comprovante comercial.
+    items(out, payload, width, false, {
+      ...preferences,
+      show_item_modifiers: true,
+      show_item_notes: true,
+      show_prices: false,
+    });
   } else {
     if (payload.order.fulfillment_type === "delivery") {
       deliveryBlock(out, payload, width, preferences);
