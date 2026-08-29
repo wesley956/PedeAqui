@@ -95,14 +95,13 @@ export class OrderPaymentProviderConfigService {
     webhookSecret?: string | null;
   }) {
     const { context, config } = await this.getCurrentStore();
-    if (config?.connectionMode === "oauth") {
+    if (config?.connectionMode === "oauth" && !config.revokedAt) {
       throw new Error("Disconnect Mercado Pago OAuth before using manual credentials");
     }
     const environment = environmentSchema.parse(input.environment);
     const admin = createAdminClient();
-    const { data, error } = await admin.rpc("order_payment_provider_configure_internal", {
+    const { data, error } = await admin.rpc("order_payment_provider_configure_manual_internal", {
       p_store_id: context.storeId,
-      p_provider: "mercado_pago",
       p_environment: environment,
       p_enabled: Boolean(input.enabled),
       p_access_token: input.accessToken?.trim() || null,
