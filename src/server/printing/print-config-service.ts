@@ -6,8 +6,10 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { PrintRoutingService } from "@/server/printing/print-routing-service";
+import { orderPrintPreferencesSchema, resolveOrderPrintPreferences } from "@/server/printing/templates";
 
 const uuid = z.string().uuid();
+const copiesInput = z.number().int().min(1).max(10);
 const stationInput = z.object({
   name: z.string().trim().min(2).max(80),
   code: z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9_-]{1,39}$/),
@@ -19,7 +21,7 @@ const printerInput = z.object({
   connectionAddress: z.string().trim().max(255).nullable().optional(),
   connectionPort: z.number().int().min(1).max(65535).nullable().optional(),
   paperWidthMm: z.union([z.literal(58), z.literal(80)]),
-  defaultCopies: z.number().int().min(1).max(10),
+  defaultCopies: copiesInput,
   agentId: z.string().uuid().nullable().optional(),
   fallbackPrinterId: z.string().uuid().nullable().optional(),
 }).superRefine((value, ctx) => {
@@ -52,7 +54,7 @@ export class PrintConfigService {
     const context = await authorize(PERMISSIONS.PRINTING_VIEW);
     const storeId = requireStore(context.storeId);
     const admin = createAdminClient();
-    const [routing, printers, agents, products] = await Promise.all([
+    const [routing, printers, agents, products, preferences] = await Promise.all([
       PrintRoutingService.listForStore(context.organizationId, storeId),
       admin.from("printers")
         .select("id, name, agent_id, connection_type, connection_address, connection_port, paper_width_mm, default_copies, active, status, last_seen_at, last_error, fallback_printer_id")
@@ -63,11 +65,22 @@ export class PrintConfigService {
       admin.from("products")
         .select("id, name, active")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).order("name"),
+      admin.from("store_print_preferences")
+        .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
     ]);
     if (printers.error) throw printers.error;
     if (agents.error) throw agents.error;
     if (products.error) throw products.error;
-    return { context, ...routing, printers: printers.data ?? [], agents: agents.data ?? [], products: products.data ?? [] };
+    if (preferences.error) throw preferences.error;
+    return {
+      context,
+      ...routing,
+      printers: printers.data ?? [],
+      agents: agents.data ?? [],
+      products: products.data ?? [],
+      printPreferences: resolveOrderPrintPreferences(preferences.data),
+    };
   }
 
   static async createStation(input: z.input<typeof stationInput>) {
@@ -107,6 +120,63 @@ export class PrintConfigService {
     if (error) throw error;
     await AuditService.record(context, { action: "print.printer_created", entityType: "printer", entityId: data.id, after: data });
     return data;
+  }
+
+  static async updatePrinterDefaultCopies(printerId: string, defaultCopies: number) {
+    const context = await authorize(PERMISSIONS.PRINTING_MANAGE);
+    const storeId = requireStore(context.storeId);
+    const id = uuid.parse(printerId);
+    const copies = copiesInput.parse(defaultCopies);
+    const admin = createAdminClient();
+    const { data: before, error: readError } = await admin.from("printers")
+      .select("id, name, default_copies")
+      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
+    if (readError) throw readError;
+    if (!before) throw new Error("Impressora não encontrada nesta unidade");
+    const { data, error } = await admin.from("printers")
+      .update({ default_copies: copies, updated_at: new Date().toISOString() })
+      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId)
+      .select("id, name, default_copies").single();
+    if (error) throw error;
+    await AuditService.record(context, {
+      action: "print.printer_default_copies_updated",
+      entityType: "printer",
+      entityId: id,
+      before,
+      after: data,
+    });
+    return data;
+  }
+
+  static async saveOrderPrintPreferences(input: z.input<typeof orderPrintPreferencesSchema>) {
+    const values = orderPrintPreferencesSchema.parse(input);
+    const context = await authorize(PERMISSIONS.PRINTING_MANAGE);
+    const storeId = requireStore(context.storeId);
+    const admin = createAdminClient();
+    const { data: before, error: readError } = await admin.from("store_print_preferences")
+      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text")
+      .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
+    if (readError) throw readError;
+    const row = {
+      organization_id: context.organizationId,
+      store_id: storeId,
+      ...values,
+      footer_text: values.footer_text || null,
+      updated_at: new Date().toISOString(),
+    };
+    const { data, error } = await admin.from("store_print_preferences")
+      .upsert(row, { onConflict: "store_id" })
+      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text")
+      .single();
+    if (error) throw error;
+    await AuditService.record(context, {
+      action: "print.order_preferences_updated",
+      entityType: "store_print_preferences",
+      entityId: storeId,
+      before: before ?? null,
+      after: data,
+    });
+    return resolveOrderPrintPreferences(data);
   }
 
   static async quickSetupDetectedPrinter(input: z.input<typeof quickDetectedPrinterInput>) {
@@ -230,7 +300,7 @@ export class PrintConfigService {
     ]);
     if (!station.data || !printer.data) throw new Error("Estação ou impressora não pertence à unidade atual");
     const safePriority = z.number().int().min(0).max(10000).parse(priority);
-    const safeCopies = copies === null ? null : z.number().int().min(1).max(10).parse(copies);
+    const safeCopies = copies === null ? null : copiesInput.parse(copies);
     const { error } = await admin.from("station_printers").upsert({
       organization_id: context.organizationId, store_id: storeId,
       station_id: station.data.id, printer_id: printer.data.id,
