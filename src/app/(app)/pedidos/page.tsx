@@ -14,7 +14,7 @@ export default async function OrdersPage() {
   if (!context.storeId) throw new Error("An active store is required");
   const workflowMode = settings.mode === "custom" ? "custom" : legacyWorkflowMode;
   const rows = orders as OrderManagerRow[];
-  const activeCount = rows.filter((order) => !["delivered", "canceled", "rejected"].includes(order.status)).length;
+  const activeCount = rows.filter((order) => !["completed", "canceled", "rejected"].includes(order.order_status)).length;
 
   return (
     <section className={styles.page}>
