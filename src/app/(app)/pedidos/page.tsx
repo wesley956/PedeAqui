@@ -14,25 +14,29 @@ export default async function OrdersPage() {
   if (!context.storeId) throw new Error("An active store is required");
   const workflowMode = settings.mode === "custom" ? "custom" : legacyWorkflowMode;
   const rows = orders as OrderManagerRow[];
+  const activeCount = rows.filter((order) => !["delivered", "canceled", "rejected"].includes(order.status)).length;
 
   return (
     <section className={styles.page}>
       <header className={styles.pageHeader}>
         <div className={styles.pageHeading}>
-          <p className={styles.pageEyebrow}>Operação em tempo real</p>
+          <p className={styles.pageEyebrow}>OPERAÇÃO</p>
           <h1>Pedidos</h1>
-          <p className={styles.pageHint}>
-            {workflowMode === "simplified"
-              ? "Iniciar → Pronto → Finalizados. Ao iniciar a rota, o pedido vai para Finalizados aguardando a confirmação da entrega. Depois de entregue e liquidado, sai do quadro e fica no histórico."
-              : workflowMode === "custom"
-                ? "O quadro segue os checkpoints escolhidos em Configurações. Etapas ocultas continuam protegidas pelas regras internas do pedido."
-                : "Acompanhe os pedidos ativos por prioridade e consulte finalizados, cancelados e recusados no histórico."}
-          </p>
+          <p className={styles.pageHint}>Veja o que entrou, o que está em andamento e qual pedido precisa da próxima ação.</p>
         </div>
-        {workflowMode !== "standard"
-          ? <Link href="/pedidos/historico" className={styles.detailsLink}>Ver histórico</Link>
-          : <p className={styles.pageHint}>A tela é atualizada automaticamente enquanto a operação estiver aberta.</p>}
+        <div className={styles.headerActions}>
+          <span className={styles.activeBadge}>{activeCount} ativo(s)</span>
+          <Link href="/pedidos/historico" className={styles.detailsLink}>Ver histórico</Link>
+        </div>
       </header>
+
+      <div className={styles.workflowNote}>
+        {workflowMode === "simplified"
+          ? "Fluxo simplificado: Iniciar → Pronto → Finalizados."
+          : workflowMode === "custom"
+            ? "O quadro segue os checkpoints definidos em Configurações."
+            : "A tela atualiza automaticamente enquanto a operação estiver aberta."}
+      </div>
 
       {workflowMode === "custom"
         ? <CustomOrderWorkflowBoard storeId={context.storeId} orders={rows} config={settings.custom} />
