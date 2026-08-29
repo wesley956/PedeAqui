@@ -1,18 +1,11 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
-import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
 import { OrderPixService } from "@/server/payments/order-pix-service";
+import { parseMercadoPagoWebhookMetadata } from "@/server/payments/providers/mercado-pago-webhook-payload";
 import { validateMercadoPagoWebhookSignature } from "@/server/payments/providers/mercado-pago-signature";
-
-const webhookSchema = z.object({
-  id: z.union([z.string(), z.number()]).transform(String),
-  type: z.literal("order"),
-  action: z.string().min(1),
-  data: z.object({ id: z.union([z.string(), z.number()]).transform(String) }),
-}).passthrough();
 
 export class MercadoPagoWebhookAuthError extends Error {
   constructor(message: string) {
@@ -27,8 +20,8 @@ export async function processMercadoPagoOrderWebhook(input: {
   headers: Headers;
   dataId: string | null;
 }) {
-  const body = webhookSchema.parse(JSON.parse(input.rawBody));
-  if (!input.dataId || input.dataId !== body.data.id) throw new Error("Mercado Pago webhook data id mismatch");
+  const dataId = input.dataId?.trim();
+  if (!dataId) throw new MercadoPagoWebhookAuthError("Mercado Pago webhook signed data id is missing");
 
   const credentials = await OrderPaymentProviderConfigService.credentials(input.storeId, "mercado_pago");
   if (!credentials?.enabled || !credentials.webhook_secret) throw new Error("Mercado Pago webhook is not configured");
@@ -39,9 +32,22 @@ export async function processMercadoPagoOrderWebhook(input: {
   if (!validateMercadoPagoWebhookSignature({
     xSignature,
     xRequestId,
-    dataId: input.dataId,
+    dataId,
     secret: credentials.webhook_secret,
   })) throw new MercadoPagoWebhookAuthError("Mercado Pago webhook signature is invalid");
+
+  // Mercado Pago signs the resource id carried in the URL together with x-request-id
+  // and the signature timestamp. Treat that signed id as canonical and keep the JSON
+  // body as best-effort metadata only. This prevents harmless provider payload shape
+  // changes from blocking reconciliation after authentication already succeeded.
+  const webhook = parseMercadoPagoWebhookMetadata(input.rawBody);
+  const bodyMatchesSignedOrder = !webhook.dataId || webhook.dataId === dataId;
+  const providerEventId = bodyMatchesSignedOrder && webhook.eventId
+    ? webhook.eventId
+    : `request:${xRequestId}`;
+  const action = bodyMatchesSignedOrder && webhook.type === "order" && webhook.action
+    ? webhook.action
+    : "order.notification";
 
   const admin = createAdminClient();
   const payloadHash = createHash("sha256").update(input.rawBody).digest("hex");
@@ -49,9 +55,9 @@ export async function processMercadoPagoOrderWebhook(input: {
     organization_id: credentials.organization_id,
     store_id: credentials.store_id,
     provider: "mercado_pago",
-    provider_event_id: body.id,
-    provider_order_id: body.data.id,
-    action: body.action,
+    provider_event_id: providerEventId,
+    provider_order_id: dataId,
+    action,
     request_id: xRequestId,
     payload_sha256: payloadHash,
     status: "processing",
@@ -68,7 +74,7 @@ export async function processMercadoPagoOrderWebhook(input: {
       .select("id, status")
       .eq("store_id", credentials.store_id)
       .eq("provider", "mercado_pago")
-      .eq("provider_event_id", body.id)
+      .eq("provider_event_id", providerEventId)
       .maybeSingle();
     if (existingError) throw existingError;
     if (existing?.status === "processed") return { duplicate: true, reconciled: true };
@@ -76,7 +82,7 @@ export async function processMercadoPagoOrderWebhook(input: {
   }
 
   try {
-    const payment = await OrderPixService.reconcile(credentials.store_id, body.data.id);
+    const payment = await OrderPixService.reconcile(credentials.store_id, dataId);
     if (!payment) throw new Error("Mercado Pago order is not linked to a PedeAqui PIX intent");
     if (eventId) {
       await admin.from("order_payment_provider_events").update({
