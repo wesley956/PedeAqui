@@ -18,6 +18,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 
 - `/mais-ferramentas` — hub das funções avançadas que saíram da navegação principal simplificada. Mantém acesso às superfícies permitidas por RBAC e disponibilidade de módulos sem remover funcionalidades do sistema.
 - `/platform/unidades/[storeId]/configuracao-operacional` — tela dedicada, exclusiva de `super_admin`, para configurar o comportamento operacional dos módulos já habilitados em uma unidade. Não ativa módulos nem altera contrato comercial.
+- `/platform/produto` — central comercial do proprietário para visualizar pacotes, catálogo técnico de módulos e simular composições personalizadas. O simulador é somente leitura sobre contratos reais: não ativa/desativa módulos nem altera assinaturas sem passar pelo fluxo comercial controlado.
 
 ## Gestão do cardápio
 
@@ -44,3 +45,4 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 
 - 29/08/2026 — novo gatilho de deploy de produção disparado após o merge do UX v3. Alteração exclusivamente documental, sem impacto funcional no painel.
 - 29/08/2026 — segundo gatilho de redeploy sem alteração funcional, usado apenas para testar a liberação da cota de builds da Vercel.
+- 29/08/2026 — adicionada a superfície `/platform/produto` ao inventário do ADM v3; nesta etapa a composição personalizada é apenas uma simulação administrativa e não modifica contratos reais.

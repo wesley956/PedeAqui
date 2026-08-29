@@ -38,10 +38,16 @@ export default async function NewRestaurantPage({
 
   const params = await searchParams;
   const created = params.created === "1";
+  const organizationId = typeof params.organizationId === "string" ? params.organizationId : null;
   const storeId = typeof params.storeId === "string" ? params.storeId : null;
   const slug = typeof params.slug === "string" ? params.slug : null;
   const invite = typeof params.invite === "string" ? params.invite : "not_requested";
   const error = typeof params.error === "string" ? params.error : null;
+  const overviewHref = organizationId && storeId
+    ? `/platform/empresas/${organizationId}/unidades/${storeId}`
+    : storeId
+      ? `/platform/unidades/${storeId}`
+      : "/platform";
 
   return (
     <main style={{ maxWidth: 760, margin: "0 auto", padding: "20px 14px 44px", display: "grid", gap: 18 }}>
@@ -68,7 +74,7 @@ export default async function NewRestaurantPage({
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 10 }}>
             <Link href={`/m/${slug}`} target="_blank" style={{ minHeight: 46, borderRadius: 12, background: "var(--accent)", color: "white", display: "grid", placeItems: "center", fontWeight: 900, textDecoration: "none", padding: "0 14px" }}>Abrir cardápio</Link>
-            <Link href={`/platform/restaurantes/${storeId}`} style={{ minHeight: 46, borderRadius: 12, border: "1px solid var(--border)", display: "grid", placeItems: "center", fontWeight: 900, textDecoration: "none", padding: "0 14px" }}>Abrir visão 360</Link>
+            <Link href={overviewHref} style={{ minHeight: 46, borderRadius: 12, border: "1px solid var(--border)", display: "grid", placeItems: "center", fontWeight: 900, textDecoration: "none", padding: "0 14px" }}>Abrir visão 360</Link>
           </div>
           <Link href="/platform/novo-restaurante" style={{ fontWeight: 800 }}>Cadastrar outro restaurante</Link>
         </section>

@@ -22,6 +22,7 @@ export async function provisionRestaurantAction(formData: FormData) {
     const result = await PlatformCommercialOnboardingService.provision(parsed.data);
     const params = new URLSearchParams({
       created: "1",
+      organizationId: result.organizationId,
       storeId: result.storeId,
       slug: result.storeSlug,
       invite: result.inviteDelivery,
