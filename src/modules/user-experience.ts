@@ -4,7 +4,7 @@ export const EXPERIENCE_MODES = ["standard", "easy"] as const;
 export type ExperienceMode = (typeof EXPERIENCE_MODES)[number];
 
 const EASY_ROLE_PRIORITIES: Record<string, readonly ModuleKey[]> = {
-  owner: ["dashboard", "orders", "pdv", "cash", "deliveries", "settings"],
+  owner: ["dashboard", "orders", "catalog", "pdv", "settings"],
   manager: ["orders", "dining", "production", "deliveries", "dashboard", "cash"],
   cashier: ["pdv", "cash", "orders", "customers"],
   attendant: ["orders", "customers", "deliveries", "conversations", "pdv"],

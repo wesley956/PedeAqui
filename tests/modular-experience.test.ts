@@ -58,11 +58,14 @@ describe("modular experience [357-361]", () => {
     expect(service).not.toContain("localStorage");
   });
 
-  it("requires preview before module changes in the settings experience", () => {
+  it("uses inline confirmation for one resource and preview for batch changes", () => {
     const page = read("src/app/(app)/configuracoes/modulos/page.tsx");
-    expect(page).toContain("ModuleConfigurationService.preview(");
+    const client = read("src/app/(app)/configuracoes/modulos/resources-client.tsx");
+    expect(client).toContain("applyModuleChangeInlineAction");
+    expect(client).toContain('state.status === "confirm"');
     expect(page).toContain("ModuleConfigurationService.previewPreset(");
-    expect(page).toContain("Desativar uma ferramenta nunca apaga o histórico");
+    expect(page).toContain("ModuleConfigurationService.previewCommercialProfile(");
+    expect(page).toContain("desativar um recurso não apaga o histórico");
   });
 
   it("does not modify shared order state-machine transitions", () => {

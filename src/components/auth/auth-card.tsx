@@ -4,9 +4,9 @@ import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import { PEDEAQUI_LEGAL } from "@/lib/legal/company";
 import styles from "./auth-card.module.css";
 
-export function AuthCard({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
+export function AuthCard({ title, subtitle, children, variant = "default" }: { title: string; subtitle: string; children: ReactNode; variant?: "default" | "driver" }) {
   return (
-    <main className={styles.root}>
+    <main className={styles.root} data-variant={variant}>
       <section className={styles.card}>
         <div className={styles.heading}>
           <div className={styles.logo}>

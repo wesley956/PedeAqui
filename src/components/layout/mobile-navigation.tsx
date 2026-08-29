@@ -7,7 +7,7 @@ import type { OperationalContext } from "./navigation-model";
 import type { ShellNavigationItem } from "./desktop-navigation";
 
 const preferredOrder: Record<OperationalContext, readonly string[]> = {
-  management: ["dashboard", "orders", "cash", "finance"],
+  management: ["dashboard", "orders", "catalog", "pdv"],
   manager: ["orders", "dining", "production", "deliveries"],
   cashier: ["pdv", "cash", "orders", "customers"],
   service: ["conversations", "orders", "customers", "pdv"],
@@ -17,11 +17,18 @@ const preferredOrder: Record<OperationalContext, readonly string[]> = {
   administrative: ["catalog", "inventory", "purchases", "settings"],
 };
 
+const icons: Record<string, string> = {
+  dashboard: "⌂", orders: "▤", catalog: "☷", pdv: "▣", cash: "$", customers: "◎", conversations: "◌",
+  dining: "▦", production: "◫", deliveries: "➜", driver: "⌁", inventory: "□", purchases: "▥", settings: "⚙",
+};
+
 function isActive(pathname: string, href: string) {
   return pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
 }
 
 function mobileLabel(item: ShellNavigationItem, contexts: readonly OperationalContext[]) {
+  if (item.key === "dashboard") return "Início";
+  if (item.key === "catalog") return "Cardápio";
   if (item.key === "dining" && contexts.includes("floor")) return "Mesas";
   if (item.key === "pdv" && contexts.includes("floor")) return "Novo";
   if (item.key === "driver" && contexts.includes("delivery")) return "Roteiro";
@@ -64,13 +71,16 @@ export function selectMobileNavigation(
 export function MobileNavigation({ items, contexts, experienceMode = "standard" }: { items: readonly ShellNavigationItem[]; contexts: readonly OperationalContext[]; experienceMode?: ExperienceMode }) {
   const pathname = usePathname();
   const { selected, more } = selectMobileNavigation(items, contexts, 4, experienceMode);
+  const moreActive = pathname === "/mais-ferramentas" || more.some((item) => isActive(pathname, item.href));
+
   return (
     <nav className="mobile-nav" aria-label="Navegação principal mobile" data-experience={experienceMode}>
       {selected.map((item) => {
         const active = isActive(pathname, item.href);
-        return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}>{mobileLabel(item, contexts)}</Link>;
+        return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}><span className="mobile-nav-icon" aria-hidden>{icons[item.key] ?? "•"}</span><span>{mobileLabel(item, contexts)}</span></Link>;
       })}
-      {more.length > 0 ? <details className="mobile-more"><summary aria-label="Abrir mais opções">Mais</summary><div className="mobile-more-panel">
+      {more.length > 0 ? <details className="mobile-more"><summary aria-label="Abrir mais opções" aria-current={moreActive ? "page" : undefined}><span className="mobile-nav-icon" aria-hidden>•••</span><span>Mais</span></summary><div className="mobile-more-panel">
+        <Link href="/mais-ferramentas" aria-current={pathname === "/mais-ferramentas" ? "page" : undefined}>Todas as ferramentas</Link>
         {more.map((item) => {
           const active = isActive(pathname, item.href);
           return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}>{item.label}</Link>;

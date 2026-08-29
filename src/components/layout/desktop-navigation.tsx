@@ -15,13 +15,30 @@ export type ShellNavigationItem = {
   easyPrimary?: boolean;
 };
 
-const groups: readonly { key: NavigationGroup; label: string }[] = [
-  { key: "operation", label: "Operação" },
-  { key: "management", label: "Gestão" },
-  { key: "supplies", label: "Suprimentos" },
-  { key: "relationship", label: "Relacionamento" },
-  { key: "administration", label: "Administração" },
-];
+const icons: Record<string, string> = {
+  dashboard: "⌂",
+  orders: "▤",
+  conversations: "◌",
+  dining: "▦",
+  catalog: "☷",
+  pdv: "▣",
+  cash: "$",
+  finance: "↗",
+  fiscal: "§",
+  production: "◫",
+  deliveries: "➜",
+  driver: "⌁",
+  inventory: "□",
+  gas_containers: "◉",
+  suppliers: "◇",
+  purchases: "▥",
+  customers: "◎",
+  growth: "↟",
+  scale: "◷",
+  team: "♙",
+  settings: "⚙",
+  platform: "◆",
+};
 
 function isActive(pathname: string, href: string) {
   return pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
@@ -37,8 +54,8 @@ function NavigationLink({ item, compact, pathname }: { item: ShellNavigationItem
       aria-current={active ? "page" : undefined}
       title={compact ? item.label : undefined}
     >
-      <span className="nav-link-marker" aria-hidden>{item.label.slice(0, 1)}</span>
-      <span className="nav-link-label">{item.label}</span>
+      <span className="nav-link-marker" aria-hidden>{icons[item.key] ?? item.label.slice(0, 1)}</span>
+      <span className="nav-link-label">{item.key === "dashboard" ? "Início" : item.label}</span>
     </Link>
   );
 }
@@ -46,8 +63,12 @@ function NavigationLink({ item, compact, pathname }: { item: ShellNavigationItem
 export function DesktopNavigation({ items, experienceMode = "standard" }: { items: readonly ShellNavigationItem[]; experienceMode?: ExperienceMode }) {
   const pathname = usePathname();
   const [compact, setCompact] = useState(false);
-  const easyPrimary = items.filter((item) => item.priority !== "hidden" && item.easyPrimary);
-  const easyMore = items.filter((item) => item.priority !== "hidden" && !item.easyPrimary);
+  const visible = items.filter((item) => item.priority !== "hidden");
+  const preferredPrimary = visible.filter((item) => item.easyPrimary);
+  const primary = preferredPrimary.length > 0 ? preferredPrimary : visible.filter((item) => item.priority === "primary").slice(0, 6);
+  const primaryKeys = new Set(primary.map((item) => item.key));
+  const more = visible.filter((item) => !primaryKeys.has(item.key));
+  const moreActive = pathname === "/mais-ferramentas" || more.some((item) => isActive(pathname, item.href));
 
   return (
     <div className="desktop-navigation" data-compact={compact ? "true" : "false"} data-experience={experienceMode}>
@@ -56,35 +77,23 @@ export function DesktopNavigation({ items, experienceMode = "standard" }: { item
         <span className="sidebar-toggle-label">{compact ? "Expandir menu" : "Recolher menu"}</span>
       </button>
       <nav className="app-nav" aria-label="Navegação principal">
-        {experienceMode === "easy" ? (
-          <>
-            <section className="nav-group" aria-labelledby="nav-group-easy">
-              <h2 className="nav-group-title" id="nav-group-easy">Atalhos</h2>
-              <div className="nav-group-links">
-                {easyPrimary.map((item) => <NavigationLink key={item.key} item={item} compact={compact} pathname={pathname} />)}
-              </div>
-            </section>
-            {easyMore.length > 0 ? (
-              <details className="nav-group">
-                <summary className="nav-group-title">Mais ferramentas</summary>
-                <div className="nav-group-links">
-                  {easyMore.map((item) => <NavigationLink key={item.key} item={item} compact={compact} pathname={pathname} />)}
-                </div>
-              </details>
-            ) : null}
-          </>
-        ) : groups.map((group) => {
-          const groupItems = items.filter((item) => item.group === group.key && item.priority !== "hidden");
-          if (groupItems.length === 0) return null;
-          return (
-            <section className="nav-group" key={group.key} aria-labelledby={`nav-group-${group.key}`}>
-              <h2 className="nav-group-title" id={`nav-group-${group.key}`}>{group.label}</h2>
-              <div className="nav-group-links">
-                {groupItems.map((item) => <NavigationLink key={item.key} item={item} compact={compact} pathname={pathname} />)}
-              </div>
-            </section>
-          );
-        })}
+        <section className="nav-group" aria-labelledby="nav-group-main">
+          <h2 className="nav-group-title" id="nav-group-main">Principal</h2>
+          <div className="nav-group-links">
+            {primary.map((item) => <NavigationLink key={item.key} item={item} compact={compact} pathname={pathname} />)}
+          </div>
+        </section>
+        {more.length > 0 ? (
+          <section className="nav-group" aria-labelledby="nav-group-more">
+            <h2 className="nav-group-title" id="nav-group-more">Organização</h2>
+            <div className="nav-group-links">
+              <Link href="/mais-ferramentas" className="app-nav-link" aria-current={moreActive ? "page" : undefined} title={compact ? "Mais ferramentas" : undefined}>
+                <span className="nav-link-marker" aria-hidden>•••</span>
+                <span className="nav-link-label">Mais ferramentas</span>
+              </Link>
+            </div>
+          </section>
+        ) : null}
       </nav>
     </div>
   );

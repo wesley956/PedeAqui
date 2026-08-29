@@ -3,6 +3,7 @@ import Script from "next/script";
 import { ConnectivityGuard } from "@/components/resilience/connectivity-guard";
 import "./globals.css";
 import "./shell.css";
+import "./shell-v3.css";
 import "./mobile.css";
 import "./accessibility.css";
 

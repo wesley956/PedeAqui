@@ -13,6 +13,7 @@ import {
 import { getAccessContext } from "@/server/access/context";
 import { ConversationService } from "@/server/conversations/conversation-service";
 import { conversationStatusLabel, type ConversationStatus } from "@/server/conversations/model";
+import styles from "./conversations.module.css";
 
 function when(value: string | null | undefined) {
   if (!value) return "—";
@@ -51,140 +52,90 @@ export default async function ConversationsPage({
 
   const filters = [
     ["all", "Todas"],
-    ["waiting_agent", "Fila humana"],
+    ["waiting_agent", "Aguardando atendimento"],
     ["human", "Em atendimento"],
-    ["bot", "Bot"],
+    ["bot", "Automático"],
     ["closed", "Encerradas"],
   ] as const;
 
   return (
-    <section style={{ display: "grid", gap: 16 }}>
+    <section className={styles.page}>
       <ConversationRealtime storeId={context.storeId} />
-      <header style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "end", flexWrap: "wrap" }}>
+      <header className={styles.header}>
         <div>
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>Atendimento omnichannel</p>
-          <h1 style={{ margin: "4px 0" }}>Conversas</h1>
-          <p className="muted" style={{ margin: 0 }}>Inbox, bot e atendimento humano usando o mesmo contato do CRM.</p>
+          <p className={styles.eyebrow}>ATENDIMENTO</p>
+          <h1>Conversas</h1>
+          <p>Veja quem está aguardando, assuma o atendimento quando necessário e converse com o cliente em um só lugar.</p>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Badge tone={inbox.integration.enabled ? "success" : "neutral"}>WhatsApp {inbox.integration.enabled ? "habilitado" : inbox.integration.configured ? "configurado" : "não configurado"}</Badge>
-          <Badge tone={inbox.integration.aiEnabled ? "success" : "neutral"}>IA {inbox.integration.aiEnabled ? "habilitada" : "desligada"}</Badge>
+        <div className={styles.integrationStatus}>
+          <Badge tone={inbox.integration.enabled ? "success" : "neutral"}>WhatsApp {inbox.integration.enabled ? "ativo" : inbox.integration.configured ? "configurado" : "não configurado"}</Badge>
+          <Badge tone={inbox.integration.aiEnabled ? "success" : "neutral"}>Atendimento automático {inbox.integration.aiEnabled ? "ativo" : "desligado"}</Badge>
         </div>
       </header>
 
-      {params.erro === "send_failed" ? (
-        <Card role="alert" style={{ borderColor: "var(--danger)" }}>
-          <strong>Não foi possível enviar a mensagem.</strong>
-          <p className="muted" style={{ marginBottom: 0 }}>Confira a configuração do provider/credenciais e tente novamente. A tentativa ficou registrada no histórico.</p>
-        </Card>
-      ) : null}
+      {params.erro === "send_failed" ? <div className={styles.alert} role="alert"><strong>Não foi possível enviar a mensagem.</strong><p>Confira a conexão do WhatsApp e tente novamente. A tentativa ficou registrada no histórico.</p></div> : null}
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div className={styles.metrics}>
         <Badge>{inbox.counts.total} na visão</Badge>
         <Badge tone={inbox.counts.waiting > 0 ? "danger" : "neutral"}>{inbox.counts.waiting} aguardando</Badge>
-        <Badge tone="success">{inbox.counts.human} humanas</Badge>
-        <Badge>{inbox.counts.bot} bot</Badge>
+        <Badge tone="success">{inbox.counts.human} em atendimento</Badge>
+        <Badge>{inbox.counts.bot} automáticas</Badge>
         <Badge>{inbox.counts.unread} não lidas</Badge>
       </div>
 
-      <nav aria-label="Filtros da inbox" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {filters.map(([value, label]) => (
-          <Link key={value} href={filterHref(value)} style={{ padding: "9px 12px", borderRadius: 10, border: "1px solid var(--border)", textDecoration: "none", fontWeight: 700, background: inbox.filter === value ? "var(--surface-2)" : "transparent" }}>
-            {label}
-          </Link>
-        ))}
+      <nav aria-label="Filtros das conversas" className={styles.filters}>
+        {filters.map(([value, label]) => <Link key={value} href={filterHref(value)} className={styles.filter} data-active={inbox.filter === value || undefined}>{label}</Link>)}
       </nav>
 
-      {inbox.conversations.length === 0 ? (
-        <EmptyState title="Nenhuma conversa nesta fila" description="Novas mensagens aparecerão aqui automaticamente quando um canal estiver conectado." />
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(260px, 360px) minmax(0, 1fr)", gap: 12, alignItems: "start" }} className="conversations-layout">
-          <div style={{ display: "grid", gap: 8, maxHeight: "calc(100vh - 270px)", overflowY: "auto" }}>
+      {inbox.conversations.length === 0 ? <div className={styles.empty}><EmptyState title="Nenhuma conversa nesta fila" description="Novas mensagens aparecerão aqui automaticamente quando um canal estiver conectado." /></div> : (
+        <div className={styles.layout}>
+          <div className={styles.inbox}>
             {inbox.conversations.map((conversation) => {
               const active = detail?.conversation.id === conversation.id;
-              return (
-                <Link key={conversation.id} href={filterHref(inbox.filter, conversation.id)} style={{ textDecoration: "none" }}>
-                  <Card style={{ borderColor: active ? "var(--accent)" : "var(--border)", display: "grid", gap: 8 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
-                      <strong>{conversation.contactName}</strong>
-                      {Number(conversation.unread_count) > 0 ? <Badge tone="danger">{conversation.unread_count}</Badge> : null}
-                    </div>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      <Badge tone={statusTone(conversation.status)}>{conversationStatusLabel(conversation.status as ConversationStatus)}</Badge>
-                      <Badge>{conversation.channel}</Badge>
-                    </div>
-                    <span className="muted" style={{ fontSize: 13 }}>{conversation.preview}</span>
-                    <span className="muted" style={{ fontSize: 11 }}>{when(conversation.last_message_at ?? conversation.opened_at)}</span>
-                  </Card>
-                </Link>
-              );
+              return <Link key={conversation.id} href={filterHref(inbox.filter, conversation.id)} className={styles.conversationLink}>
+                <article className={styles.conversationCard} data-active={active || undefined}>
+                  <div className={styles.conversationTop}><strong>{conversation.contactName}</strong>{Number(conversation.unread_count) > 0 ? <Badge tone="danger">{conversation.unread_count}</Badge> : null}</div>
+                  <div className={styles.badges}><Badge tone={statusTone(conversation.status)}>{conversationStatusLabel(conversation.status as ConversationStatus)}</Badge><Badge>{conversation.channel}</Badge></div>
+                  <span className={styles.preview}>{conversation.preview}</span>
+                  <span className={styles.time}>{when(conversation.last_message_at ?? conversation.opened_at)}</span>
+                </article>
+              </Link>;
             })}
           </div>
 
-          {detail ? (
-            <Card style={{ padding: 0, overflow: "hidden" }}>
-              <div style={{ padding: 16, borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                <div>
-                  <strong>{detail.contact?.name ?? detail.contact?.phone_normalized ?? "Contato"}</strong>
-                  <div className="muted" style={{ fontSize: 12 }}>{detail.contact?.phone_normalized ?? detail.contact?.external_id ?? "Sem telefone"}</div>
-                </div>
-                <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center" }}>
-                  <Badge tone={statusTone(detail.conversation.status)}>{conversationStatusLabel(detail.conversation.status as ConversationStatus)}</Badge>
-                  {detail.contact?.customer_id ? <Link href={`/clientes/${detail.contact.customer_id}`}>Abrir cliente</Link> : null}
-                </div>
+          {detail ? <Card className={styles.thread}>
+            <div className={styles.threadHeader}>
+              <div><strong>{detail.contact?.name ?? detail.contact?.phone_normalized ?? "Contato"}</strong><div className={styles.contactMeta}>{detail.contact?.phone_normalized ?? detail.contact?.external_id ?? "Sem telefone"}</div></div>
+              <div className={styles.threadHeaderActions}><Badge tone={statusTone(detail.conversation.status)}>{conversationStatusLabel(detail.conversation.status as ConversationStatus)}</Badge>{detail.contact?.customer_id ? <Link href={`/clientes/${detail.contact.customer_id}`}>Abrir cliente</Link> : null}</div>
+            </div>
+
+            <div className={styles.messages}>
+              {detail.messages.length === 0 ? <span className="muted">Sem mensagens ainda.</span> : detail.messages.map((message) => {
+                const outbound = message.direction === "outbound";
+                return <div key={message.id} className={styles.message} data-direction={outbound ? "outbound" : "inbound"}>
+                  <div className={styles.bubble}>{message.body || `[${message.content_type}]`}</div>
+                  <span className={styles.messageMeta}>{when(message.created_at)} · {outbound ? message.delivery_status : "recebida"}{message.error_message ? ` · ${message.error_message}` : ""}</span>
+                </div>;
+              })}
+            </div>
+
+            <div className={styles.composer}>
+              <div className={styles.actions}>
+                {detail.conversation.status !== "human" ? <form action={assumeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button type="submit">Assumir atendimento</Button></form> : null}
+                {detail.conversation.status !== "waiting_agent" && detail.conversation.status !== "closed" ? <form action={queueConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Colocar na fila</Button></form> : null}
+                {detail.conversation.status !== "bot" && detail.conversation.status !== "closed" ? <form action={returnConversationToBotAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Voltar ao automático</Button></form> : null}
+                {Number(detail.conversation.unread_count) > 0 ? <form action={markConversationReadAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Marcar como lida</Button></form> : null}
+                {detail.conversation.status !== "closed" ? <form action={closeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="danger" type="submit">Encerrar</Button></form> : null}
               </div>
 
-              <div style={{ padding: 16, minHeight: 320, maxHeight: "52vh", overflowY: "auto", display: "grid", gap: 10, alignContent: "start", background: "var(--surface-2)" }}>
-                {detail.messages.length === 0 ? <span className="muted">Sem mensagens ainda.</span> : detail.messages.map((message) => {
-                  const outbound = message.direction === "outbound";
-                  return (
-                    <div key={message.id} style={{ justifySelf: outbound ? "end" : "start", maxWidth: "82%", display: "grid", gap: 4 }}>
-                      <div style={{ padding: "10px 12px", borderRadius: outbound ? "14px 14px 4px 14px" : "14px 14px 14px 4px", background: outbound ? "var(--accent)" : "var(--surface)", border: "1px solid var(--border)", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
-                        {message.body || `[${message.content_type}]`}
-                      </div>
-                      <span className="muted" style={{ fontSize: 10, textAlign: outbound ? "right" : "left" }}>
-                        {when(message.created_at)} · {outbound ? message.delivery_status : "recebida"}
-                        {message.error_message ? ` · ${message.error_message}` : ""}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div style={{ padding: 14, borderTop: "1px solid var(--border)", display: "grid", gap: 10 }}>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {detail.conversation.status !== "human" ? (
-                    <form action={assumeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button type="submit">Assumir</Button></form>
-                  ) : null}
-                  {detail.conversation.status !== "waiting_agent" && detail.conversation.status !== "closed" ? (
-                    <form action={queueConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Enviar para fila</Button></form>
-                  ) : null}
-                  {detail.conversation.status !== "bot" && detail.conversation.status !== "closed" ? (
-                    <form action={returnConversationToBotAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Devolver ao bot</Button></form>
-                  ) : null}
-                  {Number(detail.conversation.unread_count) > 0 ? (
-                    <form action={markConversationReadAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Marcar lida</Button></form>
-                  ) : null}
-                  {detail.conversation.status !== "closed" ? (
-                    <form action={closeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="danger" type="submit">Encerrar</Button></form>
-                  ) : null}
-                </div>
-
-                {detail.conversation.status === "human" && detail.conversation.assigned_user_id === detail.currentUserId && clientMessageId ? (
-                  <form action={sendConversationMessageAction} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto", gap: 8 }}>
-                    <input type="hidden" name="conversationId" value={detail.conversation.id} />
-                    <input type="hidden" name="clientMessageId" value={clientMessageId} />
-                    <textarea name="body" required maxLength={16000} rows={2} placeholder="Escreva uma mensagem…" aria-label="Mensagem" style={{ resize: "vertical", minHeight: 48, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: 10 }} />
-                    <Button type="submit" style={{ alignSelf: "stretch" }}>Enviar</Button>
-                  </form>
-                ) : (
-                  <p className="muted" style={{ margin: 0, fontSize: 12 }}>
-                    {detail.conversation.status === "closed" ? "Conversa encerrada." : "Assuma a conversa para responder como atendente. Enquanto estiver em atendimento humano, o bot não responde."}
-                  </p>
-                )}
-              </div>
-            </Card>
-          ) : null}
+              {detail.conversation.status === "human" && detail.conversation.assigned_user_id === detail.currentUserId && clientMessageId ? <form action={sendConversationMessageAction} className={styles.sendForm}>
+                <input type="hidden" name="conversationId" value={detail.conversation.id} />
+                <input type="hidden" name="clientMessageId" value={clientMessageId} />
+                <textarea name="body" required maxLength={16000} rows={2} placeholder="Escreva uma mensagem…" aria-label="Mensagem" className={styles.textarea} />
+                <Button type="submit">Enviar</Button>
+              </form> : <p className={styles.replyHint}>{detail.conversation.status === "closed" ? "Conversa encerrada." : "Assuma a conversa para responder como atendente. Enquanto o atendimento humano estiver ativo, o automático não responde."}</p>}
+            </div>
+          </Card> : null}
         </div>
       )}
     </section>

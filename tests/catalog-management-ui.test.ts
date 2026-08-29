@@ -3,13 +3,13 @@ import { describe, expect, it } from "vitest";
 
 const productsPage = readFileSync("src/app/(app)/cardapio/produtos/page.tsx", "utf8");
 const layout = readFileSync("src/app/(app)/cardapio/layout.tsx", "utf8");
+const navigation = readFileSync("src/app/(app)/cardapio/catalog-navigation.tsx", "utf8");
 const styles = readFileSync("src/app/(app)/cardapio/catalog-management.module.css", "utf8");
 
 describe("catalog management UI", () => {
-  it("keeps the three catalog work areas explicit", () => {
-    expect(layout).toContain("Produtos");
-    expect(layout).toContain("Categorias");
-    expect(layout).toContain("Adicionais");
+  it("keeps the catalog work areas explicit through the shared navigation", () => {
+    expect(layout).toContain("<CatalogNavigation />");
+    for (const label of ["Produtos", "Categorias", "Adicionais", "Sugestões"]) expect(navigation).toContain(label);
   });
 
   it("provides quick search and operational filters", () => {
@@ -25,9 +25,9 @@ describe("catalog management UI", () => {
     expect(productsPage).not.toContain("supabase");
   });
 
-  it("keeps a mobile layout without horizontal catalog navigation", () => {
-    expect(styles).toContain("@media (max-width: 820px)");
-    expect(styles).toContain("grid-template-columns: 1fr");
+  it("keeps a responsive catalog navigation without horizontal scrolling", () => {
+    expect(styles).toContain("@media (max-width: 640px)");
+    expect(styles).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
     expect(styles).not.toContain("overflow-x: auto");
   });
 });

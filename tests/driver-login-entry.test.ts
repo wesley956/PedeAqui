@@ -9,10 +9,11 @@ const pinActions = readFileSync(join(root, "src/features/delivery/driver-pin-aut
 
 describe("driver login entry", () => {
   it("provides a dedicated public phone + PIN login for the courier area", () => {
-    expect(accessPage).toContain('title="Acesso do entregador"');
+    expect(accessPage).toContain('variant="driver"');
+    expect(accessPage).toContain('title="Olá, entregador 👋"');
     expect(accessPage).toContain('name="phone"');
     expect(accessPage).toContain('name="pin"');
-    expect(accessPage).toContain("Abrir meu roteiro");
+    expect(accessPage).toContain("Entrar nas minhas entregas");
   });
 
   it("stays available even when another account is already logged in", () => {

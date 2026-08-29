@@ -128,12 +128,15 @@
   --surface: var(--surface-1);
   --text: var(--text-primary);
   --muted: var(--text-secondary);
+  --text-muted: var(--text-secondary);
   --border: var(--border-default);
   --accent: var(--brand-primary);
   --accent-strong: var(--brand-primary-hover);
   --accent-highlight: var(--brand-highlight);
   --danger: var(--state-danger);
   --success: var(--state-success);
+  --info: var(--state-info);
+  --font-weight-normal: var(--font-weight-regular);
   --radius: var(--radius-lg);
 }
 

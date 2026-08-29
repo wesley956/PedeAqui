@@ -8,7 +8,7 @@ const hub = readFileSync(join(process.cwd(), "src/app/(app)/configuracoes/page.t
 
 describe("dining overview", () => {
   it("keeps the operational surface focused on table status and active tabs", () => {
-    for (const text of ["livres", "em atendimento", "com conta solicitada", "due_cents", "occupiedMinutes"]) expect(overview).toContain(text);
+    for (const text of ["livres", "em atendimento", "aguardando fechamento", "due_cents", "occupiedMinutes"]) expect(overview).toContain(text);
     expect(overview).not.toContain("createDiningTableAction");
   });
 

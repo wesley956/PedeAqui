@@ -21,7 +21,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
 
   return <section className={styles.page}>
     <header className={styles.header}>
-      <div><p className={styles.muted}>OPERAÇÃO DE CAIXA</p><h1>Caixa</h1><p className={styles.muted}>Abra o turno, acompanhe o dinheiro esperado e registre somente os movimentos necessários.</p></div>
+      <div><p className={styles.muted}>OPERAÇÃO</p><h1>Caixa</h1><p className={styles.muted}>Abra o turno, acompanhe o saldo e registre entradas ou saídas quando precisar.</p></div>
       {abilities.manage ? <div className={styles.headerActions}><Link href="/configuracoes/caixa" className={styles.secondary}>Configurar caixas</Link></div> : null}
     </header>
 
@@ -40,25 +40,25 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
 
       <div className={styles.operationGrid}>
         {abilities.supply ? <article className={styles.panel}>
-          <div className={styles.panelHeader}><h2>Suprimento</h2><p>Entrada manual de dinheiro no caixa.</p></div>
+          <div className={styles.panelHeader}><h2>Adicionar dinheiro</h2><p>Registre um valor que entrou manualmente no caixa.</p></div>
           <form action={cashMovementAction.bind(null, "supply", currentSession.id)} className={styles.form}>
             <input className={styles.input} name="amount" required inputMode="decimal" placeholder="Valor, ex.: 100,00" />
-            <input className={styles.input} name="reason" required minLength={3} maxLength={500} placeholder="Motivo do suprimento" />
-            <button className={styles.primary} type="submit">Registrar suprimento</button>
+            <input className={styles.input} name="reason" required minLength={3} maxLength={500} placeholder="Motivo da entrada" />
+            <button className={styles.primary} type="submit">Registrar entrada</button>
           </form>
         </article> : null}
 
         {abilities.withdraw ? <article className={styles.panel}>
-          <div className={styles.panelHeader}><h2>Sangria</h2><p>Saída auditada; o servidor bloqueia valor acima do saldo permitido.</p></div>
+          <div className={styles.panelHeader}><h2>Retirar dinheiro</h2><p>Registre uma sangria. O PedeAqui impede retirada acima do saldo permitido.</p></div>
           <form action={cashMovementAction.bind(null, "withdrawal", currentSession.id)} className={styles.form}>
             <input className={styles.input} name="amount" required inputMode="decimal" placeholder="Valor, ex.: 200,00" />
-            <input className={styles.input} name="reason" required minLength={3} maxLength={500} placeholder="Motivo da sangria" />
-            <button className={styles.danger} type="submit">Registrar sangria</button>
+            <input className={styles.input} name="reason" required minLength={3} maxLength={500} placeholder="Motivo da retirada" />
+            <button className={styles.danger} type="submit">Registrar retirada</button>
           </form>
         </article> : null}
 
         {abilities.close ? <article className={styles.panel}>
-          <div className={styles.panelHeader}><h2>Fechar e conferir</h2><p>Conte o dinheiro físico. A diferença é calculada pelo backend contra o saldo esperado.</p></div>
+          <div className={styles.panelHeader}><h2>Fechar e conferir</h2><p>Informe quanto há fisicamente no caixa. O PedeAqui calcula a diferença automaticamente.</p></div>
           <form action={closeCashSessionAction.bind(null, currentSession.id)} className={styles.form}>
             <input className={styles.input} name="countedCash" required inputMode="decimal" placeholder="Dinheiro contado" />
             <input className={styles.input} name="note" maxLength={500} placeholder="Observação opcional" />
@@ -68,7 +68,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
       </div>
 
       <article className={styles.panel}>
-        <div className={styles.panelHeader}><h2>Movimentos deste turno</h2><p>Histórico somente leitura; correções financeiras continuam entrando como movimentos compensatórios.</p></div>
+        <div className={styles.panelHeader}><h2>Movimentos deste turno</h2><p>Veja tudo o que entrou e saiu durante o turno.</p></div>
         {movements.length === 0 ? <p className={styles.muted}>Nenhum movimento ainda.</p> : <div className={styles.movements}>{movements.map((raw) => {
           const movement = raw as Record<string, unknown>;
           const type = String(movement.movement_type) as CashMovementType;
@@ -80,7 +80,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
         })}</div>}
       </article>
     </> : <article className={`${styles.panel} ${styles.openPanel}`}>
-      <div className={styles.panelHeader}><h2>Abrir turno</h2><p>Uma sessão de caixa aberta é necessária para a operação em dinheiro.</p></div>
+      <div className={styles.panelHeader}><h2>Abrir turno</h2><p>Abra um caixa para começar a receber vendas em dinheiro.</p></div>
       {abilities.open && freeRegisters.length > 0 ? <form action={openCashSessionAction} className={styles.formGrid}>
         <label className={styles.field}><span>CAIXA</span><select className={styles.select} name="cashRegisterId" required>{freeRegisters.map((register) => <option key={register.id} value={register.id}>{register.code} · {register.name}</option>)}</select></label>
         <label className={styles.field}><span>SALDO INICIAL</span><input className={styles.input} name="openingBalance" inputMode="decimal" defaultValue="0,00" /></label>

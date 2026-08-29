@@ -7,7 +7,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { hashPrintAgentToken } from "@/server/printing/agent-token";
-import { renderPrintDocument, type PrintDocumentType } from "@/server/printing/templates";
+import { renderPrintDocument, resolveOrderPrintPreferences, type PrintDocumentType } from "@/server/printing/templates";
 
 const uuid = z.string().uuid();
 const heartbeatSchema = z.object({
@@ -49,12 +49,21 @@ export class PrintQueueService {
     if (jobs.length === 0) return [];
 
     const printerIds = [...new Set(jobs.map((job) => String(job.printer_id)))];
-    const { data: printers, error: printerError } = await admin.from("printers")
-      .select("id, name, connection_type, connection_address, connection_port, paper_width_mm")
-      .eq("organization_id", agent.organization_id)
-      .eq("store_id", agent.store_id)
-      .in("id", printerIds);
+    const [{ data: printers, error: printerError }, { data: preferences, error: preferencesError }] = await Promise.all([
+      admin.from("printers")
+        .select("id, name, connection_type, connection_address, connection_port, paper_width_mm")
+        .eq("organization_id", agent.organization_id)
+        .eq("store_id", agent.store_id)
+        .in("id", printerIds),
+      admin.from("store_print_preferences")
+        .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text")
+        .eq("organization_id", agent.organization_id)
+        .eq("store_id", agent.store_id)
+        .maybeSingle(),
+    ]);
     if (printerError) throw printerError;
+    if (preferencesError) throw preferencesError;
+    const printPreferences = resolveOrderPrintPreferences(preferences);
     const byId = new Map((printers ?? []).map((printer) => [printer.id, printer]));
 
     const ready = [];
@@ -70,6 +79,7 @@ export class PrintQueueService {
           String(job.document_type) as PrintDocumentType,
           Number(printer.paper_width_mm),
           Boolean(job.is_reprint),
+          printPreferences,
         );
         if (!job.rendered_content) {
           const { error: updateError } = await admin.from("print_jobs")
