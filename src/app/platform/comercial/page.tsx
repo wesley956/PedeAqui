@@ -1,5 +1,5 @@
 import { appendCrmActivityAction, saveCrmLeadAction } from "@/features/platform-backoffice/actions";
-import { PlatformBackofficeService } from "@/server/platform/platform-backoffice-service";
+import { PlatformCrmService } from "@/server/platform/platform-crm-service";
 import styles from "../platform.module.css";
 
 const stageLabels: Record<string, string> = { new: "Novo", contacted: "Contato", demo: "Demonstração", proposal: "Proposta", won: "Ganho", lost: "Perdido" };
@@ -7,7 +7,7 @@ const money = (cents: number | null) => cents === null ? "—" : (cents / 100).t
 const dateTime = (value: string | null) => value ? new Date(value).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "Sem próxima ação";
 
 export default async function PlatformComercialPage() {
-  const data = await PlatformBackofficeService.loadCrm();
+  const data = await PlatformCrmService.load();
   const stages = ["new", "contacted", "demo", "proposal", "won", "lost"] as const;
   return (
     <div className={styles.page}>
@@ -24,26 +24,25 @@ export default async function PlatformComercialPage() {
         {stages.slice(0, 5).map((stage) => <Metric key={stage} label={stageLabels[stage]} value={data.leads.filter((item) => item.stage === stage).length} />)}
       </section>
 
-      {data.role === "super_admin" ? (
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}><div><h2>Novo lead</h2><p>Cadastro manual para prospecção. Ao fechar a venda, vincule a organização criada antes de marcar como ganho.</p></div></div>
-          <form action={saveCrmLeadAction} className={styles.formGrid}>
-            <input className={styles.field} name="contactName" placeholder="Nome do contato" required />
-            <input className={styles.field} name="businessName" placeholder="Nome do comércio" required />
-            <input className={styles.field} name="phone" placeholder="WhatsApp / telefone" />
-            <input className={styles.field} name="email" type="email" placeholder="E-mail" />
-            <select className={styles.field} name="source" defaultValue="manual"><option value="manual">Manual</option><option value="indicacao">Indicação</option><option value="instagram">Instagram</option><option value="whatsapp">WhatsApp</option><option value="site">Site</option></select>
-            <select className={styles.field} name="stage" defaultValue="new">{stages.map((stage) => <option value={stage} key={stage}>{stageLabels[stage]}</option>)}</select>
-            <input className={styles.field} name="estimatedMonthly" inputMode="decimal" placeholder="Receita mensal estimada (R$)" />
-            <input className={styles.field} name="nextActionAt" type="datetime-local" />
-            <input className={styles.field} name="notes" placeholder="Observação inicial" />
-            <button className={styles.button} type="submit">Adicionar ao funil</button>
-          </form>
-        </section>
-      ) : null}
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}><div><h2>Novo lead</h2><p>Cadastro manual para prospecção. Se a empresa já existir, ela pode ser vinculada desde o início.</p></div></div>
+        <form action={saveCrmLeadAction} className={styles.formGrid}>
+          <input className={styles.field} name="contactName" placeholder="Nome do contato" required />
+          <input className={styles.field} name="businessName" placeholder="Nome do comércio" required />
+          <input className={styles.field} name="phone" placeholder="WhatsApp / telefone" />
+          <input className={styles.field} name="email" type="email" placeholder="E-mail" />
+          <select className={styles.field} name="organizationId" defaultValue=""><option value="">Ainda não é cliente</option>{data.organizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select>
+          <select className={styles.field} name="source" defaultValue="manual"><option value="manual">Manual</option><option value="indicacao">Indicação</option><option value="instagram">Instagram</option><option value="whatsapp">WhatsApp</option><option value="site">Site</option></select>
+          <select className={styles.field} name="stage" defaultValue="new">{stages.map((stage) => <option value={stage} key={stage}>{stageLabels[stage]}</option>)}</select>
+          <input className={styles.field} name="estimatedMonthly" inputMode="decimal" placeholder="Receita mensal estimada (R$)" />
+          <input className={styles.field} name="nextActionAt" type="datetime-local" />
+          <input className={styles.field} name="notes" placeholder="Observação inicial" />
+          <button className={styles.button} type="submit">Adicionar ao funil</button>
+        </form>
+      </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionHeader}><div><h2>Oportunidades</h2><p>Organizadas pela última atualização.</p></div></div>
+        <div className={styles.sectionHeader}><div><h2>Oportunidades</h2><p>Para marcar como “Ganho”, vincule primeiro a empresa correspondente.</p></div></div>
         <div className={styles.featureList}>
           {data.leads.map((lead) => (
             <details className={styles.details} key={lead.id}>
@@ -54,31 +53,27 @@ export default async function PlatformComercialPage() {
                   <span className={styles.pill} data-tone={lead.stage === "won" ? "good" : lead.stage === "lost" ? "danger" : "warn"}>{stageLabels[lead.stage] ?? lead.stage}</span>
                 </div>
                 {lead.notes ? <p className={styles.advancedNote}>{lead.notes}</p> : null}
-                {data.role === "super_admin" ? (
-                  <>
-                    <form action={saveCrmLeadAction} className={styles.formGrid}>
-                      <input type="hidden" name="leadId" value={lead.id} />
-                      <input type="hidden" name="organizationId" value={lead.organization_id ?? ""} />
-                      <input type="hidden" name="contactName" value={lead.contact_name} />
-                      <input type="hidden" name="businessName" value={lead.business_name} />
-                      <input type="hidden" name="phone" value={lead.phone ?? ""} />
-                      <input type="hidden" name="email" value={lead.email ?? ""} />
-                      <input type="hidden" name="source" value={lead.source} />
-                      <input type="hidden" name="estimatedMonthly" value={lead.estimated_monthly_cents === null ? "" : String(lead.estimated_monthly_cents / 100)} />
-                      <input type="hidden" name="notes" value={lead.notes ?? ""} />
-                      <select className={styles.field} name="stage" defaultValue={lead.stage}>{stages.map((stage) => <option value={stage} key={stage}>{stageLabels[stage]}</option>)}</select>
-                      <input className={styles.field} name="nextActionAt" type="datetime-local" />
-                      <input className={styles.field} name="lostReason" placeholder="Motivo se perdido" defaultValue={lead.lost_reason ?? ""} />
-                      <button className={styles.button} type="submit">Atualizar oportunidade</button>
-                    </form>
-                    <form action={appendCrmActivityAction} className={styles.formGrid}>
-                      <input type="hidden" name="leadId" value={lead.id} />
-                      <select className={styles.field} name="kind" defaultValue="note"><option value="note">Nota</option><option value="call">Ligação</option><option value="whatsapp">WhatsApp</option><option value="email">E-mail</option><option value="demo">Demonstração</option><option value="proposal">Proposta</option><option value="follow_up">Follow-up</option></select>
-                      <input className={styles.field} name="summary" placeholder="Resumo da interação" required />
-                      <button className={styles.button} type="submit">Registrar interação</button>
-                    </form>
-                  </>
-                ) : null}
+                <form action={saveCrmLeadAction} className={styles.formGrid}>
+                  <input type="hidden" name="leadId" value={lead.id} />
+                  <input type="hidden" name="contactName" value={lead.contact_name} />
+                  <input type="hidden" name="businessName" value={lead.business_name} />
+                  <input type="hidden" name="phone" value={lead.phone ?? ""} />
+                  <input type="hidden" name="email" value={lead.email ?? ""} />
+                  <input type="hidden" name="source" value={lead.source} />
+                  <input type="hidden" name="estimatedMonthly" value={lead.estimated_monthly_cents === null ? "" : String(lead.estimated_monthly_cents / 100)} />
+                  <input type="hidden" name="notes" value={lead.notes ?? ""} />
+                  <select className={styles.field} name="organizationId" defaultValue={lead.organization_id ?? ""}><option value="">Ainda não vinculado</option>{data.organizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select>
+                  <select className={styles.field} name="stage" defaultValue={lead.stage}>{stages.map((stage) => <option value={stage} key={stage}>{stageLabels[stage]}</option>)}</select>
+                  <input className={styles.field} name="nextActionAt" type="datetime-local" />
+                  <input className={styles.field} name="lostReason" placeholder="Motivo se perdido" defaultValue={lead.lost_reason ?? ""} />
+                  <button className={styles.button} type="submit">Atualizar oportunidade</button>
+                </form>
+                <form action={appendCrmActivityAction} className={styles.formGrid}>
+                  <input type="hidden" name="leadId" value={lead.id} />
+                  <select className={styles.field} name="kind" defaultValue="note"><option value="note">Nota</option><option value="call">Ligação</option><option value="whatsapp">WhatsApp</option><option value="email">E-mail</option><option value="demo">Demonstração</option><option value="proposal">Proposta</option><option value="follow_up">Follow-up</option></select>
+                  <input className={styles.field} name="summary" placeholder="Resumo da interação" required />
+                  <button className={styles.button} type="submit">Registrar interação</button>
+                </form>
               </div>
             </details>
           ))}
