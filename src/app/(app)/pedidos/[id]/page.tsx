@@ -3,6 +3,8 @@ import { OrderActionForm } from "@/features/orders/order-action-form";
 import { OrderRealtime } from "@/features/orders/order-realtime";
 import { PaymentPanel } from "@/features/payments/payment-panel";
 import { SemanticStatus, type StatusTone } from "@/components/ui/status";
+import { isManualDeliveryMode } from "@/modules/manual-delivery";
+import { ModuleAccessService } from "@/server/modules/module-access-service";
 import { OrderService } from "@/server/orders/order-service";
 import { orderStatusLabels, productionStatusLabels } from "@/server/orders/state-machines";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
@@ -67,6 +69,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const { context, order, items, history, printJobs, timeZone } = await OrderService.get(id);
   if (!context.storeId) throw new Error("An active store is required");
+  const moduleSnapshot = await ModuleAccessService.load(context);
+  const manualDeliveryMode = isManualDeliveryMode(moduleSnapshot.enabledModuleKeys);
 
   const fulfillmentComplete = ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status);
   const canComplete = order.order_status === "confirmed" && ["paid", "partially_refunded", "refunded"].includes(order.payment_status) && fulfillmentComplete;
@@ -78,6 +82,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const channelLabel = order.channel === "digital_menu" || order.channel === "menu" ? "Cardápio"
     : order.channel === "table_qr" || order.channel === "dining" ? "Salão"
       : order.channel === "pdv" ? "PDV" : order.channel;
+  const canManualDispatch = manualDeliveryMode
+    && order.order_status === "confirmed"
+    && ["ready", "not_required"].includes(order.production_status)
+    && order.fulfillment_type === "delivery"
+    && ["pending", "awaiting_assignment", "assigned", "picked_up"].includes(order.fulfillment_status);
+  const canManualFinish = manualDeliveryMode
+    && order.order_status === "confirmed"
+    && order.fulfillment_type === "delivery"
+    && order.fulfillment_status === "out_for_delivery";
 
   return (
     <section className={styles.page}>
@@ -115,15 +128,22 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             {order.production_status === "preparing" ? <OrderActionForm orderId={order.id} intent="mark_ready" label="Marcar pronto" /> : null}
             {order.production_status === "ready" && order.fulfillment_type === "pickup" && order.fulfillment_status === "pending" ? <OrderActionForm orderId={order.id} intent="await_pickup" label="Liberar retirada" /> : null}
             {order.fulfillment_status === "awaiting_pickup" ? <OrderActionForm orderId={order.id} intent="customer_picked_up" label="Cliente retirou" /> : null}
-            {order.production_status === "ready" && order.fulfillment_type === "delivery" && order.fulfillment_status === "pending" ? <OrderActionForm orderId={order.id} intent="await_courier" label="Aguardar entregador" /> : null}
-            {order.fulfillment_status === "awaiting_assignment" ? <OrderActionForm orderId={order.id} intent="courier_assigned" label="Confirmar entregador" /> : null}
-            {order.fulfillment_status === "assigned" ? <OrderActionForm orderId={order.id} intent="courier_picked_up" label="Entregador retirou" /> : null}
-            {order.fulfillment_status === "picked_up" ? <OrderActionForm orderId={order.id} intent="out_for_delivery" label="Saiu para entrega" /> : null}
-            {order.fulfillment_status === "out_for_delivery" ? <OrderActionForm orderId={order.id} intent="delivered" label="Marcar entregue" /> : null}
+            {canManualDispatch ? <OrderActionForm orderId={order.id} intent="manual_out_for_delivery" label="Saiu para entrega" /> : null}
+            {canManualFinish ? <OrderActionForm orderId={order.id} intent="manual_finish_delivery" label="Finalizar pedido" /> : null}
+            {!manualDeliveryMode && order.production_status === "ready" && order.fulfillment_type === "delivery" && order.fulfillment_status === "pending" ? <OrderActionForm orderId={order.id} intent="await_courier" label="Aguardar entregador" /> : null}
+            {!manualDeliveryMode && order.fulfillment_status === "awaiting_assignment" ? <OrderActionForm orderId={order.id} intent="courier_assigned" label="Confirmar entregador" /> : null}
+            {!manualDeliveryMode && order.fulfillment_status === "assigned" ? <OrderActionForm orderId={order.id} intent="courier_picked_up" label="Entregador retirou" /> : null}
+            {!manualDeliveryMode && order.fulfillment_status === "picked_up" ? <OrderActionForm orderId={order.id} intent="out_for_delivery" label="Saiu para entrega" /> : null}
+            {!manualDeliveryMode && order.fulfillment_status === "out_for_delivery" ? <OrderActionForm orderId={order.id} intent="delivered" label="Marcar entregue" /> : null}
             {order.production_status === "ready" && order.fulfillment_type === "counter" && order.fulfillment_status === "pending" ? <OrderActionForm orderId={order.id} intent="served" label="Marcar servido" /> : null}
+            {order.fulfillment_status === "delivered" && order.payment_status === "pending" ? <OrderActionForm orderId={order.id} intent="mark_paid" label="Marcar pago" tone="secondary" /> : null}
             {canComplete ? <OrderActionForm orderId={order.id} intent="complete" label="Concluir pedido" /> : null}
           </div>
-          {order.order_status === "confirmed" && !canComplete ? <p className={styles.completionHint}>Conclusão liberada somente com pagamento pago e entrega/retirada concluída.</p> : null}
+          {manualDeliveryMode && order.fulfillment_type === "delivery" && order.fulfillment_status === "out_for_delivery"
+            ? <p className={styles.completionHint}>“Saiu para entrega” significa que o pedido está em rota. Use “Finalizar pedido” somente quando o cliente tiver recebido.</p>
+            : order.order_status === "confirmed" && !canComplete
+              ? <p className={styles.completionHint}>Conclusão liberada somente com pagamento pago e entrega/retirada concluída.</p>
+              : null}
         </div>
       </article>
 

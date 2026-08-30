@@ -21,6 +21,8 @@ export type ManagerIntent =
   | "courier_picked_up"
   | "out_for_delivery"
   | "delivered"
+  | "manual_out_for_delivery"
+  | "manual_finish_delivery"
   | "served"
   | "complete"
   | "print"

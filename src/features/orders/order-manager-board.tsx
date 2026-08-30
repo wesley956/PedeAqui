@@ -64,7 +64,19 @@ function isSimplifiedDeliveryFinalized(order: OrderManagerRow) {
     && ["out_for_delivery", "delivered"].includes(order.fulfillment_status);
 }
 
-function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkflowMode): OrderActionSpec | null {
+function isManualDeliveryInRoute(order: OrderManagerRow) {
+  return order.order_status === "confirmed"
+    && order.fulfillment_type === "delivery"
+    && order.fulfillment_status === "out_for_delivery";
+}
+
+function isManualDeliveryAwaitingFinish(order: OrderManagerRow) {
+  return order.order_status === "confirmed"
+    && order.fulfillment_type === "delivery"
+    && order.fulfillment_status === "delivered";
+}
+
+function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkflowMode, manualDeliveryMode: boolean): OrderActionSpec | null {
   if (order.order_status === "pending_confirmation") {
     return workflowMode === "simplified"
       ? { intent: "accept_and_start", label: "Aceitar e iniciar" }
@@ -83,11 +95,19 @@ function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkfl
   if (order.fulfillment_status === "awaiting_pickup") {
     return { intent: "customer_picked_up", label: "Cliente retirou" };
   }
+  if (manualDeliveryMode && ["ready", "not_required"].includes(order.production_status) && order.fulfillment_type === "delivery") {
+    if (["pending", "awaiting_assignment", "assigned", "picked_up"].includes(order.fulfillment_status)) {
+      return { intent: "manual_out_for_delivery", label: "Saiu para entrega" };
+    }
+    if (order.fulfillment_status === "out_for_delivery") {
+      return { intent: "manual_finish_delivery", label: "Finalizar pedido" };
+    }
+  }
   if (order.production_status === "ready" && order.fulfillment_type === "delivery" && order.fulfillment_status === "pending") {
     return { intent: "await_courier", label: "Aguardar entregador" };
   }
   if (
-    order.production_status === "ready"
+    ["ready", "not_required"].includes(order.production_status)
     && order.payment_status === "pending"
     && ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status)
   ) {
@@ -97,7 +117,12 @@ function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkfl
   return null;
 }
 
-export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }: { storeId: string; orders: OrderManagerRow[]; workflowMode?: BoardWorkflowMode }) {
+export function OrderManagerBoard({ storeId, orders, workflowMode = "standard", manualDeliveryMode = false }: {
+  storeId: string;
+  orders: OrderManagerRow[];
+  workflowMode?: BoardWorkflowMode;
+  manualDeliveryMode?: boolean;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -170,13 +195,38 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
     () => new Set(simplifiedFinalized.map((order) => order.id)),
     [simplifiedFinalized],
   );
+  const manualDelivering = useMemo(
+    () => manualDeliveryMode ? filtered.filter(isManualDeliveryInRoute) : [],
+    [filtered, manualDeliveryMode],
+  );
+  const manualAwaitingFinish = useMemo(
+    () => manualDeliveryMode ? filtered.filter(isManualDeliveryAwaitingFinish) : [],
+    [filtered, manualDeliveryMode],
+  );
+  const manualSpecialIds = useMemo(
+    () => new Set([...manualDelivering, ...manualAwaitingFinish].map((order) => order.id)),
+    [manualAwaitingFinish, manualDelivering],
+  );
   const simplifiedReady = useMemo(
-    () => grouped.ready.filter((order) => !simplifiedFinalizedIds.has(order.id)),
-    [grouped.ready, simplifiedFinalizedIds],
+    () => grouped.ready.filter((order) => manualDeliveryMode ? !manualSpecialIds.has(order.id) : !simplifiedFinalizedIds.has(order.id)),
+    [grouped.ready, manualDeliveryMode, manualSpecialIds, simplifiedFinalizedIds],
   );
 
   const activeCount = activeBuckets.reduce((total, bucket) => total + grouped[bucket].length, 0);
   const lateCount = useMemo(() => filtered.filter((order) => isOrderAttentionLate(order, now)).length, [filtered, now]);
+
+  const simplifiedColumns = manualDeliveryMode
+    ? [
+      { key: "start", label: "Iniciar", orders: [...grouped.new, ...grouped.queued, ...grouped.preparing] },
+      { key: "ready", label: "Pronto", orders: simplifiedReady },
+      { key: "delivering", label: "Em entrega", orders: manualDelivering },
+      { key: "finish", label: "Finalizar", orders: manualAwaitingFinish },
+    ]
+    : [
+      { key: "start", label: "Iniciar", orders: [...grouped.new, ...grouped.queued, ...grouped.preparing] },
+      { key: "ready", label: "Pronto", orders: simplifiedReady },
+      { key: "completed", label: "Finalizados", orders: simplifiedFinalized },
+    ];
 
   return (
     <div className={styles.board}>
@@ -208,20 +258,18 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
       </div>
 
       {workflowMode === "simplified" ? <div className={styles.activeGrid} aria-label="Pedidos em fluxo simplificado" data-mode="simplified">
-        {([
-          { key: "start", label: "Iniciar", orders: [...grouped.new, ...grouped.queued, ...grouped.preparing] },
-          { key: "ready", label: "Pronto", orders: simplifiedReady },
-          { key: "completed", label: "Finalizados", orders: simplifiedFinalized },
-        ] as const).map((column) => <section key={column.key} aria-label={column.label} className={styles.lane} data-bucket={column.key}>
+        {simplifiedColumns.map((column) => <section key={column.key} aria-label={column.label} className={styles.lane} data-bucket={column.key}>
           <header className={styles.laneHeader}><strong>{column.label}</strong><span className={styles.laneCount}>{column.orders.length}</span></header>
           <div className={styles.laneBody}>
             {column.orders.map((order) => {
-              const finalDeliveryLabel = column.key === "completed"
+              const finalDeliveryLabel = !manualDeliveryMode && column.key === "completed"
                 ? order.fulfillment_status === "delivered"
                   ? "Entrega confirmada · aguardando pagamento"
                   : "Aguardando confirmação de entrega"
-                : undefined;
-              return <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} workflowMode="simplified" statusLabelOverride={finalDeliveryLabel} />;
+                : manualDeliveryMode && column.key === "finish"
+                  ? "Entrega confirmada · aguardando finalização"
+                  : undefined;
+              return <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} workflowMode="simplified" manualDeliveryMode={manualDeliveryMode} statusLabelOverride={finalDeliveryLabel} />;
             })}
             {column.orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}
           </div>
@@ -234,7 +282,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
               <span className={styles.laneCount} aria-label={`${grouped[bucket].length} pedidos`}>{grouped[bucket].length}</span>
             </header>
             <div className={styles.laneBody}>
-              {grouped[bucket].map((order) => <OrderCard key={order.id} order={order} now={now} bucket={bucket} workflowMode="standard" />)}
+              {grouped[bucket].map((order) => <OrderCard key={order.id} order={order} now={now} bucket={bucket} workflowMode="standard" manualDeliveryMode={manualDeliveryMode} />)}
               {grouped[bucket].length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}
             </div>
           </section>
@@ -247,7 +295,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
           <span className={styles.historyCount}>{grouped.history.length} pedido(s)</span>
         </summary>
         <div className={styles.historyGrid}>
-          {grouped.history.map((order) => <OrderCard key={order.id} order={order} now={now} bucket="history" workflowMode="standard" />)}
+          {grouped.history.map((order) => <OrderCard key={order.id} order={order} now={now} bucket="history" workflowMode="standard" manualDeliveryMode={manualDeliveryMode} />)}
           {grouped.history.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido no histórico carregado.</div> : null}
         </div>
       </details></>}
@@ -255,13 +303,23 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
   );
 }
 
-function OrderCard({ order, now, bucket, workflowMode, statusLabelOverride }: { order: OrderManagerRow; now: number; bucket: OperationalOrderBucket; workflowMode: BoardWorkflowMode; statusLabelOverride?: string }) {
+function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, statusLabelOverride }: {
+  order: OrderManagerRow;
+  now: number;
+  bucket: OperationalOrderBucket;
+  workflowMode: BoardWorkflowMode;
+  manualDeliveryMode: boolean;
+  statusLabelOverride?: string;
+}) {
   const lane = deriveOrderLane(order);
   const blockers = completionBlockers(order);
   const status = statusForOrder(order, bucket, statusLabelOverride);
   const late = isOrderAttentionLate(order, now);
-  const primaryAction = primaryActionForOrder(order, workflowMode);
-  const canMarkPaidSecondary = order.production_status === "ready" && order.payment_status === "pending" && primaryAction?.intent !== "mark_paid";
+  const primaryAction = primaryActionForOrder(order, workflowMode, manualDeliveryMode);
+  const canMarkPaidSecondary = ["ready", "not_required"].includes(order.production_status)
+    && order.payment_status === "pending"
+    && ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status)
+    && primaryAction?.intent !== "mark_paid";
   const scheduledLabel = order.scheduled_for
     ? new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(order.scheduled_for))
     : null;
@@ -294,7 +352,7 @@ function OrderCard({ order, now, bucket, workflowMode, statusLabelOverride }: { 
         </div>
       ) : null}
 
-      {order.order_status === "confirmed" && lane === "ready" && blockers.length > 0 ? <div className={styles.blockers}>Para concluir: {blockers.join("; ")}.</div> : null}
+      {order.order_status === "confirmed" && lane === "ready" && blockers.length > 0 && !(manualDeliveryMode && order.fulfillment_status === "out_for_delivery") ? <div className={styles.blockers}>Para concluir: {blockers.join("; ")}.</div> : null}
 
       <details className={styles.cardMore}>
         <summary>Mais</summary>
