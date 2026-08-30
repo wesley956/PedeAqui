@@ -57,6 +57,18 @@ describe("customer subscription and PIX billing v1", () => {
     expect(source).toContain("requireBillingEnabled: false");
   });
 
+  it("routes the existing owner Mercado Pago webhook to subscriptions without breaking restaurant orders", () => {
+    const service = read("src/server/payments/mercado-pago-webhook-service.ts");
+    const route = read("src/app/api/webhooks/payments/mercado-pago/[storeId]/route.ts");
+    expect(service).toContain("PlatformBillingSourceService.configuration()");
+    expect(service).toContain("SubscriptionPixBillingService.reconcileByProviderResource(dataId)");
+    expect(service).toContain("billingSource.sourceStoreId === input.storeId");
+    expect(service).toContain("OrderPixService.reconcile(credentials.store_id, dataId)");
+    expect(service).toContain("subscriptionBilling: true");
+    expect(service).toContain("subscriptionBilling: false");
+    expect(route).toContain("if (!result.subscriptionBilling) scheduleOrderWhatsAppNotifications");
+  });
+
   it("protects renewal and webhook execution", () => {
     const job = read("src/app/api/internal/subscription-renewals/route.ts");
     const auth = read("src/server/jobs/internal-job-auth.ts");
