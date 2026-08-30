@@ -71,11 +71,13 @@ export class CustomerSubscriptionService {
     for (const result of [planResult, addonsResult, invoicesResult, paymentsResult, pixResult]) {
       if (result.error) throw result.error;
     }
+    const plan = planResult.data;
+    if (!plan) throw new Error("Subscription references an unavailable commercial plan");
 
     const metadata = objectMetadata(subscription.metadata);
     const activeAddons = (addonsResult.data ?? []).filter((item) => item.status === "active");
     const addonTotalCents = activeAddons.reduce((sum, item) => sum + item.unit_price_cents * item.quantity, 0);
-    const agreedPriceCents = subscription.agreed_price_cents ?? planResult.data.monthly_price_cents ?? 0;
+    const agreedPriceCents = subscription.agreed_price_cents ?? plan.monthly_price_cents ?? 0;
 
     return {
       loadedAt,
@@ -96,9 +98,9 @@ export class CustomerSubscriptionService {
         founderSlot: subscription.founder_slot,
         gracePeriodDays: subscription.grace_period_days,
         accessSuspendedAt: subscription.access_suspended_at,
-        contractPlanKey: planResult.data.key,
-        contractPlanName: planResult.data.name,
-        contractPlanDescription: planResult.data.description,
+        contractPlanKey: plan.key,
+        contractPlanName: plan.name,
+        contractPlanDescription: plan.description,
         functionalPlanKey: textMetadata(metadata, "functional_plan_key"),
         functionalPlanLabel: textMetadata(metadata, "functional_plan_label"),
       },
