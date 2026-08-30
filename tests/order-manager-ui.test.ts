@@ -18,7 +18,9 @@ describe("order manager UI [278]", () => {
 
   it("keeps all existing operational action intents", () => {
     for (const intent of ["accept", "reject", "start_production", "mark_ready", "mark_paid", "await_pickup", "customer_picked_up", "await_courier", "complete"]) {
-      expect(board, intent).toContain(`intent="${intent}"`);
+      const contextual = `intent: "${intent}"`;
+      const direct = `intent="${intent}"`;
+      expect(board.includes(contextual) || board.includes(direct), intent).toBe(true);
     }
   });
 
