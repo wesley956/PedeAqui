@@ -109,60 +109,12 @@ export async function setPlatformBillingEnabledAction(formData: FormData) {
   if (confirmation !== expected) throw new Error(`Digite ${expected} para confirmar.`);
 
   const admin = createAdminClient();
-  const { data: setting, error: readError } = await admin
-    .from("platform_settings")
-    .select("category,description,value,active")
-    .eq("key", BILLING_SOURCE_KEY)
-    .single();
-  if (readError) throw readError;
-  const currentValue = setting.value && typeof setting.value === "object" && !Array.isArray(setting.value)
-    ? setting.value as Record<string, unknown>
-    : {};
-  const sourceStoreId = typeof currentValue.source_store_id === "string" ? currentValue.source_store_id : null;
-  const sourceOrganizationId = typeof currentValue.source_organization_id === "string" ? currentValue.source_organization_id : null;
-  const providerAccountId = typeof currentValue.provider_account_id === "string" ? currentValue.provider_account_id : null;
-  if (!sourceStoreId || !sourceOrganizationId || !providerAccountId) {
-    throw new Error("A fonte Mercado Pago da cobrança ainda não está completamente configurada.");
-  }
-
-  if (enabled) {
-    const cronSecret = process.env.CRON_SECRET?.trim() ?? "";
-    if (cronSecret.length !== 64) throw new Error("CRON_SECRET de produção ainda não está configurado para a renovação automática.");
-    const { data: jobAuthorized, error: jobAuthError } = await admin.rpc("authorize_internal_job_internal", {
-      p_job_key: "subscription_renewals",
-      p_token: cronSecret,
-    });
-    if (jobAuthError) throw jobAuthError;
-    if (jobAuthorized !== true) throw new Error("CRON_SECRET não corresponde ao segredo de renovação armazenado no Vault.");
-
-    const { data: sourceConfig, error: sourceError } = await admin
-      .from("order_payment_provider_configs")
-      .select("organization_id,store_id,provider_account_id,enabled,environment,connection_mode,last_health_status,revoked_at,access_token_secret_id,refresh_token_secret_id,webhook_secret_id")
-      .eq("organization_id", sourceOrganizationId)
-      .eq("store_id", sourceStoreId)
-      .eq("provider", "mercado_pago")
-      .single();
-    if (sourceError) throw sourceError;
-    const healthySource = sourceConfig.enabled === true
-      && sourceConfig.environment === "production"
-      && sourceConfig.connection_mode === "oauth"
-      && sourceConfig.provider_account_id === providerAccountId
-      && sourceConfig.last_health_status === "healthy"
-      && !sourceConfig.revoked_at
-      && Boolean(sourceConfig.access_token_secret_id)
-      && Boolean(sourceConfig.refresh_token_secret_id)
-      && Boolean(sourceConfig.webhook_secret_id);
-    if (!healthySource) throw new Error("A conexão Mercado Pago do proprietário não está saudável para ativar cobranças.");
-  }
-
-  const { error } = await admin.rpc("platform_setting_save_internal", {
-    p_key: BILLING_SOURCE_KEY,
-    p_category: setting.category,
-    p_description: setting.description,
-    p_value: { ...currentValue, enabled },
-    p_active: setting.active,
+  const { error } = await admin.rpc("platform_subscription_billing_set_enabled_internal", {
+    p_enabled: enabled,
     p_actor_user_id: access.user.id,
-    p_reason: enabled ? "Ativação explícita da cobrança automática das assinaturas PedeAqui" : "Pausa explícita de novas cobranças automáticas das assinaturas PedeAqui",
+    p_reason: enabled
+      ? "Ativação explícita da cobrança automática das assinaturas PedeAqui"
+      : "Pausa explícita de novas cobranças automáticas das assinaturas PedeAqui",
     p_protocol: protocol(enabled ? "BILLING-GOLIVE" : "BILLING-PAUSE"),
   });
   if (error) throw error;
