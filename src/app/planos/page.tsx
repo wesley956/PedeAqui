@@ -8,145 +8,85 @@ import {
   MarketingShell,
   marketingStyles as styles,
 } from "@/components/marketing/marketing-shell";
+import { CommercialCatalogService, formatCommercialPrice } from "@/server/billing/commercial-catalog-service";
 
 export const metadata: Metadata = {
   title: "Planos e preços",
-  description: "Conheça os planos ativos do PedeAqui, seus valores mensais e como os recursos podem acompanhar a necessidade da sua operação.",
+  description: "Conheça os três planos do PedeAqui e comece com 15 dias grátis.",
 };
 
-const commercialPlans = [
-  {
-    name: "Personalizado",
-    badge: "Monte sua combinação",
-    price: "R$ 69,90",
-    suffix: "/ mês + módulos",
-    description: "Uma base enxuta para montar a operação com os módulos adicionais que realmente fizerem sentido.",
-    features: [
-      "Cardápio e catálogo",
-      "Pedidos e clientes",
-      "Dashboard e configurações",
-      "Módulos adicionais contratados à parte",
-    ],
-  },
-  {
-    name: "Essencial",
-    badge: "Base da operação",
-    price: "R$ 89,90",
-    suffix: "/ mês",
-    description: "Para começar com o núcleo do pedido digital e da organização da loja em um pacote definido.",
-    features: [
-      "Cardápio e catálogo",
-      "Pedidos",
-      "Clientes",
-      "Dashboard e configurações",
-    ],
-  },
-  {
-    name: "Profissional",
-    badge: "Operação + entrega",
-    price: "R$ 129,90",
-    suffix: "/ mês",
-    description: "Para quem quer levar o pedido além do balcão e conectar produção, entrega e fidelização à rotina.",
-    featured: true,
-    features: [
-      "Tudo do núcleo Essencial",
-      "Produção e organização da entrega",
-      "Entregadores",
-      "Marketing e fidelização",
-      "Domínio personalizado e integrações disponíveis",
-    ],
-  },
-  {
-    name: "Completo",
-    badge: "Gestão avançada",
-    price: "R$ 179,90",
-    suffix: "/ mês",
-    description: "Para operações que precisam reunir atendimento, gestão, estoque, financeiro, equipe e recursos avançados.",
-    features: [
-      "Pedidos, catálogo, produção e entrega",
-      "PDV, caixa, salão e mesas",
-      "Estoque, compras e fornecedores",
-      "Financeiro, equipe e escala",
-      "Recursos avançados de multiunidade e marca",
-    ],
-  },
-];
+const badges: Record<string, string> = {
+  essential: "Base da operação",
+  professional: "Mais escolhido",
+  management: "Gestão completa",
+};
 
-export default function PlanosPage() {
+export default async function PlanosPage() {
+  const [plans, trialDays, modules] = await Promise.all([
+    CommercialCatalogService.listPublicPlans(),
+    CommercialCatalogService.getTrialDays(),
+    CommercialCatalogService.listCommercialModules(),
+  ]);
+
   return (
     <MarketingShell>
       <MarketingHero
         eyebrow="Planos e preços"
-        title={<>Escolha uma base clara. <span style={{ color: "var(--brand-primary)" }}>Adicione complexidade só quando precisar.</span></>}
-        description="O PedeAqui tem pacotes ativos para diferentes momentos da operação e também uma opção personalizada. Os valores abaixo correspondem ao catálogo comercial atual."
+        title={<>Escolha seu plano. <span style={{ color: "var(--brand-primary)" }}>Teste por {trialDays} dias grátis.</span></>}
+        description="Comece sem pagar. Depois do período de teste, confirme a assinatura para continuar usando o PedeAqui."
       >
         <div className={styles.heroActions}>
-          <Link href="/cadastro" className={styles.primaryButton}>Criar minha conta</Link>
-          <Link href="/recursos" className={styles.secondaryButton}>Comparar recursos</Link>
+          <Link href="/cadastro" className={styles.primaryButton}>Começar teste grátis</Link>
+          <Link href="/login" className={styles.secondaryButton}>Já tenho uma conta</Link>
         </div>
       </MarketingHero>
 
       <MarketingSection
-        eyebrow="Catálogo atual"
-        title="Um plano para o tamanho da sua rotina — não para encher seu painel de funções."
-        intro="Os pacotes agrupam recursos que trabalham juntos. No Personalizado, a mensalidade-base começa menor e os módulos escolhidos entram separadamente."
+        eyebrow="Planos oficiais"
+        title="Três opções, uma única regra em todo o sistema."
+        intro="O plano escolhido aqui é o mesmo usado no cadastro, na configuração da conta, no painel e na cobrança."
       >
         <div className={styles.plansGrid}>
-          {commercialPlans.map((plan) => (
-            <article key={plan.name} className={styles.planCard} data-featured={plan.featured ? "true" : "false"}>
+          {plans.map((plan) => (
+            <article key={plan.key} className={styles.planCard} data-featured={plan.featured ? "true" : "false"}>
               <div className={styles.planTopline}>
                 <strong>{plan.name}</strong>
-                <span className={styles.planBadge}>{plan.badge}</span>
+                <span className={styles.planBadge}>{badges[plan.key]}</span>
               </div>
-              <div className={styles.planPrice}>{plan.price} <span>{plan.suffix}</span></div>
+              <div className={styles.planPrice}>{formatCommercialPrice(plan.monthlyPriceCents, plan.currency)} <span>/ mês após o teste</span></div>
               <p>{plan.description}</p>
               <ul className={styles.planFeatureList}>
-                {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
+                {plan.features.slice(0, 6).map((feature) => <li key={feature}>{feature}</li>)}
               </ul>
               <div className={styles.planCta}>
-                <Link href="/cadastro" className={plan.featured ? styles.primaryButton : styles.secondaryButton}>Quero conhecer este plano</Link>
+                <Link href={`/cadastro?plan=${plan.key}`} className={plan.featured ? styles.primaryButton : styles.secondaryButton}>Começar {trialDays} dias grátis</Link>
               </div>
             </article>
           ))}
-        </div>
-
-        <div className={styles.founderBand}>
-          <div>
-            <h3>Plano Fundadores</h3>
-            <p>Condição especial criada para os três primeiros clientes do PedeAqui, com preço-base protegido enquanto permanecerem no plano contratado. A disponibilidade é confirmada no momento da contratação porque essa condição possui limite de vagas.</p>
-          </div>
-          <div className={styles.founderPrice}>R$ 79,90 <span>/ mês</span></div>
         </div>
       </MarketingSection>
 
       <MarketingSection
         tone="soft"
-        eyebrow="Como escolher"
-        title="Pense no que sua operação precisa fazer hoje."
-        intro="Você não precisa decidir pela quantidade de telas. O melhor ponto de partida é entender quais partes da rotina precisam estar no mesmo fluxo."
+        eyebrow="Módulos extras"
+        title="Precisa de algo fora do plano? Solicite quando quiser."
+        intro="Qualquer cliente pode solicitar um módulo adicional, independentemente do plano. O recurso só é ativado depois da aprovação e o valor adicional fica claro antes da mudança."
       >
-        <MarketingCards cards={[
-          { eyebrow: "Personalizado", title: "Quero montar aos poucos", description: "Comece pela base e adicione os módulos comerciais liberados conforme a necessidade e o orçamento da operação." },
-          { eyebrow: "Essencial", title: "Quero receber e organizar pedidos", description: "O núcleo reúne cardápio, pedidos, clientes, dashboard e configurações para a rotina começar organizada." },
-          { eyebrow: "Profissional", title: "Quero operar entrega e fidelização", description: "Além do núcleo, entram recursos para produção, entrega, entregadores e relacionamento com o cliente." },
-          { eyebrow: "Completo", title: "Quero centralizar gestão e operação", description: "A proposta amplia o pacote para áreas como PDV, caixa, estoque, compras, financeiro, equipe e gestão avançada." },
-        ]} />
+        <MarketingCards cards={modules.slice(0, 12).map((module) => ({
+          eyebrow: `+ ${formatCommercialPrice(module.monthlyPriceCents)}/mês`,
+          title: module.name,
+          description: module.description || "Módulo adicional disponível mediante solicitação de ativação.",
+        }))} />
       </MarketingSection>
 
       <MarketingSection
         tone="dark"
-        eyebrow="Transparência"
-        title="Preço-base e módulos extras são coisas diferentes."
-        intro="O PedeAqui preserva a condição comercial contratada e permite que recursos adicionais sejam tratados separadamente. Assim, evoluir o produto não significa reescrever automaticamente o acordo de quem já é cliente."
-      >
-        <MarketingCards cards={[
-          { eyebrow: "Contrato", title: "O valor combinado fica registrado", description: "Planos e mudanças comerciais seguem versões próprias para preservar o histórico do cliente." },
-          { eyebrow: "Módulos", title: "Adicional entra quando houver contratação", description: "Um recurso fora do pacote-base não aparece como cobrança escondida. A composição comercial define o que está incluído e o que é adicional." },
-          { eyebrow: "Evolução", title: "Correção e segurança não viram novo plano", description: "Manutenção do produto não é tratada como desculpa para alterar automaticamente o preço-base já contratado." },
-        ]} />
-      </MarketingSection>
+        eyebrow="Condição Fundadores"
+        title="Preço-base protegido para os clientes que você escolher como Fundadores."
+        intro="Fundadores continuam vinculados ao plano contratado com preço-base protegido. Módulos adicionais, quando solicitados e aprovados, são cobrados separadamente. Essa condição é administrada pelo PedeAqui e não é um quarto plano público."
+      />
 
-      <CommercialCta title="Quer escolher pelo que sua operação realmente precisa?" description="Crie sua conta para começar ou entre no painel se você já usa o PedeAqui." />
+      <CommercialCta title="Pronto para testar o PedeAqui?" description={`Escolha um dos três planos e use por ${trialDays} dias grátis antes do primeiro pagamento.`} />
     </MarketingShell>
   );
 }
