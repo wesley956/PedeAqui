@@ -3,14 +3,13 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main, feat/platform-commercial-composer-v1-20260829]
+    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
   validate:
-    # Temporary branch trigger validates the complete commercial/admin work without opening a PR/Vercel preview.
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
