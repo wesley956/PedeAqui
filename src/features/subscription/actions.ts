@@ -1,14 +1,26 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { NavigationAccessService } from "@/server/access/navigation-access-service";
+import {
+  SubscriptionContractAcceptanceService,
+  SubscriptionContractAuthorizationError,
+  SubscriptionContractConfigurationError,
+} from "@/server/billing/subscription-contract-acceptance-service";
 import { SubscriptionPixBillingService } from "@/server/billing/subscription-pix-billing-service";
 
 export type GenerateSubscriptionPixState = {
   status: "idle" | "success" | "error";
   message: string;
+};
+
+export type AcceptSubscriptionContractState = {
+  status: "idle" | "success" | "error";
+  message: string;
+  protocol?: string;
 };
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -108,5 +120,43 @@ export async function generateSubscriptionPixAction(
     return result("success", "Novo PIX gerado. O QR Code já está disponível abaixo.");
   } catch {
     return result("error", "Não foi possível gerar o PIX agora. Tente novamente; nenhuma cobrança duplicada será criada.");
+  }
+}
+
+export async function acceptSubscriptionContractAction(
+  _previousState: AcceptSubscriptionContractState,
+  formData: FormData,
+): Promise<AcceptSubscriptionContractState> {
+  if (String(formData.get("accepted") ?? "") !== "on") {
+    return { status: "error", message: "Marque a confirmação de leitura e aceite antes de formalizar." };
+  }
+  const representativeName = String(formData.get("representativeName") ?? "").trim();
+  if (representativeName.length < 2) {
+    return { status: "error", message: "Informe o nome completo do responsável pelo aceite." };
+  }
+  const representativeDocument = String(formData.get("representativeDocument") ?? "").trim();
+
+  try {
+    const requestHeaders = await headers();
+    const forwarded = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+    const outcome = await SubscriptionContractAcceptanceService.accept({
+      representativeName,
+      representativeDocument: representativeDocument || null,
+      ipAddress: forwarded,
+      userAgent: requestHeaders.get("user-agent"),
+    });
+    revalidatePath("/assinatura");
+    revalidatePath("/assinatura/contrato");
+    revalidatePath("/assinatura/contrato/comprovante");
+    return {
+      status: "success",
+      message: outcome.alreadyAccepted ? "Este contrato já estava formalizado." : "Contrato formalizado com sucesso.",
+      protocol: outcome.protocol,
+    };
+  } catch (error) {
+    if (error instanceof SubscriptionContractAuthorizationError || error instanceof SubscriptionContractConfigurationError) {
+      return { status: "error", message: error.message };
+    }
+    return { status: "error", message: "Não foi possível formalizar o contrato agora. Nenhum aceite parcial foi registrado." };
   }
 }

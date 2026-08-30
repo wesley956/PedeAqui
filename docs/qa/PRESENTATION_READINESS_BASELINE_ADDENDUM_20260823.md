@@ -17,6 +17,8 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 ## Painel autenticado do cliente
 
 - `/assinatura` — central de assinatura do cliente, com plano comercial, equivalência funcional, mensalidade, vencimento, histórico e estado da cobrança PIX. Exige `subscription.view` e não expõe credenciais do provedor.
+- `/assinatura/contrato` — leitura da versão contratual aplicável e do Anexo Comercial; após o aceite, renderiza o snapshot preservado e permite impressão/salvamento em PDF sem reescrever o documento histórico.
+- `/assinatura/contrato/comprovante` — comprovante eletrônico do aceite com protocolo, versão, responsável, condição comercial e hash SHA-256; IP, user-agent e documento opcional do representante permanecem protegidos no registro server-only e não são exibidos nesta superfície.
 
 ## Painel do Proprietário
 
@@ -65,3 +67,4 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 - 29/08/2026 — segundo gatilho de redeploy sem alteração funcional, usado apenas para testar a liberação da cota de builds da Vercel.
 - 29/08/2026 — adicionada a superfície `/platform/produto` ao inventário do ADM v3; nesta etapa a composição personalizada era apenas uma simulação administrativa e não modificava contratos reais.
 - 30/08/2026 — ADM comercial/backoffice, Clube Fundadores e cobrança SaaS foram estruturados em branch de homologação. O scheduler de renovação fica no Supabase e nasce pausado; não houve publicação na Vercel nem ativação automática de cobrança nesta etapa.
+- 30/08/2026 — adicionada a formalização eletrônica da assinatura com contrato versionado, Anexo Comercial imutável, protocolo e SHA-256. O aceite permanece bloqueado enquanto a identificação jurídica da CONTRATADA não estiver completa e ativa; nenhum cliente é marcado como aceito automaticamente.
