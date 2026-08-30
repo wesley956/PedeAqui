@@ -57,7 +57,7 @@ function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean) {
   if (order.fulfillment_type === "pickup" && order.fulfillment_status === "awaiting_pickup") {
     return <OrderActionForm orderId={order.id} intent="customer_picked_up" label="Cliente retirou" compact />;
   }
-  if (order.fulfillment_type === "delivery" && order.production_status === "ready" && !["delivered"].includes(order.fulfillment_status)) {
+  if (order.fulfillment_type === "delivery" && ["ready", "not_required"].includes(order.production_status) && !["delivered"].includes(order.fulfillment_status)) {
     if (manualDeliveryMode) {
       if (order.fulfillment_status === "out_for_delivery") {
         return <OrderActionForm orderId={order.id} intent="manual_finish_delivery" label="Finalizar pedido" compact />;
