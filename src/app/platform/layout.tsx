@@ -8,8 +8,9 @@ import { PlatformAdminService, PlatformAuthorizationError } from "@/server/platf
 import styles from "./platform-shell-v3.module.css";
 
 type PlatformRole = "super_admin" | "support";
+type PlatformNavigationGroup = { label: string; items: Array<[string, string]> };
 
-function navigationFor(role: PlatformRole) {
+function navigationFor(role: PlatformRole): PlatformNavigationGroup[] {
   const ownerOnly = role === "super_admin";
   return [
     {
@@ -25,20 +26,20 @@ function navigationFor(role: PlatformRole) {
       items: [
         ["Empresas e unidades", "/platform#empresas"],
         ...(ownerOnly ? [
-          ["Novo cliente", "/platform/novo-restaurante"],
-          ["Onboarding", "/platform/onboarding"],
-          ["Comunicação", "/platform/comunicacao"],
+          ["Novo cliente", "/platform/novo-restaurante"] as [string, string],
+          ["Onboarding", "/platform/onboarding"] as [string, string],
+          ["Comunicação", "/platform/comunicacao"] as [string, string],
         ] : []),
       ],
     },
     ...(ownerOnly ? [{
       label: "Comercial",
       items: [
-        ["CRM e propostas", "/platform/comercial"],
-        ["Assinaturas", "/platform/assinaturas"],
-        ["Financeiro PedeAqui", "/platform/financeiro"],
-        ["Clube Fundadores", "/platform/fundadores"],
-        ["Produto e módulos", "/platform/produto"],
+        ["CRM e propostas", "/platform/comercial"] as [string, string],
+        ["Assinaturas", "/platform/assinaturas"] as [string, string],
+        ["Financeiro PedeAqui", "/platform/financeiro"] as [string, string],
+        ["Clube Fundadores", "/platform/fundadores"] as [string, string],
+        ["Produto e módulos", "/platform/produto"] as [string, string],
       ],
     }] : []),
     {
@@ -58,13 +59,13 @@ function navigationFor(role: PlatformRole) {
         ["Integridade", "/platform/integridade"],
         ["Auditoria", "/platform/auditoria"],
         ...(ownerOnly ? [
-          ["Equipe interna", "/platform/equipe"],
-          ["Privacidade / LGPD", "/platform/privacidade"],
-          ["Configurações", "/platform/configuracoes"],
+          ["Equipe interna", "/platform/equipe"] as [string, string],
+          ["Privacidade / LGPD", "/platform/privacidade"] as [string, string],
+          ["Configurações", "/platform/configuracoes"] as [string, string],
         ] : []),
       ],
     },
-  ] as Array<{ label: string; items: string[][] }>;
+  ];
 }
 
 export default async function PlatformLayout({ children }: { children: ReactNode }) {
