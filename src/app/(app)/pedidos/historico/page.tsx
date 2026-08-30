@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "@/features/orders/order-manager.module.css";
+import { formatStoreDateTime, DEFAULT_STORE_TIMEZONE } from "@/lib/store-date-time";
 import { OrderDeliveryAttributionService } from "@/server/delivery/order-delivery-attribution-service";
 import { OrderService } from "@/server/orders/order-service";
 
@@ -20,12 +21,9 @@ function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
 }
 
-function dateTime(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
-}
-
 export default async function OrderHistoryPage() {
-  const { orders } = await OrderService.listHistory(250);
+  const { context, orders } = await OrderService.listHistory(250);
+  const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
   const deliveryAttribution = await OrderDeliveryAttributionService.forOrders(
     orders.filter((order) => order.fulfillment_type === "delivery").map((order) => order.id),
   );
@@ -53,7 +51,7 @@ export default async function OrderHistoryPage() {
                 </div>
                 <div className={styles.moneyTime}>
                   <span className={styles.total}>{money(order.total_cents)}</span>
-                  <span className={styles.elapsed}>{dateTime(order.updated_at)}</span>
+                  <span className={styles.elapsed}>{formatStoreDateTime(order.updated_at, timeZone)}</span>
                 </div>
               </div>
 
