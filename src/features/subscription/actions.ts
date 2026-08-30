@@ -131,6 +131,9 @@ export async function acceptSubscriptionContractAction(
     return { status: "error", message: "Marque a confirmação de leitura e aceite antes de formalizar." };
   }
   const representativeName = String(formData.get("representativeName") ?? "").trim();
+  if (representativeName.length < 2) {
+    return { status: "error", message: "Informe o nome completo do responsável pelo aceite." };
+  }
   const representativeDocument = String(formData.get("representativeDocument") ?? "").trim();
 
   try {
@@ -154,6 +157,6 @@ export async function acceptSubscriptionContractAction(
     if (error instanceof SubscriptionContractAuthorizationError || error instanceof SubscriptionContractConfigurationError) {
       return { status: "error", message: error.message };
     }
-    return { status: "error", message: error instanceof Error ? error.message : "Não foi possível formalizar o contrato agora." };
+    return { status: "error", message: "Não foi possível formalizar o contrato agora. Nenhum aceite parcial foi registrado." };
   }
 }
