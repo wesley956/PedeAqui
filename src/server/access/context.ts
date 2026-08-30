@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_STORE_TIMEZONE } from "@/lib/store-date-time";
 import { requireAuthenticatedUser } from "@/server/auth/session";
 
 export const ORG_COOKIE = "cruz_org_id";
@@ -13,6 +14,7 @@ export type AccessContext = {
   organizationId: string;
   storeId: string | null;
   roleId: string | null;
+  timezone?: string;
 };
 
 export class MissingOrganizationError extends Error {
@@ -47,7 +49,7 @@ const resolveAccessContext = cache(async (): Promise<AccessContext> => {
 
   let storeQuery = supabase
     .from("stores")
-    .select("id, organization_id, is_primary, status")
+    .select("id, organization_id, is_primary, status, timezone")
     .eq("organization_id", membership.organization_id)
     .eq("status", "active");
 
@@ -65,6 +67,7 @@ const resolveAccessContext = cache(async (): Promise<AccessContext> => {
     organizationId: membership.organization_id,
     storeId: stores?.[0]?.id ?? null,
     roleId: membership.role_id,
+    timezone: stores?.[0]?.timezone || DEFAULT_STORE_TIMEZONE,
   };
 });
 
