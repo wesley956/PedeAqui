@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   validate:
+    # Temporary branch trigger validates the complete commercial/admin work without opening a PR/Vercel preview.
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
