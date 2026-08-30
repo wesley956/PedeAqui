@@ -1,20 +1,63 @@
-import { savePlatformSettingAction } from "@/features/platform-governance/actions";
+import { savePlatformSettingAction, setPlatformBillingEnabledAction } from "@/features/platform-governance/actions";
 import { PlatformGovernanceService } from "@/server/platform/platform-governance-service";
 import styles from "../platform.module.css";
 
-function displayValue(value: unknown){
-  if(typeof value==="string"||typeof value==="number"||typeof value==="boolean") return String(value);
-  try{return JSON.stringify(value)}catch{return "—"}
-}
-function valueType(value: unknown){ if(typeof value==="boolean")return "boolean"; if(typeof value==="number")return "number"; if(value&&typeof value==="object")return "json"; return "string"; }
+const BILLING_SOURCE_KEY = "billing.mercado_pago.source";
 
-export default async function PlatformConfiguracoesPage(){
-  const data=await PlatformGovernanceService.loadSettingsAndPrivacy();
+function displayValue(value: unknown) {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
+  try { return JSON.stringify(value); } catch { return "—"; }
+}
+function valueType(value: unknown) {
+  if (typeof value === "boolean") return "boolean";
+  if (typeof value === "number") return "number";
+  if (value && typeof value === "object") return "json";
+  return "string";
+}
+function billingEnabled(value: unknown) {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value) && (value as Record<string, unknown>).enabled === true);
+}
+
+export default async function PlatformConfiguracoesPage() {
+  const data = await PlatformGovernanceService.loadSettingsAndPrivacy();
   return <div className={styles.page}>
     <header className={styles.hero}><div><p className={styles.eyebrow}>SUPORTE E PLATAFORMA · CONFIGURAÇÕES</p><h1>Defaults globais do PedeAqui</h1><p>Somente regras não secretas ficam aqui. Tokens, credenciais e chaves de integração continuam exclusivamente em variáveis de ambiente/Vault.</p></div><span className={styles.roleBadge}>{data.settings.length} configuração(ões)</span></header>
     <section className={styles.section}>
       <div className={styles.sectionHeader}><div><h2>Configurações atuais</h2><p>Alterações entram na auditoria global e não reescrevem contratos históricos.</p></div></div>
-      <div className={styles.featureList}>{data.settings.map((setting)=><details className={styles.details} key={setting.key}><summary>{setting.key} · {displayValue(setting.value)}</summary><div className={styles.detailsBody}><p className={styles.advancedNote}>{setting.description}</p><form action={savePlatformSettingAction} className={styles.formGrid}><input type="hidden" name="key" value={setting.key}/><input type="hidden" name="category" value={setting.category}/><input type="hidden" name="description" value={setting.description}/><select className={styles.field} name="valueType" defaultValue={valueType(setting.value)}><option value="string">Texto</option><option value="number">Número</option><option value="boolean">Booleano</option><option value="json">JSON</option></select><input className={styles.field} name="value" defaultValue={displayValue(setting.value)} required/><select className={styles.field} name="active" defaultValue={setting.active?"true":"false"}><option value="true">Ativa</option><option value="false">Inativa</option></select><button className={styles.button}>Salvar configuração</button></form></div></details>)}</div>
+      <div className={styles.featureList}>
+        {data.settings.map((setting) => {
+          const isBillingSource = setting.key === BILLING_SOURCE_KEY;
+          const isBillingEnabled = isBillingSource && billingEnabled(setting.value);
+          const nextBillingState = !isBillingEnabled;
+          const confirmation = nextBillingState ? "ATIVAR COBRANCA" : "PAUSAR COBRANCA";
+          return <details className={styles.details} key={setting.key}>
+            <summary>{setting.key} · {isBillingSource ? (isBillingEnabled ? "Cobrança ativa" : "Fonte vinculada · cobrança pausada") : displayValue(setting.value)}</summary>
+            <div className={styles.detailsBody}>
+              <p className={styles.advancedNote}>{setting.description}</p>
+              {isBillingSource ? (
+                <>
+                  <p className={styles.advancedNote}>A fonte Mercado Pago é protegida: IDs e vínculo OAuth não podem ser reescritos por este formulário. O interruptor só libera novas mensalidades após validar a conexão e o segredo do job de produção.</p>
+                  <form action={setPlatformBillingEnabledAction} className={styles.formGrid}>
+                    <input type="hidden" name="enabled" value={nextBillingState ? "true" : "false"} />
+                    <input className={styles.field} name="confirmation" placeholder={`Digite ${confirmation}`} autoComplete="off" required />
+                    <button className={styles.button}>{nextBillingState ? "Ativar cobrança automática" : "Pausar novas cobranças"}</button>
+                  </form>
+                </>
+              ) : (
+                <form action={savePlatformSettingAction} className={styles.formGrid}>
+                  <input type="hidden" name="key" value={setting.key}/>
+                  <input type="hidden" name="category" value={setting.category}/>
+                  <input type="hidden" name="description" value={setting.description}/>
+                  <select className={styles.field} name="valueType" defaultValue={valueType(setting.value)}><option value="string">Texto</option><option value="number">Número</option><option value="boolean">Booleano</option><option value="json">JSON</option></select>
+                  <input className={styles.field} name="value" defaultValue={displayValue(setting.value)} required/>
+                  <select className={styles.field} name="active" defaultValue={setting.active ? "true" : "false"}><option value="true">Ativa</option><option value="false">Inativa</option></select>
+                  <button className={styles.button}>Salvar configuração</button>
+                </form>
+              )}
+            </div>
+          </details>;
+        })}
+      </div>
     </section>
     <section className={styles.section}>
       <div className={styles.sectionHeader}><div><h2>Travas deliberadas</h2><p>Configurações abaixo permanecem desligadas até decisão explícita.</p></div></div>
@@ -22,4 +65,4 @@ export default async function PlatformConfiguracoesPage(){
     </section>
   </div>;
 }
-function Card({title,text}:{title:string;text:string}){return <article className={styles.supportCard}><strong>{title}</strong><span>{text}</span></article>}
+function Card({ title, text }: { title: string; text: string }) { return <article className={styles.supportCard}><strong>{title}</strong><span>{text}</span></article>; }
