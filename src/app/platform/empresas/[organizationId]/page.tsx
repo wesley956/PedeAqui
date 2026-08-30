@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { PlatformBackofficeService } from "@/server/platform/platform-backoffice-service";
 import styles from "../../platform.module.css";
 
@@ -8,18 +9,20 @@ const date = (value: string | null | undefined) => value ? new Date(value).toLoc
 export default async function PlatformCompany360Page({ params }: { params: Promise<{ organizationId: string }> }) {
   const { organizationId } = await params;
   const data = await PlatformBackofficeService.loadOrganization360(organizationId);
+  const organization = data.organization;
+  if (!organization) notFound();
   const current = data.subscriptions.find((item) => ["trialing", "active", "past_due"].includes(item.status)) ?? data.subscriptions[0] ?? null;
   const functional = current && typeof current.metadata.functional_plan_label === "string" ? current.metadata.functional_plan_label : null;
   return (
     <div className={styles.page}>
-      <div className={styles.breadcrumbs}><Link href="/platform">Painel</Link><span>›</span><span>{data.organization.name}</span></div>
+      <div className={styles.breadcrumbs}><Link href="/platform">Painel</Link><span>›</span><span>{organization.name}</span></div>
       <header className={styles.hero}>
         <div>
           <p className={styles.eyebrow}>CLIENTES · EMPRESA 360</p>
-          <h1>{data.organization.name}</h1>
-          <p>{data.organization.legal_name || "Razão social não informada"} · {data.organization.email || "sem e-mail"} · {data.organization.phone || "sem telefone"}</p>
+          <h1>{organization.name}</h1>
+          <p>{organization.legal_name || "Razão social não informada"} · {organization.email || "sem e-mail"} · {organization.phone || "sem telefone"}</p>
         </div>
-        <div className={styles.heroBadges}><span className={styles.pill} data-tone={data.organization.status === "active" ? "good" : "warn"}>{data.organization.status}</span>{data.founder ? <span className={styles.roleBadge}>Clube Fundadores</span> : null}</div>
+        <div className={styles.heroBadges}><span className={styles.pill} data-tone={organization.status === "active" ? "good" : "warn"}>{organization.status}</span>{data.founder ? <span className={styles.roleBadge}>Clube Fundadores</span> : null}</div>
       </header>
 
       <section className={styles.metrics} aria-label="Resumo da empresa">
@@ -38,7 +41,7 @@ export default async function PlatformCompany360Page({ params }: { params: Promi
             <Info title="Próximo vencimento" text={date(current.next_due_at)} />
             <Info title="Clube Fundadores" text={data.founder ? `${data.founder.status} · nível ${data.founder.level_key} · desde ${date(data.founder.joined_at)}` : "Não participa"} />
             <Info title="CRM" text={data.crm ? `${data.crm.stage} · próximo contato ${date(data.crm.next_action_at)}` : "Sem oportunidade vinculada"} />
-            <Info title="Cadastro" text={`${data.organization.document || "Documento não informado"} · ${data.organization.timezone}`} />
+            <Info title="Cadastro" text={`${organization.document || "Documento não informado"} · ${organization.timezone}`} />
           </div>
         ) : <div className={styles.empty}>Esta empresa ainda não possui assinatura cadastrada.</div>}
       </section>
