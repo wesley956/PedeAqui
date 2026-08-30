@@ -1,5 +1,6 @@
 -- PedeAqui — agendamento diário da renovação de assinaturas no Supabase.
 -- Mantém jobs críticos independentes do Vercel Cron e usa o token já armazenado no Vault.
+-- O job nasce pausado e só é ativado junto com a cobrança SaaS em uma transação auditada.
 
 create extension if not exists pg_net with schema extensions;
 
@@ -51,6 +52,11 @@ select cron.schedule(
   $job$select private.invoke_internal_job('subscription_renewals');$job$
 );
 
+-- Não dispara até o go-live explícito.
+update cron.job
+set active=false
+where jobname='pedeaqui-subscription-renewals';
+
 create or replace function public.subscription_renewal_scheduler_ready_internal()
 returns boolean
 language sql
@@ -72,8 +78,114 @@ as $$
       where jobname='pedeaqui-subscription-renewals'
         and schedule='0 8 * * *'
         and command like '%subscription_renewals%'
-        and active=true
     );
 $$;
 revoke all on function public.subscription_renewal_scheduler_ready_internal() from public,anon,authenticated;
 grant execute on function public.subscription_renewal_scheduler_ready_internal() to service_role;
+
+create or replace function public.platform_subscription_billing_set_enabled_internal(
+  p_enabled boolean,
+  p_actor_user_id uuid,
+  p_reason text,
+  p_protocol text
+) returns jsonb
+language plpgsql
+security invoker
+set search_path=''
+as $$
+declare
+  v_setting public.platform_settings%rowtype;
+  v_source_store_id uuid;
+  v_source_organization_id uuid;
+  v_provider_account_id text;
+  v_source public.order_payment_provider_configs%rowtype;
+  v_scheduler_ready boolean;
+  v_before jsonb;
+  v_after jsonb;
+begin
+  perform private.require_platform_super_admin(p_actor_user_id);
+  if char_length(trim(coalesce(p_reason,''))) not between 5 and 500 then raise exception 'reason required'; end if;
+  if char_length(trim(coalesce(p_protocol,''))) not between 3 and 120 then raise exception 'protocol required'; end if;
+
+  select * into v_setting
+  from public.platform_settings
+  where key='billing.mercado_pago.source'
+  for update;
+  if v_setting.key is null then raise exception 'billing source setting not found'; end if;
+
+  v_source_store_id:=nullif(v_setting.value->>'source_store_id','')::uuid;
+  v_source_organization_id:=nullif(v_setting.value->>'source_organization_id','')::uuid;
+  v_provider_account_id:=nullif(v_setting.value->>'provider_account_id','');
+  if v_source_store_id is null or v_source_organization_id is null or v_provider_account_id is null then
+    raise exception 'billing source setting incomplete';
+  end if;
+
+  select * into v_source
+  from public.order_payment_provider_configs
+  where organization_id=v_source_organization_id
+    and store_id=v_source_store_id
+    and provider='mercado_pago'
+  for update;
+  if v_source.id is null then raise exception 'billing Mercado Pago source not found'; end if;
+
+  select public.subscription_renewal_scheduler_ready_internal() into v_scheduler_ready;
+  if p_enabled then
+    if not v_scheduler_ready then raise exception 'subscription renewal scheduler is not ready'; end if;
+    if not v_source.enabled
+      or v_source.environment<>'production'
+      or v_source.connection_mode<>'oauth'
+      or v_source.provider_account_id is distinct from v_provider_account_id
+      or v_source.last_health_status is distinct from 'healthy'
+      or v_source.revoked_at is not null
+      or v_source.access_token_secret_id is null
+      or v_source.refresh_token_secret_id is null
+      or v_source.webhook_secret_id is null
+    then raise exception 'billing Mercado Pago source is not healthy'; end if;
+  end if;
+
+  v_before:=jsonb_build_object(
+    'enabled',coalesce((v_setting.value->>'enabled')::boolean,false),
+    'scheduler_active',coalesce((select active from cron.job where jobname='pedeaqui-subscription-renewals' limit 1),false)
+  );
+
+  update cron.job
+  set active=p_enabled
+  where jobname='pedeaqui-subscription-renewals';
+
+  update public.platform_settings
+  set value=jsonb_set(value,'{enabled}',to_jsonb(p_enabled),true),
+      active=true,
+      updated_by=p_actor_user_id,
+      updated_at=now()
+  where key='billing.mercado_pago.source'
+  returning value into v_after;
+
+  insert into public.platform_global_audit(
+    actor_user_id,action,entity_type,entity_id,organization_id,before_data,after_data,reason,protocol
+  ) values(
+    p_actor_user_id,
+    case when p_enabled then 'platform.subscription_billing.enabled' else 'platform.subscription_billing.paused' end,
+    'platform_setting',
+    null,
+    v_source_organization_id,
+    v_before,
+    jsonb_build_object(
+      'enabled',p_enabled,
+      'scheduler_active',p_enabled,
+      'provider_account_id',v_provider_account_id,
+      'source_store_id',v_source_store_id
+    ),
+    trim(p_reason),
+    trim(p_protocol)
+  );
+
+  return jsonb_build_object(
+    'enabled',p_enabled,
+    'scheduler_active',p_enabled,
+    'scheduler_ready',v_scheduler_ready,
+    'provider_account_id',v_provider_account_id
+  );
+end;
+$$;
+revoke all on function public.platform_subscription_billing_set_enabled_internal(boolean,uuid,text,text) from public,anon,authenticated;
+grant execute on function public.platform_subscription_billing_set_enabled_internal(boolean,uuid,text,text) to service_role;
