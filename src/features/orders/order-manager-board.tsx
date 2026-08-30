@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { formatStoreDateTime } from "@/lib/store-date-time";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
@@ -117,11 +118,12 @@ function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkfl
   return null;
 }
 
-export function OrderManagerBoard({ storeId, orders, workflowMode = "standard", manualDeliveryMode = false }: {
+export function OrderManagerBoard({ storeId, orders, workflowMode = "standard", manualDeliveryMode = false, timeZone }: {
   storeId: string;
   orders: OrderManagerRow[];
   workflowMode?: BoardWorkflowMode;
   manualDeliveryMode?: boolean;
+  timeZone: string;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -269,7 +271,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard", 
                 : manualDeliveryMode && column.key === "finish"
                   ? "Entrega confirmada · aguardando finalização"
                   : undefined;
-              return <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} workflowMode="simplified" manualDeliveryMode={manualDeliveryMode} statusLabelOverride={finalDeliveryLabel} />;
+              return <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} workflowMode="simplified" manualDeliveryMode={manualDeliveryMode} timeZone={timeZone} statusLabelOverride={finalDeliveryLabel} />;
             })}
             {column.orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}
           </div>
@@ -282,7 +284,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard", 
               <span className={styles.laneCount} aria-label={`${grouped[bucket].length} pedidos`}>{grouped[bucket].length}</span>
             </header>
             <div className={styles.laneBody}>
-              {grouped[bucket].map((order) => <OrderCard key={order.id} order={order} now={now} bucket={bucket} workflowMode="standard" manualDeliveryMode={manualDeliveryMode} />)}
+              {grouped[bucket].map((order) => <OrderCard key={order.id} order={order} now={now} bucket={bucket} workflowMode="standard" manualDeliveryMode={manualDeliveryMode} timeZone={timeZone} />)}
               {grouped[bucket].length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}
             </div>
           </section>
@@ -295,7 +297,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard", 
           <span className={styles.historyCount}>{grouped.history.length} pedido(s)</span>
         </summary>
         <div className={styles.historyGrid}>
-          {grouped.history.map((order) => <OrderCard key={order.id} order={order} now={now} bucket="history" workflowMode="standard" manualDeliveryMode={manualDeliveryMode} />)}
+          {grouped.history.map((order) => <OrderCard key={order.id} order={order} now={now} bucket="history" workflowMode="standard" manualDeliveryMode={manualDeliveryMode} timeZone={timeZone} />)}
           {grouped.history.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido no histórico carregado.</div> : null}
         </div>
       </details></>}
@@ -303,12 +305,13 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard", 
   );
 }
 
-function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, statusLabelOverride }: {
+function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, timeZone, statusLabelOverride }: {
   order: OrderManagerRow;
   now: number;
   bucket: OperationalOrderBucket;
   workflowMode: BoardWorkflowMode;
   manualDeliveryMode: boolean;
+  timeZone: string;
   statusLabelOverride?: string;
 }) {
   const lane = deriveOrderLane(order);
@@ -321,7 +324,7 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, statu
     && ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status)
     && primaryAction?.intent !== "mark_paid";
   const scheduledLabel = order.scheduled_for
-    ? new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(order.scheduled_for))
+    ? formatStoreDateTime(order.scheduled_for, timeZone, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
     : null;
 
   return (
