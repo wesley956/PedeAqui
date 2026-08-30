@@ -10,14 +10,14 @@ import {
   returnConversationToBotAction,
   sendConversationMessageAction,
 } from "@/features/conversations/actions";
+import { DEFAULT_STORE_TIMEZONE, formatStoreDateTime } from "@/lib/store-date-time";
 import { getAccessContext } from "@/server/access/context";
 import { ConversationService } from "@/server/conversations/conversation-service";
 import { conversationStatusLabel, type ConversationStatus } from "@/server/conversations/model";
 import styles from "./conversations.module.css";
 
-function when(value: string | null | undefined) {
-  if (!value) return "—";
-  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+function when(value: string | null | undefined, timeZone: string) {
+  return formatStoreDateTime(value, timeZone);
 }
 
 function statusTone(status: string) {
@@ -43,6 +43,7 @@ export default async function ConversationsPage({
   const inbox = await ConversationService.loadInbox(params.status);
   const context = await getAccessContext();
   if (!context.storeId) throw new Error("Selecione uma unidade para acessar Conversas.");
+  const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
 
   const selectedRow = params.conversation
     ? inbox.conversations.find((row) => row.id === params.conversation)
@@ -97,7 +98,7 @@ export default async function ConversationsPage({
                   <div className={styles.conversationTop}><strong>{conversation.contactName}</strong>{Number(conversation.unread_count) > 0 ? <Badge tone="danger">{conversation.unread_count}</Badge> : null}</div>
                   <div className={styles.badges}><Badge tone={statusTone(conversation.status)}>{conversationStatusLabel(conversation.status as ConversationStatus)}</Badge><Badge>{conversation.channel}</Badge></div>
                   <span className={styles.preview}>{conversation.preview}</span>
-                  <span className={styles.time}>{when(conversation.last_message_at ?? conversation.opened_at)}</span>
+                  <span className={styles.time}>{when(conversation.last_message_at ?? conversation.opened_at, timeZone)}</span>
                 </article>
               </Link>;
             })}
@@ -114,7 +115,7 @@ export default async function ConversationsPage({
                 const outbound = message.direction === "outbound";
                 return <div key={message.id} className={styles.message} data-direction={outbound ? "outbound" : "inbound"}>
                   <div className={styles.bubble}>{message.body || `[${message.content_type}]`}</div>
-                  <span className={styles.messageMeta}>{when(message.created_at)} · {outbound ? message.delivery_status : "recebida"}{message.error_message ? ` · ${message.error_message}` : ""}</span>
+                  <span className={styles.messageMeta}>{when(message.created_at, timeZone)} · {outbound ? message.delivery_status : "recebida"}{message.error_message ? ` · ${message.error_message}` : ""}</span>
                 </div>;
               })}
             </div>
