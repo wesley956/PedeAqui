@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PlatformAdminService, PlatformAuthorizationError } from "@/server/platform/platform-admin-service";
 
+const BILLING_SOURCE_KEY = "billing.mercado_pago.source";
+
 async function owner() {
   const access = await PlatformAdminService.access();
   if (access.role !== "super_admin") throw new PlatformAuthorizationError();
@@ -19,7 +21,7 @@ export async function savePlatformAdminAction(formData: FormData) {
   const role = text(formData, "role");
   const active = text(formData, "active") !== "false";
   if (!email.includes("@")) throw new Error("Informe um e-mail válido.");
-  if (!['super_admin','support'].includes(role)) throw new Error("Função administrativa inválida.");
+  if (!["super_admin","support"].includes(role)) throw new Error("Função administrativa inválida.");
   const admin = createAdminClient();
   const users = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
   if (users.error) throw users.error;
@@ -81,6 +83,8 @@ export async function saveCustomerMessageAction(formData: FormData) {
 
 export async function savePlatformSettingAction(formData: FormData) {
   const access = await owner();
+  const key = text(formData, "key");
+  if (key === BILLING_SOURCE_KEY) throw new Error("A fonte Mercado Pago da plataforma usa o controle financeiro dedicado.");
   const type = text(formData, "valueType") || "string";
   const raw = text(formData, "value");
   let value: unknown = raw;
@@ -89,7 +93,7 @@ export async function savePlatformSettingAction(formData: FormData) {
   else if (type === "json") value = JSON.parse(raw);
   const admin = createAdminClient();
   const { error } = await admin.rpc("platform_setting_save_internal", {
-    p_key: text(formData, "key"),p_category: text(formData, "category"),p_description: text(formData, "description"),p_value: value,p_active: text(formData, "active") !== "false",
+    p_key: key,p_category: text(formData, "category"),p_description: text(formData, "description"),p_value: value,p_active: text(formData, "active") !== "false",
     p_actor_user_id: access.user.id,p_reason: "Configuração global atualizada pelo Painel do Proprietário",p_protocol: protocol("SETTING"),
   });
   if (error) throw error;
@@ -97,12 +101,49 @@ export async function savePlatformSettingAction(formData: FormData) {
   revalidatePath("/platform/privacidade");
 }
 
+export async function setPlatformBillingEnabledAction(formData: FormData) {
+  const access = await owner();
+  const enabled = text(formData, "enabled") === "true";
+  const confirmation = text(formData, "confirmation").toUpperCase();
+  const expected = enabled ? "ATIVAR COBRANCA" : "PAUSAR COBRANCA";
+  if (confirmation !== expected) throw new Error(`Digite ${expected} para confirmar.`);
+
+  const admin = createAdminClient();
+  const { data: setting, error: readError } = await admin
+    .from("platform_settings")
+    .select("category,description,value,active")
+    .eq("key", BILLING_SOURCE_KEY)
+    .single();
+  if (readError) throw readError;
+  const currentValue = setting.value && typeof setting.value === "object" && !Array.isArray(setting.value)
+    ? setting.value as Record<string, unknown>
+    : {};
+  if (!currentValue.source_store_id || !currentValue.source_organization_id || !currentValue.provider_account_id) {
+    throw new Error("A fonte Mercado Pago da cobrança ainda não está completamente configurada.");
+  }
+
+  const { error } = await admin.rpc("platform_setting_save_internal", {
+    p_key: BILLING_SOURCE_KEY,
+    p_category: setting.category,
+    p_description: setting.description,
+    p_value: { ...currentValue, enabled },
+    p_active: setting.active,
+    p_actor_user_id: access.user.id,
+    p_reason: enabled ? "Ativação explícita da cobrança automática das assinaturas PedeAqui" : "Pausa explícita de novas cobranças automáticas das assinaturas PedeAqui",
+    p_protocol: protocol(enabled ? "BILLING-GOLIVE" : "BILLING-PAUSE"),
+  });
+  if (error) throw error;
+  revalidatePath("/platform/produto");
+  revalidatePath("/platform/configuracoes");
+  revalidatePath("/platform/auditoria");
+}
+
 export async function createPrivacyRequestAction(formData: FormData) {
   const access = await owner();
   const organizationId = nullable(formData, "organizationId");
   const requestType = text(formData, "requestType");
   const reason = text(formData, "reason");
-  if (!['access','export','correction','anonymization','deletion','other'].includes(requestType)) throw new Error("Tipo de solicitação inválido.");
+  if (!["access","export","correction","anonymization","deletion","other"].includes(requestType)) throw new Error("Tipo de solicitação inválido.");
   if (reason.length < 5) throw new Error("Descreva a solicitação.");
   const admin = createAdminClient();
   const requestProtocol = protocol("LGPD");
