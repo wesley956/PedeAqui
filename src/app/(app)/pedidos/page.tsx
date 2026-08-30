@@ -3,6 +3,7 @@ import { CustomOrderWorkflowBoard } from "@/features/orders/custom-order-workflo
 import { OrderManagerBoard } from "@/features/orders/order-manager-board";
 import styles from "@/features/orders/order-manager.module.css";
 import type { OrderManagerRow } from "@/features/orders/manager-model";
+import { DEFAULT_STORE_TIMEZONE } from "@/lib/store-date-time";
 import { isManualDeliveryMode } from "@/modules/manual-delivery";
 import { ModuleAccessService } from "@/server/modules/module-access-service";
 import { OrderService } from "@/server/orders/order-service";
@@ -19,6 +20,7 @@ export default async function OrdersPage() {
   const rows = orders as OrderManagerRow[];
   const activeCount = rows.filter((order) => !["completed", "canceled", "rejected"].includes(order.order_status)).length;
   const manualDeliveryMode = isManualDeliveryMode(moduleSnapshot.enabledModuleKeys);
+  const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
 
   return (
     <section className={styles.page}>
@@ -50,7 +52,7 @@ export default async function OrdersPage() {
 
       {workflowMode === "custom"
         ? <CustomOrderWorkflowBoard storeId={context.storeId} orders={rows} config={settings.custom} manualDeliveryMode={manualDeliveryMode} />
-        : <OrderManagerBoard storeId={context.storeId} orders={rows} workflowMode={workflowMode} manualDeliveryMode={manualDeliveryMode} />}
+        : <OrderManagerBoard storeId={context.storeId} orders={rows} workflowMode={workflowMode} manualDeliveryMode={manualDeliveryMode} timeZone={timeZone} />}
     </section>
   );
 }
