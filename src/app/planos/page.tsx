@@ -84,7 +84,13 @@ export default async function PlanosPage() {
         eyebrow="Condição Fundadores"
         title="Preço-base protegido para os clientes que você escolher como Fundadores."
         intro="Fundadores continuam vinculados ao plano contratado com preço-base protegido. Módulos adicionais, quando solicitados e aprovados, são cobrados separadamente. Essa condição é administrada pelo PedeAqui e não é um quarto plano público."
-      />
+      >
+        <MarketingCards cards={[
+          { eyebrow: "Proteção", title: "Preço-base preservado", description: "A condição de Fundador continua registrada no contrato sem alterar automaticamente o valor-base já protegido." },
+          { eyebrow: "Adicionais", title: "Módulos continuam separados", description: "Novos módulos entram apenas quando houver solicitação e aprovação, com o valor adicional visível antes da mudança." },
+          { eyebrow: "Administração", title: "Condição controlada pelo PedeAqui", description: "Fundador é uma condição comercial administrada internamente e não aparece como um quarto plano para novos cadastros." },
+        ]} />
+      </MarketingSection>
 
       <CommercialCta title="Pronto para testar o PedeAqui?" description={`Escolha um dos três planos e use por ${trialDays} dias grátis antes do primeiro pagamento.`} />
     </MarketingShell>
