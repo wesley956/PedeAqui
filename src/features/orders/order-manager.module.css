@@ -30,7 +30,7 @@
 .orderCard[data-late="true"] .elapsed { color: var(--state-danger-text); font-weight: var(--font-weight-bold); }
 .cardTop { display: flex; justify-content: space-between; gap: var(--space-2); align-items: baseline; }
 .orderIdentity { display: flex; gap: var(--space-2); align-items: baseline; min-width: 0; flex-wrap: wrap; }
-.orderNumber { font-size: var(--font-size-base); font-weight: var(--font-weight-extrabold); white-space: nowrap; }
+.orderNumber { font-size: var(--font-size-lg); font-weight: var(--font-weight-extrabold); white-space: nowrap; }
 .customer { overflow-wrap: anywhere; font-size: var(--font-size-sm); }
 .moneyTime { display: flex; gap: var(--space-2); align-items: baseline; justify-content: flex-end; text-align: right; flex-wrap: wrap; }
 .total { font-weight: var(--font-weight-extrabold); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: var(--font-size-sm); }
