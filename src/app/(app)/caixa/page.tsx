@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cashMovementAction, closeCashSessionAction, openCashSessionAction } from "@/features/cash/actions";
 import { cashMovementLabels, type CashMovementType } from "@/features/cash/model";
+import { DEFAULT_STORE_TIMEZONE, formatStoreDateTime } from "@/lib/store-date-time";
 import styles from "@/features/cash/cash.module.css";
 import { CashService } from "@/server/cash/cash-service";
 
@@ -8,12 +9,15 @@ function money(value: unknown) {
   const cents = Number(value ?? 0);
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 }
-function dateTime(value: unknown) { return typeof value === "string" ? new Date(value).toLocaleString("pt-BR") : "—"; }
+function dateTime(value: unknown, timeZone: string) {
+  return typeof value === "string" ? formatStoreDateTime(value, timeZone) : "—";
+}
 
 export default async function CashPage({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const notice = await searchParams;
   const data = await CashService.loadDashboard();
   const { registers, sessions, currentSession, movements, abilities } = data;
+  const timeZone = data.context.timezone ?? DEFAULT_STORE_TIMEZONE;
   const summary = data.summary as { expected_cash_cents?: number; totals?: Record<string, number> } | null;
   const totals = summary?.totals ?? {};
   const openByRegister = new Map(sessions.filter((session) => session.status === "open").map((session) => [session.cash_register_id, session]));
@@ -31,7 +35,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
     {currentSession ? <>
       <div className={styles.statusBar} aria-label="Resumo do turno de caixa">
         <Metric label="Caixa" value={currentSession.register?.name ?? "Caixa"} />
-        <Metric label="Aberto em" value={dateTime(currentSession.opened_at)} />
+        <Metric label="Aberto em" value={dateTime(currentSession.opened_at, timeZone)} />
         <Metric label="Saldo esperado" value={money(summary?.expected_cash_cents)} primary />
         <Metric label="Vendas em dinheiro" value={money(totals.sales_cents)} />
         <Metric label="Suprimentos" value={money(totals.supplies_cents)} />
@@ -74,7 +78,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
           const type = String(movement.movement_type) as CashMovementType;
           const outgoing = movement.direction === "out";
           return <div key={String(movement.id)} className={styles.movement}>
-            <div><strong>{cashMovementLabels[type] ?? type}</strong><div className={styles.movementMeta}>{dateTime(movement.created_at)}{movement.reason ? ` · ${String(movement.reason)}` : ""}</div></div>
+            <div><strong>{cashMovementLabels[type] ?? type}</strong><div className={styles.movementMeta}>{dateTime(movement.created_at, timeZone)}{movement.reason ? ` · ${String(movement.reason)}` : ""}</div></div>
             <strong className={styles.movementAmount} data-direction={outgoing ? "out" : "in"}>{outgoing ? "−" : "+"}{money(movement.amount_cents)}</strong>
           </div>;
         })}</div>}
@@ -93,7 +97,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
       <summary>Histórico de turnos</summary>
       <div className={styles.secondaryBody}>{sessions.length === 0 ? <p className={styles.muted}>Nenhum turno registrado.</p> : sessions.slice(0, 15).map((session) => <div key={session.id} className={styles.session}>
         <strong>{session.register?.name ?? "Caixa"} · {session.status === "open" ? "Aberto" : "Fechado"}</strong>
-        <div className={styles.sessionMeta}>{dateTime(session.opened_at)}{session.closed_at ? ` → ${dateTime(session.closed_at)}` : ""}</div>
+        <div className={styles.sessionMeta}>{dateTime(session.opened_at, timeZone)}{session.closed_at ? ` → ${dateTime(session.closed_at, timeZone)}` : ""}</div>
         {session.status === "closed" ? <div className={styles.sessionMeta}>Esperado {money(session.expected_cash_cents_snapshot)} · Contado {money(session.counted_cash_cents)} · Diferença {money(session.difference_cents)}</div> : null}
       </div>)}</div>
     </details>
