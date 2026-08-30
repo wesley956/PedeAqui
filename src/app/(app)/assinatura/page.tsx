@@ -1,5 +1,8 @@
 import Image from "next/image";
+import Link from "next/link";
 import { CustomerSubscriptionService } from "@/server/billing/customer-subscription-service";
+import { SubscriptionContractAcceptanceService } from "@/server/billing/subscription-contract-acceptance-service";
+import { ContractAcceptanceForm } from "./contract-acceptance-form";
 import { GeneratePixButton } from "./generate-pix-button";
 import { PixCopyButton } from "./pix-copy-button";
 import styles from "./assinatura.module.css";
@@ -18,6 +21,7 @@ export default async function CustomerSubscriptionPage() {
     return <main className={styles.page}><section className={styles.hero}><div><p className={styles.eyebrow}>MINHA CONTA</p><h1>Minha assinatura</h1><p>A assinatura do PedeAqui ainda não foi configurada para esta empresa.</p></div></section></main>;
   }
 
+  const contract = await SubscriptionContractAcceptanceService.status(subscription.id);
   const loadedAt = Date.parse(data.loadedAt);
   const openInvoice = data.invoices.find((invoice) => invoice.status === "pending" || invoice.status === "overdue") ?? null;
   const currentPix = openInvoice
@@ -32,7 +36,7 @@ export default async function CustomerSubscriptionPage() {
         <div>
           <p className={styles.eyebrow}>MINHA CONTA · PEDEAQUI</p>
           <h1>Minha assinatura</h1>
-          <p>Veja seu plano, mensalidade, próximos vencimentos, módulos adicionais e histórico de pagamentos em um só lugar.</p>
+          <p>Veja seu plano, mensalidade, contrato, próximos vencimentos, módulos adicionais e histórico de pagamentos em um só lugar.</p>
         </div>
         <span className={styles.badge}>{subscriptionStatus[subscription.status] ?? subscription.status}</span>
       </section>
@@ -55,8 +59,28 @@ export default async function CustomerSubscriptionPage() {
             <Row label="Total mensal" value={money(subscription.totalMonthlyCents, subscription.currency)} />
             <Row label="Dia de vencimento" value={subscription.billingDueDay ? `Dia ${subscription.billingDueDay}` : "A definir"} />
           </div>
-          {subscription.founderSlot ? <div className={styles.founder}><strong>Cliente Fundador #{subscription.founderSlot}</strong><br />Seu valor especial de {money(subscription.agreedPriceCents, subscription.currency)} está protegido no contrato.</div> : null}
+          {subscription.founderSlot ? <div className={styles.founder}><strong>Cliente Fundador #{subscription.founderSlot}</strong><br />Seu valor especial de {money(subscription.agreedPriceCents, subscription.currency)} permanece protegido. A formalização eletrônica não altera preço, módulos ou vencimento já registrados.</div> : null}
           {subscription.priceLocked && !subscription.founderSlot ? <div className={styles.founder}><strong>Valor protegido</strong><br />Sua condição comercial atual está bloqueada conforme o contrato.</div> : null}
+
+          <div className={styles.contractPanel}>
+            {contract.state === "configuration_pending" ? (
+              <div className={styles.contractStatus}><div><strong>Contrato em preparação</strong><br /><span>A formalização eletrônica será liberada assim que os dados jurídicos da CONTRATADA forem concluídos no PedeAqui. Sua assinatura atual não muda por causa disso.</span></div><span>Versão {contract.currentVersion}</span></div>
+            ) : contract.state === "accepted" && contract.acceptance ? (
+              <>
+                <div className={styles.contractStatus}><div><strong>Contrato vigente</strong><br /><span>Formalizado em {dateTime(contract.acceptance.accepted_at)} por {contract.acceptance.representative_name}.</span></div><span>Versão {contract.acceptance.contract_version}</span></div>
+                <div className={styles.rows}>
+                  <Row label="Protocolo" value={contract.acceptance.protocol} />
+                  <Row label="Documento" value={`${contract.acceptance.document_sha256.slice(0, 12)}…`} helper="Identificador de integridade SHA-256 do documento aceito." />
+                </div>
+                <div className={styles.contractLinks}><Link href="/assinatura/contrato">Ver contrato aceito</Link><Link href="/assinatura/contrato/comprovante">Ver comprovante</Link></div>
+              </>
+            ) : (
+              <>
+                <div className={styles.contractStatus}><div><strong>{contract.state === "needs_reacceptance" ? "Novo aceite necessário" : "Contrato pendente de formalização"}</strong><br /><span>O preço, o plano e os módulos atuais serão registrados em um anexo imutável no momento do aceite.</span></div><span>Versão {contract.currentVersion}</span></div>
+                {contract.canAccept ? <ContractAcceptanceForm version={contract.currentVersion} /> : <div className={styles.empty}>Somente o proprietário da empresa pode formalizar este contrato. Você ainda pode consultar a assinatura normalmente.</div>}
+              </>
+            )}
+          </div>
         </article>
 
         <article className={styles.card}>
