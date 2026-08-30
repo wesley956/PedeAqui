@@ -17,6 +17,7 @@ import { PaymentService } from "@/server/payments/payment-service";
 import { PrintQueueService } from "@/server/printing/print-queue-service";
 import { PrintService } from "@/server/printing/print-service";
 import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
+import { ManualDeliveryService } from "@/server/delivery/manual-delivery-service";
 import type { FulfillmentStatus, ProductionStatus } from "@/server/orders/state-machines";
 import { friendlyOrderActionError } from "@/features/orders/order-action-error";
 
@@ -109,7 +110,8 @@ export async function transitionFulfillmentAction(formData: FormData) {
 
 const managerIntentSchema = z.enum([
   "accept", "reject", "cancel", "accept_and_start", "start_production", "mark_ready", "mark_paid",
-  "await_pickup", "customer_picked_up", "await_courier", "served", "complete", "print", "reprint",
+  "await_pickup", "customer_picked_up", "await_courier", "manual_out_for_delivery", "manual_finish_delivery",
+  "served", "complete", "print", "reprint",
 ]);
 
 export type OrderManagerActionState = { ok: boolean; message: string | null; error: string | null };
@@ -140,6 +142,27 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
       case "await_pickup": await OrderService.setFulfillment(orderId, "awaiting_pickup"); break;
       case "customer_picked_up": await OrderService.setFulfillment(orderId, "picked_up_by_customer"); break;
       case "await_courier": await DeliveryOperationsService.markWaiting(orderId); break;
+      case "manual_out_for_delivery": {
+        await ManualDeliveryService.dispatch(orderId);
+        scheduleOrderWhatsAppNotifications("delivery.out_for_delivery");
+        message = "Pedido marcado como saiu para entrega.";
+        break;
+      }
+      case "manual_finish_delivery": {
+        const result = await ManualDeliveryService.finish(orderId);
+        scheduleOrderWhatsAppNotifications("delivery.delivered");
+        if (result.paymentConfirmed) scheduleOrderWhatsAppNotifications("payment.paid");
+        if (result.completed) {
+          message = "Entrega confirmada e pedido finalizado.";
+        } else if (result.paymentIssue) {
+          message = "Entrega confirmada. O pagamento precisa ser resolvido antes de finalizar.";
+        } else if (result.paymentPending) {
+          message = "Entrega confirmada. Confirme o pagamento para finalizar o pedido.";
+        } else {
+          message = "Entrega confirmada.";
+        }
+        break;
+      }
       case "served": await OrderService.setFulfillment(orderId, "served"); break;
       case "complete": await OrderService.complete(orderId); break;
       case "print": {
@@ -158,13 +181,17 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
         break;
       }
     }
-    if (parsed.data !== "print" && parsed.data !== "reprint") scheduleOrderWhatsAppNotifications(`order_manager.${parsed.data}`);
+    if (!["print", "reprint", "manual_out_for_delivery", "manual_finish_delivery"].includes(parsed.data)) {
+      scheduleOrderWhatsAppNotifications(`order_manager.${parsed.data}`);
+    }
     refreshOrder(orderId);
     const labels: Record<z.infer<typeof managerIntentSchema>, string> = {
       accept: "Pedido aceito.", accept_and_start: "Pedido aceito e preparo iniciado.", reject: "Pedido rejeitado.", cancel: "Pedido cancelado.", start_production: "Produção iniciada.",
       mark_ready: "Pedido marcado como pronto.", mark_paid: "Pagamento confirmado.",
       await_pickup: "Pedido liberado para retirada.", customer_picked_up: "Retirada confirmada.",
-      await_courier: "Pedido enviado para a central de entregas.", served: "Atendimento de balcão concluído.",
+      await_courier: "Pedido enviado para a central de entregas.",
+      manual_out_for_delivery: "Pedido marcado como saiu para entrega.", manual_finish_delivery: "Entrega confirmada.",
+      served: "Atendimento de balcão concluído.",
       complete: "Pedido concluído.", print: "Pedido enviado para impressão.", reprint: "Reimpressão solicitada.",
     };
     return { ok: true, message: message ?? labels[parsed.data], error: null };
