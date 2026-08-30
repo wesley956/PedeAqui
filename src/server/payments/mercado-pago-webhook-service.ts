@@ -2,6 +2,8 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PlatformBillingSourceService } from "@/server/billing/platform-billing-source-service";
+import { SubscriptionPixBillingService } from "@/server/billing/subscription-pix-billing-service";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
 import { OrderPixService } from "@/server/payments/order-pix-service";
 import { parseMercadoPagoWebhookMetadata } from "@/server/payments/providers/mercado-pago-webhook-payload";
@@ -35,6 +37,23 @@ export async function processMercadoPagoOrderWebhook(input: {
     dataId,
     secret: credentials.webhook_secret,
   })) throw new MercadoPagoWebhookAuthError("Mercado Pago webhook signature is invalid");
+
+  // A conta Mercado Pago do proprietário também é a fonte de cobrança SaaS. O webhook
+  // OAuth já registrado para essa conta continua sendo o ponto canônico: se o recurso
+  // pertence ao ledger de mensalidades, reconcilia a assinatura; caso contrário, segue
+  // o fluxo normal do PIX do pedido do restaurante sem alterar seu comportamento.
+  const billingSource = await PlatformBillingSourceService.configuration();
+  if (billingSource.sourceStoreId === input.storeId && billingSource.credentialsReady) {
+    const subscriptionBilling = await SubscriptionPixBillingService.reconcileByProviderResource(dataId);
+    if (subscriptionBilling.matched) {
+      return {
+        duplicate: subscriptionBilling.idempotent === true,
+        reconciled: true,
+        subscriptionBilling: true as const,
+        paymentStatus: subscriptionBilling.status,
+      };
+    }
+  }
 
   // Mercado Pago signs the resource id carried in the URL together with x-request-id
   // and the signature timestamp. Treat that signed id as canonical and keep the JSON
@@ -77,7 +96,7 @@ export async function processMercadoPagoOrderWebhook(input: {
       .eq("provider_event_id", providerEventId)
       .maybeSingle();
     if (existingError) throw existingError;
-    if (existing?.status === "processed") return { duplicate: true, reconciled: true };
+    if (existing?.status === "processed") return { duplicate: true, reconciled: true, subscriptionBilling: false as const };
     eventId = existing?.id ?? null;
   }
 
@@ -91,7 +110,7 @@ export async function processMercadoPagoOrderWebhook(input: {
         error_code: null,
       }).eq("id", eventId);
     }
-    return { duplicate: false, reconciled: true, paymentStatus: payment.status };
+    return { duplicate: false, reconciled: true, subscriptionBilling: false as const, paymentStatus: payment.status };
   } catch (error) {
     if (eventId) {
       await admin.from("order_payment_provider_events").update({
