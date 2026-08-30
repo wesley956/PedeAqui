@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MercadoPagoOrderProvider } from "@/server/payments/providers/mercado-pago-order-provider";
+import { PlatformBillingSourceService } from "@/server/billing/platform-billing-source-service";
 
 const PIX_PROVIDER_KEY = "mercado_pago" as const;
 const RENEWAL_HORIZON_DAYS = 3;
@@ -9,10 +10,6 @@ const PIX_EXPIRATION = "P7D";
 
 function env(name: string) {
   return process.env[name]?.trim() || null;
-}
-
-function platformAccessToken() {
-  return env("PEDEAQUI_BILLING_MERCADO_PAGO_ACCESS_TOKEN");
 }
 
 function mapProviderStatus(status: "pending" | "paid" | "expired" | "canceled" | "failed") {
@@ -48,20 +45,30 @@ async function systemActor() {
 }
 
 export class SubscriptionPixBillingService {
-  static configuration() {
+  static async configuration() {
+    const source = await PlatformBillingSourceService.configuration();
     return {
       provider: PIX_PROVIDER_KEY,
-      accessTokenConfigured: Boolean(platformAccessToken()),
-      webhookSecretConfigured: Boolean(env("PEDEAQUI_BILLING_MERCADO_PAGO_WEBHOOK_SECRET")),
+      billingEnabled: source.enabled,
+      sourceConfigured: source.configured,
+      sourceOwnerEmail: source.sourceOwnerEmail,
+      providerAccountId: source.providerAccountId,
+      providerHealthStatus: source.healthStatus,
+      accessTokenConfigured: source.credentialsReady,
+      webhookSecretConfigured: source.credentialsReady,
       cronSecretConfigured: Boolean(env("CRON_SECRET")),
     };
   }
 
-  static webhookSecret() {
-    return env("PEDEAQUI_BILLING_MERCADO_PAGO_WEBHOOK_SECRET");
+  static async webhookSecret() {
+    return PlatformBillingSourceService.webhookSecret();
   }
 
   static async runRenewals(now = new Date()) {
+    const source = await PlatformBillingSourceService.configuration();
+    const result = { scanned: 0, invoices: 0, pixCreated: 0, reconciled: 0, skipped: 0, disabled: !source.enabled, errors: [] as string[] };
+    if (!source.enabled) return result;
+
     const admin = createAdminClient();
     const actorUserId = await systemActor();
     const horizon = new Date(now.getTime() + RENEWAL_HORIZON_DAYS * 86_400_000).toISOString();
@@ -77,8 +84,7 @@ export class SubscriptionPixBillingService {
       .order("next_due_at", { ascending: true })
       .limit(200);
     if (error) throw error;
-
-    const result = { scanned: subscriptions?.length ?? 0, invoices: 0, pixCreated: 0, reconciled: 0, skipped: 0, errors: [] as string[] };
+    result.scanned = subscriptions?.length ?? 0;
 
     for (const subscription of subscriptions ?? []) {
       try {
@@ -119,7 +125,6 @@ export class SubscriptionPixBillingService {
         });
         if (invoiceRpcError) throw invoiceRpcError;
 
-        // Consulta a linha por sua chave de negócio em vez de depender do formato de serialização do RPC composto.
         const { data: invoice, error: invoiceError } = await admin
           .from("subscription_invoices")
           .select("id,status")
@@ -150,7 +155,7 @@ export class SubscriptionPixBillingService {
           continue;
         }
 
-        if (!organization.email?.trim() || !platformAccessToken()) {
+        if (!organization.email?.trim()) {
           result.skipped += 1;
           continue;
         }
@@ -180,8 +185,7 @@ export class SubscriptionPixBillingService {
     payerEmail: string;
     actorUserId?: string;
   }) {
-    const token = platformAccessToken();
-    if (!token) throw new Error("PedeAqui billing Mercado Pago access token is not configured");
+    const credentials = await PlatformBillingSourceService.credentials();
     const admin = createAdminClient();
 
     const { count, error: countError } = await admin
@@ -193,7 +197,7 @@ export class SubscriptionPixBillingService {
     const idempotencyKey = `pa-sub-pix:${input.invoiceId}:${attempt}`;
     const externalReference = `PA_${input.invoiceId.replace(/-/g, "_")}_${attempt}`.slice(0, 64);
 
-    const provider = new MercadoPagoOrderProvider(token);
+    const provider = new MercadoPagoOrderProvider(credentials.access_token);
     const order = await provider.createPixCharge({
       amountCents: input.amountCents,
       currency: "BRL",
@@ -208,8 +212,6 @@ export class SubscriptionPixBillingService {
     }
 
     const providerStatus = mapProviderStatus(order.status);
-    // Mesmo que o provedor retorne pago imediatamente, registramos primeiro como pendente e
-    // deixamos o RPC atômico confirmar pagamento + próximo vencimento em uma única transação.
     const initialStatus = providerStatus === "paid" ? "pending" : providerStatus;
     const { data, error } = await admin
       .from("subscription_pix_charges")
@@ -231,7 +233,7 @@ export class SubscriptionPixBillingService {
         ticket_url: order.ticketUrl,
         expires_at: order.expiresAt,
         paid_at: null,
-        metadata: { source: "subscription_renewal", attempt },
+        metadata: { source: "subscription_renewal", attempt, provider_account_id: credentials.provider_account_id },
       })
       .select("id,provider_order_id,status")
       .single();
@@ -260,8 +262,7 @@ export class SubscriptionPixBillingService {
   }
 
   static async reconcileCharge(chargeId: string, actorUserId?: string) {
-    const token = platformAccessToken();
-    if (!token) throw new Error("PedeAqui billing Mercado Pago access token is not configured");
+    const credentials = await PlatformBillingSourceService.credentials();
     const admin = createAdminClient();
     const actor = actorUserId ?? await systemActor();
     const { data: charge, error: chargeError } = await admin
@@ -273,7 +274,7 @@ export class SubscriptionPixBillingService {
     if (!charge.provider_order_id) throw new Error("PIX charge has no provider order id");
     if (charge.status === "paid") return { status: "paid" as const, paymentRecorded: false, idempotent: true };
 
-    const provider = new MercadoPagoOrderProvider(token);
+    const provider = new MercadoPagoOrderProvider(credentials.access_token);
     const order = await provider.getOrder(charge.provider_order_id);
     if (order.amountCents !== charge.amount_cents) throw new Error("PIX reconciliation amount mismatch");
     const status = mapProviderStatus(order.status);
