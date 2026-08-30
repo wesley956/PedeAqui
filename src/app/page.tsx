@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HomeClientRedirect } from "@/components/navigation/home-client-redirect";
 import {
   CommercialCta,
   MarketingCards,
@@ -7,6 +8,8 @@ import {
   MarketingShell,
   marketingStyles as styles,
 } from "@/components/marketing/marketing-shell";
+import { getAuthenticatedUser } from "@/server/auth/session";
+import { StartRouteService } from "@/server/access/start-route-service";
 
 const productCards = [
   {
@@ -29,7 +32,14 @@ const productCards = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const user = await getAuthenticatedUser();
+
+  if (user) {
+    const href = await StartRouteService.resolve();
+    return <HomeClientRedirect href={href} />;
+  }
+
   return (
     <MarketingShell>
       <MarketingHero
