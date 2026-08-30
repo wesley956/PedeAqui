@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { MODULE_CATALOG, MODULE_KEYS, moduleLabel, type BusinessType } from "@/modules/module-catalog";
 import { PlatformAdminService } from "@/server/platform/platform-admin-service";
+import { PlatformCommercialComposerService } from "@/server/platform/platform-commercial-composer-service";
+import { SubscriptionPixBillingService } from "@/server/billing/subscription-pix-billing-service";
 import { PlanComposer } from "./plan-composer";
+import { CommercialApplyForm } from "./commercial-apply-form";
 import styles from "../platform.module.css";
 
 const money = (value: number | null) => value === null
@@ -18,7 +21,11 @@ function metadataText(value: unknown, key: string) {
 }
 
 export default async function PlatformProductPage() {
-  const data = await PlatformAdminService.loadCommercial();
+  const [data, composer] = await Promise.all([
+    PlatformAdminService.loadCommercial(),
+    PlatformCommercialComposerService.load(),
+  ]);
+  const pixConfiguration = SubscriptionPixBillingService.configuration();
   const featureById = new Map(data.features.map((feature) => [feature.id, feature]));
   const featuresByPlan = new Map<string, string[]>();
   for (const relation of data.planFeatures) {
@@ -59,6 +66,7 @@ export default async function PlatformProductPage() {
   });
   const optionalCount = moduleRows.filter((item) => item.kind !== "core").length;
   const gatedCount = moduleRows.filter((item) => Boolean(item.entitlementFeatureKey)).length;
+  const pixReady = pixConfiguration.accessTokenConfigured && pixConfiguration.webhookSecretConfigured && pixConfiguration.cronSecretConfigured;
 
   return (
     <div className={styles.page}>
@@ -137,6 +145,18 @@ export default async function PlatformProductPage() {
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
+          <div><h2>Cobrança SaaS por PIX</h2><p>A mensalidade do PedeAqui usa configuração própria e fica isolada do PIX recebido pelos restaurantes nos pedidos.</p></div>
+          <span className={styles.pill} data-tone={pixReady ? "good" : "neutral"}>{pixReady ? "Pronta para ativação" : "Segura / desligada"}</span>
+        </div>
+        <div className={styles.supportGrid}>
+          <CommercialCard title="Mercado Pago da plataforma" text={pixConfiguration.accessTokenConfigured ? "Credencial de cobrança configurada no servidor." : "Credencial ainda ausente. Nenhum PIX de mensalidade será criado."} />
+          <CommercialCard title="Webhook assinado" text={pixConfiguration.webhookSecretConfigured ? "Segredo do webhook configurado para conciliação automática." : "Webhook ainda não habilitado; pagamentos não serão conciliados automaticamente."} />
+          <CommercialCard title="Renovação automática" text={pixConfiguration.cronSecretConfigured ? "Job interno protegido pode executar o ciclo de renovação." : "Job interno permanece inativo até a configuração final de produção."} />
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
           <div><h2>Catálogo técnico de módulos</h2><p>Este catálogo é a fonte de verdade operacional. Dependências e módulos-base não devem ser ignorados por uma regra comercial.</p></div>
         </div>
         <div className={styles.featureList}>
@@ -154,9 +174,20 @@ export default async function PlatformProductPage() {
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <div><h2>Monte seu plano</h2><p>Simule uma composição e defina o preço de cada módulo. O simulador inclui dependências automaticamente e não altera clientes reais.</p></div>
+          <div><h2>Simulador livre</h2><p>Use para testar combinações sem tocar em cliente real. Dependências são incluídas automaticamente.</p></div>
         </div>
         <PlanComposer modules={moduleRows.map(({ key, label, description, group, kind, dependencies, supportedBusinessTypes }) => ({ key, label, description, group, kind, dependencies, supportedBusinessTypes }))} />
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <div><h2>Aplicar proposta em um cliente</h2><p>Fluxo real e transacional. O servidor recalcula pacote, dependências e preços; nenhuma seleção altera o cliente antes do botão de aplicação.</p></div>
+        </div>
+        {composer.role === "super_admin" ? (
+          <CommercialApplyForm organizations={composer.organizations} plans={composer.plans} modules={composer.modules} />
+        ) : (
+          <div className={styles.empty}>Seu perfil tem acesso de consulta. Somente super_admin pode aplicar uma composição comercial.</div>
+        )}
       </section>
 
       <section className={styles.section}>
@@ -166,7 +197,7 @@ export default async function PlatformProductPage() {
         <div className={styles.supportGrid}>
           <CommercialCard title="Contrato" text="Proposta, aceite, vigência, preço e histórico ficam no motor de assinatura. Add-ons não reescrevem a mensalidade-base anterior." />
           <CommercialCard title="Acesso" text="RBAC, módulos da unidade e entitlements continuam verificando se o recurso pode ser usado. Menu escondido sozinho nunca é autorização." />
-          <CommercialCard title="Downgrade" text="Antes de desligar um módulo, o sistema deve validar dependentes e bloqueadores operacionais. Nenhuma retirada automática ignora caixa, entrega ou outras operações abertas." />
+          <CommercialCard title="Downgrade" text="Antes de desligar um módulo, o sistema valida dependentes e bloqueadores operacionais. Nenhuma retirada automática ignora caixa, entrega ou outras operações abertas." />
         </div>
       </section>
     </div>
