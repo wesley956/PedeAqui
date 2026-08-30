@@ -27,13 +27,17 @@ describe("order alert sound", () => {
     expect(boardSource).not.toContain("o som continua ativado");
   });
 
-  it("keeps one shared alert provider mounted across panel navigation", () => {
+  it("keeps one shared alert provider mounted and refreshes order data across panel navigation", () => {
     expect(shellSource).toContain("OrderAlertProvider");
     expect(shellSource).toContain("<OrderAlertProvider storeId={storeId}>");
     expect(protectedLayoutSource).toContain("storeId={navigationAccess.context.storeId}");
-    expect(alertSource).toContain("global-order-alert:${storeId}");
-    expect(alertSource).toContain('event: "INSERT"');
+    expect(alertSource).toContain("global-order-refresh:${storeId}");
+    expect(alertSource).toContain('event: "*"');
+    expect(alertSource).toContain('payload.eventType === "INSERT"');
     expect(alertSource).toContain("pathname === \"/pedidos\"");
+    expect(alertSource).toContain("router.refresh()");
+    expect(alertSource).toContain('next === "SUBSCRIBED"');
+    expect(alertSource).toContain("realtimeDegradedRefreshMs");
   });
 
   it("uses system notifications as a fallback when the panel is in background", () => {
