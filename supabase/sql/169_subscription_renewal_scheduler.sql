@@ -52,10 +52,11 @@ select cron.schedule(
   $job$select private.invoke_internal_job('subscription_renewals');$job$
 );
 
--- Não dispara até o go-live explícito.
-update cron.job
-set active=false
-where jobname='pedeaqui-subscription-renewals';
+-- Não dispara até o go-live explícito. Usa a API oficial do pg_cron, sem UPDATE direto na tabela interna.
+select cron.alter_job(
+  job_id => (select jobid from cron.job where jobname='pedeaqui-subscription-renewals' limit 1),
+  active => false
+);
 
 create or replace function public.subscription_renewal_scheduler_ready_internal()
 returns boolean
@@ -90,7 +91,7 @@ create or replace function public.platform_subscription_billing_set_enabled_inte
   p_protocol text
 ) returns jsonb
 language plpgsql
-security invoker
+security definer
 set search_path=''
 as $$
 declare
@@ -100,8 +101,8 @@ declare
   v_provider_account_id text;
   v_source public.order_payment_provider_configs%rowtype;
   v_scheduler_ready boolean;
+  v_scheduler_job_id bigint;
   v_before jsonb;
-  v_after jsonb;
 begin
   perform private.require_platform_super_admin(p_actor_user_id);
   if char_length(trim(coalesce(p_reason,''))) not between 5 and 500 then raise exception 'reason required'; end if;
@@ -129,8 +130,10 @@ begin
   if v_source.id is null then raise exception 'billing Mercado Pago source not found'; end if;
 
   select public.subscription_renewal_scheduler_ready_internal() into v_scheduler_ready;
+  select jobid into v_scheduler_job_id from cron.job where jobname='pedeaqui-subscription-renewals' limit 1;
+
   if p_enabled then
-    if not v_scheduler_ready then raise exception 'subscription renewal scheduler is not ready'; end if;
+    if not v_scheduler_ready or v_scheduler_job_id is null then raise exception 'subscription renewal scheduler is not ready'; end if;
     if not v_source.enabled
       or v_source.environment<>'production'
       or v_source.connection_mode<>'oauth'
@@ -148,17 +151,16 @@ begin
     'scheduler_active',coalesce((select active from cron.job where jobname='pedeaqui-subscription-renewals' limit 1),false)
   );
 
-  update cron.job
-  set active=p_enabled
-  where jobname='pedeaqui-subscription-renewals';
+  if v_scheduler_job_id is not null then
+    perform cron.alter_job(job_id => v_scheduler_job_id, active => p_enabled);
+  end if;
 
   update public.platform_settings
   set value=jsonb_set(value,'{enabled}',to_jsonb(p_enabled),true),
       active=true,
       updated_by=p_actor_user_id,
       updated_at=now()
-  where key='billing.mercado_pago.source'
-  returning value into v_after;
+  where key='billing.mercado_pago.source';
 
   insert into public.platform_global_audit(
     actor_user_id,action,entity_type,entity_id,organization_id,before_data,after_data,reason,protocol
