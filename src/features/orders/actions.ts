@@ -108,7 +108,7 @@ export async function transitionFulfillmentAction(formData: FormData) {
 }
 
 const managerIntentSchema = z.enum([
-  "accept", "accept_and_start", "reject", "cancel", "start_production", "mark_ready", "mark_paid",
+  "accept", "reject", "cancel", "accept_and_start", "start_production", "mark_ready", "mark_paid",
   "await_pickup", "customer_picked_up", "await_courier", "served", "complete", "print", "reprint",
 ]);
 
