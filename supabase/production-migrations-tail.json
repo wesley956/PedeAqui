@@ -99,6 +99,50 @@
     [
       "20260829191915",
       "mercado_pago_reconciliation_scheduler"
+    ],
+    [
+      "20260830014742",
+      "platform_commercial_composer_v1"
+    ],
+    [
+      "20260830014807",
+      "platform_commercial_catalog_v1"
+    ],
+    [
+      "20260830014821",
+      "subscription_pix_billing_v1"
+    ],
+    [
+      "20260830014853",
+      "platform_commercial_composer_hardening"
+    ],
+    [
+      "20260830014907",
+      "subscription_pix_confirmation_atomic"
+    ],
+    [
+      "20260830014940",
+      "founders_club_v1"
+    ],
+    [
+      "20260830015002",
+      "platform_crm_v1"
+    ],
+    [
+      "20260830015028",
+      "platform_owner_security_founders"
+    ],
+    [
+      "20260830015057",
+      "platform_backoffice_operations_v1"
+    ],
+    [
+      "20260830015111",
+      "platform_backoffice_hardening"
+    ],
+    [
+      "20260830015130",
+      "module_admin_authorization_hardening"
     ]
   ]
 }
