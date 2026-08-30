@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import authStyles from "@/components/auth/auth-flow.module.css";
@@ -8,6 +9,11 @@ import { ThemeSelector } from "@/components/theme/theme-selector";
 import { signInAction } from "@/features/auth/actions";
 import { PEDEAQUI_LEGAL } from "@/lib/legal/company";
 import styles from "./login-commercial.module.css";
+
+export const metadata: Metadata = {
+  title: "Entrar",
+  description: "Acesse o painel do PedeAqui para acompanhar pedidos, clientes e os recursos ativos da sua operação.",
+};
 
 const loginErrors: Record<string, string> = {
   session_expired: "Sua sessão expirou. Entre novamente para continuar.",

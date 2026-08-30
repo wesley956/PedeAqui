@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   CommercialCta,
@@ -8,6 +9,11 @@ import {
   MarketingShell,
   marketingStyles as styles,
 } from "@/components/marketing/marketing-shell";
+
+export const metadata: Metadata = {
+  title: "Como funciona",
+  description: "Veja como o cliente abre o cardápio, monta o pedido, escolhe entrega ou retirada e acompanha a compra no PedeAqui.",
+};
 
 export default function ComoFuncionaPage() {
   return (

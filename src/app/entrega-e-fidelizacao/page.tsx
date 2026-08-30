@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   CommercialCta,
@@ -8,6 +9,11 @@ import {
   MarketingShell,
   marketingStyles as styles,
 } from "@/components/marketing/marketing-shell";
+
+export const metadata: Metadata = {
+  title: "Entrega e fidelização",
+  description: "Veja como o PedeAqui organiza bairros, taxas, entregadores, cashback, pontos e cupons dentro da jornada do pedido.",
+};
 
 export default function EntregaFidelizacaoPage() {
   return (

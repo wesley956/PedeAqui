@@ -13,6 +13,8 @@ export type MarketingCard = {
 export function MarketingShell({ children }: { children: ReactNode }) {
   return (
     <div className={styles.site}>
+      <a href="#conteudo-comercial" className={styles.skipLink}>Pular para o conteúdo</a>
+
       <header className={styles.header}>
         <div className={styles.navWrap}>
           <Link href="/" className={styles.brandLink} aria-label="PedeAqui — início">
@@ -40,6 +42,7 @@ export function MarketingShell({ children }: { children: ReactNode }) {
         </div>
 
         <nav className={styles.mobileNav} aria-label="Navegação comercial mobile">
+          <Link href="/login" className={styles.mobileLoginLink}>Entrar</Link>
           <Link href="/como-funciona">Como funciona</Link>
           <Link href="/pedidos-e-atendimento">Pedidos</Link>
           <Link href="/entrega-e-fidelizacao">Entrega</Link>
@@ -48,7 +51,7 @@ export function MarketingShell({ children }: { children: ReactNode }) {
         </nav>
       </header>
 
-      <main>{children}</main>
+      <main id="conteudo-comercial">{children}</main>
 
       <footer className={styles.footer}>
         <div className={styles.footerGrid}>
