@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   CommercialCta,
@@ -8,6 +9,11 @@ import {
   MarketingShell,
   marketingStyles as styles,
 } from "@/components/marketing/marketing-shell";
+
+export const metadata: Metadata = {
+  title: "Pedidos e atendimento",
+  description: "Entenda como o PedeAqui organiza pedidos, atendimento, preparo, impressão, retirada e entrega para a equipe.",
+};
 
 export default function PedidosAtendimentoPage() {
   return (
