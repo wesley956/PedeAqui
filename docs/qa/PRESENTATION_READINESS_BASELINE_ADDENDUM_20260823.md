@@ -14,11 +14,26 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 - `/configuracoes/fluxo-pedidos` — configuração do fluxo operacional da unidade com modos completo, simplificado ou personalizado. No modo personalizado, entrega e retirada possuem checkpoints visuais independentes; ocultar um checkpoint não remove nem enfraquece as máquinas de estado internas de pedido, pagamento, produção ou fulfillment.
 - `/configuracoes/impressoes/formato` — configuração de vias e conteúdo do comprovante comercial. Mantém detalhes operacionais obrigatórios na impressão de cozinha e não permite ocultar campos fiscais obrigatórios.
 
+## Painel autenticado do cliente
+
+- `/assinatura` — central de assinatura do cliente, com plano comercial, equivalência funcional, mensalidade, vencimento, histórico e estado da cobrança PIX. Exige `subscription.view` e não expõe credenciais do provedor.
+
 ## Painel do Proprietário
 
 - `/mais-ferramentas` — hub das funções avançadas que saíram da navegação principal simplificada. Mantém acesso às superfícies permitidas por RBAC e disponibilidade de módulos sem remover funcionalidades do sistema.
 - `/platform/unidades/[storeId]/configuracao-operacional` — tela dedicada, exclusiva de `super_admin`, para configurar o comportamento operacional dos módulos já habilitados em uma unidade. Não ativa módulos nem altera contrato comercial.
-- `/platform/produto` — central comercial do proprietário para visualizar pacotes, catálogo técnico de módulos e simular composições personalizadas. O simulador é somente leitura sobre contratos reais: não ativa/desativa módulos nem altera assinaturas sem passar pelo fluxo comercial controlado.
+- `/platform/produto` — central comercial do proprietário para visualizar pacotes, catálogo técnico de módulos, aplicar composições transacionais e conferir a prontidão da cobrança SaaS.
+- `/platform/pendencias` — central consolidada de pendências operacionais, financeiras e técnicas com filtragem por papel administrativo.
+- `/platform/comercial` — CRM e funil de propostas do PedeAqui; superfície exclusiva do proprietário para dados comerciais.
+- `/platform/financeiro` — visão financeira SaaS com contratos, mensalidades e indicadores agregados da plataforma.
+- `/platform/fundadores` — gestão do Clube Fundadores, mantendo contrato, nível, PedeCoins, benefícios e resgates em trilhas separadas e auditáveis.
+- `/platform/auditoria` — auditoria global das mutações administrativas e financeiras da plataforma.
+- `/platform/onboarding` — checklist administrativo de implantação de clientes e unidades.
+- `/platform/comunicacao` — central administrativa de mensagens e comunicações planejadas para clientes.
+- `/platform/equipe` — gestão da equipe interna PedeAqui, incluindo papéis de plataforma e revogação de sessões.
+- `/platform/privacidade` — fila administrativa de solicitações de privacidade/LGPD e respectivos protocolos.
+- `/platform/configuracoes` — defaults globais não secretos e controle dedicado, auditado e protegido da cobrança SaaS.
+- `/platform/empresas/[organizationId]` — visão 360 da empresa, reunindo contrato, unidades, usuários, módulos adicionais, mensalidades, Clube Fundadores, CRM e incidentes sem misturar os domínios técnicos.
 
 ## Gestão do cardápio
 
@@ -40,9 +55,13 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 - `/api/integrations/mercado-pago/oauth/start` — inicia a autorização OAuth do Mercado Pago para a unidade autenticada, usando state e PKCE; conectar a conta não habilita Pix automaticamente.
 - `/api/integrations/mercado-pago/oauth/callback` — valida o retorno OAuth, reconfirma organização/unidade e persiste as credenciais somente no servidor/Vault, mantendo o Pix desativado até ativação explícita.
 - `/api/internal/payment-reconciliation` — job interno autenticado que reconcilia em lote limitado apenas cobranças Mercado Pago pendentes e atrasadas de unidades com Pix online habilitado, recuperando notificações perdidas sem expor credenciais ou payload bruto do provedor.
+- `/api/internal/subscription-renewals` — job interno autenticado de renovação das assinaturas PedeAqui. É invocado pelo scheduler do Supabase e não depende de Vercel Cron.
+- `/api/webhooks/subscription-billing/mercado-pago` — webhook dedicado à cobrança SaaS, com assinatura validada e reconciliação idempotente.
+- `/api/webhooks/payments/mercado-pago/[storeId]` — continua atendendo pagamentos de pedidos; na unidade que hospeda a autorização OAuth da plataforma, identifica primeiro cobranças de assinatura e preserva o fluxo normal do restaurante para os demais pagamentos.
 
 ## Registro de rollout
 
 - 29/08/2026 — novo gatilho de deploy de produção disparado após o merge do UX v3. Alteração exclusivamente documental, sem impacto funcional no painel.
 - 29/08/2026 — segundo gatilho de redeploy sem alteração funcional, usado apenas para testar a liberação da cota de builds da Vercel.
-- 29/08/2026 — adicionada a superfície `/platform/produto` ao inventário do ADM v3; nesta etapa a composição personalizada é apenas uma simulação administrativa e não modifica contratos reais.
+- 29/08/2026 — adicionada a superfície `/platform/produto` ao inventário do ADM v3; nesta etapa a composição personalizada era apenas uma simulação administrativa e não modificava contratos reais.
+- 30/08/2026 — ADM comercial/backoffice, Clube Fundadores e cobrança SaaS foram estruturados em branch de homologação. O scheduler de renovação fica no Supabase e nasce pausado; não houve publicação na Vercel nem ativação automática de cobrança nesta etapa.
