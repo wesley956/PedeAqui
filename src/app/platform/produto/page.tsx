@@ -11,6 +11,12 @@ const money = (value: number | null) => value === null
 const kindLabel = { core: "Base", optional: "Opcional", segmented: "Segmentado" } as const;
 const groupLabel = { operation: "Operação", management: "Gestão", supplies: "Suprimentos", relationship: "Relacionamento", administration: "Administração" } as const;
 
+function metadataText(value: unknown, key: string) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const item = (value as Record<string, unknown>)[key];
+  return typeof item === "string" && item.trim() ? item.trim() : null;
+}
+
 export default async function PlatformProductPage() {
   const data = await PlatformAdminService.loadCommercial();
   const featureById = new Map(data.features.map((feature) => [feature.id, feature]));
@@ -21,6 +27,21 @@ export default async function PlatformProductPage() {
     if (!feature) continue;
     featuresByPlan.set(relation.plan_id, [...(featuresByPlan.get(relation.plan_id) ?? []), feature.name]);
   }
+
+  const planById = new Map(data.plans.map((plan) => [plan.id, plan]));
+  const organizationById = new Map(data.organizations.map((organization) => [organization.id, organization]));
+  const founderRows = data.subscriptions
+    .filter((subscription) => Boolean(subscription.founder_slot))
+    .map((subscription) => ({
+      id: subscription.id,
+      organizationName: organizationById.get(subscription.organization_id)?.name ?? "Empresa indisponível",
+      founderSlot: subscription.founder_slot,
+      contractPlan: planById.get(subscription.plan_id)?.name ?? "Fundadores",
+      functionalPlan: metadataText(subscription.metadata, "functional_plan_label"),
+      agreedPriceCents: subscription.agreed_price_cents,
+      priceLocked: subscription.price_locked,
+    }))
+    .sort((a, b) => (a.founderSlot ?? 99) - (b.founderSlot ?? 99));
 
   const moduleRows = MODULE_KEYS.map((key) => {
     const definition = MODULE_CATALOG[key];
@@ -93,6 +114,24 @@ export default async function PlatformProductPage() {
             );
           })}
           {data.plans.length === 0 ? <div className={styles.empty}>Nenhum pacote cadastrado.</div> : null}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <div><h2>Clientes Fundadores</h2><p>O contrato especial e o equivalente funcional aparecem separados. O equivalente informa os recursos em uso e nunca altera sozinho o preço protegido.</p></div>
+        </div>
+        <div className={styles.featureList}>
+          {founderRows.map((item) => (
+            <div className={styles.featureRow} key={item.id}>
+              <span>
+                <strong>{item.organizationName} · Fundador #{item.founderSlot}</strong>
+                <small>Contrato: {item.contractPlan} · Equivalência funcional: {item.functionalPlan ?? "a classificar"}</small>
+              </span>
+              <strong>{money(item.agreedPriceCents)}{item.priceLocked ? " · protegido" : ""}</strong>
+            </div>
+          ))}
+          {founderRows.length === 0 ? <div className={styles.empty}>Nenhum cliente Fundador atribuído.</div> : null}
         </div>
       </section>
 
