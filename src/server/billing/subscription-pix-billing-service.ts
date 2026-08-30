@@ -1,6 +1,5 @@
 import "server-only";
 
-import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MercadoPagoOrderProvider } from "@/server/payments/providers/mercado-pago-order-provider";
 
@@ -33,14 +32,6 @@ function referenceMonth(value: string) {
   return `${year}-${month}-01`;
 }
 
-function addInterval(value: string, billingInterval: string) {
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) throw new Error("Invalid next due date");
-  if (billingInterval === "year") date.setUTCFullYear(date.getUTCFullYear() + 1);
-  else date.setUTCMonth(date.getUTCMonth() + 1);
-  return date.toISOString();
-}
-
 async function systemActor() {
   const admin = createAdminClient();
   const { data, error } = await admin
@@ -68,12 +59,6 @@ export class SubscriptionPixBillingService {
 
   static webhookSecret() {
     return env("PEDEAQUI_BILLING_MERCADO_PAGO_WEBHOOK_SECRET");
-  }
-
-  static cronAuthorized(authorizationHeader: string | null) {
-    const secret = env("CRON_SECRET");
-    if (!secret) return false;
-    return authorizationHeader === `Bearer ${secret}`;
   }
 
   static async runRenewals(now = new Date()) {
@@ -119,18 +104,28 @@ export class SubscriptionPixBillingService {
 
         const month = referenceMonth(dueAt);
         const invoiceIdempotency = `auto-invoice:${subscription.id}:${month}`;
-        const { data: invoice, error: invoiceError } = await admin.rpc("subscription_invoice_save_internal", {
+        const invoiceStatus = new Date(dueAt).getTime() < now.getTime() ? "overdue" : "pending";
+        const { error: invoiceRpcError } = await admin.rpc("subscription_invoice_save_internal", {
           p_organization_id: subscription.organization_id,
           p_reference_month: month,
           p_base_amount_cents: amountCents,
           p_discount_amount_cents: 0,
           p_due_at: dueAt,
-          p_status: "pending",
+          p_status: invoiceStatus,
           p_actor_user_id: actorUserId,
           p_reason: "Mensalidade automática do PedeAqui",
           p_protocol: `AUTO-${month.slice(0, 7)}-${subscription.id.slice(0, 8)}`,
           p_idempotency_key: invoiceIdempotency,
         });
+        if (invoiceRpcError) throw invoiceRpcError;
+
+        // Consulta a linha por sua chave de negócio em vez de depender do formato de serialização do RPC composto.
+        const { data: invoice, error: invoiceError } = await admin
+          .from("subscription_invoices")
+          .select("id,status")
+          .eq("organization_id", subscription.organization_id)
+          .eq("reference_month", month)
+          .single();
         if (invoiceError) throw invoiceError;
         result.invoices += 1;
 
@@ -166,6 +161,7 @@ export class SubscriptionPixBillingService {
           invoiceId: invoice.id,
           amountCents,
           payerEmail: organization.email.trim(),
+          actorUserId,
         });
         result.pixCreated += 1;
       } catch (error) {
@@ -182,6 +178,7 @@ export class SubscriptionPixBillingService {
     invoiceId: string;
     amountCents: number;
     payerEmail: string;
+    actorUserId?: string;
   }) {
     const token = platformAccessToken();
     if (!token) throw new Error("PedeAqui billing Mercado Pago access token is not configured");
@@ -210,7 +207,10 @@ export class SubscriptionPixBillingService {
       throw new Error("Mercado Pago returned a PIX charge that does not match the requested invoice");
     }
 
-    const status = mapProviderStatus(order.status);
+    const providerStatus = mapProviderStatus(order.status);
+    // Mesmo que o provedor retorne pago imediatamente, registramos primeiro como pendente e
+    // deixamos o RPC atômico confirmar pagamento + próximo vencimento em uma única transação.
+    const initialStatus = providerStatus === "paid" ? "pending" : providerStatus;
     const { data, error } = await admin
       .from("subscription_pix_charges")
       .insert({
@@ -224,18 +224,22 @@ export class SubscriptionPixBillingService {
         idempotency_key: idempotencyKey,
         amount_cents: order.amountCents,
         currency: order.currency,
-        status,
+        status: initialStatus,
         status_detail: order.statusDetail,
         qr_code: order.qrCode,
         qr_code_base64: order.qrCodeBase64,
         ticket_url: order.ticketUrl,
         expires_at: order.expiresAt,
-        paid_at: status === "paid" ? new Date().toISOString() : null,
+        paid_at: null,
         metadata: { source: "subscription_renewal", attempt },
       })
       .select("id,provider_order_id,status")
       .single();
     if (error) throw error;
+
+    if (providerStatus === "paid") {
+      await this.confirmPaidCharge(data.id, order, input.actorUserId ?? await systemActor());
+    }
     return data;
   }
 
@@ -262,17 +266,22 @@ export class SubscriptionPixBillingService {
     const actor = actorUserId ?? await systemActor();
     const { data: charge, error: chargeError } = await admin
       .from("subscription_pix_charges")
-      .select("id,organization_id,subscription_id,invoice_id,provider_order_id,amount_cents,status")
+      .select("id,provider_order_id,amount_cents,status")
       .eq("id", chargeId)
       .single();
     if (chargeError) throw chargeError;
     if (!charge.provider_order_id) throw new Error("PIX charge has no provider order id");
+    if (charge.status === "paid") return { status: "paid" as const, paymentRecorded: false, idempotent: true };
 
     const provider = new MercadoPagoOrderProvider(token);
     const order = await provider.getOrder(charge.provider_order_id);
     if (order.amountCents !== charge.amount_cents) throw new Error("PIX reconciliation amount mismatch");
     const status = mapProviderStatus(order.status);
-    const paidAt = status === "paid" ? new Date().toISOString() : null;
+
+    if (status === "paid") {
+      const confirmation = await this.confirmPaidCharge(charge.id, order, actor);
+      return { status: "paid" as const, paymentRecorded: !confirmation.idempotent, idempotent: confirmation.idempotent };
+    }
 
     const { error: updateError } = await admin
       .from("subscription_pix_charges")
@@ -284,63 +293,30 @@ export class SubscriptionPixBillingService {
         qr_code_base64: order.qrCodeBase64,
         ticket_url: order.ticketUrl,
         expires_at: order.expiresAt,
-        paid_at: paidAt,
+        paid_at: null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", charge.id);
     if (updateError) throw updateError;
-
-    if (status !== "paid") return { status, paymentRecorded: false };
-
-    const { data: payment, error: paymentError } = await admin.rpc("subscription_payment_record_internal", {
-      p_invoice_id: charge.invoice_id,
-      p_amount_cents: charge.amount_cents,
-      p_method: "pix",
-      p_status: "paid",
-      p_actor_user_id: actor,
-      p_reason: "PIX da mensalidade confirmado automaticamente pelo Mercado Pago",
-      p_protocol: `MP-${order.providerOrderId.slice(0, 40)}`,
-      p_idempotency_key: `auto-pix-payment:${charge.id}`,
-    });
-    if (paymentError) throw paymentError;
-
-    const { error: providerReferenceError } = await admin
-      .from("subscription_payments")
-      .update({ provider_key: PIX_PROVIDER_KEY, provider_reference: order.providerOrderId, updated_at: new Date().toISOString() })
-      .eq("id", payment.id);
-    if (providerReferenceError) throw providerReferenceError;
-
-    const { data: subscription, error: subscriptionError } = await admin
-      .from("organization_subscriptions")
-      .select("id,billing_interval,next_due_at")
-      .eq("id", charge.subscription_id)
-      .single();
-    if (subscriptionError) throw subscriptionError;
-
-    if (subscription.next_due_at) {
-      const nextDueAt = addInterval(subscription.next_due_at, subscription.billing_interval);
-      const { error: nextDueError } = await admin
-        .from("organization_subscriptions")
-        .update({ next_due_at: nextDueAt, payment_status: "paid", updated_at: new Date().toISOString() })
-        .eq("id", subscription.id);
-      if (nextDueError) throw nextDueError;
-
-      await admin.from("platform_financial_audit").insert({
-        organization_id: charge.organization_id,
-        actor_user_id: actor,
-        action: "platform.subscription_pix_paid",
-        entity_type: "subscription_pix_charge",
-        entity_id: charge.id,
-        after_data: { provider: PIX_PROVIDER_KEY, provider_order_id: order.providerOrderId, next_due_at: nextDueAt },
-        reason: "PIX da mensalidade conciliado automaticamente",
-        protocol: `MP-${order.providerOrderId.slice(0, 40)}`,
-      });
-    }
-
-    return { status, paymentRecorded: true };
+    return { status, paymentRecorded: false, idempotent: false };
   }
 
-  static newRequestId() {
-    return randomUUID();
+  private static async confirmPaidCharge(
+    chargeId: string,
+    order: { providerOrderId: string; providerPaymentId: string | null; statusDetail: string | null },
+    actorUserId: string,
+  ) {
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("subscription_pix_charge_confirm_internal", {
+      p_charge_id: chargeId,
+      p_provider_order_id: order.providerOrderId,
+      p_provider_payment_id: order.providerPaymentId,
+      p_status_detail: order.statusDetail,
+      p_paid_at: new Date().toISOString(),
+      p_actor_user_id: actorUserId,
+    });
+    if (error) throw error;
+    const result = data && typeof data === "object" && !Array.isArray(data) ? data as Record<string, unknown> : {};
+    return { idempotent: result.idempotent === true, nextDueAt: typeof result.next_due_at === "string" ? result.next_due_at : null };
   }
 }
