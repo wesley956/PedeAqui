@@ -21,11 +21,11 @@ function metadataText(value: unknown, key: string) {
 }
 
 export default async function PlatformProductPage() {
-  const [data, composer] = await Promise.all([
+  const [data, composer, pixConfiguration] = await Promise.all([
     PlatformAdminService.loadCommercial(),
     PlatformCommercialComposerService.load(),
+    SubscriptionPixBillingService.configuration(),
   ]);
-  const pixConfiguration = SubscriptionPixBillingService.configuration();
   const featureById = new Map(data.features.map((feature) => [feature.id, feature]));
   const featuresByPlan = new Map<string, string[]>();
   for (const relation of data.planFeatures) {
@@ -66,7 +66,7 @@ export default async function PlatformProductPage() {
   });
   const optionalCount = moduleRows.filter((item) => item.kind !== "core").length;
   const gatedCount = moduleRows.filter((item) => Boolean(item.entitlementFeatureKey)).length;
-  const pixReady = pixConfiguration.accessTokenConfigured && pixConfiguration.webhookSecretConfigured && pixConfiguration.cronSecretConfigured;
+  const pixReady = pixConfiguration.billingEnabled && pixConfiguration.accessTokenConfigured && pixConfiguration.webhookSecretConfigured && pixConfiguration.cronSecretConfigured;
 
   return (
     <div className={styles.page}>
@@ -145,13 +145,13 @@ export default async function PlatformProductPage() {
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <div><h2>Cobrança SaaS por PIX</h2><p>A mensalidade do PedeAqui usa configuração própria e fica isolada do PIX recebido pelos restaurantes nos pedidos.</p></div>
-          <span className={styles.pill} data-tone={pixReady ? "good" : "neutral"}>{pixReady ? "Pronta para ativação" : "Segura / desligada"}</span>
+          <div><h2>Cobrança SaaS por PIX</h2><p>A mensalidade do PedeAqui usa a conta Mercado Pago do proprietário como fonte OAuth/Vault e permanece isolada do dinheiro recebido pelos restaurantes.</p></div>
+          <span className={styles.pill} data-tone={pixReady ? "good" : pixConfiguration.sourceConfigured ? "warn" : "neutral"}>{pixReady ? "Ativa e pronta" : pixConfiguration.sourceConfigured ? "Fonte vinculada · desligada" : "Não configurada"}</span>
         </div>
         <div className={styles.supportGrid}>
-          <CommercialCard title="Mercado Pago da plataforma" text={pixConfiguration.accessTokenConfigured ? "Credencial de cobrança configurada no servidor." : "Credencial ainda ausente. Nenhum PIX de mensalidade será criado."} />
-          <CommercialCard title="Webhook assinado" text={pixConfiguration.webhookSecretConfigured ? "Segredo do webhook configurado para conciliação automática." : "Webhook ainda não habilitado; pagamentos não serão conciliados automaticamente."} />
-          <CommercialCard title="Renovação automática" text={pixConfiguration.cronSecretConfigured ? "Job interno protegido pode executar o ciclo de renovação." : "Job interno permanece inativo até a configuração final de produção."} />
+          <CommercialCard title="Mercado Pago do proprietário" text={pixConfiguration.sourceConfigured ? `Conta vinculada${pixConfiguration.sourceOwnerEmail ? ` a ${pixConfiguration.sourceOwnerEmail}` : ""}${pixConfiguration.providerAccountId ? ` · ID ${pixConfiguration.providerAccountId}` : ""}. Saúde: ${pixConfiguration.providerHealthStatus}.` : "Nenhuma fonte OAuth foi definida para a cobrança da plataforma."} />
+          <CommercialCard title="Credenciais no Vault" text={pixConfiguration.accessTokenConfigured ? "OAuth e segredo de webhook estão disponíveis no cofre; nenhum token precisa ser copiado para o código." : "A fonte ainda não possui credenciais utilizáveis para cobrança."} />
+          <CommercialCard title="Renovação automática" text={!pixConfiguration.billingEnabled ? "Interruptor financeiro desligado. Nenhum PIX de mensalidade pode ser criado agora." : pixConfiguration.cronSecretConfigured ? "Cobrança habilitada e job interno protegido disponível." : "Cobrança habilitada, mas o job continua bloqueado até a configuração final de produção."} />
         </div>
       </section>
 
