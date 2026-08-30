@@ -27,7 +27,7 @@ export class PlatformAdminService{
       admin.from("features").select("id,key,name,value_type,active").order("key"),
       admin.from("plan_features").select("plan_id,feature_id,enabled,limit_value,config"),
       admin.from("organizations").select("id,name,status,created_at").order("created_at",{ ascending:false }).limit(200),
-      admin.from("organization_subscriptions").select("id,organization_id,plan_id,plan_version_id,status,billing_interval,current_period_start,current_period_end,trial_ends_at,grace_ends_at,cancel_at_period_end,billing_provider_key,agreed_price_cents,price_currency,price_locked,price_locked_at,price_lock_reason,billing_due_day,next_due_at,payment_status,founder_slot,grace_period_days,access_suspended_at,access_suspension_reason,updated_at").order("updated_at",{ ascending:false }).limit(300),
+      admin.from("organization_subscriptions").select("id,organization_id,plan_id,plan_version_id,status,billing_interval,current_period_start,current_period_end,trial_ends_at,grace_ends_at,cancel_at_period_end,billing_provider_key,agreed_price_cents,price_currency,price_locked,price_locked_at,price_lock_reason,billing_due_day,next_due_at,payment_status,founder_slot,grace_period_days,access_suspended_at,access_suspension_reason,metadata,updated_at").order("updated_at",{ ascending:false }).limit(300),
       admin.from("integration_catalog").select("id,adapter_key,kind,display_name,description,capabilities,active,position").order("position"),
       admin.from("billing_webhook_receipts").select("id,provider_key,external_event_id,status,error_message,created_at,processed_at").order("created_at",{ ascending:false }).limit(100),
     ]);
@@ -42,7 +42,7 @@ export class PlatformAdminService{
       admin.from("features").select("id,key,name,value_type,active").order("key"),
       admin.from("plan_features").select("plan_id,feature_id,enabled,limit_value,config"),
       admin.from("organizations").select("id,name,status,created_at").order("created_at",{ ascending:false }).limit(200),
-      admin.from("organization_subscriptions").select("id,organization_id,plan_id,plan_version_id,status,billing_interval,current_period_start,current_period_end,trial_ends_at,grace_ends_at,cancel_at_period_end,billing_provider_key,agreed_price_cents,price_currency,price_locked,price_locked_at,price_lock_reason,billing_due_day,next_due_at,payment_status,founder_slot,grace_period_days,access_suspended_at,access_suspension_reason,updated_at").order("updated_at",{ ascending:false }).limit(300),
+      admin.from("organization_subscriptions").select("id,organization_id,plan_id,plan_version_id,status,billing_interval,current_period_start,current_period_end,trial_ends_at,grace_ends_at,cancel_at_period_end,billing_provider_key,agreed_price_cents,price_currency,price_locked,price_locked_at,price_lock_reason,billing_due_day,next_due_at,payment_status,founder_slot,grace_period_days,access_suspended_at,access_suspension_reason,metadata,updated_at").order("updated_at",{ ascending:false }).limit(300),
     ]);
     for(const result of [plans,features,planFeatures,organizations,subscriptions]) if(result.error) throw result.error;
     return { user,role,plans:plans.data??[],features:features.data??[],planFeatures:planFeatures.data??[],organizations:organizations.data??[],subscriptions:subscriptions.data??[] };

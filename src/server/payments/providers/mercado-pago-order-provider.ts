@@ -136,7 +136,7 @@ export class MercadoPagoOrderProvider implements OrderPaymentProvider {
           payments: [{
             amount: centsToAmount(input.amountCents),
             payment_method: { id: "pix", type: "bank_transfer" },
-            expiration_time: "PT30M",
+            expiration_time: input.expirationTime ?? "PT30M",
           }],
         },
         payer: { email: input.payerEmail },

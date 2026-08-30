@@ -18,7 +18,7 @@ describe("Painel do Proprietário foundation [337]", () => {
     expect(layout).toContain("PedeAquiLogo");
     expect(layout).toContain("ThemeSelector");
     expect(layout).toContain("PlatformAdminService.access()");
-    for (const label of ["Visão geral", "Empresas", "Operação", "Integrações", "Assinaturas", "Incidentes", "Suporte", "Configuração"]) {
+    for (const label of ["Visão geral", "Empresas", "Operação", "Integrações", "Assinaturas", "Incidentes", "Suporte", "Configurações"]) {
       expect(layout).toContain(label);
     }
   });
