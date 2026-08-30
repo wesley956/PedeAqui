@@ -24,7 +24,11 @@ function navigationFor(role: PlatformRole) {
       label: "Clientes",
       items: [
         ["Empresas e unidades", "/platform#empresas"],
-        ...(ownerOnly ? [["Novo cliente", "/platform/novo-restaurante"]] : []),
+        ...(ownerOnly ? [
+          ["Novo cliente", "/platform/novo-restaurante"],
+          ["Onboarding", "/platform/onboarding"],
+          ["Comunicação", "/platform/comunicacao"],
+        ] : []),
       ],
     },
     ...(ownerOnly ? [{
@@ -53,8 +57,11 @@ function navigationFor(role: PlatformRole) {
         ["Modo suporte", "/platform/suporte/modo"],
         ["Integridade", "/platform/integridade"],
         ["Auditoria", "/platform/auditoria"],
-        ...(ownerOnly ? [["Equipe interna", "/platform/equipe"]] : []),
-        ["Configuração", "/platform#configuracao"],
+        ...(ownerOnly ? [
+          ["Equipe interna", "/platform/equipe"],
+          ["Privacidade / LGPD", "/platform/privacidade"],
+          ["Configurações", "/platform/configuracoes"],
+        ] : []),
       ],
     },
   ] as Array<{ label: string; items: string[][] }>;
