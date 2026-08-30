@@ -95,7 +95,7 @@ function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkfl
   if (order.fulfillment_status === "awaiting_pickup") {
     return { intent: "customer_picked_up", label: "Cliente retirou" };
   }
-  if (manualDeliveryMode && order.production_status === "ready" && order.fulfillment_type === "delivery") {
+  if (manualDeliveryMode && ["ready", "not_required"].includes(order.production_status) && order.fulfillment_type === "delivery") {
     if (["pending", "awaiting_assignment", "assigned", "picked_up"].includes(order.fulfillment_status)) {
       return { intent: "manual_out_for_delivery", label: "Saiu para entrega" };
     }
@@ -107,7 +107,7 @@ function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkfl
     return { intent: "await_courier", label: "Aguardar entregador" };
   }
   if (
-    order.production_status === "ready"
+    ["ready", "not_required"].includes(order.production_status)
     && order.payment_status === "pending"
     && ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status)
   ) {
@@ -316,7 +316,10 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, statu
   const status = statusForOrder(order, bucket, statusLabelOverride);
   const late = isOrderAttentionLate(order, now);
   const primaryAction = primaryActionForOrder(order, workflowMode, manualDeliveryMode);
-  const canMarkPaidSecondary = order.production_status === "ready" && order.payment_status === "pending" && primaryAction?.intent !== "mark_paid";
+  const canMarkPaidSecondary = ["ready", "not_required"].includes(order.production_status)
+    && order.payment_status === "pending"
+    && ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status)
+    && primaryAction?.intent !== "mark_paid";
   const scheduledLabel = order.scheduled_for
     ? new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(order.scheduled_for))
     : null;
