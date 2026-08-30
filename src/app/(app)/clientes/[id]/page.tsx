@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createCustomerAddressAction, removeCustomerAddressAction, setDefaultCustomerAddressAction } from "@/features/customers/actions";
+import { DEFAULT_STORE_TIMEZONE, formatStoreDate, formatStoreDateTime } from "@/lib/store-date-time";
+import { getAccessContext } from "@/server/access/context";
 import { CustomerService } from "@/server/customers/customer-service";
 import { formatCents } from "@/server/catalog/money";
 import styles from "../customers.module.css";
@@ -14,14 +16,17 @@ const orderStatusLabels: Record<string, string> = {
   completed: "Concluído",
 };
 
-function dateTime(value: string | null) {
-  if (!value) return "—";
-  return new Date(value).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+function dateTime(value: string | null, timeZone: string) {
+  return formatStoreDateTime(value, timeZone);
 }
 
 export default async function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { customer, addresses, orders, historyRestricted } = await CustomerService.profile(id);
+  const [{ customer, addresses, orders, historyRestricted }, context] = await Promise.all([
+    CustomerService.profile(id),
+    getAccessContext(),
+  ]);
+  const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
 
   return (
     <section className={styles.page}>
@@ -31,14 +36,14 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
           <h1>{customer.name}</h1>
           <p className={styles.profileContact}>{customer.phone || customer.email || "Sem contato informado"}</p>
         </div>
-        <div className={styles.countBadge}>Cliente desde {new Date(customer.created_at).toLocaleDateString("pt-BR")}</div>
+        <div className={styles.countBadge}>Cliente desde {formatStoreDate(customer.created_at, timeZone)}</div>
       </header>
 
       <div className={styles.profileMetrics}>
         <article className={`card ${styles.metric}`}><span>PEDIDOS CONCLUÍDOS</span><strong>{customer.orders_count}</strong></article>
         <article className={`card ${styles.metric}`}><span>TOTAL GASTO</span><strong>{formatCents(Number(customer.total_spent_cents))}</strong></article>
         <article className={`card ${styles.metric}`}><span>TICKET MÉDIO</span><strong>{formatCents(customer.average_ticket_cents)}</strong></article>
-        <article className={`card ${styles.metric}`}><span>ÚLTIMA COMPRA</span><strong>{customer.last_order_at ? new Date(customer.last_order_at).toLocaleDateString("pt-BR") : "—"}</strong></article>
+        <article className={`card ${styles.metric}`}><span>ÚLTIMA COMPRA</span><strong>{customer.last_order_at ? formatStoreDate(customer.last_order_at, timeZone) : "—"}</strong></article>
       </div>
 
       <div className={styles.profileGrid}>
@@ -103,7 +108,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                     <div className={styles.orderTop}>
                       <div>
                         <strong>#{order.display_number} · {order.store_name}</strong>
-                        <div className={styles.orderMeta}>{dateTime(order.created_at)} · {order.channel} · {order.fulfillment_type}</div>
+                        <div className={styles.orderMeta}>{dateTime(order.created_at, timeZone)} · {order.channel} · {order.fulfillment_type}</div>
                       </div>
                       <span className={styles.orderValue}>{formatCents(Number(order.total_cents))}</span>
                     </div>
