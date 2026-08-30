@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   CommercialCta,
@@ -8,62 +9,144 @@ import {
   marketingStyles as styles,
 } from "@/components/marketing/marketing-shell";
 
+export const metadata: Metadata = {
+  title: "Planos e preços",
+  description: "Conheça os planos ativos do PedeAqui, seus valores mensais e como os recursos podem acompanhar a necessidade da sua operação.",
+};
+
+const commercialPlans = [
+  {
+    name: "Personalizado",
+    badge: "Monte sua combinação",
+    price: "R$ 69,90",
+    suffix: "/ mês + módulos",
+    description: "Uma base enxuta para montar a operação com os módulos adicionais que realmente fizerem sentido.",
+    features: [
+      "Cardápio e catálogo",
+      "Pedidos e clientes",
+      "Dashboard e configurações",
+      "Módulos adicionais contratados à parte",
+    ],
+  },
+  {
+    name: "Essencial",
+    badge: "Base da operação",
+    price: "R$ 89,90",
+    suffix: "/ mês",
+    description: "Para começar com o núcleo do pedido digital e da organização da loja em um pacote definido.",
+    features: [
+      "Cardápio e catálogo",
+      "Pedidos",
+      "Clientes",
+      "Dashboard e configurações",
+    ],
+  },
+  {
+    name: "Profissional",
+    badge: "Operação + entrega",
+    price: "R$ 129,90",
+    suffix: "/ mês",
+    description: "Para quem quer levar o pedido além do balcão e conectar produção, entrega e fidelização à rotina.",
+    featured: true,
+    features: [
+      "Tudo do núcleo Essencial",
+      "Produção e organização da entrega",
+      "Entregadores",
+      "Marketing e fidelização",
+      "Domínio personalizado e integrações disponíveis",
+    ],
+  },
+  {
+    name: "Completo",
+    badge: "Gestão avançada",
+    price: "R$ 179,90",
+    suffix: "/ mês",
+    description: "Para operações que precisam reunir atendimento, gestão, estoque, financeiro, equipe e recursos avançados.",
+    features: [
+      "Pedidos, catálogo, produção e entrega",
+      "PDV, caixa, salão e mesas",
+      "Estoque, compras e fornecedores",
+      "Financeiro, equipe e escala",
+      "Recursos avançados de multiunidade e marca",
+    ],
+  },
+];
+
 export default function PlanosPage() {
   return (
     <MarketingShell>
       <MarketingHero
-        eyebrow="Planos"
-        title={<>Um começo simples, com espaço para <span style={{ color: "var(--brand-primary)" }}>adicionar recursos depois.</span></>}
-        description="O PedeAqui foi estruturado para separar o plano-base dos módulos adicionais. Isso evita obrigar toda operação a pagar e usar exatamente o mesmo conjunto de recursos."
+        eyebrow="Planos e preços"
+        title={<>Escolha uma base clara. <span style={{ color: "var(--brand-primary)" }}>Adicione complexidade só quando precisar.</span></>}
+        description="O PedeAqui tem pacotes ativos para diferentes momentos da operação e também uma opção personalizada. Os valores abaixo correspondem ao catálogo comercial atual."
       >
         <div className={styles.heroActions}>
           <Link href="/cadastro" className={styles.primaryButton}>Criar minha conta</Link>
-          <Link href="/recursos" className={styles.secondaryButton}>Ver recursos</Link>
+          <Link href="/recursos" className={styles.secondaryButton}>Comparar recursos</Link>
         </div>
       </MarketingHero>
 
-      <MarketingSection eyebrow="Condição criada para o início do PedeAqui" title="Plano Fundadores">
-        <div className={styles.splitGrid}>
+      <MarketingSection
+        eyebrow="Catálogo atual"
+        title="Um plano para o tamanho da sua rotina — não para encher seu painel de funções."
+        intro="Os pacotes agrupam recursos que trabalham juntos. No Personalizado, a mensalidade-base começa menor e os módulos escolhidos entram separadamente."
+      >
+        <div className={styles.plansGrid}>
+          {commercialPlans.map((plan) => (
+            <article key={plan.name} className={styles.planCard} data-featured={plan.featured ? "true" : "false"}>
+              <div className={styles.planTopline}>
+                <strong>{plan.name}</strong>
+                <span className={styles.planBadge}>{plan.badge}</span>
+              </div>
+              <div className={styles.planPrice}>{plan.price} <span>{plan.suffix}</span></div>
+              <p>{plan.description}</p>
+              <ul className={styles.planFeatureList}>
+                {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
+              </ul>
+              <div className={styles.planCta}>
+                <Link href="/cadastro" className={plan.featured ? styles.primaryButton : styles.secondaryButton}>Quero conhecer este plano</Link>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className={styles.founderBand}>
           <div>
-            <p className={styles.heroLead}>O Plano Fundadores foi definido para os três primeiros clientes do PedeAqui, com preço-base travado enquanto o cliente permanecer no plano contratado.</p>
-            <MarketingCards cards={[
-              { eyebrow: "Contrato", title: "Preço-base protegido", description: "Mudanças futuras em outros planos não alteram retroativamente o contrato do cliente Fundador." },
-              { eyebrow: "Evolução", title: "Recursos extras podem ser adicionados", description: "Módulos e melhorias adicionais podem ser contratados separadamente sem substituir o plano-base." },
-            ]} />
+            <h3>Plano Fundadores</h3>
+            <p>Condição especial criada para os três primeiros clientes do PedeAqui, com preço-base protegido enquanto permanecerem no plano contratado. A disponibilidade é confirmada no momento da contratação porque essa condição possui limite de vagas.</p>
           </div>
-          <aside className={styles.priceCard}>
-            <small>PLANO FUNDADORES</small>
-            <div className={styles.priceValue}>R$ 79,90 <span>/ mês</span></div>
-            <p>Condição definida para os três primeiros clientes do PedeAqui.</p>
-            <div className={styles.priceList}>
-              <div>Preço-base mensal definido no contrato</div>
-              <div>Compatível com a estrutura de recursos por módulos</div>
-              <div>Alterações futuras não reescrevem contratos antigos</div>
-              <div>Correções e segurança não mudam o preço-base</div>
-            </div>
-            <Link href="/cadastro" className={styles.primaryButton}>Quero conhecer o PedeAqui</Link>
-            <p style={{ fontSize: 12, marginBottom: 0 }}>A disponibilidade desta condição depende do limite de clientes Fundadores. O PedeAqui não publica preço de módulo adicional sem valor comercial definido.</p>
-          </aside>
+          <div className={styles.founderPrice}>R$ 79,90 <span>/ mês</span></div>
         </div>
       </MarketingSection>
 
-      <MarketingSection tone="soft" eyebrow="Como os módulos entram" title="Você não precisa contratar uma lista incompreensível de funções." intro="A lógica comercial é separar o que faz parte da base da operação dos recursos adicionais que fazem sentido para cada negócio.">
+      <MarketingSection
+        tone="soft"
+        eyebrow="Como escolher"
+        title="Pense no que sua operação precisa fazer hoje."
+        intro="Você não precisa decidir pela quantidade de telas. O melhor ponto de partida é entender quais partes da rotina precisam estar no mesmo fluxo."
+      >
         <MarketingCards cards={[
-          { eyebrow: "1", title: "Comece pelo que precisa", description: "A contratação define uma base coerente para o tipo de operação e evita ligar recursos só para preencher o painel." },
-          { eyebrow: "2", title: "Adicione quando fizer sentido", description: "Entrega, crescimento, estoque, PDV e outras áreas podem seguir as regras do plano e dos módulos disponíveis." },
-          { eyebrow: "3", title: "Seu histórico continua", description: "Desativar um recurso não significa apagar automaticamente o que já aconteceu na operação." },
+          { eyebrow: "Personalizado", title: "Quero montar aos poucos", description: "Comece pela base e adicione os módulos comerciais liberados conforme a necessidade e o orçamento da operação." },
+          { eyebrow: "Essencial", title: "Quero receber e organizar pedidos", description: "O núcleo reúne cardápio, pedidos, clientes, dashboard e configurações para a rotina começar organizada." },
+          { eyebrow: "Profissional", title: "Quero operar entrega e fidelização", description: "Além do núcleo, entram recursos para produção, entrega, entregadores e relacionamento com o cliente." },
+          { eyebrow: "Completo", title: "Quero centralizar gestão e operação", description: "A proposta amplia o pacote para áreas como PDV, caixa, estoque, compras, financeiro, equipe e gestão avançada." },
         ]} />
       </MarketingSection>
 
-      <MarketingSection tone="dark" eyebrow="Transparência" title="Preço que não existe ainda não aparece inventado no site." intro="O PedeAqui já possui estrutura para planos, versões e módulos. Quando novos valores comerciais forem definidos, esta página pode mostrar cada opção usando a mesma fonte de verdade do produto, sem espalhar números fixos pelo código.">
+      <MarketingSection
+        tone="dark"
+        eyebrow="Transparência"
+        title="Preço-base e módulos extras são coisas diferentes."
+        intro="O PedeAqui preserva a condição comercial contratada e permite que recursos adicionais sejam tratados separadamente. Assim, evoluir o produto não significa reescrever automaticamente o acordo de quem já é cliente."
+      >
         <MarketingCards cards={[
-          { eyebrow: "Sem surpresa", title: "Contrato antigo não muda sozinho", description: "A evolução dos planos futuros não deve alterar o acordo anterior de outro cliente." },
-          { eyebrow: "Sem pacote falso", title: "Recurso adicional só recebe preço quando houver preço definido", description: "O site comercial não usa valores de exemplo como se fossem cobrança oficial." },
-          { eyebrow: "Sem linguagem técnica", title: "Você escolhe pelo benefício", description: "A explicação comercial fala de entrega, atendimento, cashback e operação — não de nomes internos do sistema." },
+          { eyebrow: "Contrato", title: "O valor combinado fica registrado", description: "Planos e mudanças comerciais seguem versões próprias para preservar o histórico do cliente." },
+          { eyebrow: "Módulos", title: "Adicional entra quando houver contratação", description: "Um recurso fora do pacote-base não aparece como cobrança escondida. A composição comercial define o que está incluído e o que é adicional." },
+          { eyebrow: "Evolução", title: "Correção e segurança não viram novo plano", description: "Manutenção do produto não é tratada como desculpa para alterar automaticamente o preço-base já contratado." },
         ]} />
       </MarketingSection>
 
-      <CommercialCta title="Quer entender qual conjunto faz sentido para sua operação?" description="Crie sua conta para começar ou entre no painel se você já é cliente." />
+      <CommercialCta title="Quer escolher pelo que sua operação realmente precisa?" description="Crie sua conta para começar ou entre no painel se você já usa o PedeAqui." />
     </MarketingShell>
   );
 }
