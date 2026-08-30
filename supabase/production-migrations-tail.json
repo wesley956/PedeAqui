@@ -37,6 +37,7 @@
     ["20260830015111","platform_backoffice_hardening"],
     ["20260830015130","module_admin_authorization_hardening"],
     ["20260830020951","platform_billing_mercado_pago_source"],
-    ["20260830022346","subscription_renewal_job_secret"]
+    ["20260830022346","subscription_renewal_job_secret"],
+    ["20260830023050","subscription_renewal_scheduler"]
   ]
 }
