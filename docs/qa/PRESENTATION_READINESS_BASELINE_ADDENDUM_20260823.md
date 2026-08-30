@@ -8,6 +8,15 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 - `/politica-de-privacidade` — política de privacidade pública.
 - `/termos-de-uso` — termos de uso públicos.
 
+## Site comercial público
+
+- `/` — entrada comercial pública para visitantes anônimos; usuários já autenticados preservam o resolvedor contextual do painel.
+- `/como-funciona` — jornada comercial do cardápio à confirmação e acompanhamento do pedido.
+- `/pedidos-e-atendimento` — explicação do fluxo operacional após a confirmação, incluindo preparo e impressão quando configurados.
+- `/entrega-e-fidelizacao` — explicação integrada de bairros, taxas, entregador e benefícios de fidelização conforme módulos ativos.
+- `/recursos` — visão comercial dos recursos agrupados pelo problema que resolvem, sem expor detalhes técnicos internos.
+- `/planos` — apresentação dos planos e condições comerciais usando apenas preços e regras confirmados no produto.
+
 ## Configurações da unidade
 
 - `/configuracoes/loja` — perfil oficial da unidade para identificação, contato, endereço e metadados públicos autorizados. Mantém RBAC, isolamento por organização/unidade e não cria cadastro paralelo de endereço ou telefone.
@@ -68,3 +77,4 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 - 29/08/2026 — adicionada a superfície `/platform/produto` ao inventário do ADM v3; nesta etapa a composição personalizada era apenas uma simulação administrativa e não modificava contratos reais.
 - 30/08/2026 — ADM comercial/backoffice, Clube Fundadores e cobrança SaaS foram estruturados em branch de homologação. O scheduler de renovação fica no Supabase e nasce pausado; não houve publicação na Vercel nem ativação automática de cobrança nesta etapa.
 - 30/08/2026 — adicionada a formalização eletrônica da assinatura com contrato versionado, Anexo Comercial imutável, protocolo e SHA-256. O aceite permanece bloqueado enquanto a identificação jurídica da CONTRATADA não estiver completa e ativa; nenhum cliente é marcado como aceito automaticamente.
+- 30/08/2026 — adicionadas as superfícies comerciais públicas multipágina e o novo login visual, preservando o roteamento contextual de usuários autenticados e sem alterar cardápio, checkout ou painel operacional.
