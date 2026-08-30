@@ -72,9 +72,10 @@ export class PlatformBillingSourceService {
     };
   }
 
-  static async credentials() {
+  static async credentials(options: { requireBillingEnabled?: boolean } = {}) {
     const source = await readSourceSetting();
-    if (!source.active || source.value.enabled !== true) {
+    if (!source.active) throw new Error("PedeAqui billing Mercado Pago source is inactive");
+    if (options.requireBillingEnabled !== false && source.value.enabled !== true) {
       throw new Error("PedeAqui subscription billing is disabled");
     }
     const storeId = source.value.source_store_id;
@@ -93,6 +94,6 @@ export class PlatformBillingSourceService {
   }
 
   static async webhookSecret() {
-    return (await this.credentials()).webhook_secret;
+    return (await this.credentials({ requireBillingEnabled: false })).webhook_secret;
   }
 }
