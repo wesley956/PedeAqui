@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { HomeClientRedirect } from "@/components/navigation/home-client-redirect";
 import {
@@ -10,6 +11,11 @@ import {
 } from "@/components/marketing/marketing-shell";
 import { getAuthenticatedUser } from "@/server/auth/session";
 import { StartRouteService } from "@/server/access/start-route-service";
+
+export const metadata: Metadata = {
+  title: "Pedidos próprios, operação organizada",
+  description: "Cardápio por link, pedidos organizados, atendimento, entrega e fidelização em um fluxo claro para o seu negócio.",
+};
 
 const productCards = [
   {
@@ -49,7 +55,7 @@ export default async function HomePage() {
       >
         <div className={styles.heroActions}>
           <Link href="/cadastro" className={styles.primaryButton}>Criar minha conta</Link>
-          <Link href="/como-funciona" className={styles.secondaryButton}>Ver como funciona</Link>
+          <Link href="/login" className={styles.secondaryButton}>Entrar no painel</Link>
         </div>
         <div className={styles.heroPoints}>
           <span>Cardápio por link</span>
@@ -82,8 +88,8 @@ export default async function HomePage() {
 
       <MarketingSection
         eyebrow="Produto"
-        title="Não é uma página enorme para você tentar entender tudo de uma vez."
-        intro="Cada parte importante do PedeAqui ganhou sua própria explicação. Você entra direto no assunto que quer conhecer e vê como aquele recurso se encaixa na rotina."
+        title="Conheça o PedeAqui por partes, sem perder o fio da operação."
+        intro="Cada área explica um momento real da rotina: como o cliente pede, o que a equipe recebe e o que acontece quando entra entrega ou fidelização."
       >
         <MarketingCards cards={productCards} />
       </MarketingSection>
@@ -124,7 +130,7 @@ export default async function HomePage() {
       >
         <MarketingCards cards={[
           { eyebrow: "Visão completa", title: "Todos os recursos", description: "Veja cardápio, clientes, impressão, entrega, cashback, pontos e outras áreas organizadas pelo que elas resolvem.", href: "/recursos" },
-          { eyebrow: "Comercial", title: "Planos e condição Fundadores", description: "Entenda o modelo de contratação sem tabela técnica e sem preço inventado para recurso que ainda não possui valor público definido.", href: "/planos" },
+          { eyebrow: "Comercial", title: "Planos e preços", description: "Compare os pacotes ativos, os valores mensais e a opção personalizada sem tabela técnica escondida.", href: "/planos" },
           { eyebrow: "Acesso", title: "Já é cliente?", description: "Entre no painel pela nova tela de login, mantendo o mesmo acesso e as mesmas regras de segurança.", href: "/login" },
         ]} />
       </MarketingSection>
