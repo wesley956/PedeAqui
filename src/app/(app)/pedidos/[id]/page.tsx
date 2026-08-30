@@ -84,7 +84,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       : order.channel === "pdv" ? "PDV" : order.channel;
   const canManualDispatch = manualDeliveryMode
     && order.order_status === "confirmed"
-    && order.production_status === "ready"
+    && ["ready", "not_required"].includes(order.production_status)
     && order.fulfillment_type === "delivery"
     && ["pending", "awaiting_assignment", "assigned", "picked_up"].includes(order.fulfillment_status);
   const canManualFinish = manualDeliveryMode
