@@ -69,6 +69,22 @@ describe("customer subscription and PIX billing v1", () => {
     expect(route).toContain("if (!result.subscriptionBilling) scheduleOrderWhatsAppNotifications");
   });
 
+  it("requires an explicit go-live phrase, healthy OAuth and a matching renewal secret", () => {
+    const actions = read("src/features/platform-governance/actions.ts");
+    const settings = read("src/app/platform/configuracoes/page.tsx");
+    const secretMigration = read("supabase/sql/168_subscription_renewal_job_secret.sql");
+    expect(actions).toContain("ATIVAR COBRANCA");
+    expect(actions).toContain("PAUSAR COBRANCA");
+    expect(actions).toContain("process.env.CRON_SECRET");
+    expect(actions).toContain('p_job_key: "subscription_renewals"');
+    expect(actions).toContain('sourceConfig.last_health_status === "healthy"');
+    expect(actions).toContain("A fonte Mercado Pago da plataforma usa o controle financeiro dedicado");
+    expect(settings).toContain("setPlatformBillingEnabledAction");
+    expect(settings).toContain("Ativar cobrança automática");
+    expect(secretMigration).toContain("pedeaqui_internal_subscription_renewals_token");
+    expect(secretMigration).toContain("extensions.gen_random_bytes(32)");
+  });
+
   it("protects renewal and webhook execution", () => {
     const job = read("src/app/api/internal/subscription-renewals/route.ts");
     const auth = read("src/server/jobs/internal-job-auth.ts");
