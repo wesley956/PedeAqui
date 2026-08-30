@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   CommercialCta,
@@ -7,6 +8,11 @@ import {
   MarketingShell,
   marketingStyles as styles,
 } from "@/components/marketing/marketing-shell";
+
+export const metadata: Metadata = {
+  title: "Recursos",
+  description: "Conheça os recursos do PedeAqui para vender, organizar pedidos, entregar, fidelizar clientes e administrar a operação.",
+};
 
 export default function RecursosPage() {
   return (
@@ -63,7 +69,7 @@ export default function RecursosPage() {
         ]} />
       </MarketingSection>
 
-      <CommercialCta title="Não precisa usar tudo para começar." description="Veja os planos e a condição Fundadores ou crie sua conta para conhecer o PedeAqui." />
+      <CommercialCta title="Não precisa usar tudo para começar." description="Veja os planos ativos ou crie sua conta para conhecer o PedeAqui." />
     </MarketingShell>
   );
 }
