@@ -1,12 +1,22 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { CORE_MODULE_KEYS, MODULE_CATALOG, MODULE_KEYS, isBusinessType, isModuleKey, modulesForPreset, type ModuleKey } from "@/modules/module-catalog";
+import { CORE_MODULE_KEYS, MODULE_CATALOG, isBusinessType, isModuleKey, modulesForPreset, type ModuleKey } from "@/modules/module-catalog";
 import { PlatformAdminService, PlatformAuthorizationError } from "@/server/platform/platform-admin-service";
 
 export type CommercialMode = "package" | "package_plus_addons" | "custom";
 
 type JsonObject = Record<string, unknown>;
+
+type ActiveStore = {
+  id: string;
+  organization_id: string;
+  name: string;
+  status: string;
+  business_type: string;
+  module_config_revision: number;
+  module_preset: string;
+};
 
 function objectMetadata(value: unknown): JsonObject {
   return value && typeof value === "object" && !Array.isArray(value) ? value as JsonObject : {};
@@ -32,8 +42,9 @@ export class PlatformCommercialComposerService {
       if (result.error) throw result.error;
     }
 
-    const storesByOrganization = new Map<string, typeof storesResult.data>();
-    for (const store of storesResult.data ?? []) {
+    const storesByOrganization = new Map<string, ActiveStore[]>();
+    for (const rawStore of storesResult.data ?? []) {
+      const store = rawStore as ActiveStore;
       storesByOrganization.set(store.organization_id, [...(storesByOrganization.get(store.organization_id) ?? []), store]);
     }
     const featureById = new Map((featuresResult.data ?? []).map((feature) => [feature.id, feature]));
@@ -120,8 +131,10 @@ export class PlatformCommercialComposerService {
     if (planError) throw planError;
     if (featuresError) throw featuresError;
     if (planFeaturesError) throw planFeaturesError;
+    if (plan.key === "founders") throw new Error("O plano Fundadores só pode ser alterado pelo fluxo dedicado de Fundadores.");
     if (!plan.current_version_id) throw new Error("Plano sem versão comercial ativa");
     if (!isBusinessType(store.business_type)) throw new Error("Tipo de negócio inválido");
+    const businessType = store.business_type;
     if (store.module_config_revision !== input.expectedModuleRevision) throw new Error("A configuração de módulos mudou; recarregue antes de aplicar.");
 
     const featureById = new Map((features ?? []).map((feature) => [feature.id, feature]));
@@ -133,12 +146,12 @@ export class PlatformCommercialComposerService {
 
     const requested = input.selectedModules.filter(isModuleKey);
     const targetModules = input.mode === "package"
-      ? modulesForPreset(store.business_type, "custom", includedModules)
+      ? modulesForPreset(businessType, "custom", includedModules)
       : input.mode === "package_plus_addons"
-        ? modulesForPreset(store.business_type, "custom", [...includedModules, ...requested])
-        : modulesForPreset(store.business_type, "custom", requested);
+        ? modulesForPreset(businessType, "custom", [...includedModules, ...requested])
+        : modulesForPreset(businessType, "custom", requested);
 
-    const core = new Set<ModuleKey>(CORE_MODULE_KEYS.filter((key) => MODULE_CATALOG[key].supportedBusinessTypes.includes(store.business_type)));
+    const core = new Set<ModuleKey>(CORE_MODULE_KEYS.filter((key) => MODULE_CATALOG[key].supportedBusinessTypes.includes(businessType)));
     const packageBase = new Set(includedModules);
     const featureByModule = new Map<ModuleKey, { metadata: JsonObject }>();
     for (const feature of features ?? []) {
