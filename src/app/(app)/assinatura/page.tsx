@@ -17,8 +17,8 @@ export default async function CustomerSubscriptionPage() {
     return <main className={styles.page}><section className={styles.hero}><div><p className={styles.eyebrow}>MINHA CONTA</p><h1>Minha assinatura</h1><p>A assinatura do PedeAqui ainda não foi configurada para esta empresa.</p></div></section></main>;
   }
 
-  const now = Date.now();
-  const currentPix = data.pixCharges.find((charge) => charge.status === "pending" && (!charge.expires_at || new Date(charge.expires_at).getTime() > now)) ?? null;
+  const loadedAt = Date.parse(data.loadedAt);
+  const currentPix = data.pixCharges.find((charge) => charge.status === "pending" && (!charge.expires_at || Date.parse(charge.expires_at) > loadedAt)) ?? null;
   const openInvoice = data.invoices.find((invoice) => invoice.status === "pending" || invoice.status === "overdue") ?? null;
   const functionalDiffers = subscription.functionalPlanLabel && subscription.functionalPlanLabel !== subscription.contractPlanName;
 
