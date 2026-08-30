@@ -6,6 +6,8 @@ export type OnlinePixChargeRequest = {
   externalReference: string;
   idempotencyKey: string;
   payerEmail: string;
+  /** ISO 8601 duration. Mercado Pago Pix currently accepts from 30 minutes to 30 days. */
+  expirationTime?: string;
 };
 
 export type OnlinePixProviderOrder = {
