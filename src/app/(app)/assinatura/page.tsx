@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { CustomerSubscriptionService } from "@/server/billing/customer-subscription-service";
+import { GeneratePixButton } from "./generate-pix-button";
 import { PixCopyButton } from "./pix-copy-button";
 import styles from "./assinatura.module.css";
 
@@ -18,8 +19,11 @@ export default async function CustomerSubscriptionPage() {
   }
 
   const loadedAt = Date.parse(data.loadedAt);
-  const currentPix = data.pixCharges.find((charge) => charge.status === "pending" && (!charge.expires_at || Date.parse(charge.expires_at) > loadedAt)) ?? null;
   const openInvoice = data.invoices.find((invoice) => invoice.status === "pending" || invoice.status === "overdue") ?? null;
+  const currentPix = openInvoice
+    ? data.pixCharges.find((charge) => charge.invoice_id === openInvoice.id && charge.status === "pending" && (!charge.expires_at || Date.parse(charge.expires_at) > loadedAt)) ?? null
+    : null;
+  const hadPixForOpenInvoice = openInvoice ? data.pixCharges.some((charge) => charge.invoice_id === openInvoice.id) : false;
   const functionalDiffers = subscription.functionalPlanLabel && subscription.functionalPlanLabel !== subscription.contractPlanName;
 
   return (
@@ -73,9 +77,12 @@ export default async function CustomerSubscriptionPage() {
             </div>
           </div>
         ) : openInvoice ? (
-          <div className={styles.empty}>Existe uma mensalidade de {money(openInvoice.total_amount_cents ?? openInvoice.base_amount_cents, openInvoice.currency)} com vencimento em {dateTime(openInvoice.due_at)}. O PIX será disponibilizado aqui assim que a cobrança automática for emitida.</div>
+          <div className={styles.empty}>
+            Existe uma mensalidade de {money(openInvoice.total_amount_cents ?? openInvoice.base_amount_cents, openInvoice.currency)} com vencimento em {dateTime(openInvoice.due_at)}. Gere o PIX agora; se um QR anterior tiver expirado, o PedeAqui confere o status no Mercado Pago antes de emitir outro.
+            <GeneratePixButton invoiceId={openInvoice.id} renew={hadPixForOpenInvoice} />
+          </div>
         ) : (
-          <div className={styles.empty}>Nenhuma cobrança PIX pendente neste momento. A próxima cobrança será gerada automaticamente no ciclo de renovação.</div>
+          <div className={styles.empty}>Nenhuma cobrança PIX pendente neste momento. A próxima mensalidade e seu PIX serão gerados automaticamente no ciclo de renovação.</div>
         )}
       </section>
 
