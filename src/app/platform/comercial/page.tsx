@@ -21,7 +21,7 @@ export default async function PlatformComercialPage() {
       </header>
 
       <section className={styles.metrics} aria-label="Funil comercial">
-        {stages.slice(0, 5).map((stage) => <Metric key={stage} label={stageLabels[stage]} value={data.leads.filter((item) => item.stage === stage).length} />)}
+        {stages.slice(0, 5).map((stage) => <Metric key={stage} label={stageLabels[stage] ?? stage} value={data.leads.filter((item) => item.stage === stage).length} />)}
       </section>
 
       <section className={styles.section}>
@@ -33,7 +33,7 @@ export default async function PlatformComercialPage() {
           <input className={styles.field} name="email" type="email" placeholder="E-mail" />
           <select className={styles.field} name="organizationId" defaultValue=""><option value="">Ainda não é cliente</option>{data.organizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select>
           <select className={styles.field} name="source" defaultValue="manual"><option value="manual">Manual</option><option value="indicacao">Indicação</option><option value="instagram">Instagram</option><option value="whatsapp">WhatsApp</option><option value="site">Site</option></select>
-          <select className={styles.field} name="stage" defaultValue="new">{stages.map((stage) => <option value={stage} key={stage}>{stageLabels[stage]}</option>)}</select>
+          <select className={styles.field} name="stage" defaultValue="new">{stages.map((stage) => <option value={stage} key={stage}>{stageLabels[stage] ?? stage}</option>)}</select>
           <input className={styles.field} name="estimatedMonthly" inputMode="decimal" placeholder="Receita mensal estimada (R$)" />
           <input className={styles.field} name="nextActionAt" type="datetime-local" />
           <input className={styles.field} name="notes" placeholder="Observação inicial" />
@@ -63,7 +63,7 @@ export default async function PlatformComercialPage() {
                   <input type="hidden" name="estimatedMonthly" value={lead.estimated_monthly_cents === null ? "" : String(lead.estimated_monthly_cents / 100)} />
                   <input type="hidden" name="notes" value={lead.notes ?? ""} />
                   <select className={styles.field} name="organizationId" defaultValue={lead.organization_id ?? ""}><option value="">Ainda não vinculado</option>{data.organizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}</select>
-                  <select className={styles.field} name="stage" defaultValue={lead.stage}>{stages.map((stage) => <option value={stage} key={stage}>{stageLabels[stage]}</option>)}</select>
+                  <select className={styles.field} name="stage" defaultValue={lead.stage}>{stages.map((stage) => <option value={stage} key={stage}>{stageLabels[stage] ?? stage}</option>)}</select>
                   <input className={styles.field} name="nextActionAt" type="datetime-local" />
                   <input className={styles.field} name="lostReason" placeholder="Motivo se perdido" defaultValue={lead.lost_reason ?? ""} />
                   <button className={styles.button} type="submit">Atualizar oportunidade</button>
