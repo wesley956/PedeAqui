@@ -5,8 +5,12 @@ import { SubscriptionPixBillingService } from "@/server/billing/subscription-pix
 const RESOURCE_ID = /^[A-Za-z0-9_-]{1,120}$/;
 
 export async function POST(request: Request) {
-  const secret = SubscriptionPixBillingService.webhookSecret();
-  if (!secret) return NextResponse.json({ error: "Subscription billing webhook is not configured" }, { status: 503 });
+  let secret: string;
+  try {
+    secret = await SubscriptionPixBillingService.webhookSecret();
+  } catch {
+    return NextResponse.json({ error: "Subscription billing webhook is not configured" }, { status: 503 });
+  }
 
   const contentLength = Number(request.headers.get("content-length") ?? "0");
   if (contentLength > 1_000_000) return NextResponse.json({ error: "Payload too large" }, { status: 413 });
