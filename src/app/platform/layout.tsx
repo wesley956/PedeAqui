@@ -7,47 +7,58 @@ import { signOutAction } from "@/features/auth/actions";
 import { PlatformAdminService, PlatformAuthorizationError } from "@/server/platform/platform-admin-service";
 import styles from "./platform-shell-v3.module.css";
 
-const navigation = [
-  {
-    label: "Início",
-    items: [
-      ["Visão geral", "/platform"],
-      ["Apresentação", "/platform/apresentacao"],
-    ],
-  },
-  {
-    label: "Clientes",
-    items: [
-      ["Empresas e unidades", "/platform#empresas"],
-      ["Novo cliente", "/platform/novo-restaurante"],
-    ],
-  },
-  {
-    label: "Comercial",
-    items: [
-      ["Assinaturas", "/platform/assinaturas"],
-      ["Produto e módulos", "/platform/produto"],
-    ],
-  },
-  {
-    label: "Operação",
-    items: [
-      ["Operação", "/platform/operacao"],
-      ["Integrações", "/platform/integracoes"],
-      ["Incidentes", "/platform/incidentes"],
-      ["Alertas", "/platform/alertas"],
-    ],
-  },
-  {
-    label: "Suporte e plataforma",
-    items: [
-      ["Suporte", "/platform/suporte"],
-      ["Modo suporte", "/platform/suporte/modo"],
-      ["Integridade", "/platform/integridade"],
-      ["Configuração", "/platform#configuracao"],
-    ],
-  },
-] as const;
+type PlatformRole = "super_admin" | "support";
+
+function navigationFor(role: PlatformRole) {
+  const ownerOnly = role === "super_admin";
+  return [
+    {
+      label: "Início",
+      items: [
+        ["Visão geral", "/platform"],
+        ["Pendências", "/platform/pendencias"],
+        ["Apresentação", "/platform/apresentacao"],
+      ],
+    },
+    {
+      label: "Clientes",
+      items: [
+        ["Empresas e unidades", "/platform#empresas"],
+        ...(ownerOnly ? [["Novo cliente", "/platform/novo-restaurante"]] : []),
+      ],
+    },
+    ...(ownerOnly ? [{
+      label: "Comercial",
+      items: [
+        ["CRM e propostas", "/platform/comercial"],
+        ["Assinaturas", "/platform/assinaturas"],
+        ["Financeiro PedeAqui", "/platform/financeiro"],
+        ["Clube Fundadores", "/platform/fundadores"],
+        ["Produto e módulos", "/platform/produto"],
+      ],
+    }] : []),
+    {
+      label: "Operação",
+      items: [
+        ["Operação", "/platform/operacao"],
+        ["Integrações", "/platform/integracoes"],
+        ["Incidentes", "/platform/incidentes"],
+        ["Alertas", "/platform/alertas"],
+      ],
+    },
+    {
+      label: "Suporte e plataforma",
+      items: [
+        ["Suporte", "/platform/suporte"],
+        ["Modo suporte", "/platform/suporte/modo"],
+        ["Integridade", "/platform/integridade"],
+        ["Auditoria", "/platform/auditoria"],
+        ...(ownerOnly ? [["Equipe interna", "/platform/equipe"]] : []),
+        ["Configuração", "/platform#configuracao"],
+      ],
+    },
+  ] as Array<{ label: string; items: string[][] }>;
+}
 
 export default async function PlatformLayout({ children }: { children: ReactNode }) {
   let access: Awaited<ReturnType<typeof PlatformAdminService.access>>;
@@ -59,6 +70,7 @@ export default async function PlatformLayout({ children }: { children: ReactNode
   }
 
   const roleLabel = access.role === "super_admin" ? "Proprietário" : "Suporte";
+  const navigation = navigationFor(access.role);
 
   return (
     <div className={styles.shell}>
