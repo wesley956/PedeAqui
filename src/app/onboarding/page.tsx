@@ -4,18 +4,13 @@ import { requireAuthenticatedUser } from "@/server/auth/session";
 import { CommercialCatalogService } from "@/server/billing/commercial-catalog-service";
 
 export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ error?: string; plan?: string }> }) {
-  const user = await requireAuthenticatedUser();
+  await requireAuthenticatedUser();
   const params = await searchParams;
   const [plans, trialDays] = await Promise.all([
     CommercialCatalogService.listPublicPlans(),
     CommercialCatalogService.getTrialDays(),
   ]);
-  const metadataPlan = typeof user.user_metadata?.selected_plan_key === "string" ? user.user_metadata.selected_plan_key : null;
-  const selectedPlanKey = plans.some((plan) => plan.key === params.plan)
-    ? params.plan
-    : plans.some((plan) => plan.key === metadataPlan)
-      ? metadataPlan
-      : plans[0]?.key;
+  const selectedPlanKey = plans.some((plan) => plan.key === params.plan) ? params.plan : plans[0]?.key;
 
   return (
     <AuthCard title="Configure seu PedeAqui" subtitle={`Seu teste de ${trialDays} dias começa quando esta configuração for concluída.`}>
