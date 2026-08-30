@@ -106,6 +106,7 @@ create or replace function public.set_store_module_preset_internal(
 ) returns jsonb language plpgsql security invoker set search_path='' as $$
 declare v_changes jsonb; v_result jsonb; v_old_preset text; v_revision bigint; v_changed boolean;
 begin
+  perform private.require_platform_super_admin(p_actor_user_id);
   if p_module_preset not in ('essential','complete','custom') then raise exception 'invalid restorable preset'; end if;
   if p_enabled_modules is null then raise exception 'enabled modules are required'; end if;
   if not (array['dashboard','orders','catalog','customers','settings']::text[] <@ p_enabled_modules) then raise exception 'core modules are required'; end if;
@@ -113,7 +114,7 @@ begin
   if v_old_preset is null then raise exception 'store not found'; end if;
   select jsonb_agg(jsonb_build_object('module_key',c.module_key,'enabled',c.module_key=any(p_enabled_modules))) into v_changes
   from (values ('dashboard'),('orders'),('conversations'),('dining'),('catalog'),('pdv'),('cash'),('finance'),('fiscal'),('production'),('deliveries'),('driver'),('inventory'),('gas_containers'),('suppliers'),('purchases'),('customers'),('growth'),('scale'),('team'),('settings')) c(module_key);
-  v_result := public.set_store_modules_internal(p_organization_id,p_store_id,v_changes,case when p_module_preset='custom' then 'manual' else 'preset' end,p_actor_user_id,p_expected_revision);
+  v_result := public.set_store_modules_internal(p_organization_id,p_store_id,v_changes,'preset',p_actor_user_id,p_expected_revision);
   v_changed := coalesce((v_result->>'changed')::boolean,false); v_revision := coalesce((v_result->>'revision')::bigint,p_expected_revision);
   if v_old_preset is distinct from p_module_preset then
     if not v_changed then v_revision := v_revision+1; end if;
