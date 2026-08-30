@@ -24,18 +24,16 @@ export default async function ContractReceiptPage() {
           <h1>PedeAqui · Contrato de Assinatura</h1>
           <span className={styles.meta}>Protocolo {evidence.protocol}</span>
         </header>
-        <div className={styles.notice}>Este comprovante referencia o documento e o Anexo Comercial preservados no momento do aceite eletrônico.</div>
+        <div className={styles.notice}>Este comprovante referencia o documento e o Anexo Comercial preservados no momento do aceite eletrônico. Dados técnicos de evidência, como IP e user-agent, permanecem protegidos no registro interno e não são exibidos nesta tela.</div>
         <div className={styles.rows}>
           <Row label="Empresa" value={commercial.organization_name} />
           <Row label="Responsável" value={evidence.representative_name} />
           <Row label="E-mail" value={evidence.representative_email} />
-          {evidence.representative_document ? <Row label="Documento informado" value={evidence.representative_document} /> : null}
           <Row label="Contrato" value={evidence.contract_version} />
           <Row label="Plano" value={commercial.plan_name} />
           <Row label="Mensalidade-base" value={money(commercial.price_cents, commercial.currency)} />
           {commercial.founder_slot ? <Row label="Plano Fundadores" value={`Slot #${commercial.founder_slot} · preço protegido`} /> : null}
           <Row label="Aceito em" value={date(evidence.accepted_at)} />
-          {evidence.ip_address ? <Row label="IP registrado" value={evidence.ip_address} /> : null}
         </div>
         <section className={styles.section}>
           <h2>Integridade</h2>
