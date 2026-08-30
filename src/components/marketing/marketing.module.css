@@ -9,6 +9,27 @@
   color: var(--commercial-ink);
 }
 
+.skipLink {
+  position: fixed;
+  top: 10px;
+  left: 12px;
+  z-index: calc(var(--z-sticky) + 2);
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--brand-graphite-deep);
+  color: white;
+  font-weight: 800;
+  transform: translateY(-160%);
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+.skipLink:focus { transform: translateY(0); }
+
+.site :where(a, summary):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand-primary) 72%, white);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
 .header {
   position: sticky;
   top: 0;
@@ -34,7 +55,7 @@
   gap: 24px;
 }
 
-.brandLink { display: inline-flex; align-items: center; }
+.brandLink { display: inline-flex; align-items: center; flex: 0 0 auto; }
 
 .desktopNav,
 .headerActions,
@@ -87,6 +108,7 @@
 .lightButton { background: white; color: var(--commercial-ink); border: 1px solid rgba(255,255,255,.4); }
 
 .mobileNav { display: none; }
+.mobileLoginLink { color: #9c4300; }
 
 .hero {
   padding: 92px 0 86px;
@@ -200,6 +222,65 @@ a.infoCard:hover { transform: translateY(-2px); border-color: #d4ccc3; box-shado
 .priceList { display: grid; gap: 10px; margin: 22px 0; }
 .priceList div::before { content: "✓"; color: var(--brand-primary); margin-right: 8px; font-weight: 900; }
 
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+.planCard {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 26px;
+  border: 1px solid var(--commercial-line);
+  border-radius: 24px;
+  background: white;
+  box-shadow: 0 14px 32px rgba(32,36,39,.05);
+}
+.planCard[data-featured="true"] {
+  border-color: #ffc69d;
+  box-shadow: 0 20px 44px rgba(255,107,0,.12);
+}
+.planTopline { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.planTopline strong { font-size: 21px; }
+.planBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--commercial-orange-soft);
+  color: #9c4300;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.planPrice { margin: 24px 0 8px; font-size: clamp(38px, 4vw, 50px); line-height: 1; font-weight: 900; letter-spacing: -.055em; }
+.planPrice span { font-size: 14px; font-weight: 700; letter-spacing: 0; color: var(--commercial-muted); }
+.planCard > p { margin: 0; color: var(--commercial-muted); line-height: 1.55; }
+.planFeatureList { list-style: none; margin: 24px 0; padding: 0; display: grid; gap: 10px; color: #4f5356; font-size: 14px; }
+.planFeatureList li { position: relative; padding-left: 22px; line-height: 1.45; }
+.planFeatureList li::before { content: "✓"; position: absolute; left: 0; color: var(--brand-primary); font-weight: 900; }
+.planCta { margin-top: auto; }
+.planCta a { width: 100%; }
+.planNote { margin-top: 14px !important; font-size: 12px; line-height: 1.45 !important; }
+.founderBand {
+  margin-top: 20px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1.2fr auto;
+  gap: 22px;
+  align-items: center;
+  border-radius: 22px;
+  border: 1px solid #ffd0ae;
+  background: #fff7f0;
+}
+.founderBand h3 { margin: 0 0 8px; font-size: 25px; }
+.founderBand p { margin: 0; color: var(--commercial-muted); line-height: 1.55; }
+.founderPrice { white-space: nowrap; font-size: 28px; font-weight: 900; color: #9c4300; }
+.founderPrice span { font-size: 13px; color: var(--commercial-muted); }
+
 .ctaSection {
   margin-block: 74px;
   padding: 36px;
@@ -222,10 +303,23 @@ a.infoCard:hover { transform: translateY(-2px); border-color: #d4ccc3; box-shado
 
 @media (max-width: 900px) {
   .desktopNav { display: none; }
-  .mobileNav { display: flex; gap: 18px; overflow-x: auto; padding: 0 16px 12px; color: #5d6063; font-size: 13px; font-weight: 700; scrollbar-width: none; }
+  .mobileNav {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 0 16px 12px;
+    color: #5d6063;
+    font-size: 13px;
+    font-weight: 700;
+    scrollbar-width: none;
+    overscroll-behavior-inline: contain;
+  }
   .mobileNav::-webkit-scrollbar { display: none; }
+  .mobileNav a { flex: 0 0 auto; min-height: 36px; display: inline-flex; align-items: center; padding: 0 10px; border-radius: 10px; }
+  .mobileNav a:hover { background: #fff4eb; color: #9c4300; }
+  .mobileLoginLink { background: var(--commercial-orange-soft); color: #9c4300 !important; }
   .heroVisual, .splitGrid { grid-template-columns: 1fr; }
-  .cardGrid { grid-template-columns: 1fr 1fr; }
+  .cardGrid, .plansGrid { grid-template-columns: 1fr 1fr; }
   .flowGrid { grid-template-columns: 1fr 1fr; }
   .footerGrid { grid-template-columns: 1fr 1fr; }
   .footerGrid > div { grid-column: 1 / -1; }
@@ -237,18 +331,33 @@ a.infoCard:hover { transform: translateY(-2px); border-color: #d4ccc3; box-shado
   .headerActions .secondaryButton { display: none; }
   .headerActions .primaryButton { min-height: 40px; padding-inline: 13px; font-size: 12px; }
   .hero { padding: 58px 0 60px; }
-  .hero h1 { font-size: clamp(44px, 14vw, 60px); }
+  .hero h1 { font-size: clamp(42px, 13vw, 60px); }
   .heroVisual { margin-top: 34px; }
   .previewPanel, .previewTicket { padding: 20px; }
   .previewTicket { transform: none; }
+  .previewPanelHeader { align-items: flex-start; }
+  .previewPanelHeader strong { font-size: 21px; }
+  .orderRow { align-items: flex-start; }
+  .orderStatus { flex: 0 0 auto; }
   .section { padding: 62px 0; }
-  .cardGrid, .flowGrid, .compareGrid, .footerGrid { grid-template-columns: 1fr; }
+  .cardGrid, .flowGrid, .compareGrid, .footerGrid, .plansGrid { grid-template-columns: 1fr; }
   .infoCard { min-height: auto; }
+  .planCard { padding: 22px; }
+  .founderBand { grid-template-columns: 1fr; gap: 14px; }
   .ctaSection { margin-block: 54px; padding: 26px; flex-direction: column; align-items: stretch; }
   .ctaActions { align-items: stretch; flex-direction: column; }
   .ctaActions a { width: 100%; }
 }
 
+@media (max-width: 360px) {
+  .headerActions .primaryButton { padding-inline: 10px; font-size: 11px; }
+  .hero h1 { font-size: 40px; }
+  .previewPanelHeader { display: grid; }
+  .statusPill { width: max-content; }
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  .infoCard, .primaryButton, .secondaryButton { transition: transform var(--motion-normal) var(--ease-standard), border-color var(--motion-normal) var(--ease-standard), box-shadow var(--motion-normal) var(--ease-standard), background var(--motion-normal) var(--ease-standard); }
+  .infoCard, .primaryButton, .secondaryButton, .mobileNav a {
+    transition: transform var(--motion-normal) var(--ease-standard), border-color var(--motion-normal) var(--ease-standard), box-shadow var(--motion-normal) var(--ease-standard), background var(--motion-normal) var(--ease-standard), color var(--motion-normal) var(--ease-standard);
+  }
 }
