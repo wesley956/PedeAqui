@@ -262,7 +262,7 @@ export class SubscriptionPixBillingService {
   }
 
   static async reconcileCharge(chargeId: string, actorUserId?: string) {
-    const credentials = await PlatformBillingSourceService.credentials();
+    const credentials = await PlatformBillingSourceService.credentials({ requireBillingEnabled: false });
     const admin = createAdminClient();
     const actor = actorUserId ?? await systemActor();
     const { data: charge, error: chargeError } = await admin
