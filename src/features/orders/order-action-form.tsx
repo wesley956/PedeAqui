@@ -8,6 +8,7 @@ const initialOrderManagerActionState: OrderManagerActionState = { ok: false, mes
 
 export type ManagerIntent =
   | "accept"
+  | "accept_and_start"
   | "reject"
   | "cancel"
   | "start_production"

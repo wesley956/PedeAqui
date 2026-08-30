@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { StatusBadge, type OperationalStatusKey } from "@/components/ui/status";
-import { OrderActionForm } from "@/features/orders/order-action-form";
+import { OrderActionForm, type ManagerIntent } from "@/features/orders/order-action-form";
 import { useOrderAlert } from "@/features/orders/use-order-alert";
 import {
   canCompleteFromManager,
@@ -33,6 +33,8 @@ const fulfillmentLabels: Record<string, string> = {
   canceled: "Fulfillment cancelado", not_required: "Sem fulfillment",
 };
 const channelLabels: Record<string, string> = { menu: "Cardápio", digital_menu: "Cardápio", pdv: "PDV", dining: "Salão", whatsapp: "WhatsApp", manual: "Manual" };
+type BoardWorkflowMode = "standard" | "simplified";
+type OrderActionSpec = { intent: ManagerIntent; label: string; tone?: "primary" | "secondary" | "danger" };
 
 function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
@@ -62,7 +64,40 @@ function isSimplifiedDeliveryFinalized(order: OrderManagerRow) {
     && ["out_for_delivery", "delivered"].includes(order.fulfillment_status);
 }
 
-export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }: { storeId: string; orders: OrderManagerRow[]; workflowMode?: "standard" | "simplified" }) {
+function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkflowMode): OrderActionSpec | null {
+  if (order.order_status === "pending_confirmation") {
+    return workflowMode === "simplified"
+      ? { intent: "accept_and_start", label: "Aceitar e iniciar" }
+      : { intent: "accept", label: "Aceitar pedido" };
+  }
+  if (order.order_status !== "confirmed") return null;
+  if (["pending_confirmation", "queued"].includes(order.production_status)) {
+    return { intent: "start_production", label: workflowMode === "simplified" ? "Iniciar" : "Iniciar produção" };
+  }
+  if (order.production_status === "preparing") {
+    return { intent: "mark_ready", label: workflowMode === "simplified" ? "Pronto" : "Marcar pronto" };
+  }
+  if (order.production_status === "ready" && order.fulfillment_type === "pickup" && order.fulfillment_status === "pending") {
+    return { intent: "await_pickup", label: "Liberar retirada" };
+  }
+  if (order.fulfillment_status === "awaiting_pickup") {
+    return { intent: "customer_picked_up", label: "Cliente retirou" };
+  }
+  if (order.production_status === "ready" && order.fulfillment_type === "delivery" && order.fulfillment_status === "pending") {
+    return { intent: "await_courier", label: "Aguardar entregador" };
+  }
+  if (
+    order.production_status === "ready"
+    && order.payment_status === "pending"
+    && ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status)
+  ) {
+    return { intent: "mark_paid", label: "Marcar pago", tone: "secondary" };
+  }
+  if (canCompleteFromManager(order)) return { intent: "complete", label: "Concluir pedido" };
+  return null;
+}
+
+export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }: { storeId: string; orders: OrderManagerRow[]; workflowMode?: BoardWorkflowMode }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -186,7 +221,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
                   ? "Entrega confirmada · aguardando pagamento"
                   : "Aguardando confirmação de entrega"
                 : undefined;
-              return <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} statusLabelOverride={finalDeliveryLabel} />;
+              return <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} workflowMode="simplified" statusLabelOverride={finalDeliveryLabel} />;
             })}
             {column.orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}
           </div>
@@ -199,7 +234,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
               <span className={styles.laneCount} aria-label={`${grouped[bucket].length} pedidos`}>{grouped[bucket].length}</span>
             </header>
             <div className={styles.laneBody}>
-              {grouped[bucket].map((order) => <OrderCard key={order.id} order={order} now={now} bucket={bucket} />)}
+              {grouped[bucket].map((order) => <OrderCard key={order.id} order={order} now={now} bucket={bucket} workflowMode="standard" />)}
               {grouped[bucket].length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}
             </div>
           </section>
@@ -212,7 +247,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
           <span className={styles.historyCount}>{grouped.history.length} pedido(s)</span>
         </summary>
         <div className={styles.historyGrid}>
-          {grouped.history.map((order) => <OrderCard key={order.id} order={order} now={now} bucket="history" />)}
+          {grouped.history.map((order) => <OrderCard key={order.id} order={order} now={now} bucket="history" workflowMode="standard" />)}
           {grouped.history.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido no histórico carregado.</div> : null}
         </div>
       </details></>}
@@ -220,11 +255,13 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard" }
   );
 }
 
-function OrderCard({ order, now, bucket, statusLabelOverride }: { order: OrderManagerRow; now: number; bucket: OperationalOrderBucket; statusLabelOverride?: string }) {
+function OrderCard({ order, now, bucket, workflowMode, statusLabelOverride }: { order: OrderManagerRow; now: number; bucket: OperationalOrderBucket; workflowMode: BoardWorkflowMode; statusLabelOverride?: string }) {
   const lane = deriveOrderLane(order);
   const blockers = completionBlockers(order);
   const status = statusForOrder(order, bucket, statusLabelOverride);
   const late = isOrderAttentionLate(order, now);
+  const primaryAction = primaryActionForOrder(order, workflowMode);
+  const canMarkPaidSecondary = order.production_status === "ready" && order.payment_status === "pending" && primaryAction?.intent !== "mark_paid";
   const scheduledLabel = order.scheduled_for
     ? new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(order.scheduled_for))
     : null;
@@ -242,44 +279,39 @@ function OrderCard({ order, now, bucket, statusLabelOverride }: { order: OrderMa
         </div>
       </div>
 
-      <div className={styles.statusRow}>
-        <StatusBadge status={status.status} label={status.label} />
-        {late ? <StatusBadge status="order_late" /> : null}
-      </div>
-
-      <div className={styles.tags} aria-label="Origem e modalidade do pedido">
-        <Tag>{channelLabels[order.channel] ?? order.channel}</Tag>
-        <Tag>{fulfillmentTypeLabel(order.fulfillment_type)}</Tag>
-        <Tag>{paymentLabels[order.payment_status] ?? order.payment_status}</Tag>
+      <div className={styles.compactMeta}>
+        <div className={styles.statusRow}>
+          <StatusBadge status={status.status} label={status.label} />
+          {late ? <StatusBadge status="order_late" /> : null}
+        </div>
+        <span className={styles.metaText}>{fulfillmentTypeLabel(order.fulfillment_type)} · {paymentLabels[order.payment_status] ?? order.payment_status} · {channelLabels[order.channel] ?? order.channel}</span>
         {scheduledLabel ? <Tag>Agendado {scheduledLabel}</Tag> : null}
       </div>
 
-      <div className={styles.stateLine}>
-        {orderStatusLabels[order.order_status]} · {productionStatusLabels[order.production_status]} · {fulfillmentLabels[order.fulfillment_status] ?? order.fulfillment_status}
-      </div>
-
-      <div className={styles.actions}>
-        {order.order_status === "pending_confirmation" ? (
-          <>
-            <OrderActionForm orderId={order.id} intent="accept" label="Aceitar pedido" compact />
-            <details>
-              <summary className={styles.rejectSummary}>Recusar pedido</summary>
-              <div className={styles.rejectBody}><OrderActionForm orderId={order.id} intent="reject" label="Confirmar recusa" tone="danger" reasonLabel="Motivo" reasonPlaceholder="Ex.: item indisponível" compact /></div>
-            </details>
-          </>
-        ) : null}
-        {order.order_status === "confirmed" && ["pending_confirmation", "queued"].includes(order.production_status) ? <OrderActionForm orderId={order.id} intent="start_production" label="Iniciar produção" compact /> : null}
-        {order.production_status === "preparing" ? <OrderActionForm orderId={order.id} intent="mark_ready" label="Marcar pronto" compact /> : null}
-        {order.production_status === "ready" && order.payment_status === "pending" ? <OrderActionForm orderId={order.id} intent="mark_paid" label="Marcar pago" tone="secondary" compact /> : null}
-        {order.production_status === "ready" && order.fulfillment_type === "pickup" && order.fulfillment_status === "pending" ? <OrderActionForm orderId={order.id} intent="await_pickup" label="Liberar retirada" compact /> : null}
-        {order.fulfillment_status === "awaiting_pickup" ? <OrderActionForm orderId={order.id} intent="customer_picked_up" label="Cliente retirou" compact /> : null}
-        {order.production_status === "ready" && order.fulfillment_type === "delivery" && order.fulfillment_status === "pending" ? <OrderActionForm orderId={order.id} intent="await_courier" label="Aguardar entregador" compact /> : null}
-        {canCompleteFromManager(order) ? <OrderActionForm orderId={order.id} intent="complete" label="Concluir pedido" compact /> : null}
-      </div>
+      {primaryAction ? (
+        <div className={styles.primaryAction}>
+          <OrderActionForm orderId={order.id} intent={primaryAction.intent} label={primaryAction.label} tone={primaryAction.tone} compact />
+        </div>
+      ) : null}
 
       {order.order_status === "confirmed" && lane === "ready" && blockers.length > 0 ? <div className={styles.blockers}>Para concluir: {blockers.join("; ")}.</div> : null}
 
-      <Link href={`/pedidos/${order.id}`} className={styles.detailsLink}>Abrir detalhes</Link>
+      <details className={styles.cardMore}>
+        <summary>Mais</summary>
+        <div className={styles.cardMoreBody}>
+          <div className={styles.stateLine}>
+            {orderStatusLabels[order.order_status]} · {productionStatusLabels[order.production_status]} · {fulfillmentLabels[order.fulfillment_status] ?? order.fulfillment_status}
+          </div>
+          <Link href={`/pedidos/${order.id}`} className={styles.detailsLink}>Abrir detalhes</Link>
+          {canMarkPaidSecondary ? <OrderActionForm orderId={order.id} intent="mark_paid" label="Marcar pago" tone="secondary" compact /> : null}
+          {order.order_status === "pending_confirmation" ? (
+            <details className={styles.rejectDetails}>
+              <summary className={styles.rejectSummary}>Recusar pedido</summary>
+              <div className={styles.rejectBody}><OrderActionForm orderId={order.id} intent="reject" label="Confirmar recusa" tone="danger" reasonLabel="Motivo" reasonPlaceholder="Ex.: item indisponível" compact /></div>
+            </details>
+          ) : null}
+        </div>
+      </details>
     </article>
   );
 }

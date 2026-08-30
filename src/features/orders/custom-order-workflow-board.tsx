@@ -70,17 +70,24 @@ function nextAction(order: OrderManagerRow) {
 }
 
 function Card({ order, now }: { order: OrderManagerRow; now: number }) {
+  const action = nextAction(order);
+  const modality = order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : "Atendimento";
   return <article className={styles.orderCard}>
     <div className={styles.cardTop}>
       <div className={styles.orderIdentity}><span className={styles.orderNumber}>#{order.display_number}</span><strong className={styles.customer}>{order.customer_name_snapshot}</strong></div>
       <div className={styles.moneyTime}><span className={styles.total}>{money(order.total_cents)}</span><span className={styles.elapsed}>{elapsedLabel(order.created_at, now)}</span></div>
     </div>
-    <div className={styles.tags}>
-      <span>{order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : "Atendimento"}</span>
-      <span>{order.payment_status === "paid" ? "Pago" : "Pagamento pendente"}</span>
+    <div className={styles.compactMeta}>
+      <span className={styles.metaText}>{modality} · {order.payment_status === "paid" ? "Pago" : "Pagamento pendente"} · {workflowStageLabels[rawStage(order)]}</span>
     </div>
-    <div className={styles.stateLine}>Etapa visual: {workflowStageLabels[rawStage(order)]}</div>
-    <div className={styles.actions}>{nextAction(order)}<Link href={`/pedidos/${order.id}`} className={styles.detailsLink}>Ver pedido</Link></div>
+    {action ? <div className={styles.primaryAction}>{action}</div> : null}
+    <details className={styles.cardMore}>
+      <summary>Mais</summary>
+      <div className={styles.cardMoreBody}>
+        <div className={styles.stateLine}>Etapa operacional: {workflowStageLabels[rawStage(order)]}</div>
+        <Link href={`/pedidos/${order.id}`} className={styles.detailsLink}>Ver pedido</Link>
+      </div>
+    </details>
   </article>;
 }
 
