@@ -46,11 +46,15 @@ describe("customer subscription and PIX billing v1", () => {
     expect(env).not.toContain("PEDEAQUI_BILLING_MERCADO_PAGO_WEBHOOK_SECRET");
   });
 
-  it("stays off before go-live and requires a due date for renewal selection", () => {
+  it("stays off before go-live and still reconciles already-issued PIX after a pause", () => {
+    const source = read("src/server/billing/platform-billing-source-service.ts");
     const service = read("src/server/billing/subscription-pix-billing-service.ts");
     expect(service).toContain("if (!source.enabled) return result");
     expect(service).toContain('.not("next_due_at", "is", null)');
     expect(service).toContain('expirationTime: PIX_EXPIRATION');
+    expect(service).toContain("credentials({ requireBillingEnabled: false })");
+    expect(source).toContain("webhookSecret()");
+    expect(source).toContain("requireBillingEnabled: false");
   });
 
   it("protects renewal and webhook execution", () => {
