@@ -24,6 +24,7 @@ function textMetadata(metadata: JsonObject, key: string) {
 
 export class CustomerSubscriptionService {
   static async load() {
+    const loadedAt = new Date().toISOString();
     const access = await NavigationAccessService.load();
     if (!access.permissionKeys.includes(PERMISSIONS.SUBSCRIPTION_VIEW)) {
       throw new CustomerSubscriptionAuthorizationError();
@@ -49,6 +50,7 @@ export class CustomerSubscriptionService {
 
     if (!subscription) {
       return {
+        loadedAt,
         organization,
         subscription: null,
         addons: [],
@@ -76,6 +78,7 @@ export class CustomerSubscriptionService {
     const agreedPriceCents = subscription.agreed_price_cents ?? planResult.data.monthly_price_cents ?? 0;
 
     return {
+      loadedAt,
       organization,
       subscription: {
         id: subscription.id,
