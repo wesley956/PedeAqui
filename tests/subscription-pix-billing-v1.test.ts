@@ -31,11 +31,24 @@ describe("customer subscription and PIX billing v1", () => {
     expect(migration).toContain("grant select,insert,update on table public.subscription_pix_charges to service_role");
   });
 
-  it("uses isolated platform credentials and stays off without due date or token", () => {
+  it("reuses the owner Mercado Pago OAuth source without duplicating secrets", () => {
+    const source = read("src/server/billing/platform-billing-source-service.ts");
+    const billing = read("src/server/billing/subscription-pix-billing-service.ts");
+    const migration = read("supabase/sql/167_platform_billing_mercado_pago_source.sql");
+    const env = read(".env.example");
+    expect(source).toContain('billing.mercado_pago.source');
+    expect(source).toContain("getUsableMercadoPagoCredentials");
+    expect(source).toContain('source.value.enabled !== true');
+    expect(billing).toContain("PlatformBillingSourceService.credentials()");
+    expect(migration).toContain("aweservicosaw@gmail.com");
+    expect(migration).toContain("'enabled',false");
+    expect(env).not.toContain("PEDEAQUI_BILLING_MERCADO_PAGO_ACCESS_TOKEN");
+    expect(env).not.toContain("PEDEAQUI_BILLING_MERCADO_PAGO_WEBHOOK_SECRET");
+  });
+
+  it("stays off before go-live and requires a due date for renewal selection", () => {
     const service = read("src/server/billing/subscription-pix-billing-service.ts");
-    expect(service).toContain("PEDEAQUI_BILLING_MERCADO_PAGO_ACCESS_TOKEN");
-    expect(service).toContain("PEDEAQUI_BILLING_MERCADO_PAGO_WEBHOOK_SECRET");
-    expect(service).toContain("if (!organization.email?.trim() || !platformAccessToken())");
+    expect(service).toContain("if (!source.enabled) return result");
     expect(service).toContain('.not("next_due_at", "is", null)');
     expect(service).toContain('expirationTime: PIX_EXPIRATION');
   });
@@ -47,6 +60,7 @@ describe("customer subscription and PIX billing v1", () => {
     expect(job).toContain('authorizeInternalJob(request, "subscription_renewals")');
     expect(auth).toContain('"subscription_renewals"');
     expect(webhook).toContain("validateMercadoPagoWebhookSignature");
+    expect(webhook).toContain("await SubscriptionPixBillingService.webhookSecret()");
     expect(webhook).toContain("RESOURCE_ID");
     expect(webhook).toContain("reconcileByProviderResource");
   });
