@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { BUSINESS_TYPES, isModuleKey, modulesForPreset } from "@/modules/module-catalog";
+import { BUSINESS_TYPES, modulesForPreset } from "@/modules/module-catalog";
+import { moduleKeyFromEntitlementFeatureKey } from "@/modules/entitlement-key";
 import { requireAuthenticatedUser } from "@/server/auth/session";
 import { ORG_COOKIE, STORE_COOKIE } from "@/server/access/context";
 import { logger } from "@/server/observability/logger";
@@ -39,8 +40,9 @@ export async function bootstrapOrganizationAction(formData: FormData) {
   if (entitlementError) redirect(`/onboarding?plan=${parsed.data.planKey}&error=plan_failed`);
   const requestedModules = (entitlementRows ?? []).flatMap((row) => {
     const relation = row.features as unknown as { key?: string } | { key?: string }[] | null;
-    const key = Array.isArray(relation) ? relation[0]?.key : relation?.key;
-    return key && isModuleKey(key) ? [key] : [];
+    const featureKey = Array.isArray(relation) ? relation[0]?.key : relation?.key;
+    const moduleKey = moduleKeyFromEntitlementFeatureKey(featureKey);
+    return moduleKey ? [moduleKey] : [];
   });
   const enabledModules = modulesForPreset(parsed.data.businessType, "custom", requestedModules);
   const supabase = await createClient();
