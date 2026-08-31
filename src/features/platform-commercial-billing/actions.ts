@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { PlatformCommercialBillingService } from "@/server/platform/platform-commercial-billing-service";
+import { PlatformModuleRequestService } from "@/server/platform/platform-module-request-service";
 
 const text = (form: FormData, key: string) => {
   const value = form.get(key);
@@ -18,6 +19,7 @@ const common = (form: FormData) => ({
 function refresh() {
   revalidatePath("/platform");
   revalidatePath("/platform/assinaturas");
+  revalidatePath("/configuracoes/modulos");
 }
 
 function optional(form: FormData, key: string) {
@@ -189,8 +191,20 @@ export async function createSubscriptionChangeQuoteAction(form: FormData) {
 }
 
 export async function acceptSubscriptionChangeAction(form: FormData) {
-  await PlatformCommercialBillingService.acceptChange({
-    changeId: text(form, "changeId"), reason: text(form, "reason"), protocol: text(form, "protocol"),
+  const input = { changeId: text(form, "changeId"), reason: text(form, "reason"), protocol: text(form, "protocol") };
+  if (await PlatformModuleRequestService.isClientModuleRequest(input.changeId)) {
+    await PlatformModuleRequestService.approve(input);
+  } else {
+    await PlatformCommercialBillingService.acceptChange(input);
+  }
+  refresh();
+}
+
+export async function rejectSubscriptionChangeAction(form: FormData) {
+  await PlatformModuleRequestService.reject({
+    changeId: text(form, "changeId"),
+    reason: text(form, "reason"),
+    protocol: text(form, "protocol"),
   });
   refresh();
 }

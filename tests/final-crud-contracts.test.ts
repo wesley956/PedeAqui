@@ -49,7 +49,8 @@ describe("PA-DIAG 146-153 — contrato modular sem retroatividade", () => {
     expect(service).toContain("revenueByPlan");
     expect(service).toContain("revenueByModule");
     expect(service).toContain("subscription_change_requests");
-    expect(page).toContain("Propostas e mudanças programadas");
+    expect(page).toContain("Solicitações e mudanças comerciais");
+    expect(page).toContain("Pedidos de módulos feitos pelo cliente só são ativados após sua aprovação");
     expect(page).toContain("Receita por plano e módulo");
   });
 });

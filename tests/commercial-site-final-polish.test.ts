@@ -7,6 +7,9 @@ const read = (relative: string) => fs.readFileSync(path.join(root, relative), "u
 
 const home = read("src/app/page.tsx");
 const plans = read("src/app/planos/page.tsx");
+const catalog = read("src/server/billing/commercial-catalog-service.ts");
+const signup = read("src/app/cadastro/page.tsx");
+const onboarding = read("src/app/onboarding/page.tsx");
 const login = read("src/app/login/page.tsx");
 const loginCss = read("src/app/login/login-commercial.module.css");
 const shell = read("src/components/marketing/marketing-shell.tsx");
@@ -26,19 +29,19 @@ describe("commercial site final polish", () => {
     expect(login).toContain('title: "Entrar"');
   });
 
-  it("publishes the current active commercial plan prices", () => {
-    for (const [name, price] of [
-      ["Personalizado", "R$ 69,90"],
-      ["Fundadores", "R$ 79,90"],
-      ["Essencial", "R$ 89,90"],
-      ["Profissional", "R$ 129,90"],
-      ["Completo", "R$ 179,90"],
-    ]) {
-      expect(plans).toContain(name);
-      expect(plans).toContain(price);
+  it("publishes the authoritative three-plan catalog with dynamic prices", () => {
+    expect(catalog).toContain('PUBLIC_PLAN_KEYS = ["essential", "professional", "management"]');
+    expect(catalog).toContain('.in("key", [...PUBLIC_PLAN_KEYS])');
+    expect(plans).toContain("CommercialCatalogService.listPublicPlans()");
+    expect(plans).toContain("formatCommercialPrice(plan.monthlyPriceCents");
+    expect(plans).toContain("O plano escolhido aqui é o mesmo usado no cadastro");
+    expect(plans).toContain("Módulos extras");
+    expect(plans).toContain("não é um quarto plano público");
+    expect(plans).not.toContain("Personalizado");
+    expect(plans).not.toContain("R$ 69,90");
+    for (const page of [plans, signup, onboarding]) {
+      expect(page).toContain('export const dynamic = "force-dynamic"');
     }
-    expect(plans).toContain("/ mês + módulos");
-    expect(plans).toContain("A disponibilidade é confirmada no momento da contratação");
   });
 
   it("keeps keyboard focus visible in the commercial experience", () => {

@@ -13,6 +13,8 @@ const layout = read("src/app/platform/layout.tsx");
 const connectivity = read("src/components/resilience/connectivity-guard.tsx");
 const loginRateSql = read("supabase/sql/122_auth_login_rate_limit.sql");
 const authActions = read("src/features/auth/actions.ts");
+const commercialAlignment = read("supabase/migrations/20260830230000_commercial_flow_alignment.sql");
+const founderAlignment = read("supabase/migrations/20260830235000_founder_condition_and_entitlement_alignment.sql");
 
 describe("presentation resilience PA-DIAG-096–119", () => {
   it("offers a mobile presentation workspace, exact sequence and commercial answers", () => {
@@ -77,12 +79,14 @@ describe("SaaS finance and founders PA-DIAG-120–145", () => {
     expect(sql).toContain("financial ledger is immutable");
   });
 
-  it("supports catalog CRUD through versioned, backend-authorized actions", () => {
+  it("versions the three official plans through backend-authorized actions", () => {
     expect(sql).toContain("platform_plan_save_internal");
     expect(sql).toContain("private.require_platform_super_admin");
     expect(service).toContain("savePlan");
     expect(actions).toContain("saveCommercialPlanAction");
-    expect(billingPage).toContain("Criar um novo plano");
+    expect(billingPage).toContain('const PUBLIC_PLAN_KEYS = new Set(["essential", "professional", "management"])');
+    expect(billingPage).toContain("Estes são os mesmos três planos usados na página comercial");
+    expect(billingPage).not.toContain("Criar um novo plano");
     expect(billingPage).toContain("Salvar nova versão");
     expect(billingPage).toContain("Disponível para novas vendas");
   });
@@ -124,20 +128,25 @@ describe("SaaS finance and founders PA-DIAG-120–145", () => {
     expect(sql).not.toMatch(/whatsapp.*(token|secret)/i);
   });
 
-  it("enforces exactly three founder slots in the database", () => {
-    expect(sql).toContain("organization_subscriptions_founder_slot_unique");
-    expect(sql).toContain("founder_slot between 1 and 3");
-    expect(sql).toContain("generate_series(1,3)");
-    expect(sql).toContain("founders plan capacity reached");
-    expect(sql).toContain("pg_advisory_xact_lock");
+  it("removes the old three-founder capacity while keeping assignment serialized", () => {
+    expect(commercialAlignment).toContain("drop constraint if exists organization_subscriptions_founder_slot_check");
+    expect(commercialAlignment).toContain("founder_slot is null or founder_slot >= 1");
+    expect(founderAlignment).toContain("não possui limite de vagas");
+    expect(founderAlignment).toContain("coalesce(max(founder_slot),0) + 1");
+    expect(founderAlignment).toContain("pg_advisory_xact_lock");
+    expect(founderAlignment).not.toContain("generate_series(1,3)");
+    expect(founderAlignment).not.toContain("founders plan capacity reached");
   });
 
-  it("seeds the R$ 79,90 lifetime founders plan", () => {
+  it("preserves the R$ 79,90 founder condition outside the public catalog", () => {
     expect(sql).toContain("values('founders','Fundadores'");
-    expect(sql).toContain("monthly_price_cents=7990");
-    expect(sql).toContain("agreed_price_cents=7990");
-    expect(sql).toContain("price_locked=true");
-    expect(billingPage).toContain("posições vitalícias usadas");
+    expect(commercialAlignment).toContain("where key = 'custom'");
+    expect(commercialAlignment).toContain("where key = 'founders'");
+    expect(founderAlignment).toContain("agreed_price_cents = 7990");
+    expect(founderAlignment).toContain("price_locked = true");
+    expect(founderAlignment).toContain("where key = 'founders' and active = true");
+    expect(billingPage).toContain("clientes com preço-base protegido");
+    expect(billingPage).toContain("Não há limite de Fundadores");
   });
 
   it("keeps every mutation server-side and revalidates commercial views", () => {

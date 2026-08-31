@@ -38,18 +38,36 @@ export class ModuleUnavailableError extends Error {
   }
 }
 
+function entitlementFeatureKey(moduleKey: ModuleKey) {
+  return MODULE_CATALOG[moduleKey].entitlementFeatureKey ?? `module.${moduleKey}`;
+}
+
 async function entitlementMap(organizationId: string) {
   const result = new Map<ModuleKey, boolean>();
-  const featureToModules = new Map<string, ModuleKey[]>();
+  const admin = createAdminClient();
 
+  // Compatibilidade explícita para organizações antigas que ainda não possuem
+  // contrato/assinatura comercial. Isso impede que o rollout de planos desligue
+  // módulos de clientes já em operação. Assim que uma assinatura é criada, o
+  // backend passa a aplicar plano-base + add-ons aprovados.
+  const { data: subscriptionRows, error: subscriptionError } = await admin
+    .from("organization_subscriptions")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .limit(1);
+  if (subscriptionError) throw subscriptionError;
+
+  if (!subscriptionRows?.length) {
+    for (const moduleKey of MODULE_KEYS) result.set(moduleKey, true);
+    return result;
+  }
+
+  const featureToModules = new Map<string, ModuleKey[]>();
   for (const moduleKey of MODULE_KEYS) {
-    const featureKey = MODULE_CATALOG[moduleKey].entitlementFeatureKey;
-    if (!featureKey) { result.set(moduleKey, true); continue; }
+    const featureKey = entitlementFeatureKey(moduleKey);
     featureToModules.set(featureKey, [...(featureToModules.get(featureKey) ?? []), moduleKey]);
   }
 
-  if (featureToModules.size === 0) return result;
-  const admin = createAdminClient();
   await Promise.all([...featureToModules.entries()].map(async ([featureKey, moduleKeys]) => {
     const { data, error } = await admin.rpc("organization_entitlement_internal", {
       p_organization_id: organizationId,
@@ -60,6 +78,7 @@ async function entitlementMap(organizationId: string) {
     const allowed = Boolean((data as { enabled?: boolean } | null)?.enabled);
     for (const moduleKey of moduleKeys) result.set(moduleKey, allowed);
   }));
+
   return result;
 }
 

@@ -8,6 +8,8 @@ import { getAuthenticatedUser, requireAuthenticatedUser } from "@/server/auth/se
 import { MissingOrganizationError } from "@/server/access/context";
 import { NavigationAccessService } from "@/server/access/navigation-access-service";
 import { OperationHeaderService, type OperationHeaderData } from "@/server/access/operation-header-service";
+import { PERMISSIONS } from "@/server/access/permissions";
+import { SubscriptionLifecycleService } from "@/server/billing/subscription-lifecycle-service";
 import { OnboardingReadinessService, type OnboardingReadiness } from "@/server/onboarding/onboarding-readiness-service";
 import { UserGuideService } from "@/server/onboarding/user-guide-service";
 import { BrandingReadService, type ResolvedBranding } from "@/server/platform/branding-read-service";
@@ -27,12 +29,21 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
 
   try {
     navigationAccess = await NavigationAccessService.load();
+
+    const subscription = await SubscriptionLifecycleService.accessForOrganization(navigationAccess.context.organizationId);
+    const regularizationRoute = pathname === "/assinatura" || pathname.startsWith("/assinatura/");
+    const accessDeniedRoute = pathname === "/acesso-negado" || pathname.startsWith("/acesso-negado/");
+    if (!subscription.operationalAccess && !regularizationRoute && !accessDeniedRoute) {
+      if (navigationAccess.permissionKeys.includes(PERMISSIONS.SUBSCRIPTION_VIEW)) redirect("/assinatura");
+      redirect("/acesso-negado?reason=subscription");
+    }
+
     const driverOnly = navigationAccess.operationalContexts.length === 1 && navigationAccess.operationalContexts[0] === "delivery";
-    if (driverOnly && pathname && pathname !== "/entregador" && !pathname.startsWith("/entregador/")) {
+    if (driverOnly && subscription.operationalAccess && pathname && pathname !== "/entregador" && !pathname.startsWith("/entregador/") && !regularizationRoute && !accessDeniedRoute) {
       redirect("/entregador");
     }
     const moduleKey = moduleKeyForPathname(pathname);
-    if (moduleKey) {
+    if (moduleKey && subscription.operationalAccess) {
       const availability = navigationAccess.moduleAvailability[moduleKey];
       if (!availability.available) {
         if (availability.reason === "permission_denied") redirect("/acesso-negado");

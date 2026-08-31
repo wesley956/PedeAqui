@@ -9,6 +9,7 @@ import { normalizeAppUrl } from "@/lib/app-url";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { StartRouteService } from "@/server/access/start-route-service";
+import { PUBLIC_PLAN_KEYS } from "@/server/billing/commercial-catalog-service";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -16,10 +17,7 @@ const credentialsSchema = z.object({
 });
 
 function getCredentials(formData: FormData) {
-  return credentialsSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
+  return credentialsSchema.safeParse({ email: formData.get("email"), password: formData.get("password") });
 }
 
 function getAppUrl() {
@@ -32,10 +30,11 @@ function loginErrorPath(error: string, returnPath: string | null, entry: string 
   return `/login?error=${error}${next}`;
 }
 
-function signupPath(error: string | null, returnPath: string | null) {
+function signupPath(error: string | null, returnPath: string | null, plan?: string | null) {
   const params = new URLSearchParams();
   if (error) params.set("error", error);
   if (returnPath) params.set("next", returnPath);
+  if (plan) params.set("plan", plan);
   const query = params.toString();
   return `/cadastro${query ? `?${query}` : ""}`;
 }
@@ -68,51 +67,53 @@ export async function signInAction(formData: FormData) {
     redirect(loginErrorPath("invalid_credentials", returnPath, entry));
   }
   await admin.rpc("auth_login_success_internal", { p_key_hash: guardKey });
-
-  // Explicit internal deep links win. Only a generic login uses the operational start route.
   redirect(returnPath ?? await StartRouteService.resolve());
 }
 
 export async function signUpAction(formData: FormData) {
   const parsed = getCredentials(formData);
-  const returnPath = safeInternalPath(typeof formData.get("next") === "string" ? String(formData.get("next")) : null, "/onboarding") ?? "/onboarding";
-  if (!parsed.success) redirect(signupPath("invalid_input", returnPath));
+  const requestedPlan = typeof formData.get("plan") === "string" ? String(formData.get("plan")) : "";
+  const plan = (PUBLIC_PLAN_KEYS as readonly string[]).includes(requestedPlan) ? requestedPlan : null;
+  const requestedNext = typeof formData.get("next") === "string" ? String(formData.get("next")) : null;
+  const fallback = plan ? `/onboarding?plan=${plan}` : "/onboarding";
+  const returnPath = safeInternalPath(requestedNext, fallback) ?? fallback;
+  if (!parsed.success || !plan) redirect(signupPath("invalid_input", returnPath, plan));
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     ...parsed.data,
     options: {
       emailRedirectTo: `${getAppUrl()}/auth/callback?next=${encodeURIComponent(returnPath)}`,
+      data: { selected_plan_key: plan },
     },
   });
-  if (error) redirect(signupPath("signup_failed", returnPath));
 
+  const duplicate = Boolean(data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0);
+  if (duplicate || error?.message?.toLowerCase().includes("already registered") || error?.message?.toLowerCase().includes("already been registered")) {
+    redirect(signupPath("email_exists", returnPath, plan));
+  }
+  if (error) redirect(signupPath("signup_failed", returnPath, plan));
+
+  if (data.session) redirect(returnPath);
   redirect(`/login?status=check_email&next=${encodeURIComponent(returnPath)}`);
 }
 
 export async function requestPasswordResetAction(formData: FormData) {
   const email = z.string().email().safeParse(formData.get("email"));
   if (!email.success) redirect("/recuperar-senha?error=invalid_email");
-
   const supabase = await createClient();
-  // Intentionally return the same UI result regardless of account existence.
-  await supabase.auth.resetPasswordForEmail(email.data, {
-    redirectTo: `${getAppUrl()}/auth/callback?next=/nova-senha`,
-  });
+  await supabase.auth.resetPasswordForEmail(email.data, { redirectTo: `${getAppUrl()}/auth/callback?next=/nova-senha` });
   redirect("/recuperar-senha?status=sent");
 }
 
 export async function updatePasswordAction(formData: FormData) {
   const password = z.string().min(8).max(128).safeParse(formData.get("password"));
   if (!password.success) redirect("/nova-senha?error=invalid_password");
-
   const supabase = await createClient();
   const { data: userData, error: sessionError } = await supabase.auth.getUser();
   if (sessionError || !userData.user) redirect("/login?error=session_expired&next=/nova-senha");
-
   const { error } = await supabase.auth.updateUser({ password: password.data });
   if (error) redirect("/nova-senha?error=update_failed");
-
   redirect(await StartRouteService.resolve());
 }
 

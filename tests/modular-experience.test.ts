@@ -41,13 +41,15 @@ describe("modular experience [357-361]", () => {
     expect(layout).toContain("/recurso-indisponivel?module=");
   });
 
-  it("uses atomic modular onboarding and central presets", () => {
+  it("uses atomic commercial onboarding and the central plan catalog", () => {
     const action = read("src/features/onboarding/actions.ts");
-    expect(action).toContain("modulesForPreset(");
-    expect(action).toContain('supabase.rpc("bootstrap_organization_modular"');
-    const sql = read("supabase/sql/106_modular_experience.sql");
+    expect(action).toContain("PUBLIC_PLAN_KEYS");
+    expect(action).toContain("planKey: z.enum(PUBLIC_PLAN_KEYS)");
+    expect(action).toContain('supabase.rpc("bootstrap_commercial_organization"');
+    const sql = read("supabase/migrations/20260831004000_atomic_commercial_onboarding.sql");
     expect(sql).toContain("pg_advisory_xact_lock");
-    expect(sql).toContain("organization.modules.bootstrap");
+    expect(sql).toContain("organization.commercial_bootstrap");
+    expect(sql).toContain("subscription_history");
   });
 
   it("persists Easy Mode server-side per user/store without localStorage", () => {
@@ -58,14 +60,19 @@ describe("modular experience [357-361]", () => {
     expect(service).not.toContain("localStorage");
   });
 
-  it("uses inline confirmation for one resource and preview for batch changes", () => {
+  it("uses inline confirmation for included resources and approval for paid modules", () => {
     const page = read("src/app/(app)/configuracoes/modulos/page.tsx");
     const client = read("src/app/(app)/configuracoes/modulos/resources-client.tsx");
+    const actions = read("src/features/modules/actions.ts");
     expect(client).toContain("applyModuleChangeInlineAction");
     expect(client).toContain('state.status === "confirm"');
-    expect(page).toContain("ModuleConfigurationService.previewPreset(");
-    expect(page).toContain("ModuleConfigurationService.previewCommercialProfile(");
-    expect(page).toContain("desativar um recurso não apaga o histórico");
+    expect(client).toContain("requestModuleActivationAction");
+    expect(client).toContain("Solicitar ativação");
+    expect(page).toContain("Nada é cobrado ou liberado sem aprovação");
+    expect(actions).toContain('admin.from("subscription_change_requests").insert');
+    expect(actions).toContain('status: "draft"');
+    expect(actions).toContain("proposed_total_price_cents");
+    expect(actions).toContain("O histórico continuará salvo.");
   });
 
   it("does not modify shared order state-machine transitions", () => {
