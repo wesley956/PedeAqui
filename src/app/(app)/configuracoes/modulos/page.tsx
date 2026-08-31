@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { businessVocabulary } from "@/modules/business-vocabulary";
 import { CORE_MODULE_KEYS, MODULE_CATALOG, MODULE_KEYS, isModuleKey, moduleLabel } from "@/modules/module-catalog";
 import { ModuleAccessService } from "@/server/modules/module-access-service";
 import { CommercialCatalogService } from "@/server/billing/commercial-catalog-service";
@@ -17,6 +16,9 @@ const errorMessages: Record<string, string> = {
   unsupported_profile: "Esta ferramenta não é compatível com o perfil do negócio.",
   not_sellable: "Este recurso não está disponível como módulo adicional.",
   subscription_missing: "Não encontramos uma assinatura ativa para receber esta solicitação.",
+  store_missing: "Não encontramos uma unidade ativa para esta solicitação.",
+  already_available: "Este módulo já está liberado pela sua assinatura. Você pode ativá-lo normalmente.",
+  dependency_not_entitled: "Este módulo depende de outro recurso pago que ainda não está incluído na sua assinatura. Solicite primeiro o recurso indicado nas dependências.",
   request_failed: "Não foi possível enviar a solicitação de ativação.",
   failed: "Não foi possível alterar os recursos agora.",
 };
@@ -35,7 +37,6 @@ export default async function ModulesSettingsPage({ searchParams }: { searchPara
     CommercialCatalogService.listCommercialModules(),
     getAccessContext(),
   ]);
-  const vocabulary = businessVocabulary(snapshot.businessType);
   const requestedModule = params.module && isModuleKey(params.module) ? params.module : null;
   const prices = new Map(commercialModules.map((module) => [module.key, module.monthlyPriceCents]));
   const admin = createAdminClient();
@@ -46,8 +47,9 @@ export default async function ModulesSettingsPage({ searchParams }: { searchPara
     .in("status", ["draft", "scheduled"]);
   const pendingKeys = new Set((pendingRows ?? []).flatMap((row) => {
     const relation = row.features as unknown as { key?: string } | { key?: string }[] | null;
-    const key = Array.isArray(relation) ? relation[0]?.key : relation?.key;
-    return key ? [key] : [];
+    const featureKey = Array.isArray(relation) ? relation[0]?.key : relation?.key;
+    if (!featureKey) return [];
+    return [featureKey.startsWith("module.") ? featureKey.slice("module.".length) : featureKey];
   }));
 
   const resources: ResourceItem[] = MODULE_KEYS.flatMap((key) => {
