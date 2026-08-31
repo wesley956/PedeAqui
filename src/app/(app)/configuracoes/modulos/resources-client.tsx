@@ -74,7 +74,7 @@ function ResourceRow({ resource, highlighted }: { resource: ResourceItem; highli
         {!resource.enabled && !resource.canActivate ? <span className={styles.unavailable}>{resource.availabilityLabel ?? "Indisponível"}</span> : <button type="submit" className={resource.enabled ? styles.secondaryButton : styles.primaryButton} disabled={pending}>{pending ? (targetEnabled ? "Ativando…" : "Desativando…") : state.status === "confirm" ? "Confirmar" : resource.enabled ? "Desativar" : "Ativar"}</button>}
       </form> : null}
     </div>
-    {state.status === "confirm" ? <div className={styles.confirm} role="status"><span>{state.message}</span><small>Toque em Confirmar para aplicar.</small></div> : null}
+    {state.status === "confirm" ? <div className={styles.confirm} role="status"><span>{state.message}</span><small>Toque em Confirmar para aplicar. Você permanece nesta mesma posição da página.</small></div> : null}
     {state.status === "error" ? <div className={styles.error} role="alert">{state.message}</div> : null}
     {state.status === "success" ? <div className={styles.success} role="status">{state.message}</div> : null}
   </article>;
