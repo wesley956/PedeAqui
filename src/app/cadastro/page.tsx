@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { signUpAction } from "@/features/auth/actions";
 import { CommercialCatalogService, formatCommercialPrice } from "@/server/billing/commercial-catalog-service";
 
+export const dynamic = "force-dynamic";
+
 const errorMessages: Record<string, string> = {
   invalid_input: "Confira o e-mail e use uma senha com pelo menos 8 caracteres.",
   email_exists: "Já existe uma conta com este e-mail. Entre na sua conta ou recupere sua senha.",

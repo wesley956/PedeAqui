@@ -3,6 +3,8 @@ import { ModularOnboardingForm } from "@/features/onboarding/modular-onboarding-
 import { requireAuthenticatedUser } from "@/server/auth/session";
 import { CommercialCatalogService } from "@/server/billing/commercial-catalog-service";
 
+export const dynamic = "force-dynamic";
+
 export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ error?: string; plan?: string }> }) {
   await requireAuthenticatedUser();
   const params = await searchParams;

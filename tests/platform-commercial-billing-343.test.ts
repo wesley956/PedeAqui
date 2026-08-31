@@ -46,7 +46,8 @@ describe("Platform commercial subscriptions [343]", () => {
 
   it("shows commercial feature names without exposing feature keys", () => {
     expect(service).toContain('name: featureById.get(item.feature_id)?.name');
-    expect(page).toContain("Recursos são apresentados pelo nome usado no produto");
+    expect(page).toContain("change.featureName ?? change.targetPlanName ?? change.changeType");
+    expect(page).toContain("Módulo adicional: {addon.featureName}");
     expect(page).not.toContain("feature.key");
   });
 

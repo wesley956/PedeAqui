@@ -35,7 +35,7 @@ describe("[PA-DIAG-055..066] super admin, financeiro e auditoria", () => {
 
   it("oferece ciclo comercial e termos de R$ 79,90 vitalícios sem apagar histórico", () => {
     expect(billingPage).toContain('defaultValue={subscription.agreedPriceCents === null ? "79.90"');
-    expect(billingPage).toContain("Manter este valor para sempre");
+    expect(billingPage).toContain("Manter este valor protegido");
     expect(migration).toContain("agreed_price_cents");
     expect(migration).toContain("price_locked");
     expect(migration).toContain("billing_due_day");
@@ -62,6 +62,7 @@ describe("[PA-DIAG-067..079] módulos, perfis e bloqueio integral", () => {
   const layout = read("src/app/(app)/layout.tsx");
   const settings = read("src/app/(app)/configuracoes/modulos/page.tsx");
   const resourceClient = read("src/app/(app)/configuracoes/modulos/resources-client.tsx");
+  const moduleActions = read("src/features/modules/actions.ts");
   const support = read("src/server/platform/platform-module-support-service.ts");
 
   it("mantém um catálogo válido e perfis comerciais mínimos previsíveis", () => {
@@ -91,14 +92,15 @@ describe("[PA-DIAG-067..079] módulos, perfis e bloqueio integral", () => {
     expect(support).toContain("planned_changes");
   });
 
-  it("oferece perfis rápidos, prévia em lote e personalização inline sem apagar dados", () => {
-    expect(settings).toContain("Cardápio básico");
-    expect(settings).toContain("Delivery + WhatsApp");
-    expect(settings).toContain("previewCommercialProfile");
-    expect(settings).toContain("Confira as mudanças e confirme quando estiver tudo certo.");
-    expect(settings).toContain("desativar um recurso não apaga o histórico");
+  it("oferece ativação inline e solicitação precificada sem apagar dados", () => {
+    expect(settings).toContain("recursos fora do plano não podem ser ativados diretamente");
+    expect(settings).toContain("monthlyPriceCents");
+    expect(resourceClient).toContain("requestModuleActivationAction");
+    expect(resourceClient).toContain("Solicitar ativação");
+    expect(resourceClient).toContain("Adicional: +");
     expect(resourceClient).toContain("applyModuleChangeInlineAction");
     expect(resourceClient).toContain("Você permanece nesta mesma posição da página");
+    expect(moduleActions).toContain("O histórico continuará salvo.");
     expect(access).toContain("configRevision");
   });
 });

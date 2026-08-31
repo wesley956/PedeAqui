@@ -10,6 +10,10 @@ import {
 } from "@/components/marketing/marketing-shell";
 import { CommercialCatalogService, formatCommercialPrice } from "@/server/billing/commercial-catalog-service";
 
+// Prices and modules come from the live commercial catalog. Do not query
+// Supabase while the deployment artifact is being compiled.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Planos e preços",
   description: "Conheça os três planos do PedeAqui e comece com 15 dias grátis.",
