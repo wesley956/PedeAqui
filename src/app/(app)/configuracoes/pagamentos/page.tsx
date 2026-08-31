@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { Button } from "@/components/ui/button";
+import buttonStyles from "@/components/ui/button.module.css";
 import {
   disconnectMercadoPagoOAuthAction,
   saveOnlinePixProviderAction,
@@ -18,8 +19,22 @@ const paymentHints: Record<string, string> = {
   debit_card: "O cliente pode escolher cartão de débito para pagar conforme a operação da unidade.",
 };
 
-export default async function PaymentSettingsPage() {
-  const [methods, providerResult, requestHeaders] = await Promise.all([
+const mercadoPagoStatusMessages: Record<string, string> = {
+  connected: "Mercado Pago conectado com sucesso. O Pix continua desligado até você ativá-lo nesta unidade.",
+  authorization_denied: "A autorização foi cancelada no Mercado Pago. Você pode tentar conectar novamente.",
+  oauth_error: "Não foi possível concluir a conexão com o Mercado Pago. Tente novamente.",
+  not_authorized: "Sua sessão não tem permissão para gerenciar os pagamentos desta unidade.",
+  store_required: "Selecione uma unidade antes de conectar o Mercado Pago.",
+  setup_required: "O servidor ainda não reconheceu todas as configurações necessárias do Mercado Pago.",
+};
+
+type PaymentSettingsPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function PaymentSettingsPage({ searchParams }: PaymentSettingsPageProps) {
+  const [params, methods, providerResult, requestHeaders] = await Promise.all([
+    searchParams,
     StorePaymentMethodService.listCurrentStore(),
     OrderPaymentProviderConfigService.getCurrentStore(),
     headers(),
@@ -32,6 +47,9 @@ export default async function PaymentSettingsPage() {
   const webhookUrl = host ? `${protocol}://${host}${webhookPath}` : webhookPath;
   const oauthAvailable = isMercadoPagoOAuthConfigured();
   const oauthConnected = Boolean(config?.connectionMode === "oauth" && config.credentialsConfigured && !config.revokedAt);
+  const mercadoPagoStatusParam = params.mercado_pago;
+  const mercadoPagoStatus = Array.isArray(mercadoPagoStatusParam) ? mercadoPagoStatusParam[0] : mercadoPagoStatusParam;
+  const mercadoPagoMessage = mercadoPagoStatus ? mercadoPagoStatusMessages[mercadoPagoStatus] : null;
   const statusText = !config?.credentialsConfigured
     ? "Ainda não conectado"
     : config.enabled
@@ -48,6 +66,16 @@ export default async function PaymentSettingsPage() {
         <h1 style={{ margin: "4px 0" }}>Formas de pagamento</h1>
         <p className="muted" style={{ margin: 0 }}>Defina as opções do cliente e conecte o Pix online da unidade.</p>
       </header>
+
+      {mercadoPagoMessage ? (
+        <div
+          role={mercadoPagoStatus === "connected" ? "status" : "alert"}
+          className="card"
+          style={{ padding: 14 }}
+        >
+          {mercadoPagoMessage}
+        </div>
+      ) : null}
 
       <form action={savePaymentMethodsAction} className="card" style={{ padding: 20, display: "grid", gap: 12 }}>
         <div>
@@ -106,9 +134,13 @@ export default async function PaymentSettingsPage() {
               <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>O restaurante autoriza o PedeAqui no Mercado Pago sem copiar Access Token. A conexão começa com Pix desligado.</p>
             </div>
             {oauthAvailable ? (
-              <form action="/api/integrations/mercado-pago/oauth/start" method="get">
-                <Button type="submit">Conectar Mercado Pago</Button>
-              </form>
+              <a
+                href="/api/integrations/mercado-pago/oauth/start"
+                className={`${buttonStyles.button} ${buttonStyles.primary} ${buttonStyles.md}`}
+                style={{ width: "fit-content" }}
+              >
+                Conectar Mercado Pago
+              </a>
             ) : (
               <p className="muted" style={{ margin: 0, fontSize: 12 }}>A aplicação Mercado Pago do PedeAqui ainda precisa das credenciais globais e da Redirect URI no servidor para liberar este botão.</p>
             )}
