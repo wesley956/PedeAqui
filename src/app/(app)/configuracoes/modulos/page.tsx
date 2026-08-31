@@ -14,6 +14,7 @@ const errorMessages: Record<string, string> = {
   operational_blocker: "Existe uma operação em andamento que precisa ser concluída antes desta mudança.",
   not_in_plan: "Esta ferramenta não está incluída no plano atual.",
   unsupported_profile: "Esta ferramenta não é compatível com o perfil do negócio.",
+  permission_denied: "Somente quem possui permissão de gestão da empresa pode solicitar um módulo que altera a mensalidade.",
   not_sellable: "Este recurso não está disponível como módulo adicional.",
   subscription_missing: "Não encontramos uma assinatura ativa para receber esta solicitação.",
   store_missing: "Não encontramos uma unidade ativa para esta solicitação.",
