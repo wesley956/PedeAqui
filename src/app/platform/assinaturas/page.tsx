@@ -12,6 +12,7 @@ import {
   changePlanAction,
   createSubscriptionChangeQuoteAction,
   recordSubscriptionPaymentAction,
+  rejectSubscriptionChangeAction,
   saveCommercialPlanAction,
   saveSubscriptionInvoiceAction,
   scheduleCancellationAction,
@@ -22,12 +23,14 @@ import {
 import { PlatformCommercialBillingService } from "@/server/platform/platform-commercial-billing-service";
 import styles from "../platform.module.css";
 
+const PUBLIC_PLAN_KEYS = new Set(["essential", "professional", "management"]);
 const dateTime = (value: string | null) => value ? new Date(value).toLocaleString("pt-BR") : "Não definido";
 const money = (value: number | null) => value === null ? "Valor ainda não definido" : (value / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export default async function PlatformSubscriptionsPage() {
   const data = await PlatformCommercialBillingService.load();
-  const activePlans = data.plans.filter((plan) => plan.active);
+  const commercialPlans = data.plans.filter((plan) => PUBLIC_PLAN_KEYS.has(plan.key));
+  const activePlans = commercialPlans.filter((plan) => plan.active);
 
   return (
     <div className={styles.page}>
@@ -51,30 +54,49 @@ export default async function PlatformSubscriptionsPage() {
         <Metric label="Receita de melhorias" value={money(data.metrics.projectedAddonRevenueCents)} helper="módulos adicionais" />
         <Metric label="Valor em atraso" value={money(data.metrics.overdueAmountCents)} helper="mensalidades vencidas" />
         <Metric label="Vencem em 7 dias" value={data.metrics.dueSoon} helper="avisos antecipados" />
-        <Metric label="Fundadores" value={`${data.metrics.founderSlotsUsed}/3`} helper="posições vitalícias usadas" />
+        <Metric label="Fundadores" value={data.metrics.founderSlotsUsed} helper="clientes com preço-base protegido" />
       </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionHeader}><div><h2>Propostas e mudanças programadas</h2><p>O preço novo é calculado e registrado antes do aceite. O plano-base e as mensalidades anteriores nunca são reescritos.</p></div></div>
+        <div className={styles.sectionHeader}><div><h2>Solicitações e mudanças comerciais</h2><p>Pedidos de módulos feitos pelo cliente só são ativados após sua aprovação. O preço novo é registrado antes da mudança.</p></div></div>
         <div className={styles.featureList}>
           {data.changeRequests.map((change) => {
+            const clientModuleRequest = change.changeType === "add_on" && change.status === "draft" && change.protocol.startsWith("MOD-");
             return <div className={styles.featureRow} key={change.id}>
-              <span><strong>{change.organizationName} · {change.featureName ?? change.targetPlanName ?? change.changeType}</strong><small>{money(change.currentBasePriceCents + change.currentAddonsPriceCents)} → {money(change.proposedTotalPriceCents)} · vigência {dateTime(change.effectiveAt)} · {change.status}</small></span>
               <span>
-                {change.status === "draft" && data.canManage ? <form action={acceptSubscriptionChangeAction}><input type="hidden" name="changeId" value={change.id} /><input type="hidden" name="reason" value="Condição comercial aceita e conferida" /><input type="hidden" name="protocol" value={`ACEITE-${change.id.slice(0, 8)}`} /><PendingSubmitButton className={styles.button}>Registrar aceite</PendingSubmitButton></form> : null}
+                <strong>{change.organizationName} · {change.featureName ?? change.targetPlanName ?? change.changeType}</strong>
+                <small>{money(change.currentBasePriceCents + change.currentAddonsPriceCents)} → {money(change.proposedTotalPriceCents)} · vigência {dateTime(change.effectiveAt)} · {change.status}</small>
+                {clientModuleRequest ? <small>Solicitação feita pelo cliente. Aprovar ativa o adicional e o módulo na unidade solicitante na mesma transação.</small> : null}
+              </span>
+              <span>
+                {clientModuleRequest && data.canManage ? <>
+                  <form action={acceptSubscriptionChangeAction}>
+                    <input type="hidden" name="changeId" value={change.id} />
+                    <input type="hidden" name="reason" value="Solicitação de módulo aprovada pelo proprietário" />
+                    <input type="hidden" name="protocol" value={`APROVAR-${change.id.slice(0, 8)}`} />
+                    <PendingSubmitButton className={styles.button}>Aprovar e ativar</PendingSubmitButton>
+                  </form>
+                  <form action={rejectSubscriptionChangeAction}>
+                    <input type="hidden" name="changeId" value={change.id} />
+                    <input type="hidden" name="reason" value="Solicitação de módulo recusada pelo proprietário" />
+                    <input type="hidden" name="protocol" value={`RECUSAR-${change.id.slice(0, 8)}`} />
+                    <PendingSubmitButton className={styles.exit}>Recusar</PendingSubmitButton>
+                  </form>
+                </> : null}
+                {change.status === "draft" && !clientModuleRequest && data.canManage ? <form action={acceptSubscriptionChangeAction}><input type="hidden" name="changeId" value={change.id} /><input type="hidden" name="reason" value="Condição comercial aceita e conferida" /><input type="hidden" name="protocol" value={`ACEITE-${change.id.slice(0, 8)}`} /><PendingSubmitButton className={styles.button}>Registrar aceite</PendingSubmitButton></form> : null}
                 {change.status === "scheduled" && change.isDue && data.canManage ? <form action={applyScheduledSubscriptionChangeAction}><input type="hidden" name="changeId" value={change.id} /><input type="hidden" name="reason" value="Vigência contratual alcançada" /><input type="hidden" name="protocol" value={`APLICAR-${change.id.slice(0, 8)}`} /><PendingSubmitButton className={styles.button}>Aplicar agora</PendingSubmitButton></form> : null}
                 {change.status === "scheduled" && !change.isDue ? <small>Aplicação liberada na data programada</small> : null}
               </span>
             </div>;
           })}
-          {data.changeRequests.length === 0 ? <div className={styles.empty}>Nenhuma proposta criada. Use o simulador de um cliente abaixo.</div> : null}
+          {data.changeRequests.length === 0 ? <div className={styles.empty}>Nenhuma solicitação ou proposta pendente.</div> : null}
         </div>
       </section>
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}><div><h2>Receita por plano e módulo</h2><p>Relatório mensal previsto, separado entre contrato-base e melhorias contratadas.</p></div></div>
         <div className={styles.featureList}>
-          {data.revenueByPlan.map((row) => <div className={styles.featureRow} key={`plan:${row.id}`}><span><strong>Plano {row.name}</strong><small>{row.subscriptions} cliente(s) ativo(s)</small></span><strong>{money(row.amountCents)}</strong></div>)}
+          {data.revenueByPlan.filter((row) => commercialPlans.some((plan) => plan.id === row.id)).map((row) => <div className={styles.featureRow} key={`plan:${row.id}`}><span><strong>Plano {row.name}</strong><small>{row.subscriptions} cliente(s) ativo(s)</small></span><strong>{money(row.amountCents)}</strong></div>)}
           {data.revenueByModule.map((row) => <div className={styles.featureRow} key={`module:${row.id}`}><span><strong>Módulo adicional: {row.name}</strong><small>{row.subscriptions} contrato(s)</small></span><strong>{money(row.amountCents)}</strong></div>)}
           {data.revenueByPlan.length + data.revenueByModule.length === 0 ? <div className={styles.empty}>O relatório será preenchido quando houver assinaturas ativas.</div> : null}
         </div>
@@ -124,14 +146,14 @@ export default async function PlatformSubscriptionsPage() {
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <div><h2>Planos comerciais</h2><p>Recursos são apresentados pelo nome usado no produto; identificadores internos não aparecem nesta área.</p></div>
+          <div><h2>Planos comerciais</h2><p>Estes são os mesmos três planos usados na página comercial, no cadastro, no onboarding e na cobrança.</p></div>
         </div>
         <div className={styles.planGrid}>
-          {data.plans.map((plan) => (
+          {commercialPlans.map((plan) => (
             <article className={styles.planCard} key={plan.id}>
               <div className={styles.cardTop}><strong>{plan.name}</strong><span className={styles.pill} data-tone={plan.active ? "good" : "neutral"}>{plan.active ? "Disponível para novas vendas" : "Fora de venda"}</span></div>
               {plan.description ? <span className={styles.meta}>{plan.description}</span> : null}
-              <span className={styles.meta}>Referência: {plan.monthlyPriceCents === null ? "preço personalizado" : `${money(plan.monthlyPriceCents)} por mês`}</span>
+              <span className={styles.meta}>Referência: {plan.monthlyPriceCents === null ? "preço não definido" : `${money(plan.monthlyPriceCents)} por mês`}</span>
               <div className={styles.featureList}>
                 {plan.features.slice(0, 8).map((feature) => <div className={styles.featureRow} key={`${plan.id}:${feature.name}`}><span>{feature.name}</span><strong>{feature.limitLabel}</strong></div>)}
                 {plan.features.length === 0 ? <div className={styles.empty}>Nenhum recurso comercial habilitado.</div> : null}
@@ -139,11 +161,7 @@ export default async function PlatformSubscriptionsPage() {
             </article>
           ))}
         </div>
-        {data.canManage ? <details className={styles.details}>
-          <summary>Criar um novo plano</summary>
-          <PlanEditor features={data.features} />
-        </details> : null}
-        {data.canManage ? data.plans.map((plan) => <details className={styles.details} key={`edit:${plan.id}`}>
+        {data.canManage ? commercialPlans.map((plan) => <details className={styles.details} key={`edit:${plan.id}`}>
           <summary>Editar e versionar: {plan.name}</summary>
           <PlanEditor plan={plan} features={data.features} enabledFeatureIds={data.planFeatures.filter((item) => item.plan_id === plan.id && item.enabled).map((item) => item.feature_id)} />
         </details>) : null}
@@ -162,16 +180,16 @@ export default async function PlatformSubscriptionsPage() {
                   <span className={styles.pill} data-tone={subscription.status === "active" ? "good" : subscription.status === "past_due" ? "danger" : subscription.status === "trialing" ? "warn" : "neutral"}>{subscription.statusLabel}</span>
                 </div>
                 <p className={styles.meta}>Fim do período: {dateTime(subscription.currentPeriodEnd)}</p>
-                <p className={styles.meta}><strong>{money(subscription.agreedPriceCents)}</strong>{subscription.priceLocked ? " · valor vitalício bloqueado" : " · sujeito aos termos do plano"}</p>
+                <p className={styles.meta}><strong>{money(subscription.agreedPriceCents)}</strong>{subscription.priceLocked ? " · preço-base protegido" : " · sujeito aos termos do plano"}</p>
                 <p className={styles.meta}>Vencimento: {subscription.billingDueDay ? `dia ${subscription.billingDueDay}` : "dia não definido"} · {subscription.paymentStatusLabel}</p>
                 {subscription.nextDueAt ? <p className={styles.meta}>Próximo vencimento: {dateTime(subscription.nextDueAt)}</p> : null}
                 {subscription.trialEndsAt ? <p className={styles.meta}>Teste até: {dateTime(subscription.trialEndsAt)}</p> : null}
                 {subscription.graceEndsAt ? <p className={styles.meta}>Tolerância até: {dateTime(subscription.graceEndsAt)}</p> : null}
                 {subscription.cancelAtPeriodEnd ? <p className={styles.advancedNote}>Cancelamento já agendado para o fim do período.</p> : null}
                 <p className={styles.meta}>Cobrança externa: {subscription.hasProvider ? "provider conectado" : "gestão manual/sem provider"}</p>
-                {subscription.founderSlot ? <p className={styles.advancedNote}>Cliente Fundador #{subscription.founderSlot} · R$ 79,90 preservados no contrato.</p> : null}
+                {subscription.founderSlot ? <p className={styles.advancedNote}>Condição Fundador #{subscription.founderSlot} · preço-base de R$ 79,90 protegido sobre o plano {subscription.planName}. Módulos extras são cobrados à parte.</p> : null}
                 {subscription.accessSuspendedAt ? <p className={styles.advancedNote}>Acesso suspenso desde {dateTime(subscription.accessSuspendedAt)}. Os dados do restaurante continuam preservados.</p> : null}
-                {(data.addonsBySubscription[subscription.id] ?? []).filter((item) => item.status === "active").map((addon) => <p className={styles.advancedNote} key={addon.id}>Melhoria: {addon.featureName} · {money(addon.unitPriceCents * addon.quantity)}/mês, sem substituir o plano-base.</p>)}
+                {(data.addonsBySubscription[subscription.id] ?? []).filter((item) => item.status === "active").map((addon) => <p className={styles.advancedNote} key={addon.id}>Módulo adicional: {addon.featureName} · {money(addon.unitPriceCents * addon.quantity)}/mês, sem substituir o plano-base.</p>)}
 
                 {data.canManage ? <details className={styles.details}>
                   <summary>Simular melhoria, upgrade ou downgrade</summary>
@@ -190,14 +208,14 @@ export default async function PlatformSubscriptionsPage() {
                 </details> : null}
 
                 {data.canManage ? <details className={styles.details}>
-                  <summary>Fundadores e acesso do cliente</summary>
+                  <summary>Fundador e acesso do cliente</summary>
                   <div className={styles.detailsBody}>
-                    {!subscription.founderSlot && data.metrics.founderSlotsUsed < 3 ? <form action={assignFounderPlanAction} className={styles.detailsBody}>
+                    {!subscription.founderSlot ? <form action={assignFounderPlanAction} className={styles.detailsBody}>
                       <input type="hidden" name="organizationId" value={subscription.organizationId} />
-                      <label>Motivo<input className={styles.field} name="reason" minLength={5} maxLength={500} required defaultValue="Um dos três primeiros clientes do PedeAqui" /></label>
+                      <label>Motivo<input className={styles.field} name="reason" minLength={5} maxLength={500} required defaultValue="Condição Fundador concedida pelo proprietário do PedeAqui" /></label>
                       <label>Protocolo<input className={styles.field} name="protocol" minLength={3} maxLength={120} required placeholder="Ex.: FUNDADOR-001" /></label>
-                      <p className={styles.advancedNote}>A atribuição usa uma trava no banco e recusa automaticamente o quarto cliente.</p>
-                      <PendingSubmitButton className={styles.button}>Atribuir Plano Fundadores</PendingSubmitButton>
+                      <p className={styles.advancedNote}>A condição não troca o plano-base. Ela protege a mensalidade-base em R$ 79,90; módulos extras continuam sendo cobrados separadamente. Não há limite de Fundadores.</p>
+                      <PendingSubmitButton className={styles.button}>Tornar cliente Fundador</PendingSubmitButton>
                     </form> : null}
                     <form action={setSubscriptionAccessAction} className={styles.detailsBody}>
                       <input type="hidden" name="organizationId" value={subscription.organizationId} />
@@ -235,9 +253,9 @@ export default async function PlatformSubscriptionsPage() {
                       <label>Dia do vencimento<input className={styles.field} name="billingDueDay" type="number" min="1" max="28" defaultValue={subscription.billingDueDay ?? 10} /></label>
                       <label>Próximo vencimento<input className={styles.field} name="nextDueAt" type="datetime-local" /></label>
                       <label>Situação do pagamento<select className={styles.field} name="paymentStatus" defaultValue={subscription.paymentStatus}><option value="not_started">Cobrança não iniciada</option><option value="pending">Pendente</option><option value="paid">Pago</option><option value="overdue">Em atraso</option><option value="waived">Isento neste vencimento</option></select></label>
-                      <label><input name="priceLocked" type="checkbox" defaultChecked={subscription.priceLocked} /> Manter este valor para sempre</label>
-                      <label>Motivo do valor vitalício<input className={styles.field} name="priceLockReason" minLength={5} maxLength={500} defaultValue={subscription.priceLockReason ?? "Cliente fundador do PedeAqui"} placeholder="Ex.: um dos três primeiros clientes" /></label>
-                      <p className={styles.advancedNote}>Com o valor vitalício marcado, reajustes futuros do plano não alteram esta mensalidade. Uma mudança posterior exige nova ação, motivo e protocolo.</p>
+                      <label><input name="priceLocked" type="checkbox" defaultChecked={subscription.priceLocked} /> Manter este valor protegido</label>
+                      <label>Motivo do valor protegido<input className={styles.field} name="priceLockReason" minLength={5} maxLength={500} defaultValue={subscription.priceLockReason ?? "Condição comercial protegida"} placeholder="Ex.: condição Fundador" /></label>
+                      <p className={styles.advancedNote}>Com o valor protegido marcado, reajustes futuros do plano não alteram esta mensalidade. Uma mudança posterior exige nova ação, motivo e protocolo.</p>
                       <PendingSubmitButton className={styles.button} pendingLabel="Salvando termos…">Salvar termos comerciais</PendingSubmitButton>
                     </form>
                   </details>
@@ -357,20 +375,20 @@ function Metric({ label, value, helper }: { label: string; value: number | strin
 }
 
 function PlanEditor({ plan, features, enabledFeatureIds = [] }: {
-  plan?: { id: string; key: string; name: string; description: string | null; monthlyPriceCents: number | null; yearlyPriceCents: number | null; active: boolean; position: number };
+  plan: { id: string; key: string; name: string; description: string | null; monthlyPriceCents: number | null; yearlyPriceCents: number | null; active: boolean; position: number };
   features: Array<{ id: string; name: string; active: boolean }>;
   enabledFeatureIds?: string[];
 }) {
   const enabled = new Set(enabledFeatureIds);
   return <form action={saveCommercialPlanAction} className={styles.detailsBody}>
-    {plan ? <input type="hidden" name="planId" value={plan.id} /> : null}
-    <label>Identificador amigável<input className={styles.field} name="key" pattern="[a-z0-9][a-z0-9._-]{1,79}" defaultValue={plan?.key ?? ""} placeholder="ex.: delivery-basico" required /></label>
-    <label>Nome<input className={styles.field} name="name" minLength={2} maxLength={120} defaultValue={plan?.name ?? ""} required /></label>
-    <label>Descrição<textarea className={styles.field} name="description" maxLength={1000} defaultValue={plan?.description ?? ""} /></label>
-    <label>Mensal (R$)<input className={styles.field} name="monthlyPrice" type="number" min="0" max="1000000" step="0.01" defaultValue={plan?.monthlyPriceCents === null || plan?.monthlyPriceCents === undefined ? "" : (plan.monthlyPriceCents / 100).toFixed(2)} /></label>
-    <label>Anual (R$)<input className={styles.field} name="yearlyPrice" type="number" min="0" max="1000000" step="0.01" defaultValue={plan?.yearlyPriceCents === null || plan?.yearlyPriceCents === undefined ? "" : (plan.yearlyPriceCents / 100).toFixed(2)} /></label>
-    <label>Ordem<input className={styles.field} name="position" type="number" min="0" max="10000" defaultValue={plan?.position ?? 100} required /></label>
-    <label><input name="active" type="checkbox" defaultChecked={plan?.active ?? true} /> Disponível para novas vendas</label>
+    <input type="hidden" name="planId" value={plan.id} />
+    <input type="hidden" name="key" value={plan.key} />
+    <label>Nome<input className={styles.field} name="name" minLength={2} maxLength={120} defaultValue={plan.name} required /></label>
+    <label>Descrição<textarea className={styles.field} name="description" maxLength={1000} defaultValue={plan.description ?? ""} /></label>
+    <label>Mensal (R$)<input className={styles.field} name="monthlyPrice" type="number" min="0" max="1000000" step="0.01" defaultValue={plan.monthlyPriceCents === null ? "" : (plan.monthlyPriceCents / 100).toFixed(2)} /></label>
+    <label>Anual (R$)<input className={styles.field} name="yearlyPrice" type="number" min="0" max="1000000" step="0.01" defaultValue={plan.yearlyPriceCents === null ? "" : (plan.yearlyPriceCents / 100).toFixed(2)} /></label>
+    <label>Ordem<input className={styles.field} name="position" type="number" min="0" max="10000" defaultValue={plan.position} required /></label>
+    <label><input name="active" type="checkbox" defaultChecked={plan.active} /> Disponível para novas vendas</label>
     <fieldset className={styles.detailsBody}><legend>Módulos incluídos no plano</legend>{features.filter((feature) => feature.active).map((feature) => <label key={feature.id}><input type="checkbox" name="featureIds" value={feature.id} defaultChecked={enabled.has(feature.id)} /> {feature.name}</label>)}</fieldset>
     <label>Motivo da nova versão<input className={styles.field} name="reason" minLength={5} maxLength={500} required placeholder="Ex.: novo preço e módulos aprovados" /></label>
     <label>Protocolo<input className={styles.field} name="protocol" minLength={3} maxLength={120} required placeholder="Ex.: PLANO-2026-001" /></label>
