@@ -18,6 +18,7 @@ export type CommercialPlan = {
 
 export type CommercialModule = {
   key: string;
+  featureKey: string;
   name: string;
   description: string;
   monthlyPriceCents: number;
@@ -125,9 +126,11 @@ export class CommercialCatalogService {
       const metadata = (feature.metadata ?? {}) as Record<string, unknown>;
       if (metadata.commercial_sellable !== true) return [];
       const monthlyPriceCents = Number(metadata.commercial_price_cents);
-      if (!Number.isFinite(monthlyPriceCents) || monthlyPriceCents <= 0) return [];
+      const moduleKey = typeof metadata.module_key === "string" ? metadata.module_key.trim() : "";
+      if (!moduleKey || !Number.isFinite(monthlyPriceCents) || monthlyPriceCents <= 0) return [];
       return [{
-        key: feature.key,
+        key: moduleKey,
+        featureKey: feature.key,
         name: feature.name,
         description: feature.description ?? "",
         monthlyPriceCents,
