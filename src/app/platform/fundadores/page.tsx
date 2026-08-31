@@ -13,45 +13,45 @@ export default async function PlatformFundadoresPage() {
     <div className={styles.page}>
       <header className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>COMERCIAL · CLUBE FUNDADORES</p>
-          <h1>Clientes mais seletos do PedeAqui</h1>
-          <p>O Clube Fundadores é separado dos planos comuns. A entrada é administrativa, exige contrato Fundadores protegido e mantém benefícios, níveis e saldo em uma razão imutável.</p>
+          <p className={styles.eyebrow}>COMERCIAL · FUNDADORES</p>
+          <h1>Condição Fundador e clube de benefícios</h1>
+          <p>Fundador não é um quarto plano. É uma condição comercial que mantém o cliente no plano-base contratado, protege a mensalidade-base em R$ 79,90 e permite cobrar módulos extras separadamente. O clube abaixo é uma camada opcional de benefícios e fidelidade.</p>
         </div>
-        <Link href="/platform/produto" className={styles.button}>Ver produto e módulos</Link>
+        <Link href="/platform/assinaturas" className={styles.button}>Gerenciar assinaturas</Link>
       </header>
 
-      <section className={styles.metrics} aria-label="Resumo do Clube Fundadores">
-        <Metric label="Membros ativos" value={String(active.length)} helper="entrada seletiva" />
-        <Metric label="PedeCoins emitidos" value={String(balance)} helper="saldo líquido atual" />
-        <Metric label="Níveis cadastrados" value={String(data.levels.length)} helper="progressão configurável" />
+      <section className={styles.metrics} aria-label="Resumo dos Fundadores">
+        <Metric label="Fundadores ativos" value={String(active.length)} helper="sem limite de vagas" />
+        <Metric label="PedeCoins emitidos" value={String(balance)} helper="saldo líquido do clube" />
+        <Metric label="Níveis cadastrados" value={String(data.levels.length)} helper="benefícios opcionais" />
         <Metric label="Benefícios ativos" value={String(data.benefits.filter((item) => item.active).length)} helper="catálogo do clube" />
       </section>
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <div><h2>Membros</h2><p>Contrato comercial, equivalência funcional e Clube Fundadores aparecem separados para não misturar preço, módulos e fidelidade.</p></div>
+          <div><h2>Clientes Fundadores</h2><p>Plano-base, preço protegido e clube aparecem separados para não misturar contrato, módulos e fidelidade.</p></div>
         </div>
         <div className={styles.featureList}>
           {data.rows.map((item) => (
             <div className={styles.featureRow} key={item.id}>
               <span>
                 <strong>{item.organizationName}{item.founderSlot ? ` · Fundador #${item.founderSlot}` : ""}</strong>
-                <small>Contrato: {item.contractPlan ?? "—"} · Equivalência: {item.functionalPlanLabel ?? "a classificar"} · entrada {date(item.joined_at)}</small>
-                <small>Mensalidade {money(item.agreedPriceCents)}{item.priceLocked ? " protegida" : ""} · próximo vencimento {date(item.nextDueAt)}</small>
+                <small>Plano-base: {item.contractPlan ?? "—"} · entrada no clube {date(item.joined_at)}</small>
+                <small>Preço-base {money(item.agreedPriceCents)}{item.priceLocked ? " protegido" : ""} · módulos adicionais são cobrados à parte · próximo vencimento {date(item.nextDueAt)}</small>
               </span>
               <span style={{ alignItems: "flex-end" }}>
                 <span className={styles.pill} data-tone={item.status === "active" ? "good" : item.status === "paused" ? "warn" : "danger"}>{item.status}</span>
                 <strong>{item.balanceUnits} PedeCoins</strong>
-                <small>{item.ledgerEntries} movimento(s)</small>
+                <small>{item.ledgerEntries} movimento(s) do clube</small>
               </span>
             </div>
           ))}
-          {data.rows.length === 0 ? <div className={styles.empty}>Nenhum membro cadastrado no Clube Fundadores.</div> : null}
+          {data.rows.length === 0 ? <div className={styles.empty}>Nenhum cliente com condição Fundador cadastrado.</div> : null}
         </div>
       </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionHeader}><div><h2>Níveis do clube</h2><p>A progressão automática permanece desligada até definirmos os marcos de tempo e as regras de recompensa.</p></div></div>
+        <div className={styles.sectionHeader}><div><h2>Níveis do clube</h2><p>Esses níveis são benefícios opcionais e não alteram plano-base, preço protegido nem módulos contratados.</p></div></div>
         <div className={styles.planGrid}>
           {data.levels.map((level) => (
             <article className={styles.planCard} key={level.key}>
@@ -64,7 +64,7 @@ export default async function PlatformFundadoresPage() {
       </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionHeader}><div><h2>Marketplace de benefícios</h2><p>Desconto, publicidade, serviços, acesso antecipado e cashback poderão ser cadastrados aqui. Cashback sacável continuará desativado até revisão fiscal/contábil.</p></div></div>
+        <div className={styles.sectionHeader}><div><h2>Marketplace de benefícios</h2><p>Desconto, publicidade, serviços, acesso antecipado e cashback pertencem ao clube. Nenhum benefício altera automaticamente a assinatura comercial.</p></div></div>
         <div className={styles.featureList}>
           {data.benefits.map((benefit) => (
             <div className={styles.featureRow} key={benefit.id}>
@@ -72,7 +72,7 @@ export default async function PlatformFundadoresPage() {
               <span style={{ alignItems: "flex-end" }}><span className={styles.pill} data-tone={benefit.active ? "good" : "warn"}>{benefit.active ? "Disponível" : "Rascunho"}</span><strong>{benefit.cost_units === null ? "Sem custo definido" : `${benefit.cost_units} PedeCoins`}</strong></span>
             </div>
           ))}
-          {data.benefits.length === 0 ? <div className={styles.empty}>Nenhum benefício publicado. A estrutura está pronta, mas o catálogo ficará vazio até definirmos as regras.</div> : null}
+          {data.benefits.length === 0 ? <div className={styles.empty}>Nenhum benefício publicado. A condição Fundador continua válida independentemente deste catálogo.</div> : null}
         </div>
       </section>
     </div>
