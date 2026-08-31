@@ -45,6 +45,11 @@ export async function bootstrapOrganizationAction(formData: FormData) {
     return moduleKey ? [moduleKey] : [];
   });
   const enabledModules = modulesForPreset(parsed.data.businessType, "custom", requestedModules);
+  // Vasilhames é segmentado e exige entitlement no próprio RPC legado de bootstrap.
+  // O plano Completo já concede o entitlement, mas ele só passa a existir após a assinatura.
+  // Por isso não autoativamos Vasilhames nesta primeira transação; após o onboarding ele
+  // aparece como incluído e pode ser ativado normalmente, sem adicional, no negócio de gás.
+  const bootstrapModules = enabledModules.filter((moduleKey) => moduleKey !== "gas_containers");
   const supabase = await createClient();
 
   const { error: profileError } = await supabase.from("profiles").upsert({ id: user.id, status: "active" }, { onConflict: "id" });
@@ -55,7 +60,7 @@ export async function bootstrapOrganizationAction(formData: FormData) {
     const storeSlug = storeSlugCandidate(parsed.data.storeName, attempt);
     const { data, error } = await supabase.rpc("bootstrap_organization_modular", {
       organization_name: parsed.data.organizationName, store_name: parsed.data.storeName, store_slug: storeSlug,
-      p_business_type: parsed.data.businessType, p_module_preset: "custom", p_enabled_modules: enabledModules,
+      p_business_type: parsed.data.businessType, p_module_preset: "custom", p_enabled_modules: bootstrapModules,
     });
     if (!error) { bootstrapData = data; break; }
     if (isStoreSlugConflict(error) && attempt < MAX_STORE_SLUG_ATTEMPTS - 1) continue;
@@ -63,8 +68,17 @@ export async function bootstrapOrganizationAction(formData: FormData) {
     redirect(`/onboarding?plan=${parsed.data.planKey}&error=bootstrap_failed`);
   }
 
-  const result = bootstrapData as { organization_id?: string; store_id?: string } | null;
+  const result = bootstrapData as { organization_id?: string; store_id?: string; reused?: boolean } | null;
   if (!result?.organization_id || !result.store_id) redirect(`/onboarding?plan=${parsed.data.planKey}&error=bootstrap_failed`);
+
+  const cookieStore = await cookies();
+  const secure = process.env.NODE_ENV === "production";
+  cookieStore.set(ORG_COOKIE, result.organization_id, { httpOnly: true, sameSite: "lax", secure, path: "/" });
+  cookieStore.set(STORE_COOKIE, result.store_id, { httpOnly: true, sameSite: "lax", secure, path: "/" });
+
+  // O RPC reaproveita a organização de usuários que já possuem empresa. Nesse caso,
+  // onboarding nunca deve trocar plano, reiniciar trial ou alterar módulos existentes.
+  if (result.reused === true) redirect("/dashboard");
 
   const trialDays = await CommercialCatalogService.getTrialDays();
   const trialStart = new Date();
@@ -91,11 +105,13 @@ export async function bootstrapOrganizationAction(formData: FormData) {
     logger.error("onboarding_subscription_failed", { organizationId: result.organization_id, errorCode: subscriptionError.code, errorMessage: subscriptionError.message });
     redirect(`/onboarding?plan=${parsed.data.planKey}&error=subscription_failed`);
   }
-  await admin.from("stores").update({ trial_ends_at: trialEnd.toISOString() }).eq("id", result.store_id);
+  const { error: trialMirrorError } = await admin.from("stores")
+    .update({ trial_ends_at: trialEnd.toISOString() })
+    .eq("id", result.store_id)
+    .eq("organization_id", result.organization_id);
+  if (trialMirrorError) {
+    logger.warn("onboarding_store_trial_mirror_failed", { organizationId: result.organization_id, storeId: result.store_id, errorCode: trialMirrorError.code });
+  }
 
-  const cookieStore = await cookies();
-  const secure = process.env.NODE_ENV === "production";
-  cookieStore.set(ORG_COOKIE, result.organization_id, { httpOnly: true, sameSite: "lax", secure, path: "/" });
-  cookieStore.set(STORE_COOKIE, result.store_id, { httpOnly: true, sameSite: "lax", secure, path: "/" });
   redirect("/dashboard");
 }
