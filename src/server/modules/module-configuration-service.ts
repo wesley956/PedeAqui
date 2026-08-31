@@ -69,20 +69,13 @@ async function supportSnapshot(organizationId: string, storeId: string) {
   const access = await PlatformAdminService.access();
   if (access.role !== "super_admin") throw new PlatformAuthorizationError();
   const admin = createAdminClient();
-  const [
-    { data: store, error: storeError },
-    { data: rows, error: rowsError },
-    { data: subscriptionRows, error: subscriptionError },
-  ] = await Promise.all([
+  const [{ data: store, error: storeError }, { data: rows, error: rowsError }] = await Promise.all([
     admin.from("stores").select("id,organization_id,business_type,module_config_revision").eq("organization_id", organizationId).eq("id", storeId).maybeSingle(),
     admin.from("store_modules").select("module_key,enabled").eq("organization_id", organizationId).eq("store_id", storeId),
-    admin.from("organization_subscriptions").select("id").eq("organization_id", organizationId).limit(1),
   ]);
   if (storeError) throw storeError;
   if (rowsError) throw rowsError;
-  if (subscriptionError) throw subscriptionError;
   if (!store) throw new Error("Unidade não encontrada para configuração modular.");
-
   const rawBusinessType = String(store.business_type ?? "restaurant");
   const businessType = isBusinessType(rawBusinessType) ? rawBusinessType : "restaurant";
   const enabledModuleKeys = new Set<ModuleKey>();
@@ -90,24 +83,18 @@ async function supportSnapshot(organizationId: string, storeId: string) {
     const key = String(row.module_key ?? "") as ModuleKey;
     if ((MODULE_KEYS as readonly string[]).includes(key) && row.enabled === true) enabledModuleKeys.add(key);
   }
-
   const modulesBlockedByPlan = new Set<ModuleKey>();
-  // Organizações sem qualquer assinatura são legadas e permanecem sem gate comercial.
-  // Para organizações contratadas, todo módulo usa a feature module.<key>, mesmo que
-  // o catálogo antigo não tivesse entitlementFeatureKey explícito.
-  if (subscriptionRows?.length) {
-    for (const moduleKey of MODULE_KEYS) {
-      const featureKey = MODULE_CATALOG[moduleKey].entitlementFeatureKey ?? `module.${moduleKey}`;
-      const { data, error } = await admin.rpc("organization_entitlement_internal", {
-        p_organization_id: organizationId,
-        p_feature_key: featureKey,
-        p_at: new Date().toISOString(),
-      });
-      if (error) throw error;
-      if (!Boolean((data as { enabled?: boolean } | null)?.enabled)) modulesBlockedByPlan.add(moduleKey);
-    }
+  for (const moduleKey of MODULE_KEYS) {
+    const featureKey = MODULE_CATALOG[moduleKey].entitlementFeatureKey;
+    if (!featureKey) continue;
+    const { data, error } = await admin.rpc("organization_entitlement_internal", {
+      p_organization_id: organizationId,
+      p_feature_key: featureKey,
+      p_at: new Date().toISOString(),
+    });
+    if (error) throw error;
+    if (!Boolean((data as { enabled?: boolean } | null)?.enabled)) modulesBlockedByPlan.add(moduleKey);
   }
-
   return { access, admin, businessType, enabledModuleKeys, modulesBlockedByPlan, configRevision: Number(store.module_config_revision) || 0 };
 }
 
@@ -180,7 +167,7 @@ export class ModuleConfigurationService {
     const { context, snapshot } = await authorizedSnapshot(input.existingContext);
     if (!context.storeId) throw new Error("Module configuration requires an active store");
     const target = new Set(modulesForCommercialProfile(snapshot.businessType, input.profile));
-    const changes = MODULE_KEYS.filter((key) => snapshot.enabledModuleKeys.has(key) !== target.has(key)).map((moduleKey) => ({ moduleKey, enabled: target.has(key) }));
+    const changes = MODULE_KEYS.filter((key) => snapshot.enabledModuleKeys.has(key) !== target.has(key)).map((moduleKey) => ({ moduleKey, enabled: target.has(moduleKey) }));
     const blockers: Array<{ code: "not_in_plan" | "operational_blocker"; moduleKey: ModuleKey; detail?: string }> = [];
     for (const key of target) if (snapshot.entitlementAllowedByModule.get(key) === false) blockers.push({ code: "not_in_plan", moduleKey: key });
     for (const change of changes.filter((entry) => !entry.enabled)) {
