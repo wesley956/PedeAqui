@@ -3,6 +3,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { NavigationAccessService } from "@/server/access/navigation-access-service";
+import { SubscriptionLifecycleService } from "@/server/billing/subscription-lifecycle-service";
 
 export class CustomerSubscriptionAuthorizationError extends Error {
   constructor() {
@@ -32,16 +33,16 @@ export class CustomerSubscriptionService {
 
     const organizationId = access.context.organizationId;
     const admin = createAdminClient();
-    const { data: organization, error: organizationError } = await admin
-      .from("organizations")
-      .select("id,name,email,status")
-      .eq("id", organizationId)
-      .single();
-    if (organizationError) throw organizationError;
+    const [organizationResult, lifecycle] = await Promise.all([
+      admin.from("organizations").select("id,name,email,status").eq("id", organizationId).single(),
+      SubscriptionLifecycleService.accessForOrganization(organizationId),
+    ]);
+    if (organizationResult.error) throw organizationResult.error;
+    const organization = organizationResult.data;
 
     const { data: subscription, error: subscriptionError } = await admin
       .from("organization_subscriptions")
-      .select("id,organization_id,plan_id,plan_version_id,status,billing_interval,agreed_price_cents,price_currency,price_locked,price_lock_reason,billing_due_day,next_due_at,payment_status,founder_slot,grace_period_days,access_suspended_at,metadata,created_at,updated_at")
+      .select("id,organization_id,plan_id,plan_version_id,status,billing_interval,current_period_start,current_period_end,trial_ends_at,grace_ends_at,agreed_price_cents,price_currency,price_locked,price_lock_reason,billing_due_day,next_due_at,payment_status,founder_slot,grace_period_days,access_suspended_at,access_suspension_reason,metadata,created_at,updated_at")
       .eq("organization_id", organizationId)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -52,6 +53,7 @@ export class CustomerSubscriptionService {
       return {
         loadedAt,
         organization,
+        lifecycle,
         subscription: null,
         addons: [],
         invoices: [],
@@ -82,10 +84,15 @@ export class CustomerSubscriptionService {
     return {
       loadedAt,
       organization,
+      lifecycle,
       subscription: {
         id: subscription.id,
         status: subscription.status,
         billingInterval: subscription.billing_interval,
+        currentPeriodStart: subscription.current_period_start,
+        currentPeriodEnd: subscription.current_period_end,
+        trialEndsAt: subscription.trial_ends_at,
+        graceEndsAt: lifecycle.graceEndsAt ?? subscription.grace_ends_at,
         agreedPriceCents,
         addonTotalCents,
         totalMonthlyCents: agreedPriceCents + addonTotalCents,
@@ -98,6 +105,10 @@ export class CustomerSubscriptionService {
         founderSlot: subscription.founder_slot,
         gracePeriodDays: subscription.grace_period_days,
         accessSuspendedAt: subscription.access_suspended_at,
+        accessSuspensionReason: subscription.access_suspension_reason,
+        accessState: lifecycle.state,
+        remainingTrialDays: lifecycle.remainingTrialDays,
+        remainingGraceDays: lifecycle.remainingGraceDays,
         contractPlanKey: plan.key,
         contractPlanName: plan.name,
         contractPlanDescription: plan.description,
