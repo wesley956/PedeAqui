@@ -29,12 +29,9 @@ export async function bootstrapOrganizationAction(formData: FormData) {
   });
   if (!parsed.success) redirect("/onboarding?error=invalid_input");
 
+  // Toda a criação comercial (perfil, empresa, loja, assinatura, trial e módulos)
+  // acontece dentro do RPC transacional. Assim uma falha não deixa cadastro parcial.
   const supabase = await createClient();
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .upsert({ id: user.id, status: "active" }, { onConflict: "id" });
-  if (profileError) redirect(`/onboarding?plan=${parsed.data.planKey}&error=profile_failed`);
-
   let bootstrapData: unknown = null;
   for (let attempt = 0; attempt < MAX_STORE_SLUG_ATTEMPTS; attempt += 1) {
     const storeSlug = storeSlugCandidate(parsed.data.storeName, attempt);
