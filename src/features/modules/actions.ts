@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isCommercialModuleProfile, isModuleKey, moduleLabel } from "@/modules/module-catalog";
+import { isCommercialModuleProfile, isModuleKey, moduleLabel, MODULE_CATALOG } from "@/modules/module-catalog";
 import { getAccessContext } from "@/server/access/context";
 import {
   ModuleConfigurationConflictError,
@@ -62,33 +62,81 @@ export async function applyModuleChangeInlineAction(previous: ModuleInlineAction
 export async function requestModuleActivationAction(formData: FormData) {
   const moduleKey = String(formData.get("moduleKey") ?? "");
   if (!isModuleKey(moduleKey)) redirect("/configuracoes/modulos?error=invalid_module");
+
   const context = await getAccessContext();
+  if (!context.storeId) redirect("/configuracoes/modulos?error=store_missing");
+
+  const snapshot = await ModuleAccessService.load(context);
+  if (snapshot.entitlementAllowedByModule.get(moduleKey) === true) {
+    redirect("/configuracoes/modulos?error=already_available");
+  }
+
+  // Um adicional não pode ser aprovado isoladamente se alguma dependência paga
+  // ainda estiver fora do plano. Ex.: Entregadores exige Entregas; Compras exige
+  // Estoque e Fornecedores. Isso evita cobrar um módulo que não poderá funcionar.
+  const missingPaidDependency = MODULE_CATALOG[moduleKey].dependencies.find(
+    (dependency) => snapshot.entitlementAllowedByModule.get(dependency) === false,
+  );
+  if (missingPaidDependency) {
+    redirect(`/configuracoes/modulos?error=dependency_not_entitled&dependency=${missingPaidDependency}`);
+  }
+
   const admin = createAdminClient();
-  const { data: feature } = await admin.from("features").select("id,key,name,metadata").eq("key", moduleKey).eq("active", true).maybeSingle();
+  const { data: feature, error: featureError } = await admin
+    .from("features")
+    .select("id,key,name,metadata")
+    .eq("key", `module.${moduleKey}`)
+    .eq("active", true)
+    .maybeSingle();
+  if (featureError) redirect("/configuracoes/modulos?error=request_failed");
+
   const metadata = (feature?.metadata ?? {}) as Record<string, unknown>;
   const price = Number(metadata.commercial_price_cents);
-  if (!feature || metadata.commercial_sellable !== true || !Number.isFinite(price) || price <= 0) redirect("/configuracoes/modulos?error=not_sellable");
+  if (!feature || metadata.module_key !== moduleKey || metadata.commercial_sellable !== true || !Number.isFinite(price) || price <= 0) {
+    redirect("/configuracoes/modulos?error=not_sellable");
+  }
 
-  const { data: subscription } = await admin.from("organization_subscriptions")
+  const { data: subscription, error: subscriptionError } = await admin.from("organization_subscriptions")
     .select("id,plan_id,plan_version_id,agreed_price_cents,price_currency")
-    .eq("organization_id", context.organizationId).in("status", ["trialing", "active", "past_due"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    .eq("organization_id", context.organizationId)
+    .in("status", ["trialing", "active", "past_due"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (subscriptionError) redirect("/configuracoes/modulos?error=request_failed");
   if (!subscription) redirect("/configuracoes/modulos?error=subscription_missing");
 
-  const { data: existingRequest } = await admin.from("subscription_change_requests")
-    .select("id").eq("organization_id", context.organizationId).eq("feature_id", feature.id).eq("change_type", "add_on").in("status", ["draft", "scheduled"]).limit(1).maybeSingle();
+  const { data: existingRequest, error: existingRequestError } = await admin.from("subscription_change_requests")
+    .select("id")
+    .eq("organization_id", context.organizationId)
+    .eq("feature_id", feature.id)
+    .eq("requested_store_id", context.storeId)
+    .eq("change_type", "add_on")
+    .in("status", ["draft", "scheduled"])
+    .limit(1)
+    .maybeSingle();
+  if (existingRequestError) redirect("/configuracoes/modulos?error=request_failed");
   if (existingRequest) redirect("/configuracoes/modulos?success=request_pending");
 
-  const { data: addons } = await admin.from("subscription_addons").select("unit_price_cents,quantity").eq("subscription_id", subscription.id).eq("status", "active");
+  const { data: addons, error: addonsError } = await admin.from("subscription_addons")
+    .select("unit_price_cents,quantity")
+    .eq("subscription_id", subscription.id)
+    .eq("status", "active");
+  if (addonsError) redirect("/configuracoes/modulos?error=request_failed");
+
   const currentAddons = (addons ?? []).reduce((sum, addon) => sum + addon.unit_price_cents * addon.quantity, 0);
   let basePrice = subscription.agreed_price_cents;
   if (basePrice == null) {
-    const { data: plan } = await admin.from("plans").select("monthly_price_cents").eq("id", subscription.plan_id).single();
+    const { data: plan, error: planError } = await admin.from("plans").select("monthly_price_cents").eq("id", subscription.plan_id).single();
+    if (planError) redirect("/configuracoes/modulos?error=request_failed");
     basePrice = plan?.monthly_price_cents ?? 0;
   }
+
   const protocol = `MOD-${Date.now()}-${randomUUID().slice(0, 8)}`;
   const { error } = await admin.from("subscription_change_requests").insert({
     organization_id: context.organizationId,
     subscription_id: subscription.id,
+    requested_store_id: context.storeId,
     change_type: "add_on",
     status: "draft",
     current_plan_id: subscription.plan_id,
@@ -107,25 +155,32 @@ export async function requestModuleActivationAction(formData: FormData) {
     created_by: context.userId,
   });
   if (error) redirect("/configuracoes/modulos?error=request_failed");
+
   revalidatePath("/configuracoes/modulos");
   redirect("/configuracoes/modulos?success=request_created");
 }
 
 export async function applyModuleChangeAction(formData: FormData) {
-  const moduleKey = String(formData.get("moduleKey") ?? ""); const enabled = String(formData.get("enabled") ?? "") === "true";
+  const moduleKey = String(formData.get("moduleKey") ?? "");
+  const enabled = String(formData.get("enabled") ?? "") === "true";
   if (!isModuleKey(moduleKey)) redirect("/configuracoes/modulos?error=invalid_module");
   try { await ModuleConfigurationService.apply({ moduleKey, enabled }); } catch (error) { redirect(`/configuracoes/modulos?error=${errorCode(error)}`); }
-  revalidatePath("/", "layout"); redirect("/configuracoes/modulos?success=module_updated");
+  revalidatePath("/", "layout");
+  redirect("/configuracoes/modulos?success=module_updated");
 }
 
 export async function applyModulePresetAction(formData: FormData) {
-  const preset = String(formData.get("preset") ?? ""); if (preset !== "essential" && preset !== "complete") redirect("/configuracoes/modulos?error=invalid_preset");
+  const preset = String(formData.get("preset") ?? "");
+  if (preset !== "essential" && preset !== "complete") redirect("/configuracoes/modulos?error=invalid_preset");
   try { await ModuleConfigurationService.applyPreset({ preset }); } catch (error) { redirect(`/configuracoes/modulos?error=${errorCode(error)}`); }
-  revalidatePath("/", "layout"); redirect("/configuracoes/modulos?success=preset_updated");
+  revalidatePath("/", "layout");
+  redirect("/configuracoes/modulos?success=preset_updated");
 }
 
 export async function applyCommercialModuleProfileAction(formData: FormData) {
-  const profile = String(formData.get("profile") ?? ""); if (!isCommercialModuleProfile(profile)) redirect("/configuracoes/modulos?error=invalid_profile");
+  const profile = String(formData.get("profile") ?? "");
+  if (!isCommercialModuleProfile(profile)) redirect("/configuracoes/modulos?error=invalid_profile");
   try { await ModuleConfigurationService.applyCommercialProfile({ profile }); } catch (error) { redirect(`/configuracoes/modulos?error=${errorCode(error)}`); }
-  revalidatePath("/", "layout"); redirect("/configuracoes/modulos?success=profile_updated");
+  revalidatePath("/", "layout");
+  redirect("/configuracoes/modulos?success=profile_updated");
 }
