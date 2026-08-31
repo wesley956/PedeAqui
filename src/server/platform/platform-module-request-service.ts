@@ -16,18 +16,31 @@ async function requireSuperAdmin() {
   return access;
 }
 
+async function requireClientModuleRequest(changeId: string) {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("subscription_change_requests")
+    .select("id,change_type,status,requested_store_id")
+    .eq("id", changeId)
+    .maybeSingle();
+  if (error) throw error;
+  if (data?.change_type !== "add_on" || data.status !== "draft" || !data.requested_store_id) {
+    throw new Error("Client module request required");
+  }
+  return data;
+}
+
 export class PlatformModuleRequestService {
   static async isClientModuleRequest(changeId: string) {
     const parsed = z.string().uuid().parse(changeId);
     await requireSuperAdmin();
-    const admin = createAdminClient();
-    const { data, error } = await admin
-      .from("subscription_change_requests")
-      .select("id,change_type,status,requested_store_id")
-      .eq("id", parsed)
-      .maybeSingle();
-    if (error) throw error;
-    return Boolean(data?.change_type === "add_on" && data?.status === "draft" && data?.requested_store_id);
+    try {
+      await requireClientModuleRequest(parsed);
+      return true;
+    } catch (error) {
+      if (error instanceof Error && error.message === "Client module request required") return false;
+      throw error;
+    }
   }
 
   static async approve(input: z.input<typeof decisionSchema>) {
@@ -47,6 +60,7 @@ export class PlatformModuleRequestService {
   static async reject(input: z.input<typeof decisionSchema>) {
     const values = decisionSchema.parse(input);
     const access = await requireSuperAdmin();
+    await requireClientModuleRequest(values.changeId);
     const admin = createAdminClient();
     const { data, error } = await admin.rpc("subscription_change_cancel_internal", {
       p_change_id: values.changeId,
