@@ -13,6 +13,15 @@ const subscriptionStatus: Record<string,string> = { active:"Ativa",trialing:"Em 
 const paymentStatus: Record<string,string> = { not_started:"Cobrança ainda não iniciada",pending:"Pagamento pendente",paid:"Pago",overdue:"Em atraso",waived:"Isento neste vencimento" };
 const invoiceStatus: Record<string,string> = { pending:"Pendente",paid:"Paga",overdue:"Em atraso",cancelled:"Cancelada",waived:"Isenta" };
 
+function accessHeadline(state: string, trialDays: number | null, graceDays: number | null) {
+  if (state === "trial") return `Teste grátis ativo${trialDays === null ? "" : ` · ${trialDays} dia${trialDays === 1 ? "" : "s"} restante${trialDays === 1 ? "" : "s"}`}`;
+  if (state === "grace") return `Período de tolerância${graceDays === null ? "" : ` · ${graceDays} dia${graceDays === 1 ? "" : "s"} restante${graceDays === 1 ? "" : "s"}`}`;
+  if (state === "payment_required") return "Pagamento necessário para continuar usando o PedeAqui";
+  if (state === "suspended") return "Acesso operacional suspenso até a regularização";
+  if (state === "ended") return "Assinatura encerrada";
+  return null;
+}
+
 export default async function CustomerSubscriptionPage() {
   const data = await CustomerSubscriptionService.load();
   const subscription = data.subscription;
@@ -29,6 +38,14 @@ export default async function CustomerSubscriptionPage() {
     : null;
   const hadPixForOpenInvoice = openInvoice ? data.pixCharges.some((charge) => charge.invoice_id === openInvoice.id) : false;
   const functionalDiffers = subscription.functionalPlanLabel && subscription.functionalPlanLabel !== subscription.contractPlanName;
+  const headline = accessHeadline(subscription.accessState, subscription.remainingTrialDays, subscription.remainingGraceDays);
+  const cycleMetric = subscription.accessState === "trial"
+    ? `${subscription.remainingTrialDays ?? "—"} dia(s) de teste`
+    : subscription.accessState === "grace"
+      ? `${subscription.remainingGraceDays ?? "—"} dia(s) de tolerância`
+      : subscription.accessState === "suspended" || subscription.accessState === "payment_required"
+        ? "Regularização necessária"
+        : subscriptionStatus[subscription.status] ?? subscription.status;
 
   return (
     <main className={styles.page}>
@@ -41,9 +58,17 @@ export default async function CustomerSubscriptionPage() {
         <span className={styles.badge}>{subscriptionStatus[subscription.status] ?? subscription.status}</span>
       </section>
 
+      {headline ? <section className={styles.card} aria-live="polite">
+        <div><p className={styles.eyebrow}>SITUAÇÃO DA CONTA</p><h2>{headline}</h2></div>
+        {subscription.accessState === "trial" ? <p>Seu teste gratuito termina em {dateTime(subscription.trialEndsAt)}. Até lá você pode usar normalmente os recursos do plano escolhido.</p> : null}
+        {subscription.accessState === "grace" ? <p>O vencimento passou, mas o acesso continua durante a tolerância até {dateTime(subscription.graceEndsAt)}. Regularize a mensalidade para evitar suspensão.</p> : null}
+        {subscription.accessState === "payment_required" || subscription.accessState === "suspended" ? <p>Seus dados continuam preservados. Após a confirmação do pagamento, a assinatura volta ao estado ativo e o acesso operacional é liberado automaticamente.</p> : null}
+      </section> : null}
+
       <section className={styles.metrics} aria-label="Resumo da assinatura">
         <Metric label="Plano contratado" value={subscription.contractPlanName} />
         <Metric label="Mensalidade atual" value={money(subscription.totalMonthlyCents, subscription.currency)} />
+        <Metric label="Ciclo atual" value={cycleMetric} />
         <Metric label="Próximo vencimento" value={subscription.nextDueAt ? new Date(subscription.nextDueAt).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "A definir"} />
         <Metric label="Pagamento" value={paymentStatus[subscription.paymentStatus] ?? subscription.paymentStatus} />
       </section>
@@ -59,7 +84,7 @@ export default async function CustomerSubscriptionPage() {
             <Row label="Total mensal" value={money(subscription.totalMonthlyCents, subscription.currency)} />
             <Row label="Dia de vencimento" value={subscription.billingDueDay ? `Dia ${subscription.billingDueDay}` : "A definir"} />
           </div>
-          {subscription.founderSlot ? <div className={styles.founder}><strong>Cliente Fundador #{subscription.founderSlot}</strong><br />Seu valor especial de {money(subscription.agreedPriceCents, subscription.currency)} permanece protegido. A formalização eletrônica não altera preço, módulos ou vencimento já registrados.</div> : null}
+          {subscription.founderSlot ? <div className={styles.founder}><strong>Cliente Fundador #{subscription.founderSlot}</strong><br />Seu preço-base especial de {money(subscription.agreedPriceCents, subscription.currency)} permanece protegido no plano {subscription.contractPlanName}. Módulos adicionais são cobrados separadamente.</div> : null}
           {subscription.priceLocked && !subscription.founderSlot ? <div className={styles.founder}><strong>Valor protegido</strong><br />Sua condição comercial atual está bloqueada conforme o contrato.</div> : null}
 
           <div className={styles.contractPanel}>
@@ -105,6 +130,8 @@ export default async function CustomerSubscriptionPage() {
             Existe uma mensalidade de {money(openInvoice.total_amount_cents ?? openInvoice.base_amount_cents, openInvoice.currency)} com vencimento em {dateTime(openInvoice.due_at)}. Gere o PIX agora; se um QR anterior tiver expirado, o PedeAqui confere o status no Mercado Pago antes de emitir outro.
             <GeneratePixButton invoiceId={openInvoice.id} renew={hadPixForOpenInvoice} />
           </div>
+        ) : subscription.accessState === "trial" ? (
+          <div className={styles.empty}>Você está no período gratuito. A primeira mensalidade só vence ao final dos {subscription.remainingTrialDays ?? ""} dia(s) restantes do teste.</div>
         ) : (
           <div className={styles.empty}>Nenhuma cobrança PIX pendente neste momento. A próxima mensalidade e seu PIX serão gerados automaticamente no ciclo de renovação.</div>
         )}
