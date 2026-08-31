@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isCommercialModuleProfile, isModuleKey, moduleLabel, MODULE_CATALOG } from "@/modules/module-catalog";
+import { authorizeOrganization, AuthorizationError } from "@/server/access/authorize";
 import { getAccessContext } from "@/server/access/context";
+import { PERMISSIONS } from "@/server/access/permissions";
 import {
   ModuleConfigurationConflictError,
   ModuleConfigurationError,
@@ -65,6 +67,12 @@ export async function requestModuleActivationAction(formData: FormData) {
 
   const context = await getAccessContext();
   if (!context.storeId) redirect("/configuracoes/modulos?error=store_missing");
+  try {
+    await authorizeOrganization(PERMISSIONS.ORGANIZATION_MANAGE, context);
+  } catch (error) {
+    if (error instanceof AuthorizationError) redirect("/configuracoes/modulos?error=permission_denied");
+    throw error;
+  }
 
   const snapshot = await ModuleAccessService.load(context);
   if (snapshot.entitlementAllowedByModule.get(moduleKey) === true) {
