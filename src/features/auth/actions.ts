@@ -94,6 +94,7 @@ export async function signUpAction(formData: FormData) {
   }
   if (error) redirect(signupPath("signup_failed", returnPath, plan));
 
+  if (data.session) redirect(returnPath);
   redirect(`/login?status=check_email&next=${encodeURIComponent(returnPath)}`);
 }
 
