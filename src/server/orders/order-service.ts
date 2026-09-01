@@ -20,6 +20,8 @@ import {
 } from "@/server/orders/state-machines";
 
 const uuidSchema = z.string().uuid();
+const historySearchSchema = z.string().trim().max(80).transform((value) => value.replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim());
+const operationalPageSize = 200;
 const createResultSchema = z.object({ order_id: z.string().uuid(), display_number: z.coerce.number(), created: z.boolean() });
 const transitionResultSchema = z.object({
   order_id: z.string().uuid(),
@@ -101,7 +103,7 @@ export class OrderService {
     return { ...createResultSchema.parse(data), accessToken };
   }
 
-  static async list(limit = 150) {
+  static async list() {
     const context = await authorize(PERMISSIONS.ORDERS_VIEW);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
@@ -113,35 +115,61 @@ export class OrderService {
     if (settingsResult.error) throw settingsResult.error;
 
     const workflowMode = settingsResult.data?.orders_workflow_mode === "simplified" ? "simplified" as const : "standard" as const;
-    let query = admin.from("orders")
-      .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
-      .eq("organization_id", context.organizationId)
-      .eq("store_id", storeId);
-
-    if (workflowMode === "simplified") {
-      query = query.not("order_status", "in", "(completed,rejected,canceled)");
+    const orders = [];
+    for (let from = 0; ; from += operationalPageSize) {
+      const { data, error } = await admin.from("orders")
+        .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
+        .eq("organization_id", context.organizationId)
+        .eq("store_id", storeId)
+        .not("order_status", "in", "(completed,rejected,canceled)")
+        .order("created_at", { ascending: false })
+        .range(from, from + operationalPageSize - 1);
+      if (error) throw error;
+      orders.push(...(data ?? []));
+      if ((data?.length ?? 0) < operationalPageSize) break;
     }
-
-    const { data, error } = await query
-      .order("created_at", { ascending: false })
-      .limit(Math.min(Math.max(limit, 1), 250));
-    if (error) throw error;
-    return { context, orders: data ?? [], workflowMode };
+    return { context, orders, workflowMode };
   }
 
-  static async listHistory(limit = 250) {
+  static async listHistory(input: { page?: number; pageSize?: number; search?: string } = {}) {
     const context = await authorize(PERMISSIONS.ORDERS_VIEW);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const { data, error } = await admin.from("orders")
+    const page = Math.max(1, Math.trunc(input.page ?? 1));
+    const pageSize = Math.min(100, Math.max(10, Math.trunc(input.pageSize ?? 30)));
+    const search = historySearchSchema.parse(input.search ?? "");
+    let query = admin.from("orders")
       .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
-      .in("order_status", ["completed", "rejected", "canceled"])
+      .in("order_status", ["completed", "rejected", "canceled"]);
+    if (search) {
+      const number = /^#?\d+$/.test(search) ? Number(search.replace("#", "")) : null;
+      query = number === null
+        ? query.ilike("customer_name_snapshot", `%${search}%`)
+        : query.eq("display_number", number);
+    }
+    const countQuery = admin.from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .in("order_status", ["completed", "rejected", "canceled"]);
+    const filteredCountQuery = search
+      ? (/^#?\d+$/.test(search)
+        ? countQuery.eq("display_number", Number(search.replace("#", "")))
+        : countQuery.ilike("customer_name_snapshot", `%${search}%`))
+      : countQuery;
+    const from = (page - 1) * pageSize;
+    const [{ data, error }, { count, error: countError }] = await Promise.all([
+      query
       .order("updated_at", { ascending: false })
-      .limit(Math.min(Math.max(limit, 1), 250));
+        .range(from, from + pageSize - 1),
+      filteredCountQuery,
+    ]);
     if (error) throw error;
-    return { context, orders: data ?? [] };
+    if (countError) throw countError;
+    const total = count ?? 0;
+    return { context, orders: data ?? [], page, pageSize, search, total, hasPrevious: page > 1, hasNext: from + pageSize < total };
   }
 
   static async get(orderId: string) {

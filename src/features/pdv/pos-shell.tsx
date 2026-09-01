@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useMemo, useState, type FormEvent } from "react";
-import { createPdvSaleAction } from "@/features/pdv/actions";
+import { useDeferredValue, useEffect, useMemo, useState, useTransition, type FormEvent } from "react";
+import { createPdvSaleAction, searchPdvCustomersAction } from "@/features/pdv/actions";
 import {
   cartTotalCents,
   filterPosProducts,
   formatMoneyInput,
-  normalizePosSearch,
   parsePosMoneyToCents,
   projectPosGrowth,
   projectedUnitPriceCents,
@@ -90,8 +89,8 @@ function ProductConfigurator({ state, product, onChange, onCancel, onAdd }: { st
   );
 }
 
-export function PosShell({ categories, products, customers, paymentMethods, coupons, growthSettings, sessionNonce }: {
-  categories: PosCategory[]; products: PosProduct[]; customers: PosCustomer[]; paymentMethods: PosPaymentMethodOption[];
+export function PosShell({ categories, products, customerSearchEnabled, paymentMethods, coupons, growthSettings, sessionNonce }: {
+  categories: PosCategory[]; products: PosProduct[]; customerSearchEnabled: boolean; paymentMethods: PosPaymentMethodOption[];
   coupons: PosCoupon[]; growthSettings: PosGrowthSettings; sessionNonce: string;
 }) {
   const defaultMethod = paymentMethods[0]?.method ?? "cash";
@@ -99,7 +98,10 @@ export function PosShell({ categories, products, customers, paymentMethods, coup
   const [search, setSearch] = useState(""); const deferredSearch = useDeferredValue(search);
   const [cart, setCart] = useState<PosCartLine[]>([]); const [configurator, setConfigurator] = useState<ConfiguratorState | null>(null);
   const [customerQuery, setCustomerQuery] = useState(""); const deferredCustomerQuery = useDeferredValue(customerQuery);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [customerMatches, setCustomerMatches] = useState<PosCustomer[]>([]);
+  const [customerSearchError, setCustomerSearchError] = useState<string | null>(null);
+  const [customerSearchPending, startCustomerSearch] = useTransition();
+  const [selectedCustomer, setSelectedCustomer] = useState<PosCustomer | null>(null);
   const [customerName, setCustomerName] = useState(""); const [customerPhone, setCustomerPhone] = useState(""); const [customerEmail, setCustomerEmail] = useState("");
   const [couponCode, setCouponCode] = useState(""); const [cashbackText, setCashbackText] = useState(""); const [loyaltyPointsText, setLoyaltyPointsText] = useState("");
   const [payments, setPayments] = useState<PaymentDraft[]>(() => [{ id: "payment-1", method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]);
@@ -107,8 +109,15 @@ export function PosShell({ categories, products, customers, paymentMethods, coup
 
   const productIndex = useMemo(() => new Map(products.map((product) => [product.id, product])), [products]);
   const visibleProducts = useMemo(() => filterPosProducts(products, categoryId, deferredSearch), [products, categoryId, deferredSearch]);
-  const selectedCustomer = selectedCustomerId ? customers.find((customer) => customer.id === selectedCustomerId) ?? null : null;
-  const customerMatches = useMemo(() => { const needle = normalizePosSearch(deferredCustomerQuery); if (!needle) return []; return customers.filter((customer) => normalizePosSearch(`${customer.name} ${customer.phone ?? ""} ${customer.email ?? ""}`).includes(needle)).slice(0, 8); }, [customers, deferredCustomerQuery]);
+  useEffect(() => {
+    if (!customerSearchEnabled || selectedCustomer || deferredCustomerQuery.trim().length < 2) return;
+    const timer = window.setTimeout(() => startCustomerSearch(async () => {
+      const result = await searchPdvCustomersAction(deferredCustomerQuery);
+      setCustomerMatches(result.customers);
+      setCustomerSearchError(result.error);
+    }), 250);
+    return () => window.clearTimeout(timer);
+  }, [customerSearchEnabled, deferredCustomerQuery, selectedCustomer]);
   const cartSubtotal = cartTotalCents(cart);
   const cashbackParsed = cashbackText.trim() ? parsePosMoneyToCents(cashbackText) : 0;
   const loyaltyNumber = loyaltyPointsText.trim() ? Number(loyaltyPointsText) : 0;
@@ -133,8 +142,8 @@ export function PosShell({ categories, products, customers, paymentMethods, coup
   function chooseProduct(product: PosProduct) { if (product.modifierGroups.length === 0) { addCartLine(product, [], 1, ""); return; } setConfigurator({ productId: product.id, modifierIds: [], quantity: 1, note: "", error: null }); }
   function changeQuantity(key: string, delta: number) { setCart((current) => current.flatMap((line) => { if (line.key !== key) return [line]; const quantity = line.quantity + delta; return quantity > 0 ? [{ ...line, quantity: Math.min(999, quantity) }] : []; })); touchSale(); }
   function removeLine(key: string) { setCart((current) => current.filter((line) => line.key !== key)); touchSale(); }
-  function selectCustomer(customer: PosCustomer | null) { setSelectedCustomerId(customer?.id ?? null); setCustomerQuery(customer ? `${customer.name}${customer.phone ? ` · ${customer.phone}` : ""}` : ""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail(""); setCashbackText(""); setLoyaltyPointsText(""); touchSale(); }
-  function changeManualCustomer(field: "name" | "phone" | "email", value: string) { setSelectedCustomerId(null); setCashbackText(""); setLoyaltyPointsText(""); if (field === "name") setCustomerName(value); if (field === "phone") setCustomerPhone(value); if (field === "email") setCustomerEmail(value); touchSale(); }
+  function selectCustomer(customer: PosCustomer | null) { setSelectedCustomer(customer); setCustomerMatches([]); setCustomerQuery(customer ? `${customer.name}${customer.phone ? ` · ${customer.phone}` : ""}` : ""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail(""); setCashbackText(""); setLoyaltyPointsText(""); touchSale(); }
+  function changeManualCustomer(field: "name" | "phone" | "email", value: string) { setSelectedCustomer(null); setCashbackText(""); setLoyaltyPointsText(""); if (field === "name") setCustomerName(value); if (field === "phone") setCustomerPhone(value); if (field === "email") setCustomerEmail(value); touchSale(); }
   function updatePayment(id: string, patch: Partial<PaymentDraft>) { setPayments((current) => current.map((payment) => payment.id === id ? { ...payment, ...patch } : payment)); touchSale(); }
   function addPayment() { setPayments((current) => { const prepared = current.length === 1 && !current[0]?.amountText.trim() ? current.map((payment) => ({ ...payment, amountText: formatMoneyInput(saleTotal) })) : current; return [...prepared, { id: crypto.randomUUID(), method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]; }); touchSale(); }
   function removePayment(id: string) { setPayments((current) => { const remaining = current.filter((payment) => payment.id !== id); const [onlyPayment] = remaining; if (remaining.length === 1 && onlyPayment) return [{ ...onlyPayment, amountText: "" }]; return remaining; }); touchSale(); }
@@ -152,7 +161,7 @@ export function PosShell({ categories, products, customers, paymentMethods, coup
     try {
       const result = await createPdvSaleAction(input, `${sessionNonce}:${revision}`);
       if (!result.ok || !result.sale) { setError(result.error ?? "Não foi possível finalizar a venda."); return; }
-      setLastSale(result.sale); setCart([]); setSelectedCustomerId(null); setCustomerQuery(""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail(""); setCouponCode(""); setCashbackText(""); setLoyaltyPointsText("");
+      setLastSale(result.sale); setCart([]); setSelectedCustomer(null); setCustomerQuery(""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail(""); setCouponCode(""); setCashbackText(""); setLoyaltyPointsText("");
       setPayments([{ id: crypto.randomUUID(), method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]); setRevision((value) => value + 1);
     } finally { setPending(false); }
   }
@@ -178,7 +187,7 @@ export function PosShell({ categories, products, customers, paymentMethods, coup
             <div className={styles.advancedBody}>
               <div className={styles.section}>
                 <div className={styles.rowBetween}><h3>Cliente</h3><button type="button" className={styles.smallButton} onClick={() => selectCustomer(null)}>Consumidor</button></div>
-                {customers.length > 0 ? <><input className={styles.field} value={customerQuery} onChange={(event) => { setCustomerQuery(event.target.value); setSelectedCustomerId(null); setCashbackText(""); setLoyaltyPointsText(""); }} placeholder="Buscar por nome, telefone ou e-mail" />{customerMatches.length > 0 ? <div className={styles.customerMatches}>{customerMatches.map((customer) => <button type="button" key={customer.id} className={selectedCustomerId === customer.id ? styles.customerSelected : styles.customerButton} onClick={() => selectCustomer(customer)}><strong>{customer.name}</strong><div className={styles.mutedSmall}>{customer.phone ?? customer.email ?? "Cliente cadastrado"} · Cashback {money(customer.cashbackBalanceCents)} · {customer.loyaltyBalancePoints} pts</div></button>)}</div> : null}</> : null}
+                {customerSearchEnabled ? <><input className={styles.field} value={customerQuery} onChange={(event) => { setCustomerQuery(event.target.value); setSelectedCustomer(null); setCustomerMatches([]); setCustomerSearchError(null); setCashbackText(""); setLoyaltyPointsText(""); }} placeholder="Buscar por nome, telefone ou e-mail" aria-label="Buscar cliente no cadastro completo" />{customerSearchPending ? <div className={styles.mutedSmall} role="status">Buscando no cadastro completo…</div> : null}{customerSearchError ? <div className={styles.statusError}>{customerSearchError}</div> : null}{customerMatches.length > 0 ? <div className={styles.customerMatches}>{customerMatches.map((customer) => <button type="button" key={customer.id} className={styles.customerButton} onClick={() => selectCustomer(customer)}><strong>{customer.name}</strong><div className={styles.mutedSmall}>{customer.phone ?? customer.email ?? "Cliente cadastrado"} · Cashback {money(customer.cashbackBalanceCents)} · {customer.loyaltyBalancePoints} pts</div></button>)}</div> : null}</> : null}
                 {selectedCustomer ? <div className={styles.customerSelected}><strong>{selectedCustomer.name}</strong><div className={styles.mutedSmall}>{selectedCustomer.phone ?? selectedCustomer.email ?? "Cliente cadastrado"}</div><div className={styles.mutedSmall}>Cashback {money(selectedCustomer.cashbackBalanceCents)} · Pontos {selectedCustomer.loyaltyBalancePoints}</div></div> : <div className={styles.twoColumns}><input className={styles.field} value={customerName} onChange={(event) => changeManualCustomer("name", event.target.value)} placeholder="Nome (opcional)" maxLength={120} /><input className={styles.field} value={customerPhone} onChange={(event) => changeManualCustomer("phone", event.target.value)} placeholder="Telefone" maxLength={32} inputMode="tel" /><input className={styles.field} value={customerEmail} onChange={(event) => changeManualCustomer("email", event.target.value)} placeholder="E-mail (opcional)" type="email" maxLength={200} /></div>}
               </div>
               <div className={styles.section}>

@@ -28,13 +28,16 @@ describe("backend performance contracts [310]", () => {
     expect(read("src/server/orders/public-order-service.ts")).not.toContain("modifiersResult.data ?? []).filter");
   });
 
-  it("keeps critical list/snapshot payloads bounded", () => {
+  it("keeps each critical query bounded while preserving complete operational queues", () => {
     const orders = read("src/server/orders/order-service.ts");
     const kitchen = read("src/server/kitchen/kitchen-service.ts");
     const pdv = read("src/server/pdv/pdv-service.ts");
-    expect(orders).toContain("Math.min(Math.max(limit, 1), 250)");
-    expect(kitchen).toContain("Math.min(Math.max(limit, 1), 250)");
-    expect(pdv).toContain(".limit(150)");
+    expect(orders).toContain("const operationalPageSize = 200");
+    expect(orders).toContain(".range(from, from + operationalPageSize - 1)");
+    expect(kitchen).toContain("const relationChunkSize = 100");
+    expect(kitchen).toContain("chunks(orderIds)");
+    expect(pdv).toContain("static async searchCustomers");
+    expect(pdv).toContain(".limit(8)");
   });
 
   it("records measured evidence and rejects speculative index churn", () => {

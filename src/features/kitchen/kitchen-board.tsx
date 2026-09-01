@@ -25,9 +25,11 @@ export function KitchenBoard({ storeId, stations, orders, initialNow, businessTy
   initialNow: number;
   businessType?: BusinessType;
 }) {
+  const initialVisibleCount = 120;
   const router = useRouter();
   const [stationId, setStationId] = useState<string | null>(null);
   const [now, setNow] = useState(initialNow);
+  const [visibleCount, setVisibleCount] = useState(initialVisibleCount);
   const vocabulary = businessVocabulary(businessType);
 
   useEffect(() => {
@@ -45,7 +47,8 @@ export function KitchenBoard({ storeId, stations, orders, initialNow, businessTy
     return () => { void supabase.removeChannel(channel); };
   }, [router, storeId]);
 
-  const visibleOrders = useMemo(() => filterKitchenOrdersByStation(orders, stationId), [orders, stationId]);
+  const filteredOrders = useMemo(() => filterKitchenOrdersByStation(orders, stationId), [orders, stationId]);
+  const visibleOrders = useMemo(() => filteredOrders.slice(0, visibleCount), [filteredOrders, visibleCount]);
   const stationNames = useMemo(() => new Map(stations.map((station) => [station.id, station.name])), [stations]);
   const counts = useMemo(() => {
     let attention = 0;
@@ -69,10 +72,15 @@ export function KitchenBoard({ storeId, stations, orders, initialNow, businessTy
       </div>
 
       <div className={styles.summary} aria-live="polite">
-        <Summary label="Na tela" value={visibleOrders.length} />
+        <Summary label="Na fila" value={filteredOrders.length} />
         <Summary label="Atenção" value={counts.attention} tone="warning" />
         <Summary label="Atrasados" value={counts.late} tone="danger" />
       </div>
+
+      {filteredOrders.length > initialVisibleCount ? <div className={styles.overload} role="alert">
+        <strong>Operação acima de 120 pedidos ativos.</strong>
+        <span>Todos estão preservados. A tela mostra {visibleOrders.length} de {filteredOrders.length} para manter a leitura fluida.</span>
+      </div> : null}
 
       {stations.length === 0 ? <div className={styles.empty}><strong>{vocabulary.noStationsTitle}</strong><p>{vocabulary.noStationsBody}</p></div> : null}
       {visibleOrders.length === 0 ? <div className={styles.empty}><strong>{vocabulary.noProductionTitle}</strong><p>Pedidos confirmados aparecerão aqui automaticamente quando esta etapa for necessária.</p></div> : (
@@ -80,6 +88,7 @@ export function KitchenBoard({ storeId, stations, orders, initialNow, businessTy
           {visibleOrders.map((order) => <KitchenCard key={order.id} order={order} now={now} stationNames={stationNames} filteredByStation={stationId !== null} businessType={businessType} />)}
         </div>
       )}
+      {visibleOrders.length < filteredOrders.length ? <Button type="button" tone="secondary" size="lg" onClick={() => setVisibleCount((count) => Math.min(count + initialVisibleCount, filteredOrders.length))}>Carregar mais {Math.min(initialVisibleCount, filteredOrders.length - visibleOrders.length)} pedido(s)</Button> : null}
     </div>
   );
 }

@@ -19,6 +19,7 @@ import type {
 } from "@/features/pdv/model";
 
 const idempotencySchema = z.string().trim().min(8).max(200);
+const customerSearchSchema = z.string().trim().min(2).max(80).transform((value) => value.replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim());
 const resultSchema = z.object({
   order_id: z.string().uuid(),
   display_number: z.coerce.number().int().positive(),
@@ -106,23 +107,6 @@ export class PdvService {
       modifierGroups: (groupIdsByProduct.get(row.id) ?? []).map((groupId) => groupsById.get(groupId)).filter((group): group is PosModifierGroup => Boolean(group)),
     }));
 
-    let customers: PosCustomer[] = [];
-    if (customerAccess) {
-      const [customerResult, cashbackResult, loyaltyResult] = await Promise.all([
-        admin.from("customers").select("id, name, phone, email").eq("organization_id", context.organizationId).is("deleted_at", null).order("last_order_at", { ascending: false, nullsFirst: false }).order("name").limit(150),
-        admin.from("cashback_accounts").select("customer_id, balance_cents").eq("organization_id", context.organizationId).eq("store_id", storeId),
-        admin.from("loyalty_accounts").select("customer_id, balance_points").eq("organization_id", context.organizationId).eq("store_id", storeId),
-      ]);
-      for (const result of [customerResult, cashbackResult, loyaltyResult]) if (result.error) throw result.error;
-      const cashbackMap = new Map((cashbackResult.data ?? []).map((row) => [row.customer_id, Number(row.balance_cents)]));
-      const loyaltyMap = new Map((loyaltyResult.data ?? []).map((row) => [row.customer_id, Number(row.balance_points)]));
-      customers = (customerResult.data ?? []).map((row) => ({
-        id: row.id, name: row.name, phone: row.phone, email: row.email,
-        cashbackBalanceCents: cashbackMap.get(row.id) ?? 0,
-        loyaltyBalancePoints: loyaltyMap.get(row.id) ?? 0,
-      }));
-    }
-
     const methods: PosPaymentMethodOption[] = paymentMethods.filter((item) => item.enabled).map((item) => ({ method: item.method as PosPaymentMethod, label: paymentLabels[item.method as PosPaymentMethod] }));
     const now = Date.now();
     const coupons: PosCoupon[] = (couponsResult.data ?? []).filter((row) => {
@@ -142,7 +126,39 @@ export class PdvService {
       loyaltyRedeemCentsPerPoint: Number(growthSettingsResult.data?.loyalty_redeem_cents_per_point ?? 1),
     };
 
-    return { categories, products, customers, paymentMethods: methods, coupons, growthSettings, sessionNonce: randomUUID() };
+    return { categories, products, customerSearchEnabled: customerAccess, paymentMethods: methods, coupons, growthSettings, sessionNonce: randomUUID() };
+  }
+
+  static async searchCustomers(rawQuery: string): Promise<PosCustomer[]> {
+    const query = customerSearchSchema.parse(rawQuery);
+    const context = await authorize(PERMISSIONS.ORDERS_CREATE);
+    await authorize(PERMISSIONS.CUSTOMERS_VIEW, context);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const pattern = `%${query}%`;
+    const customerResult = await admin.from("customers")
+      .select("id, name, phone, email")
+      .eq("organization_id", context.organizationId)
+      .is("deleted_at", null)
+      .or(`name.ilike.${pattern},phone.ilike.${pattern},email.ilike.${pattern}`)
+      .order("last_order_at", { ascending: false, nullsFirst: false })
+      .order("name")
+      .limit(8);
+    if (customerResult.error) throw customerResult.error;
+    const customerIds = (customerResult.data ?? []).map((row) => row.id);
+    if (customerIds.length === 0) return [];
+    const [cashbackResult, loyaltyResult] = await Promise.all([
+      admin.from("cashback_accounts").select("customer_id, balance_cents").eq("organization_id", context.organizationId).eq("store_id", storeId).in("customer_id", customerIds),
+      admin.from("loyalty_accounts").select("customer_id, balance_points").eq("organization_id", context.organizationId).eq("store_id", storeId).in("customer_id", customerIds),
+    ]);
+    for (const result of [cashbackResult, loyaltyResult]) if (result.error) throw result.error;
+    const cashbackMap = new Map((cashbackResult.data ?? []).map((row) => [row.customer_id, Number(row.balance_cents)]));
+    const loyaltyMap = new Map((loyaltyResult.data ?? []).map((row) => [row.customer_id, Number(row.balance_points)]));
+    return (customerResult.data ?? []).map((row) => ({
+      id: row.id, name: row.name, phone: row.phone, email: row.email,
+      cashbackBalanceCents: cashbackMap.get(row.id) ?? 0,
+      loyaltyBalancePoints: loyaltyMap.get(row.id) ?? 0,
+    }));
   }
 
   static async createSale(input: PosSaleInput, idempotencyKey: string) {

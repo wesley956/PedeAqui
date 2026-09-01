@@ -47,3 +47,12 @@ export async function createPdvSaleAction(input: PosSaleInput, idempotencyKey: s
     return { ok: false as const, sale: null, error: friendlyPdvError(error) };
   }
 }
+
+export async function searchPdvCustomersAction(query: string) {
+  try {
+    if (query.trim().length < 2) return { ok: true as const, customers: [], error: null };
+    return { ok: true as const, customers: await PdvService.searchCustomers(query), error: null };
+  } catch {
+    return { ok: false as const, customers: [], error: "Não foi possível buscar clientes agora." };
+  }
+}
