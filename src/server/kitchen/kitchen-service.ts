@@ -1,5 +1,6 @@
 import "server-only";
 
+import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
@@ -141,5 +142,75 @@ export class KitchenService {
     }));
 
     return { context, storeId, stations, orders: kitchenOrders, snapshotAt, overloaded: kitchenOrders.length > 120 };
+  }
+
+  static async projection(orderId: string): Promise<KitchenOrder | null> {
+    const id = z.string().uuid().parse(orderId);
+    const context = await authorize(PERMISSIONS.ORDERS_VIEW);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const orderResult = await admin.from("orders")
+      .select("id, display_number, customer_name_snapshot, fulfillment_type, production_status, confirmed_at, created_at")
+      .eq("id", id)
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .eq("order_status", "confirmed")
+      .in("production_status", ["pending_confirmation", "queued", "preparing", "ready"])
+      .maybeSingle();
+    if (orderResult.error) throw orderResult.error;
+    if (!orderResult.data) return null;
+    const itemsResult = await admin.from("order_items")
+      .select("id, product_id, product_name_snapshot, quantity, note, created_at")
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .eq("order_id", id)
+      .order("created_at");
+    if (itemsResult.error) throw itemsResult.error;
+    const items = itemsResult.data ?? [];
+    const itemIds = items.map((item) => item.id);
+    const productIds = [...new Set(items.map((item) => item.product_id).filter((value): value is string => Boolean(value)))];
+    const [modifierResult, routeResult] = await Promise.all([
+      itemIds.length ? admin.from("order_item_modifiers")
+        .select("order_item_id, group_name_snapshot, modifier_name_snapshot, created_at")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).in("order_item_id", itemIds).order("created_at")
+        : Promise.resolve({ data: [], error: null }),
+      productIds.length ? admin.from("product_production_stations")
+        .select("product_id, station_id")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).in("product_id", productIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+    if (modifierResult.error) throw modifierResult.error;
+    if (routeResult.error) throw routeResult.error;
+    const modifiersByItem = new Map<string, { name: string; groupName: string }[]>();
+    for (const modifier of modifierResult.data ?? []) {
+      const current = modifiersByItem.get(modifier.order_item_id) ?? [];
+      current.push({ name: modifier.modifier_name_snapshot, groupName: modifier.group_name_snapshot });
+      modifiersByItem.set(modifier.order_item_id, current);
+    }
+    const stationsByProduct = new Map<string, string[]>();
+    for (const route of routeResult.data ?? []) {
+      const current = stationsByProduct.get(route.product_id) ?? [];
+      current.push(route.station_id);
+      stationsByProduct.set(route.product_id, current);
+    }
+    const order = orderResult.data;
+    return {
+      id: order.id,
+      displayNumber: Number(order.display_number),
+      customerName: order.customer_name_snapshot,
+      fulfillmentType: order.fulfillment_type,
+      productionStatus: order.production_status as KitchenProductionStatus,
+      confirmedAt: order.confirmed_at,
+      createdAt: order.created_at,
+      items: items.map((item) => ({
+        id: item.id,
+        productId: item.product_id,
+        name: item.product_name_snapshot,
+        quantity: Number(item.quantity),
+        note: item.note,
+        stationIds: item.product_id ? stationsByProduct.get(item.product_id) ?? [] : [],
+        modifiers: modifiersByItem.get(item.id) ?? [],
+      })),
+    };
   }
 }

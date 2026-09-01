@@ -11,6 +11,7 @@ const actions = read("src/features/orders/actions.ts");
 const detail = read("src/app/(app)/pedidos/[id]/page.tsx");
 const publicRefresh = read("src/features/orders/public-order-refresh.tsx");
 const realtime = read("src/features/orders/order-realtime.tsx");
+const operationalRealtime = read("src/features/operations/use-operational-realtime.tsx");
 const publicDetail = read("src/app/m/[slug]/pedido/[id]/page.tsx");
 
 describe("presentation diagnostics 036–040", () => {
@@ -65,10 +66,10 @@ describe("presentation diagnostics 036–040", () => {
   });
 
   it("keeps manager and detail pages live without manual reload", () => {
-    expect(manager).toContain('event: "INSERT"');
-    expect(manager).toContain('event: "UPDATE"');
-    expect(customManager).toContain('event: "INSERT"');
-    expect(customManager).toContain('event: "UPDATE"');
+    expect(manager).toContain("useOperationalRealtime");
+    expect(customManager).toContain("useOperationalRealtime");
+    expect(operationalRealtime).toContain('{ event: "*", schema: "public", table: "orders"');
+    expect(operationalRealtime).toContain("applyOperationalRowEvent");
     expect(realtime).toContain('{ event: "*", schema: "public", table: "orders"');
     expect(publicRefresh).toContain("window.setInterval(refreshIfVisible, intervalMs)");
     expect(publicRefresh).toContain('document.visibilityState === "visible"');

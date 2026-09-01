@@ -13,6 +13,9 @@
 .toolbar { display: flex; gap: var(--space-3); align-items: end; flex-wrap: wrap; padding: var(--space-3); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); background: var(--surface-1); }
 .search { flex: 1 1 280px; }
 .toolbarMeta { padding-bottom: var(--space-2); color: var(--text-secondary); font-size: var(--font-size-xs); }
+:global(.operational-realtime-status) { display: inline-flex; align-items: center; min-height: var(--control-height-sm); padding: 0 var(--space-3); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-pill); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); }
+:global(.operational-realtime-status[data-status="connected"]) { border-color: var(--state-success); background: var(--state-success-surface); }
+:global(.operational-realtime-status[data-status="degraded"]) { border-color: var(--state-warning); background: var(--state-warning-surface); }
 .noticeSlot { min-height: 0; }
 
 .activeGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: var(--space-3); align-items: start; }

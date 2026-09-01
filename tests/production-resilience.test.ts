@@ -19,6 +19,7 @@ const orderRealtime = readFileSync("src/features/orders/order-realtime.tsx", "ut
 const deliveryRealtime = readFileSync("src/features/delivery/delivery-realtime.tsx", "utf8");
 const conversationRealtime = readFileSync("src/features/conversations/conversation-realtime.tsx", "utf8");
 const kitchenRealtime = readFileSync("src/features/kitchen/kitchen-board.tsx", "utf8");
+const operationalRealtime = readFileSync("src/features/operations/use-operational-realtime.tsx", "utf8");
 const ciWorkflow = readFileSync(".github/workflows/ci.yml", "utf8");
 
 describe("catalog resilience contracts", () => {
@@ -83,10 +84,11 @@ describe("Realtime store scope", () => {
   });
 
   it("centralizes every audited store subscription on the validated scope", () => {
-    for (const source of [orderRealtime, deliveryRealtime, conversationRealtime, kitchenRealtime]) {
+    for (const source of [orderRealtime, deliveryRealtime, conversationRealtime, operationalRealtime]) {
       expect(source).toContain("realtimeStoreScope");
       expect(source).toContain("scope.filter");
     }
+    expect(kitchenRealtime).toContain("useOperationalRealtime");
   });
 });
 

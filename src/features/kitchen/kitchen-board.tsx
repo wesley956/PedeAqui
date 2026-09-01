@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { realtimeStoreScope } from "@/lib/supabase/realtime";
 import { Button } from "@/components/ui/button";
 import { OrderActionForm } from "@/features/orders/order-action-form";
+import { OperationalRealtimeBadge, useOperationalRealtime } from "@/features/operations/use-operational-realtime";
+import { resolveKitchenRealtimeOrderAction } from "@/features/kitchen/actions";
 import { businessVocabulary, productionStatusLabelForBusiness } from "@/modules/business-vocabulary";
 import type { BusinessType } from "@/modules/module-catalog";
 import {
@@ -18,7 +18,12 @@ import {
 } from "@/features/kitchen/kitchen-model";
 import styles from "./kitchen-board.module.css";
 
-export function KitchenBoard({ storeId, stations, orders, initialNow, businessType = "restaurant" }: {
+const isOperationalKitchenOrder = () => true;
+async function resolveKitchenRow(raw: Record<string, unknown>) {
+  return typeof raw.id === "string" ? resolveKitchenRealtimeOrderAction(raw.id) : null;
+}
+
+export function KitchenBoard({ storeId, stations, orders: initialOrders, initialNow, businessType = "restaurant" }: {
   storeId: string;
   stations: KitchenStation[];
   orders: KitchenOrder[];
@@ -31,21 +36,18 @@ export function KitchenBoard({ storeId, stations, orders, initialNow, businessTy
   const [now, setNow] = useState(initialNow);
   const [visibleCount, setVisibleCount] = useState(initialVisibleCount);
   const vocabulary = businessVocabulary(businessType);
+  const { rows: orders, status: realtimeStatus } = useOperationalRealtime({
+    storeId,
+    initialRows: initialOrders,
+    surface: "kitchen",
+    isOperational: isOperationalKitchenOrder,
+    resolveRow: resolveKitchenRow,
+  });
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 15_000);
     return () => window.clearInterval(timer);
   }, []);
-
-  useEffect(() => {
-    const scope = realtimeStoreScope(storeId);
-    if (!scope) return;
-    const supabase = createClient();
-    const channel = supabase.channel(`kds:${scope.storeId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: scope.filter }, () => router.refresh())
-      .subscribe();
-    return () => { void supabase.removeChannel(channel); };
-  }, [router, storeId]);
 
   const filteredOrders = useMemo(() => filterKitchenOrdersByStation(orders, stationId), [orders, stationId]);
   const visibleOrders = useMemo(() => filteredOrders.slice(0, visibleCount), [filteredOrders, visibleCount]);
@@ -69,6 +71,7 @@ export function KitchenBoard({ storeId, stations, orders, initialNow, businessTy
           {stations.map((station) => <Button key={station.id} tone={stationId === station.id ? "primary" : "secondary"} size="lg" aria-pressed={stationId === station.id} onClick={() => setStationId(station.id)}>{station.name}</Button>)}
         </div>
         <Button type="button" tone="ghost" size="lg" onClick={() => router.refresh()}>Atualizar</Button>
+        <OperationalRealtimeBadge status={realtimeStatus} />
       </div>
 
       <div className={styles.summary} aria-live="polite">

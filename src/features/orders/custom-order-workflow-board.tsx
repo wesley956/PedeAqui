@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { OrderActionForm } from "@/features/orders/order-action-form";
 import { elapsedLabel, type OrderManagerRow } from "@/features/orders/manager-model";
 import { useOrderAlert } from "@/features/orders/use-order-alert";
+import { OperationalRealtimeBadge, useOperationalRealtime } from "@/features/operations/use-operational-realtime";
 import {
   deliveryWorkflowStages,
   foldStageToVisible,
@@ -19,6 +18,8 @@ import {
   type WorkflowStage,
 } from "@/features/orders/workflow-config";
 import styles from "./order-manager.module.css";
+
+const isOperationalOrder = (order: OrderManagerRow) => !["completed", "canceled", "rejected"].includes(order.order_status);
 
 function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
@@ -119,50 +120,36 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode }:
   </section>;
 }
 
-export function CustomOrderWorkflowBoard({ storeId, orders, config, manualDeliveryMode = false }: {
+export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, config, manualDeliveryMode = false }: {
   storeId: string;
   orders: OrderManagerRow[];
   config: CustomWorkflowConfig;
   manualDeliveryMode?: boolean;
 }) {
-  const router = useRouter();
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
-  const seen = useRef(new Set(orders.map((order) => order.id)));
+  const seen = useRef(new Set(initialOrders.map((order) => order.id)));
   const { soundEnabled, primaryLabel, toggle, test, notifyNewOrder } = useOrderAlert(setNotice);
+  const { rows: orders, status: realtimeStatus } = useOperationalRealtime({
+    storeId,
+    initialRows: initialOrders,
+    surface: "orders",
+    isOperational: isOperationalOrder,
+    onInsert: (row) => {
+      if (seen.current.has(row.id)) return;
+      seen.current.add(row.id);
+      if (row.order_status === "pending_confirmation") {
+        setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
+        void notifyNewOrder();
+      }
+    },
+  });
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 15_000);
     return () => window.clearInterval(timer);
   }, []);
-
-  useEffect(() => {
-    const supabase = createClient();
-    const channel = supabase.channel(`custom-order-manager:${storeId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
-        (payload) => {
-          const row = payload.new as { id?: string; display_number?: number; order_status?: string };
-          if (row.id && !seen.current.has(row.id)) {
-            seen.current.add(row.id);
-            if (row.order_status === "pending_confirmation") {
-              setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
-              void notifyNewOrder();
-            }
-          }
-          router.refresh();
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
-        () => router.refresh(),
-      )
-      .subscribe();
-    return () => { void supabase.removeChannel(channel); };
-  }, [notifyNewOrder, router, storeId]);
 
   useEffect(() => {
     for (const order of orders) seen.current.add(order.id);
@@ -183,6 +170,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders, config, manualDelive
       <Button type="button" tone="secondary" onClick={() => void toggle()} aria-pressed={soundEnabled}>{primaryLabel}</Button>
       <Button type="button" tone="secondary" onClick={() => void test()}>Testar som</Button>
       <div className={styles.toolbarMeta}>Fluxo personalizado · {filtered.length} pedido(s)</div>
+      <OperationalRealtimeBadge status={realtimeStatus} />
     </div>
     <div className={styles.noticeSlot} aria-live="polite">
       {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}

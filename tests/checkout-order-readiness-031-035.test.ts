@@ -36,10 +36,9 @@ describe("presentation diagnostics 031–035", () => {
     expect(publicOrderPage).toContain('label="Quando"');
   });
 
-  it("subscribes the manager to inserted orders and presents menu/table labels cleanly", () => {
-    expect(manager).toContain('event: "INSERT"');
-    expect(manager).toContain('table: "orders"');
-    expect(manager).toContain("router.refresh()");
+  it("subscribes the manager incrementally and presents menu/table labels cleanly", () => {
+    expect(manager).toContain("useOperationalRealtime");
+    expect(manager).toContain("notifyNewOrder()");
     expect(manager).toContain('digital_menu: "Cardápio"');
     expect(manager).toContain('type === "dine_in" || type === "table"');
     expect(orderService).toContain("scheduled_for");
