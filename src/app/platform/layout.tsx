@@ -46,6 +46,7 @@ function navigationFor(role: PlatformRole): PlatformNavigationGroup[] {
       label: "Operação",
       items: [
         ["Operação", "/platform/operacao"],
+        ["Praticidade dos pilotos", "/platform/operacao/praticidade"],
         ["Integrações", "/platform/integracoes"],
         ["Incidentes", "/platform/incidentes"],
         ["Alertas", "/platform/alertas"],

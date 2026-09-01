@@ -1,10 +1,24 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { parseMoneyToCents } from "@/server/catalog/money";
 import { CatalogImageService } from "@/server/catalog/catalog-image-service";
 import { StoreMenuService } from "@/server/menu/store-menu-service";
 import { PERMISSIONS } from "@/server/access/permissions";
+import { getAccessContext } from "@/server/access/context";
+import { ProductExperienceService } from "@/server/product-experience/product-experience-service";
+
+function schedulePauseTelemetry(action:"pause"|"resume"){
+  after(async()=>{
+    try{
+      const context=await getAccessContext();
+      await ProductExperienceService.capture(context,{eventName:"px.operation.pause",source:"server",outcome:"success",metadata:{action}});
+    }catch{
+      // Pausing or resuming orders is already complete and must remain so.
+    }
+  });
+}
 
 function optionalString(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
@@ -70,11 +84,13 @@ export async function saveMenuSettingsAction(formData: FormData) {
 
 export async function pauseOrdersAction(formData: FormData) {
   await StoreMenuService.setAcceptingOrders(false, optionalString(formData.get("reason")));
+  schedulePauseTelemetry("pause");
   revalidateMenu();
 }
 
 export async function resumeOrdersAction() {
   await StoreMenuService.setAcceptingOrders(true);
+  schedulePauseTelemetry("resume");
   revalidateMenu();
 }
 

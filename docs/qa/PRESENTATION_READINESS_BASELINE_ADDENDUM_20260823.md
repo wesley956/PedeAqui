@@ -44,6 +44,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 - `/platform/equipe` — gestão da equipe interna PedeAqui, incluindo papéis de plataforma e revogação de sessões.
 - `/platform/privacidade` — fila administrativa de solicitações de privacidade/LGPD e respectivos protocolos.
 - `/platform/configuracoes` — defaults globais não secretos e controle dedicado, auditado e protegido da cobrança SaaS.
+- `/platform/operacao/praticidade` — baseline comparativo dos clientes-piloto com métricas técnicas agregadas, sem conteúdo de pedidos, endereços, conversas ou dados financeiros.
 - `/platform/empresas/[organizationId]` — visão 360 da empresa, reunindo contrato, unidades, usuários, módulos adicionais, mensalidades, Clube Fundadores, CRM e incidentes sem misturar os domínios técnicos.
 
 ## Gestão do cardápio
@@ -62,6 +63,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 ## APIs e agentes adicionados posteriormente
 
 - `/api/order-alert/presence` — heartbeat autenticado do painel para o fallback nativo distinguir painel ativo de navegador fechado e respeitar a preferência explícita de som.
+- `/api/product-experience/events` — captura autenticada e não bloqueante de eventos de praticidade allowlisted, isolados por organização/unidade e sem dados pessoais desnecessários.
 - `/api/print-agent/order-alerts` — endpoint autenticado pelo token do Print Agent para consumir eventos imutáveis de novos pedidos quando o painel não está ativo; não substitui nem bloqueia o alerta web.
 - `/api/integrations/mercado-pago/oauth/start` — inicia a autorização OAuth do Mercado Pago para a unidade autenticada, usando state e PKCE; conectar a conta não habilita Pix automaticamente.
 - `/api/integrations/mercado-pago/oauth/callback` — valida o retorno OAuth, reconfirma organização/unidade e persiste as credenciais somente no servidor/Vault, mantendo o Pix desativado até ativação explícita.

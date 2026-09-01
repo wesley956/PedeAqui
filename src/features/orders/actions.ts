@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { OrderNotificationContextService } from "@/server/conversations/order-notification-context-service";
@@ -20,6 +21,31 @@ import { DeliveryOperationsService } from "@/server/delivery/delivery-operations
 import { ManualDeliveryService } from "@/server/delivery/manual-delivery-service";
 import type { FulfillmentStatus, ProductionStatus } from "@/server/orders/state-machines";
 import { friendlyOrderActionError } from "@/features/orders/order-action-error";
+import { getAccessContext } from "@/server/access/context";
+import { ProductExperienceService } from "@/server/product-experience/product-experience-service";
+
+function scheduleOrderActionTelemetry(
+  orderId: string,
+  action: string,
+  startedAt: number,
+  outcome: "success" | "failure",
+) {
+  after(async () => {
+    try {
+      const context = await getAccessContext();
+      await ProductExperienceService.capture(context, {
+        eventName: "px.order.action",
+        orderId,
+        outcome,
+        durationMs: Date.now() - startedAt,
+        source: "server",
+        metadata: { action, surface: "order_manager", result: outcome },
+      });
+    } catch {
+      // The action has already finished; telemetry is never authoritative.
+    }
+  });
+}
 
 export async function createOrderFromCheckoutAction(formData: FormData) {
   const storeSlug = String(formData.get("storeSlug") ?? "");
@@ -117,6 +143,7 @@ const managerIntentSchema = z.enum([
 export type OrderManagerActionState = { ok: boolean; message: string | null; error: string | null };
 
 export async function orderManagerAction(_previousState: OrderManagerActionState, formData: FormData): Promise<OrderManagerActionState> {
+  const startedAt = Date.now();
   const orderId = String(formData.get("orderId") ?? "");
   const parsed = managerIntentSchema.safeParse(String(formData.get("intent") ?? ""));
   if (!parsed.success) return { ok: false, message: null, error: "Esta ação não está disponível para o pedido." };
@@ -185,6 +212,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
       scheduleOrderWhatsAppNotifications(`order_manager.${parsed.data}`);
     }
     refreshOrder(orderId);
+    scheduleOrderActionTelemetry(orderId, parsed.data, startedAt, "success");
     const labels: Record<z.infer<typeof managerIntentSchema>, string> = {
       accept: "Pedido aceito.", accept_and_start: "Pedido aceito e preparo iniciado.", reject: "Pedido rejeitado.", cancel: "Pedido cancelado.", start_production: "Produção iniciada.",
       mark_ready: "Pedido marcado como pronto.", mark_paid: "Pagamento confirmado.",
@@ -197,6 +225,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
     return { ok: true, message: message ?? labels[parsed.data], error: null };
   } catch (error) {
     refreshOrder(orderId);
+    scheduleOrderActionTelemetry(orderId, parsed.data, startedAt, "failure");
     return { ok: false, message: null, error: friendlyOrderActionError(error) };
   }
 }
