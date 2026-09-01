@@ -108,6 +108,51 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
   }, [updateStatus]);
 
   useEffect(() => {
+    let unlockInFlight = false;
+
+    const unlockFromInteraction = () => {
+      if (!configuredRef.current || statusRef.current === "ready" || unlockInFlight) return;
+
+      const audio = audioRef.current ?? createOrderAlertAudio();
+      const previousVolume = audio.volume;
+      const previousMuted = audio.muted;
+      audioRef.current = audio;
+      unlockInFlight = true;
+
+      audio.pause();
+      audio.currentTime = 0;
+      audio.muted = false;
+      audio.volume = 0;
+
+      void audio.play()
+        .then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = previousVolume;
+          audio.muted = previousMuted;
+          updateStatus("ready");
+          syncPresence(true);
+        })
+        .catch(() => {
+          audio.volume = previousVolume;
+          audio.muted = previousMuted;
+          if (configuredRef.current) updateStatus("needs_activation");
+        })
+        .finally(() => {
+          unlockInFlight = false;
+        });
+    };
+
+    window.addEventListener("pointerdown", unlockFromInteraction, true);
+    window.addEventListener("keydown", unlockFromInteraction, true);
+
+    return () => {
+      window.removeEventListener("pointerdown", unlockFromInteraction, true);
+      window.removeEventListener("keydown", unlockFromInteraction, true);
+    };
+  }, [syncPresence, updateStatus]);
+
+  useEffect(() => {
     if (!storeId) return;
     const browserId = getPresenceBrowserId();
     browserIdRef.current = browserId;
