@@ -21,8 +21,13 @@ function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
 }
 
-export default async function OrderHistoryPage() {
-  const { context, orders } = await OrderService.listHistory(250);
+export default async function OrderHistoryPage({ searchParams }: { searchParams: Promise<{ page?: string; q?: string }> }) {
+  const params = await searchParams;
+  const requestedPage = Number(params.page);
+  const { context, orders, page, pageSize, search, total, hasPrevious, hasNext } = await OrderService.listHistory({
+    page: Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1,
+    search: params.q ?? "",
+  });
   const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
   const deliveryAttribution = await OrderDeliveryAttributionService.forOrders(
     orders.filter((order) => order.fulfillment_type === "delivery").map((order) => order.id),
@@ -38,6 +43,20 @@ export default async function OrderHistoryPage() {
         </div>
         <Link href="/pedidos" className={styles.detailsLink}>← Voltar para pedidos ativos</Link>
       </header>
+
+      <form method="get" className={styles.historyToolbar}>
+        <label className={styles.historySearchLabel}>
+          <span>Buscar no histórico completo</span>
+          <input name="q" type="search" defaultValue={search} placeholder="Nome do cliente ou número do pedido" maxLength={80} />
+        </label>
+        <button type="submit" className={styles.detailsLink}>Buscar</button>
+        {search ? <Link href="/pedidos/historico" className={styles.detailsLink}>Limpar</Link> : null}
+      </form>
+
+      <div className={styles.historyStatus} role="status">
+        {total === 0 ? "Nenhum resultado." : `Exibindo ${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} de ${total} pedido(s).`}
+        {total > pageSize ? " O histórico está paginado; nenhum pedido foi descartado." : ""}
+      </div>
 
       <div className={styles.historyGrid}>
         {orders.map((order) => {
@@ -69,6 +88,11 @@ export default async function OrderHistoryPage() {
         })}
         {orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido finalizado, cancelado ou recusado.</div> : null}
       </div>
+      {(hasPrevious || hasNext) ? <nav className={styles.historyPagination} aria-label="Paginação do histórico">
+        {hasPrevious ? <Link className={styles.detailsLink} href={{ pathname: "/pedidos/historico", query: { ...(search ? { q: search } : {}), page: page - 1 } }}>← Página anterior</Link> : <span />}
+        <span>Página {page} de {Math.max(1, Math.ceil(total / pageSize))}</span>
+        {hasNext ? <Link className={styles.detailsLink} href={{ pathname: "/pedidos/historico", query: { ...(search ? { q: search } : {}), page: page + 1 } }}>Próxima página →</Link> : <span />}
+      </nav> : null}
     </section>
   );
 }

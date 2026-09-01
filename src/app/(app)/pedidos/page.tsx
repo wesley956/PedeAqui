@@ -11,7 +11,7 @@ import { OrderWorkflowSettingsService } from "@/server/orders/order-workflow-set
 
 export default async function OrdersPage() {
   const [{ context, orders, workflowMode: legacyWorkflowMode }, { settings }, moduleSnapshot] = await Promise.all([
-    OrderService.list(200),
+    OrderService.list(),
     OrderWorkflowSettingsService.get(),
     ModuleAccessService.load(),
   ]);
