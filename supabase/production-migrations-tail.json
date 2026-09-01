@@ -39,6 +39,7 @@
     ["20260830020951","platform_billing_mercado_pago_source"],
     ["20260830022346","subscription_renewal_job_secret"],
     ["20260830023050","subscription_renewal_scheduler"],
-    ["20260830063248","subscription_contract_acceptance"]
+    ["20260830063248","subscription_contract_acceptance"],
+    ["20260901062003","product_experience_events"]
   ]
 }

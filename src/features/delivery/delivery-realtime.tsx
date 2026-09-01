@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { realtimeStoreScope } from "@/lib/supabase/realtime";
+import { trackProductExperience } from "@/lib/product-experience/client";
 
 const REFRESH_COALESCE_MS = 200;
 const DEGRADED_REFRESH_MS = 30_000;
@@ -24,6 +25,7 @@ export function DeliveryRealtime({
   const router = useRouter();
   const [status, setStatus] = useState<RealtimeStatus>("connecting");
   const statusRef = useRef<RealtimeStatus>("connecting");
+  const statusChangedAtRef = useRef<number | null>(null);
   const refreshTimerRef = useRef<number | null>(null);
   const hasValidStoreScope = realtimeStoreScope(storeId) !== null;
   const tableKey = tables.join(",");
@@ -31,6 +33,7 @@ export function DeliveryRealtime({
   useEffect(() => {
     const scope = realtimeStoreScope(storeId);
     if (!scope) return;
+    statusChangedAtRef.current = Date.now();
 
     const supabase = createClient();
     const scheduleRefresh = () => {
@@ -41,8 +44,18 @@ export function DeliveryRealtime({
       }, REFRESH_COALESCE_MS);
     };
     const updateStatus = (next: RealtimeStatus) => {
+      const previous = statusRef.current;
+      if (previous === next) return;
+      const durationMs = statusChangedAtRef.current === null ? null : Date.now() - statusChangedAtRef.current;
       statusRef.current = next;
+      statusChangedAtRef.current = Date.now();
       setStatus(next);
+      trackProductExperience({
+        eventName: "px.realtime.connection",
+        outcome: next === "connected" ? (previous === "error" ? "recovered" : "success") : next === "error" ? "failure" : "unknown",
+        durationMs,
+        metadata: { surface: "delivery", state: next, previous_state: previous, transport: "supabase_realtime" },
+      });
     };
 
     let channel = supabase.channel(`delivery-ops:${scope.storeId}:${tableKey}`);
