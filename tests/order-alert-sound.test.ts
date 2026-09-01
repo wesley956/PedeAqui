@@ -27,6 +27,14 @@ describe("order alert sound", () => {
     expect(boardSource).not.toContain("o som continua ativado");
   });
 
+  it("silently unlocks a saved sound preference on the first normal panel interaction", () => {
+    expect(alertSource).toContain('window.addEventListener("pointerdown", unlockFromInteraction, true)');
+    expect(alertSource).toContain('window.addEventListener("keydown", unlockFromInteraction, true)');
+    expect(alertSource).toContain("audio.volume = 0");
+    expect(alertSource).toContain('updateStatus("ready")');
+    expect(alertSource).toContain("configuredRef.current");
+  });
+
   it("keeps one shared alert provider mounted and refreshes order data across panel navigation", () => {
     expect(shellSource).toContain("OrderAlertProvider");
     expect(shellSource).toContain("<OrderAlertProvider storeId={storeId}>");
