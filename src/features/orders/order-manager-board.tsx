@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { formatStoreDateTime } from "@/lib/store-date-time";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/feedback";
@@ -11,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { StatusBadge, type OperationalStatusKey } from "@/components/ui/status";
 import { OrderActionForm, type ManagerIntent } from "@/features/orders/order-action-form";
 import { useOrderAlert } from "@/features/orders/use-order-alert";
+import { OperationalRealtimeBadge, useOperationalRealtime } from "@/features/operations/use-operational-realtime";
 import {
   canCompleteFromManager,
   completionBlockers,
@@ -36,6 +35,7 @@ const fulfillmentLabels: Record<string, string> = {
 const channelLabels: Record<string, string> = { menu: "Cardápio", digital_menu: "Cardápio", pdv: "PDV", dining: "Salão", whatsapp: "WhatsApp", manual: "Manual" };
 type BoardWorkflowMode = "standard" | "simplified";
 type OrderActionSpec = { intent: ManagerIntent; label: string; tone?: "primary" | "secondary" | "danger" };
+const isOperationalOrder = (order: OrderManagerRow) => !["completed", "canceled", "rejected"].includes(order.order_status);
 
 function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
@@ -118,53 +118,37 @@ function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkfl
   return null;
 }
 
-export function OrderManagerBoard({ storeId, orders, workflowMode = "standard", manualDeliveryMode = false, timeZone }: {
+export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode = "standard", manualDeliveryMode = false, timeZone }: {
   storeId: string;
   orders: OrderManagerRow[];
   workflowMode?: BoardWorkflowMode;
   manualDeliveryMode?: boolean;
   timeZone: string;
 }) {
-  const router = useRouter();
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
-  const seen = useRef(new Set(orders.map((order) => order.id)));
+  const seen = useRef(new Set(initialOrders.map((order) => order.id)));
   const { soundEnabled, primaryLabel, toggle, test, notifyNewOrder } = useOrderAlert(setNotice);
+  const { rows: orders, status: realtimeStatus } = useOperationalRealtime({
+    storeId,
+    initialRows: initialOrders,
+    surface: "orders",
+    isOperational: isOperationalOrder,
+    onInsert: (row) => {
+      if (seen.current.has(row.id)) return;
+      seen.current.add(row.id);
+      if (row.order_status === "pending_confirmation") {
+        setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
+        void notifyNewOrder();
+      }
+    },
+  });
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 15_000);
     return () => window.clearInterval(timer);
   }, []);
-
-  useEffect(() => {
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`order-manager:${storeId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
-        (payload) => {
-          const row = payload.new as { id?: string; display_number?: number; order_status?: string };
-          if (row.id && !seen.current.has(row.id)) {
-            seen.current.add(row.id);
-            if (row.order_status === "pending_confirmation") {
-              setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
-              void notifyNewOrder();
-            }
-          }
-          router.refresh();
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
-        () => router.refresh(),
-      )
-      .subscribe();
-
-    return () => { void supabase.removeChannel(channel); };
-  }, [notifyNewOrder, router, storeId]);
 
   useEffect(() => {
     for (const order of orders) seen.current.add(order.id);
@@ -253,6 +237,7 @@ export function OrderManagerBoard({ storeId, orders, workflowMode = "standard", 
             ? `${activeCount} em acompanhamento · ${lateCount} atrasado(s)`
             : `${activeCount} ativo(s) · ${lateCount} atrasado(s) · ${grouped.history.length} no histórico`}
         </div>
+        <OperationalRealtimeBadge status={realtimeStatus} />
       </div>
 
       <div className={styles.noticeSlot} aria-live="polite">

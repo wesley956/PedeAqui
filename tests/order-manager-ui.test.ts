@@ -4,16 +4,18 @@ import { describe, expect, it } from "vitest";
 
 const read = (relative: string) => fs.readFileSync(path.join(process.cwd(), relative), "utf8");
 const board = read("src/features/orders/order-manager-board.tsx");
+const realtime = read("src/features/operations/use-operational-realtime.tsx");
 const css = read("src/features/orders/order-manager.module.css");
 const page = read("src/app/(app)/pedidos/page.tsx");
 
 describe("order manager UI [278]", () => {
-  it("preserves the existing realtime insert/update refresh contract", () => {
-    expect(board).toContain('"postgres_changes"');
-    expect(board).toContain('event: "INSERT"');
-    expect(board).toContain('event: "UPDATE"');
-    expect(board).toContain("router.refresh()");
-    expect(board).toContain("supabase.removeChannel(channel)");
+  it("applies insert/update incrementally with periodic reconciliation", () => {
+    expect(board).toContain("useOperationalRealtime");
+    expect(realtime).toContain('"postgres_changes"');
+    expect(realtime).toContain('event: "*"');
+    expect(realtime).toContain("applyOperationalRowEvent");
+    expect(realtime).toContain("reconcileEveryMs");
+    expect(realtime).toContain("supabase.removeChannel(channel)");
   });
 
   it("keeps all existing operational action intents", () => {

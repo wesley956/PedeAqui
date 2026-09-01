@@ -7,10 +7,10 @@ const css = readFileSync(join(process.cwd(), "src/features/kitchen/kitchen-board
 const model = readFileSync(join(process.cwd(), "src/features/kitchen/kitchen-model.ts"), "utf8");
 
 describe("KDS operational UI", () => {
-  it("keeps station filtering and realtime refresh", () => {
+  it("keeps station filtering and incremental realtime projection", () => {
     expect(board).toContain("filterKitchenOrdersByStation");
-    expect(board).toContain("postgres_changes");
-    expect(board).toContain("router.refresh()");
+    expect(board).toContain("useOperationalRealtime");
+    expect(board).toContain("resolveKitchenRealtimeOrderAction");
   });
 
   it("shows production actions only through the existing order action flow", () => {

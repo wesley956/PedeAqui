@@ -60,7 +60,7 @@ describe("order alert sound", () => {
     expect(boardSource).toContain("Testar som");
     expect(customBoardSource).toContain("useOrderAlert(setNotice)");
     expect(customBoardSource).toContain("Testar som");
-    expect(customBoardSource).toContain('event: "INSERT"');
+    expect(customBoardSource).toContain("useOperationalRealtime");
     expect(customBoardSource).toContain("notifyNewOrder()");
   });
 });
