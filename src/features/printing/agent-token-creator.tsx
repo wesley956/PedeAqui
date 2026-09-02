@@ -19,7 +19,12 @@ function assistedInstaller(token: string, appUrl: string) {
 setlocal EnableExtensions\r
 chcp 65001 >nul\r
 title PedeAqui Impressao - Instalacao\r
-set "APP_DIR=%LOCALAPPDATA%\\PedeAqui\\PrintAgent"\r
+fltmc >nul 2>&1 || (\r
+  echo O Windows precisa autorizar esta instalacao uma unica vez.\r
+  powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%~f0' -Verb RunAs"\r
+  exit /b\r
+)\r
+set "APP_DIR=%ProgramData%\\PedeAqui\\PrintAgent"\r
 set "SRC_DIR=%APP_DIR%\\src"\r
 set "DL_DIR=%TEMP%\\PedeAqui-PrintAgent-Download"\r
 echo.\r
@@ -55,7 +60,7 @@ copy /Y "%DL_DIR%\\package.download" "%APP_DIR%\\package.json" >nul || goto :per
 copy /Y "%DL_DIR%\\manifest.download" "%APP_DIR%\\manifest.json" >nul || goto :permission_error\r
 del /Q "%DL_DIR%\\*.download" >nul 2>&1\r
 echo [3/4] Conectando com sua unidade...\r
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$needle=[IO.Path]::Combine($env:LOCALAPPDATA,'PedeAqui','PrintAgent','src','index.mjs'); Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'node.exe' -and $_.CommandLine -and $_.CommandLine.Contains($needle) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1\r
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$needle=[IO.Path]::Combine($env:ProgramData,'PedeAqui','PrintAgent','src','index.mjs'); Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'node.exe' -and $_.CommandLine -and $_.CommandLine.Contains($needle) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1\r
 (\r
   echo @echo off\r
   echo setlocal EnableExtensions\r
@@ -63,8 +68,8 @@ powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$needle=[IO.
   echo set "PEDEAQUI_PRINT_AGENT_TOKEN=${safeToken}"\r
   echo set "PEDEAQUI_AGENT_WATCHDOG=1"\r
   echo :agent_loop\r
-  echo "%NODE_EXE%" "%LOCALAPPDATA%\\PedeAqui\\PrintAgent\\src\\updater.mjs"\r
-  echo "%NODE_EXE%" "%LOCALAPPDATA%\\PedeAqui\\PrintAgent\\src\\index.mjs"\r
+  echo "%NODE_EXE%" "%ProgramData%\\PedeAqui\\PrintAgent\\src\\updater.mjs"\r
+  echo "%NODE_EXE%" "%ProgramData%\\PedeAqui\\PrintAgent\\src\\index.mjs"\r
   echo timeout /t 5 /nobreak ^>nul\r
   echo goto agent_loop\r
 ) > "%APP_DIR%\\run.cmd"\r
@@ -72,15 +77,17 @@ powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$needle=[IO.
   echo Set shell = CreateObject^("WScript.Shell"^)\r
   echo shell.Run Chr^(34^) ^& "%APP_DIR%\\run.cmd" ^& Chr^(34^), 0, False\r
 ) > "%APP_DIR%\\launch.vbs"\r
-icacls "%APP_DIR%" /inheritance:e /grant:r "%USERDOMAIN%\\%USERNAME%:(OI)(CI)F" /T /C >nul 2>&1\r
-set "STARTUP=%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup"\r
-copy /Y "%APP_DIR%\\launch.vbs" "%STARTUP%\\PedeAqui Impressao.vbs" >nul\r
+icacls "%APP_DIR%" /inheritance:r /grant:r "*S-1-5-18:(OI)(CI)F" "*S-1-5-32-544:(OI)(CI)F" "*S-1-5-19:(OI)(CI)M" /T /C >nul 2>&1\r
+echo Criando inicializacao protegida junto com o Windows...\r
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $task='PedeAqui Impressao'; $action=New-ScheduledTaskAction -Execute 'wscript.exe' -Argument ('\"' + $env:ProgramData + '\\PedeAqui\\PrintAgent\\launch.vbs\"'); $trigger=New-ScheduledTaskTrigger -AtStartup; $settings=New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit (New-TimeSpan -Days 3650) -StartWhenAvailable; $principal=New-ScheduledTaskPrincipal -UserId 'NT AUTHORITY\\LOCAL SERVICE' -LogonType ServiceAccount -RunLevel Limited; Register-ScheduledTask -TaskName $task -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null; Start-ScheduledTask -TaskName $task"\r
+if errorlevel 1 goto :task_error\r
 echo [4/4] Iniciando...\r
-wscript.exe "%APP_DIR%\\launch.vbs"\r
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $task=Get-ScheduledTask -TaskName 'PedeAqui Impressao'; if ($task.State -eq 'Disabled') { throw 'A tarefa foi criada, mas esta desativada.' }; $deadline=(Get-Date).AddSeconds(30); do { Start-Sleep -Seconds 2; $process=Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'node.exe' -and $_.CommandLine -like '*PedeAqui\\PrintAgent\\src\\index.mjs*' } | Select-Object -First 1 } until ($process -or (Get-Date) -ge $deadline); if (-not $process) { throw 'O agente nao iniciou dentro de 30 segundos.' }; $headers=@{ Authorization='Bearer ${safeToken}' }; Invoke-RestMethod -Method Post -Uri '${safeUrl}/api/print-agent/config' -Headers $headers -ContentType 'application/json' -Body '{}' -TimeoutSec 15 | Out-Null"\r
+if errorlevel 1 goto :validation_error\r
 echo.\r
 echo ==============================================\r
 echo PedeAqui Impressao conectado com sucesso.\r
-echo Recuperacao automatica e watchdog ativados.\r
+echo Inicializacao no boot, recuperacao e watchdog validados.\r
 echo Volte ao painel e atualize o status.\r
 echo ==============================================\r
 timeout /t 5 >nul\r
@@ -102,6 +109,18 @@ exit /b 1\r
 echo.\r
 echo O Windows bloqueou a gravacao dos arquivos do PedeAqui Impressao.\r
 echo Feche o aplicativo, execute este instalador como administrador e tente novamente.\r
+pause\r
+exit /b 1\r
+:task_error\r
+echo.\r
+echo Nao foi possivel configurar a inicializacao com o Windows.\r
+echo Execute novamente, aceite a autorizacao do Windows e tente de novo.\r
+pause\r
+exit /b 1\r
+:validation_error\r
+echo.\r
+echo A instalacao foi criada, mas o agente ainda nao conseguiu se comunicar.\r
+echo Confira a internet e use Reinstalar conexao no painel.\r
 pause\r
 exit /b 1\r
 `;
