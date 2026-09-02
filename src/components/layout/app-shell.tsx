@@ -34,7 +34,7 @@ export function AppShell({ children, email, branding, navigationItems, operation
           <DesktopNavigation items={navigationItems} experienceMode={experienceMode} />
         </aside>
         <div className="app-main">
-          <OperationTopbar email={email} data={operationHeader} experienceMode={experienceMode} driverOnly={driverOnly} />
+          <OperationTopbar email={email} data={operationHeader} storeId={storeId} experienceMode={experienceMode} driverOnly={driverOnly} />
           <main id="main-content" className="app-content" tabIndex={-1}>{children}</main>
           {!branding.hidePedeAquiBranding && !usesPlatformDefault ? <footer className="platform-footer" aria-label="Tecnologia PedeAqui"><span>Tecnologia</span><PedeAquiLogo size="xs" decorative /></footer> : null}
         </div>

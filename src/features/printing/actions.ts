@@ -120,6 +120,12 @@ export async function retryPrintJobAction(formData: FormData) {
   refresh();
 }
 
+export async function recognizePrintedJobAction(formData: FormData) {
+  if (formData.get("confirmed") !== "on") throw new Error("Confirme que o documento realmente foi impresso");
+  await PrintQueueService.recognizePrinted(text(formData, "jobId"), text(formData, "reason"));
+  refresh();
+}
+
 export async function cancelPrintJobAction(formData: FormData) {
   await PrintQueueService.cancel(text(formData, "jobId"));
   refresh();

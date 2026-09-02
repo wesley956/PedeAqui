@@ -237,6 +237,33 @@ export class PrintQueueService {
     await AuditService.record(context, { action: "print.job_retried", entityType: "print_job", entityId: id, before: job, after: { status: "pending", attempts: 0 } });
   }
 
+  static async recognizePrinted(jobId: string, reason: string) {
+    const context = await authorize(PERMISSIONS.PRINTING_MANAGE);
+    if (!context.storeId) throw new Error("An active store is required");
+    const id = uuid.parse(jobId);
+    const safeReason = z.string().trim().min(5).max(500).parse(reason);
+    const admin = createAdminClient();
+    const { data: job, error: readError } = await admin.from("print_jobs")
+      .select("id,status,attempts,last_error")
+      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", context.storeId).maybeSingle();
+    if (readError) throw readError;
+    if (!job) throw new Error("Print job not found");
+    if (!new Set(["pending", "processing", "failed"]).has(job.status)) throw new Error("Print job cannot be manually recognized from current state");
+    const now = new Date().toISOString();
+    const { error } = await admin.from("print_jobs").update({
+      status: "printed", printed_at: now, failed_at: null, claimed_by_agent_id: null, lease_expires_at: null,
+      last_error: null, updated_at: now,
+    }).eq("id", id).eq("organization_id", context.organizationId).eq("store_id", context.storeId).in("status", ["pending", "processing", "failed"]);
+    if (error) throw error;
+    await AuditService.record(context, {
+      action: "print.job_manually_recognized",
+      entityType: "print_job",
+      entityId: id,
+      before: job,
+      after: { status: "printed", recognition: "manual", reason: safeReason },
+    });
+  }
+
   static async cancel(jobId: string) {
     const context = await authorize(PERMISSIONS.PRINTING_MANAGE);
     if (!context.storeId) throw new Error("An active store is required");

@@ -5,18 +5,21 @@ import { createClient } from "@/lib/supabase/server";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import type { NavigationAccess } from "@/server/access/navigation-access-service";
+import { OperationalHealthService, type OperationalHealthSnapshot } from "@/server/operations/operational-health-service";
 
 export type OperationHeaderData = {
   storeName: string | null;
   storeStatus: string | null;
   cashStatus: "open" | "closed" | null;
   cashRegisterName: string | null;
+  health: OperationalHealthSnapshot;
 };
 
 export class OperationHeaderService {
   static async load(access: NavigationAccess): Promise<OperationHeaderData> {
     const { context, permissionKeys } = access;
     const supabase = await createClient();
+    const healthPromise = OperationalHealthService.load(access);
     let storeName: string | null = null;
     let storeStatus: string | null = null;
 
@@ -33,7 +36,7 @@ export class OperationHeaderService {
     }
 
     if (!context.storeId || !permissionKeys.includes(PERMISSIONS.CASH_VIEW)) {
-      return { storeName, storeStatus, cashStatus: null, cashRegisterName: null };
+      return { storeName, storeStatus, cashStatus: null, cashRegisterName: null, health: await healthPromise };
     }
 
     await authorize(PERMISSIONS.CASH_VIEW, context);
@@ -50,7 +53,7 @@ export class OperationHeaderService {
       .maybeSingle();
     if (sessionError) throw sessionError;
 
-    if (!session) return { storeName, storeStatus, cashStatus: "closed", cashRegisterName: null };
+    if (!session) return { storeName, storeStatus, cashStatus: "closed", cashRegisterName: null, health: await healthPromise };
 
     const { data: register, error: registerError } = await admin
       .from("cash_registers")
@@ -61,6 +64,6 @@ export class OperationHeaderService {
       .maybeSingle();
     if (registerError) throw registerError;
 
-    return { storeName, storeStatus, cashStatus: "open", cashRegisterName: register?.name ?? null };
+    return { storeName, storeStatus, cashStatus: "open", cashRegisterName: register?.name ?? null, health: await healthPromise };
   }
 }
