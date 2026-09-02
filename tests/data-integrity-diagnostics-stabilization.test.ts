@@ -24,7 +24,7 @@ describe("stabilization #824 data-integrity diagnostics", () => {
   });
 
   it("is backend-only and read-only by construction", () => {
-    expect(sql).toContain("create or replace function app_private.stabilization_integrity_report")
+    expect(sql).toContain("create or replace function app_private.stabilization_integrity_report");
     expect(sql).toContain("stable");
     expect(sql).not.toMatch(/\b(insert|update|delete|truncate)\s+/);
     expect(sql).toMatch(/revoke[\s\S]+from\s+public/);
@@ -36,8 +36,11 @@ describe("stabilization #824 data-integrity diagnostics", () => {
   it("marks every reported invariant with an explicit severity for release gating", () => {
     const checks = [...sql.matchAll(/select\s+'([^']+)'::text\s+as\s+check_name,\s+'([^']+)'::text\s+as\s+severity/g)];
     expect(checks.length).toBeGreaterThanOrEqual(6);
-    for (const [, name, severity] of checks) {
-      expect(name.length).toBeGreaterThan(0);
+    for (const match of checks) {
+      const name = match[1];
+      const severity = match[2];
+      expect(name).toBeTruthy();
+      expect(severity).toBeTruthy();
       expect(["critical", "warning", "info"]).toContain(severity);
     }
   });
