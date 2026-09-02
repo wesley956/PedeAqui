@@ -40,6 +40,8 @@ function revalidateMenu() {
   revalidatePath("/configuracoes/horarios");
   revalidatePath("/m/[slug]", "page");
   revalidatePath("/m/[slug]/produto/[id]", "page");
+  revalidatePath("/operacao");
+  revalidatePath("/", "layout");
 }
 
 async function resolveStoreImage(
