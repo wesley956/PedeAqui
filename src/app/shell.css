@@ -53,6 +53,22 @@
 .app-topbar-signals span { display: inline-flex; align-items: center; min-height: var(--space-6); padding: 0 var(--space-2); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-pill); background: var(--surface-1); }
 .app-topbar-signals [data-state="open"] { color: var(--state-success-text); border-color: var(--state-success); background: var(--state-success-surface); }
 .app-topbar-actions { display: flex; align-items: center; gap: var(--space-3); }
+.operational-health { position: relative; }
+.operational-health > summary { list-style: none; cursor: pointer; min-height: var(--control-height-sm); display: inline-flex; align-items: center; padding: 0 var(--space-3); border: var(--border-width) solid var(--state-success); border-radius: var(--radius-pill); background: var(--state-success-surface); color: var(--state-success-text); font-size: var(--font-size-xs); font-weight: var(--font-weight-extrabold); white-space: nowrap; }
+.operational-health > summary::-webkit-details-marker { display: none; }
+.operational-health[data-severity="P0"] > summary { border-color: var(--state-danger); background: var(--state-danger-surface); color: var(--state-danger-text); }
+.operational-health[data-severity="P1"] > summary,.operational-health[data-severity="P2"] > summary { border-color: var(--state-warning); background: var(--state-warning-surface); color: var(--state-warning-text); }
+.operational-health-panel { position: absolute; top: calc(100% + var(--space-2)); right: 0; width: min(520px, calc(100vw - 24px)); max-height: min(72vh, 680px); overflow: auto; display: grid; gap: var(--space-2); padding: var(--space-3); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-lg); background: var(--surface-1); box-shadow: var(--shadow-lg); z-index: var(--z-overlay); }
+.operational-health-panel > header { display: flex; justify-content: space-between; gap: var(--space-2); align-items: baseline; }
+.operational-health-panel > header span { color: var(--text-secondary); font-size: var(--font-size-xs); }
+.operational-health-item { display: grid; gap: var(--space-2); padding: var(--space-3); border: var(--border-width) solid var(--border-default); border-left: 4px solid var(--state-success); border-radius: var(--radius-md); }
+.operational-health-item[data-severity="P0"] { border-left-color: var(--state-danger); background: var(--state-danger-surface); }
+.operational-health-item[data-severity="P1"],.operational-health-item[data-severity="P2"] { border-left-color: var(--state-warning); background: var(--state-warning-surface); }
+.operational-health-item p { margin: var(--space-1) 0 0; color: var(--text-secondary); font-size: var(--font-size-xs); line-height: 1.4; }
+.operational-health-actions { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+.operational-health-actions > a,.operational-health-actions button { min-height: var(--control-height-sm); display: inline-flex; align-items: center; padding: 0 var(--space-2); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-md); background: var(--surface-1); color: var(--text-primary); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); }
+.operational-health-manual { flex-basis: 100%; }.operational-health-manual > summary { cursor: pointer; font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); }.operational-health-manual form { display: grid; gap: var(--space-2); margin-top: var(--space-2); }.operational-health-manual input[type="text"],.operational-health-manual input:not([type]) { min-height: var(--control-height-md); padding: 0 var(--space-2); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-md); }.operational-health-manual label { font-size: var(--font-size-xs); }
+.operational-health-ok { margin: 0; padding: var(--space-3); color: var(--state-success-text); background: var(--state-success-surface); border-radius: var(--radius-md); font-size: var(--font-size-sm); }
 .theme-selector { display: grid; gap: var(--space-2); }
 .theme-selector-field { display: grid; gap: var(--space-1); }
 .theme-selector-label { color: var(--text-secondary); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: .04em; }

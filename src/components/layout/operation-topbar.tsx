@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { ExperienceMode } from "@/modules/user-experience";
 import type { OperationHeaderData } from "@/server/access/operation-header-service";
 import { ThemeSelector } from "@/components/theme/theme-selector";
+import { OperationalHealthIndicator } from "@/features/operations/operational-health-indicator";
 
 function storeStatusLabel(status: string | null) {
   if (status === "active") return "Unidade ativa";
@@ -11,7 +12,7 @@ function storeStatusLabel(status: string | null) {
   return null;
 }
 
-export function OperationTopbar({ email, data, experienceMode = "standard", driverOnly = false }: { email: string | null; data: OperationHeaderData; experienceMode?: ExperienceMode; driverOnly?: boolean }) {
+export function OperationTopbar({ email, data, storeId, experienceMode = "standard", driverOnly = false }: { email: string | null; data: OperationHeaderData; storeId: string | null; experienceMode?: ExperienceMode; driverOnly?: boolean }) {
   const storeLabel = data.storeName ?? "Operação";
   const storeStatus = storeStatusLabel(data.storeStatus);
   const cashLabel = data.cashStatus === "open"
@@ -30,6 +31,7 @@ export function OperationTopbar({ email, data, experienceMode = "standard", driv
         </div>
       </div>
       <div className="app-topbar-actions">
+        <OperationalHealthIndicator storeId={storeId} snapshot={data.health} />
         <form action={setExperienceModeAction} className="app-experience-toggle">
           <input type="hidden" name="mode" value={nextExperienceMode} />
           <Button tone="ghost" type="submit" aria-label={experienceMode === "easy" ? "Voltar ao modo padrão" : "Ativar modo fácil"}>
