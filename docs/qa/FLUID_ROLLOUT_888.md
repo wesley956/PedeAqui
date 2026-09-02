@@ -23,6 +23,7 @@ npm run test:fluid-rollout
 | 320–1920 px, toque e teclado | `mobile-full-layout-qa.test.ts`, `full-accessibility-qa.test.ts` |
 | Roteiro móvel do entregador | `courier-route-residual-843.test.ts` |
 | Pico de 50 pedidos com rollback | `supabase/tests/e2e_fluid_rollout_50_orders.sql` |
+| Produto esgotado e políticas de pagamento | `supabase/tests/e2e_fluid_rollout_exceptions.sql` |
 
 O CI completo continua obrigatório depois deste gate. O comando focal não substitui TypeScript, lint, banco, E2E, Print Agent nem build.
 
@@ -33,8 +34,8 @@ Estes cenários devem usar conta de teste ou transação com rollback, nunca Don
 - repetição de 50 pedidos em 30 minutos, em janela sustentada, além da rajada já validada;
 - queda e retorno real de internet durante recebimento e atualização;
 - Print Agent desligado, reiniciado e recuperado após boot do Windows;
-- produto esgotado durante montagem e envio do carrinho;
-- pagamento atrasado e política de conclusão selecionada;
+- experiência humana das mensagens de produto esgotado durante o carrinho;
+- experiência humana da confirmação de pagamento em cada política;
 - abertura, pausa, retomada e fechamento da operação;
 - rollback para o commit anterior sem apagar dados nem configurações.
 
@@ -66,7 +67,9 @@ Rollback de aplicação volta ao commit de produção anterior. Mudanças de con
 - Conta controlada: login e fluxos essenciais validados na Santa Rita Açaí & Sorvetes, sem alterar a operação.
 - Carga transacional: 50 pedidos em 514,44 ms (10,29 ms/pedido), todos visíveis, únicos e revertidos; nenhum resíduo permaneceu.
 - Banco: checkout, PDV, cozinha, fallback de impressão e isolamento multiempresa passaram na produção com rollback.
+- Exceções: produto esgotado bloqueou o checkout; `strict`, `flexible` e `quick_confirmation` persistiram; política insegura foi recusada; 0 resíduos.
 - Operação real observada: Print Agent sem heartbeat e uma impressão parada foram sinalizados como P0 no painel e no Modo Movimento.
+- Compatibilidade encontrada: a configuração guiada falhava para lojas com fluxo `custom`; o leitor e o formulário agora preservam esse modo sem conversão silenciosa.
 - Dona Maria: pendente de opt-in; configuração atual não foi alterada.
 - Dom Burger: pendente de resposta humana.
 - Rollout geral: bloqueado até evidência real e aprovação explícita.
