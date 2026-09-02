@@ -5,6 +5,7 @@ import { parseMoneyToCents } from "@/server/catalog/money";
 import { scheduleOrderWhatsAppNotifications } from "@/server/conversations/order-notification-dispatch";
 import { DeliveryService } from "@/server/delivery/delivery-service";
 import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
+import { DriverMutationService } from "@/server/delivery/driver-mutation-service";
 import { DriverMobileAccessService } from "@/server/delivery/driver-mobile-access-service";
 import { RouteTrackingService } from "@/server/delivery/route-tracking-service";
 
@@ -105,6 +106,7 @@ function friendly(error: unknown) {
     ["not assigned to current driver", "Esta entrega não está atribuída ao seu usuário."],
     ["telefone já está vinculado", "Este telefone já está vinculado a outro entregador."],
     ["cadastre o telefone", "Cadastre o telefone do entregador antes de liberar o acesso."],
+    ["idempotency key reused", "Esta ação foi reenviada com dados diferentes. Atualize a página e tente novamente."],
   ];
   for (const [needle, message] of rules) if (lower.includes(needle)) return message;
   return raw;
@@ -112,11 +114,11 @@ function friendly(error: unknown) {
 
 export async function createDriverAction(_previous: DeliveryActionState, formData: FormData): Promise<DeliveryActionState> {
   try {
-    await DeliveryOperationsService.createDriver({
+    await DriverMutationService.createDriver({
       name: text(formData, "name"),
       phone: optional(formData, "phone"),
       maxActiveDeliveries: Number(text(formData, "maxActiveDeliveries") || "3"),
-    });
+    }, text(formData, "idempotencyKey"));
     refreshOperations();
     return { ok: true, message: "Entregador cadastrado e disponível para receber entregas.", error: null };
   } catch (error) {
@@ -145,13 +147,13 @@ export async function createDriverMobileAccessAction(_previous: DriverMobileAcce
 
 export async function updateDriverAction(_previous: DeliveryActionState, formData: FormData): Promise<DeliveryActionState> {
   try {
-    await DeliveryOperationsService.updateDriver(text(formData, "driverId"), {
+    await DriverMutationService.updateDriver(text(formData, "driverId"), {
       name: text(formData, "name"),
       phone: optional(formData, "phone"),
       active: formData.get("active") === "on",
       onDuty: formData.get("onDuty") === "on",
       maxActiveDeliveries: Number(text(formData, "maxActiveDeliveries") || "3"),
-    });
+    }, text(formData, "idempotencyKey"));
     refreshOperations();
     return { ok: true, message: "Entregador atualizado.", error: null };
   } catch (error) {
