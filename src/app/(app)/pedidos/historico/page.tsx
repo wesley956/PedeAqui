@@ -3,6 +3,7 @@ import styles from "@/features/orders/order-manager.module.css";
 import { formatStoreDateTime, DEFAULT_STORE_TIMEZONE } from "@/lib/store-date-time";
 import { OrderDeliveryAttributionService } from "@/server/delivery/order-delivery-attribution-service";
 import { OrderService } from "@/server/orders/order-service";
+import { OrderListPosition } from "@/features/orders/order-navigation-memory";
 
 const statusLabels: Record<string, string> = {
   completed: "Finalizado",
@@ -29,12 +30,15 @@ export default async function OrderHistoryPage({ searchParams }: { searchParams:
     search: params.q ?? "",
   });
   const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
+  const returnQuery = new URLSearchParams({ ...(search ? { q: search } : {}), ...(page > 1 ? { page: String(page) } : {}) }).toString();
+  const returnTo = `/pedidos/historico${returnQuery ? `?${returnQuery}` : ""}`;
   const deliveryAttribution = await OrderDeliveryAttributionService.forOrders(
     orders.filter((order) => order.fulfillment_type === "delivery").map((order) => order.id),
   );
 
   return (
     <section className={styles.page}>
+      <OrderListPosition storageKey="orders:history" />
       <header className={styles.pageHeader}>
         <div className={styles.pageHeading}>
           <p className={styles.pageEyebrow}>Consulta</p>
@@ -82,7 +86,7 @@ export default async function OrderHistoryPage({ searchParams }: { searchParams:
                 ) : null}
               </div>
 
-              <Link href={`/pedidos/${order.id}`} className={styles.detailsLink}>Abrir detalhes</Link>
+              <Link href={{ pathname: `/pedidos/${order.id}`, query: { from: returnTo } }} className={styles.detailsLink}>Abrir detalhes</Link>
             </article>
           );
         })}

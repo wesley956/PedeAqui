@@ -66,8 +66,10 @@ function toneForFulfillment(status: string): StatusTone {
   return "neutral";
 }
 
-export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function OrderDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ from?: string }> }) {
   const { id } = await params;
+  const requestedReturn = (await searchParams).from ?? "";
+  const returnTo = requestedReturn === "/pedidos" || requestedReturn.startsWith("/pedidos/historico?") || requestedReturn === "/pedidos/historico" ? requestedReturn : "/pedidos";
   const { context, order, items, history, printJobs, timeZone } = await OrderService.get(id);
   if (!context.storeId) throw new Error("An active store is required");
   const [moduleSnapshot, operational] = await Promise.all([ModuleAccessService.load(context), OperationalSettingsService.loadCurrent()]);
@@ -92,11 +94,17 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     && order.order_status === "confirmed"
     && order.fulfillment_type === "delivery"
     && order.fulfillment_status === "out_for_delivery";
+  const operationalImpacts = [
+    printJobs.some((job) => job.status === "failed") ? { title: "Impressão requer atenção", detail: "A cozinha pode não ter recebido uma via. Confira a impressora e reenvie em Impressões." } : null,
+    fulfillmentComplete && order.payment_status === "pending" ? { title: "Pagamento ainda pendente", detail: operational.settings.paymentCompletionPolicy === "flexible" ? "A operação terminou, mas o valor continuará na fila do Financeiro até a baixa." : "Confirme o recebimento para liberar a conclusão do pedido." } : null,
+    order.production_status === "preparing" ? { title: "Pedido em preparo", detail: "A próxima ação é marcar como pronto quando a cozinha terminar." } : null,
+    !manualDeliveryMode && order.fulfillment_status === "awaiting_assignment" ? { title: "Entrega sem responsável", detail: "Escolha o entregador na Central de Entregas para o pedido seguir." } : null,
+  ].filter((impact): impact is { title: string; detail: string } => Boolean(impact));
 
   return (
     <section className={styles.page}>
       <OrderRealtime storeId={context.storeId} />
-      <Link href="/pedidos" className={styles.back}>← Voltar aos pedidos</Link>
+      <Link href={returnTo} className={styles.back}>← Voltar sem perder sua posição</Link>
 
       <article className={styles.hero}>
         <div className={styles.heroTop}>
@@ -116,6 +124,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <StatusItem label="Entrega/retirada" value={fulfillmentLabels[order.fulfillment_status] ?? order.fulfillment_status} tone={toneForFulfillment(order.fulfillment_status)} />
         </div>
         {order.cancel_reason ? <p className={styles.completionHint}><strong>Motivo do cancelamento:</strong> {order.cancel_reason}</p> : null}
+        {operationalImpacts.map((impact) => <p key={impact.title} className={styles.completionHint}><strong>{impact.title}:</strong> {impact.detail}</p>)}
 
         <div className={styles.nextAction}>
           <div>
@@ -124,7 +133,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </div>
           <div className={styles.actionGrid}>
             {order.order_status === "pending_confirmation" ? <OrderActionForm orderId={order.id} intent="accept" label="Aceitar pedido" /> : null}
-            {order.order_status === "pending_confirmation" ? <OrderActionForm orderId={order.id} intent="reject" label="Recusar pedido" tone="danger" reasonLabel="Motivo da recusa" reasonPlaceholder="Ex.: item indisponível" /> : null}
             {order.order_status === "confirmed" && ["pending_confirmation", "queued"].includes(order.production_status) ? <OrderActionForm orderId={order.id} intent="start_production" label="Iniciar produção" /> : null}
             {order.production_status === "preparing" ? <OrderActionForm orderId={order.id} intent="mark_ready" label="Marcar pronto" /> : null}
             {order.production_status === "ready" && order.fulfillment_type === "pickup" && order.fulfillment_status === "pending" ? <OrderActionForm orderId={order.id} intent="await_pickup" label="Liberar retirada" /> : null}
@@ -241,7 +249,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <p className={styles.sectionHint}>Use cancelamento somente quando necessário; a regra de autorização permanece no servidor.</p>
           </div>
           <div className={styles.cancelForm}>
-            <OrderActionForm orderId={order.id} intent="cancel" label="Cancelar pedido" tone="danger" reasonLabel="Motivo do cancelamento" reasonPlaceholder="Ex.: cliente solicitou cancelamento" />
+            {order.order_status === "pending_confirmation"
+              ? <OrderActionForm orderId={order.id} intent="reject" label="Recusar pedido" tone="danger" reasonLabel="Motivo da recusa" reasonPlaceholder="Ex.: item indisponível" />
+              : <OrderActionForm orderId={order.id} intent="cancel" label="Cancelar pedido" tone="danger" reasonLabel="Motivo do cancelamento" reasonPlaceholder="Ex.: cliente solicitou cancelamento" />}
           </div>
         </section>
       ) : null}

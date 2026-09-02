@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CustomOrderWorkflowBoard } from "@/features/orders/custom-order-workflow-board";
 import { OrderManagerBoard } from "@/features/orders/order-manager-board";
+import { OrderListPosition } from "@/features/orders/order-navigation-memory";
 import styles from "@/features/orders/order-manager.module.css";
 import type { OrderManagerRow } from "@/features/orders/manager-model";
 import { DEFAULT_STORE_TIMEZONE } from "@/lib/store-date-time";
@@ -26,6 +27,7 @@ export default async function OrdersPage() {
 
   return (
     <section className={styles.page}>
+      <OrderListPosition storageKey="orders:active" />
       <header className={styles.pageHeader}>
         <div className={styles.pageHeading}>
           <p className={styles.pageEyebrow}>OPERAÇÃO</p>
