@@ -26,6 +26,7 @@ import styles from "@/features/pdv/pdv.module.css";
 type PaymentDraft = { id: string; method: PosPaymentMethod; amountText: string; cashReceivedText: string; reference: string };
 type ConfiguratorState = { productId: string; modifierIds: string[]; quantity: number; note: string; error: string | null };
 type LastSale = { orderId: string; displayNumber: number; totalCents: number; changeDueCents: number };
+type MobilePdvView = "catalog" | "sale";
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 function money(cents: number) { return currency.format(cents / 100); }
@@ -95,6 +96,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
 }) {
   const defaultMethod = paymentMethods[0]?.method ?? "cash";
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [mobileView, setMobileView] = useState<MobilePdvView>("catalog");
   const [search, setSearch] = useState(""); const deferredSearch = useDeferredValue(search);
   const [cart, setCart] = useState<PosCartLine[]>([]); const [configurator, setConfigurator] = useState<ConfiguratorState | null>(null);
   const [customerQuery, setCustomerQuery] = useState(""); const deferredCustomerQuery = useDeferredValue(customerQuery);
@@ -127,6 +129,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
     loyaltyRedeemPoints: Number.isInteger(loyaltyNumber) && loyaltyNumber >= 0 ? loyaltyNumber : -1,
   }), [cartSubtotal, couponCode, coupons, selectedCustomer, growthSettings, cashbackParsed, loyaltyNumber]);
   const saleTotal = growthProjection.valid ? growthProjection.totalCents : cartSubtotal;
+  const cartItemCount = cart.reduce((sum, line) => sum + line.quantity, 0);
   const configProduct = configurator ? productIndex.get(configurator.productId) ?? null : null;
 
   function touchSale() { setRevision((value) => value + 1); setError(null); setLastSale(null); }
@@ -172,14 +175,33 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
       {lastSale ? <div className={styles.statusSuccess}>Venda <strong>#{lastSale.displayNumber}</strong> finalizada em {money(lastSale.totalCents)}.{lastSale.changeDueCents > 0 ? <> Troco: <strong>{money(lastSale.changeDueCents)}</strong>.</> : null}{" "}<Link href={`/pedidos/${lastSale.orderId}`}>Abrir pedido</Link></div> : null}
       {error ? <div className={styles.statusError}>{error}</div> : null}
 
-      <div className={styles.layout}>
-        <div className={styles.catalog}>
+      <nav className={styles.mobileViewSwitcher} aria-label="Etapa atual da venda">
+        <button
+          type="button"
+          className={mobileView === "catalog" ? styles.mobileViewActive : styles.mobileViewButton}
+          aria-current={mobileView === "catalog" ? "page" : undefined}
+          onClick={() => setMobileView("catalog")}
+        >
+          Itens
+        </button>
+        <button
+          type="button"
+          className={mobileView === "sale" ? styles.mobileViewActive : styles.mobileViewButton}
+          aria-current={mobileView === "sale" ? "page" : undefined}
+          onClick={() => setMobileView("sale")}
+        >
+          Venda · {cartItemCount} {cartItemCount === 1 ? "item" : "itens"} · {money(saleTotal)}
+        </button>
+      </nav>
+
+      <div className={styles.layout} data-mobile-view={mobileView}>
+        <div className={styles.catalog} data-pdv-panel="catalog">
           <div className={styles.toolbar}><input className={styles.search} type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar produto, SKU ou código de barras" autoComplete="off" aria-label="Buscar produtos no PDV" /><div className={styles.categories} aria-label="Categorias do PDV"><button type="button" className={categoryId === null ? styles.categoryActive : styles.categoryButton} onClick={() => setCategoryId(null)}>Todos</button>{categories.map((category) => <button type="button" key={category.id} className={categoryId === category.id ? styles.categoryActive : styles.categoryButton} onClick={() => setCategoryId(category.id)}>{category.name}</button>)}</div></div>
           {visibleProducts.length === 0 ? <div className={styles.empty}>Nenhum produto disponível para este filtro.</div> : <div className={styles.productGrid}>{visibleProducts.map((product) => <button type="button" key={product.id} className={styles.productCard} onClick={() => chooseProduct(product)}><span><span className={styles.productName}>{product.name}</span>{product.description ? <span className={styles.productDescription}>{product.description}</span> : null}</span><span className={styles.rowBetween}><span className={styles.productPrice}>{money(product.priceCents)}</span><span className={styles.mutedSmall}>{product.modifierGroups.length > 0 ? "Configurar" : "+ Adicionar"}</span></span></button>)}</div>}
         </div>
 
-        <form className={`card ${styles.cartPanel}`} onSubmit={finalizeSale}>
-          <div className={styles.cartHeader}><div><div className={styles.mutedSmall}>VENDA ATUAL</div><h2 style={{ margin: "3px 0 0", fontSize: 19 }}>Carrinho</h2></div><strong>{cart.reduce((sum, line) => sum + line.quantity, 0)} item(ns)</strong></div>
+        <form className={`card ${styles.cartPanel}`} data-pdv-panel="sale" onSubmit={finalizeSale}>
+          <div className={styles.cartHeader}><div><div className={styles.mutedSmall}>VENDA ATUAL</div><h2 style={{ margin: "3px 0 0", fontSize: 19 }}>Carrinho</h2></div><strong>{cartItemCount} {cartItemCount === 1 ? "item" : "itens"}</strong></div>
           {cart.length === 0 ? <div className={styles.empty}>Selecione produtos para iniciar a venda.</div> : <div className={styles.cartList}>{cart.map((line) => <div key={line.key} className={styles.cartLine}><div className={styles.rowBetween}><strong>{line.productName}</strong><strong>{money(line.unitPriceCents * line.quantity)}</strong></div>{line.modifierLabels.length > 0 ? <div className={styles.mutedSmall}>{line.modifierLabels.join(" · ")}</div> : null}{line.note ? <div className={styles.mutedSmall}>Obs.: {line.note}</div> : null}<div className={styles.rowBetween}><div className={styles.qtyRow}><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, -1)}>−</button><strong>{line.quantity}</strong><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, 1)}>+</button></div><button type="button" className={styles.removeButton} onClick={() => removeLine(line.key)}>Remover</button></div></div>)}</div>}
 
           <details className={styles.advancedSection}>
