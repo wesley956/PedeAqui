@@ -123,7 +123,7 @@ export default async function DriverPage() {
 
     <div className={styles.sectionHeading}>
       <div><span className={styles.label}>MINHA CARGA</span><h2>Entregas assumidas</h2></div>
-      <strong className={styles.capacity}>{data.activeDeliveryCount}/{data.driver.max_active_deliveries}</strong>
+      <strong className={styles.capacity}>{data.activeDeliveryCount}/{data.driver.max_active_deliveries} em uso</strong>
     </div>
 
     {active.length === 0 ? <article className={styles.empty}><strong>Nenhuma entrega ativa.</strong><p>{data.selfClaimEnabled ? "Pegue um pedido disponível acima quando estiver pronto para sair." : "Quando uma entrega for atribuída a você, ela aparecerá aqui automaticamente."}</p></article> : <div className={styles.list}>{active.map((item) => {
@@ -161,6 +161,8 @@ export default async function DriverPage() {
           <strong>{paymentText}</strong>
         </section>
 
+        {nextAction ? <div className={styles.next}><span className={styles.nextLabel}>Próxima ação</span>{nextAction}</div> : null}
+
         <div className={styles.destination}>
           <span className={styles.label}>Destino</span>
           <div className={styles.address}>{destination}</div>
@@ -173,7 +175,6 @@ export default async function DriverPage() {
           {order.customer_phone_snapshot ? <a href={`tel:${order.customer_phone_snapshot}`} className={styles.phoneLink}>Ligar para cliente</a> : <span className={styles.phoneLink} aria-disabled="true">Telefone não informado</span>}
         </div>
 
-        {nextAction ? <div className={styles.next}><span className={styles.nextLabel}>Próxima ação</span>{nextAction}</div> : null}
       </article>;
     })}</div>}
 

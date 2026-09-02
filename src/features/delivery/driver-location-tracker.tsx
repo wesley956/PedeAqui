@@ -21,6 +21,10 @@ export function DriverLocationTracker({ sessionId }: { sessionId: string }) {
   }
 
   function start() {
+    if (watchId.current !== null) {
+      navigator.geolocation.clearWatch(watchId.current);
+      watchId.current = null;
+    }
     if (!navigator.geolocation) {
       setState("error");
       void reportUnavailable("unavailable");
@@ -60,8 +64,13 @@ export function DriverLocationTracker({ sessionId }: { sessionId: string }) {
     offline: "Sem conexão — retomaremos quando possível",
     error: "GPS indisponível — a entrega continua disponível",
   };
+  const canRetry = state === "denied" || state === "offline" || state === "error";
   return <div role="status" aria-live="polite" data-tracking-state={state}>
     {state === "idle" ? <button type="button" onClick={start}>Compartilhar localização da rota</button> : <strong>{labels[state]}</strong>}
+    {state === "denied" ? <small>Libere a localização nas permissões do navegador e tente novamente. Você ainda pode concluir a entrega sem rastreamento.</small> : null}
+    {state === "offline" ? <small>Confira a internet do celular. A entrega continua disponível e você pode tentar novamente quando a conexão voltar.</small> : null}
+    {state === "error" ? <small>Confira se a localização do celular está ligada. A entrega continua disponível mesmo sem GPS.</small> : null}
+    {canRetry ? <button type="button" onClick={start}>Tentar compartilhar novamente</button> : null}
     <small>O compartilhamento ocorre somente durante esta rota e para ao concluir a entrega. Navegadores móveis podem suspender atualizações em segundo plano.</small>
   </div>;
 }
