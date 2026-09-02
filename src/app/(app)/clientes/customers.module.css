@@ -104,6 +104,16 @@
 .sectionCard h2 { margin: 0; font-size: 18px; }
 .sectionHeader { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
 .sectionSub { color: var(--muted); font-size: 11px; margin-top: 3px; }
+.addressComposer { overflow: hidden; }
+.addressComposer > summary { cursor: pointer; list-style: none; padding: 17px; }
+.addressComposer > summary::-webkit-details-marker { display: none; }
+.addressComposer > summary span { display: grid; gap: 3px; padding-right: 28px; }
+.addressComposer > summary strong { font-size: 16px; }
+.addressComposer > summary small { color: var(--muted); font-size: 11px; font-weight: 500; }
+.addressComposer > summary::after { content: "+"; float: right; margin-top: -29px; color: var(--accent); font-size: 20px; font-weight: 900; }
+.addressComposer[open] > summary::after { content: "−"; }
+.addressComposer > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -3px; }
+.addressForm { display: grid; gap: 12px; padding: 14px 17px 17px; border-top: 1px solid var(--border); }
 
 .addressList, .orderList { display: grid; }
 .address, .orderRow { padding: 12px 0; border-top: 1px solid var(--border); display: grid; gap: 7px; }

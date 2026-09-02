@@ -56,6 +56,15 @@ export default async function GrowthPage() {
         </div>
       </header>
 
+      <section className={styles.objectives} aria-labelledby="growth-next-action">
+        <div className={styles.objectivesHeader}><h2 id="growth-next-action">O que você quer fazer agora?</h2><p>Escolha um objetivo; as configurações avançadas continuam disponíveis abaixo.</p></div>
+        <div className={styles.objectiveGrid}>
+          <a className={styles.objectiveCard} href="#fidelidade"><strong>Fidelizar clientes</strong><span>Configure cashback ou pontos para premiar novas compras.</span><b>Configurar fidelidade →</b></a>
+          <a className={styles.objectiveCard} href="#campanhas"><strong>Trazer clientes de volta</strong><span>Crie uma campanha para todos ou para um grupo específico.</span><b>Criar campanha →</b></a>
+          <Link className={styles.objectiveCard} href="/crescimento/campanhas"><strong>Acompanhar e enviar</strong><span>Prepare o público e acompanhe os envios autorizados pelo WhatsApp.</span><b>Abrir campanhas →</b></Link>
+        </div>
+      </section>
+
       <section className={styles.metrics} aria-label="Resumo de crescimento">
         <Metric label="Cupons ativos" value={String(activeCoupons)} />
         <Metric label="Clientes com saldo" value={String(data.balances.length)} />
