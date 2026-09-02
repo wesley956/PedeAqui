@@ -34,7 +34,7 @@ export function OperationTopbar({ email, data, storeId, experienceMode = "standa
       </div>
       <div className="app-topbar-actions">
         {data.receiving ? <ReceivingControl state={data.receiving} /> : null}
-        {!driverOnly ? <Link className="app-operation-link" href="/operacao">Abrir/fechar</Link> : null}
+        {!driverOnly ? <><Link className="app-operation-link" href="/movimento">Modo Movimento</Link><Link className="app-operation-link" href="/operacao">Abrir/fechar</Link></> : null}
         <OperationalHealthIndicator storeId={storeId} snapshot={data.health} />
         <form action={setExperienceModeAction} className="app-experience-toggle">
           <input type="hidden" name="mode" value={nextExperienceMode} />

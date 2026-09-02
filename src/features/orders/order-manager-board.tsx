@@ -33,8 +33,8 @@ const fulfillmentLabels: Record<string, string> = {
   canceled: "Fulfillment cancelado", not_required: "Sem fulfillment",
 };
 const channelLabels: Record<string, string> = { menu: "Cardápio", digital_menu: "Cardápio", pdv: "PDV", dining: "Salão", whatsapp: "WhatsApp", manual: "Manual" };
-type BoardWorkflowMode = "standard" | "simplified";
-type OrderActionSpec = { intent: ManagerIntent; label: string; tone?: "primary" | "secondary" | "danger" };
+export type BoardWorkflowMode = "standard" | "simplified";
+export type OrderActionSpec = { intent: ManagerIntent; label: string; tone?: "primary" | "secondary" | "danger" };
 const isOperationalOrder = (order: OrderManagerRow) => !["completed", "canceled", "rejected"].includes(order.order_status);
 
 function money(cents: number | string) {
@@ -77,7 +77,7 @@ function isManualDeliveryAwaitingFinish(order: OrderManagerRow) {
     && order.fulfillment_status === "delivered";
 }
 
-function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkflowMode, manualDeliveryMode: boolean): OrderActionSpec | null {
+export function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkflowMode, manualDeliveryMode: boolean): OrderActionSpec | null {
   if (order.order_status === "pending_confirmation") {
     return workflowMode === "simplified"
       ? { intent: "accept_and_start", label: "Aceitar e iniciar" }

@@ -93,6 +93,7 @@ function refreshOrder(orderId: string) {
   revalidatePath(`/pedidos/${orderId}`);
   revalidatePath("/entregas");
   revalidatePath("/entregador");
+  revalidatePath("/movimento");
 }
 
 export async function cancelOrderAction(formData: FormData) {
