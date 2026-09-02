@@ -5,6 +5,7 @@ import { PaymentPanel } from "@/features/payments/payment-panel";
 import { SemanticStatus, type StatusTone } from "@/components/ui/status";
 import { isManualDeliveryMode } from "@/modules/manual-delivery";
 import { ModuleAccessService } from "@/server/modules/module-access-service";
+import { OperationalSettingsService } from "@/server/stores/operational-settings-service";
 import { OrderService } from "@/server/orders/order-service";
 import { orderStatusLabels, productionStatusLabels } from "@/server/orders/state-machines";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
@@ -69,8 +70,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const { context, order, items, history, printJobs, timeZone } = await OrderService.get(id);
   if (!context.storeId) throw new Error("An active store is required");
-  const moduleSnapshot = await ModuleAccessService.load(context);
-  const manualDeliveryMode = isManualDeliveryMode(moduleSnapshot.enabledModuleKeys);
+  const [moduleSnapshot, operational] = await Promise.all([ModuleAccessService.load(context), OperationalSettingsService.loadCurrent()]);
+  const manualDeliveryMode = isManualDeliveryMode(moduleSnapshot.enabledModuleKeys, operational.settings.deliveryOperationLevel);
 
   const fulfillmentComplete = ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status);
   const canComplete = order.order_status === "confirmed" && ["paid", "partially_refunded", "refunded"].includes(order.payment_status) && fulfillmentComplete;

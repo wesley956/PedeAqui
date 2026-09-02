@@ -11,13 +11,6 @@ import { PaymentService } from "@/server/payments/payment-service";
 import type { FulfillmentStatus, PaymentStatus } from "@/server/orders/state-machines";
 
 const uuid = z.string().uuid();
-const dispatchPath: readonly FulfillmentStatus[] = [
-  "pending",
-  "awaiting_assignment",
-  "assigned",
-  "picked_up",
-  "out_for_delivery",
-];
 const settledPaymentStatuses: readonly PaymentStatus[] = ["paid", "partially_refunded", "refunded"];
 
 function requireStore(storeId: string | null) {
@@ -28,7 +21,10 @@ function requireStore(storeId: string | null) {
 async function loadManualContext() {
   const context = await authorize(PERMISSIONS.ORDERS_EDIT);
   const modules = await ModuleAccessService.load(context);
-  if (!isManualDeliveryMode(modules.enabledModuleKeys)) {
+  const admin = createAdminClient();
+  const { data: settings, error } = await admin.from("store_operational_settings").select("delivery_operation_level").eq("organization_id",context.organizationId).eq("store_id",requireStore(context.storeId)).maybeSingle();
+  if(error) throw error;
+  if (!isManualDeliveryMode(modules.enabledModuleKeys, settings?.delivery_operation_level)) {
     throw new Error("A entrega manual só está disponível quando Entregas ou Entregadores está desativado para a loja.");
   }
   return { context, storeId: requireStore(context.storeId) };
@@ -64,18 +60,12 @@ export class ManualDeliveryService {
   static async dispatch(orderId: string) {
     const order = await loadOrder(orderId);
     const current = order.fulfillment_status as FulfillmentStatus;
-    const index = dispatchPath.indexOf(current);
-    if (index < 0) {
-      if (current === "delivered") return { changed: false, status: current };
-      throw new Error(`A entrega manual não pode iniciar a partir do estado ${current}.`);
-    }
-
-    let changed = false;
-    for (const next of dispatchPath.slice(index + 1)) {
-      await OrderService.setFulfillment(order.id, next, "Fluxo manual sem gestão de entregador");
-      changed = true;
-    }
-    return { changed, status: "out_for_delivery" as const };
+    if (current === "delivered") return { changed: false, status: current };
+    const context = await authorize(PERMISSIONS.ORDERS_EDIT);
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("manual_delivery_dispatch_internal", { p_order_id: order.id, p_actor_user_id: context.userId, p_reason: "Entrega manual sem gestão de motoboy" });
+    if (error) throw error;
+    return data as { changed: boolean; status: "out_for_delivery" };
   }
 
   static async finish(orderId: string): Promise<ManualDeliveryFinishResult> {

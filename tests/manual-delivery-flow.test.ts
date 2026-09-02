@@ -1,18 +1,25 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { ModuleKey } from "@/modules/module-catalog";
-import { isManualDeliveryMode, isOfflineDeliveryPayment } from "@/modules/manual-delivery";
+import { isManualDeliveryMode, isOfflineDeliveryPayment, resolveDeliveryOperationLevel } from "@/modules/manual-delivery";
 
 function modules(...keys: ModuleKey[]) {
   return new Set<ModuleKey>(keys);
 }
 
 describe("manual delivery mode", () => {
-  it("stays managed only when both delivery modules are enabled", () => {
+  it("derives the safest legacy level from modules", () => {
     expect(isManualDeliveryMode(modules("deliveries", "driver"))).toBe(false);
-    expect(isManualDeliveryMode(modules("deliveries"))).toBe(true);
+    expect(isManualDeliveryMode(modules("deliveries"))).toBe(false);
     expect(isManualDeliveryMode(modules("driver"))).toBe(true);
     expect(isManualDeliveryMode(modules())).toBe(true);
+  });
+
+  it("keeps the restaurant choice within the modules actually available", () => {
+    expect(resolveDeliveryOperationLevel("manual", modules("deliveries", "driver"))).toBe("manual");
+    expect(resolveDeliveryOperationLevel("advanced", modules("deliveries"))).toBe("dispatch_simple");
+    expect(resolveDeliveryOperationLevel("driver_connected", modules())).toBe("manual");
+    expect(resolveDeliveryOperationLevel(null, modules("deliveries", "driver"))).toBe("driver_connected");
   });
 
   it("only auto-confirms payment-at-delivery methods", () => {
@@ -31,11 +38,19 @@ describe("manual delivery mode", () => {
 
   it("uses the order flow instead of creating a fake driver", () => {
     const service = readFileSync("src/server/delivery/manual-delivery-service.ts", "utf8");
-    expect(service).toContain('"awaiting_assignment"');
-    expect(service).toContain('"assigned"');
-    expect(service).toContain('"picked_up"');
-    expect(service).toContain('"out_for_delivery"');
+    expect(service).toContain('manual_delivery_dispatch_internal');
+    expect(service).not.toContain("dispatchPath");
     expect(service).not.toContain("createDriver");
     expect(service).not.toContain("driver_id");
+  });
+
+  it("persists one truthful manual dispatch transition behind service-role authorization", () => {
+    const migration = readFileSync("supabase/migrations/20260902013000_delivery_operation_levels.sql", "utf8");
+    expect(migration).toContain("fulfillment_status='out_for_delivery'");
+    expect(migration).toContain("v_order.fulfillment_status,'out_for_delivery'");
+    expect(migration).not.toContain("fulfillment_status='assigned'");
+    expect(migration).not.toContain("fulfillment_status='picked_up'");
+    expect(migration).toContain("revoke all on function public.manual_delivery_dispatch_internal(uuid,uuid,text) from public,anon,authenticated");
+    expect(migration).toContain("grant execute on function public.manual_delivery_dispatch_internal(uuid,uuid,text) to service_role");
   });
 });

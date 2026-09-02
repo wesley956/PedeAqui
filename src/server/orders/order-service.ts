@@ -108,7 +108,7 @@ export class OrderService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const settingsResult = await admin.from("store_operational_settings")
-      .select("orders_workflow_mode")
+      .select("orders_workflow_mode,delivery_operation_level")
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
       .maybeSingle();
@@ -128,7 +128,7 @@ export class OrderService {
       orders.push(...(data ?? []));
       if ((data?.length ?? 0) < operationalPageSize) break;
     }
-    return { context, orders, workflowMode };
+    return { context, orders, workflowMode, deliveryOperationLevel: settingsResult.data?.delivery_operation_level ?? null };
   }
 
   static async listHistory(input: { page?: number; pageSize?: number; search?: string } = {}) {

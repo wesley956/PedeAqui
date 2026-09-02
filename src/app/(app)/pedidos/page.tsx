@@ -10,7 +10,7 @@ import { OrderService } from "@/server/orders/order-service";
 import { OrderWorkflowSettingsService } from "@/server/orders/order-workflow-settings-service";
 
 export default async function OrdersPage() {
-  const [{ context, orders, workflowMode: legacyWorkflowMode }, { settings }, moduleSnapshot] = await Promise.all([
+  const [{ context, orders, workflowMode: legacyWorkflowMode, deliveryOperationLevel }, { settings }, moduleSnapshot] = await Promise.all([
     OrderService.list(),
     OrderWorkflowSettingsService.get(),
     ModuleAccessService.load(),
@@ -19,7 +19,7 @@ export default async function OrdersPage() {
   const workflowMode = settings.mode === "custom" ? "custom" : legacyWorkflowMode;
   const rows = orders as OrderManagerRow[];
   const activeCount = rows.filter((order) => !["completed", "canceled", "rejected"].includes(order.order_status)).length;
-  const manualDeliveryMode = isManualDeliveryMode(moduleSnapshot.enabledModuleKeys);
+  const manualDeliveryMode = isManualDeliveryMode(moduleSnapshot.enabledModuleKeys, deliveryOperationLevel);
   const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
 
   return (
