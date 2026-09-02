@@ -22,6 +22,7 @@ import {
   type OrderManagerRow,
 } from "@/features/orders/manager-model";
 import { orderStatusLabels, productionStatusLabels } from "@/server/orders/state-machines";
+import type { PaymentCompletionPolicy } from "@/modules/payment-completion-policy";
 import styles from "./order-manager.module.css";
 
 const activeBuckets = ["new", "preparing", "ready", "queued"] as const satisfies readonly OperationalOrderBucket[];
@@ -34,7 +35,7 @@ const fulfillmentLabels: Record<string, string> = {
 };
 const channelLabels: Record<string, string> = { menu: "Cardápio", digital_menu: "Cardápio", pdv: "PDV", dining: "Salão", whatsapp: "WhatsApp", manual: "Manual" };
 export type BoardWorkflowMode = "standard" | "simplified";
-export type OrderActionSpec = { intent: ManagerIntent; label: string; tone?: "primary" | "secondary" | "danger" };
+export type OrderActionSpec = { intent: ManagerIntent; label: string; tone?: "primary" | "secondary" | "danger"; confirmPayment?: boolean };
 const isOperationalOrder = (order: OrderManagerRow) => !["completed", "canceled", "rejected"].includes(order.order_status);
 
 function money(cents: number | string) {
@@ -77,7 +78,7 @@ function isManualDeliveryAwaitingFinish(order: OrderManagerRow) {
     && order.fulfillment_status === "delivered";
 }
 
-export function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkflowMode, manualDeliveryMode: boolean): OrderActionSpec | null {
+export function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkflowMode, manualDeliveryMode: boolean, paymentPolicy?: PaymentCompletionPolicy | null): OrderActionSpec | null {
   if (order.order_status === "pending_confirmation") {
     return workflowMode === "simplified"
       ? { intent: "accept_and_start", label: "Aceitar e iniciar" }
@@ -101,7 +102,7 @@ export function primaryActionForOrder(order: OrderManagerRow, workflowMode: Boar
       return { intent: "manual_out_for_delivery", label: "Saiu para entrega" };
     }
     if (order.fulfillment_status === "out_for_delivery") {
-      return { intent: "manual_finish_delivery", label: "Finalizar pedido" };
+      return { intent: "manual_finish_delivery", label: paymentPolicy === "quick_confirmation" ? "Receber e finalizar" : "Finalizar pedido", confirmPayment: paymentPolicy === "quick_confirmation" };
     }
   }
   if (order.production_status === "ready" && order.fulfillment_type === "delivery" && order.fulfillment_status === "pending") {
@@ -118,11 +119,12 @@ export function primaryActionForOrder(order: OrderManagerRow, workflowMode: Boar
   return null;
 }
 
-export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode = "standard", manualDeliveryMode = false, timeZone }: {
+export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode = "standard", manualDeliveryMode = false, paymentPolicy = null, timeZone }: {
   storeId: string;
   orders: OrderManagerRow[];
   workflowMode?: BoardWorkflowMode;
   manualDeliveryMode?: boolean;
+  paymentPolicy?: PaymentCompletionPolicy | null;
   timeZone: string;
 }) {
   const [query, setQuery] = useState("");
@@ -256,7 +258,7 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
                 : manualDeliveryMode && column.key === "finish"
                   ? "Entrega confirmada · aguardando finalização"
                   : undefined;
-              return <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} workflowMode="simplified" manualDeliveryMode={manualDeliveryMode} timeZone={timeZone} statusLabelOverride={finalDeliveryLabel} />;
+              return <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} workflowMode="simplified" manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} statusLabelOverride={finalDeliveryLabel} />;
             })}
             {column.orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}
           </div>
@@ -269,7 +271,7 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
               <span className={styles.laneCount} aria-label={`${grouped[bucket].length} pedidos`}>{grouped[bucket].length}</span>
             </header>
             <div className={styles.laneBody}>
-              {grouped[bucket].map((order) => <OrderCard key={order.id} order={order} now={now} bucket={bucket} workflowMode="standard" manualDeliveryMode={manualDeliveryMode} timeZone={timeZone} />)}
+              {grouped[bucket].map((order) => <OrderCard key={order.id} order={order} now={now} bucket={bucket} workflowMode="standard" manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />)}
               {grouped[bucket].length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}
             </div>
           </section>
@@ -282,7 +284,7 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
           <span className={styles.historyCount}>{grouped.history.length} pedido(s)</span>
         </summary>
         <div className={styles.historyGrid}>
-          {grouped.history.map((order) => <OrderCard key={order.id} order={order} now={now} bucket="history" workflowMode="standard" manualDeliveryMode={manualDeliveryMode} timeZone={timeZone} />)}
+          {grouped.history.map((order) => <OrderCard key={order.id} order={order} now={now} bucket="history" workflowMode="standard" manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />)}
           {grouped.history.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido no histórico carregado.</div> : null}
         </div>
       </details></>}
@@ -290,12 +292,13 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
   );
 }
 
-function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, timeZone, statusLabelOverride }: {
+function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, paymentPolicy, timeZone, statusLabelOverride }: {
   order: OrderManagerRow;
   now: number;
   bucket: OperationalOrderBucket;
   workflowMode: BoardWorkflowMode;
   manualDeliveryMode: boolean;
+  paymentPolicy: PaymentCompletionPolicy | null;
   timeZone: string;
   statusLabelOverride?: string;
 }) {
@@ -303,7 +306,7 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, timeZ
   const blockers = completionBlockers(order);
   const status = statusForOrder(order, bucket, statusLabelOverride);
   const late = isOrderAttentionLate(order, now);
-  const primaryAction = primaryActionForOrder(order, workflowMode, manualDeliveryMode);
+  const primaryAction = primaryActionForOrder(order, workflowMode, manualDeliveryMode, paymentPolicy);
   const canMarkPaidSecondary = ["ready", "not_required"].includes(order.production_status)
     && order.payment_status === "pending"
     && ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status)
@@ -336,7 +339,7 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, timeZ
 
       {primaryAction ? (
         <div className={styles.primaryAction}>
-          <OrderActionForm orderId={order.id} intent={primaryAction.intent} label={primaryAction.label} tone={primaryAction.tone} compact />
+          <OrderActionForm orderId={order.id} intent={primaryAction.intent} label={primaryAction.label} tone={primaryAction.tone} confirmPayment={primaryAction.confirmPayment} compact />
         </div>
       ) : null}
 

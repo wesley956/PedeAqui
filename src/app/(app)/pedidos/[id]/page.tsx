@@ -130,7 +130,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             {order.production_status === "ready" && order.fulfillment_type === "pickup" && order.fulfillment_status === "pending" ? <OrderActionForm orderId={order.id} intent="await_pickup" label="Liberar retirada" /> : null}
             {order.fulfillment_status === "awaiting_pickup" ? <OrderActionForm orderId={order.id} intent="customer_picked_up" label="Cliente retirou" /> : null}
             {canManualDispatch ? <OrderActionForm orderId={order.id} intent="manual_out_for_delivery" label="Saiu para entrega" /> : null}
-            {canManualFinish ? <OrderActionForm orderId={order.id} intent="manual_finish_delivery" label="Finalizar pedido" /> : null}
+            {canManualFinish ? <OrderActionForm orderId={order.id} intent="manual_finish_delivery" label={operational.settings.paymentCompletionPolicy === "quick_confirmation" ? "Receber e finalizar" : "Finalizar pedido"} confirmPayment={operational.settings.paymentCompletionPolicy === "quick_confirmation"} /> : null}
             {!manualDeliveryMode && order.production_status === "ready" && order.fulfillment_type === "delivery" && order.fulfillment_status === "pending" ? <OrderActionForm orderId={order.id} intent="await_courier" label="Aguardar entregador" /> : null}
             {!manualDeliveryMode && order.fulfillment_status === "awaiting_assignment" ? <OrderActionForm orderId={order.id} intent="courier_assigned" label="Confirmar entregador" /> : null}
             {!manualDeliveryMode && order.fulfillment_status === "assigned" ? <OrderActionForm orderId={order.id} intent="courier_picked_up" label="Entregador retirou" /> : null}

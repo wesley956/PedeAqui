@@ -13,12 +13,19 @@ export function GuidedSetupForm({ settings, deliveryAvailable, driverAvailable, 
   const [acceptance, setAcceptance] = useState(settings.ordersAutoAccept ? "automatic" : "manual");
   const modules = new Set<ModuleKey>([...(deliveryAvailable ? ["deliveries" as const] : []), ...(driverAvailable ? ["driver" as const] : [])]);
   const [deliveryLevel, setDeliveryLevel] = useState<DeliveryOperationLevel>(() => resolveDeliveryOperationLevel(settings.deliveryOperationLevel, modules));
+  const [paymentPolicy, setPaymentPolicy] = useState(settings.paymentCompletionPolicy ?? "strict");
   const effectiveAcceptance = workflow === "simplified" ? "automatic" : acceptance;
   return <form action={saveGuidedOperationalSetupAction} className={styles.form}>
     <fieldset disabled={!canManage}>
       <legend>1. Como sua equipe quer enxergar os pedidos?</legend>
       <Choice name="workflow" value="simplified" checked={workflow === "simplified"} onChange={() => setWorkflow("simplified")} title="Uma equipe, fluxo simples" badge="Recomendado" detail="Iniciar, Pronto e Finalizados. O sistema cuida das etapas técnicas por trás." />
       <Choice name="workflow" value="standard" checked={workflow === "standard"} onChange={() => setWorkflow("standard")} title="Setores e etapas separadas" detail="Confirmação, produção, expedição e entrega aparecem separadamente." />
+    </fieldset>
+    <fieldset disabled={!canManage}>
+      <legend>4. O que fazer quando a entrega termina e o pagamento ainda está pendente?</legend>
+      <Choice name="paymentPolicy" value="strict" checked={paymentPolicy === "strict"} onChange={() => setPaymentPolicy("strict")} title="Manter na operação" detail="O pedido só sai do painel depois que o pagamento for confirmado." />
+      <Choice name="paymentPolicy" value="flexible" checked={paymentPolicy === "flexible"} onChange={() => setPaymentPolicy("flexible")} title="Enviar para pendências financeiras" detail="A entrega sai da operação, mas a dívida continua separada e visível no Financeiro." />
+      <Choice name="paymentPolicy" value="quick_confirmation" checked={paymentPolicy === "quick_confirmation"} onChange={() => setPaymentPolicy("quick_confirmation")} title="Perguntar ao finalizar" badge="Mais rápido" detail="Ao finalizar, o PedeAqui pergunta se o pagamento foi recebido antes de dar baixa." />
     </fieldset>
     <fieldset disabled={!canManage}>
       <legend>2. Quem confirma um pedido novo?</legend>

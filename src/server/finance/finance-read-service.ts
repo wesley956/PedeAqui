@@ -34,6 +34,8 @@ export class FinanceReadService {
     const suppliers=(suppliersResult.data??[]).map((supplier)=>({ ...supplier,config:supplierConfigMap.get(supplier.id)??null }));
     let report:unknown=null;
     if(canReports){ const reportResult=await admin.rpc("financial_report_internal",{ p_store_id:storeId,p_from:selectedPeriod.from,p_to:selectedPeriod.to }); if(reportResult.error) throw reportResult.error; report=reportResult.data; }
-    return { context,storeId,store:storeResult.data,period:selectedPeriod,accounts,categories:categoriesResult.data??[],obligations:obligationsResult.data??[],transactions:transactionsResult.data??[],suppliers,report,canManage,canSettle,canReports };
+    const pendingDeliveryPaymentsResult=await admin.from("orders").select("id,display_number,customer_name_snapshot,total_cents,payment_method_snapshot,updated_at").eq("organization_id",context.organizationId).eq("store_id",storeId).eq("order_status","confirmed").eq("fulfillment_status","delivered").in("payment_status",["pending","authorized","failed"]).order("updated_at",{ascending:true}).limit(100);
+    if(pendingDeliveryPaymentsResult.error) throw pendingDeliveryPaymentsResult.error;
+    return { context,storeId,store:storeResult.data,period:selectedPeriod,accounts,categories:categoriesResult.data??[],obligations:obligationsResult.data??[],transactions:transactionsResult.data??[],suppliers,pendingDeliveryPayments:pendingDeliveryPaymentsResult.data??[],report,canManage,canSettle,canReports };
   }
 }

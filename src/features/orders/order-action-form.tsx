@@ -14,6 +14,7 @@ export type ManagerIntent =
   | "start_production"
   | "mark_ready"
   | "mark_paid"
+  | "mark_paid_and_complete"
   | "await_pickup"
   | "customer_picked_up"
   | "await_courier"
@@ -30,7 +31,7 @@ export type ManagerIntent =
 
 const routedDeliveryIntents = new Set<ManagerIntent>(["courier_assigned", "courier_picked_up", "out_for_delivery", "delivered"]);
 
-export function OrderActionForm({ orderId, intent, label, tone = "primary", reasonLabel, reasonPlaceholder, printJobId, compact = false }: {
+export function OrderActionForm({ orderId, intent, label, tone = "primary", reasonLabel, reasonPlaceholder, printJobId, compact = false, confirmPayment = false }: {
   orderId: string;
   intent: ManagerIntent;
   label: string;
@@ -39,6 +40,7 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
   reasonPlaceholder?: string;
   printJobId?: string;
   compact?: boolean;
+  confirmPayment?: boolean;
 }) {
   const [state, action, pending] = useActionState(orderManagerAction, initialOrderManagerActionState);
   const iconOnlyPrint = intent === "print" && compact && !reasonLabel;
@@ -46,9 +48,10 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
     return <Link href="/entregas" style={{ ...buttonStyle("secondary"), display: "grid", placeItems: "center", textDecoration: "none" }}>{label} → Entregas</Link>;
   }
   return (
-    <form action={action} style={{ display: "grid", gap: 6 }}>
+    <form action={action} onSubmit={confirmPayment ? (event) => { if (!window.confirm("Você recebeu o pagamento deste pedido? Ao confirmar, o PedeAqui dará a baixa financeira.")) event.preventDefault(); } : undefined} style={{ display: "grid", gap: 6 }}>
       <input type="hidden" name="orderId" value={orderId} />
       <input type="hidden" name="intent" value={intent} />
+      {confirmPayment ? <input type="hidden" name="paymentReceived" value="yes" /> : null}
       {printJobId ? <input type="hidden" name="printJobId" value={printJobId} /> : null}
       {reasonLabel ? <label style={{ display: "grid", gap: 4 }}><span style={{ fontSize: 11, fontWeight: 800 }}>{reasonLabel}</span><input name="reason" required minLength={3} maxLength={500} placeholder={reasonPlaceholder} style={inputStyle} /></label> : null}
       <button

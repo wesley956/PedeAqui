@@ -33,7 +33,7 @@ describe("manual delivery mode", () => {
     const board = readFileSync("src/features/orders/order-manager-board.tsx", "utf8");
     expect(board).toContain('label: "Em entrega"');
     expect(board).toContain('intent: "manual_out_for_delivery", label: "Saiu para entrega"');
-    expect(board).toContain('intent: "manual_finish_delivery", label: "Finalizar pedido"');
+    expect(board).toContain('intent: "manual_finish_delivery", label: paymentPolicy === "quick_confirmation" ? "Receber e finalizar" : "Finalizar pedido"');
   });
 
   it("uses the order flow instead of creating a fake driver", () => {
