@@ -92,3 +92,9 @@
   .cardTop { align-items: flex-start; }
   .moneyTime { flex-direction: column; gap: 0; align-items: flex-end; }
 }
+.recentFinalized{display:grid;gap:12px;margin-top:18px;padding:16px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface)}
+.recentFinalizedHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.recentFinalizedHeader h2{margin:0 0 4px;font-size:1rem}
+.recentFinalizedGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px}
+.recentFinalizedItem{display:grid;gap:3px;min-height:54px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-2);color:var(--text);text-decoration:none}
+.recentFinalizedItem span{font-size:.78rem;color:var(--muted)}
