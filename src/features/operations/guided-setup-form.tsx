@@ -4,12 +4,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { saveGuidedOperationalSetupAction } from "@/features/operations/guided-setup-actions";
 import type { OperationalSettings } from "@/server/stores/operational-settings-service";
+import { resolveDeliveryOperationLevel, type DeliveryOperationLevel } from "@/modules/manual-delivery";
+import type { ModuleKey } from "@/modules/module-catalog";
 import styles from "@/app/(app)/configuracoes/operacao/operacao-config.module.css";
 
-export function GuidedSetupForm({ settings, deliveryAvailable, canManage }: { settings: OperationalSettings; deliveryAvailable: boolean; canManage: boolean }) {
+export function GuidedSetupForm({ settings, deliveryAvailable, driverAvailable, canManage }: { settings: OperationalSettings; deliveryAvailable: boolean; driverAvailable: boolean; canManage: boolean }) {
   const [workflow, setWorkflow] = useState(settings.ordersWorkflowMode);
   const [acceptance, setAcceptance] = useState(settings.ordersAutoAccept ? "automatic" : "manual");
-  const [handoff, setHandoff] = useState(settings.deliveriesAutoCreateWhenReady ? "automatic" : "manual");
+  const modules = new Set<ModuleKey>([...(deliveryAvailable ? ["deliveries" as const] : []), ...(driverAvailable ? ["driver" as const] : [])]);
+  const [deliveryLevel, setDeliveryLevel] = useState<DeliveryOperationLevel>(() => resolveDeliveryOperationLevel(settings.deliveryOperationLevel, modules));
   const effectiveAcceptance = workflow === "simplified" ? "automatic" : acceptance;
   return <form action={saveGuidedOperationalSetupAction} className={styles.form}>
     <fieldset disabled={!canManage}>
@@ -22,14 +25,15 @@ export function GuidedSetupForm({ settings, deliveryAvailable, canManage }: { se
       <Choice name="acceptance" value="automatic" checked={effectiveAcceptance === "automatic"} onChange={() => setAcceptance("automatic")} title="O PedeAqui confirma automaticamente" badge={workflow === "simplified" ? "Necessário no fluxo simples" : "Mais rápido"} detail="Pedidos elegíveis entram direto na fila. Exceções continuam visíveis." disabled={workflow === "simplified"} />
       <Choice name="acceptance" value="manual" checked={effectiveAcceptance === "manual"} onChange={() => setAcceptance("manual")} title="Uma pessoa confirma" detail="Cada pedido aguarda aceite. Útil quando estoque e capacidade variam muito." disabled={workflow === "simplified"} />
     </fieldset>
-    <fieldset disabled={!canManage || !deliveryAvailable}>
-      <legend>3. Como tratar pedidos de entrega?</legend>
-      {deliveryAvailable ? <>
-        <Choice name="deliveryHandoff" value="manual" checked={handoff === "manual"} onChange={() => setHandoff("manual")} title="Eu administro o motoboy" badge="Mais simples" detail="O pedido continua sendo delivery, mas não cria trabalho automático para o motoboy." />
-        <Choice name="deliveryHandoff" value="automatic" checked={handoff === "automatic"} onChange={() => setHandoff("automatic")} title="Enviar ao módulo de entregas" detail="Quando ficar pronto, o pedido segue para a central de entregas." />
-      </> : <div className={styles.moduleOff}><strong>Entrega gerenciada manualmente</strong><p>O cliente ainda pode pedir delivery. Como o módulo está desligado, nenhuma etapa de motoboy será exigida — exatamente o cenário da Dona Maria.</p></div>}
+    <fieldset disabled={!canManage}>
+      <legend>3. Até onde o PedeAqui participa da entrega?</legend>
+      <Choice name="deliveryLevel" value="manual" checked={deliveryLevel === "manual"} onChange={() => setDeliveryLevel("manual")} title="Entrega manual" badge="Mais simples" detail="O restaurante informa que saiu e finaliza. Motoboy não acessa o sistema." />
+      <Choice name="deliveryLevel" value="dispatch_simple" checked={deliveryLevel === "dispatch_simple"} onChange={() => setDeliveryLevel("dispatch_simple")} title="Despacho simples" detail="Organiza pedidos prontos para despacho, sem exigir aplicativo do motoboy." disabled={!deliveryAvailable} />
+      <Choice name="deliveryLevel" value="driver_connected" checked={deliveryLevel === "driver_connected"} onChange={() => setDeliveryLevel("driver_connected")} title="Entregador conectado" detail="O restaurante atribui e o motoboy atualiza a rota pelo PedeAqui." disabled={!deliveryAvailable || !driverAvailable} />
+      <Choice name="deliveryLevel" value="advanced" checked={deliveryLevel === "advanced"} onChange={() => setDeliveryLevel("advanced")} title="Gestão avançada" detail="Inclui retirada livre, rastreamento e alertas da rota." disabled={!deliveryAvailable || !driverAvailable} />
+      {!deliveryAvailable ? <div className={styles.moduleOff}><strong>Somente entrega manual está disponível</strong><p>O cliente ainda pode pedir delivery; nenhuma etapa de motoboy será exigida.</p></div> : null}
     </fieldset>
-    <section className={styles.preview} aria-live="polite"><strong>Como ficará na prática</strong><p>Pedido novo → {effectiveAcceptance === "automatic" ? "entra automaticamente" : "aguarda sua confirmação"} → {workflow === "simplified" ? "Iniciar → Pronto → Finalizado" : "segue todas as etapas"}{deliveryAvailable ? ` → entrega ${handoff === "automatic" ? "vai para a central" : "fica sob seu controle"}` : " → delivery sem gestão de motoboy"}.</p></section>
+    <section className={styles.preview} aria-live="polite"><strong>Como ficará na prática</strong><p>Pedido novo → {effectiveAcceptance === "automatic" ? "entra automaticamente" : "aguarda sua confirmação"} → {workflow === "simplified" ? "Iniciar → Pronto" : "segue todas as etapas"} → {deliveryLevel === "manual" ? "Saiu para entrega → Finalizar, sem ação do motoboy" : deliveryLevel === "dispatch_simple" ? "Despachar, sem login do motoboy" : deliveryLevel === "driver_connected" ? "Atribuir → motoboy atualiza a entrega" : "gestão completa da rota"}.</p></section>
     {canManage ? <Button type="submit" loadingLabel="Salvando configuração…">Salvar este fluxo</Button> : <p className={styles.readOnly}>Você pode revisar o fluxo, mas somente o responsável pela loja pode alterá-lo.</p>}
     <small>Esta alteração não ativa módulos, não muda seu plano e pode ser revertida a qualquer momento.</small>
   </form>;

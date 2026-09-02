@@ -6,10 +6,12 @@ import { OperationalSettingsService } from "@/server/stores/operational-settings
 export async function saveOperationalSettingsAction(formData: FormData) {
   const organizationId = String(formData.get("organizationId") ?? "");
   const storeId = String(formData.get("storeId") ?? "");
+  const current = await OperationalSettingsService.loadPlatform(organizationId, storeId);
   await OperationalSettingsService.savePlatform({
     organizationId,
     storeId,
     settings: {
+      ...current,
       ordersAutoAccept: formData.get("ordersAutoAccept") === "on",
       ordersWorkflowMode: formData.get("ordersWorkflowMode") === "simplified" ? "simplified" : "standard",
       deliveriesAutoCreateWhenReady: formData.get("deliveriesAutoCreateWhenReady") === "on",
