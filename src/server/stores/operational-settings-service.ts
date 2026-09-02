@@ -6,6 +6,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { DELIVERY_OPERATION_LEVELS } from "@/modules/manual-delivery";
+import { PAYMENT_COMPLETION_POLICIES } from "@/modules/payment-completion-policy";
 import { PlatformAdminService, PlatformAuthorizationError } from "@/server/platform/platform-admin-service";
 
 export const operationalSettingsSchema = z.object({
@@ -19,6 +20,7 @@ export const operationalSettingsSchema = z.object({
   growthCampaignsEnabled: z.boolean(),
   campaignRatePerMinute: z.number().int().min(1).max(60),
   deliveryOperationLevel: z.enum(DELIVERY_OPERATION_LEVELS).nullable(),
+  paymentCompletionPolicy: z.enum(PAYMENT_COMPLETION_POLICIES).nullable(),
 }).superRefine((settings, context) => {
   if (settings.ordersWorkflowMode === "simplified" && !settings.ordersAutoAccept) {
     context.addIssue({ code: "custom", path: ["ordersAutoAccept"], message: "O fluxo simplificado exige autoaceite." });
@@ -38,6 +40,7 @@ export const LEGACY_OPERATIONAL_SETTINGS: OperationalSettings = {
   growthCampaignsEnabled: false,
   campaignRatePerMinute: 10,
   deliveryOperationLevel: null,
+  paymentCompletionPolicy: null,
 };
 
 type SettingsRow = {
@@ -51,6 +54,7 @@ type SettingsRow = {
   growth_campaigns_enabled: boolean;
   campaign_rate_per_minute: number;
   delivery_operation_level: string | null;
+  payment_completion_policy: string | null;
 };
 
 function fromRow(row: SettingsRow | null): OperationalSettings {
@@ -66,12 +70,13 @@ function fromRow(row: SettingsRow | null): OperationalSettings {
     growthCampaignsEnabled: row.growth_campaigns_enabled,
     campaignRatePerMinute: Number(row.campaign_rate_per_minute),
     deliveryOperationLevel: DELIVERY_OPERATION_LEVELS.includes(row.delivery_operation_level as never) ? row.delivery_operation_level as OperationalSettings["deliveryOperationLevel"] : null,
+    paymentCompletionPolicy: PAYMENT_COMPLETION_POLICIES.includes(row.payment_completion_policy as never) ? row.payment_completion_policy as OperationalSettings["paymentCompletionPolicy"] : null,
   });
 }
 
 async function read(organizationId: string, storeId: string) {
   const admin = createAdminClient();
-  const { data, error } = await admin.from("store_operational_settings").select("orders_auto_accept,orders_workflow_mode,deliveries_auto_create_when_ready,deliveries_driver_tracking_enabled,deliveries_driver_self_claim_enabled,deliveries_stationary_alert_minutes,deliveries_tracking_retention_days,growth_campaigns_enabled,campaign_rate_per_minute,delivery_operation_level")
+  const { data, error } = await admin.from("store_operational_settings").select("orders_auto_accept,orders_workflow_mode,deliveries_auto_create_when_ready,deliveries_driver_tracking_enabled,deliveries_driver_self_claim_enabled,deliveries_stationary_alert_minutes,deliveries_tracking_retention_days,growth_campaigns_enabled,campaign_rate_per_minute,delivery_operation_level,payment_completion_policy")
     .eq("organization_id", organizationId).eq("store_id", storeId).maybeSingle();
   if (error) throw error;
   return fromRow(data as SettingsRow | null);
@@ -103,6 +108,7 @@ export class OperationalSettingsService {
       growth_campaigns_enabled: settings.growthCampaignsEnabled,
       campaign_rate_per_minute: settings.campaignRatePerMinute,
       delivery_operation_level: settings.deliveryOperationLevel,
+      payment_completion_policy: settings.paymentCompletionPolicy,
       updated_at: new Date().toISOString(),
     };
     const { error } = await admin.from("store_operational_settings").upsert(payload, { onConflict: "store_id" });
@@ -142,6 +148,7 @@ export class OperationalSettingsService {
         growth_campaigns_enabled: settings.growthCampaignsEnabled,
         campaign_rate_per_minute: settings.campaignRatePerMinute,
         delivery_operation_level: settings.deliveryOperationLevel,
+        payment_completion_policy: settings.paymentCompletionPolicy,
       },
       p_actor_user_id: access.user.id,
       p_reason: z.string().trim().min(5).max(500).parse(input.reason),

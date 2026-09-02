@@ -9,6 +9,7 @@ import { OrderActionForm } from "@/features/orders/order-action-form";
 import { elapsedLabel, type OrderManagerRow } from "@/features/orders/manager-model";
 import { useOrderAlert } from "@/features/orders/use-order-alert";
 import { OperationalRealtimeBadge, useOperationalRealtime } from "@/features/operations/use-operational-realtime";
+import type { PaymentCompletionPolicy } from "@/modules/payment-completion-policy";
 import {
   deliveryWorkflowStages,
   foldStageToVisible,
@@ -47,7 +48,7 @@ function visibleStage(order: OrderManagerRow, config: CustomWorkflowConfig) {
   return foldStageToVisible(pickupRaw as (typeof pickupWorkflowStages)[number], config.pickup, pickupWorkflowStages);
 }
 
-function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean) {
+function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean, paymentPolicy: PaymentCompletionPolicy | null) {
   if (order.order_status === "pending_confirmation") return <OrderActionForm orderId={order.id} intent="accept" label="Aceitar" compact />;
   if (order.order_status !== "confirmed") return null;
   if (["pending_confirmation", "queued"].includes(order.production_status)) return <OrderActionForm orderId={order.id} intent="start_production" label="Iniciar preparo" compact />;
@@ -61,7 +62,7 @@ function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean) {
   if (order.fulfillment_type === "delivery" && ["ready", "not_required"].includes(order.production_status) && !["delivered"].includes(order.fulfillment_status)) {
     if (manualDeliveryMode) {
       if (order.fulfillment_status === "out_for_delivery") {
-        return <OrderActionForm orderId={order.id} intent="manual_finish_delivery" label="Finalizar pedido" compact />;
+        return <OrderActionForm orderId={order.id} intent="manual_finish_delivery" label={paymentPolicy === "quick_confirmation" ? "Receber e finalizar" : "Finalizar pedido"} confirmPayment={paymentPolicy === "quick_confirmation"} compact />;
       }
       return <OrderActionForm orderId={order.id} intent="manual_out_for_delivery" label="Saiu para entrega" compact />;
     }
@@ -76,8 +77,8 @@ function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean) {
   return null;
 }
 
-function Card({ order, now, manualDeliveryMode }: { order: OrderManagerRow; now: number; manualDeliveryMode: boolean }) {
-  const action = nextAction(order, manualDeliveryMode);
+function Card({ order, now, manualDeliveryMode, paymentPolicy }: { order: OrderManagerRow; now: number; manualDeliveryMode: boolean; paymentPolicy: PaymentCompletionPolicy | null }) {
+  const action = nextAction(order, manualDeliveryMode, paymentPolicy);
   const modality = order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : "Atendimento";
   return <article className={styles.orderCard}>
     <div className={styles.cardTop}>
@@ -98,13 +99,14 @@ function Card({ order, now, manualDeliveryMode }: { order: OrderManagerRow; now:
   </article>;
 }
 
-function FlowSection({ title, stages, orders, config, now, manualDeliveryMode }: {
+function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, paymentPolicy }: {
   title: string;
   stages: readonly WorkflowStage[];
   orders: OrderManagerRow[];
   config: CustomWorkflowConfig;
   now: number;
   manualDeliveryMode: boolean;
+  paymentPolicy: PaymentCompletionPolicy | null;
 }) {
   return <section style={{ display: "grid", gap: 10 }}>
     <header style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}><h2 style={{ margin: 0, fontSize: 17 }}>{title}</h2><span className="muted" style={{ fontSize: 12 }}>{orders.length} pedido(s)</span></header>
@@ -113,18 +115,19 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode }:
         const stageOrders = orders.filter((order) => visibleStage(order, config) === stage);
         return <section key={stage} className={styles.lane} data-bucket={stage} aria-label={`${title}: ${workflowStageLabels[stage]}`}>
           <header className={styles.laneHeader}><strong>{workflowStageLabels[stage]}</strong><span className={styles.laneCount}>{stageOrders.length}</span></header>
-          <div className={styles.laneBody}>{stageOrders.map((order) => <Card key={order.id} order={order} now={now} manualDeliveryMode={manualDeliveryMode} />)}{stageOrders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
+          <div className={styles.laneBody}>{stageOrders.map((order) => <Card key={order.id} order={order} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} />)}{stageOrders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
         </section>;
       })}
     </div>
   </section>;
 }
 
-export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, config, manualDeliveryMode = false }: {
+export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, config, manualDeliveryMode = false, paymentPolicy = null }: {
   storeId: string;
   orders: OrderManagerRow[];
   config: CustomWorkflowConfig;
   manualDeliveryMode?: boolean;
+  paymentPolicy?: PaymentCompletionPolicy | null;
 }) {
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -175,7 +178,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
     <div className={styles.noticeSlot} aria-live="polite">
       {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}
     </div>
-    <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} />
-    <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} />
+    <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} />
+    <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} />
   </div>;
 }

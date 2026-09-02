@@ -136,7 +136,7 @@ export async function transitionFulfillmentAction(formData: FormData) {
 }
 
 const managerIntentSchema = z.enum([
-  "accept", "reject", "cancel", "accept_and_start", "start_production", "mark_ready", "mark_paid",
+  "accept", "reject", "cancel", "accept_and_start", "start_production", "mark_ready", "mark_paid", "mark_paid_and_complete",
   "await_pickup", "customer_picked_up", "await_courier", "manual_out_for_delivery", "manual_finish_delivery",
   "served", "complete", "print", "reprint",
 ]);
@@ -167,6 +167,11 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
       case "start_production": await OrderService.startProduction(orderId); break;
       case "mark_ready": await OrderService.setProduction(orderId, "ready"); break;
       case "mark_paid": await PaymentService.confirmDefaultForOrder(orderId); break;
+      case "mark_paid_and_complete": {
+        await PaymentService.confirmDefaultForOrder(orderId);
+        await OrderService.complete(orderId);
+        break;
+      }
       case "await_pickup": await OrderService.setFulfillment(orderId, "awaiting_pickup"); break;
       case "customer_picked_up": await OrderService.setFulfillment(orderId, "picked_up_by_customer"); break;
       case "await_courier": await DeliveryOperationsService.markWaiting(orderId); break;
@@ -177,7 +182,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
         break;
       }
       case "manual_finish_delivery": {
-        const result = await ManualDeliveryService.finish(orderId);
+        const result = await ManualDeliveryService.finish(orderId, formData.get("paymentReceived") === "yes");
         scheduleOrderWhatsAppNotifications("delivery.delivered");
         if (result.paymentConfirmed) scheduleOrderWhatsAppNotifications("payment.paid");
         if (result.completed) {
@@ -216,7 +221,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
     scheduleOrderActionTelemetry(orderId, parsed.data, startedAt, "success");
     const labels: Record<z.infer<typeof managerIntentSchema>, string> = {
       accept: "Pedido aceito.", accept_and_start: "Pedido aceito e preparo iniciado.", reject: "Pedido rejeitado.", cancel: "Pedido cancelado.", start_production: "Produção iniciada.",
-      mark_ready: "Pedido marcado como pronto.", mark_paid: "Pagamento confirmado.",
+      mark_ready: "Pedido marcado como pronto.", mark_paid: "Pagamento confirmado.", mark_paid_and_complete: "Pagamento confirmado e pedido concluído.",
       await_pickup: "Pedido liberado para retirada.", customer_picked_up: "Retirada confirmada.",
       await_courier: "Pedido enviado para a central de entregas.",
       manual_out_for_delivery: "Pedido marcado como saiu para entrega.", manual_finish_delivery: "Entrega confirmada.",

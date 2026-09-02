@@ -9,11 +9,14 @@ export async function saveGuidedOperationalSetupAction(formData: FormData) {
   const simplified = formData.get("workflow") === "simplified";
   const requestedLevel = String(formData.get("deliveryLevel") ?? "manual");
   const deliveryOperationLevel = (["manual","dispatch_simple","driver_connected","advanced"] as const).find((level) => level === requestedLevel) ?? "manual";
+  const requestedPaymentPolicy = String(formData.get("paymentPolicy") ?? "strict");
+  const paymentCompletionPolicy = (["strict", "flexible", "quick_confirmation"] as const).find((policy) => policy === requestedPaymentPolicy) ?? "strict";
   await OperationalSettingsService.saveCurrent({
     ...current.settings,
     ordersAutoAccept: simplified ? true : autoAccept,
     ordersWorkflowMode: simplified ? "simplified" : "standard",
     deliveryOperationLevel,
+    paymentCompletionPolicy,
     deliveriesAutoCreateWhenReady: deliveryOperationLevel !== "manual",
     deliveriesDriverTrackingEnabled: deliveryOperationLevel === "advanced",
     deliveriesDriverSelfClaimEnabled: deliveryOperationLevel === "advanced",

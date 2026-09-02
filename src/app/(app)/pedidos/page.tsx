@@ -5,19 +5,21 @@ import styles from "@/features/orders/order-manager.module.css";
 import type { OrderManagerRow } from "@/features/orders/manager-model";
 import { DEFAULT_STORE_TIMEZONE } from "@/lib/store-date-time";
 import { isManualDeliveryMode } from "@/modules/manual-delivery";
+import { isDeliveredWithPaymentPending, isFlexiblePaymentQueue, type PaymentCompletionPolicy } from "@/modules/payment-completion-policy";
 import { ModuleAccessService } from "@/server/modules/module-access-service";
 import { OrderService } from "@/server/orders/order-service";
 import { OrderWorkflowSettingsService } from "@/server/orders/order-workflow-settings-service";
 
 export default async function OrdersPage() {
-  const [{ context, orders, workflowMode: legacyWorkflowMode, deliveryOperationLevel }, { settings }, moduleSnapshot] = await Promise.all([
+  const [{ context, orders, workflowMode: legacyWorkflowMode, deliveryOperationLevel, paymentCompletionPolicy }, { settings }, moduleSnapshot] = await Promise.all([
     OrderService.list(),
     OrderWorkflowSettingsService.get(),
     ModuleAccessService.load(),
   ]);
   if (!context.storeId) throw new Error("An active store is required");
   const workflowMode = settings.mode === "custom" ? "custom" : legacyWorkflowMode;
-  const rows = orders as OrderManagerRow[];
+  const paymentPolicy = paymentCompletionPolicy as PaymentCompletionPolicy | null;
+  const rows = (orders as OrderManagerRow[]).filter((order) => !isFlexiblePaymentQueue(paymentPolicy) || !isDeliveredWithPaymentPending(order));
   const activeCount = rows.filter((order) => !["completed", "canceled", "rejected"].includes(order.order_status)).length;
   const manualDeliveryMode = isManualDeliveryMode(moduleSnapshot.enabledModuleKeys, deliveryOperationLevel);
   const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
@@ -51,8 +53,8 @@ export default async function OrdersPage() {
       </div>
 
       {workflowMode === "custom"
-        ? <CustomOrderWorkflowBoard storeId={context.storeId} orders={rows} config={settings.custom} manualDeliveryMode={manualDeliveryMode} />
-        : <OrderManagerBoard storeId={context.storeId} orders={rows} workflowMode={workflowMode} manualDeliveryMode={manualDeliveryMode} timeZone={timeZone} />}
+        ? <CustomOrderWorkflowBoard storeId={context.storeId} orders={rows} config={settings.custom} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} />
+        : <OrderManagerBoard storeId={context.storeId} orders={rows} workflowMode={workflowMode} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />}
     </section>
   );
 }
