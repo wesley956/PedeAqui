@@ -24,6 +24,15 @@ describe("PDV fast path", () => {
     expect(css).toContain(".layout{grid-template-columns:1fr}");
   });
 
+  it("keeps the cart total and current step reachable on narrow screens", () => {
+    expect(shell).toContain('aria-label="Etapa atual da venda"');
+    expect(shell).toContain('data-mobile-view={mobileView}');
+    expect(shell).toContain('Venda · {cartItemCount}');
+    expect(css).toContain('.mobileViewSwitcher{position:sticky');
+    expect(css).toContain('.layout[data-mobile-view="catalog"][data-pdv-panel="sale"]');
+    expect(css).toContain('.layout[data-mobile-view="sale"][data-pdv-panel="catalog"]');
+  });
+
   it("does not change the transactional sale action", () => {
     expect(shell).toContain("createPdvSaleAction(input");
     expect(shell).toContain("paymentPayload(payments");
