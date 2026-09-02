@@ -1,0 +1,4 @@
+-- PedeAqui — reconciliação do hotfix remoto 20260902053415.
+-- Produção removeu a atribuição de trial_ends_at diretamente em public.stores durante o bootstrap comercial.
+-- O histórico local é append-only; a definição funcional final é reassertada no próximo hardening
+-- em vez de reescrever 177_atomic_commercial_onboarding.sql.
