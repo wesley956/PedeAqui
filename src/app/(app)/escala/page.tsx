@@ -76,7 +76,7 @@ export default async function ScalePage() {
         </div>
       </article>
 
-      <details className={styles.details}>
+      {data.entitlements["branding.white_label"].enabled ? <details className={styles.details}>
         <summary>Marca própria e identidade</summary>
         <div className={styles.detailsBody}>
           <p className={styles.muted}>Use somente se sua operação tiver direito a personalização de marca.</p>
@@ -91,9 +91,9 @@ export default async function ScalePage() {
             <button className={styles.button} type="submit" disabled={!data.canEdit}>Salvar identidade</button>
           </form>
         </div>
-      </details>
+      </details> : null}
 
-      <details className={styles.details}>
+      {data.entitlements["domains.custom"].enabled ? <details className={styles.details}>
         <summary>Domínios personalizados</summary>
         <div className={styles.detailsBody}>
           <p className={styles.muted}>Conecte um endereço próprio, como pedidos.suaempresa.com.br, quando esse recurso estiver disponível no seu plano.</p>
@@ -112,7 +112,7 @@ export default async function ScalePage() {
             </div>
           ))}</div>
         </div>
-      </details>
+      </details> : null}
 
       <article className={`card ${styles.card}`}>
         <div className={styles.sectionHead}><div className={styles.sectionCopy}><h2>Grupos de unidades</h2><p className={styles.muted}>Agrupe lojas ou franquias para facilitar uma operação com várias unidades.</p></div></div>
@@ -137,7 +137,7 @@ export default async function ScalePage() {
       <article className={`card ${styles.card}`}>
         <div className={styles.sectionHead}><div className={styles.sectionCopy}><h2>Reposição entre unidades</h2><p className={styles.muted}>Veja onde o estoque está abaixo do mínimo e organize compras de forma centralizada.</p></div></div>
         {!data.entitlements["scale.central_purchasing"].enabled ? <p className={styles.muted}>Este recurso não está incluído no plano atual.</p> : needs.length === 0 ? <p className={styles.muted}>Nenhuma unidade está abaixo do estoque mínimo.</p> : (
-          <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Insumo</th><th>Unidade</th><th>Atual</th><th>Mínimo</th><th>Falta</th><th>Fornecedor</th></tr></thead><tbody>{needs.map((row) => <tr key={`${row.store_id}:${row.inventory_item_id}`}><td>{row.item_name}</td><td>{row.store_name}</td><td>{row.current_quantity}</td><td>{row.minimum_quantity}</td><td>{row.shortage_quantity} {row.base_unit}</td><td>{row.preferred_supplier_name ?? "—"}</td></tr>)}</tbody></table></div>
+          <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Insumo</th><th>Unidade</th><th>Atual</th><th>Mínimo</th><th>Falta</th><th>Fornecedor</th></tr></thead><tbody>{needs.map((row) => <tr key={`${row.store_id}:${row.inventory_item_id}`}><td data-label="Insumo">{row.item_name}</td><td data-label="Unidade">{row.store_name}</td><td data-label="Atual">{row.current_quantity}</td><td data-label="Mínimo">{row.minimum_quantity}</td><td data-label="Falta"><strong>{row.shortage_quantity} {row.base_unit}</strong></td><td data-label="Fornecedor">{row.preferred_supplier_name ?? "Não definido"}</td></tr>)}</tbody></table></div>
         )}
       </article>
 
