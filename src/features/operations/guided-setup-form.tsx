@@ -20,6 +20,7 @@ export function GuidedSetupForm({ settings, deliveryAvailable, driverAvailable, 
       <legend>1. Como sua equipe quer enxergar os pedidos?</legend>
       <Choice name="workflow" value="simplified" checked={workflow === "simplified"} onChange={() => setWorkflow("simplified")} title="Uma equipe, fluxo simples" badge="Recomendado" detail="Iniciar, Pronto e Finalizados. O sistema cuida das etapas técnicas por trás." />
       <Choice name="workflow" value="standard" checked={workflow === "standard"} onChange={() => setWorkflow("standard")} title="Setores e etapas separadas" detail="Confirmação, produção, expedição e entrega aparecem separadamente." />
+      <Choice name="workflow" value="custom" checked={workflow === "custom"} onChange={() => setWorkflow("custom")} title="Manter fluxo personalizado" detail="Preserva os checkpoints que já foram escolhidos em Fluxo de pedidos." />
     </fieldset>
     <fieldset disabled={!canManage}>
       <legend>4. O que fazer quando a entrega termina e o pagamento ainda está pendente?</legend>
@@ -40,7 +41,7 @@ export function GuidedSetupForm({ settings, deliveryAvailable, driverAvailable, 
       <Choice name="deliveryLevel" value="advanced" checked={deliveryLevel === "advanced"} onChange={() => setDeliveryLevel("advanced")} title="Gestão avançada" detail="Inclui retirada livre, rastreamento e alertas da rota." disabled={!deliveryAvailable || !driverAvailable} />
       {!deliveryAvailable ? <div className={styles.moduleOff}><strong>Somente entrega manual está disponível</strong><p>O cliente ainda pode pedir delivery; nenhuma etapa de motoboy será exigida.</p></div> : null}
     </fieldset>
-    <section className={styles.preview} aria-live="polite"><strong>Como ficará na prática</strong><p>Pedido novo → {effectiveAcceptance === "automatic" ? "entra automaticamente" : "aguarda sua confirmação"} → {workflow === "simplified" ? "Iniciar → Pronto" : "segue todas as etapas"} → {deliveryLevel === "manual" ? "Saiu para entrega → Finalizar, sem ação do motoboy" : deliveryLevel === "dispatch_simple" ? "Despachar, sem login do motoboy" : deliveryLevel === "driver_connected" ? "Atribuir → motoboy atualiza a entrega" : "gestão completa da rota"}.</p></section>
+    <section className={styles.preview} aria-live="polite"><strong>Como ficará na prática</strong><p>Pedido novo → {effectiveAcceptance === "automatic" ? "entra automaticamente" : "aguarda sua confirmação"} → {workflow === "simplified" ? "Iniciar → Pronto" : workflow === "custom" ? "segue seus checkpoints personalizados" : "segue todas as etapas"} → {deliveryLevel === "manual" ? "Saiu para entrega → Finalizar, sem ação do motoboy" : deliveryLevel === "dispatch_simple" ? "Despachar, sem login do motoboy" : deliveryLevel === "driver_connected" ? "Atribuir → motoboy atualiza a entrega" : "gestão completa da rota"}.</p></section>
     {canManage ? <Button type="submit" loadingLabel="Salvando configuração…">Salvar este fluxo</Button> : <p className={styles.readOnly}>Você pode revisar o fluxo, mas somente o responsável pela loja pode alterá-lo.</p>}
     <small>Esta alteração não ativa módulos, não muda seu plano e pode ser revertida a qualquer momento.</small>
   </form>;
