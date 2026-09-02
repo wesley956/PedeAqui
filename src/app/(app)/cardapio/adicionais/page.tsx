@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
-import { Input } from "@/components/ui/input";
+import { Checkbox, Input, MoneyInput, QuantityInput, SelectField } from "@/components/ui/form-controls";
 import { ModifierService } from "@/server/catalog/modifier-service";
 import {
   createModifierFormAction,
@@ -13,35 +13,21 @@ import {
 import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import { formatCents } from "@/server/catalog/money";
 
-const selectStyle = {
-  width: "100%",
-  minHeight: 44,
-  borderRadius: 10,
-  border: "1px solid var(--border)",
-  background: "var(--surface-2)",
-  color: "var(--text)",
-  padding: "10px 12px",
-} as const;
-
 function editableMoney(cents: number) {
   return (cents / 100).toFixed(2).replace(".", ",");
 }
 
 function SelectionModeField({ id, defaultValue = "distinct_choices" }: { id: string; defaultValue?: string }) {
-  return <label style={{ display: "grid", gap: 6 }} htmlFor={id}>
-    <span style={{ fontWeight: 700, fontSize: 14 }}>Como o cliente escolhe</span>
-    <select id={id} name="selectionMode" defaultValue={defaultValue} style={selectStyle}>
+  return <SelectField id={id} name="selectionMode" label="Como o cliente escolhe" defaultValue={defaultValue} hint="Na divisão igual, o PedeAqui calcula automaticamente quantas unidades ficam em cada opção.">
       <option value="distinct_choices">Escolha simples ou múltipla</option>
       <option value="quantity_per_option">Quantidade manual por opção (− / +)</option>
       <option value="equal_split_options">Dividir igualmente entre opções escolhidas (− / +)</option>
-    </select>
-    <span className="muted" style={{ fontSize: 12 }}>Na divisão igual, o cliente escolhe as opções e o PedeAqui calcula automaticamente quantas unidades ficam em cada uma.</span>
-  </label>;
+  </SelectField>;
 }
 
 function DistributionTotalField({ id, defaultValue }: { id: string; defaultValue?: number | null }) {
   return <div style={{ display: "grid", gap: 4 }}>
-    <Input id={id} label="Total a distribuir (divisão igual)" name="distributionTotal" type="number" min={1} max={100} defaultValue={defaultValue ?? ""} />
+    <QuantityInput id={id} label="Total a distribuir (divisão igual)" name="distributionTotal" min={1} max={100} defaultValue={defaultValue ?? ""} />
     <span className="muted" style={{ fontSize: 12 }}>Preencha somente no modo de divisão igual. Ex.: 50 para uma caixa com 50 unidades.</span>
   </div>;
 }
@@ -66,28 +52,25 @@ export default async function ModifiersPage() {
           <Input id="new-group-description" label="Descrição" name="description" />
           <SelectionModeField id="new-group-selection-mode" />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <Input id="new-group-min" label="Mínimo de opções/unidades" name="minSelection" type="number" min={0} defaultValue={0} />
-            <Input id="new-group-max" label="Máximo de opções/unidades" name="maxSelection" type="number" min={1} defaultValue={1} />
+            <QuantityInput id="new-group-min" label="Mínimo de opções/unidades" name="minSelection" min={0} defaultValue={0} />
+            <QuantityInput id="new-group-max" label="Máximo de opções/unidades" name="maxSelection" min={1} defaultValue={1} />
           </div>
           <DistributionTotalField id="new-group-distribution-total" />
-          <Input id="new-group-order" label="Ordem" name="sortOrder" type="number" min={0} defaultValue={0} />
-          <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input name="required" type="checkbox" /> Obrigatório</label>
-          <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input name="active" type="checkbox" defaultChecked /> Ativo</label>
+          <QuantityInput id="new-group-order" label="Ordem" name="sortOrder" min={0} defaultValue={0} />
+          <Checkbox name="required" label="Obrigatório" />
+          <Checkbox name="active" label="Ativo" defaultChecked />
           <Button type="submit">Criar grupo</Button>
         </ResilientMutationForm>
 
         <ResilientMutationForm action={createModifierFormAction} className="card" style={{ padding: 18, display: "grid", gap: 12 }}>
           <h2 style={{ margin: 0, fontSize: 18 }}>Novo adicional ou opção</h2>
-          <label style={{ display: "grid", gap: 6 }} htmlFor="new-modifier-group">
-            <span style={{ fontWeight: 700, fontSize: 14 }}>Grupo</span>
-            <select id="new-modifier-group" name="modifierGroupId" required disabled={groups.length === 0} style={selectStyle}>
+          <SelectField id="new-modifier-group" name="modifierGroupId" label="Grupo" required disabled={groups.length === 0}>
               {groups.length === 0 ? <option value="">Crie um grupo primeiro</option> : groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
-            </select>
-          </label>
+          </SelectField>
           <Input id="new-modifier-name" label="Nome" name="name" required />
-          <Input id="new-modifier-price" label="Preço adicional por unidade" name="price" inputMode="decimal" defaultValue="0,00" required />
-          <Input id="new-modifier-order" label="Ordem" name="sortOrder" type="number" min={0} defaultValue={0} />
-          <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input name="active" type="checkbox" defaultChecked /> Ativo</label>
+          <MoneyInput id="new-modifier-price" label="Preço adicional por unidade" name="price" defaultValue="0,00" required />
+          <QuantityInput id="new-modifier-order" label="Ordem" name="sortOrder" min={0} defaultValue={0} />
+          <Checkbox name="active" label="Ativo" defaultChecked />
           <Button type="submit" disabled={groups.length === 0}>Criar opção</Button>
         </ResilientMutationForm>
       </div>
@@ -121,13 +104,13 @@ export default async function ModifiersPage() {
                   <Input id={`group-${group.id}-description`} label="Descrição" name="description" defaultValue={group.description ?? ""} />
                   <SelectionModeField id={`group-${group.id}-selection-mode`} defaultValue={group.selection_mode ?? "distinct_choices"} />
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <Input id={`group-${group.id}-min`} label="Mínimo de opções/unidades" name="minSelection" type="number" min={0} defaultValue={group.min_selection} />
-                    <Input id={`group-${group.id}-max`} label="Máximo de opções/unidades" name="maxSelection" type="number" min={1} defaultValue={group.max_selection} />
+                    <QuantityInput id={`group-${group.id}-min`} label="Mínimo de opções/unidades" name="minSelection" min={0} defaultValue={group.min_selection} />
+                    <QuantityInput id={`group-${group.id}-max`} label="Máximo de opções/unidades" name="maxSelection" min={1} defaultValue={group.max_selection} />
                   </div>
                   <DistributionTotalField id={`group-${group.id}-distribution-total`} defaultValue={group.distribution_total} />
-                  <Input id={`group-${group.id}-order`} label="Ordem" name="sortOrder" type="number" min={0} defaultValue={group.sort_order} />
-                  <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input name="required" type="checkbox" defaultChecked={group.required} /> Obrigatório</label>
-                  <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input name="active" type="checkbox" defaultChecked={group.active} /> Ativo</label>
+                  <QuantityInput id={`group-${group.id}-order`} label="Ordem" name="sortOrder" min={0} defaultValue={group.sort_order} />
+                  <Checkbox name="required" label="Obrigatório" defaultChecked={group.required} />
+                  <Checkbox name="active" label="Ativo" defaultChecked={group.active} />
                   <Button type="submit">Salvar grupo</Button>
                 </ResilientMutationForm>
               </details>
@@ -148,16 +131,13 @@ export default async function ModifiersPage() {
                       <summary style={{ cursor: "pointer" }}>Editar opção</summary>
                       <ResilientMutationForm action={updateModifierFormAction} successReset={false} style={{ display: "grid", gap: 10, marginTop: 12 }}>
                         <input type="hidden" name="modifierId" value={item.id} />
-                        <label style={{ display: "grid", gap: 6 }} htmlFor={`modifier-${item.id}-group`}>
-                          <span style={{ fontWeight: 700, fontSize: 14 }}>Grupo</span>
-                          <select id={`modifier-${item.id}-group`} name="modifierGroupId" required defaultValue={item.modifier_group_id} style={selectStyle}>
+                        <SelectField id={`modifier-${item.id}-group`} name="modifierGroupId" label="Grupo" required defaultValue={item.modifier_group_id}>
                             {groups.map((optionGroup) => <option key={optionGroup.id} value={optionGroup.id}>{optionGroup.name}</option>)}
-                          </select>
-                        </label>
+                        </SelectField>
                         <Input id={`modifier-${item.id}-name`} label="Nome" name="name" required defaultValue={item.name} />
-                        <Input id={`modifier-${item.id}-price`} label="Preço adicional" name="price" inputMode="decimal" required defaultValue={editableMoney(item.price_cents)} />
-                        <Input id={`modifier-${item.id}-order`} label="Ordem" name="sortOrder" type="number" min={0} defaultValue={item.sort_order} />
-                        <label style={{ display: "flex", gap: 8, alignItems: "center" }}><input name="active" type="checkbox" defaultChecked={item.active} /> Ativo</label>
+                        <MoneyInput id={`modifier-${item.id}-price`} label="Preço adicional" name="price" required defaultValue={editableMoney(item.price_cents)} />
+                        <QuantityInput id={`modifier-${item.id}-order`} label="Ordem" name="sortOrder" min={0} defaultValue={item.sort_order} />
+                        <Checkbox name="active" label="Ativo" defaultChecked={item.active} />
                         <Button type="submit">Salvar opção</Button>
                       </ResilientMutationForm>
                     </details>

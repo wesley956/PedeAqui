@@ -121,6 +121,11 @@
   max-width: 720px;
 }
 
+.headerCopy h1,
+.headerCopy p {
+  margin: 0;
+}
+
 .primaryLink {
   min-height: 42px;
   padding: 0 var(--space-4);
@@ -268,6 +273,67 @@
   margin: 0;
 }
 
+.formCard {
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.formCard h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.managementList {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.managementCard {
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.managementTop,
+.managementActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.editDetails summary {
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.editBody {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.suggestionRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(110px, 150px);
+  gap: var(--space-3);
+  align-items: center;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-default);
+}
+
 @media (max-width: 980px) {
   .nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .filters { grid-template-columns: 1fr 1fr; }
@@ -294,6 +360,7 @@
   .productActions form,
   .productActions button { width: 100%; }
   .productActions > a { justify-content: center; min-height: 44px; }
+  .suggestionRow { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 390px) {

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { OrderActionForm } from "@/features/orders/order-action-form";
 import { elapsedLabel, type OrderManagerRow } from "@/features/orders/manager-model";
 import { useOrderAlert } from "@/features/orders/use-order-alert";
+import { useRememberedOrderSearch } from "@/features/orders/order-navigation-memory";
 import { OperationalRealtimeBadge, useOperationalRealtime } from "@/features/operations/use-operational-realtime";
 import type { PaymentCompletionPolicy } from "@/modules/payment-completion-policy";
 import {
@@ -93,7 +94,7 @@ function Card({ order, now, manualDeliveryMode, paymentPolicy }: { order: OrderM
       <summary>Mais</summary>
       <div className={styles.cardMoreBody}>
         <div className={styles.stateLine}>Etapa operacional: {workflowStageLabels[rawStage(order)]}</div>
-        <Link href={`/pedidos/${order.id}`} className={styles.detailsLink}>Ver pedido</Link>
+        <Link href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.detailsLink}>Ver pedido</Link>
       </div>
     </details>
   </article>;
@@ -134,6 +135,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
   const [now, setNow] = useState(() => Date.now());
   const seen = useRef(new Set(initialOrders.map((order) => order.id)));
   const { soundEnabled, primaryLabel, toggle, test, notifyNewOrder } = useOrderAlert(setNotice);
+  useRememberedOrderSearch("orders:active:query", query, setQuery);
   const { rows: orders, status: realtimeStatus } = useOperationalRealtime({
     storeId,
     initialRows: initialOrders,
