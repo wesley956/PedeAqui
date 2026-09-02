@@ -36,7 +36,7 @@ export function useOperationalRealtime<T extends RealtimeRow>({
 }: {
   storeId: string;
   initialRows: T[];
-  surface: "orders" | "kitchen";
+  surface: "orders" | "kitchen" | "movement";
   isOperational: (row: T) => boolean;
   onInsert?: (row: T) => void;
   resolveRow?: (raw: Record<string, unknown>) => Promise<T | null>;

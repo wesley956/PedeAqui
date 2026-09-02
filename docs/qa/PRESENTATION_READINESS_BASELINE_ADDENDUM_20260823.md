@@ -55,6 +55,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 ## Operação de pedidos
 
 - `/operacao` — central guiada para conferir prontidão antes da abertura, pausar ou retomar novos pedidos e revisar pendências antes do encerramento. A pausa preserva pedidos existentes e não altera horários; módulos desativados não criam etapas obrigatórias.
+- `/movimento` — fila operacional única, atualizada incrementalmente, que prioriza falhas críticas e oferece uma ação principal por pedido conforme atendimento, cozinha ou expedição, sem criar estados paralelos.
 
 - No fluxo simplificado, o quadro operacional possui `Iniciar`, `Pronto` e `Finalizados`. A coluna `Finalizados` representa a etapa em que o restaurante terminou sua operação e o pedido de delivery já iniciou rota (`out_for_delivery`), exibindo `Aguardando confirmação de entrega` até o entregador confirmar.
 - No fluxo personalizado, a unidade escolhe checkpoints visuais predefinidos separadamente para entrega e retirada. `Novo` e `Finalizado` permanecem obrigatórios; etapas intermediárias ocultas são agrupadas visualmente sem burlar as transições internas seguras. A operação de rota continua na Central de Entregas.
