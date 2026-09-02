@@ -7,6 +7,14 @@ import { resolveModuleAvailability } from "@/modules/module-access";
 const root = process.cwd();
 const read = (relative: string) => fs.readFileSync(path.join(root, relative), "utf8");
 
+type BusinessType = (typeof MODULE_CATALOG)[ModuleKey]["supportedBusinessTypes"][number];
+
+function supportedBusinessType(moduleKey: ModuleKey): BusinessType {
+  const businessType = MODULE_CATALOG[moduleKey].supportedBusinessTypes[0];
+  if (!businessType) throw new Error(`Module ${moduleKey} has no supported business type fixture`);
+  return businessType;
+}
+
 function enabledWithDependencies(moduleKey: ModuleKey) {
   const active = new Set<ModuleKey>([moduleKey]);
   let changed = true;
@@ -51,7 +59,7 @@ describe("stabilization #821 RBAC, multi-tenant and multi-unit matrix", () => {
     const definition = MODULE_CATALOG[moduleKey];
     const result = resolveModuleAvailability({
       definition,
-      businessType: definition.supportedBusinessTypes[0],
+      businessType: supportedBusinessType(moduleKey),
       storeEnabled: false,
       activeModuleKeys: enabledWithDependencies(moduleKey),
       grantedPermissions: new Set(definition.permissionsAny),
@@ -64,7 +72,7 @@ describe("stabilization #821 RBAC, multi-tenant and multi-unit matrix", () => {
     const definition = MODULE_CATALOG[moduleKey];
     const result = resolveModuleAvailability({
       definition,
-      businessType: definition.supportedBusinessTypes[0],
+      businessType: supportedBusinessType(moduleKey),
       storeEnabled: true,
       activeModuleKeys: enabledWithDependencies(moduleKey),
       grantedPermissions: new Set(definition.permissionsAny),
@@ -79,7 +87,7 @@ describe("stabilization #821 RBAC, multi-tenant and multi-unit matrix", () => {
       const definition = MODULE_CATALOG[moduleKey];
       const result = resolveModuleAvailability({
         definition,
-        businessType: definition.supportedBusinessTypes[0],
+        businessType: supportedBusinessType(moduleKey),
         storeEnabled: true,
         activeModuleKeys: enabledWithDependencies(moduleKey),
         grantedPermissions: new Set(),
@@ -95,7 +103,7 @@ describe("stabilization #821 RBAC, multi-tenant and multi-unit matrix", () => {
       const definition = MODULE_CATALOG[moduleKey];
       const result = resolveModuleAvailability({
         definition,
-        businessType: definition.supportedBusinessTypes[0],
+        businessType: supportedBusinessType(moduleKey),
         storeEnabled: true,
         activeModuleKeys: new Set<ModuleKey>([moduleKey]),
         grantedPermissions: new Set(definition.permissionsAny),
@@ -111,7 +119,7 @@ describe("stabilization #821 RBAC, multi-tenant and multi-unit matrix", () => {
     const definition = MODULE_CATALOG[moduleKey];
     const result = resolveModuleAvailability({
       definition,
-      businessType: definition.supportedBusinessTypes[0],
+      businessType: supportedBusinessType(moduleKey),
       storeEnabled: true,
       activeModuleKeys: enabledWithDependencies(moduleKey),
       grantedPermissions: new Set(definition.permissionsAny),
