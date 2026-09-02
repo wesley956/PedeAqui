@@ -6,7 +6,9 @@ import { OperationalSettingsService } from "@/server/stores/operational-settings
 export async function saveGuidedOperationalSetupAction(formData: FormData) {
   const current = await OperationalSettingsService.loadCurrent();
   const autoAccept = formData.get("acceptance") === "automatic";
-  const simplified = formData.get("workflow") === "simplified";
+  const requestedWorkflow = String(formData.get("workflow") ?? "standard");
+  const workflow = (["standard", "simplified", "custom"] as const).find((item) => item === requestedWorkflow) ?? "standard";
+  const simplified = workflow === "simplified";
   const requestedLevel = String(formData.get("deliveryLevel") ?? "manual");
   const deliveryOperationLevel = (["manual","dispatch_simple","driver_connected","advanced"] as const).find((level) => level === requestedLevel) ?? "manual";
   const requestedPaymentPolicy = String(formData.get("paymentPolicy") ?? "strict");
@@ -14,7 +16,7 @@ export async function saveGuidedOperationalSetupAction(formData: FormData) {
   await OperationalSettingsService.saveCurrent({
     ...current.settings,
     ordersAutoAccept: simplified ? true : autoAccept,
-    ordersWorkflowMode: simplified ? "simplified" : "standard",
+    ordersWorkflowMode: workflow,
     deliveryOperationLevel,
     paymentCompletionPolicy,
     deliveriesAutoCreateWhenReady: deliveryOperationLevel !== "manual",

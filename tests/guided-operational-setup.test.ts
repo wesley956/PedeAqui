@@ -20,6 +20,17 @@ describe("guided operational setup #884", () => {
     expect(action).not.toContain("store_modules");
   });
 
+  it("opens and preserves stores that already use a custom order flow", () => {
+    const service = read("src/server/stores/operational-settings-service.ts");
+    const action = read("src/features/operations/guided-setup-actions.ts");
+    const form = read("src/features/operations/guided-setup-form.tsx");
+    expect(service).toContain('z.enum(["standard", "simplified", "custom"])');
+    expect(action).toContain('["standard", "simplified", "custom"]');
+    expect(action).toContain("ordersWorkflowMode: workflow");
+    expect(form).toContain('value="custom"');
+    expect(form).toContain("Preserva os checkpoints");
+  });
+
   it("explains delivery without driver management", () => {
     const form = read("src/features/operations/guided-setup-form.tsx");
     expect(form).toContain("O cliente ainda pode pedir delivery");

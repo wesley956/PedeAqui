@@ -11,7 +11,7 @@ import { PlatformAdminService, PlatformAuthorizationError } from "@/server/platf
 
 export const operationalSettingsSchema = z.object({
   ordersAutoAccept: z.boolean(),
-  ordersWorkflowMode: z.enum(["standard", "simplified"]),
+  ordersWorkflowMode: z.enum(["standard", "simplified", "custom"]),
   deliveriesAutoCreateWhenReady: z.boolean(),
   deliveriesDriverTrackingEnabled: z.boolean(),
   deliveriesDriverSelfClaimEnabled: z.boolean(),
