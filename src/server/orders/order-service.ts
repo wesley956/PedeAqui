@@ -22,6 +22,8 @@ import {
 const uuidSchema = z.string().uuid();
 const historySearchSchema = z.string().trim().max(80).transform((value) => value.replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim());
 const operationalPageSize = 200;
+const recentFinalizedWindowMs = 2 * 60 * 60_000;
+const recentFinalizedLimit = 12;
 const createResultSchema = z.object({ order_id: z.string().uuid(), display_number: z.coerce.number(), created: z.boolean() });
 const transitionResultSchema = z.object({
   order_id: z.string().uuid(),
@@ -128,7 +130,19 @@ export class OrderService {
       orders.push(...(data ?? []));
       if ((data?.length ?? 0) < operationalPageSize) break;
     }
-    return { context, orders, workflowMode, deliveryOperationLevel: settingsResult.data?.delivery_operation_level ?? null, paymentCompletionPolicy: settingsResult.data?.payment_completion_policy ?? null };
+    // A janela móvel atravessa meia-noite e mudanças de horário sem retirar pedidos
+    // ativos/agendados do quadro. O histórico completo permanece paginado à parte.
+    const recentSince = new Date(Date.now() - recentFinalizedWindowMs).toISOString();
+    const { data: recentFinalized, error: recentError } = await admin.from("orders")
+      .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .in("order_status", ["completed", "rejected", "canceled"])
+      .gte("updated_at", recentSince)
+      .order("updated_at", { ascending: false })
+      .limit(recentFinalizedLimit);
+    if (recentError) throw recentError;
+    return { context, orders, recentFinalized: recentFinalized ?? [], recentFinalizedWindowMinutes: recentFinalizedWindowMs / 60_000, workflowMode, deliveryOperationLevel: settingsResult.data?.delivery_operation_level ?? null, paymentCompletionPolicy: settingsResult.data?.payment_completion_policy ?? null };
   }
 
   static async listHistory(input: { page?: number; pageSize?: number; search?: string } = {}) {
@@ -329,6 +343,15 @@ export class OrderService {
 
   static complete(orderId: string) {
     return this.transition(orderId, "order", "completed" as OrderStatus);
+  }
+
+  static reconcileCompletion(orderId: string) {
+    return this.transition(
+      orderId,
+      "order",
+      "completed" as OrderStatus,
+      "Reconciliação de pedido com atendimento finalizado",
+    );
   }
 
   static async startProduction(orderId: string) {

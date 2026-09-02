@@ -12,7 +12,7 @@ Para o usuário da loja, a instalação normal deve ser feita pelo painel em **C
 4. voltar ao painel e clicar em **Atualizar impressoras**;
 5. escolher **Usar esta impressora** e depois **Imprimir teste**.
 
-O instalador assistido prepara o runtime quando necessário, baixa o Print Agent, configura a URL/credencial específica daquele computador e o coloca para iniciar com o Windows. O operador não precisa usar terminal no fluxo normal.
+O instalador assistido prepara o runtime quando necessário, baixa o Print Agent, configura a URL/credencial específica daquele computador e registra uma tarefa de boot executada pela conta restrita `LOCAL SERVICE`. O agente inicia antes do login, sem depender de navegador ou da sessão de um funcionário. O instalador só declara sucesso depois de validar a tarefa, o processo e a primeira comunicação autenticada com o PedeAqui.
 
 A partir da versão 0.4.0 o instalador também prepara um **watchdog** local. Se o processo do Print Agent encerrar, ele é iniciado novamente após alguns segundos. O watchdog executa o atualizador antes de cada nova inicialização; o próprio agente verifica periodicamente se existe uma versão mais nova e solicita uma reinicialização segura quando não está no meio de uma impressão.
 

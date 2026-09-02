@@ -46,10 +46,24 @@ describe("simple printing setup", () => {
     const admin = read("src/server/printing/print-agent-admin-service.ts");
     expect(creator).toContain("Baixar instalador assistido (Windows)");
     expect(creator).toContain("Configuração manual");
-    expect(creator).toContain("PedeAqui Impressao.vbs");
+    expect(creator).toContain("launch.vbs");
     expect(creator).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
     expect(admin).toContain("reconnect(agentId");
     expect(admin).toContain("credentialRotated");
+  });
+
+  it("installs a least-privilege boot task and validates the first server communication", () => {
+    const creator = read("src/features/printing/agent-token-creator.tsx");
+    expect(creator).toContain("New-ScheduledTaskTrigger -AtStartup");
+    expect(creator).toContain("NT AUTHORITY\\\\LOCAL SERVICE");
+    expect(creator).toContain("-LogonType ServiceAccount -RunLevel Limited");
+    expect(creator).toContain("Register-ScheduledTask");
+    expect(creator).toContain("Start-ScheduledTask");
+    expect(creator).toContain("/api/print-agent/config");
+    expect(creator).toContain("-Method Post");
+    expect(creator).toContain(":task_error");
+    expect(creator).toContain(":validation_error");
+    expect(creator).not.toContain("\\\\Start Menu\\\\Programs\\\\Startup");
   });
 });
 

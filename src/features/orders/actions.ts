@@ -197,7 +197,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
         break;
       }
       case "served": await OrderService.setFulfillment(orderId, "served"); break;
-      case "complete": await OrderService.complete(orderId); break;
+      case "complete": await OrderService.reconcileCompletion(orderId); break;
       case "print": {
         const result = await PrintService.requestConfirmedOrderPrint(orderId);
         if (result.kind === "no_route") throw new Error("No active print routes");
@@ -226,7 +226,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
       await_courier: "Pedido enviado para a central de entregas.",
       manual_out_for_delivery: "Pedido marcado como saiu para entrega.", manual_finish_delivery: "Entrega confirmada.",
       served: "Atendimento de balcão concluído.",
-      complete: "Pedido concluído.", print: "Pedido enviado para impressão.", reprint: "Reimpressão solicitada.",
+      complete: "Pedido reconciliado e concluído.", print: "Pedido enviado para impressão.", reprint: "Reimpressão solicitada.",
     };
     return { ok: true, message: message ?? labels[parsed.data], error: null };
   } catch (error) {
