@@ -61,12 +61,11 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             <Info label="Nascimento" value={customer.birth_date ? new Date(`${customer.birth_date}T12:00:00`).toLocaleDateString("pt-BR") : "Não informado"} />
           </article>
 
-          <form action={createCustomerAddressAction} className={`card ${styles.sectionCard}`}>
+          <details className={`card ${styles.addressComposer}`}>
+            <summary><span><strong>Adicionar endereço</strong><small>Abra somente quando precisar cadastrar um novo local.</small></span></summary>
+            <form action={createCustomerAddressAction} className={styles.addressForm}>
             <input type="hidden" name="customerId" value={id} />
-            <div>
-              <h2>Novo endereço</h2>
-              <div className={styles.sectionSub}>O primeiro endereço se torna principal automaticamente.</div>
-            </div>
+            <div className={styles.sectionSub}>O primeiro endereço se torna principal automaticamente.</div>
             <div className={styles.twoColumns}>
               <Input label="Identificação" name="label" defaultValue="Principal" required />
               <Input label="CEP" name="postalCode" inputMode="numeric" placeholder="13460-000" required />
@@ -88,8 +87,9 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
               <input type="checkbox" name="isDefault" />
               <span>Definir como endereço principal</span>
             </label>
-            <Button type="submit">Adicionar endereço</Button>
-          </form>
+            <Button type="submit">Salvar novo endereço</Button>
+            </form>
+          </details>
         </div>
 
         <div style={{ display: "grid", gap: 16 }}>

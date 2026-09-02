@@ -7,6 +7,8 @@ const styles = readFileSync("src/app/(app)/crescimento/growth.module.css", "utf8
 describe("growth commercial workspace [335]", () => {
   it("starts with outcomes and clear module navigation", () => {
     expect(page).toContain("Faça seus clientes voltarem");
+    expect(page.indexOf("O que você quer fazer agora?")).toBeLessThan(page.indexOf('aria-label="Resumo de crescimento"'));
+    for (const outcome of ["Fidelizar clientes", "Trazer clientes de volta", "Acompanhar e enviar"]) expect(page).toContain(outcome);
     for (const target of ["#fidelidade", "#cupons", "#clientes", "#campanhas", "#automacoes"]) expect(page).toContain(target);
     expect(page).toContain('aria-label="Resumo de crescimento"');
   });
@@ -25,6 +27,7 @@ describe("growth commercial workspace [335]", () => {
     expect(page).not.toContain("<table");
     expect(styles).toContain(".metrics");
     expect(styles).toContain(".customerGrid");
+    expect(styles).toContain(".objectiveGrid");
     expect(styles).toContain("@media(max-width:680px)");
   });
 });
