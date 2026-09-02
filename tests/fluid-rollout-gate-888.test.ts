@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 const pkg = JSON.parse(readFileSync("package.json", "utf8")) as { scripts: Record<string, string> };
 const runbook = readFileSync("docs/qa/FLUID_ROLLOUT_888.md", "utf8");
+const loadTest = readFileSync("supabase/tests/e2e_fluid_rollout_50_orders.sql", "utf8");
 
 describe("fluid rollout gate #888", () => {
   it("provides one reproducible command for the automated risk matrix", () => {
@@ -29,5 +30,15 @@ describe("fluid rollout gate #888", () => {
       "Print Agent desligado", "produto esgotado", "pagamento atrasado",
       "Rollback de aplicação", "migration posterior e auditável",
     ]) expect(runbook).toContain(scenario);
+  });
+
+  it("keeps the 50-order production fixture isolated and repeatable", () => {
+    expect(loadTest).toContain("for i in 1..50 loop");
+    expect(loadTest).toContain("rollback;");
+    expect(loadTest).toContain("active_orders_visible");
+    expect(loadTest).toContain("unique_display_numbers");
+    expect(loadTest).not.toContain("aweservicosaw@gmail.com");
+    expect(runbook).toContain("50 pedidos em 514,44 ms");
+    expect(runbook).toContain("nenhum resíduo permaneceu");
   });
 });

@@ -22,6 +22,7 @@ npm run test:fluid-rollout
 | Módulos e entitlements | `commercial-plan-module-entitlements.test.ts` |
 | 320–1920 px, toque e teclado | `mobile-full-layout-qa.test.ts`, `full-accessibility-qa.test.ts` |
 | Roteiro móvel do entregador | `courier-route-residual-843.test.ts` |
+| Pico de 50 pedidos com rollback | `supabase/tests/e2e_fluid_rollout_50_orders.sql` |
 
 O CI completo continua obrigatório depois deste gate. O comando focal não substitui TypeScript, lint, banco, E2E, Print Agent nem build.
 
@@ -29,7 +30,7 @@ O CI completo continua obrigatório depois deste gate. O comando focal não subs
 
 Estes cenários devem usar conta de teste ou transação com rollback, nunca Dona Maria sem autorização:
 
-- 50 pedidos em 30 minutos, medindo latência e garantindo que nenhum pedido fique escondido;
+- repetição de 50 pedidos em 30 minutos, em janela sustentada, além da rajada já validada;
 - queda e retorno real de internet durante recebimento e atualização;
 - Print Agent desligado, reiniciado e recuperado após boot do Windows;
 - produto esgotado durante montagem e envio do carrinho;
@@ -62,7 +63,10 @@ Rollback de aplicação volta ao commit de produção anterior. Mudanças de con
 ## Estado atual
 
 - Gate automatizado: preparado e reproduzível.
-- Conta controlada e carga: pendente de execução com ambiente/credenciais próprios.
+- Conta controlada: login e fluxos essenciais validados na Santa Rita Açaí & Sorvetes, sem alterar a operação.
+- Carga transacional: 50 pedidos em 514,44 ms (10,29 ms/pedido), todos visíveis, únicos e revertidos; nenhum resíduo permaneceu.
+- Banco: checkout, PDV, cozinha, fallback de impressão e isolamento multiempresa passaram na produção com rollback.
+- Operação real observada: Print Agent sem heartbeat e uma impressão parada foram sinalizados como P0 no painel e no Modo Movimento.
 - Dona Maria: pendente de opt-in; configuração atual não foi alterada.
 - Dom Burger: pendente de resposta humana.
 - Rollout geral: bloqueado até evidência real e aprovação explícita.
