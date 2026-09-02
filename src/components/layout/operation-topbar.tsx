@@ -5,6 +5,8 @@ import type { ExperienceMode } from "@/modules/user-experience";
 import type { OperationHeaderData } from "@/server/access/operation-header-service";
 import { ThemeSelector } from "@/components/theme/theme-selector";
 import { OperationalHealthIndicator } from "@/features/operations/operational-health-indicator";
+import Link from "next/link";
+import { ReceivingControl } from "@/features/operations/receiving-control";
 
 function storeStatusLabel(status: string | null) {
   if (status === "active") return "Unidade ativa";
@@ -31,6 +33,8 @@ export function OperationTopbar({ email, data, storeId, experienceMode = "standa
         </div>
       </div>
       <div className="app-topbar-actions">
+        {data.receiving ? <ReceivingControl state={data.receiving} /> : null}
+        {!driverOnly ? <Link className="app-operation-link" href="/operacao">Abrir/fechar</Link> : null}
         <OperationalHealthIndicator storeId={storeId} snapshot={data.health} />
         <form action={setExperienceModeAction} className="app-experience-toggle">
           <input type="hidden" name="mode" value={nextExperienceMode} />
