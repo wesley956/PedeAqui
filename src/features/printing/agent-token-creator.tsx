@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createPrintAgentAction,
@@ -11,6 +11,15 @@ import {
 const initialState: AgentCreationState = { token: null, name: null, error: null };
 const RAW_ROOT = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent";
 const RAW_BASE = `${RAW_ROOT}/src`;
+
+function useIntentKey(resetSignal: string | null) {
+  const [key, setKey] = useState("");
+  useEffect(() => { setKey(crypto.randomUUID()); }, []);
+  useEffect(() => {
+    if (resetSignal) setKey(crypto.randomUUID());
+  }, [resetSignal]);
+  return key;
+}
 
 function assistedInstaller(token: string, appUrl: string) {
   const safeToken = token.replaceAll("\"", "");
@@ -160,11 +169,13 @@ function InstallerCard({ state }: { state: AgentCreationState }) {
 
 export function AgentTokenCreator() {
   const [state, action, pending] = useActionState(createPrintAgentAction, initialState);
+  const idempotencyKey = useIntentKey(state.token);
   return (
     <div style={{ display: "grid", gap: 10 }}>
       <form action={action} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
         <input name="name" required minLength={2} maxLength={100} placeholder="Ex.: Computador do caixa" style={inputStyle} />
-        <button type="submit" disabled={pending} style={buttonStyle}>{pending ? "Preparando…" : "Conectar este computador"}</button>
+        <button type="submit" disabled={pending || !idempotencyKey} style={buttonStyle}>{pending ? "Preparando…" : "Conectar este computador"}</button>
       </form>
       {state.error ? <div style={{ color: "#f97066", fontSize: 13 }}>{state.error}</div> : null}
       <InstallerCard state={state} />
@@ -175,13 +186,15 @@ export function AgentTokenCreator() {
 export function AgentReconnectInstaller({ agentId, upgrade = false }: { agentId: string; upgrade?: boolean }) {
   const router = useRouter();
   const [state, action, pending] = useActionState(reconnectPrintAgentAction, initialState);
+  const idempotencyKey = useIntentKey(state.token);
   return (
     <div style={{ display: "grid", gap: 8 }}>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <button type="button" onClick={() => router.refresh()} style={secondaryButtonStyle}>Atualizar status</button>
         <form action={action}>
           <input type="hidden" name="agentId" value={agentId} />
-          <button type="submit" disabled={pending} style={secondaryButtonStyle}>{pending ? "Preparando…" : upgrade ? "Atualizar proteção automática" : "Reinstalar conexão"}</button>
+          <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
+          <button type="submit" disabled={pending || !idempotencyKey} style={secondaryButtonStyle}>{pending ? "Preparando…" : upgrade ? "Atualizar proteção automática" : "Reinstalar conexão"}</button>
         </form>
       </div>
       <span className="muted" style={{ fontSize: 12 }}>
