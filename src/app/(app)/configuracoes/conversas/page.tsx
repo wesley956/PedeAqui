@@ -7,7 +7,8 @@ import { DEFAULT_WHATSAPP_GREETING, DEFAULT_WHATSAPP_GREETING_FALLBACK } from "@
 import { MetaEmbeddedSignupService } from "@/server/conversations/meta-embedded-signup-service";
 import { normalizeWhatsAppAutomationPreset } from "@/server/conversations/order-notification-model";
 import { ConversationSettingsService } from "@/server/conversations/settings-service";
-import { ModuleAccessService } from "@/server/modules/module-access-service";
+import { resolveWhatsAppAutomationCapabilities } from "@/server/conversations/whatsapp-automation-capability";
+import { WhatsAppAutomationCapabilityService } from "@/server/conversations/whatsapp-automation-capability-service";
 
 const fieldStyle = {
   minHeight: 44,
@@ -26,14 +27,37 @@ function greetingForEditor(value: string) {
 
 export default async function ConversationSettingsPage() {
   const platformConfig = MetaEmbeddedSignupService.publicConfig();
-  const [settings, embeddedStatus, modules] = await Promise.all([
+  const [settings, embeddedStatus, structural] = await Promise.all([
     ConversationSettingsService.load(),
     MetaEmbeddedSignupService.currentStatus(),
-    ModuleAccessService.load(),
+    WhatsAppAutomationCapabilityService.loadCurrentStore(),
   ]);
   const connectionConfigured = Boolean(settings?.whatsapp_phone_number_id && settings?.access_token_secret_ref && settings?.app_secret_secret_ref);
   const orderTemplateConfigured = Boolean(settings?.order_notification_template_name);
   const preset = normalizeWhatsAppAutomationPreset(settings?.order_notification_preset);
+  const preferences = {
+    order_received: settings?.notify_order_received ?? true,
+    order_confirmed: Boolean(settings?.notify_order_confirmed),
+    production_preparing: Boolean(settings?.notify_production_preparing),
+    payment_paid: Boolean(settings?.notify_payment_paid),
+    pickup_ready: settings?.notify_pickup_ready ?? true,
+    pickup_completed: Boolean(settings?.notify_pickup_completed),
+    out_for_delivery: settings?.notify_out_for_delivery ?? true,
+    delivered: Boolean(settings?.notify_delivered),
+  } as const;
+  const capabilities = resolveWhatsAppAutomationCapabilities({
+    businessType: structural.businessType,
+    modules: structural.modules,
+    channel: {
+      configured: connectionConfigured,
+      enabled: Boolean(settings?.whatsapp_enabled),
+      connectionStatus: embeddedStatus.connection_status,
+    },
+    orderNotificationsEnabled: Boolean(settings?.order_notifications_enabled),
+    preferences,
+    onlinePaymentReady: structural.onlinePaymentReady,
+    deliveryOperationEnabled: structural.deliveryOperationEnabled,
+  });
 
   return (
     <section style={{ display: "grid", gap: 18, maxWidth: 880 }}>
@@ -64,17 +88,16 @@ export default async function ConversationSettingsPage() {
             connected={connectionConfigured}
             enabled={Boolean(settings?.order_notifications_enabled)}
             preset={preset}
-            productionAvailable={modules.availability.production.available}
-            deliveriesAvailable={modules.availability.deliveries.available}
+            capabilities={capabilities}
             defaults={{
-              notifyOrderReceived: settings?.notify_order_received ?? true,
-              notifyOrderConfirmed: Boolean(settings?.notify_order_confirmed),
-              notifyProductionPreparing: Boolean(settings?.notify_production_preparing),
-              notifyPaymentPaid: Boolean(settings?.notify_payment_paid),
-              notifyPickupReady: settings?.notify_pickup_ready ?? true,
-              notifyPickupCompleted: Boolean(settings?.notify_pickup_completed),
-              notifyOutForDelivery: settings?.notify_out_for_delivery ?? true,
-              notifyDelivered: Boolean(settings?.notify_delivered),
+              notifyOrderReceived: preferences.order_received,
+              notifyOrderConfirmed: preferences.order_confirmed,
+              notifyProductionPreparing: preferences.production_preparing,
+              notifyPaymentPaid: preferences.payment_paid,
+              notifyPickupReady: preferences.pickup_ready,
+              notifyPickupCompleted: preferences.pickup_completed,
+              notifyOutForDelivery: preferences.out_for_delivery,
+              notifyDelivered: preferences.delivered,
             }}
           />
 
@@ -86,11 +109,11 @@ export default async function ConversationSettingsPage() {
                 : "Dentro da janela aberta pelo cliente, os avisos podem seguir normalmente. Para avisos fora dela, é necessário ter um modelo de mensagem aprovado pelo WhatsApp."}
             </p>
             {!orderTemplateConfigured && connectionConfigured ? <p style={{ margin: 0, fontSize: 12, fontWeight: 700 }}>Modelo para avisos fora da janela: pendente.</p> : null}
-            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Se o WhatsApp ou um modelo ficarem indisponíveis, o pedido, a produção e a entrega continuam funcionando normalmente.</p>
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Se o WhatsApp, um módulo, o plano ou um modelo ficarem indisponíveis, a automação é suspensa sem apagar a preferência. O pedido continua funcionando normalmente.</p>
           </div>
           <input type="hidden" name="orderNotificationTemplateName" value={settings?.order_notification_template_name ?? ""} />
           <input type="hidden" name="orderNotificationTemplateLanguage" value={settings?.order_notification_template_language ?? "pt_BR"} />
-          <p className="muted" style={{ margin: 0, fontSize: 12 }}>Cada aviso possui uma chave única por pedido. Reprocessamentos e eventos repetidos não criam uma segunda mensagem local.</p>
+          <p className="muted" style={{ margin: 0, fontSize: 12 }}>Eventos já ignorados durante uma suspensão não são reenviados retroativamente quando a capability volta.</p>
         </Card>
 
         <Card style={{ display: "grid", gap: 12 }}>
