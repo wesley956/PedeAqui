@@ -84,7 +84,10 @@ export function canCompleteFromManager(order: Pick<OrderManagerRow, "order_statu
 export function completionBlockers(order: Pick<OrderManagerRow, "order_status" | "payment_status" | "fulfillment_status">) {
   const blockers: string[] = [];
   if (order.order_status !== "confirmed") blockers.push("pedido não está confirmado");
+
+  const fulfillmentDone = ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status);
+  if (!fulfillmentDone) return blockers;
+
   if (!paymentAllowsOrderCompletion(order.payment_status)) blockers.push("pagamento ainda não está liquidado");
-  if (!["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status)) blockers.push("entrega/retirada não foi concluída");
   return blockers;
 }
