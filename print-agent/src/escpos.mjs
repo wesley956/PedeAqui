@@ -25,7 +25,15 @@ function textSizeByte(textSize) {
   return 0x00;
 }
 
-function lineSpacingByte(lineSpacing) {
+function lineSpacingByte(lineSpacing, textSize) {
+  // ESC/POS cannot effectively feed less than the physical character height.
+  // Extra-large uses double height (GS ! 0x11), so use larger comfortable/wide
+  // values while preserving the printer's current default for normal spacing.
+  if (textSize === "extra_large") {
+    if (lineSpacing === "comfortable") return 60;
+    if (lineSpacing === "wide") return 72;
+    return 30;
+  }
   if (lineSpacing === "compact") return 22;
   if (lineSpacing === "comfortable") return 38;
   if (lineSpacing === "wide") return 46;
@@ -46,7 +54,7 @@ export function escposDocument(text, textSize = "normal") {
       0x1b,0x40,
       0x1b,0x74,0x02,
       0x1b,0x61,0x00,
-      0x1b,0x33,lineSpacingByte(styled.lineSpacing),
+      0x1b,0x33,lineSpacingByte(styled.lineSpacing, textSize),
       0x1d,0x21,textSizeByte(textSize),
     ]),
     textBytes(styled.text),
