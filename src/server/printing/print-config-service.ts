@@ -73,7 +73,7 @@ export class PrintConfigService {
         .select("id, name, active")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).order("name"),
       admin.from("store_print_preferences")
-        .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text")
+        .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
     ]);
     if (printers.error) throw printers.error;
@@ -196,7 +196,7 @@ export class PrintConfigService {
     const storeId = requireStore(context.storeId);
     const admin = createAdminClient();
     const { data: before, error: readError } = await admin.from("store_print_preferences")
-      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text")
+      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size")
       .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (readError) throw readError;
     const desired = resolveOrderPrintPreferences(values);
@@ -210,7 +210,7 @@ export class PrintConfigService {
     };
     const { data, error } = await admin.from("store_print_preferences")
       .upsert(row, { onConflict: "store_id" })
-      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text")
+      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size")
       .single();
     if (error) throw error;
     await AuditService.record(context, {
