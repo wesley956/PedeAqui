@@ -15,6 +15,7 @@ function walk(dir: string): string[] {
 
 const sourceFiles = walk(srcRoot);
 const read = (relative: string) => fs.readFileSync(path.join(root, relative), "utf8");
+const backendOnlyBaseline = JSON.parse(read("supabase/security-backend-only-baseline.json")) as { tables: string[] };
 
 describe("stabilization #820 public security surface", () => {
   it("never exposes a service-role key through NEXT_PUBLIC variables", () => {
@@ -56,6 +57,20 @@ describe("stabilization #820 public security surface", () => {
     expect(publicServer).toContain('import "server-only"');
     expect(publicServer).toContain("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY");
     expect(publicServer).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+  });
+
+  it("keeps the live-classified backend-only tables out of client-side PostgREST access", () => {
+    expect(backendOnlyBaseline.tables.length).toBeGreaterThanOrEqual(40);
+    for (const file of sourceFiles) {
+      const source = fs.readFileSync(file, "utf8");
+      const firstStatement = source.trimStart().split("\n").slice(0, 3).join("\n");
+      if (!/["']use client["']/.test(firstStatement)) continue;
+
+      for (const table of backendOnlyBaseline.tables) {
+        const directFrom = new RegExp(`\\.from\\(\\s*["']${table}["']\\s*\\)`);
+        expect(source, `${path.relative(root, file)} must not query backend-only table ${table}`).not.toMatch(directFrom);
+      }
+    }
   });
 
   it("keeps stabilization diagnostics and idempotency functions backend-only", () => {
