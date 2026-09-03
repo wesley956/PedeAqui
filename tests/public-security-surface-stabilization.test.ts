@@ -79,9 +79,7 @@ describe("stabilization #820 public security surface", () => {
 
     for (const sql of [idempotency, integrity]) {
       expect(sql).toContain("set search_path = ''");
-      expect(sql).toMatch(/revoke\s+all\s+on\s+function[\s\S]+from\s+public/gi);
-      expect(sql).toMatch(/revoke[\s\S]+from\s+anon/gi);
-      expect(sql).toMatch(/revoke[\s\S]+from\s+authenticated/gi);
+      expect(sql).toMatch(/revoke\s+all\s+on\s+function[\s\S]+from\s+public\s*,\s*anon\s*,\s*authenticated\s*;/i);
       expect(sql).toMatch(/grant\s+execute[\s\S]+to\s+service_role/gi);
     }
   });
