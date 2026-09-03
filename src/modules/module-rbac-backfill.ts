@@ -26,13 +26,7 @@ function assignmentScope(assignment: LegacyModulePermissionAssignment): ModulePe
 }
 
 function stableKey(assignment: LegacyModulePermissionAssignment): string {
-  return [
-    assignment.moduleKey,
-    assignment.permission,
-    assignment.organizationId,
-    assignment.storeId ?? "",
-    assignmentScope(assignment),
-  ].join("|");
+  return [assignment.moduleKey, assignment.permission, assignment.organizationId, assignment.storeId ?? "", assignmentScope(assignment)].join("|");
 }
 
 function effectForAssignment(assignment: LegacyModulePermissionAssignment): ModulePermissionEffect | null {
@@ -41,13 +35,8 @@ function effectForAssignment(assignment: LegacyModulePermissionAssignment): Modu
   return null;
 }
 
-/**
- * Pure dry-run planner. It never writes to the database and never converts unknown/null legacy state into allow.
- * Conflicts at the same exact scope collapse to deny, making repeated runs deterministic and safe.
- */
-export function planModuleRbacBackfill(
-  assignments: readonly LegacyModulePermissionAssignment[],
-): ModuleRbacBackfillPlan {
+/** Pure dry-run: unknown legacy state is skipped and conflicts at the same exact scope collapse to deny. */
+export function planModuleRbacBackfill(assignments: readonly LegacyModulePermissionAssignment[]): ModuleRbacBackfillPlan {
   const grouped = new Map<string, LegacyModulePermissionAssignment[]>();
   const skippedSourceIds: string[] = [];
 
@@ -66,6 +55,7 @@ export function planModuleRbacBackfill(
     .sort(([left], [right]) => left.localeCompare(right))
     .map(([, group]): ModuleRbacBackfillRecord => {
       const exemplar = group[0];
+      if (!exemplar) throw new Error("RBAC backfill invariant violated: empty assignment group");
       const effects = group.map(effectForAssignment).filter((effect): effect is ModulePermissionEffect => effect != null);
       const effect: ModulePermissionEffect = effects.includes("deny") ? "deny" : "allow";
       const sourceIds = group.map((entry) => entry.sourceId).sort();
