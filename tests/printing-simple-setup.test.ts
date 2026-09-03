@@ -73,22 +73,30 @@ describe("simple printing setup", () => {
     expect(config).toContain("if (changed) {");
   });
 
-  it("replays Print Agent creation/reconnect without storing plaintext credentials", () => {
+  it("replays Print Agent creation/reconnect by explicit intent without storing plaintext credentials", () => {
     const creator = read("src/features/printing/agent-token-creator.tsx");
+    const actions = read("src/features/printing/actions.ts");
     const admin = read("src/server/printing/print-agent-admin-service.ts");
     const migration = read("supabase/sql/185_print_agent_credential_idempotency.sql");
     expect(creator).toContain("Baixar instalador assistido (Windows)");
     expect(creator).toContain("Configuração manual");
     expect(creator).toContain("launch.vbs");
     expect(creator).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+    expect(creator).toContain("useIntentKey(state.token)");
+    expect(creator).toContain('name="idempotencyKey" value={idempotencyKey}');
+    expect(actions).toContain('text(formData, "idempotencyKey")');
     expect(migration).toContain("credential_version");
     expect(migration).toContain("print_agent_create_idempotent_internal");
-    expect(migration).toContain("pg_advisory_xact_lock");
-    expect(migration).toContain("created_at >= now() - interval '15 minutes'");
+    expect(migration).toContain("print_agent_reconnect_idempotent_internal");
+    expect(migration).toContain("public.idempotency_keys");
+    expect(migration).toContain("'printing.agent.create'");
+    expect(migration).toContain("'printing.agent.reconnect'");
+    expect(migration).toContain("'replayed', true");
     expect(admin).toContain("derivePrintAgentToken");
     expect(admin).toContain('admin.rpc("print_agent_create_idempotent_internal"');
-    expect(admin).toContain("CREDENTIAL_REPLAY_WINDOW_MS");
-    expect(admin).toContain('.eq("credential_version", currentCredentialVersion)');
+    expect(admin).toContain('admin.rpc("print_agent_reconnect_idempotent_internal"');
+    expect(admin).toContain("result.created && !result.replayed");
+    expect(admin).toContain("result.rotated && !result.replayed");
     expect(admin).toContain("credentialRotated");
     expect(admin).not.toContain("createPrintAgentToken()");
   });
