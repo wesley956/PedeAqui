@@ -59,7 +59,9 @@ export function validateOrderNotificationTextTemplate(value: string) {
     return { ok: false as const, message: "Use apenas os placeholders de link fornecidos pelo PedeAqui." };
   }
 
-  const placeholders = [...text.matchAll(placeholderPattern)].map((match) => match[1]);
+  const placeholders = [...text.matchAll(placeholderPattern)]
+    .map((match) => match[1])
+    .filter((placeholder): placeholder is string => typeof placeholder === "string");
   const unknown = placeholders.find((placeholder) => !allowedPlaceholders.has(placeholder));
   if (unknown) {
     return { ok: false as const, message: `Placeholder não permitido: {${unknown}}.` };
