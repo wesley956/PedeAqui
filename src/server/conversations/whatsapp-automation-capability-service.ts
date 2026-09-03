@@ -12,6 +12,8 @@ import {
   type BusinessType,
   type ModuleKey,
 } from "@/modules/module-catalog";
+import { authorize } from "@/server/access/authorize";
+import { PERMISSIONS } from "@/server/access/permissions";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
 
 const AUTOMATION_MODULES = ["conversations", "production", "deliveries"] as const;
@@ -100,6 +102,12 @@ async function structuralModules(organizationId: string, storeId: string) {
 }
 
 export class WhatsAppAutomationCapabilityService {
+  static async loadCurrentStore(): Promise<WhatsAppAutomationStructuralSnapshot> {
+    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE);
+    if (!context.storeId) throw new Error("Selecione uma unidade para configurar as automações do WhatsApp.");
+    return this.loadForStore(context.organizationId, context.storeId);
+  }
+
   static async loadForStore(organizationId: string, storeId: string): Promise<WhatsAppAutomationStructuralSnapshot> {
     const admin = createAdminClient();
     const [moduleSnapshot, onlinePaymentReady, deliverySettings] = await Promise.all([
