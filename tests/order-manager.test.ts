@@ -112,13 +112,17 @@ describe("order completion gating", () => {
     expect(completionBlockers({ ...base, payment_status: "refunded" })).toEqual([]);
   });
 
-  it("explains all blockers without inventing a combined status", () => {
-    const blocked = order({ order_status: "pending_confirmation", payment_status: "pending", fulfillment_status: "pending" });
-    expect(canCompleteFromManager(blocked)).toBe(false);
-    expect(completionBlockers(blocked)).toEqual([
-      "pedido não está confirmado",
-      "pagamento ainda não está liquidado",
-      "entrega/retirada não foi concluída",
-    ]);
+  it("shows only the blocker relevant to the current operational stage", () => {
+    const awaitingConfirmation = order({ order_status: "pending_confirmation", payment_status: "pending", fulfillment_status: "pending" });
+    expect(canCompleteFromManager(awaitingConfirmation)).toBe(false);
+    expect(completionBlockers(awaitingConfirmation)).toEqual(["pedido não está confirmado"]);
+
+    const inFulfillment = order({ order_status: "confirmed", payment_status: "pending", fulfillment_status: "out_for_delivery" });
+    expect(canCompleteFromManager(inFulfillment)).toBe(false);
+    expect(completionBlockers(inFulfillment)).toEqual([]);
+
+    const awaitingPaymentAfterFulfillment = order({ order_status: "confirmed", payment_status: "pending", fulfillment_status: "delivered" });
+    expect(canCompleteFromManager(awaitingPaymentAfterFulfillment)).toBe(false);
+    expect(completionBlockers(awaitingPaymentAfterFulfillment)).toEqual(["pagamento ainda não está liquidado"]);
   });
 });

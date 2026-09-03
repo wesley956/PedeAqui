@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { ModuleKey } from "@/modules/module-catalog";
 import { isManualDeliveryMode, isOfflineDeliveryPayment, resolveDeliveryOperationLevel } from "@/modules/manual-delivery";
+import { completionBlockers } from "@/features/orders/manager-model";
 
 function modules(...keys: ModuleKey[]) {
   return new Set<ModuleKey>(keys);
@@ -36,6 +37,17 @@ describe("manual delivery mode", () => {
     expect(board).toContain('intent: "manual_finish_delivery", label: paymentPolicy === "quick_confirmation" ? "Receber e finalizar" : "Finalizar pedido"');
   });
 
+  it("does not show finalization blockers before fulfillment is complete", () => {
+    const readyForDispatch = {
+      order_status: "confirmed" as const,
+      payment_status: "pending" as const,
+      fulfillment_status: "pending" as const,
+    };
+    expect(completionBlockers(readyForDispatch)).toEqual([]);
+    expect(completionBlockers({ ...readyForDispatch, fulfillment_status: "out_for_delivery" })).toEqual([]);
+    expect(completionBlockers({ ...readyForDispatch, fulfillment_status: "delivered" })).toEqual(["pagamento ainda não está liquidado"]);
+  });
+
   it("uses the order flow instead of creating a fake driver", () => {
     const service = readFileSync("src/server/delivery/manual-delivery-service.ts", "utf8");
     expect(service).toContain('manual_delivery_dispatch_internal');
@@ -52,5 +64,13 @@ describe("manual delivery mode", () => {
     expect(migration).not.toContain("fulfillment_status='picked_up'");
     expect(migration).toContain("revoke all on function public.manual_delivery_dispatch_internal(uuid,uuid,text) from public,anon,authenticated");
     expect(migration).toContain("grant execute on function public.manual_delivery_dispatch_internal(uuid,uuid,text) to service_role");
+  });
+
+  it("allows only the server role to resolve modules during manual dispatch", () => {
+    const migration = readFileSync("supabase/migrations/20260903013000_manual_delivery_private_execution_grant.sql", "utf8");
+    expect(migration).toContain("revoke all on function private.store_module_enabled(uuid, uuid, text) from public, anon, authenticated");
+    expect(migration).toContain("grant execute on function private.store_module_enabled(uuid, uuid, text) to service_role");
+    expect(migration).not.toContain("grant execute on function private.store_module_enabled(uuid, uuid, text) to authenticated");
+    expect(migration).not.toContain("grant execute on function private.store_module_enabled(uuid, uuid, text) to anon");
   });
 });
