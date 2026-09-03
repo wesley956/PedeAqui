@@ -112,7 +112,7 @@ describe("[329] persistence and safety contracts", () => {
     expect(worker).toContain('settings.connection_status === "temporarily_unavailable"');
     expect(worker).toContain('errorCode: "whatsapp_temporarily_unavailable"');
     expect(capability).toContain('state: "suspended_channel"');
-    expect(capability).toContain("channelReason(channel)");
+    expect(capability).toContain("channelReason(input.channel)");
     expect(worker).not.toContain("order_transition_internal");
   });
 
