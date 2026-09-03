@@ -9,6 +9,12 @@ import {
   notificationEnabled,
   retryDelaySeconds,
 } from "@/server/conversations/order-notification-model";
+import {
+  defaultOrderNotificationText,
+  normalizeOrderNotificationCustomTemplates,
+  renderOrderNotificationTextTemplate,
+  validateOrderNotificationTextTemplate,
+} from "@/server/conversations/order-notification-template";
 
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
@@ -18,6 +24,7 @@ describe("[329] order notification model", () => {
     expect(notificationEnabled({ order_notifications_enabled: false, notify_order_received: true }, "order_received")).toBe(false);
     expect(notificationEnabled({ order_notifications_enabled: true, notify_order_received: false }, "order_received")).toBe(false);
     expect(notificationEnabled({ order_notifications_enabled: true, notify_order_received: true }, "order_received")).toBe(true);
+    expect(notificationEnabled({ order_notifications_enabled: true, notify_order_canceled: true }, "order_canceled")).toBe(true);
   });
 
   it("uses stable idempotency keys per order and notification type", () => {
@@ -25,6 +32,7 @@ describe("[329] order notification model", () => {
     expect(first).toBe(notificationClientMessageId("order-1", "out_for_delivery"));
     expect(first).not.toBe(notificationClientMessageId("order-1", "delivered"));
     expect(first).not.toBe(notificationClientMessageId("order-2", "out_for_delivery"));
+    expect(notificationClientMessageId("order-1", "order_canceled")).toBe("order-notification:v1:order-1:order_canceled");
   });
 
   it("builds a one-time URL exchange path and useful customer messages", () => {
@@ -34,9 +42,52 @@ describe("[329] order notification model", () => {
     expect(buildOrderNotificationBody({ type: "order_received", storeName: "Cantina", displayNumber: 42, trackingUrl: url })).toContain("pedido #42");
     expect(buildOrderNotificationBody({ type: "pickup_ready", storeName: "Cantina", displayNumber: 42, trackingUrl: url })).toContain("pronto para retirada");
     expect(buildOrderNotificationBody({ type: "out_for_delivery", storeName: "Cantina", displayNumber: 42, trackingUrl: url })).toContain("saiu para entrega");
+    expect(buildOrderNotificationBody({ type: "order_canceled", storeName: "Cantina", displayNumber: 42, trackingUrl: url })).toContain("cancelado");
     expect(buildOrderNotificationTemplateParameters({ type: "out_for_delivery", storeName: "Cantina", displayNumber: 42, trackingUrl: url })).toEqual([
       "Cantina", "#42", "Saiu para entrega", url,
     ]);
+  });
+
+  it("renders only controlled placeholders and rejects unsafe custom text", () => {
+    const custom = "Olá {cliente}, o {pedido} da {restaurante} está como {status}. {link_acompanhamento}";
+    expect(validateOrderNotificationTextTemplate(custom).ok).toBe(true);
+    expect(renderOrderNotificationTextTemplate(custom, {
+      cliente: "Ana",
+      pedido: "#7",
+      restaurante: "Cantina",
+      status: "Pedido confirmado",
+      link_acompanhamento: "https://app.pedeaqui.example/acompanhamento",
+    })).toContain("Ana");
+    expect(validateOrderNotificationTextTemplate("Acesse https://site-externo.example").ok).toBe(false);
+    expect(validateOrderNotificationTextTemplate("<script>alert(1)</script>").ok).toBe(false);
+    expect(validateOrderNotificationTextTemplate("Olá {variavel_inventada}").ok).toBe(false);
+  });
+
+  it("falls back to the safe default when a custom template needs unavailable data", () => {
+    const body = buildOrderNotificationBody({
+      type: "order_received",
+      storeName: "Cantina",
+      displayNumber: 42,
+      trackingUrl: "https://app.pedeaqui.example/pedido/42",
+      customTemplate: "Olá {cliente}, recebemos {pedido}.",
+      customerName: null,
+    });
+    expect(body).toBe(buildOrderNotificationBody({
+      type: "order_received",
+      storeName: "Cantina",
+      displayNumber: 42,
+      trackingUrl: "https://app.pedeaqui.example/pedido/42",
+    }));
+    expect(body).toContain("recebemos seu pedido #42");
+  });
+
+  it("normalizes overrides without persisting defaults or invalid templates", () => {
+    expect(normalizeOrderNotificationCustomTemplates({
+      order_received: defaultOrderNotificationText("order_received"),
+      order_confirmed: "Confirmamos {pedido} na {restaurante}.",
+      delivered: "https://unsafe.example",
+      unknown: "ignorar",
+    })).toEqual({ order_confirmed: "Confirmamos {pedido} na {restaurante}." });
   });
 
   it("backs off retries instead of polling aggressively", () => {
@@ -49,6 +100,7 @@ describe("[329] order notification model", () => {
 describe("[329] persistence and safety contracts", () => {
   const migration = read("supabase/sql/98_order_whatsapp_notifications.sql");
   const templateMigration = read("supabase/sql/99_order_whatsapp_template_support.sql");
+  const customizationMigration = read("supabase/sql/187_whatsapp_automation_cancel_and_custom_templates.sql");
   const worker = read("src/server/conversations/order-notification-worker.ts");
   const provider = read("src/server/conversations/provider.ts");
   const dispatch = read("src/server/conversations/order-notification-dispatch.ts");
@@ -64,11 +116,13 @@ describe("[329] persistence and safety contracts", () => {
     expect(migration).toContain("when 'payment.paid' then 'payment_paid'");
     expect(migration).toContain("when 'production.ready' then 'pickup_ready'");
     expect(migration).toContain("when 'fulfillment.out_for_delivery' then 'out_for_delivery'");
+    expect(customizationMigration).toContain("when 'order.canceled' then 'order_canceled'");
     expect(worker).not.toContain("order_transition_internal");
   });
 
   it("deduplicates each notification and reuses the existing conversation outbound layer", () => {
     expect(migration).toContain("unique (organization_id, order_id, notification_type)");
+    expect(customizationMigration).toContain("on conflict (organization_id, order_id, notification_type) do nothing");
     expect(worker).toContain("conversation_resolve_outbound_internal");
     expect(worker).toContain("conversation_create_outbound_internal");
     expect(worker).toContain("conversation_mark_outbound_result_internal");
@@ -105,6 +159,13 @@ describe("[329] persistence and safety contracts", () => {
     expect(worker.slice(templateGate, outboundCreate)).not.toContain("retryAfterSeconds");
   });
 
+  it("requires an actual canceled order before dispatching the cancellation automation", () => {
+    expect(worker).toContain('job.notification_type === "order_canceled"');
+    expect(worker).toContain('order.order_status !== "canceled"');
+    expect(worker).toContain('errorCode: "cancel_state_mismatch"');
+    expect(customizationMigration).toContain("notify_order_canceled boolean not null default false");
+  });
+
   it("revalidates channel health through the shared capability resolver and never lets WhatsApp block an order", () => {
     expect(worker).toContain("connection_status");
     expect(worker).toContain("resolveWhatsAppAutomationCapabilities");
@@ -137,5 +198,6 @@ describe("[329] persistence and safety contracts", () => {
     expect(migration).toContain("notify_order_received boolean not null default true");
     expect(migration).toContain("notify_out_for_delivery boolean not null default true");
     expect(migration).toContain("notify_delivered boolean not null default false");
+    expect(customizationMigration).toContain("notify_order_canceled boolean not null default false");
   });
 });
