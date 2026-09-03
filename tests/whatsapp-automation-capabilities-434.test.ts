@@ -25,6 +25,7 @@ const preferences = {
   pickup_completed: true,
   out_for_delivery: true,
   delivered: true,
+  order_canceled: true,
 } as const;
 
 function input(overrides: Partial<WhatsAppAutomationCapabilityInput> = {}): WhatsAppAutomationCapabilityInput {
@@ -87,6 +88,21 @@ describe("#434 WhatsApp automation capability matrix", () => {
     expect(capabilities.order_received.state).toBe("enabled");
     expect(capabilities.production_preparing.state).toBe("enabled");
     expect(capabilities.out_for_delivery.state).toBe("enabled");
+    expect(capabilities.order_canceled.state).toBe("enabled");
+  });
+
+  it("makes authoritative cancellation independent from delivery, production and online payment modules", () => {
+    const capabilities = resolveWhatsAppAutomationCapabilities(input({
+      onlinePaymentReady: false,
+      deliveryOperationEnabled: false,
+      modules: {
+        conversations: availability("conversations"),
+        production: availability("production", false, "disabled_by_store"),
+        deliveries: availability("deliveries", false, "disabled_by_store"),
+      },
+    }));
+    expect(capabilities.order_canceled).toMatchObject({ state: "enabled", preferenceEnabled: true, configurable: true });
+    expect(capabilities.order_canceled.triggerLabel).toContain("cancelado");
   });
 
   it("suspends delivery notifications when the store delivery operation is off even if the module remains on", () => {
@@ -105,6 +121,7 @@ describe("#434 WhatsApp automation capability matrix", () => {
       preferenceEnabled: true,
       configurable: true,
     });
+    expect(capabilities.order_canceled.state).toBe("suspended_channel");
   });
 
   it("does not call a disabled preference suspended just because the channel is down", () => {
@@ -140,6 +157,8 @@ describe("#434 shared UI/dispatch contracts", () => {
   const worker = read("src/server/conversations/order-notification-worker.ts");
   const page = read("src/app/(app)/configuracoes/conversas/page.tsx");
   const action = read("src/features/conversations/settings-actions.ts");
+  const settingsUi = read("src/features/conversations/whatsapp-automation-settings.tsx");
+  const settingsService = read("src/server/conversations/settings-service.ts");
 
   it("uses the same capability resolver in the settings UI and background dispatch", () => {
     expect(page).toContain("resolveWhatsAppAutomationCapabilities");
@@ -169,12 +188,25 @@ describe("#434 shared UI/dispatch contracts", () => {
     expect(worker).toContain("retryDelaySeconds(job.attempts)");
   });
 
-  it("preserves disabled structural preferences on save", () => {
+  it("preserves disabled structural preferences and custom text on save", () => {
     expect(action).toContain("capabilities.production_preparing.configurable");
     expect(action).toContain("currentPreferences.production_preparing");
     expect(action).toContain("capabilities.payment_paid.configurable");
     expect(action).toContain("currentPreferences.payment_paid");
     expect(action).toContain("capabilities.out_for_delivery.configurable");
     expect(action).toContain("currentPreferences.out_for_delivery");
+    expect(action).toContain("if (!capabilities[type].configurable) continue");
+    expect(action).toContain("normalizeOrderNotificationCustomTemplates(current?.order_notification_custom_templates)");
+  });
+
+  it("integrates cancellation and custom text without bypassing Meta approved templates", () => {
+    expect(worker).toContain('job.notification_type === "order_canceled"');
+    expect(worker).toContain('order.order_status !== "canceled"');
+    expect(worker).toContain("normalizeOrderNotificationCustomTemplates");
+    expect(settingsUi).toContain("Editar texto e visualizar prévia");
+    expect(settingsUi).toContain("Restaurar texto padrão");
+    expect(settingsUi).toContain("modelo aprovado na Meta");
+    expect(settingsService).toContain("order_notification_custom_template_keys");
+    expect(settingsService).not.toContain("order_notification_custom_templates: data.order_notification_custom_templates");
   });
 });
