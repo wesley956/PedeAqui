@@ -53,6 +53,19 @@ describe("simple printing setup", () => {
     expect(queue.indexOf('action: "print.setup_test_queued"')).toBeGreaterThan(queue.indexOf('if (error) {'));
   });
 
+  it("keeps configuration replay-safe and audits only effective changes", () => {
+    const config = read("src/server/printing/print-config-service.ts");
+    const migration = read("supabase/sql/183_printing_idempotency_hardening.sql");
+    expect(migration).toContain("printers_store_agent_system_address_unique");
+    expect(migration).toContain("where connection_type = 'system'");
+    expect(config).toContain("if (Number(before.default_copies) === copies)");
+    expect(config).toContain("JSON.stringify(resolveOrderPrintPreferences(before))");
+    expect(config).toContain("if (existing && Number(existing.priority) === safePriority");
+    expect(config).toContain("if (existing) return;");
+    expect(config).toContain('if (error.code === "23505")');
+    expect(config).toContain("if (changed) {");
+  });
+
   it("offers an assisted installer while keeping credentials isolated to the Print Agent", () => {
     const creator = read("src/features/printing/agent-token-creator.tsx");
     const admin = read("src/server/printing/print-agent-admin-service.ts");
