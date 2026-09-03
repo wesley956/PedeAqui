@@ -4,6 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const appRoot = path.join(root, "src", "app");
 const sourceRoot = path.join(root, "src");
+const publicRoot = path.join(root, "public");
 
 function walk(dir, predicate = () => true) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -43,6 +44,15 @@ function normalizeInternalTarget(raw) {
   if (!raw || !raw.startsWith("/")) return null;
   const clean = raw.split("#", 1)[0].split("?", 1)[0].replace(/\/$/, "") || "/";
   if (clean.includes("${") || clean.includes("[object Object]")) return null;
+  return clean;
+}
+
+function normalizePublicAsset(raw) {
+  if (!raw || !raw.startsWith("/")) return null;
+  const clean = raw.split("#", 1)[0].split("?", 1)[0];
+  if (!clean || clean.includes("${") || clean.includes("[object Object]")) return null;
+  if (!/\.[a-z0-9]{2,8}$/i.test(clean)) return null;
+  if (clean.startsWith("/_next/") || clean.startsWith("/api/")) return null;
   return clean;
 }
 
@@ -104,6 +114,32 @@ for (const file of sourceFiles) {
   }
 }
 
+const assetSourceFiles = walk(sourceRoot, (file) => /\.(?:tsx?|jsx?|css)$/.test(file));
+const assetReferences = [];
+const missingAssets = [];
+const assetPatterns = [
+  /\b(?:src|poster|href)\s*=\s*["'`]([^"'`]+)["'`]/g,
+  /url\(\s*["']?([^"')]+)["']?\s*\)/g,
+];
+
+for (const file of assetSourceFiles) {
+  const source = fs.readFileSync(file, "utf8");
+  for (const pattern of assetPatterns) {
+    pattern.lastIndex = 0;
+    let match;
+    while ((match = pattern.exec(source)) !== null) {
+      const target = normalizePublicAsset(match[1]);
+      if (!target) continue;
+      const line = source.slice(0, match.index).split("\n").length;
+      const resolved = path.resolve(publicRoot, `.${target}`);
+      const withinPublic = resolved === publicRoot || resolved.startsWith(`${publicRoot}${path.sep}`);
+      const exists = withinPublic && fs.existsSync(resolved) && fs.statSync(resolved).isFile();
+      assetReferences.push({ file: path.relative(root, file), line, target });
+      if (!exists) missingAssets.push({ file: path.relative(root, file), line, target });
+    }
+  }
+}
+
 const duplicateRoutes = routes.filter((route, index) => routes.indexOf(route) !== index);
 const categories = routes.reduce((acc, route) => {
   const category = classify(route);
@@ -112,6 +148,7 @@ const categories = routes.reduce((acc, route) => {
 }, {});
 
 console.log(`ROUTE_INTEGRITY: ${routes.length} páginas; ${references.length} referências internas literais.`);
+console.log(`ROUTE_INTEGRITY: ${assetReferences.length} referências de assets públicos literais.`);
 console.log(`ROUTE_INTEGRITY: classificação ${JSON.stringify(categories)}.`);
 
 if (duplicateRoutes.length > 0) {
@@ -123,6 +160,12 @@ if (duplicateRoutes.length > 0) {
 if (unresolved.length > 0) {
   console.error("ROUTE_INTEGRITY: links/redirecionamentos internos sem página correspondente:");
   for (const item of unresolved) console.error(`- ${item.file}:${item.line} -> ${item.target}`);
+  process.exitCode = 1;
+}
+
+if (missingAssets.length > 0) {
+  console.error("ROUTE_INTEGRITY: assets públicos literais ausentes:");
+  for (const item of missingAssets) console.error(`- ${item.file}:${item.line} -> ${item.target}`);
   process.exitCode = 1;
 }
 
