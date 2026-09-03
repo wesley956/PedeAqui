@@ -55,9 +55,16 @@ describe("simple printing setup", () => {
 
   it("keeps configuration replay-safe and audits only effective changes", () => {
     const config = read("src/server/printing/print-config-service.ts");
-    const migration = read("supabase/sql/183_printing_idempotency_hardening.sql");
-    expect(migration).toContain("printers_store_agent_system_address_unique");
-    expect(migration).toContain("where connection_type = 'system'");
+    const quickSetupMigration = read("supabase/sql/183_printing_idempotency_hardening.sql");
+    const manualPrinterMigration = read("supabase/sql/184_printing_manual_printer_idempotency.sql");
+    expect(quickSetupMigration).toContain("printers_store_agent_system_address_unique");
+    expect(quickSetupMigration).toContain("where connection_type = 'system'");
+    expect(manualPrinterMigration).toContain("print_create_printer_idempotent_internal");
+    expect(manualPrinterMigration).toContain("pg_advisory_xact_lock");
+    expect(manualPrinterMigration).toContain("created_at >= now() - interval '15 minutes'");
+    expect(manualPrinterMigration).toContain("'created', false");
+    expect(config).toContain('admin.rpc("print_create_printer_idempotent_internal"');
+    expect(config).toContain("if (result.created) {");
     expect(config).toContain("if (Number(before.default_copies) === copies)");
     expect(config).toContain("JSON.stringify(resolveOrderPrintPreferences(before))");
     expect(config).toContain("if (existing && Number(existing.priority) === safePriority");
