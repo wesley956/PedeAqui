@@ -84,8 +84,8 @@ describe("accessible print text size", () => {
     const index = read("print-agent/src/index.mjs");
     const manifest = JSON.parse(read("print-agent/manifest.json"));
     const packageJson = JSON.parse(read("print-agent/package.json"));
-    expect(index).toContain('const version = "0.6.0"');
-    expect(manifest.version).toBe("0.6.0");
-    expect(packageJson.version).toBe("0.6.0");
+    expect(index).toContain('const version = "0.7.0"');
+    expect(manifest.version).toBe("0.7.0");
+    expect(packageJson.version).toBe("0.7.0");
   });
 });
