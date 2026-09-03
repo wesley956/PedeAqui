@@ -14,6 +14,7 @@ const custom: OrderNotificationSelection = {
   notifyPickupCompleted: true,
   notifyOutForDelivery: false,
   notifyDelivered: true,
+  notifyOrderCanceled: false,
 };
 
 describe("WhatsApp automation presets", () => {
@@ -33,6 +34,7 @@ describe("WhatsApp automation presets", () => {
       notifyPickupCompleted: false,
       notifyOutForDelivery: true,
       notifyDelivered: false,
+      notifyOrderCanceled: true,
     });
   });
 
