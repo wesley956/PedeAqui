@@ -5,6 +5,9 @@
   "engines": {
     "node": ">=22.0.0"
   },
+  "overrides": {
+    "electron-to-chromium": "1.5.420"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
