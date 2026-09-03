@@ -1,6 +1,5 @@
 import "server-only";
 
-import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
@@ -10,6 +9,8 @@ import { hashPrintAgentToken } from "@/server/printing/agent-token";
 import { renderPrintDocument, resolveOrderPrintPreferences, type PrintDocumentType } from "@/server/printing/templates";
 
 const uuid = z.string().uuid();
+const SETUP_TEST_REPLAY_WINDOW_MS = 2 * 60_000;
+const SETUP_TEST_RACE_BUCKET_MS = 15_000;
 const heartbeatSchema = z.object({
   version: z.string().trim().max(80).nullable().optional(),
   capabilities: z.record(z.string(), z.unknown()).default({}),
@@ -167,6 +168,22 @@ export class PrintQueueService {
     if (printerError) throw printerError;
     if (!printer?.active || !printer.agent_id) throw new Error("A impressora precisa estar ativa e conectada a um computador");
 
+    const replaySince = new Date(Date.now() - SETUP_TEST_REPLAY_WINDOW_MS).toISOString();
+    const { data: inFlight, error: inFlightError } = await admin.from("print_jobs")
+      .select("id")
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .eq("printer_id", printer.id)
+      .eq("template_key", "setup_test_v1")
+      .eq("created_by", context.userId)
+      .in("status", ["pending", "processing"])
+      .gte("created_at", replaySince)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (inFlightError) throw inFlightError;
+    if (inFlight?.id) return inFlight.id;
+
     const { data: route, error: routeError } = await admin.from("station_printers")
       .select("station_id")
       .eq("organization_id", context.organizationId)
@@ -190,6 +207,8 @@ export class PrintQueueService {
       "",
       "Pode fechar a configuracao no painel.",
     ].join("\n");
+    const bucket = Math.floor(Date.now() / SETUP_TEST_RACE_BUCKET_MS);
+    const idempotencyKey = `setup-test:${storeId}:${printer.id}:${context.userId}:${bucket}`;
     const { data: job, error } = await admin.from("print_jobs").insert({
       organization_id: context.organizationId,
       store_id: storeId,
@@ -204,11 +223,23 @@ export class PrintQueueService {
       status: "pending",
       priority: 10,
       copies: 1,
-      idempotency_key: `setup-test:${storeId}:${printer.id}:${randomUUID()}`,
+      idempotency_key: idempotencyKey,
       source: "panel",
       created_by: context.userId,
     }).select("id").single();
-    if (error) throw error;
+    if (error) {
+      if (error.code === "23505") {
+        const { data: replay, error: replayError } = await admin.from("print_jobs")
+          .select("id")
+          .eq("organization_id", context.organizationId)
+          .eq("store_id", storeId)
+          .eq("idempotency_key", idempotencyKey)
+          .maybeSingle();
+        if (replayError) throw replayError;
+        if (replay?.id) return replay.id;
+      }
+      throw error;
+    }
     await AuditService.record(context, {
       action: "print.setup_test_queued",
       entityType: "print_job",
