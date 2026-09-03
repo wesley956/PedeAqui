@@ -57,7 +57,7 @@ export class PrintQueueService {
         .eq("store_id", agent.store_id)
         .in("id", printerIds),
       admin.from("store_print_preferences")
-        .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text")
+        .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size")
         .eq("organization_id", agent.organization_id)
         .eq("store_id", agent.store_id)
         .maybeSingle(),
@@ -93,6 +93,7 @@ export class PrintQueueService {
           copies: Number(job.copies),
           documentType: String(job.document_type),
           renderedContent: rendered,
+          textSize: printPreferences.text_size,
           printer: {
             id: printer.id,
             name: printer.name,
