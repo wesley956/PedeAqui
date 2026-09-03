@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const sql = fs
-  .readFileSync(path.join(process.cwd(), "supabase/sql/184_stabilization_data_integrity_diagnostics.sql"), "utf8")
+  .readFileSync(path.join(process.cwd(), "supabase/sql/182_stabilization_data_integrity_diagnostics.sql"), "utf8")
   .toLowerCase();
 
 describe("stabilization #824 data-integrity diagnostics", () => {
