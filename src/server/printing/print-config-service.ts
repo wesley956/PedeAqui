@@ -29,6 +29,13 @@ const printerInput = z.object({
     ctx.addIssue({ code: "custom", message: "Endereço e porta são obrigatórios para impressora de rede." });
   }
 });
+const printerCreationResult = z.object({
+  id: uuid,
+  name: z.string(),
+  connection_type: z.string(),
+  paper_width_mm: z.number().int(),
+  created: z.boolean(),
+});
 const quickDetectedPrinterInput = z.object({
   agentId: z.string().uuid(),
   printerName: z.string().trim().min(2).max(255),
@@ -130,16 +137,30 @@ export class PrintConfigService {
       const { data } = await admin.from("printers").select("id").eq("id", values.fallbackPrinterId).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
       if (!data) throw new Error("Impressora de fallback inválida para esta unidade");
     }
-    const { data, error } = await admin.from("printers").insert({
-      organization_id: context.organizationId, store_id: storeId, agent_id: values.agentId ?? null,
-      name: values.name, connection_type: values.connectionType,
-      connection_address: values.connectionAddress || null, connection_port: values.connectionPort ?? null,
-      paper_width_mm: values.paperWidthMm, default_copies: values.defaultCopies,
-      fallback_printer_id: values.fallbackPrinterId ?? null, created_by: context.userId,
-    }).select("id, name, connection_type, paper_width_mm").single();
+    const { data, error } = await admin.rpc("print_create_printer_idempotent_internal", {
+      p_store_id: storeId,
+      p_name: values.name,
+      p_connection_type: values.connectionType,
+      p_connection_address: values.connectionAddress || null,
+      p_connection_port: values.connectionPort ?? null,
+      p_paper_width_mm: values.paperWidthMm,
+      p_default_copies: values.defaultCopies,
+      p_agent_id: values.agentId ?? null,
+      p_fallback_printer_id: values.fallbackPrinterId ?? null,
+      p_actor_user_id: context.userId,
+    });
     if (error) throw error;
-    await AuditService.record(context, { action: "print.printer_created", entityType: "printer", entityId: data.id, after: data });
-    return data;
+    const result = printerCreationResult.parse(data);
+    const printer = {
+      id: result.id,
+      name: result.name,
+      connection_type: result.connection_type,
+      paper_width_mm: result.paper_width_mm,
+    };
+    if (result.created) {
+      await AuditService.record(context, { action: "print.printer_created", entityType: "printer", entityId: result.id, after: printer });
+    }
+    return printer;
   }
 
   static async updatePrinterDefaultCopies(printerId: string, defaultCopies: number) {
