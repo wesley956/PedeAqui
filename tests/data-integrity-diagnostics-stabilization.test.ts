@@ -35,9 +35,7 @@ describe("stabilization #824 data-integrity diagnostics", () => {
     expect(sql).toContain("security definer");
     expect(sql).toContain("set search_path = ''");
     expect(sql).not.toMatch(/\b(insert|update|delete|truncate)\s+/);
-    expect(sql).toMatch(/revoke[\s\S]+from\s+public/);
-    expect(sql).toMatch(/revoke[\s\S]+from\s+anon/);
-    expect(sql).toMatch(/revoke[\s\S]+from\s+authenticated/);
+    expect(sql).toMatch(/revoke\s+all\s+on\s+function[\s\S]+from\s+public\s*,\s*anon\s*,\s*authenticated\s*;/);
     expect(sql).toMatch(/grant\s+execute[\s\S]+to\s+service_role/);
   });
 
