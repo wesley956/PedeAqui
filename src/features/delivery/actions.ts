@@ -8,6 +8,8 @@ import { DeliveryOperationsService } from "@/server/delivery/delivery-operations
 import { DriverMutationService } from "@/server/delivery/driver-mutation-service";
 import { DriverMobileAccessService } from "@/server/delivery/driver-mobile-access-service";
 import { RouteTrackingService } from "@/server/delivery/route-tracking-service";
+import { classifyFailure, failureCode } from "@/server/observability/failure-classification";
+import { logger } from "@/server/observability/logger";
 
 function optionalMoney(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.trim() ? parseMoneyToCents(value) : null;
@@ -109,7 +111,18 @@ function friendly(error: unknown) {
     ["idempotency key reused", "Esta ação foi reenviada com dados diferentes. Atualize a página e tente novamente."],
   ];
   for (const [needle, message] of rules) if (lower.includes(needle)) return message;
-  return raw;
+  return classifyFailure(error).userMessage;
+}
+
+function reportFailure(operation: string, error: unknown) {
+  const classification = classifyFailure(error);
+  logger.error("delivery_action_failed", {
+    operation,
+    failureKind: classification.kind,
+    failureCode: failureCode(error),
+    retryable: classification.retryable,
+  });
+  return friendly(error);
 }
 
 export async function createDriverAction(_previous: DeliveryActionState, formData: FormData): Promise<DeliveryActionState> {
@@ -122,7 +135,7 @@ export async function createDriverAction(_previous: DeliveryActionState, formDat
     refreshOperations();
     return { ok: true, message: "Entregador cadastrado e disponível para receber entregas.", error: null };
   } catch (error) {
-    return { ok: false, message: null, error: friendly(error) };
+    return { ok: false, message: null, error: reportFailure("driver.create", error) };
   }
 }
 
@@ -141,7 +154,7 @@ export async function createDriverMobileAccessAction(_previous: DriverMobileAcce
       linked: result.linked,
     };
   } catch (error) {
-    return { ok: false, error: friendly(error), inviteUrl: null, expiresAt: null, phone: null, linked: false };
+    return { ok: false, error: reportFailure("driver.mobile_access", error), inviteUrl: null, expiresAt: null, phone: null, linked: false };
   }
 }
 
@@ -157,7 +170,7 @@ export async function updateDriverAction(_previous: DeliveryActionState, formDat
     refreshOperations();
     return { ok: true, message: "Entregador atualizado.", error: null };
   } catch (error) {
-    return { ok: false, message: null, error: friendly(error) };
+    return { ok: false, message: null, error: reportFailure("driver.update", error) };
   }
 }
 
@@ -193,6 +206,6 @@ export async function deliveryOperationAction(_previous: DeliveryActionState, fo
     }
     return { ok: false, message: null, error: "Ação de entrega inválida." };
   } catch (error) {
-    return { ok: false, message: null, error: friendly(error) };
+    return { ok: false, message: null, error: reportFailure(`delivery.${intent || "unknown"}`, error) };
   }
 }
