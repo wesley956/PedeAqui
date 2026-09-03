@@ -4,12 +4,12 @@ export function createPrintAgentToken() {
   return randomBytes(32).toString("base64url");
 }
 
-export function derivePrintAgentToken(agentId: string, credentialVersion: number, secret: string) {
+export function derivePrintAgentToken(agentId: string, intentKey: string, secret: string) {
   if (!agentId) throw new Error("Print Agent id is required");
-  if (!Number.isInteger(credentialVersion) || credentialVersion < 1) throw new Error("Print Agent credential version is invalid");
+  if (intentKey.trim().length < 8 || intentKey.trim().length > 240) throw new Error("Print Agent intent key is invalid");
   if (!secret) throw new Error("Print Agent credential secret is not configured");
   return createHmac("sha256", secret)
-    .update(`pedeaqui-print-agent:${agentId}:${credentialVersion}`, "utf8")
+    .update(`pedeaqui-print-agent:${agentId}:${intentKey.trim()}`, "utf8")
     .digest("base64url");
 }
 
