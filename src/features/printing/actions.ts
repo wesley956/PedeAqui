@@ -37,7 +37,7 @@ export async function createPrinterAction(formData: FormData) {
     defaultCopies: integer(formData, "defaultCopies", 1),
     agentId: nullable(formData, "agentId"),
     fallbackPrinterId: nullable(formData, "fallbackPrinterId"),
-  });
+  }, text(formData, "idempotencyKey"));
   refresh();
 }
 
@@ -75,7 +75,10 @@ export async function quickSetupDetectedPrinterAction(formData: FormData) {
 }
 
 export async function enqueuePrinterTestAction(formData: FormData) {
-  await PrintQueueService.enqueueSetupTest(text(formData, "printerId"));
+  await PrintQueueService.enqueueSetupTest(
+    text(formData, "printerId"),
+    text(formData, "idempotencyKey"),
+  );
   refresh();
   redirect("/configuracoes/impressoes?test=queued");
 }
@@ -97,7 +100,10 @@ export async function linkProductStationAction(formData: FormData) {
 export type AgentCreationState = { token: string | null; name: string | null; error: string | null };
 export async function createPrintAgentAction(_state: AgentCreationState, formData: FormData): Promise<AgentCreationState> {
   try {
-    const result = await PrintAgentAdminService.create(text(formData, "name"));
+    const result = await PrintAgentAdminService.create(
+      text(formData, "name"),
+      text(formData, "idempotencyKey"),
+    );
     refresh();
     return { token: result.token, name: result.name, error: null };
   } catch {
@@ -107,7 +113,10 @@ export async function createPrintAgentAction(_state: AgentCreationState, formDat
 
 export async function reconnectPrintAgentAction(_state: AgentCreationState, formData: FormData): Promise<AgentCreationState> {
   try {
-    const result = await PrintAgentAdminService.reconnect(text(formData, "agentId"));
+    const result = await PrintAgentAdminService.reconnect(
+      text(formData, "agentId"),
+      text(formData, "idempotencyKey"),
+    );
     refresh();
     return { token: result.token, name: result.name, error: null };
   } catch {
