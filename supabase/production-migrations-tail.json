@@ -49,6 +49,13 @@
     ["20260901231340","product_experience_events"],
     ["20260902053134","delivery_operation_levels"],
     ["20260902053415","fix_commercial_onboarding_store_trial_assignment"],
-    ["20260902054003","payment_completion_policies"]
+    ["20260902054003","payment_completion_policies"],
+    ["20260903013052","manual_delivery_private_execution_grant"],
+    ["20260903213245","stabilization_driver_idempotency_and_index_hardening"],
+    ["20260903213305","stabilization_data_integrity_diagnostics"],
+    ["20260903213314","printing_idempotency_hardening"],
+    ["20260903213326","printing_manual_printer_idempotency"],
+    ["20260903213354","print_agent_credential_idempotency"],
+    ["20260903213406","print_accessibility_text_size"]
   ]
 }
