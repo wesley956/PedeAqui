@@ -12,7 +12,7 @@ import { WhatsAppCloudProvider, WhatsAppProviderError, resolveWhatsAppAccessToke
 
 const templateNameSchema = z.string().trim().regex(/^[a-z0-9_]{1,512}$/).nullable();
 const templateLanguageSchema = z.string().trim().regex(/^[a-z]{2}_[A-Z]{2}$/);
-const customTemplatesSchema = z.record(z.enum(ORDER_NOTIFICATION_TYPES), z.string().trim().min(1).max(1000)).default({});
+const customTemplatesSchema = z.partialRecord(z.enum(ORDER_NOTIFICATION_TYPES), z.string().trim().min(1).max(1000)).default({});
 
 const settingsSchema = z.object({
   whatsappEnabled: z.boolean(), phoneNumberId: z.string().trim().min(1).max(120).nullable(), businessAccountId: z.string().trim().min(1).max(120).nullable(),
