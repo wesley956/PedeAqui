@@ -31,11 +31,13 @@ const sample = {
 };
 
 describe("accessible print text size", () => {
-  it("keeps current customers on normal text by default", () => {
+  it("keeps current customers and existing jobs on normal text by default", () => {
     expect(resolveOrderPrintPreferences({}).text_size).toBe("normal");
     const migration = read("supabase/sql/186_print_accessibility_text_size.sql");
     expect(migration).toContain("text_size text not null default 'normal'");
     expect(migration).toContain("'normal', 'large', 'extra_large'");
+    expect(migration).toContain("print_jobs_snapshot_text_size_internal");
+    expect(migration).toContain("before insert on public.print_jobs");
   });
 
   it("reduces logical line width only for extra-large double-width printing", () => {
@@ -60,13 +62,15 @@ describe("accessible print text size", () => {
     expect(config).toContain("footer_text, text_size");
   });
 
-  it("carries text size separately to the agent and maps it to ESC/POS size commands", () => {
+  it("keeps each job width synchronized with the physical text size sent to the agent", () => {
     const queue = read("src/server/printing/print-queue-service.ts");
     const agent = read("print-agent/src/index.mjs");
     const escpos = read("print-agent/src/escpos.mjs");
     const systemPrint = read("print-agent/src/system-print.mjs");
 
-    expect(queue).toContain("textSize: printPreferences.text_size");
+    expect(queue).toContain("jobTextSize");
+    expect(queue).toContain("textSize: jobTextSize");
+    expect(queue).toContain("text_size: jobTextSize");
     expect(agent).toContain("job.textSize");
     expect(agent).toContain("accessibleTextSize: true");
     expect(escpos).toContain('textSize === "large"');
