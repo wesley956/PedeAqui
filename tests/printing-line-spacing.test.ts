@@ -53,10 +53,11 @@ describe("configurable print line spacing", () => {
     expect(agent).toContain('post("/api/print-agent/job-style", { jobId })');
     expect(agent).toContain("configurableLineSpacing: true");
     expect(agent).toContain("withLineSpacingIntent(job.renderedContent, lineSpacing)");
-    expect(escpos).toContain("0x1b,0x33,lineSpacingByte(styled.lineSpacing)");
+    expect(escpos).toContain("0x1b,0x33,lineSpacingByte(styled.lineSpacing, textSize)");
     expect(escpos).toContain('lineSpacing === "compact"');
-    expect(escpos).toContain('lineSpacing === "comfortable"');
-    expect(escpos).toContain('lineSpacing === "wide"');
+    expect(escpos).toContain('textSize === "extra_large"');
+    expect(escpos).toContain("return 60");
+    expect(escpos).toContain("return 72");
     expect(escpos).toContain("0x1b,0x32");
   });
 });
