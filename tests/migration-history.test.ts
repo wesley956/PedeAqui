@@ -37,9 +37,14 @@ describe("canonical Supabase SQL history", () => {
     expect(baselineFile).toBe(`${baselinePrefix}_${lastMigration[1]}.sql`);
     expect(new Set(pendingPrefixes).size).toBe(pendingPrefixes.length);
     if (pendingPrefixes.length > 0) {
-      expect(pendingPrefixes[0]).toBe(baselinePrefix + 1);
+      const firstPending = pendingPrefixes[0];
+      if (firstPending === undefined) throw new Error("prefixo inicial pendente ausente");
+      expect(firstPending).toBe(baselinePrefix + 1);
       for (let index = 1; index < pendingPrefixes.length; index += 1) {
-        expect(pendingPrefixes[index]).toBe(pendingPrefixes[index - 1] + 1);
+        const previous = pendingPrefixes[index - 1];
+        const current = pendingPrefixes[index];
+        if (previous === undefined || current === undefined) throw new Error("sequência de migrations pendentes inválida");
+        expect(current).toBe(previous + 1);
       }
     }
 
