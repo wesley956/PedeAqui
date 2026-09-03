@@ -7,6 +7,7 @@ import {
 import { PERMISSIONS } from "@/server/access/permissions";
 import { NavigationAccessService } from "@/server/access/navigation-access-service";
 import { PrintConfigService } from "@/server/printing/print-config-service";
+import { PrintLineSpacingService } from "@/server/printing/print-line-spacing-service";
 import { renderPrintDocument } from "@/server/printing/templates";
 import styles from "./format.module.css";
 
@@ -69,10 +70,18 @@ const previewFontSize = {
   extra_large: 18,
 } as const;
 
+const previewLineHeight = {
+  compact: 1.05,
+  normal: 1.25,
+  comfortable: 1.45,
+  wide: 1.7,
+} as const;
+
 export default async function PrintFormatPage() {
-  const [config, access] = await Promise.all([
+  const [config, access, lineSpacing] = await Promise.all([
     PrintConfigService.snapshot(),
     NavigationAccessService.load(),
+    PrintLineSpacingService.get(),
   ]);
   const canManage = access.permissionKeys.includes(PERMISSIONS.PRINTING_MANAGE);
   const preferences = config.printPreferences;
@@ -113,6 +122,16 @@ export default async function PrintFormatPage() {
                   <option value="extra_large">Extra grande — máxima legibilidade</option>
                 </select>
                 <small className={styles.hint}>Use Grande ou Extra grande quando alguém da equipe tiver dificuldade para enxergar o comprovante. O padrão atual não muda sozinho.</small>
+              </label>
+              <label className={styles.field}>
+                <span>Espaçamento entre linhas</span>
+                <select className={styles.input} name="lineSpacing" defaultValue={lineSpacing} disabled={!canManage}>
+                  <option value="compact">Compacto — economiza papel</option>
+                  <option value="normal">Padrão</option>
+                  <option value="comfortable">Confortável — leitura mais arejada</option>
+                  <option value="wide">Amplo — máximo espaçamento</option>
+                </select>
+                <small className={styles.hint}>Controla somente a distância vertical entre as linhas. O tamanho das letras continua independente.</small>
               </label>
               <div className={styles.options}>
                 <PrintOption name="showCustomerName" title="Nome do cliente" hint="Mostra quem fez o pedido." checked={preferences.show_customer_name} disabled={!canManage} />
@@ -194,9 +213,9 @@ export default async function PrintFormatPage() {
         <aside className={`card ${styles.card} ${styles.preview}`}>
           <div className={styles.sectionHead}>
             <h2>Prévia do comprovante</h2>
-            <p className={styles.hint}>Exemplo em papel de 80 mm. Depois de salvar, esta prévia reflete as escolhas da loja, inclusive o tamanho das letras.</p>
+            <p className={styles.hint}>Exemplo em papel de 80 mm. Depois de salvar, esta prévia reflete o tamanho das letras e o espaçamento entre linhas.</p>
           </div>
-          <pre className={styles.paper} style={{ fontSize: previewFontSize[preferences.text_size] }}>{preview}</pre>
+          <pre className={styles.paper} style={{ fontSize: previewFontSize[preferences.text_size], lineHeight: previewLineHeight[lineSpacing] }}>{preview}</pre>
         </aside>
       </div>
     </section>

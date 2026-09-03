@@ -6,6 +6,8 @@ const cp850 = new Map(Object.entries({
   "ê":136,"Ê":210,"ô":147,"Ô":226,"ç":135,"Ç":128,"à":133,"À":183,
 }));
 
+const lineSpacingIntent = /^@@PEDEAQUI_LINE_SPACING=(compact|normal|comfortable|wide)@@\n/;
+
 function textBytes(text) {
   const bytes = [];
   for (const char of text) {
@@ -23,11 +25,37 @@ function textSizeByte(textSize) {
   return 0x00;
 }
 
+function lineSpacingByte(lineSpacing) {
+  if (lineSpacing === "compact") return 22;
+  if (lineSpacing === "comfortable") return 38;
+  if (lineSpacing === "wide") return 46;
+  return 30;
+}
+
+function extractLineSpacingIntent(text) {
+  const source = String(text ?? "");
+  const match = source.match(lineSpacingIntent);
+  if (!match) return { text: source, lineSpacing: "normal" };
+  return { text: source.slice(match[0].length), lineSpacing: match[1] };
+}
+
 export function escposDocument(text, textSize = "normal") {
+  const styled = extractLineSpacingIntent(text);
   return Buffer.concat([
-    Buffer.from([0x1b,0x40,0x1b,0x74,0x02,0x1b,0x61,0x00,0x1d,0x21,textSizeByte(textSize)]),
-    textBytes(text),
-    Buffer.from([0x1d,0x21,0x00,0x0a,0x0a,0x1d,0x56,0x00]),
+    Buffer.from([
+      0x1b,0x40,
+      0x1b,0x74,0x02,
+      0x1b,0x61,0x00,
+      0x1b,0x33,lineSpacingByte(styled.lineSpacing),
+      0x1d,0x21,textSizeByte(textSize),
+    ]),
+    textBytes(styled.text),
+    Buffer.from([
+      0x1d,0x21,0x00,
+      0x1b,0x32,
+      0x0a,0x0a,
+      0x1d,0x56,0x00,
+    ]),
   ]);
 }
 

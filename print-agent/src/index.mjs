@@ -12,10 +12,11 @@ const requestTimeoutMs = Math.max(3000, Number(process.env.PEDEAQUI_PRINT_REQUES
 const updateCheckMs = Math.max(60000, Number(process.env.PEDEAQUI_PRINT_UPDATE_CHECK_MS || 6 * 60 * 60 * 1000));
 const watchdogEnabled = process.env.PEDEAQUI_AGENT_WATCHDOG === "1";
 const remoteManifestUrl = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent/manifest.json";
-const version = "0.6.0";
+const version = "0.7.0";
 const printers = new Map();
 const deliveryFailures = new Map();
 const deliveryFailureHoldMs = 5 * 60 * 1000;
+const lineSpacingValues = new Set(["compact", "normal", "comfortable", "wide"]);
 let heartbeatRunning = false;
 let updateCheckRunning = false;
 let updateRequested = false;
@@ -65,6 +66,21 @@ async function post(path, body = {}) {
 
 async function acknowledge(jobId) { await post("/api/print-agent/ack", { jobId }); }
 async function fail(jobId, error) { await post("/api/print-agent/fail", { jobId, error: String(error).slice(0, 2000) }); }
+
+async function lineSpacingForJob(jobId) {
+  try {
+    const data = await post("/api/print-agent/job-style", { jobId });
+    const value = String(data?.lineSpacing || "normal");
+    return lineSpacingValues.has(value) ? value : "normal";
+  } catch (error) {
+    console.error("job line spacing lookup failed; using normal spacing", jobId, error);
+    return "normal";
+  }
+}
+
+function withLineSpacingIntent(content, lineSpacing) {
+  return `@@PEDEAQUI_LINE_SPACING=${lineSpacing}@@\n${content}`;
+}
 
 async function recoverPrintedUnacked(job) {
   try {
@@ -152,9 +168,11 @@ async function deliver(job) {
   printers.set(printer.id, { id: printer.id, status: "online", error: null });
 
   try {
+    const lineSpacing = await lineSpacingForJob(job.id);
+    const styledContent = withLineSpacingIntent(job.renderedContent, lineSpacing);
     await saveSpool(job, "claimed");
     await saveSpool(job, "printing");
-    await sendToPrinter(printer, job.renderedContent, job.copies, job.id, job.textSize);
+    await sendToPrinter(printer, styledContent, job.copies, job.id, job.textSize);
   } catch (error) {
     await reportPrePrintFailure(job, printer, error);
     return;
@@ -294,6 +312,7 @@ async function heartbeat() {
         watchdog: watchdogEnabled,
         selfUpdate: watchdogEnabled,
         accessibleTextSize: true,
+        configurableLineSpacing: true,
         paperWidthsMm: [58, 80],
       },
       printers: [...printers.values()],
