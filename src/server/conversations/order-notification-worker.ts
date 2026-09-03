@@ -26,6 +26,7 @@ type QueueRow = {
   organization_id: string;
   store_id: string;
   order_id: string;
+  domain_event_id: string | null;
   notification_type: OrderNotificationType;
   attempts: number;
 };
@@ -92,6 +93,17 @@ async function finish(input: {
 
 async function processOne(job: QueueRow, workerId: string) {
   const admin = createAdminClient();
+  if (!job.domain_event_id) {
+    await finish({
+      notificationId: job.id,
+      workerId,
+      status: "skipped",
+      errorCode: "authoritative_event_missing",
+      errorMessage: "Evento autoritativo ausente; notificação não enviada.",
+    });
+    return "skipped" as const;
+  }
+
   const { data: order, error: orderError } = await admin.from("orders")
     .select("id, organization_id, store_id, display_number, fulfillment_type, order_status, customer_id, customer_name_snapshot")
     .eq("id", job.order_id)
@@ -270,7 +282,13 @@ async function processOne(job: QueueRow, workerId: string) {
   const { data: pending, error: pendingError } = await admin.rpc("conversation_create_outbound_internal", {
     p_conversation_id: conversation.conversation_id,
     p_body: body,
-    p_client_message_id: notificationClientMessageId(order.id, job.notification_type),
+    p_client_message_id: notificationClientMessageId({
+      organizationId: job.organization_id,
+      storeId: job.store_id,
+      orderId: job.order_id,
+      type: job.notification_type,
+      authoritativeEventId: job.domain_event_id,
+    }),
     p_sender_type: "system",
     p_actor_user_id: null,
   });
