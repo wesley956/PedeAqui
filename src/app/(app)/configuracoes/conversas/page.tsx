@@ -6,6 +6,7 @@ import { WhatsAppAutomationSettings } from "@/features/conversations/whatsapp-au
 import { DEFAULT_WHATSAPP_GREETING, DEFAULT_WHATSAPP_GREETING_FALLBACK } from "@/server/conversations/greeting";
 import { MetaEmbeddedSignupService } from "@/server/conversations/meta-embedded-signup-service";
 import { normalizeWhatsAppAutomationPreset } from "@/server/conversations/order-notification-model";
+import { normalizeOrderNotificationCustomTemplates } from "@/server/conversations/order-notification-template";
 import { ConversationSettingsService } from "@/server/conversations/settings-service";
 import { resolveWhatsAppAutomationCapabilities } from "@/server/conversations/whatsapp-automation-capability";
 import { WhatsAppAutomationCapabilityService } from "@/server/conversations/whatsapp-automation-capability-service";
@@ -35,6 +36,7 @@ export default async function ConversationSettingsPage() {
   const connectionConfigured = Boolean(settings?.whatsapp_phone_number_id && settings?.access_token_secret_ref && settings?.app_secret_secret_ref);
   const orderTemplateConfigured = Boolean(settings?.order_notification_template_name);
   const preset = normalizeWhatsAppAutomationPreset(settings?.order_notification_preset);
+  const customTemplates = normalizeOrderNotificationCustomTemplates(settings?.order_notification_custom_templates);
   const preferences = {
     order_received: settings?.notify_order_received ?? true,
     order_confirmed: Boolean(settings?.notify_order_confirmed),
@@ -44,6 +46,7 @@ export default async function ConversationSettingsPage() {
     pickup_completed: Boolean(settings?.notify_pickup_completed),
     out_for_delivery: settings?.notify_out_for_delivery ?? true,
     delivered: Boolean(settings?.notify_delivered),
+    order_canceled: Boolean(settings?.notify_order_canceled),
   } as const;
   const capabilities = resolveWhatsAppAutomationCapabilities({
     businessType: structural.businessType,
@@ -81,7 +84,7 @@ export default async function ConversationSettingsPage() {
         <Card style={{ display: "grid", gap: 12 }}>
           <div>
             <h2 style={{ margin: 0, fontSize: 18 }}>Automações do pedido</h2>
-            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Escolha um fluxo pronto ou personalize as etapas. Os avisos são disparados somente por estados reais do pedido no PedeAqui e nunca mudam o andamento do pedido.</p>
+            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Escolha um fluxo pronto ou personalize as etapas e textos. Os avisos são disparados somente por estados reais do pedido no PedeAqui e nunca mudam o andamento do pedido.</p>
           </div>
 
           <WhatsAppAutomationSettings
@@ -89,6 +92,7 @@ export default async function ConversationSettingsPage() {
             enabled={Boolean(settings?.order_notifications_enabled)}
             preset={preset}
             capabilities={capabilities}
+            customTemplates={customTemplates}
             defaults={{
               notifyOrderReceived: preferences.order_received,
               notifyOrderConfirmed: preferences.order_confirmed,
@@ -98,6 +102,7 @@ export default async function ConversationSettingsPage() {
               notifyPickupCompleted: preferences.pickup_completed,
               notifyOutForDelivery: preferences.out_for_delivery,
               notifyDelivered: preferences.delivered,
+              notifyOrderCanceled: preferences.order_canceled,
             }}
           />
 
@@ -109,7 +114,7 @@ export default async function ConversationSettingsPage() {
                 : "Dentro da janela aberta pelo cliente, os avisos podem seguir normalmente. Para avisos fora dela, é necessário ter um modelo de mensagem aprovado pelo WhatsApp."}
             </p>
             {!orderTemplateConfigured && connectionConfigured ? <p style={{ margin: 0, fontSize: 12, fontWeight: 700 }}>Modelo para avisos fora da janela: pendente.</p> : null}
-            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Se o WhatsApp, um módulo, o plano ou um modelo ficarem indisponíveis, a automação é suspensa sem apagar a preferência. O pedido continua funcionando normalmente.</p>
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Se o WhatsApp, um módulo, o plano ou um modelo ficarem indisponíveis, a automação é suspensa sem apagar a preferência nem o texto personalizado. O pedido continua funcionando normalmente.</p>
           </div>
           <input type="hidden" name="orderNotificationTemplateName" value={settings?.order_notification_template_name ?? ""} />
           <input type="hidden" name="orderNotificationTemplateLanguage" value={settings?.order_notification_template_language ?? "pt_BR"} />
