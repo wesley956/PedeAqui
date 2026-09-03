@@ -52,6 +52,7 @@ describe("[329] persistence and safety contracts", () => {
   const worker = read("src/server/conversations/order-notification-worker.ts");
   const provider = read("src/server/conversations/provider.ts");
   const dispatch = read("src/server/conversations/order-notification-dispatch.ts");
+  const capability = read("src/server/conversations/whatsapp-automation-capability.ts");
   const accessRoute = read("src/app/m/[slug]/pedido/[id]/acesso/route.ts");
   const orderAction = read("src/features/orders/actions.ts");
   const deliveryAction = read("src/features/delivery/actions.ts");
@@ -104,12 +105,14 @@ describe("[329] persistence and safety contracts", () => {
     expect(worker.slice(templateGate, outboundCreate)).not.toContain("retryAfterSeconds");
   });
 
-  it("revalidates channel health at dispatch and never lets WhatsApp block an order", () => {
+  it("revalidates channel health through the shared capability resolver and never lets WhatsApp block an order", () => {
     expect(worker).toContain("connection_status");
-    expect(worker).toContain('settings.connection_status === "action_required"');
+    expect(worker).toContain("resolveWhatsAppAutomationCapabilities");
+    expect(worker).toContain("automationCanDispatch(capability)");
     expect(worker).toContain('settings.connection_status === "temporarily_unavailable"');
-    expect(worker).toContain('errorCode: "whatsapp_action_required"');
     expect(worker).toContain('errorCode: "whatsapp_temporarily_unavailable"');
+    expect(capability).toContain('state: "suspended_channel"');
+    expect(capability).toContain("channelReason(channel)");
     expect(worker).not.toContain("order_transition_internal");
   });
 
