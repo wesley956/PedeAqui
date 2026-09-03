@@ -69,6 +69,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 - `/api/order-alert/presence` — heartbeat autenticado do painel para o fallback nativo distinguir painel ativo de navegador fechado e respeitar a preferência explícita de som.
 - `/api/product-experience/events` — captura autenticada e não bloqueante de eventos de praticidade allowlisted, isolados por organização/unidade e sem dados pessoais desnecessários.
 - `/api/print-agent/order-alerts` — endpoint autenticado pelo token do Print Agent para consumir eventos imutáveis de novos pedidos quando o painel não está ativo; não substitui nem bloqueia o alerta web.
+- `/api/print-agent/job-style` — endpoint autenticado e restrito ao job atribuído ao Print Agent para recuperar o espaçamento entre linhas preservado no próprio job de impressão.
 - `/api/integrations/mercado-pago/oauth/start` — inicia a autorização OAuth do Mercado Pago para a unidade autenticada, usando state e PKCE; conectar a conta não habilita Pix automaticamente.
 - `/api/integrations/mercado-pago/oauth/callback` — valida o retorno OAuth, reconfirma organização/unidade e persiste as credenciais somente no servidor/Vault, mantendo o Pix desativado até ativação explícita.
 - `/api/internal/payment-reconciliation` — job interno autenticado que reconcilia em lote limitado apenas cobranças Mercado Pago pendentes e atrasadas de unidades com Pix online habilitado, recuperando notificações perdidas sem expor credenciais ou payload bruto do provedor.
