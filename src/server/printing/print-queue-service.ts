@@ -9,6 +9,7 @@ import { hashPrintAgentToken } from "@/server/printing/agent-token";
 import { renderPrintDocument, resolveOrderPrintPreferences, type PrintDocumentType } from "@/server/printing/templates";
 
 const uuid = z.string().uuid();
+const textSize = z.enum(["normal", "large", "extra_large"]);
 const SETUP_TEST_REPLAY_WINDOW_MS = 2 * 60_000;
 const SETUP_TEST_RACE_BUCKET_MS = 15_000;
 const heartbeatSchema = z.object({
@@ -75,12 +76,14 @@ export class PrintQueueService {
         continue;
       }
       try {
+        const jobTextSize = textSize.catch("normal").parse(job.text_size);
+        const jobPreferences = { ...printPreferences, text_size: jobTextSize };
         const rendered = job.rendered_content || renderPrintDocument(
           job.payload,
           String(job.document_type) as PrintDocumentType,
           Number(printer.paper_width_mm),
           Boolean(job.is_reprint),
-          printPreferences,
+          jobPreferences,
         );
         if (!job.rendered_content) {
           const { error: updateError } = await admin.from("print_jobs")
@@ -93,7 +96,7 @@ export class PrintQueueService {
           copies: Number(job.copies),
           documentType: String(job.document_type),
           renderedContent: rendered,
-          textSize: printPreferences.text_size,
+          textSize: jobTextSize,
           printer: {
             id: printer.id,
             name: printer.name,
