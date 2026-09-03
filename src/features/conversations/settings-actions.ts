@@ -7,7 +7,8 @@ import {
   normalizeWhatsAppAutomationPreset,
   resolveOrderNotificationSelection,
 } from "@/server/conversations/order-notification-model";
-import { ModuleAccessService } from "@/server/modules/module-access-service";
+import { resolveWhatsAppAutomationCapabilities } from "@/server/conversations/whatsapp-automation-capability";
+import { WhatsAppAutomationCapabilityService } from "@/server/conversations/whatsapp-automation-capability-service";
 
 function optional(formData: FormData, key: string) {
   const value = String(formData.get(key) ?? "").trim();
@@ -25,50 +26,59 @@ function restoreGreetingTokens(value: string) {
 }
 
 export async function saveConversationSettingsAction(formData: FormData) {
-  const [current, modules] = await Promise.all([
+  const [current, structural] = await Promise.all([
     ConversationSettingsService.load(),
-    ModuleAccessService.load(),
+    WhatsAppAutomationCapabilityService.loadCurrentStore(),
   ]);
   const greeting = optional(formData, "greetingTemplate");
   const preset = normalizeWhatsAppAutomationPreset(formData.get("orderNotificationPreset") ?? current?.order_notification_preset);
-  const productionAvailable = modules.availability.production.available;
-  const deliveriesAvailable = modules.availability.deliveries.available;
+  const connectionConfigured = Boolean(current?.whatsapp_phone_number_id && current?.access_token_secret_ref && current?.app_secret_secret_ref);
+  const currentPreferences = {
+    order_received: current?.notify_order_received ?? true,
+    order_confirmed: Boolean(current?.notify_order_confirmed),
+    production_preparing: Boolean(current?.notify_production_preparing),
+    payment_paid: Boolean(current?.notify_payment_paid),
+    pickup_ready: current?.notify_pickup_ready ?? true,
+    pickup_completed: Boolean(current?.notify_pickup_completed),
+    out_for_delivery: current?.notify_out_for_delivery ?? true,
+    delivered: Boolean(current?.notify_delivered),
+  } as const;
+  const capabilities = resolveWhatsAppAutomationCapabilities({
+    businessType: structural.businessType,
+    modules: structural.modules,
+    channel: { configured: connectionConfigured, enabled: Boolean(current?.whatsapp_enabled), connectionStatus: null },
+    orderNotificationsEnabled: Boolean(current?.order_notifications_enabled),
+    preferences: currentPreferences,
+    onlinePaymentReady: structural.onlinePaymentReady,
+    deliveryOperationEnabled: structural.deliveryOperationEnabled,
+  });
 
-  // Campos indisponíveis ficam desabilitados na UI e não são enviados pelo browser.
-  // Nesse caso preservamos a preferência anterior: módulo desligado suspende a
-  // automação, mas não apaga a escolha do restaurante. Presets continuam podendo
-  // registrar a preferência completa para ela voltar de forma segura na reativação.
+  // Campo desabilitado não é enviado pelo browser. Em modo Personalizado preservamos
+  // a preferência se a capability estiver suspensa/incompatível; desligar módulo,
+  // entitlement, entrega ou pagamento online nunca apaga a escolha anterior.
   const selected = resolveOrderNotificationSelection(preset, {
-    notifyOrderReceived: checked(formData, "notifyOrderReceived"),
-    notifyOrderConfirmed: checked(formData, "notifyOrderConfirmed"),
-    notifyProductionPreparing: productionAvailable
-      ? checked(formData, "notifyProductionPreparing")
-      : Boolean(current?.notify_production_preparing),
-    notifyPaymentPaid: checked(formData, "notifyPaymentPaid"),
-    notifyPickupReady: productionAvailable
-      ? checked(formData, "notifyPickupReady")
-      : Boolean(current?.notify_pickup_ready),
-    notifyPickupCompleted: checked(formData, "notifyPickupCompleted"),
-    notifyOutForDelivery: deliveriesAvailable
-      ? checked(formData, "notifyOutForDelivery")
-      : Boolean(current?.notify_out_for_delivery),
-    notifyDelivered: deliveriesAvailable
-      ? checked(formData, "notifyDelivered")
-      : Boolean(current?.notify_delivered),
+    notifyOrderReceived: capabilities.order_received.configurable ? checked(formData, "notifyOrderReceived") : currentPreferences.order_received,
+    notifyOrderConfirmed: capabilities.order_confirmed.configurable ? checked(formData, "notifyOrderConfirmed") : currentPreferences.order_confirmed,
+    notifyProductionPreparing: capabilities.production_preparing.configurable ? checked(formData, "notifyProductionPreparing") : currentPreferences.production_preparing,
+    notifyPaymentPaid: capabilities.payment_paid.configurable ? checked(formData, "notifyPaymentPaid") : currentPreferences.payment_paid,
+    notifyPickupReady: capabilities.pickup_ready.configurable ? checked(formData, "notifyPickupReady") : currentPreferences.pickup_ready,
+    notifyPickupCompleted: capabilities.pickup_completed.configurable ? checked(formData, "notifyPickupCompleted") : currentPreferences.pickup_completed,
+    notifyOutForDelivery: capabilities.out_for_delivery.configurable ? checked(formData, "notifyOutForDelivery") : currentPreferences.out_for_delivery,
+    notifyDelivered: capabilities.delivered.configurable ? checked(formData, "notifyDelivered") : currentPreferences.delivered,
   });
 
   await ConversationSettingsService.save({
-    whatsappEnabled: checked(formData, "whatsappEnabled"),
+    whatsappEnabled: connectionConfigured ? checked(formData, "whatsappEnabled") : Boolean(current?.whatsapp_enabled),
     phoneNumberId: current?.whatsapp_phone_number_id ?? null,
     businessAccountId: current?.whatsapp_business_account_id ?? null,
     accessTokenSecretRef: current?.access_token_secret_ref ?? null,
     appSecretSecretRef: current?.app_secret_secret_ref ?? null,
     botEnabled: checked(formData, "botEnabled"),
     aiEnabled: checked(formData, "aiEnabled"),
-    greetingEnabled: checked(formData, "greetingEnabled"),
+    greetingEnabled: connectionConfigured ? checked(formData, "greetingEnabled") : Boolean(current?.greeting_enabled),
     greetingTemplate: greeting ? restoreGreetingTokens(greeting) : DEFAULT_WHATSAPP_GREETING,
     greetingFallbackMessage: optional(formData, "greetingFallbackMessage") ?? DEFAULT_WHATSAPP_GREETING_FALLBACK,
-    orderNotificationsEnabled: checked(formData, "orderNotificationsEnabled"),
+    orderNotificationsEnabled: connectionConfigured ? checked(formData, "orderNotificationsEnabled") : Boolean(current?.order_notifications_enabled),
     orderNotificationPreset: preset,
     notifyOrderReceived: selected.notifyOrderReceived,
     notifyOrderConfirmed: selected.notifyOrderConfirmed,
