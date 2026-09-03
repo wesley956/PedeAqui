@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { contextualNavigationWithModuleRbac } from "@/components/layout/navigation-model";
 import { MODULE_CATALOG, type ModuleKey } from "@/modules/module-catalog";
 import type { ModuleAvailability } from "@/modules/module-access";
 import {
@@ -12,14 +13,10 @@ import { planModuleRbacBackfill } from "@/modules/module-rbac-backfill";
 const context = { organizationId: "org-a", storeId: "store-a" };
 const moduleKey: ModuleKey = "orders";
 const permission = MODULE_CATALOG[moduleKey].permissionsAny[0];
+if (!permission) throw new Error("orders must declare at least one permission");
 
 function availability(available: boolean): ModuleAvailability {
-  return {
-    moduleKey,
-    available,
-    reason: available ? "available" : "disabled_by_store",
-    missingDependencies: [],
-  };
+  return { moduleKey, available, reason: available ? "available" : "disabled_by_store", missingDependencies: [] };
 }
 
 function decide(grants: readonly ModulePermissionGrant[], available = true) {
@@ -37,14 +34,7 @@ describe("module RBAC rollout", () => {
   });
 
   it("accepts a matching store permission", () => {
-    const decision = decide([{
-      permission,
-      effect: "allow",
-      scope: "store",
-      organizationId: "org-a",
-      storeId: "store-a",
-      sourceId: "store-allow",
-    }]);
+    const decision = decide([{ permission, effect: "allow", scope: "store", organizationId: "org-a", storeId: "store-a", sourceId: "store-allow" }]);
     expect(decision).toMatchObject({ allowed: true, visible: true, reason: "allowed" });
     expect(canNavigateToModule(decision)).toBe(true);
     expect(canAccessModuleRoute(decision)).toBe(true);
@@ -80,18 +70,18 @@ describe("module RBAC rollout", () => {
     const denied = decide([]);
     expect(canNavigateToModule(denied)).toBe(false);
     expect(canAccessModuleRoute(denied)).toBe(false);
+    const navigation = contextualNavigationWithModuleRbac(
+      ["management"],
+      new Set([permission]),
+      { orders: denied },
+    );
+    expect(navigation.some((item) => item.key === "orders")).toBe(false);
   });
 });
 
 describe("module RBAC backfill planner", () => {
   it("never converts null legacy state into permission", () => {
-    const plan = planModuleRbacBackfill([{
-      moduleKey,
-      permission,
-      organizationId: "org-a",
-      allowed: null,
-      sourceId: "legacy-null",
-    }]);
+    const plan = planModuleRbacBackfill([{ moduleKey, permission, organizationId: "org-a", allowed: null, sourceId: "legacy-null" }]);
     expect(plan.grants).toEqual([]);
     expect(plan.skippedSourceIds).toEqual(["legacy-null"]);
   });
