@@ -1,15 +1,13 @@
+import {
+  defaultOrderNotificationText,
+  renderOrderNotificationTextTemplate,
+  type OrderNotificationType,
+} from "@/server/conversations/order-notification-template";
+
+export type { OrderNotificationType } from "@/server/conversations/order-notification-template";
+
 export const WHATSAPP_AUTOMATION_PRESETS = ["simple", "complete", "custom"] as const;
 export type WhatsAppAutomationPreset = (typeof WHATSAPP_AUTOMATION_PRESETS)[number];
-
-export type OrderNotificationType =
-  | "order_received"
-  | "order_confirmed"
-  | "production_preparing"
-  | "payment_paid"
-  | "pickup_ready"
-  | "pickup_completed"
-  | "out_for_delivery"
-  | "delivered";
 
 export type OrderNotificationFlags = {
   order_notifications_enabled?: boolean | null;
@@ -22,6 +20,7 @@ export type OrderNotificationFlags = {
   notify_pickup_completed?: boolean | null;
   notify_out_for_delivery?: boolean | null;
   notify_delivered?: boolean | null;
+  notify_order_canceled?: boolean | null;
 };
 
 export type OrderNotificationSelection = {
@@ -33,6 +32,7 @@ export type OrderNotificationSelection = {
   notifyPickupCompleted: boolean;
   notifyOutForDelivery: boolean;
   notifyDelivered: boolean;
+  notifyOrderCanceled: boolean;
 };
 
 const flagByType: Record<OrderNotificationType, keyof OrderNotificationFlags> = {
@@ -44,6 +44,7 @@ const flagByType: Record<OrderNotificationType, keyof OrderNotificationFlags> = 
   pickup_completed: "notify_pickup_completed",
   out_for_delivery: "notify_out_for_delivery",
   delivered: "notify_delivered",
+  order_canceled: "notify_order_canceled",
 };
 
 const statusByType: Record<OrderNotificationType, string> = {
@@ -55,6 +56,7 @@ const statusByType: Record<OrderNotificationType, string> = {
   pickup_completed: "Pedido retirado",
   out_for_delivery: "Saiu para entrega",
   delivered: "Pedido entregue",
+  order_canceled: "Pedido cancelado",
 };
 
 const SIMPLE_PRESET: OrderNotificationSelection = {
@@ -66,6 +68,7 @@ const SIMPLE_PRESET: OrderNotificationSelection = {
   notifyPickupCompleted: false,
   notifyOutForDelivery: true,
   notifyDelivered: false,
+  notifyOrderCanceled: true,
 };
 
 const COMPLETE_PRESET: OrderNotificationSelection = {
@@ -77,6 +80,7 @@ const COMPLETE_PRESET: OrderNotificationSelection = {
   notifyPickupCompleted: true,
   notifyOutForDelivery: true,
   notifyDelivered: true,
+  notifyOrderCanceled: true,
 };
 
 export function normalizeWhatsAppAutomationPreset(value: unknown): WhatsAppAutomationPreset {
@@ -106,6 +110,10 @@ export function buildOrderTrackingUrl(appUrl: string, slug: string, orderId: str
   return url.toString();
 }
 
+export function buildPublicMenuUrl(appUrl: string, slug: string) {
+  return new URL(`/m/${encodeURIComponent(slug)}`, appUrl).toString();
+}
+
 export function notificationStatusText(type: OrderNotificationType) {
   return statusByType[type];
 }
@@ -129,26 +137,24 @@ export function buildOrderNotificationBody(input: {
   storeName: string;
   displayNumber: number;
   trackingUrl: string;
+  menuUrl?: string | null;
+  customerName?: string | null;
+  customTemplate?: string | null;
 }) {
-  const number = `#${input.displayNumber}`;
-  switch (input.type) {
-    case "order_received":
-      return `${input.storeName}: recebemos seu pedido ${number}. Acompanhe por aqui: ${input.trackingUrl}`;
-    case "order_confirmed":
-      return `${input.storeName}: seu pedido ${number} foi confirmado. Acompanhe: ${input.trackingUrl}`;
-    case "production_preparing":
-      return `Seu pedido ${number} já está em preparo. Acompanhe: ${input.trackingUrl}`;
-    case "payment_paid":
-      return `Pagamento do pedido ${number} confirmado. Acompanhe: ${input.trackingUrl}`;
-    case "pickup_ready":
-      return `Seu pedido ${number} está pronto para retirada. Acompanhe: ${input.trackingUrl}`;
-    case "pickup_completed":
-      return `Pedido ${number} retirado. Obrigado por pedir com ${input.storeName}!`;
-    case "out_for_delivery":
-      return `Seu pedido ${number} saiu para entrega. Acompanhe: ${input.trackingUrl}`;
-    case "delivered":
-      return `Seu pedido ${number} foi entregue. Obrigado por pedir com ${input.storeName}!`;
+  const values = {
+    cliente: input.customerName,
+    restaurante: input.storeName,
+    pedido: `#${input.displayNumber}`,
+    status: notificationStatusText(input.type),
+    link_cardapio: input.menuUrl,
+    link_acompanhamento: input.trackingUrl,
+  };
+  if (input.customTemplate) {
+    const custom = renderOrderNotificationTextTemplate(input.customTemplate, values);
+    if (custom) return custom;
   }
+  return renderOrderNotificationTextTemplate(defaultOrderNotificationText(input.type), values)
+    ?? `${input.storeName}: atualização do pedido #${input.displayNumber}: ${notificationStatusText(input.type)}.`;
 }
 
 export function retryDelaySeconds(attempts: number) {

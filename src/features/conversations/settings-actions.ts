@@ -7,6 +7,13 @@ import {
   normalizeWhatsAppAutomationPreset,
   resolveOrderNotificationSelection,
 } from "@/server/conversations/order-notification-model";
+import {
+  ORDER_NOTIFICATION_TYPES,
+  defaultOrderNotificationText,
+  normalizeOrderNotificationCustomTemplates,
+  validateOrderNotificationTextTemplate,
+  type OrderNotificationTemplateMap,
+} from "@/server/conversations/order-notification-template";
 import { resolveWhatsAppAutomationCapabilities } from "@/server/conversations/whatsapp-automation-capability";
 import { WhatsAppAutomationCapabilityService } from "@/server/conversations/whatsapp-automation-capability-service";
 
@@ -42,6 +49,7 @@ export async function saveConversationSettingsAction(formData: FormData) {
     pickup_completed: Boolean(current?.notify_pickup_completed),
     out_for_delivery: current?.notify_out_for_delivery ?? true,
     delivered: Boolean(current?.notify_delivered),
+    order_canceled: Boolean(current?.notify_order_canceled),
   } as const;
   const capabilities = resolveWhatsAppAutomationCapabilities({
     businessType: structural.businessType,
@@ -65,7 +73,25 @@ export async function saveConversationSettingsAction(formData: FormData) {
     notifyPickupCompleted: capabilities.pickup_completed.configurable ? checked(formData, "notifyPickupCompleted") : currentPreferences.pickup_completed,
     notifyOutForDelivery: capabilities.out_for_delivery.configurable ? checked(formData, "notifyOutForDelivery") : currentPreferences.out_for_delivery,
     notifyDelivered: capabilities.delivered.configurable ? checked(formData, "notifyDelivered") : currentPreferences.delivered,
+    notifyOrderCanceled: capabilities.order_canceled.configurable ? checked(formData, "notifyOrderCanceled") : currentPreferences.order_canceled,
   });
+
+  const customTemplates: OrderNotificationTemplateMap = {
+    ...normalizeOrderNotificationCustomTemplates(current?.order_notification_custom_templates),
+  };
+  for (const type of ORDER_NOTIFICATION_TYPES) {
+    if (!capabilities[type].configurable) continue;
+    const raw = formData.get(`orderNotificationText_${type}`);
+    if (typeof raw !== "string") continue;
+    const text = raw.trim();
+    if (!text || text === defaultOrderNotificationText(type)) {
+      delete customTemplates[type];
+      continue;
+    }
+    const validation = validateOrderNotificationTextTemplate(text);
+    if (!validation.ok) throw new Error(`${capabilities[type].label}: ${validation.message}`);
+    customTemplates[type] = text;
+  }
 
   await ConversationSettingsService.save({
     whatsappEnabled: connectionConfigured ? checked(formData, "whatsappEnabled") : Boolean(current?.whatsapp_enabled),
@@ -88,6 +114,8 @@ export async function saveConversationSettingsAction(formData: FormData) {
     notifyPickupCompleted: selected.notifyPickupCompleted,
     notifyOutForDelivery: selected.notifyOutForDelivery,
     notifyDelivered: selected.notifyDelivered,
+    notifyOrderCanceled: selected.notifyOrderCanceled,
+    orderNotificationCustomTemplates: customTemplates,
     orderNotificationTemplateName: optional(formData, "orderNotificationTemplateName") ?? current?.order_notification_template_name ?? null,
     orderNotificationTemplateLanguage: optional(formData, "orderNotificationTemplateLanguage") ?? current?.order_notification_template_language ?? "pt_BR",
   });

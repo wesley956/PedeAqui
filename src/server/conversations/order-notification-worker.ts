@@ -6,10 +6,12 @@ import {
   buildOrderNotificationBody,
   buildOrderNotificationTemplateParameters,
   buildOrderTrackingUrl,
+  buildPublicMenuUrl,
   notificationClientMessageId,
   retryDelaySeconds,
   type OrderNotificationType,
 } from "@/server/conversations/order-notification-model";
+import { normalizeOrderNotificationCustomTemplates } from "@/server/conversations/order-notification-template";
 import {
   automationCanDispatch,
   resolveWhatsAppAutomationCapabilities,
@@ -104,7 +106,7 @@ async function processOne(job: QueueRow, workerId: string) {
 
   const [settingsResult, storeResult, contextResult, customerResult, structural] = await Promise.all([
     admin.from("store_conversation_settings")
-      .select("whatsapp_enabled, connection_status, whatsapp_phone_number_id, access_token_secret_ref, app_secret_secret_ref, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, order_notification_template_name, order_notification_template_language")
+      .select("whatsapp_enabled, connection_status, whatsapp_phone_number_id, access_token_secret_ref, app_secret_secret_ref, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, notify_order_canceled, order_notification_custom_templates, order_notification_template_name, order_notification_template_language")
       .eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
     admin.from("stores").select("name, slug, status")
       .eq("organization_id", job.organization_id).eq("id", job.store_id).maybeSingle(),
@@ -139,6 +141,7 @@ async function processOne(job: QueueRow, workerId: string) {
     pickup_completed: Boolean(settings.notify_pickup_completed),
     out_for_delivery: Boolean(settings.notify_out_for_delivery),
     delivered: Boolean(settings.notify_delivered),
+    order_canceled: Boolean(settings.notify_order_canceled),
   } as const;
   const capabilities = resolveWhatsAppAutomationCapabilities({
     businessType: structural.businessType,
@@ -177,7 +180,12 @@ async function processOne(job: QueueRow, workerId: string) {
     return "skipped" as const;
   }
 
-  if (order.order_status === "canceled" || order.order_status === "rejected") {
+  if (job.notification_type === "order_canceled") {
+    if (order.order_status !== "canceled") {
+      await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "cancel_state_mismatch", errorMessage: "O cancelamento autoritativo não corresponde ao estado atual do pedido." });
+      return "skipped" as const;
+    }
+  } else if (order.order_status === "canceled" || order.order_status === "rejected") {
     await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "order_terminal_problem", errorMessage: "Pedido cancelado ou rejeitado antes do envio." });
     return "skipped" as const;
   }
@@ -213,11 +221,16 @@ async function processOne(job: QueueRow, workerId: string) {
   }
 
   const trackingUrl = buildOrderTrackingUrl(appUrl, store.slug, order.id, context.tracking_access_token);
+  const menuUrl = buildPublicMenuUrl(appUrl, store.slug);
+  const customTemplates = normalizeOrderNotificationCustomTemplates(settings.order_notification_custom_templates);
   const messageInput = {
     type: job.notification_type,
     storeName: store.name,
     displayNumber: Number(order.display_number),
     trackingUrl,
+    menuUrl,
+    customerName: order.customer_name_snapshot,
+    customTemplate: customTemplates[job.notification_type] ?? null,
   };
   const body = buildOrderNotificationBody(messageInput);
 
