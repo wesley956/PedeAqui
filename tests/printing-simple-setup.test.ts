@@ -41,6 +41,18 @@ describe("simple printing setup", () => {
     expect(queue).toContain('source: "panel"');
   });
 
+  it("reuses an in-flight setup test and deduplicates concurrent replay without duplicating audit", () => {
+    const queue = read("src/server/printing/print-queue-service.ts");
+    expect(queue).toContain("SETUP_TEST_REPLAY_WINDOW_MS");
+    expect(queue).toContain("SETUP_TEST_RACE_BUCKET_MS");
+    expect(queue).toContain('.in("status", ["pending", "processing"])');
+    expect(queue).toContain('if (inFlight?.id) return inFlight.id');
+    expect(queue).toContain('error.code === "23505"');
+    expect(queue).toContain('.eq("idempotency_key", idempotencyKey)');
+    expect(queue).toContain('action: "print.setup_test_queued"');
+    expect(queue.indexOf('action: "print.setup_test_queued"')).toBeGreaterThan(queue.indexOf('if (error) {'));
+  });
+
   it("offers an assisted installer while keeping credentials isolated to the Print Agent", () => {
     const creator = read("src/features/printing/agent-token-creator.tsx");
     const admin = read("src/server/printing/print-agent-admin-service.ts");
