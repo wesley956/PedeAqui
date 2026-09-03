@@ -1,16 +1,7 @@
-import { createHash, createHmac, randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 export function createPrintAgentToken() {
   return randomBytes(32).toString("base64url");
-}
-
-export function derivePrintAgentToken(agentId: string, intentKey: string, secret: string) {
-  if (!agentId) throw new Error("Print Agent id is required");
-  if (intentKey.trim().length < 8 || intentKey.trim().length > 240) throw new Error("Print Agent intent key is invalid");
-  if (!secret) throw new Error("Print Agent credential secret is not configured");
-  return createHmac("sha256", secret)
-    .update(`pedeaqui-print-agent:${agentId}:${intentKey.trim()}`, "utf8")
-    .digest("base64url");
 }
 
 export function hashPrintAgentToken(token: string) {

@@ -63,12 +63,6 @@ const samplePayload = {
   ],
 };
 
-const previewFontSize = {
-  normal: 12,
-  large: 15,
-  extra_large: 18,
-} as const;
-
 export default async function PrintFormatPage() {
   const [config, access] = await Promise.all([
     PrintConfigService.snapshot(),
@@ -105,15 +99,6 @@ export default async function PrintFormatPage() {
               <p className={styles.hint}>Número do pedido, horário, origem e itens continuam sendo a base do comprovante. Você escolhe os detalhes adicionais.</p>
             </div>
             <form action={saveOrderPrintPreferencesAction} className={styles.stack}>
-              <label className={styles.field}>
-                <span>Tamanho das letras</span>
-                <select className={styles.input} name="textSize" defaultValue={preferences.text_size} disabled={!canManage}>
-                  <option value="normal">Padrão</option>
-                  <option value="large">Grande — mais fácil de enxergar</option>
-                  <option value="extra_large">Extra grande — máxima legibilidade</option>
-                </select>
-                <small className={styles.hint}>Use Grande ou Extra grande quando alguém da equipe tiver dificuldade para enxergar o comprovante. O padrão atual não muda sozinho.</small>
-              </label>
               <div className={styles.options}>
                 <PrintOption name="showCustomerName" title="Nome do cliente" hint="Mostra quem fez o pedido." checked={preferences.show_customer_name} disabled={!canManage} />
                 <PrintOption name="showCustomerPhone" title="Telefone nas entregas" hint="Útil para contato do entregador." checked={preferences.show_customer_phone} disabled={!canManage} />
@@ -194,9 +179,9 @@ export default async function PrintFormatPage() {
         <aside className={`card ${styles.card} ${styles.preview}`}>
           <div className={styles.sectionHead}>
             <h2>Prévia do comprovante</h2>
-            <p className={styles.hint}>Exemplo em papel de 80 mm. Depois de salvar, esta prévia reflete as escolhas da loja, inclusive o tamanho das letras.</p>
+            <p className={styles.hint}>Exemplo em papel de 80 mm. Depois de salvar, esta prévia reflete as escolhas da loja.</p>
           </div>
-          <pre className={styles.paper} style={{ fontSize: previewFontSize[preferences.text_size] }}>{preview}</pre>
+          <pre className={styles.paper}>{preview}</pre>
         </aside>
       </div>
     </section>

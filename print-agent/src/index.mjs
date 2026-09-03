@@ -12,7 +12,7 @@ const requestTimeoutMs = Math.max(3000, Number(process.env.PEDEAQUI_PRINT_REQUES
 const updateCheckMs = Math.max(60000, Number(process.env.PEDEAQUI_PRINT_UPDATE_CHECK_MS || 6 * 60 * 60 * 1000));
 const watchdogEnabled = process.env.PEDEAQUI_AGENT_WATCHDOG === "1";
 const remoteManifestUrl = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent/manifest.json";
-const version = "0.6.0";
+const version = "0.5.0";
 const printers = new Map();
 const deliveryFailures = new Map();
 const deliveryFailureHoldMs = 5 * 60 * 1000;
@@ -115,13 +115,13 @@ async function recoverSpool() {
   return ready;
 }
 
-async function sendToPrinter(printer, content, copies, jobId, textSize = "normal") {
+async function sendToPrinter(printer, content, copies, jobId) {
   if (printer.connectionType === "network") {
-    await printNetwork({ address: printer.address, port: printer.port }, content, copies, textSize);
+    await printNetwork({ address: printer.address, port: printer.port }, content, copies);
     return;
   }
   if (printer.connectionType === "system" || printer.connectionType === "usb") {
-    await printSystem({ address: printer.address }, content, copies, jobId, textSize);
+    await printSystem({ address: printer.address }, content, copies, jobId);
     return;
   }
   throw new Error(`connection type ${printer.connectionType} is not implemented by this agent`);
@@ -154,7 +154,7 @@ async function deliver(job) {
   try {
     await saveSpool(job, "claimed");
     await saveSpool(job, "printing");
-    await sendToPrinter(printer, job.renderedContent, job.copies, job.id, job.textSize);
+    await sendToPrinter(printer, job.renderedContent, job.copies, job.id);
   } catch (error) {
     await reportPrePrintFailure(job, printer, error);
     return;
@@ -293,7 +293,6 @@ async function heartbeat() {
         nativeOrderAlertAudio: nativeOrderAlertSupported() ? "pedeaqui-pedido.mp3" : null,
         watchdog: watchdogEnabled,
         selfUpdate: watchdogEnabled,
-        accessibleTextSize: true,
         paperWidthsMm: [58, 80],
       },
       printers: [...printers.values()],

@@ -60,7 +60,6 @@ export async function saveOrderPrintPreferencesAction(formData: FormData) {
     show_payment: checked(formData, "showPayment"),
     show_footer: checked(formData, "showFooter"),
     footer_text: nullable(formData, "footerText"),
-    text_size: (text(formData, "textSize") || "normal") as "normal" | "large" | "extra_large",
   });
   refresh();
 }
@@ -95,35 +94,24 @@ export async function linkProductStationAction(formData: FormData) {
   refresh();
 }
 
-export type AgentCreationState = {
-  token: string | null;
-  name: string | null;
-  error: string | null;
-  intentRevision: string | null;
-};
+export type AgentCreationState = { token: string | null; name: string | null; error: string | null };
 export async function createPrintAgentAction(_state: AgentCreationState, formData: FormData): Promise<AgentCreationState> {
   try {
-    const result = await PrintAgentAdminService.create(
-      text(formData, "name"),
-      text(formData, "idempotencyKey"),
-    );
+    const result = await PrintAgentAdminService.create(text(formData, "name"));
     refresh();
-    return { token: result.token, name: result.name, error: null, intentRevision: `${result.id}:${Date.now()}` };
+    return { token: result.token, name: result.name, error: null };
   } catch {
-    return { token: null, name: null, error: "Não foi possível preparar este computador para impressão. Tente novamente.", intentRevision: _state.intentRevision };
+    return { token: null, name: null, error: "Não foi possível preparar este computador para impressão. Tente novamente." };
   }
 }
 
 export async function reconnectPrintAgentAction(_state: AgentCreationState, formData: FormData): Promise<AgentCreationState> {
   try {
-    const result = await PrintAgentAdminService.reconnect(
-      text(formData, "agentId"),
-      text(formData, "idempotencyKey"),
-    );
+    const result = await PrintAgentAdminService.reconnect(text(formData, "agentId"));
     refresh();
-    return { token: result.token, name: result.name, error: null, intentRevision: `${result.id}:${Date.now()}` };
+    return { token: result.token, name: result.name, error: null };
   } catch {
-    return { token: null, name: null, error: "Não foi possível reconectar este computador. Tente novamente.", intentRevision: _state.intentRevision };
+    return { token: null, name: null, error: "Não foi possível reconectar este computador. Tente novamente." };
   }
 }
 

@@ -44,7 +44,6 @@ export const orderPrintPreferencesSchema = z.object({
   show_payment: z.boolean().default(true),
   show_footer: z.boolean().default(true),
   footer_text: z.string().trim().max(120).nullable().default(null),
-  text_size: z.enum(["normal", "large", "extra_large"]).default("normal"),
 });
 
 export const DEFAULT_ORDER_PRINT_PREFERENCES = orderPrintPreferencesSchema.parse({});
@@ -67,7 +66,6 @@ export function resolveOrderPrintPreferences(value: unknown): OrderPrintPreferen
     show_payment: source.show_payment ?? true,
     show_footer: source.show_footer ?? true,
     footer_text: source.footer_text ?? null,
-    text_size: source.text_size ?? "normal",
   });
 }
 
@@ -208,8 +206,7 @@ export function renderPrintDocument(
 ) {
   const payload = printPayloadSchema.parse(input);
   const preferences = resolveOrderPrintPreferences(preferencesInput);
-  const baseWidth = paperWidthMm === 58 ? 32 : 48;
-  const width = preferences.text_size === "extra_large" ? Math.floor(baseWidth / 2) : baseWidth;
+  const width = paperWidthMm === 58 ? 32 : 48;
   const out: string[] = [];
   if (reprint) { out.push(center("*** REIMPRESSAO ***", width)); out.push(line("*", width)); }
   out.push(center(`PEDIDO #${payload.order.display_number}`, width));

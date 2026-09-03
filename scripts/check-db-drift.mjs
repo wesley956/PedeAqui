@@ -10,21 +10,17 @@ function migrationPrefix(name) {
   return Number(match[1]);
 }
 
-function migrationName(name) {
-  return name.replace(/^\d+_/, "").replace(/\.sql$/, "");
-}
-
 export function inspectSqlHistory(fileNames) {
   const files = fileNames
     .filter((name) => name.endsWith(".sql"))
     .sort((a, b) => migrationPrefix(a) - migrationPrefix(b) || a.localeCompare(b));
-  const parsed = files.map((name) => ({ name, prefix: migrationPrefix(name), migrationName: migrationName(name) }));
+  const parsed = files.map((name) => ({ name, prefix: migrationPrefix(name) }));
   const counts = new Map();
   for (const item of parsed) counts.set(item.prefix, (counts.get(item.prefix) ?? 0) + 1);
   const max = Math.max(...parsed.map((item) => item.prefix));
   const duplicates = [...counts.entries()].filter(([, count]) => count > 1).map(([prefix]) => prefix);
   const missing = Array.from({ length: max }, (_, index) => index + 1).filter((prefix) => !counts.has(prefix));
-  return { files, parsed, duplicates, missing, max };
+  return { files, duplicates, missing, max };
 }
 
 export function validateProductionBaseline(baseline) {
@@ -99,35 +95,15 @@ export function localDriftErrors({ sqlFiles, baseline }) {
   if (history.missing.join(",") !== "17") {
     errors.push(`Lacunas históricas inesperadas: ${history.missing.join(",") || "nenhuma"}`);
   }
-
   const remoteTail = baseline.migrations.at(-1);
   if (!remoteTail) {
     errors.push("Baseline remoto não possui migrations.");
     return errors;
   }
-
-  // O SQL canônico é append-only e pode conter migrations novas ainda não promovidas.
-  // Por isso a migration que representa a cauda de produção precisa existir, mas não
-  // precisa ser o último arquivo local durante um PR de schema.
-  const productionTailFiles = history.parsed.filter((item) => item.migrationName === remoteTail[1]);
-  if (productionTailFiles.length !== 1) {
-    errors.push(
-      productionTailFiles.length === 0
-        ? `Migration da cauda de produção não existe no SQL canônico: ${remoteTail[1]}`
-        : `Migration da cauda de produção aparece mais de uma vez no SQL canônico: ${remoteTail[1]}`,
-    );
-    return errors;
+  const expectedSqlTail = `${history.max}_${remoteTail[1]}.sql`;
+  if (history.files.at(-1) !== expectedSqlTail) {
+    errors.push(`Cauda SQL inesperada: ${history.files.at(-1) ?? "nenhuma"}; esperado ${expectedSqlTail}`);
   }
-
-  const productionTailPrefix = productionTailFiles[0].prefix;
-  const unexpectedBeforeTail = history.parsed
-    .filter((item) => item.prefix <= productionTailPrefix)
-    .filter((item) => item.prefix !== 14 && item.prefix !== 17)
-    .filter((item, index, items) => index > 0 && item.prefix < items[index - 1].prefix);
-  if (unexpectedBeforeTail.length) {
-    errors.push(`Ordem SQL inválida antes da cauda de produção: ${unexpectedBeforeTail.map((item) => item.name).join(", ")}`);
-  }
-
   return errors;
 }
 
@@ -144,14 +120,8 @@ function runCli() {
   const base = JSON.parse(fs.readFileSync(baselinePath, "utf8"));
   const tail = fs.existsSync(tailPath) ? JSON.parse(fs.readFileSync(tailPath, "utf8")) : { migrations: [] };
   const baseline = mergeProductionBaseline(base, tail);
-  const sqlFiles = fs.readdirSync(sqlDir);
-  const localErrors = localDriftErrors({ sqlFiles, baseline });
+  const localErrors = localDriftErrors({ sqlFiles: fs.readdirSync(sqlDir), baseline });
   if (localErrors.length) return fail(localErrors);
-
-  const history = inspectSqlHistory(sqlFiles);
-  const productionTailName = baseline.migrations.at(-1)?.[1];
-  const productionTailPrefix = history.parsed.find((item) => item.migrationName === productionTailName)?.prefix ?? history.max;
-  const pendingLocal = history.parsed.filter((item) => item.prefix > productionTailPrefix);
 
   const remoteFileIndex = process.argv.indexOf("--remote-file");
   if (remoteFileIndex >= 0) {
@@ -161,12 +131,10 @@ function runCli() {
     const remoteErrors = compareMigrationHistory(baseline.migrations, actual);
     if (remoteErrors.length) return fail(remoteErrors);
     console.log(`DB_DRIFT: remoto confere com ${baseline.migrations.length} migrations versionadas.`);
-    if (pendingLocal.length) console.log(`DB_DRIFT: ${pendingLocal.length} migration(s) SQL local(is) aguardando promoção.`);
     return;
   }
 
   console.log(`DB_DRIFT: histórico local válido; baseline de produção possui ${baseline.migrations.length} migrations.`);
-  if (pendingLocal.length) console.log(`DB_DRIFT: ${pendingLocal.length} migration(s) SQL local(is) aguardando promoção.`);
   console.log("DB_DRIFT: comparação remota é somente leitura e roda no CI quando SUPABASE_DB_URL estiver configurado.");
 }
 

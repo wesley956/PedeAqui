@@ -180,12 +180,12 @@ $copies = [Math]::Max(1, [int]$env:PEDEAQUI_PRINT_COPIES)
 [PedeAquiRawPrinter]::Print($env:PEDEAQUI_PRINTER_NAME, $env:PEDEAQUI_PRINT_DOC_NAME, $bytes, $copies)
 `;
 
-export async function printSystem({ address }, text, copies = 1, jobId = null, textSize = "normal") {
+export async function printSystem({ address }, text, copies = 1, jobId = null) {
   requireWindows();
   const name = printerName(address);
   const safeJobId = String(jobId || "").replace(/[^a-zA-Z0-9-]/g, "").slice(0, 48);
   const documentName = safeJobId ? `PedeAqui:${safeJobId}` : "PedeAqui";
-  const payload = escposDocument(text, textSize).toString("base64");
+  const payload = escposDocument(text).toString("base64");
 
   await ensureSpoolerRunning();
   try {

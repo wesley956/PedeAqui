@@ -16,7 +16,6 @@
     "test:e2e": "vitest run tests/e2e-context-journeys.test.ts",
     "test:fluid-rollout": "vitest run tests/manual-delivery-flow.test.ts tests/delivery-operations.test.ts tests/operational-realtime-resilience.test.ts tests/operational-queues-completeness.test.ts tests/print-agent-token.test.ts tests/printing-simple-setup.test.ts tests/concurrency-contracts.test.ts tests/access-isolation-contracts.test.ts tests/commercial-plan-module-entitlements.test.ts tests/mobile-full-layout-qa.test.ts tests/full-accessibility-qa.test.ts tests/courier-route-residual-843.test.ts tests/fluid-rollout-gate-888.test.ts",
     "test:public-ux": "vitest run tests/public-ux-final-gate.test.ts tests/public-store-information.test.ts tests/modifier-quantity-contract.test.ts tests/public-complements.test.ts tests/public-cart-bar.test.ts tests/public-cart-edit.test.ts tests/progressive-checkout-ui.test.ts tests/public-checkout-simplification-798.test.ts tests/public-order-tracking-v2.test.ts tests/access-isolation-contracts.test.ts tests/full-accessibility-qa.test.ts tests/mobile-full-layout-qa.test.ts",
-    "check:routes": "node scripts/check-route-integrity.mjs",
     "db:drift": "node scripts/check-db-drift.mjs",
     "preflight:production": "node scripts/production-preflight.mjs"
   },

@@ -40,15 +40,6 @@
     ["20260830022346","subscription_renewal_job_secret"],
     ["20260830023050","subscription_renewal_scheduler"],
     ["20260830063248","subscription_contract_acceptance"],
-    ["20260830233136","commercial_flow_alignment"],
-    ["20260830235617","founder_condition_and_entitlement_alignment"],
-    ["20260830235902","module_request_approval_and_server_entitlements"],
-    ["20260831000919","subscription_trial_grace_and_payment_reactivation"],
-    ["20260831002929","public_order_subscription_guard"],
-    ["20260831003827","atomic_commercial_onboarding"],
-    ["20260901231340","product_experience_events"],
-    ["20260902053134","delivery_operation_levels"],
-    ["20260902053415","fix_commercial_onboarding_store_trial_assignment"],
-    ["20260902054003","payment_completion_policies"]
+    ["20260901062003","product_experience_events"]
   ]
 }

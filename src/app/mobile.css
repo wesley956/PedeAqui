@@ -41,12 +41,12 @@
     gap: var(--space-2);
   }
   .app-topbar[data-driver-only="true"] .theme-selector-compact .theme-selector-select {
-    min-height: 44px;
-    width: 44px;
-    max-width: 44px;
+    min-height: 40px;
+    width: 40px;
+    max-width: 40px;
   }
   .app-topbar[data-driver-only="true"] .app-topbar-actions button {
-    min-height: 44px;
+    min-height: 40px;
     padding-inline: var(--space-3);
   }
 }

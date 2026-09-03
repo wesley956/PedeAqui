@@ -53,12 +53,6 @@ describe("full mobile layout QA [314]", () => {
     expect(courier).toContain("@media(pointer:coarse)");
   });
 
-  it("keeps narrow driver-header controls at least 44px for touch", () => {
-    const mobileCss = read("src/app/mobile.css");
-    expect(mobileCss).toContain('.app-topbar[data-driver-only="true"] .theme-selector-compact .theme-selector-select { min-height: 44px; width: 44px; max-width: 44px; }');
-    expect(mobileCss).toContain('.app-topbar[data-driver-only="true"] .app-topbar-actions button { min-height: 44px;');
-  });
-
   it("loads mobile overrides globally after shell rules", () => {
     const layout = read("src/app/layout.tsx");
     expect(layout.indexOf('import "./mobile.css"')).toBeGreaterThan(layout.indexOf('import "./shell.css"'));
