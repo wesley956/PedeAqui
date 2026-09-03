@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { classifyFailure } from "@/server/observability/failure-classification";
 
 const root = process.cwd();
 const read = (relative: string) => fs.readFileSync(path.join(root, relative), "utf8");
@@ -41,5 +42,24 @@ describe("stabilization #826 interaction feedback contracts", () => {
     expect(feedback).toContain("loading={loading}");
     expect(feedback).toContain("onClick={onConfirm}");
     expect(feedback).toContain("onClick={onClose}");
+  });
+
+  it.each([
+    [{ status: 422 }, "validation", false, "Revise os dados informados e tente novamente."],
+    [{ name: "TimeoutError" }, "timeout", true, "O serviço demorou mais que o esperado. Tente novamente em instantes."],
+    [{ name: "FetchError" }, "dependency", true, "Um serviço necessário está indisponível no momento. Tente novamente em instantes."],
+    [new Error("unexpected implementation detail"), "internal", false, "Não foi possível concluir a operação. Tente novamente."],
+  ] as const)("classifies validation, timeout, dependency and unexpected failures for the operator", (error, kind, retryable, userMessage) => {
+    expect(classifyFailure(error)).toEqual({ kind, retryable, userMessage });
+  });
+
+  it("keeps technical failure classification in server logs while exposing only friendly fallback text", () => {
+    const actions = read("src/features/delivery/actions.ts");
+    expect(actions).toContain("classifyFailure(error).userMessage");
+    expect(actions).toContain('logger.error("delivery_action_failed"');
+    expect(actions).toContain("failureKind: classification.kind");
+    expect(actions).toContain("failureCode: failureCode(error)");
+    expect(actions).toContain("retryable: classification.retryable");
+    expect(actions).not.toContain("return raw;");
   });
 });
