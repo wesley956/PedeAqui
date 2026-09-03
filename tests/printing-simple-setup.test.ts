@@ -73,15 +73,24 @@ describe("simple printing setup", () => {
     expect(config).toContain("if (changed) {");
   });
 
-  it("offers an assisted installer while keeping credentials isolated to the Print Agent", () => {
+  it("replays Print Agent creation/reconnect without storing plaintext credentials", () => {
     const creator = read("src/features/printing/agent-token-creator.tsx");
     const admin = read("src/server/printing/print-agent-admin-service.ts");
+    const migration = read("supabase/sql/185_print_agent_credential_idempotency.sql");
     expect(creator).toContain("Baixar instalador assistido (Windows)");
     expect(creator).toContain("Configuração manual");
     expect(creator).toContain("launch.vbs");
     expect(creator).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
-    expect(admin).toContain("reconnect(agentId");
+    expect(migration).toContain("credential_version");
+    expect(migration).toContain("print_agent_create_idempotent_internal");
+    expect(migration).toContain("pg_advisory_xact_lock");
+    expect(migration).toContain("created_at >= now() - interval '15 minutes'");
+    expect(admin).toContain("derivePrintAgentToken");
+    expect(admin).toContain('admin.rpc("print_agent_create_idempotent_internal"');
+    expect(admin).toContain("CREDENTIAL_REPLAY_WINDOW_MS");
+    expect(admin).toContain('.eq("credential_version", currentCredentialVersion)');
     expect(admin).toContain("credentialRotated");
+    expect(admin).not.toContain("createPrintAgentToken()");
   });
 
   it("installs a least-privilege boot task and validates the first server communication", () => {
