@@ -10,12 +10,14 @@ describe("Print Agent credentials", () => {
     expect(hashPrintAgentToken(token)).toBe(hashPrintAgentToken(token));
   });
 
-  it("derives the same opaque credential for the same generation and rotates across versions", () => {
+  it("derives the same opaque credential for the same intent and rotates for a new intent", () => {
     const agentId = "11111111-1111-4111-8111-111111111111";
     const secret = "server-only-test-secret-that-is-long-enough";
-    const first = derivePrintAgentToken(agentId, 1, secret);
-    expect(first).toBe(derivePrintAgentToken(agentId, 1, secret));
-    expect(first).not.toBe(derivePrintAgentToken(agentId, 2, secret));
+    const firstIntent = "11111111-2222-4333-8444-555555555555";
+    const secondIntent = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee";
+    const first = derivePrintAgentToken(agentId, firstIntent, secret);
+    expect(first).toBe(derivePrintAgentToken(agentId, firstIntent, secret));
+    expect(first).not.toBe(derivePrintAgentToken(agentId, secondIntent, secret));
     expect(first.length).toBeGreaterThan(30);
     expect(hashPrintAgentToken(first)).toMatch(/^[0-9a-f]{64}$/);
   });
