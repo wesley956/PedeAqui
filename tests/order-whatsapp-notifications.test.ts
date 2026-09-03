@@ -19,6 +19,13 @@ import {
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
+const identity = {
+  organizationId: "11111111-1111-4111-8111-111111111111",
+  storeId: "22222222-2222-4222-8222-222222222222",
+  orderId: "33333333-3333-4333-8333-333333333333",
+  authoritativeEventId: "44444444-4444-4444-8444-444444444444",
+} as const;
+
 describe("[329] order notification model", () => {
   it("requires the global switch and the specific notification switch", () => {
     expect(notificationEnabled({ order_notifications_enabled: false, notify_order_received: true }, "order_received")).toBe(false);
@@ -27,12 +34,16 @@ describe("[329] order notification model", () => {
     expect(notificationEnabled({ order_notifications_enabled: true, notify_order_canceled: true }, "order_canceled")).toBe(true);
   });
 
-  it("uses stable idempotency keys per order and notification type", () => {
-    const first = notificationClientMessageId("order-1", "out_for_delivery");
-    expect(first).toBe(notificationClientMessageId("order-1", "out_for_delivery"));
-    expect(first).not.toBe(notificationClientMessageId("order-1", "delivered"));
-    expect(first).not.toBe(notificationClientMessageId("order-2", "out_for_delivery"));
-    expect(notificationClientMessageId("order-1", "order_canceled")).toBe("order-notification:v1:order-1:order_canceled");
+  it("keys outbound idempotency by tenant, store, order, automation and authoritative event", () => {
+    const first = notificationClientMessageId({ ...identity, type: "out_for_delivery" });
+    expect(first).toBe(notificationClientMessageId({ ...identity, type: "out_for_delivery" }));
+    expect(first.length).toBeLessThanOrEqual(180);
+    expect(first).not.toBe(notificationClientMessageId({ ...identity, type: "delivered" }));
+    expect(first).not.toBe(notificationClientMessageId({ ...identity, storeId: "55555555-5555-4555-8555-555555555555", type: "out_for_delivery" }));
+    expect(first).not.toBe(notificationClientMessageId({ ...identity, organizationId: "66666666-6666-4666-8666-666666666666", type: "out_for_delivery" }));
+    expect(first).not.toBe(notificationClientMessageId({ ...identity, authoritativeEventId: "77777777-7777-4777-8777-777777777777", type: "out_for_delivery" }));
+    expect(first).toContain("order-wa:v2");
+    expect(first).toContain(identity.authoritativeEventId.replaceAll("-", ""));
   });
 
   it("builds a one-time URL exchange path and useful customer messages", () => {
@@ -120,13 +131,22 @@ describe("[329] persistence and safety contracts", () => {
     expect(worker).not.toContain("order_transition_internal");
   });
 
-  it("deduplicates each notification and reuses the existing conversation outbound layer", () => {
+  it("deduplicates semantically and ties outbound replay to the authoritative event", () => {
     expect(migration).toContain("unique (organization_id, order_id, notification_type)");
     expect(customizationMigration).toContain("on conflict (organization_id, order_id, notification_type) do nothing");
-    expect(worker).toContain("conversation_resolve_outbound_internal");
+    expect(worker).toContain("domain_event_id: string | null");
+    expect(worker).toContain('errorCode: "authoritative_event_missing"');
+    expect(worker).toContain("authoritativeEventId: job.domain_event_id");
+    expect(worker).toContain("organizationId: job.organization_id");
+    expect(worker).toContain("storeId: job.store_id");
     expect(worker).toContain("conversation_create_outbound_internal");
-    expect(worker).toContain("conversation_mark_outbound_result_internal");
-    expect(worker).toContain("notificationClientMessageId");
+  });
+
+  it("scopes order, settings, context and conversation dispatch to the claimed tenant/store", () => {
+    expect(worker).toContain('.eq("organization_id", job.organization_id)');
+    expect(worker).toContain('.eq("store_id", job.store_id)');
+    expect(worker).toContain("WhatsAppAutomationCapabilityService.loadForStore(job.organization_id, job.store_id)");
+    expect(worker).toContain("p_store_id: job.store_id");
   });
 
   it("dispatches first attempts after the authoritative response without blocking it", () => {

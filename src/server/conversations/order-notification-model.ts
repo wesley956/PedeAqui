@@ -100,8 +100,27 @@ export function notificationEnabled(settings: OrderNotificationFlags, type: Orde
   return Boolean(settings.order_notifications_enabled && settings[flagByType[type]]);
 }
 
-export function notificationClientMessageId(orderId: string, type: OrderNotificationType) {
-  return `order-notification:v1:${orderId}:${type}`;
+function compactId(value: string) {
+  return value.replaceAll("-", "");
+}
+
+export function notificationClientMessageId(input: {
+  organizationId: string;
+  storeId: string;
+  orderId: string;
+  type: OrderNotificationType;
+  authoritativeEventId: string;
+}) {
+  const key = [
+    "order-wa:v2",
+    compactId(input.organizationId),
+    compactId(input.storeId),
+    compactId(input.orderId),
+    input.type,
+    compactId(input.authoritativeEventId),
+  ].join(":");
+  if (key.length > 180) throw new Error("Order notification idempotency key is too long");
+  return key;
 }
 
 export function buildOrderTrackingUrl(appUrl: string, slug: string, orderId: string, accessToken: string) {
