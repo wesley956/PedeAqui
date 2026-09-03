@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+// Keep this contract on the current main so the migration is validated with the stabilized npm resolution.
 const sql = fs.readFileSync(
   path.join(process.cwd(), "supabase/sql/187_whatsapp_automation_cancel_and_custom_templates.sql"),
   "utf8",
