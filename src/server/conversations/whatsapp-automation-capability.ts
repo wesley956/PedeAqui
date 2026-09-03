@@ -109,6 +109,12 @@ export const WHATSAPP_ORDER_AUTOMATIONS: readonly AutomationDefinition[] = [
     module: "deliveries",
     requiresDeliveryOperation: true,
   },
+  {
+    key: "order_canceled",
+    label: "Pedido cancelado",
+    description: "Avisa somente depois de um cancelamento autoritativo persistido no PedeAqui.",
+    triggerLabel: "Quando o pedido é cancelado",
+  },
 ] as const;
 
 function labelFor(definition: AutomationDefinition, businessType: BusinessType) {
