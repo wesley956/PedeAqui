@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bearerToken, createPrintAgentToken, hashPrintAgentToken } from "@/server/printing/agent-token";
+import { bearerToken, createPrintAgentToken, derivePrintAgentToken, hashPrintAgentToken } from "@/server/printing/agent-token";
 import { effectivePrintHealth } from "@/server/printing/printer-health";
 
 describe("Print Agent credentials", () => {
@@ -8,6 +8,16 @@ describe("Print Agent credentials", () => {
     expect(token.length).toBeGreaterThan(30);
     expect(hashPrintAgentToken(token)).toMatch(/^[0-9a-f]{64}$/);
     expect(hashPrintAgentToken(token)).toBe(hashPrintAgentToken(token));
+  });
+
+  it("derives the same opaque credential for the same generation and rotates across versions", () => {
+    const agentId = "11111111-1111-4111-8111-111111111111";
+    const secret = "server-only-test-secret-that-is-long-enough";
+    const first = derivePrintAgentToken(agentId, 1, secret);
+    expect(first).toBe(derivePrintAgentToken(agentId, 1, secret));
+    expect(first).not.toBe(derivePrintAgentToken(agentId, 2, secret));
+    expect(first.length).toBeGreaterThan(30);
+    expect(hashPrintAgentToken(first)).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it("accepts only bearer authorization syntax", () => {
