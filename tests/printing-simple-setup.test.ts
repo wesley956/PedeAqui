@@ -82,9 +82,12 @@ describe("simple printing setup", () => {
     expect(creator).toContain("Configuração manual");
     expect(creator).toContain("launch.vbs");
     expect(creator).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
-    expect(creator).toContain("useIntentKey(state.token)");
+    expect(creator).toContain("useId()");
+    expect(creator).toContain("intentKey(");
+    expect(creator).toContain("state.intentRevision");
     expect(creator).toContain('name="idempotencyKey" value={idempotencyKey}');
     expect(actions).toContain('text(formData, "idempotencyKey")');
+    expect(actions).toContain("intentRevision");
     expect(migration).toContain("credential_version");
     expect(migration).toContain("print_agent_create_idempotent_internal");
     expect(migration).toContain("print_agent_reconnect_idempotent_internal");
