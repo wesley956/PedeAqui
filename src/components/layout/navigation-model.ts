@@ -1,3 +1,5 @@
+import { isModuleKey, type ModuleKey } from "@/modules/module-catalog";
+import { canNavigateToModule, type ModuleRbacDecision } from "@/modules/module-rbac";
 import { PERMISSIONS, type PermissionKey } from "@/server/access/permissions";
 
 export type OperationalContext =
@@ -98,4 +100,22 @@ export function contextualNavigation(contexts: readonly OperationalContext[], gr
   return NAVIGATION_MODULES
     .map((module) => ({ ...module, priority: priorityForModule(contexts, module.key) }))
     .filter((module) => module.priority !== "hidden" && canSurfaceModule(module, grantedPermissions, platformAuthorized));
+}
+
+/**
+ * Rollout-safe navigation gate. Existing navigation remains untouched until callers explicitly provide
+ * module RBAC decisions from the new resolver; once provided, the same decision used by server guards
+ * controls whether a module can surface in navigation.
+ */
+export function contextualNavigationWithModuleRbac(
+  contexts: readonly OperationalContext[],
+  grantedPermissions: ReadonlySet<string>,
+  moduleDecisions: Readonly<Partial<Record<ModuleKey, ModuleRbacDecision>>>,
+  platformAuthorized = false,
+) {
+  return contextualNavigation(contexts, grantedPermissions, platformAuthorized).filter((module) => {
+    if (!isModuleKey(module.key)) return true;
+    const decision = moduleDecisions[module.key];
+    return decision ? canNavigateToModule(decision) : true;
+  });
 }
