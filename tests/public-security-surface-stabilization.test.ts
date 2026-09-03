@@ -59,10 +59,11 @@ describe("stabilization #820 public security surface", () => {
   });
 
   it("keeps stabilization diagnostics and idempotency functions backend-only", () => {
-    const idempotency = read("supabase/sql/181_stabilization_driver_idempotency_and_index_hygiene.sql");
-    const integrity = read("supabase/sql/182_stabilization_data_integrity_diagnostics.sql");
+    const idempotency = read("supabase/sql/183_stabilization_driver_idempotency_and_index_hardening.sql");
+    const integrity = read("supabase/sql/184_stabilization_data_integrity_diagnostics.sql");
 
     for (const sql of [idempotency, integrity]) {
+      expect(sql).toContain("set search_path = ''");
       expect(sql).toMatch(/revoke\s+all\s+on\s+function[\s\S]+from\s+public/gi);
       expect(sql).toMatch(/revoke[\s\S]+from\s+anon/gi);
       expect(sql).toMatch(/revoke[\s\S]+from\s+authenticated/gi);
