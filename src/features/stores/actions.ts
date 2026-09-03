@@ -57,9 +57,9 @@ export async function saveStoreProfileAction(formData: FormData) {
     tiktokUrl: field(formData, "tiktokUrl"),
   });
 
-  revalidatePath("/inicio");
+  revalidatePath("/dashboard");
   revalidatePath("/configuracoes");
   revalidatePath("/configuracoes/loja");
   revalidatePath(`/m/${store.slug}`);
-  redirect("/inicio?guia=1");
+  redirect("/dashboard?guia=1");
 }

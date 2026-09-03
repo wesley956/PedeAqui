@@ -69,7 +69,9 @@ export function DeliveryOperationForm({
 
 export function DriverCreateForm() {
   const [state, action, pending] = useActionState(createDriverAction, initial);
+  const key = useMemo(() => crypto.randomUUID(), []);
   return <form action={action} className={styles.form}>
+    <input type="hidden" name="idempotencyKey" value={key} />
     <input name="name" required minLength={2} maxLength={100} placeholder="Nome do entregador" className={styles.input} />
     <input name="phone" placeholder="Telefone" className={styles.input} />
     <label className={styles.form}><span className={styles.driverMeta}>CAPACIDADE SIMULTÂNEA</span><input name="maxActiveDeliveries" type="number" min={1} max={20} defaultValue={3} className={styles.input} /></label>
@@ -81,7 +83,9 @@ export function DriverCreateForm() {
 
 export function DriverUpdateForm({ driver }: { driver: { id: string; name: string; phone: string | null; active: boolean; on_duty: boolean; max_active_deliveries: number; activeDeliveries: number } }) {
   const [state, action, pending] = useActionState(updateDriverAction, initial);
+  const key = useMemo(() => crypto.randomUUID(), [driver.id]);
   return <form action={action} className={styles.form}>
+    <input type="hidden" name="idempotencyKey" value={key} />
     <input type="hidden" name="driverId" value={driver.id} />
     <input name="name" required defaultValue={driver.name} className={styles.input} />
     <input name="phone" defaultValue={driver.phone ?? ""} placeholder="Telefone" className={styles.input} />

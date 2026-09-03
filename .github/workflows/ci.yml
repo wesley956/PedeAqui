@@ -62,6 +62,9 @@ jobs:
           PREFLIGHT_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npm run preflight:production
 
+      - name: Route and internal-link integrity
+        run: npm run check:routes
+
       - name: Lint
         run: npm run lint
 
