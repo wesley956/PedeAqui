@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { PrintAgentAdminService } from "@/server/printing/print-agent-admin-service";
 import { PrintConfigService } from "@/server/printing/print-config-service";
+import { PrintLineSpacingService } from "@/server/printing/print-line-spacing-service";
 import { PrintQueueService } from "@/server/printing/print-queue-service";
 
 function text(formData: FormData, name: string) { return String(formData.get(name) ?? "").trim(); }
@@ -62,6 +63,7 @@ export async function saveOrderPrintPreferencesAction(formData: FormData) {
     footer_text: nullable(formData, "footerText"),
     text_size: (text(formData, "textSize") || "normal") as "normal" | "large" | "extra_large",
   });
+  await PrintLineSpacingService.save(text(formData, "lineSpacing") || "normal");
   refresh();
 }
 
