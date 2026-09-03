@@ -17,10 +17,17 @@ function textBytes(text) {
   return Buffer.from(bytes);
 }
 
-export function escposDocument(text) {
+function textSizeByte(textSize) {
+  if (textSize === "large") return 0x10;
+  if (textSize === "extra_large") return 0x11;
+  return 0x00;
+}
+
+export function escposDocument(text, textSize = "normal") {
   return Buffer.concat([
-    Buffer.from([0x1b,0x40,0x1b,0x74,0x02,0x1b,0x61,0x00]),
-    textBytes(text), Buffer.from([0x0a,0x0a,0x1d,0x56,0x00]),
+    Buffer.from([0x1b,0x40,0x1b,0x74,0x02,0x1b,0x61,0x00,0x1d,0x21,textSizeByte(textSize)]),
+    textBytes(text),
+    Buffer.from([0x1d,0x21,0x00,0x0a,0x0a,0x1d,0x56,0x00]),
   ]);
 }
 
@@ -34,9 +41,9 @@ export async function probeNetwork({ address, port }, timeoutMs = 2500) {
   });
 }
 
-export async function printNetwork({ address, port }, text, copies = 1) {
+export async function printNetwork({ address, port }, text, copies = 1, textSize = "normal") {
   if (!address || !port) throw new Error("network printer requires address and port");
-  const payload = escposDocument(text);
+  const payload = escposDocument(text, textSize);
   for (let copy = 0; copy < copies; copy += 1) {
     await new Promise((resolve, reject) => {
       const socket = net.createConnection({ host: address, port: Number(port) });

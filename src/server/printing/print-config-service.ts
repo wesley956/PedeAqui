@@ -29,6 +29,13 @@ const printerInput = z.object({
     ctx.addIssue({ code: "custom", message: "Endereço e porta são obrigatórios para impressora de rede." });
   }
 });
+const printerCreationResult = z.object({
+  id: uuid,
+  name: z.string(),
+  connection_type: z.string(),
+  paper_width_mm: z.number().int(),
+  created: z.boolean(),
+});
 const quickDetectedPrinterInput = z.object({
   agentId: z.string().uuid(),
   printerName: z.string().trim().min(2).max(255),
@@ -66,7 +73,7 @@ export class PrintConfigService {
         .select("id, name, active")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).order("name"),
       admin.from("store_print_preferences")
-        .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text")
+        .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
     ]);
     if (printers.error) throw printers.error;
@@ -88,11 +95,31 @@ export class PrintConfigService {
     const context = await authorize(PERMISSIONS.PRINTING_MANAGE);
     const storeId = requireStore(context.storeId);
     const admin = createAdminClient();
+    const findExisting = () => admin.from("production_stations")
+      .select("id, name, code, kind")
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .eq("code", values.code)
+      .maybeSingle();
+    const existingResult = await findExisting();
+    if (existingResult.error) throw existingResult.error;
+    if (existingResult.data) {
+      if (existingResult.data.name === values.name && existingResult.data.kind === values.kind) return existingResult.data;
+      throw new Error("Já existe uma estação com este código nesta unidade.");
+    }
+
     const { data, error } = await admin.from("production_stations").insert({
       organization_id: context.organizationId, store_id: storeId, name: values.name,
       code: values.code, kind: values.kind, created_by: context.userId,
     }).select("id, name, code, kind").single();
-    if (error) throw error;
+    if (error) {
+      if (error.code === "23505") {
+        const replay = await findExisting();
+        if (replay.error) throw replay.error;
+        if (replay.data?.name === values.name && replay.data.kind === values.kind) return replay.data;
+      }
+      throw error;
+    }
     await AuditService.record(context, { action: "print.station_created", entityType: "production_station", entityId: data.id, after: data });
     return data;
   }
@@ -110,16 +137,30 @@ export class PrintConfigService {
       const { data } = await admin.from("printers").select("id").eq("id", values.fallbackPrinterId).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
       if (!data) throw new Error("Impressora de fallback inválida para esta unidade");
     }
-    const { data, error } = await admin.from("printers").insert({
-      organization_id: context.organizationId, store_id: storeId, agent_id: values.agentId ?? null,
-      name: values.name, connection_type: values.connectionType,
-      connection_address: values.connectionAddress || null, connection_port: values.connectionPort ?? null,
-      paper_width_mm: values.paperWidthMm, default_copies: values.defaultCopies,
-      fallback_printer_id: values.fallbackPrinterId ?? null, created_by: context.userId,
-    }).select("id, name, connection_type, paper_width_mm").single();
+    const { data, error } = await admin.rpc("print_create_printer_idempotent_internal", {
+      p_store_id: storeId,
+      p_name: values.name,
+      p_connection_type: values.connectionType,
+      p_connection_address: values.connectionAddress || null,
+      p_connection_port: values.connectionPort ?? null,
+      p_paper_width_mm: values.paperWidthMm,
+      p_default_copies: values.defaultCopies,
+      p_agent_id: values.agentId ?? null,
+      p_fallback_printer_id: values.fallbackPrinterId ?? null,
+      p_actor_user_id: context.userId,
+    });
     if (error) throw error;
-    await AuditService.record(context, { action: "print.printer_created", entityType: "printer", entityId: data.id, after: data });
-    return data;
+    const result = printerCreationResult.parse(data);
+    const printer = {
+      id: result.id,
+      name: result.name,
+      connection_type: result.connection_type,
+      paper_width_mm: result.paper_width_mm,
+    };
+    if (result.created) {
+      await AuditService.record(context, { action: "print.printer_created", entityType: "printer", entityId: result.id, after: printer });
+    }
+    return printer;
   }
 
   static async updatePrinterDefaultCopies(printerId: string, defaultCopies: number) {
@@ -133,6 +174,7 @@ export class PrintConfigService {
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (readError) throw readError;
     if (!before) throw new Error("Impressora não encontrada nesta unidade");
+    if (Number(before.default_copies) === copies) return { ...before, default_copies: copies };
     const { data, error } = await admin.from("printers")
       .update({ default_copies: copies, updated_at: new Date().toISOString() })
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId)
@@ -154,9 +196,11 @@ export class PrintConfigService {
     const storeId = requireStore(context.storeId);
     const admin = createAdminClient();
     const { data: before, error: readError } = await admin.from("store_print_preferences")
-      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text")
+      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size")
       .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (readError) throw readError;
+    const desired = resolveOrderPrintPreferences(values);
+    if (before && JSON.stringify(resolveOrderPrintPreferences(before)) === JSON.stringify(desired)) return desired;
     const row = {
       organization_id: context.organizationId,
       store_id: storeId,
@@ -166,7 +210,7 @@ export class PrintConfigService {
     };
     const { data, error } = await admin.from("store_print_preferences")
       .upsert(row, { onConflict: "store_id" })
-      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text")
+      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size")
       .single();
     if (error) throw error;
     await AuditService.record(context, {
@@ -184,6 +228,7 @@ export class PrintConfigService {
     const context = await authorize(PERMISSIONS.PRINTING_MANAGE);
     const storeId = requireStore(context.storeId);
     const admin = createAdminClient();
+    let changed = false;
 
     const { data: agent, error: agentError } = await admin.from("print_agents")
       .select("id, name, active, capabilities")
@@ -197,8 +242,8 @@ export class PrintConfigService {
       throw new Error("A impressora escolhida não foi detectada por este computador");
     }
 
-    const { data: existing, error: existingError } = await admin.from("printers")
-      .select("id, name, active")
+    const findSystemPrinter = () => admin.from("printers")
+      .select("id, name, active, paper_width_mm, last_error")
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
       .eq("agent_id", agent.id)
@@ -206,19 +251,25 @@ export class PrintConfigService {
       .eq("connection_address", values.printerName)
       .limit(1)
       .maybeSingle();
-    if (existingError) throw existingError;
+    const existingResult = await findSystemPrinter();
+    if (existingResult.error) throw existingResult.error;
 
     let printer: { id: string; name: string };
-    if (existing) {
-      const { data, error } = await admin.from("printers")
-        .update({ active: true, paper_width_mm: values.paperWidthMm, last_error: null, updated_at: new Date().toISOString() })
-        .eq("id", existing.id)
-        .eq("organization_id", context.organizationId)
-        .eq("store_id", storeId)
-        .select("id, name")
-        .single();
-      if (error) throw error;
-      printer = data;
+    if (existingResult.data) {
+      if (existingResult.data.active && Number(existingResult.data.paper_width_mm) === values.paperWidthMm && !existingResult.data.last_error) {
+        printer = { id: existingResult.data.id, name: existingResult.data.name };
+      } else {
+        const { data, error } = await admin.from("printers")
+          .update({ active: true, paper_width_mm: values.paperWidthMm, last_error: null, updated_at: new Date().toISOString() })
+          .eq("id", existingResult.data.id)
+          .eq("organization_id", context.organizationId)
+          .eq("store_id", storeId)
+          .select("id, name")
+          .single();
+        if (error) throw error;
+        printer = data;
+        changed = true;
+      }
     } else {
       const { data, error } = await admin.from("printers").insert({
         organization_id: context.organizationId,
@@ -232,29 +283,46 @@ export class PrintConfigService {
         active: true,
         created_by: context.userId,
       }).select("id, name").single();
-      if (error) throw error;
-      printer = data;
+      if (error) {
+        if (error.code === "23505") {
+          const replay = await findSystemPrinter();
+          if (replay.error) throw replay.error;
+          if (!replay.data) throw error;
+          printer = { id: replay.data.id, name: replay.data.name };
+        } else {
+          throw error;
+        }
+      } else {
+        printer = data;
+        changed = true;
+      }
     }
 
-    const { data: existingStation, error: stationReadError } = await admin.from("production_stations")
-      .select("id, name, active")
+    const findDefaultStation = () => admin.from("production_stations")
+      .select("id, name, active, auto_print")
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
       .eq("code", "pedidos")
       .maybeSingle();
-    if (stationReadError) throw stationReadError;
+    const existingStationResult = await findDefaultStation();
+    if (existingStationResult.error) throw existingStationResult.error;
 
     let station: { id: string; name: string };
-    if (existingStation) {
-      const { data, error } = await admin.from("production_stations")
-        .update({ active: true, auto_print: true, updated_at: new Date().toISOString() })
-        .eq("id", existingStation.id)
-        .eq("organization_id", context.organizationId)
-        .eq("store_id", storeId)
-        .select("id, name")
-        .single();
-      if (error) throw error;
-      station = data;
+    if (existingStationResult.data) {
+      if (existingStationResult.data.active && existingStationResult.data.auto_print) {
+        station = { id: existingStationResult.data.id, name: existingStationResult.data.name };
+      } else {
+        const { data, error } = await admin.from("production_stations")
+          .update({ active: true, auto_print: true, updated_at: new Date().toISOString() })
+          .eq("id", existingStationResult.data.id)
+          .eq("organization_id", context.organizationId)
+          .eq("store_id", storeId)
+          .select("id, name")
+          .single();
+        if (error) throw error;
+        station = data;
+        changed = true;
+      }
     } else {
       const { data, error } = await admin.from("production_stations").insert({
         organization_id: context.organizationId,
@@ -266,27 +334,51 @@ export class PrintConfigService {
         auto_print: true,
         created_by: context.userId,
       }).select("id, name").single();
-      if (error) throw error;
-      station = data;
+      if (error) {
+        if (error.code === "23505") {
+          const replay = await findDefaultStation();
+          if (replay.error) throw replay.error;
+          if (!replay.data) throw error;
+          station = { id: replay.data.id, name: replay.data.name };
+        } else {
+          throw error;
+        }
+      } else {
+        station = data;
+        changed = true;
+      }
     }
 
-    const { error: linkError } = await admin.from("station_printers").upsert({
-      organization_id: context.organizationId,
-      store_id: storeId,
-      station_id: station.id,
-      printer_id: printer.id,
-      priority: 100,
-      copies: null,
-      active: true,
-    }, { onConflict: "station_id,printer_id" });
-    if (linkError) throw linkError;
+    const { data: currentLink, error: currentLinkError } = await admin.from("station_printers")
+      .select("priority, copies, active")
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .eq("station_id", station.id)
+      .eq("printer_id", printer.id)
+      .maybeSingle();
+    if (currentLinkError) throw currentLinkError;
+    if (!currentLink || Number(currentLink.priority) !== 100 || currentLink.copies !== null || !currentLink.active) {
+      const { error: linkError } = await admin.from("station_printers").upsert({
+        organization_id: context.organizationId,
+        store_id: storeId,
+        station_id: station.id,
+        printer_id: printer.id,
+        priority: 100,
+        copies: null,
+        active: true,
+      }, { onConflict: "station_id,printer_id" });
+      if (linkError) throw linkError;
+      changed = true;
+    }
 
-    await AuditService.record(context, {
-      action: "print.quick_setup_completed",
-      entityType: "printer",
-      entityId: printer.id,
-      after: { agentId: agent.id, printerName: printer.name, stationId: station.id, paperWidthMm: values.paperWidthMm },
-    });
+    if (changed) {
+      await AuditService.record(context, {
+        action: "print.quick_setup_completed",
+        entityType: "printer",
+        entityId: printer.id,
+        after: { agentId: agent.id, printerName: printer.name, stationId: station.id, paperWidthMm: values.paperWidthMm },
+      });
+    }
     return { printer, station };
   }
 
@@ -301,6 +393,15 @@ export class PrintConfigService {
     if (!station.data || !printer.data) throw new Error("Estação ou impressora não pertence à unidade atual");
     const safePriority = z.number().int().min(0).max(10000).parse(priority);
     const safeCopies = copies === null ? null : copiesInput.parse(copies);
+    const { data: existing, error: readError } = await admin.from("station_printers")
+      .select("priority, copies, active")
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .eq("station_id", station.data.id)
+      .eq("printer_id", printer.data.id)
+      .maybeSingle();
+    if (readError) throw readError;
+    if (existing && Number(existing.priority) === safePriority && existing.copies === safeCopies && existing.active) return;
     const { error } = await admin.from("station_printers").upsert({
       organization_id: context.organizationId, store_id: storeId,
       station_id: station.data.id, printer_id: printer.data.id,
@@ -319,11 +420,23 @@ export class PrintConfigService {
       admin.from("production_stations").select("id").eq("id", uuid.parse(stationId)).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
     ]);
     if (!product.data || !station.data) throw new Error("Produto ou estação não pertence à unidade atual");
-    const { error } = await admin.from("product_production_stations").upsert({
+    const { data: existing, error: readError } = await admin.from("product_production_stations")
+      .select("product_id")
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .eq("product_id", product.data.id)
+      .eq("station_id", station.data.id)
+      .maybeSingle();
+    if (readError) throw readError;
+    if (existing) return;
+    const { error } = await admin.from("product_production_stations").insert({
       organization_id: context.organizationId, store_id: storeId,
       product_id: product.data.id, station_id: station.data.id,
-    }, { onConflict: "product_id,station_id" });
-    if (error) throw error;
+    });
+    if (error) {
+      if (error.code === "23505") return;
+      throw error;
+    }
     await AuditService.record(context, { action: "print.product_station_linked", entityType: "product", entityId: product.data.id, after: { stationId: station.data.id } });
   }
 }
