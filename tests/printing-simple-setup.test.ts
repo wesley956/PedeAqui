@@ -73,19 +73,24 @@ describe("simple printing setup", () => {
     expect(config).toContain("if (changed) {");
   });
 
-  it("replays Print Agent creation/reconnect by explicit intent without storing plaintext credentials", () => {
-    const creator = read("src/features/printing/agent-token-creator.tsx");
+  it("replays Print Agent creation/reconnect by a fresh server-seeded intent without storing plaintext credentials", () => {
+    const wrapper = read("src/features/printing/agent-token-creator.tsx");
+    const creator = read("src/features/printing/agent-token-creator-client.tsx");
     const actions = read("src/features/printing/actions.ts");
     const admin = read("src/server/printing/print-agent-admin-service.ts");
     const migration = read("supabase/sql/185_print_agent_credential_idempotency.sql");
+    expect(wrapper).toContain('from "node:crypto"');
+    expect(wrapper).toContain("randomUUID()");
+    expect(wrapper).toContain("intentSeed={randomUUID()}");
     expect(creator).toContain("Baixar instalador assistido (Windows)");
     expect(creator).toContain("Configuração manual");
     expect(creator).toContain("launch.vbs");
     expect(creator).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
-    expect(creator).toContain("useId()");
+    expect(creator).toContain("intentSeed");
     expect(creator).toContain("intentKey(");
     expect(creator).toContain("state.intentRevision");
     expect(creator).toContain('name="idempotencyKey" value={idempotencyKey}');
+    expect(creator).not.toContain("useEffect");
     expect(actions).toContain('text(formData, "idempotencyKey")');
     expect(actions).toContain("intentRevision");
     expect(migration).toContain("credential_version");
@@ -105,7 +110,7 @@ describe("simple printing setup", () => {
   });
 
   it("installs a least-privilege boot task and validates the first server communication", () => {
-    const creator = read("src/features/printing/agent-token-creator.tsx");
+    const creator = read("src/features/printing/agent-token-creator-client.tsx");
     expect(creator).toContain("New-ScheduledTaskTrigger -AtStartup");
     expect(creator).toContain("NT AUTHORITY\\\\LOCAL SERVICE");
     expect(creator).toContain("-LogonType ServiceAccount -RunLevel Limited");
