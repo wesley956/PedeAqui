@@ -37,7 +37,7 @@ export async function createPrinterAction(formData: FormData) {
     defaultCopies: integer(formData, "defaultCopies", 1),
     agentId: nullable(formData, "agentId"),
     fallbackPrinterId: nullable(formData, "fallbackPrinterId"),
-  }, text(formData, "idempotencyKey"));
+  });
   refresh();
 }
 
@@ -75,10 +75,7 @@ export async function quickSetupDetectedPrinterAction(formData: FormData) {
 }
 
 export async function enqueuePrinterTestAction(formData: FormData) {
-  await PrintQueueService.enqueueSetupTest(
-    text(formData, "printerId"),
-    text(formData, "idempotencyKey"),
-  );
+  await PrintQueueService.enqueueSetupTest(text(formData, "printerId"));
   refresh();
   redirect("/configuracoes/impressoes?test=queued");
 }
