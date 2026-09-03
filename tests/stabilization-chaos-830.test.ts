@@ -97,7 +97,7 @@ describe("stabilization #830 controlled failure recovery", () => {
     const doc = read("docs/observability/STABILIZATION_830_CHAOS_MATRIX.md");
     expect(doc).toContain("somente em CI/staging");
     expect(doc).toContain("Produção e contas reais não são usadas");
-    expect(doc).toContain("estado incerto");
+    expect(doc).toContain("Estado incerto");
     expect(doc).toContain("Dona Maria");
     expect(doc).toContain("WhatsApp, PIX online, reconhecimento de cliente, telemetria e impressão");
   });
