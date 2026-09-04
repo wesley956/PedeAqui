@@ -53,8 +53,8 @@ describe("stabilization #829 commercial journey", () => {
     expect(sql).toContain("from public.cart_item_modifiers m where m.cart_item_id=v_cart_item.id");
     expect(sql).toContain("insert into public.order_item_gas_options");
     const modifierTest = read("tests/modifier-quantity-contract.test.ts");
-    expect(modifierTest).toContain("+ 5x Coxinha");
-    expect(modifierTest).toContain("+ 2x Kibe");
+    expect(modifierTest).toContain("(5) Coxinha");
+    expect(modifierTest).toContain("(2) Kibe");
   });
 
   it("supports delivery/pickup and only accepts payment methods currently enabled", () => {
