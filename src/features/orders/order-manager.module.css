@@ -98,3 +98,4 @@
 .recentFinalizedGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px}
 .recentFinalizedItem{display:grid;gap:3px;min-height:54px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-2);color:var(--text);text-decoration:none}
 .recentFinalizedItem span{font-size:.78rem;color:var(--muted)}
+.deliveryAction{display:flex;align-items:center;justify-content:center;min-height:var(--control-height-md);padding:0 var(--space-4);border-radius:var(--radius-md);background:var(--accent);color:var(--text-on-brand);font-weight:var(--font-weight-extrabold);text-decoration:none}.deliveryAction:hover{filter:brightness(.96)}.deliveryAction:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}

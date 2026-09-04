@@ -27,7 +27,7 @@ const payload = {
 describe("thermal print templates", () => {
   it("keeps kitchen ticket operational and without financial/customer data", () => {
     const text = renderPrintDocument(payload, "kitchen", 80);
-    expect(text).toContain("PEDIDO #42");
+    expect(text).toContain("Pedido 42");
     expect(text).toContain("2x X-Burger");
     expect(text).toContain("+ Bacon");
     expect(text).toContain("OBS: Sem cebola");
@@ -39,9 +39,13 @@ describe("thermal print templates", () => {
   it("renders expedition data and visibly marks reprints", () => {
     const text = renderPrintDocument(payload, "expedition", 58, true);
     expect(text).toContain("*** REIMPRESSAO ***");
-    expect(text).toContain("CLIENTE: Maria");
-    expect(text).toContain("ENDERECO: Rua A, Nº 10");
-    expect(text).toContain("Pagamento: pix");
+    expect(text).toContain("PARA ENTREGA");
+    expect(text).toContain("Itens");
+    expect(text).toContain("Cliente");
+    expect(text).toContain("Nome: Maria");
+    expect(text).toContain("Entrega: Rua A, Nº 10");
+    expect(text).toContain("Pagamento");
+    expect(text).toContain("Forma de pagamento: Pix");
     expect(text).toContain("TOTAL");
     expect(text).not.toContain("Troco para");
     expect(text).not.toMatch(/\nTroco\s/);
@@ -76,7 +80,7 @@ describe("thermal print templates", () => {
     };
     const text = renderPrintDocument(cashPayload, "receipt", 80);
 
-    expect(text).toContain("Pagamento: cash");
+    expect(text).toContain("Forma de pagamento: Dinheiro");
     expect(text).not.toContain("Troco para");
     expect(text).not.toMatch(/\nTroco\s/);
   });

@@ -116,6 +116,19 @@ function labeled(lines: string[], label: string, value: string | null | undefine
   if (!clean) return;
   lines.push(...wrap(`${label}: ${clean}`, width));
 }
+function section(lines: string[], title: string, width: number) {
+  lines.push(line("-", width));
+  lines.push(title);
+}
+function paymentLabel(method: string) {
+  const labels: Record<string, string> = {
+    pix: "Pix",
+    cash: "Dinheiro",
+    credit_card: "Cartao de credito",
+    debit_card: "Cartao de debito",
+  };
+  return labels[method] ?? method;
+}
 function normalize(value: string | null | undefined) {
   return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
@@ -182,21 +195,18 @@ function deliveryBlock(lines: string[], payload: PrintPayload, width: number, pr
   const hasAddress = preferences.show_delivery_address && Boolean(address);
   if (!hasCustomer && !hasPhone && !hasAddress) return;
 
-  lines.push(line("=", width));
-  lines.push(center("DADOS PARA ENTREGA", width));
-  lines.push(line("=", width));
-  if (preferences.show_customer_name) labeled(lines, "CLIENTE", payload.order.customer_name, width);
-  if (preferences.show_customer_phone) labeled(lines, "TELEFONE", payload.order.customer_phone, width);
+  section(lines, "Cliente", width);
+  if (preferences.show_customer_name) labeled(lines, "Nome", payload.order.customer_name, width);
+  if (preferences.show_customer_phone) labeled(lines, "Telefone", payload.order.customer_phone, width);
   if (preferences.show_delivery_address && address) {
     const streetAndNumber = [address.street, address.number ? `Nº ${address.number}` : null].filter(Boolean).join(", ");
-    labeled(lines, "ENDERECO", streetAndNumber, width);
-    labeled(lines, "BAIRRO", address.district, width);
-    labeled(lines, "COMPLEMENTO", address.complement, width);
-    labeled(lines, "REFERENCIA", address.reference, width);
+    labeled(lines, "Entrega", streetAndNumber, width);
+    labeled(lines, "Bairro", address.district, width);
+    labeled(lines, "Complemento", address.complement, width);
+    labeled(lines, "Referencia", address.reference, width);
     const cityState = [address.city, address.state].filter(Boolean).join("/");
-    labeled(lines, "CIDADE/UF", cityState, width);
+    labeled(lines, "Cidade/UF", cityState, width);
   }
-  lines.push(line("=", width));
 }
 
 export function renderPrintDocument(
@@ -212,11 +222,12 @@ export function renderPrintDocument(
   const width = preferences.text_size === "extra_large" ? Math.floor(baseWidth / 2) : baseWidth;
   const out: string[] = [];
   if (reprint) { out.push(center("*** REIMPRESSAO ***", width)); out.push(line("*", width)); }
-  out.push(center(`PEDIDO #${payload.order.display_number}`, width));
-  out.push(center(payload.station.name.toUpperCase(), width));
-  out.push(pair(orderTime(payload), payload.order.channel.toUpperCase(), width));
+  const commercial = documentType !== "kitchen";
+  if (commercial && payload.order.fulfillment_type === "delivery") out.push(center("PARA ENTREGA", width));
+  out.push(pair(orderTime(payload), payload.station.name, width));
   const requestedTime = scheduledTime(payload);
-  if (requestedTime) out.push(clip(`AGENDADO: ${requestedTime}`, width));
+  if (requestedTime) out.push(clip(`Entrega prevista: ${requestedTime}`, width));
+  out.push(center(`Pedido ${payload.order.display_number}`, width));
   out.push(line("-", width));
 
   if (documentType === "kitchen") {
@@ -229,22 +240,26 @@ export function renderPrintDocument(
       show_prices: false,
     });
   } else {
+    section(out, "Itens", width);
+    items(out, payload, width, true, preferences);
     if (payload.order.fulfillment_type === "delivery") {
       deliveryBlock(out, payload, width, preferences);
     } else if (preferences.show_customer_name && payload.order.customer_name) {
-      out.push(clip(`Cliente: ${payload.order.customer_name}`, width));
+      section(out, "Cliente", width);
+      labeled(out, "Nome", payload.order.customer_name, width);
     }
-    out.push(line("-", width));
-    items(out, payload, width, true, preferences);
+    if (preferences.show_payment && payload.order.payment_method) {
+      section(out, "Pagamento", width);
+      out.push(clip(`Forma de pagamento: ${paymentLabel(payload.order.payment_method)}`, width));
+    }
     if (preferences.show_prices) {
-      out.push(line("-", width));
+      section(out, "Totais", width);
       out.push(pair("Subtotal", money(payload.order.subtotal_cents), width));
       if (payload.order.discount_cents > 0) out.push(pair("Desconto", `-${money(payload.order.discount_cents)}`, width));
       if (payload.order.delivery_fee_cents > 0) out.push(pair("Entrega", money(payload.order.delivery_fee_cents), width));
       out.push(pair("TOTAL", money(payload.order.total_cents), width));
     }
     if (preferences.show_payment && payload.order.payment_method) {
-      out.push(clip(`Pagamento: ${payload.order.payment_method}`, width));
       if (preferences.show_prices && payload.order.payment_method === "cash" && (payload.order.cash_change_for_cents ?? 0) > 0) {
         const cashChangeForCents = payload.order.cash_change_for_cents ?? 0;
         out.push(pair("Troco para", money(cashChangeForCents), width));

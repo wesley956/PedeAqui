@@ -113,7 +113,9 @@ export const MODULE_CATALOG: Record<ModuleKey, ModuleDefinition> = {
   },
   deliveries: {
     key: "deliveries", defaultLabel: "Entregas", description: "Gestão de entregas dos pedidos.", group: "operation",
-    routes: ["/entregas", "/configuracoes/entrega"], permissionsAny: [PERMISSIONS.DELIVERY_VIEW, PERMISSIONS.ORDERS_VIEW], dependencies: ["orders"], incompatibleWith: [],
+    // Bairros, taxas e prazos são regras comerciais do checkout e continuam
+    // configuráveis mesmo quando a operação gerenciada de entregas está desligada.
+    routes: ["/entregas"], permissionsAny: [PERMISSIONS.DELIVERY_VIEW, PERMISSIONS.ORDERS_VIEW], dependencies: ["orders"], incompatibleWith: [],
     kind: "optional", canDisable: true, supportedBusinessTypes: COMMERCE_BUSINESS_TYPES, entitlementFeatureKey: null,
   },
   driver: {
