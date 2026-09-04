@@ -44,7 +44,7 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
         </RestaurantBrand>
       </header>
       <div className={styles.content}>
-        <div className={styles.serviceSummary} aria-label="Opções do pedido">
+        <div className={styles.serviceSummary} aria-label="Opções do pedido" tabIndex={0}>
           {deliveryAvailable ? <span className={styles.pill}>Entrega · a partir de {money(menu.delivery.starting_fee_cents)}</span> : null}
           {deliveryAvailable ? <span className={styles.pill}>{menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span> : null}
           {menu.settings.allow_pickup ? <span className={styles.pill}>Retirada disponível</span> : null}
