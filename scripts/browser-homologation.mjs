@@ -12,6 +12,7 @@ const results = [];
 const failures = [];
 const safeName = (value) => value.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-|-$/g, "");
 const criticalImpact = new Set(["critical", "serious"]);
+const compactHtml = (value) => String(value || "").replace(/\s+/g, " ").trim().slice(0, 420);
 
 async function auditPage(page, label, url, { screenshot = true, axe = true } = {}) {
   const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
@@ -38,8 +39,20 @@ async function auditPage(page, label, url, { screenshot = true, axe = true } = {
     const audit = await new AxeBuilder({ page }).analyze();
     violations = audit.violations
       .filter((item) => criticalImpact.has(item.impact))
-      .map((item) => ({ id: item.id, impact: item.impact, nodes: item.nodes.length }));
-    if (violations.length) failures.push(`${label}: axe serious/critical ${JSON.stringify(violations)}`);
+      .map((item) => ({
+        id: item.id,
+        impact: item.impact,
+        help: item.help,
+        nodes: item.nodes.length,
+        samples: item.nodes.slice(0, 8).map((node) => ({
+          target: node.target,
+          html: compactHtml(node.html),
+          failureSummary: compactHtml(node.failureSummary),
+        })),
+      }));
+    if (violations.length) {
+      failures.push(`${label}: axe serious/critical ${JSON.stringify(violations.map(({ id, impact, nodes }) => ({ id, impact, nodes })))}`);
+    }
   }
 
   if (screenshot) {
