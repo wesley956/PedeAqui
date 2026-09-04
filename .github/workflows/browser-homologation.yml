@@ -35,6 +35,12 @@ jobs:
       - name: Install project dependencies
         run: npm install --legacy-peer-deps --no-audit --no-fund
 
+      - name: Install browser homologation tools
+        run: npm install --no-save --legacy-peer-deps --no-audit --no-fund playwright@1.55.0 @axe-core/playwright@4.10.2
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
       - name: Start exact PR locally
         shell: bash
         run: |
@@ -58,12 +64,6 @@ jobs:
           echo "Local PedeAqui did not become ready." >&2
           cat /tmp/pedeaqui-browser-app.log >&2 || true
           exit 1
-
-      - name: Install browser homologation tools
-        run: npm install --no-save --legacy-peer-deps playwright@1.55.0 @axe-core/playwright@4.10.2
-
-      - name: Install Chromium and WebKit
-        run: npx playwright install --with-deps chromium webkit
 
       - name: Run public browser homologation
         run: node scripts/browser-homologation.mjs
