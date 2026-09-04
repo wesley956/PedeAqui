@@ -1,0 +1,94 @@
+name: Browser Homologation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "scripts/browser-homologation.mjs"
+      - ".github/workflows/browser-homologation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  public-browser-homologation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BASE_URL: http://127.0.0.1:3000
+      APP_URL: http://127.0.0.1:3000
+      DEMO_SLUG: santa-rita
+      # Publishable browser configuration only. The server-only value below is an inert build placeholder.
+      NEXT_PUBLIC_SUPABASE_URL: https://zsbsczjhiujnhdznrzck.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_TE-qMe5ZrtkBehXml7Whdw_ltBUjcs1
+      SUPABASE_SERVICE_ROLE_KEY: browser_server_only_placeholder
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install project dependencies
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+
+      - name: Install browser homologation tools
+        run: npm install --no-save --legacy-peer-deps --no-audit --no-fund playwright@1.55.0 @axe-core/playwright@4.10.2
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Build exact PR for production
+        run: npm run build
+
+      - name: Start exact production build locally
+        shell: bash
+        run: |
+          nohup npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/pedeaqui-browser-app.log 2>&1 &
+          echo "APP_PID=$!" >> "$GITHUB_ENV"
+
+      - name: Wait for local PedeAqui
+        shell: bash
+        run: |
+          for attempt in $(seq 1 60); do
+            login_status="$(curl -sS -o /tmp/pedeaqui-login.html -w '%{http_code}' --max-time 10 "${BASE_URL}/login" || true)"
+            menu_status="$(curl -sS -o /tmp/pedeaqui-menu.html -w '%{http_code}' --max-time 15 "${BASE_URL}/m/${DEMO_SLUG}" || true)"
+            if [ "$login_status" = "200" ] && [ "$menu_status" = "200" ]; then
+              echo "Local PedeAqui production build ready (login=${login_status}, menu=${menu_status})."
+              exit 0
+            fi
+            echo "Local app not ready yet (attempt ${attempt}/60, login=${login_status:-000}, menu=${menu_status:-000})."
+            tail -n 20 /tmp/pedeaqui-browser-app.log || true
+            sleep 3
+          done
+          echo "Local PedeAqui did not become ready." >&2
+          cat /tmp/pedeaqui-browser-app.log >&2 || true
+          exit 1
+
+      - name: Run public browser homologation
+        run: node scripts/browser-homologation.mjs
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-homologation-evidence
+          path: artifacts/browser-homologation
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Show local app log on failure
+        if: failure()
+        run: tail -n 200 /tmp/pedeaqui-browser-app.log || true
+
+      - name: Stop local PedeAqui
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "${APP_PID:-}" ]; then
+            kill "$APP_PID" 2>/dev/null || true
+          fi

@@ -72,7 +72,7 @@
 .newAccount { padding: 16px; border: 1px solid var(--border-default); border-radius: 16px; background: var(--surface-1); }
 .newAccount strong { display: block; margin-bottom: 4px; }
 .newAccount p { margin: 0 0 12px; color: var(--text-secondary); font-size: 14px; }
-.createLink { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0 16px; border-radius: 11px; background: var(--accent); color: white; font-weight: 800; }
+.createLink { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0 16px; border-radius: 11px; background: var(--accent); color: var(--text-on-brand); font-weight: 800; }
 .createLink:hover { background: var(--accent-strong); }
 
 .appearance :global(.theme-selector-card) { width: 100%; padding: 14px; background: var(--surface-1); }
