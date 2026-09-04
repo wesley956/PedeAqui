@@ -2,13 +2,34 @@ import type { CSSProperties, ReactNode } from "react";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import styles from "./public-brand.module.css";
 
+function channelToLinear(channel: number) {
+  const normalized = channel / 255;
+  return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+}
+
+function relativeLuminance(hex: string) {
+  const normalized = hex.trim().replace(/^#/, "");
+  const expanded = normalized.length === 3 ? normalized.split("").map((value) => value + value).join("") : normalized;
+  if (!/^[0-9a-f]{6}$/i.test(expanded)) return 0;
+  const r = channelToLinear(Number.parseInt(expanded.slice(0, 2), 16));
+  const g = channelToLinear(Number.parseInt(expanded.slice(2, 4), 16));
+  const b = channelToLinear(Number.parseInt(expanded.slice(4, 6), 16));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrastRatio(first: number, second: number) {
+  const lighter = Math.max(first, second);
+  const darker = Math.min(first, second);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 function contrastText(hex: string) {
-  const value = hex.slice(1);
-  const r = Number.parseInt(value.slice(0, 2), 16);
-  const g = Number.parseInt(value.slice(2, 4), 16);
-  const b = Number.parseInt(value.slice(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.58 ? "#171717" : "#FFFFFF";
+  const background = relativeLuminance(hex);
+  const dark = "#171717";
+  const white = "#FFFFFF";
+  const darkContrast = contrastRatio(background, relativeLuminance(dark));
+  const whiteContrast = contrastRatio(background, relativeLuminance(white));
+  return darkContrast >= whiteContrast ? dark : white;
 }
 
 export function restaurantBrandVars(primaryColor: string) {
