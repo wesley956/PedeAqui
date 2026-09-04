@@ -29,4 +29,12 @@ describe("operation versus settings", () => {
       expect(page).toContain(href);
     }
   });
+
+  it("keeps neighborhood and delivery-fee settings available without the managed delivery module", () => {
+    const catalog = fs.readFileSync(path.join(process.cwd(), "src/modules/module-catalog.ts"), "utf8");
+    expect(page).toContain('delivery: { title: "Bairros e taxas de entrega"');
+    expect(page).not.toMatch(/delivery: \{[^\n]+moduleKey: "deliveries"/);
+    expect(catalog).toContain('routes: ["/entregas"]');
+    expect(catalog).not.toContain('routes: ["/entregas", "/configuracoes/entrega"]');
+  });
 });

@@ -19,6 +19,7 @@ import {
   elapsedLabel,
   isOrderAttentionLate,
   operationalBucketLabels,
+  shouldContinueInDeliveryCenter,
   type OperationalOrderBucket,
   type OrderManagerRow,
 } from "@/features/orders/manager-model";
@@ -309,6 +310,7 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, payme
   const status = statusForOrder(order, bucket, statusLabelOverride);
   const late = isOrderAttentionLate(order, now);
   const primaryAction = primaryActionForOrder(order, workflowMode, manualDeliveryMode, paymentPolicy);
+  const continueInDeliveryCenter = shouldContinueInDeliveryCenter(order, manualDeliveryMode);
   const canMarkPaidSecondary = ["ready", "not_required"].includes(order.production_status)
     && order.payment_status === "pending"
     && ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status)
@@ -342,6 +344,13 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, payme
       {primaryAction ? (
         <div className={styles.primaryAction}>
           <OrderActionForm orderId={order.id} intent={primaryAction.intent} label={primaryAction.label} tone={primaryAction.tone} confirmPayment={primaryAction.confirmPayment} compact />
+        </div>
+      ) : null}
+
+
+      {continueInDeliveryCenter ? (
+        <div className={styles.primaryAction}>
+          <Link href="/entregas" className={styles.deliveryAction}>Atualizar entrega</Link>
         </div>
       ) : null}
 

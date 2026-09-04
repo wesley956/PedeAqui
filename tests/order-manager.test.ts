@@ -7,6 +7,7 @@ import {
   deriveOrderLane,
   elapsedLabel,
   isOrderAttentionLate,
+  shouldContinueInDeliveryCenter,
   type OrderManagerRow,
 } from "@/features/orders/manager-model";
 
@@ -124,5 +125,19 @@ describe("order completion gating", () => {
     const awaitingPaymentAfterFulfillment = order({ order_status: "confirmed", payment_status: "pending", fulfillment_status: "delivered" });
     expect(canCompleteFromManager(awaitingPaymentAfterFulfillment)).toBe(false);
     expect(completionBlockers(awaitingPaymentAfterFulfillment)).toEqual(["pagamento ainda não está liquidado"]);
+  });
+});
+
+describe("managed delivery continuation", () => {
+  it("keeps a prominent route to update ready deliveries after dispatch has started", () => {
+    const readyDelivery = order({
+      order_status: "confirmed",
+      production_status: "ready",
+      fulfillment_type: "delivery",
+      fulfillment_status: "awaiting_assignment",
+    });
+    expect(shouldContinueInDeliveryCenter(readyDelivery, false)).toBe(true);
+    expect(shouldContinueInDeliveryCenter({ ...readyDelivery, fulfillment_status: "assigned" }, false)).toBe(true);
+    expect(shouldContinueInDeliveryCenter(readyDelivery, true)).toBe(false);
   });
 });

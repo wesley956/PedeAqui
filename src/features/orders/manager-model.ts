@@ -81,6 +81,14 @@ export function canCompleteFromManager(order: Pick<OrderManagerRow, "order_statu
   return order.order_status === "confirmed" && paymentAllowsOrderCompletion(order.payment_status) && fulfillmentDone;
 }
 
+export function shouldContinueInDeliveryCenter(order: Pick<OrderManagerRow, "order_status" | "production_status" | "fulfillment_type" | "fulfillment_status">, manualDeliveryMode: boolean) {
+  return !manualDeliveryMode
+    && order.order_status === "confirmed"
+    && order.fulfillment_type === "delivery"
+    && ["ready", "not_required"].includes(order.production_status)
+    && ["awaiting_assignment", "assigned", "picked_up", "out_for_delivery"].includes(order.fulfillment_status);
+}
+
 export function completionBlockers(order: Pick<OrderManagerRow, "order_status" | "payment_status" | "fulfillment_status">) {
   const blockers: string[] = [];
   if (order.order_status !== "confirmed") blockers.push("pedido não está confirmado");
