@@ -20,10 +20,10 @@ function deltaLabel(current: number, previous: number) {
 
 const actionMeta: Record<string, { title: string; note: string; icon: string }> = {
   orders: { title: "Ver pedidos", note: "Acompanhar pedidos e próximas ações", icon: "🧾" },
-  catalog: { title: "Editar cardápio", note: "Produtos, preços e adicionais", icon: "🍔" },
+  catalog: { title: "Editar catálogo", note: "Itens, preços e adicionais", icon: "🍔" },
   pdv: { title: "Novo pedido no balcão", note: "Abrir o PDV", icon: "💵" },
   deliveries: { title: "Acompanhar entregas", note: "Pedidos em rota e atrasos", icon: "🚚" },
-  settings: { title: "Configurar restaurante", note: "Horário, pagamentos, entrega...", icon: "⚙️" },
+  settings: { title: "Configurar negócio", note: "Horário, pagamentos, entrega...", icon: "⚙️" },
 };
 
 export default async function DashboardPage() {
@@ -65,7 +65,7 @@ export default async function DashboardPage() {
 
   return <section className={styles.page} data-experience={access.experienceMode}>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>HOJE</p><h1>Início</h1><p className="muted">O essencial para tocar sua {vocabulary.unitLabel} agora.</p></div>
+      <div><p className={styles.eyebrow}>HOJE</p><h1>Início</h1><p className="muted">O essencial para cuidar do seu negócio agora.</p></div>
       <div className={styles.dateBadge}>{localDateLabel(snapshot.local_date)}</div>
     </header>
 
