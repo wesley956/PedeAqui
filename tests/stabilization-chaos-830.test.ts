@@ -110,6 +110,7 @@ describe("stabilization #830 controlled failure recovery", () => {
     expect(runner).toContain("supabase start");
     expect(runner).toContain("supabase stop");
     expect(runner).toContain("for pass in 1 2 3");
+    expect(runner).toContain("sort -t_ -k1,1n");
     expect(runner).toContain("quality_rls_isolation.sql");
     expect(runner).toContain("ISOLATED_CHAOS_RESULT=passed");
     expect(runner).not.toContain("supabase link");
