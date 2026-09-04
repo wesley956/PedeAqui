@@ -116,5 +116,6 @@ describe("stabilization #830 controlled failure recovery", () => {
     expect(runner).toContain("ISOLATED_CHAOS_RESULT=passed");
     expect(runner).not.toContain("supabase link");
     expect(runner).not.toContain("SUPABASE_ACCESS_TOKEN");
+    expect(read("supabase/tests/e2e_cash_register.sql")).toContain("'cash',true,'manual'");
   });
 });
