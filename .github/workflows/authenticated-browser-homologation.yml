@@ -1,0 +1,58 @@
+name: Authenticated Browser Homologation
+
+on:
+  push:
+    branches:
+      - homologation/authenticated-small-gates
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BASE_URL: https://pedeaqui.pp.ua
+  DEMO_SLUG: santa-rita
+  HOMOLOGATION_EMAIL: aweservicosaw@gmail.com
+  NEXT_PUBLIC_SUPABASE_URL: https://zsbsczjhiujnhdznrzck.supabase.co
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_TE-qMe5ZrtkBehXml7Whdw_ltBUjcs1
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+jobs:
+  authenticated-homologation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Require server-side homologation secret
+        shell: bash
+        run: |
+          if [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+            echo "SUPABASE_SERVICE_ROLE_KEY is not configured for repository Actions." >&2
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+
+      - name: Install browser tools
+        run: npm install --no-save --legacy-peer-deps --no-audit --no-fund playwright@1.55.0 @axe-core/playwright@4.10.2
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run authenticated production homologation
+        run: node scripts/authenticated-browser-homologation.mjs
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authenticated-browser-homologation-evidence
+          path: artifacts/authenticated-browser-homologation
+          if-no-files-found: warn
+          retention-days: 30
