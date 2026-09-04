@@ -18,19 +18,19 @@
 .product{display:grid;grid-template-columns:minmax(0,1fr) 104px;gap:var(--space-3);padding:var(--space-3);background:var(--surface-1);border:var(--border-width) solid var(--border-default);border-radius:var(--radius-xl);color:var(--text-primary);min-width:0;min-height:132px;text-decoration:none;transition:border-color var(--motion-fast) var(--ease-standard),transform var(--motion-fast) var(--ease-standard),box-shadow var(--motion-fast) var(--ease-standard)}
 .product:hover{border-color:var(--restaurant-primary);box-shadow:var(--shadow-sm)}
 .product:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
-.productUnavailable{opacity:.76}
+.productUnavailable{opacity:1}
 .productNoImage{grid-template-columns:1fr}
 .productCopy{display:grid;align-content:space-between;gap:var(--space-2);min-width:0}
 .productText{min-width:0}
 .productTitleRow{display:flex;gap:var(--space-2);align-items:start;justify-content:space-between;min-width:0}
 .productTitle{font-size:var(--font-size-md);line-height:var(--line-height-snug)}
-.description{color:var(--text-secondary);font-size:var(--font-size-sm);margin:var(--space-1) 0 0;line-height:var(--line-height-snug);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.description{color:var(--text-primary);font-size:var(--font-size-sm);margin:var(--space-1) 0 0;line-height:var(--line-height-snug);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .priceRow{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
-.price{color:var(--restaurant-primary);font-weight:900;font-size:var(--font-size-md)}
-.oldPrice{color:var(--text-secondary);font-size:var(--font-size-xs);text-decoration:line-through}
+.price{color:var(--text-primary);font-weight:900;font-size:var(--font-size-md)}
+.oldPrice{color:var(--text-primary);font-size:var(--font-size-xs);text-decoration:line-through}
 .soldOut,.promo{font-size:var(--font-size-xs);font-weight:800;padding:var(--space-1) var(--space-2);border-radius:var(--radius-pill)}
 .soldOut{color:var(--state-danger-text);background:var(--state-danger-surface)}
-.promo{color:var(--state-success-text);background:var(--state-success-surface)}
+.promo{color:var(--text-primary);background:var(--state-success-surface)}
 .viewHint,.unavailableHint{font-size:var(--font-size-xs);font-weight:700;margin-left:auto}
 .viewHint{color:var(--text-secondary)}
 .unavailableHint{color:var(--state-danger-text)}
@@ -49,7 +49,8 @@
   .sectionHeader{gap:2px}
   .sectionHeader h2{font-size:1.1875rem;line-height:1.2}
   .sectionHeader p{font-size:.8125rem;line-height:1.35}
-  .products{grid-template-columns:1fr;gap:10px}
+  .products{grid-template-columns:1fr}
+  .products{gap:10px}
   .product{min-height:128px;grid-template-columns:minmax(0,1fr) 108px;gap:12px;padding:10px;border-color:transparent;border-radius:16px;box-shadow:var(--shadow-sm)}
   .productNoImage{grid-template-columns:1fr}
   .productCopy{gap:8px}
