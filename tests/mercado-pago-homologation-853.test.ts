@@ -61,6 +61,12 @@ function providerResponse(input?: {
   };
 }
 
+function requireFetchCall(fetchMock: ReturnType<typeof vi.fn>, index: number): [string, RequestInit] {
+  const call = fetchMock.mock.calls.at(index);
+  if (!call) throw new Error(`Expected fetch call ${index}`);
+  return call as [string, RequestInit];
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
@@ -115,6 +121,7 @@ describe("#853 Mercado Pago automated homologation gate", () => {
     expect(authorizationUrl.searchParams.get("code_challenge_method")).toBe("S256");
 
     const [encoded, signature] = created.cookieValue.split(".");
+    if (!encoded || !signature) throw new Error("Expected signed OAuth session");
     expect(() => readMercadoPagoOAuthSession(`${encoded}.${"A".repeat(signature.length)}`)).toThrow(/signature/i);
 
     vi.spyOn(Date, "now").mockReturnValue(now + 10 * 60 * 1000 + 1);
@@ -154,10 +161,12 @@ describe("#853 Mercado Pago automated homologation gate", () => {
     expect(exchanged.refresh_token).toBe("refresh-1");
     expect(refreshed.refresh_token).toBe("refresh-2");
 
-    const firstBody = JSON.parse(String((fetchMock.mock.calls[0][1] as RequestInit).body));
+    const [, firstInit] = requireFetchCall(fetchMock, 0);
+    const firstBody = JSON.parse(String(firstInit.body));
     expect(firstBody).toMatchObject({ grant_type: "authorization_code", code: "code-1" });
     expect(firstBody.code_verifier).toContain("verifier-");
-    const secondBody = JSON.parse(String((fetchMock.mock.calls[1][1] as RequestInit).body));
+    const [, secondInit] = requireFetchCall(fetchMock, 1);
+    const secondBody = JSON.parse(String(secondInit.body));
     expect(secondBody).toMatchObject({ grant_type: "refresh_token", refresh_token: "refresh-1" });
   });
 
@@ -177,7 +186,7 @@ describe("#853 Mercado Pago automated homologation gate", () => {
       payerEmail: "offline@example.invalid",
     });
 
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [, init] = requireFetchCall(fetchMock, 0);
     expect(init.headers).toMatchObject({ "x-idempotency-key": "85300000-0000-4000-8000-000000000853" });
     expect(init.signal).toBeInstanceOf(AbortSignal);
 
@@ -199,7 +208,8 @@ describe("#853 Mercado Pago automated homologation gate", () => {
     const result = await provider.getOrder("ORD01JHOMOLOG853");
     expect(result.status).toBe("expired");
     expect(result.amountCents).toBe(3790);
-    expect((fetchMock.mock.calls[0][1] as RequestInit).signal).toBeInstanceOf(AbortSignal);
+    const [, init] = requireFetchCall(fetchMock, 0);
+    expect(init.signal).toBeInstanceOf(AbortSignal);
 
     const service = read("src/server/payments/order-pix-service.ts");
     expect(service).toContain("PIX provider reference mismatch");
