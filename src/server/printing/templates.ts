@@ -76,7 +76,9 @@ function money(cents: number) {
     .format(cents / 100)
     .replace(/[\u00a0\u202f]/g, " ");
 }
-function clip(value: string, width: number) { return value.length <= width ? value : `${value.slice(0, Math.max(0, width - 1))}…`; }
+// Keep template punctuation ASCII-safe. Some thermal printer code pages render
+// otherwise harmless Unicode punctuation as stray question marks or glyphs.
+function clip(value: string, width: number) { return value.length <= width ? value : `${value.slice(0, Math.max(0, width - 1))}.`; }
 function line(char: string, width: number) { return char.repeat(width); }
 function center(value: string, width: number) {
   const text = clip(value, width);
@@ -162,8 +164,16 @@ function printModifiers(lines: string[], modifiers: PrintModifier[], width: numb
     lines.push(clip(`  TOTAL PARA FRITAR: ${total}`, width));
   }
 
+  const groups = new Map<string, PrintModifier[]>();
   for (const modifier of others) {
-    lines.push(...wrap(`  + ${modifier.quantity > 1 ? `${modifier.quantity}x ` : ""}${modifier.name}`, width));
+    const group = String(modifier.group ?? "Opcoes").trim() || "Opcoes";
+    groups.set(group, [...(groups.get(group) ?? []), modifier]);
+  }
+  for (const [group, groupModifiers] of groups) {
+    lines.push(...wrap(`  ${group}:`, width));
+    for (const modifier of groupModifiers) {
+      lines.push(...wrap(`    (${modifier.quantity}) ${modifier.name}`, width));
+    }
   }
 }
 function orderTime(payload: PrintPayload) {
@@ -199,7 +209,7 @@ function deliveryBlock(lines: string[], payload: PrintPayload, width: number, pr
   if (preferences.show_customer_name) labeled(lines, "Nome", payload.order.customer_name, width);
   if (preferences.show_customer_phone) labeled(lines, "Telefone", payload.order.customer_phone, width);
   if (preferences.show_delivery_address && address) {
-    const streetAndNumber = [address.street, address.number ? `Nº ${address.number}` : null].filter(Boolean).join(", ");
+    const streetAndNumber = [address.street, address.number ? `N. ${address.number}` : null].filter(Boolean).join(", ");
     labeled(lines, "Entrega", streetAndNumber, width);
     labeled(lines, "Bairro", address.district, width);
     labeled(lines, "Complemento", address.complement, width);

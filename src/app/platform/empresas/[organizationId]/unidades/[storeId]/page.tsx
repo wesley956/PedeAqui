@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { PlatformRestaurant360Service } from "@/server/platform/platform-restaurant-360-service";
 import { OperationalSettingsForm } from "@/features/platform/operational-settings-form";
 import { OperationalSettingsService } from "@/server/stores/operational-settings-service";
+import { ModuleSupportPanel } from "@/app/platform/module-support-panel";
+import { SupportActionsPanel } from "@/app/platform/support-actions-panel";
 import styles from "@/app/platform/platform.module.css";
 
 const dateTime = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" });
@@ -38,7 +40,7 @@ export default async function Restaurant360Page({ params }: { params: Promise<{ 
 
   const readinessTone = data.readiness.ready ? "good" : "danger";
   const moduleTone = data.modules.dependencyIssues.length === 0 ? "good" : "danger";
-  return (
+  return <>
     <div className={styles.page}>
       <div className={styles.breadcrumbs}><Link href="/platform#empresas">← Empresas e unidades</Link><span>/</span><span>{data.organization.name}</span><span>/</span><strong>{data.store.name}</strong></div>
 
@@ -135,7 +137,9 @@ export default async function Restaurant360Page({ params }: { params: Promise<{ 
         </div>
       </section>
     </div>
-  );
+    <ModuleSupportPanel organizationId={organizationId} storeId={storeId} />
+    <SupportActionsPanel organizationId={organizationId} storeId={storeId} />
+  </>;
 }
 
 function Metric({ label, value, helper }: { label: string; value: string | number; helper: string }) {

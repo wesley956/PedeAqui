@@ -55,7 +55,8 @@ describe("modifier quantity persistence contract", () => {
     }, "kitchen", 80);
 
     expect(ticket).toContain("1x Copo com salgados");
-    expect(ticket).toContain("+ 5x Coxinha");
-    expect(ticket).toContain("+ 2x Kibe");
+    expect(ticket).toContain("Opcoes:");
+    expect(ticket).toContain("(5) Coxinha");
+    expect(ticket).toContain("(2) Kibe");
   });
 });
