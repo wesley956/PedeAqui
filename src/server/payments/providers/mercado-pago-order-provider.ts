@@ -9,6 +9,7 @@ import type {
 } from "@/server/payments/providers/order-payment-provider";
 
 const API_BASE = "https://api.mercadopago.com";
+const REQUEST_TIMEOUT_MS = 10_000;
 
 const paymentMethodSchema = z.object({
   id: z.string().optional(),
@@ -142,6 +143,7 @@ export class MercadoPagoOrderProvider implements OrderPaymentProvider {
         payer: { email: input.payerEmail },
       }),
       cache: "no-store",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
     return mapOrder(await parseResponse(response));
   }
@@ -154,6 +156,7 @@ export class MercadoPagoOrderProvider implements OrderPaymentProvider {
         authorization: `Bearer ${this.accessToken}`,
       },
       cache: "no-store",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
     return mapOrder(await parseResponse(response));
   }
