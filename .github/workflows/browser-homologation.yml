@@ -15,14 +15,15 @@ permissions:
 jobs:
   public-browser-homologation:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     env:
       BASE_URL: http://127.0.0.1:3000
       APP_URL: http://127.0.0.1:3000
       DEMO_SLUG: santa-rita
-      # Publishable browser configuration only. No service-role/server secret is used by this workflow.
+      # Publishable browser configuration only. The server-only value below is an inert build placeholder.
       NEXT_PUBLIC_SUPABASE_URL: https://zsbsczjhiujnhdznrzck.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_TE-qMe5ZrtkBehXml7Whdw_ltBUjcs1
+      SUPABASE_SERVICE_ROLE_KEY: browser_server_only_placeholder
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,10 +42,13 @@ jobs:
       - name: Install Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
 
-      - name: Start exact PR locally
+      - name: Build exact PR for production
+        run: npm run build
+
+      - name: Start exact production build locally
         shell: bash
         run: |
-          nohup npm run dev -- --hostname 127.0.0.1 --port 3000 > /tmp/pedeaqui-browser-app.log 2>&1 &
+          nohup npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/pedeaqui-browser-app.log 2>&1 &
           echo "APP_PID=$!" >> "$GITHUB_ENV"
 
       - name: Wait for local PedeAqui
@@ -54,7 +58,7 @@ jobs:
             login_status="$(curl -sS -o /tmp/pedeaqui-login.html -w '%{http_code}' --max-time 10 "${BASE_URL}/login" || true)"
             menu_status="$(curl -sS -o /tmp/pedeaqui-menu.html -w '%{http_code}' --max-time 15 "${BASE_URL}/m/${DEMO_SLUG}" || true)"
             if [ "$login_status" = "200" ] && [ "$menu_status" = "200" ]; then
-              echo "Local PedeAqui ready (login=${login_status}, menu=${menu_status})."
+              echo "Local PedeAqui production build ready (login=${login_status}, menu=${menu_status})."
               exit 0
             fi
             echo "Local app not ready yet (attempt ${attempt}/60, login=${login_status:-000}, menu=${menu_status:-000})."
