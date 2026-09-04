@@ -29,7 +29,8 @@ describe("thermal print templates", () => {
     const text = renderPrintDocument(payload, "kitchen", 80);
     expect(text).toContain("Pedido 42");
     expect(text).toContain("2x X-Burger");
-    expect(text).toContain("+ Bacon");
+    expect(text).toContain("Adicionais:");
+    expect(text).toContain("(1) Bacon");
     expect(text).toContain("OBS: Sem cebola");
     expect(text).not.toContain("Maria");
     expect(text).not.toContain("Pagamento");
@@ -43,7 +44,9 @@ describe("thermal print templates", () => {
     expect(text).toContain("Itens");
     expect(text).toContain("Cliente");
     expect(text).toContain("Nome: Maria");
-    expect(text).toContain("Entrega: Rua A, Nº 10");
+    expect(text).toContain("Entrega: Rua A, N. 10");
+    expect(text).not.toContain("º");
+    expect(text).not.toContain("…");
     expect(text).toContain("Pagamento");
     expect(text).toContain("Forma de pagamento: Pix");
     expect(text).toContain("TOTAL");
