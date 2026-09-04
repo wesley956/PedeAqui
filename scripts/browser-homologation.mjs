@@ -6,6 +6,7 @@ import AxeBuilder from "@axe-core/playwright";
 const baseUrl = (process.env.BASE_URL || "https://www.pedeaqui.pp.ua").replace(/\/$/, "");
 const demoSlug = process.env.DEMO_SLUG || "santa-rita";
 const outDir = path.join(process.cwd(), "artifacts", "browser-homologation");
+const expectedOrigin = new URL(baseUrl).origin;
 await fs.mkdir(outDir, { recursive: true });
 
 const results = [];
@@ -13,6 +14,16 @@ const failures = [];
 const safeName = (value) => value.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-|-$/g, "");
 const criticalImpact = new Set(["critical", "serious"]);
 const compactHtml = (value) => String(value || "").replace(/\s+/g, " ").trim().slice(0, 420);
+
+function isProviderGate({ title, h1, effectiveUrl }) {
+  const text = `${title || ""} ${h1 || ""}`.toLowerCase();
+  if (text.includes("log in to vercel") || text.includes("login – vercel")) return true;
+  try {
+    return new URL(effectiveUrl).origin !== expectedOrigin;
+  } catch {
+    return true;
+  }
+}
 
 async function auditPage(page, label, url, { screenshot = true, axe = true } = {}) {
   const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
@@ -29,6 +40,11 @@ async function auditPage(page, label, url, { screenshot = true, axe = true } = {
     h1: document.querySelector("h1")?.textContent?.trim() || null,
     bodyTextLength: document.body.innerText.trim().length,
   }));
+  const effectiveUrl = page.url();
+
+  if (isProviderGate({ ...metrics, effectiveUrl })) {
+    throw new Error(`${label}: homologação desviou para uma tela externa/proteção de provedor (${effectiveUrl}, title=${JSON.stringify(metrics.title)}, h1=${JSON.stringify(metrics.h1)})`);
+  }
 
   const overflow = metrics.scrollWidth > metrics.width + 2;
   if (overflow) failures.push(`${label}: overflow horizontal ${metrics.scrollWidth}px > ${metrics.width}px`);
@@ -59,7 +75,7 @@ async function auditPage(page, label, url, { screenshot = true, axe = true } = {
     await page.screenshot({ path: path.join(outDir, `${safeName(label)}.png`), fullPage: true });
   }
 
-  results.push({ label, url, status, ...metrics, overflow, violations });
+  results.push({ label, url, effectiveUrl, status, ...metrics, overflow, violations });
 }
 
 async function runResponsiveMatrix() {
