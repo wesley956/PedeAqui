@@ -53,7 +53,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     <section className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerCopy}>
-          <h1>Produtos</h1>
+          <h2>Produtos</h2>
           <p className="muted">Encontre itens rapidamente e altere a disponibilidade sem abrir o cadastro completo.</p>
         </div>
         <Link href="/cardapio/produtos/novo" className={styles.primaryLink}>Novo produto</Link>
