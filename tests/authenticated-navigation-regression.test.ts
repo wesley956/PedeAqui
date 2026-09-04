@@ -19,4 +19,13 @@ describe("authenticated navigation regressions", () => {
     expect(page).toContain("<h2>Produtos</h2>");
     expect(page).not.toContain("<h1>Produtos</h1>");
   });
+
+  it("keeps dashboard copy neutral across restaurant, gas and generic profiles", () => {
+    const page = read("src/app/(app)/dashboard/page.tsx");
+    expect(page).toContain("O essencial para cuidar do seu negócio agora.");
+    expect(page).toContain('settings: { title: "Configurar negócio"');
+    expect(page).toContain('catalog: { title: "Editar catálogo"');
+    expect(page).not.toContain("sua {vocabulary.unitLabel}");
+    expect(page).not.toContain('title: "Configurar restaurante"');
+  });
 });
