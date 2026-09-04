@@ -5,6 +5,8 @@ begin;
 insert into auth.users (id,email) values ('c5555555-5555-4555-8555-555555555555','cash-e2e@example.invalid');
 insert into public.organizations (id,name,created_by) values ('c0000000-0000-4000-8000-000000000001','Cash E2E Org','c5555555-5555-4555-8555-555555555555');
 insert into public.stores (id,organization_id,name,slug,status) values ('c0000000-0000-4000-8000-000000000011','c0000000-0000-4000-8000-000000000001','Cash E2E Store','cash-e2e','active');
+insert into public.store_modules (organization_id,store_id,module_key,enabled,configuration_source)
+values ('c0000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000011','cash',true,'manual');
 insert into public.products (id,organization_id,store_id,name,price_cents,active,availability) values ('c0000000-0000-4000-8000-000000000021','c0000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000011','Produto Caixa',1590,true,'available');
 insert into public.store_payment_methods (organization_id,store_id,method,enabled) values ('c0000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000011','cash',true);
 

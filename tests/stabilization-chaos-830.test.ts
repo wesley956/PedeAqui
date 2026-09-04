@@ -101,4 +101,21 @@ describe("stabilization #830 controlled failure recovery", () => {
     expect(doc).toContain("Dona Maria");
     expect(doc).toContain("WhatsApp, PIX online, reconhecimento de cliente, telemetria e impressão");
   });
+
+  it("runs the database scenarios three times in a disposable local Supabase stack", () => {
+    const workflow = read(".github/workflows/isolated-chaos.yml");
+    const runner = read("scripts/run-isolated-chaos.sh");
+    expect(workflow).toContain("supabase/setup-cli@v3");
+    expect(workflow).toContain("version: 2.84.2");
+    expect(runner).toContain("supabase start");
+    expect(runner).toContain("supabase stop");
+    expect(runner).toContain("for pass in 1 2 3");
+    expect(runner).toContain("sort -t_ -k1,1n");
+    expect(runner).toContain("create extension if not exists pg_cron");
+    expect(runner).toContain("quality_rls_isolation.sql");
+    expect(runner).toContain("ISOLATED_CHAOS_RESULT=passed");
+    expect(runner).not.toContain("supabase link");
+    expect(runner).not.toContain("SUPABASE_ACCESS_TOKEN");
+    expect(read("supabase/tests/e2e_cash_register.sql")).toContain("'cash',true,'manual'");
+  });
 });

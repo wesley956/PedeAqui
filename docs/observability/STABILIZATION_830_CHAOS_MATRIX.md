@@ -38,3 +38,15 @@ WhatsApp, PIX online, reconhecimento de cliente, telemetria e impressão não po
 ## Critério para homologação externa
 
 O CI prova os contratos determinísticos e a matriz pode ser executada repetidamente em staging. A homologação com falha de infraestrutura real (queda deliberada de hosting/rede ou restart do ambiente) só deve ocorrer em ambiente não produtivo e fica registrada como evidência separada; não deve ser simulada em Dona Maria, Dom Burger ou outras contas ativas.
+
+## Staging isolado gratuito
+
+O workflow `Isolated Chaos` cria uma pilha Supabase local e descartável no runner do GitHub Actions, sem `supabase link`, token de acesso ou conexão com o projeto hospedado. Ele aplica a especificação canônica de `supabase/sql`, reinicia a infraestrutura preservando o banco e executa três vezes os cenários transacionais de checkout, caixa, impressão/fallback e isolamento RLS.
+
+Comando equivalente em uma máquina com Docker, Supabase CLI e `psql`:
+
+```bash
+bash scripts/run-isolated-chaos.sh
+```
+
+O log `isolated-chaos.log` é guardado por 30 dias como evidência. Todos os fixtures usam domínios `.invalid`, UUIDs reservados para teste e transações revertidas.
