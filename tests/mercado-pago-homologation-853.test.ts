@@ -249,7 +249,7 @@ describe("#853 Mercado Pago automated homologation gate", () => {
     expect(reconciliation).toContain('.eq("provider", "mercado_pago")');
     expect(reconciliation).toContain('.eq("enabled", true)');
     expect(reconciliation).toContain('.eq("status", "pending")');
-    expect(reconciliation).toContain("OrderPixService.reconcile(row.store_id, row.provider_order_id)");
+    expect(reconciliation).toContain("OrderPixService.reconcile(charge.store_id, charge.provider_order_id)");
     expect(pix).toContain('.eq("store_id", storeId)');
     expect(pix).toContain('.eq("provider_order_id", providerOrderId)');
     expect(scheduler).toContain("*/2 * * * *");
