@@ -14,10 +14,10 @@ const safeName = (value) => value.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-|-$
 const criticalImpact = new Set(["critical", "serious"]);
 
 async function auditPage(page, label, url, { screenshot = true, axe = true } = {}) {
-  const response = await page.goto(url, { waitUntil: "networkidle", timeout: 45000 });
+  const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
   const status = response?.status() ?? 0;
   if (status >= 400 || status === 0) throw new Error(`${label}: HTTP ${status}`);
-  await page.waitForTimeout(350);
+  await page.waitForTimeout(900);
 
   const metrics = await page.evaluate(() => ({
     width: window.innerWidth,
