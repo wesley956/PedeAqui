@@ -44,10 +44,11 @@ fi
 supabase init --force
 supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
 
-for schema_file in $(find supabase/sql -maxdepth 1 -type f -name '*.sql' -print | LC_ALL=C sort); do
+while IFS= read -r schema_name; do
+  schema_file="supabase/sql/${schema_name}"
   echo "ISOLATED_SCHEMA_APPLY=${schema_file}"
   psql "${local_db_url}" -X -v ON_ERROR_STOP=1 -f "${schema_file}" >/dev/null
-done
+done < <(find supabase/sql -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC_ALL=C sort -t_ -k1,1n -k2,2)
 
 # Prove that the disposable database survives a controlled infrastructure restart.
 supabase stop
