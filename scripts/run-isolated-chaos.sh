@@ -44,6 +44,11 @@ fi
 supabase init --force
 supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
 
+# Hosted Supabase has pg_cron enabled for the scheduler migrations. Enable the
+# same bundled extension explicitly in the disposable local database.
+psql "${local_db_url}" -X -v ON_ERROR_STOP=1 \
+  -c "create extension if not exists pg_cron with schema extensions" >/dev/null
+
 while IFS= read -r schema_name; do
   schema_file="supabase/sql/${schema_name}"
   echo "ISOLATED_SCHEMA_APPLY=${schema_file}"
