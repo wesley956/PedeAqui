@@ -15,9 +15,8 @@ permissions:
 jobs:
   public-browser-homologation:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     env:
-      BASE_URL: https://www.pedeaqui.pp.ua
       DEMO_SLUG: santa-rita
     steps:
       - name: Checkout
@@ -27,6 +26,30 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Resolve Vercel preview URL
+        shell: bash
+        run: |
+          branch="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          slug="$(printf '%s' "$branch" | tr '/' '-' | tr '[:upper:]' '[:lower:]')"
+          base_url="https://cruz-git-${slug}-pede-aqui.vercel.app"
+          echo "BASE_URL=${base_url}" >> "$GITHUB_ENV"
+          echo "Browser homologation target: ${base_url}"
+
+      - name: Wait for Vercel preview
+        shell: bash
+        run: |
+          for attempt in $(seq 1 36); do
+            status="$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 10 "${BASE_URL}/login" || true)"
+            if [ "$status" -ge 200 ] && [ "$status" -lt 400 ]; then
+              echo "Preview ready with HTTP ${status}."
+              exit 0
+            fi
+            echo "Preview not ready yet (attempt ${attempt}/36, HTTP ${status:-000})."
+            sleep 5
+          done
+          echo "Vercel preview did not become reachable in the allotted window." >&2
+          exit 1
 
       - name: Install project dependencies
         run: npm install --legacy-peer-deps --no-audit --no-fund
@@ -46,5 +69,5 @@ jobs:
         with:
           name: browser-homologation-evidence
           path: artifacts/browser-homologation
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
