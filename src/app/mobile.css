@@ -1,5 +1,29 @@
 @media (max-width: 900px) {
   .app-main { overflow-x: clip; }
+  .app-topbar {
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .app-topbar-context {
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 0;
+  }
+  .app-topbar-context > strong {
+    max-width: 100%;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+  .app-topbar-actions {
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: var(--space-2);
+  }
+  .app-topbar-actions > * { max-width: 100%; }
   .mobile-nav > a,
   .mobile-more > summary { touch-action: manipulation; }
   .mobile-more-panel {
