@@ -68,18 +68,6 @@ function isSimplifiedDeliveryFinalized(order: OrderManagerRow) {
     && ["out_for_delivery", "delivered"].includes(order.fulfillment_status);
 }
 
-function isManualDeliveryInRoute(order: OrderManagerRow) {
-  return order.order_status === "confirmed"
-    && order.fulfillment_type === "delivery"
-    && order.fulfillment_status === "out_for_delivery";
-}
-
-function isManualDeliveryAwaitingFinish(order: OrderManagerRow) {
-  return order.order_status === "confirmed"
-    && order.fulfillment_type === "delivery"
-    && order.fulfillment_status === "delivered";
-}
-
 export function primaryActionForOrder(order: OrderManagerRow, workflowMode: BoardWorkflowMode, manualDeliveryMode: boolean, paymentPolicy?: PaymentCompletionPolicy | null): OrderActionSpec | null {
   if (order.order_status === "pending_confirmation") {
     return workflowMode === "simplified"
@@ -186,38 +174,19 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
     () => new Set(simplifiedFinalized.map((order) => order.id)),
     [simplifiedFinalized],
   );
-  const manualDelivering = useMemo(
-    () => manualDeliveryMode ? filtered.filter(isManualDeliveryInRoute) : [],
-    [filtered, manualDeliveryMode],
-  );
-  const manualAwaitingFinish = useMemo(
-    () => manualDeliveryMode ? filtered.filter(isManualDeliveryAwaitingFinish) : [],
-    [filtered, manualDeliveryMode],
-  );
-  const manualSpecialIds = useMemo(
-    () => new Set([...manualDelivering, ...manualAwaitingFinish].map((order) => order.id)),
-    [manualAwaitingFinish, manualDelivering],
-  );
   const simplifiedReady = useMemo(
-    () => grouped.ready.filter((order) => manualDeliveryMode ? !manualSpecialIds.has(order.id) : !simplifiedFinalizedIds.has(order.id)),
-    [grouped.ready, manualDeliveryMode, manualSpecialIds, simplifiedFinalizedIds],
+    () => grouped.ready.filter((order) => !simplifiedFinalizedIds.has(order.id)),
+    [grouped.ready, simplifiedFinalizedIds],
   );
 
   const activeCount = activeBuckets.reduce((total, bucket) => total + grouped[bucket].length, 0);
   const lateCount = useMemo(() => filtered.filter((order) => isOrderAttentionLate(order, now)).length, [filtered, now]);
 
-  const simplifiedColumns = manualDeliveryMode
-    ? [
-      { key: "start", label: "Iniciar", orders: [...grouped.new, ...grouped.queued, ...grouped.preparing] },
-      { key: "ready", label: "Pronto", orders: simplifiedReady },
-      { key: "delivering", label: "Em entrega", orders: manualDelivering },
-      { key: "finish", label: "Finalizar", orders: manualAwaitingFinish },
-    ]
-    : [
-      { key: "start", label: "Iniciar", orders: [...grouped.new, ...grouped.queued, ...grouped.preparing] },
-      { key: "ready", label: "Pronto", orders: simplifiedReady },
-      { key: "completed", label: "Finalizados", orders: simplifiedFinalized },
-    ];
+  const simplifiedColumns = [
+    { key: "start", label: "Iniciar", orders: [...grouped.new, ...grouped.queued, ...grouped.preparing] },
+    { key: "ready", label: "Pronto", orders: simplifiedReady },
+    { key: "completed", label: "Finalizados", orders: simplifiedFinalized },
+  ];
 
   return (
     <div className={styles.board}>
@@ -254,13 +223,15 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
           <header className={styles.laneHeader}><strong>{column.label}</strong><span className={styles.laneCount}>{column.orders.length}</span></header>
           <div className={styles.laneBody}>
             {column.orders.map((order) => {
-              const finalDeliveryLabel = !manualDeliveryMode && column.key === "completed"
+              const finalDeliveryLabel = column.key === "completed"
                 ? order.fulfillment_status === "delivered"
-                  ? "Entrega confirmada · aguardando pagamento"
-                  : "Aguardando confirmação de entrega"
-                : manualDeliveryMode && column.key === "finish"
-                  ? "Entrega confirmada · aguardando finalização"
-                  : undefined;
+                  ? manualDeliveryMode
+                    ? "Entrega confirmada · aguardando finalização"
+                    : "Entrega confirmada · aguardando pagamento"
+                  : manualDeliveryMode
+                    ? "Saiu para entrega · finalizar quando concluir"
+                    : "Aguardando confirmação de entrega"
+                : undefined;
               return <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} workflowMode="simplified" manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} statusLabelOverride={finalDeliveryLabel} />;
             })}
             {column.orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}
