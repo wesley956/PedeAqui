@@ -138,7 +138,7 @@ export default async function PrintFormatPage() {
                   <option value="comfortable">Confortável — leitura mais arejada</option>
                   <option value="wide">Amplo — máximo espaçamento</option>
                 </select>
-                <small className={styles.hint}>Controla somente a distância vertical entre as linhas. Os níveis Confortável e Amplo agora têm uma diferença mais visível no papel.</small>
+                <small className={styles.hint}>Controla somente a distância vertical entre as linhas. O tamanho das letras continua independente. Os níveis Confortável e Amplo agora têm uma diferença mais visível no papel.</small>
               </label>
               <label className={styles.field}>
                 <span>Organização dos itens</span>
