@@ -56,8 +56,10 @@ describe("configurable print line spacing", () => {
     expect(escpos).toContain("0x1b,0x33,lineSpacingByte(styled.lineSpacing, textSize)");
     expect(escpos).toContain('lineSpacing === "compact"');
     expect(escpos).toContain('textSize === "extra_large"');
-    expect(escpos).toContain("return 60");
+    expect(escpos).toContain("return 48");
+    expect(escpos).toContain("return 64");
     expect(escpos).toContain("return 72");
+    expect(escpos).toContain("return 96");
     expect(escpos).toContain("0x1b,0x32");
   });
 });

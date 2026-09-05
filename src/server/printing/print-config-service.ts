@@ -61,7 +61,7 @@ export class PrintConfigService {
     const context = await authorize(PERMISSIONS.PRINTING_VIEW);
     const storeId = requireStore(context.storeId);
     const admin = createAdminClient();
-    const [routing, printers, agents, products, preferences] = await Promise.all([
+    const [routing, printers, agents, products, categories, preferences] = await Promise.all([
       PrintRoutingService.listForStore(context.organizationId, storeId),
       admin.from("printers")
         .select("id, name, agent_id, connection_type, connection_address, connection_port, paper_width_mm, default_copies, active, status, last_seen_at, last_error, fallback_printer_id")
@@ -72,13 +72,17 @@ export class PrintConfigService {
       admin.from("products")
         .select("id, name, active")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).order("name"),
+      admin.from("categories")
+        .select("id, name, sort_order")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).eq("active", true).order("sort_order").order("name"),
       admin.from("store_print_preferences")
-        .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size")
+        .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size, item_layout, order_section_title, drinks_section_title, drink_category_ids")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
     ]);
     if (printers.error) throw printers.error;
     if (agents.error) throw agents.error;
     if (products.error) throw products.error;
+    if (categories.error) throw categories.error;
     if (preferences.error) throw preferences.error;
     return {
       context,
@@ -86,6 +90,7 @@ export class PrintConfigService {
       printers: printers.data ?? [],
       agents: agents.data ?? [],
       products: products.data ?? [],
+      categories: categories.data ?? [],
       printPreferences: resolveOrderPrintPreferences(preferences.data),
     };
   }
@@ -196,7 +201,7 @@ export class PrintConfigService {
     const storeId = requireStore(context.storeId);
     const admin = createAdminClient();
     const { data: before, error: readError } = await admin.from("store_print_preferences")
-      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size")
+      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size, item_layout, order_section_title, drinks_section_title, drink_category_ids")
       .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (readError) throw readError;
     const desired = resolveOrderPrintPreferences(values);
@@ -210,7 +215,7 @@ export class PrintConfigService {
     };
     const { data, error } = await admin.from("store_print_preferences")
       .upsert(row, { onConflict: "store_id" })
-      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size")
+      .select("show_customer_name, show_customer_phone, show_delivery_address, show_item_modifiers, show_item_notes, show_prices, show_payment, show_footer, footer_text, text_size, item_layout, order_section_title, drinks_section_title, drink_category_ids")
       .single();
     if (error) throw error;
     await AuditService.record(context, {

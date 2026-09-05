@@ -4,6 +4,8 @@ const modifierSchema = z.object({ group: z.string().nullable().optional(), name:
 const itemSchema = z.object({
   order_item_id: z.string().optional(),
   product_id: z.string().nullable().optional(),
+  category_id: z.string().nullable().optional(),
+  category_name: z.string().nullable().optional(),
   name: z.string(),
   quantity: z.number().int().positive(),
   note: z.string().nullable().optional(),
@@ -45,6 +47,10 @@ export const orderPrintPreferencesSchema = z.object({
   show_footer: z.boolean().default(true),
   footer_text: z.string().trim().max(120).nullable().default(null),
   text_size: z.enum(["normal", "large", "extra_large"]).default("normal"),
+  item_layout: z.enum(["continuous", "sections"]).default("continuous"),
+  order_section_title: z.string().trim().min(1).max(40).default("PEDIDO"),
+  drinks_section_title: z.string().trim().min(1).max(40).default("BEBIDAS"),
+  drink_category_ids: z.array(z.string().uuid()).max(100).default([]),
 });
 
 export const DEFAULT_ORDER_PRINT_PREFERENCES = orderPrintPreferencesSchema.parse({});
@@ -68,6 +74,10 @@ export function resolveOrderPrintPreferences(value: unknown): OrderPrintPreferen
     show_footer: source.show_footer ?? true,
     footer_text: source.footer_text ?? null,
     text_size: source.text_size ?? "normal",
+    item_layout: source.item_layout ?? "continuous",
+    order_section_title: source.order_section_title ?? "PEDIDO",
+    drinks_section_title: source.drinks_section_title ?? "BEBIDAS",
+    drink_category_ids: source.drink_category_ids ?? [],
   });
 }
 
@@ -189,12 +199,29 @@ function scheduledTime(payload: PrintPayload) {
     return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: payload.order.timezone ?? "America/Sao_Paulo" }).format(date);
   } catch { return date.toISOString().slice(0, 16).replace("T", " "); }
 }
-function items(lines: string[], payload: PrintPayload, width: number, showPrice: boolean, preferences: OrderPrintPreferences) {
-  for (const item of payload.items) {
+function itemLines(lines: string[], list: PrintPayload["items"], width: number, showPrice: boolean, preferences: OrderPrintPreferences) {
+  for (const item of list) {
     const left = `${item.quantity}x ${item.name}`;
     lines.push(showPrice && preferences.show_prices && item.line_total_cents !== undefined ? pair(left, money(item.line_total_cents), width) : clip(left, width));
     if (preferences.show_item_modifiers) printModifiers(lines, item.modifiers, width);
     if (preferences.show_item_notes && item.note) lines.push(...wrap(`  OBS: ${item.note}`, width));
+  }
+}
+function items(lines: string[], payload: PrintPayload, width: number, showPrice: boolean, preferences: OrderPrintPreferences) {
+  if (preferences.item_layout !== "sections") {
+    itemLines(lines, payload.items, width, showPrice, preferences);
+    return;
+  }
+  const drinkIds = new Set(preferences.drink_category_ids);
+  const drinks = payload.items.filter((item) => item.category_id && drinkIds.has(item.category_id));
+  const orders = payload.items.filter((item) => !item.category_id || !drinkIds.has(item.category_id));
+  if (orders.length) {
+    section(lines, preferences.order_section_title, width);
+    itemLines(lines, orders, width, showPrice, preferences);
+  }
+  if (drinks.length) {
+    section(lines, preferences.drinks_section_title, width);
+    itemLines(lines, drinks, width, showPrice, preferences);
   }
 }
 function deliveryBlock(lines: string[], payload: PrintPayload, width: number, preferences: OrderPrintPreferences) {
@@ -250,7 +277,7 @@ export function renderPrintDocument(
       show_prices: false,
     });
   } else {
-    section(out, "Itens", width);
+    if (preferences.item_layout !== "sections") section(out, "Itens", width);
     items(out, payload, width, true, preferences);
     if (payload.order.fulfillment_type === "delivery") {
       deliveryBlock(out, payload, width, preferences);

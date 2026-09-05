@@ -44,6 +44,8 @@ const samplePayload = {
     {
       order_item_id: "preview-item-1",
       product_id: "preview-product-1",
+      category_id: "11111111-1111-4111-8111-111111111111",
+      category_name: "Salgados",
       name: "Copo 30 salgados",
       quantity: 1,
       note: "Caprichar no guardanapo",
@@ -56,6 +58,8 @@ const samplePayload = {
     {
       order_item_id: "preview-item-2",
       product_id: "preview-product-2",
+      category_id: "22222222-2222-4222-8222-222222222222",
+      category_name: "Bebidas",
       name: "Refrigerante 2L",
       quantity: 1,
       line_total_cents: 2000,
@@ -87,7 +91,10 @@ export default async function PrintFormatPage() {
   const preferences = config.printPreferences;
   const stationMap = new Map(config.stations.map((station) => [station.id, station.name]));
   const printerMap = new Map(config.printers.map((printer) => [printer.id, printer.name]));
-  const preview = renderPrintDocument(samplePayload, "receipt", 80, false, preferences);
+  const previewPreferences = preferences.item_layout === "sections" && preferences.drink_category_ids.length > 0
+    ? { ...preferences, drink_category_ids: ["22222222-2222-4222-8222-222222222222"] }
+    : preferences;
+  const preview = renderPrintDocument(samplePayload, "receipt", 80, false, previewPreferences);
   const activePrinters = config.printers.filter((printer) => printer.active);
 
   return (
@@ -131,8 +138,33 @@ export default async function PrintFormatPage() {
                   <option value="comfortable">Confortável — leitura mais arejada</option>
                   <option value="wide">Amplo — máximo espaçamento</option>
                 </select>
-                <small className={styles.hint}>Controla somente a distância vertical entre as linhas. O tamanho das letras continua independente.</small>
+                <small className={styles.hint}>Controla somente a distância vertical entre as linhas. Os níveis Confortável e Amplo agora têm uma diferença mais visível no papel.</small>
               </label>
+              <label className={styles.field}>
+                <span>Organização dos itens</span>
+                <select className={styles.input} name="itemLayout" defaultValue={preferences.item_layout} disabled={!canManage}>
+                  <option value="continuous">Lista contínua</option>
+                  <option value="sections">Separar pedido e bebidas</option>
+                </select>
+                <small className={styles.hint}>Adicionais e observações continuam logo abaixo do produto ao qual pertencem.</small>
+              </label>
+              <label className={styles.field}>
+                <span>Título da parte principal</span>
+                <input className={styles.input} name="orderSectionTitle" maxLength={40} defaultValue={preferences.order_section_title} disabled={!canManage} />
+              </label>
+              <label className={styles.field}>
+                <span>Título da parte de bebidas</span>
+                <input className={styles.input} name="drinksSectionTitle" maxLength={40} defaultValue={preferences.drinks_section_title} disabled={!canManage} />
+              </label>
+              <fieldset className={styles.field}>
+                <legend>Categorias que são bebidas</legend>
+                <small className={styles.hint}>Marque as categorias que devem sair na parte de bebidas.</small>
+                <div className={styles.options}>
+                  {config.categories.map((category) => (
+                    <PrintOption key={category.id} name="drinkCategoryIds" title={category.name} hint="Imprimir em Bebidas" checked={preferences.drink_category_ids.includes(category.id)} value={category.id} disabled={!canManage} />
+                  ))}
+                </div>
+              </fieldset>
               <div className={styles.options}>
                 <PrintOption name="showCustomerName" title="Nome do cliente" hint="Mostra quem fez o pedido." checked={preferences.show_customer_name} disabled={!canManage} />
                 <PrintOption name="showCustomerPhone" title="Telefone nas entregas" hint="Útil para contato do entregador." checked={preferences.show_customer_phone} disabled={!canManage} />
@@ -222,10 +254,10 @@ export default async function PrintFormatPage() {
   );
 }
 
-function PrintOption({ name, title, hint, checked, disabled }: { name: string; title: string; hint: string; checked: boolean; disabled?: boolean }) {
+function PrintOption({ name, title, hint, checked, value, disabled }: { name: string; title: string; hint: string; checked: boolean; value?: string; disabled?: boolean }) {
   return (
     <label className={styles.option}>
-      <input type="checkbox" name={name} defaultChecked={checked} disabled={disabled} />
+      <input type="checkbox" name={name} value={value} defaultChecked={checked} disabled={disabled} />
       <span className={styles.optionCopy}><strong>{title}</strong><small>{hint}</small></span>
     </label>
   );
