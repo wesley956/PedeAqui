@@ -31,6 +31,8 @@ export type PublicProductState = PublicProduct & {
   operational: PublicMenuState["operational"];
 };
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 function operationalState({
   status,
   acceptingOrders,
@@ -104,6 +106,7 @@ export class PublicMenuService {
   }
 
   static async getProduct(slug: string, productId: string, now = new Date()): Promise<PublicProductState | null> {
+    if (!UUID_PATTERN.test(productId)) return null;
     const supabase = createPublicClient();
     const { data, error } = await supabase.rpc("get_public_product", {
       p_store_slug: slug,
