@@ -30,9 +30,12 @@ describe("manual delivery mode", () => {
     expect(isOfflineDeliveryPayment("pix")).toBe(false);
   });
 
-  it("keeps saiu para entrega separate from finalization in the simplified board", () => {
+  it("keeps saiu para entrega separate from finalization inside the three-card simplified board", () => {
     const board = readFileSync("src/features/orders/order-manager-board.tsx", "utf8");
-    expect(board).toContain('label: "Em entrega"');
+    expect(board).toContain('const simplifiedColumns = [');
+    expect(board).toContain('{ key: "completed", label: "Finalizados"');
+    expect(board).not.toContain('label: "Em entrega"');
+    expect(board).not.toContain('{ key: "finish", label: "Finalizar"');
     expect(board).toContain('intent: "manual_out_for_delivery", label: "Saiu para entrega"');
     expect(board).toContain('intent: "manual_finish_delivery", label: paymentPolicy === "quick_confirmation" ? "Receber e finalizar" : "Finalizar pedido"');
   });

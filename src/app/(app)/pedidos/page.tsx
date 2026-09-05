@@ -48,7 +48,7 @@ export default async function OrdersPage() {
       <div className={styles.workflowNote}>
         {workflowMode === "simplified"
           ? manualDeliveryMode
-            ? "Fluxo simplificado: Iniciar → Pronto → Saiu para entrega → Finalizar pedido."
+            ? "Fluxo simplificado: Iniciar → Pronto → Finalizados. A entrega manual continua dentro do próprio pedido."
             : "Fluxo simplificado: Iniciar → Pronto → Finalizados."
           : workflowMode === "custom"
             ? manualDeliveryMode
