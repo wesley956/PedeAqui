@@ -62,6 +62,10 @@ export async function saveOrderPrintPreferencesAction(formData: FormData) {
     show_footer: checked(formData, "showFooter"),
     footer_text: nullable(formData, "footerText"),
     text_size: (text(formData, "textSize") || "normal") as "normal" | "large" | "extra_large",
+    item_layout: (text(formData, "itemLayout") || "continuous") as "continuous" | "sections",
+    order_section_title: text(formData, "orderSectionTitle") || "PEDIDO",
+    drinks_section_title: text(formData, "drinksSectionTitle") || "BEBIDAS",
+    drink_category_ids: formData.getAll("drinkCategoryIds").map(String),
   });
   await PrintLineSpacingService.save(text(formData, "lineSpacing") || "normal");
   refresh();

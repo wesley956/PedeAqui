@@ -30,13 +30,13 @@ function lineSpacingByte(lineSpacing, textSize) {
   // Extra-large uses double height (GS ! 0x11), so use larger comfortable/wide
   // values while preserving the printer's current default for normal spacing.
   if (textSize === "extra_large") {
-    if (lineSpacing === "comfortable") return 60;
-    if (lineSpacing === "wide") return 72;
+    if (lineSpacing === "comfortable") return 72;
+    if (lineSpacing === "wide") return 96;
     return 30;
   }
-  if (lineSpacing === "compact") return 22;
-  if (lineSpacing === "comfortable") return 38;
-  if (lineSpacing === "wide") return 46;
+  if (lineSpacing === "compact") return 24;
+  if (lineSpacing === "comfortable") return 48;
+  if (lineSpacing === "wide") return 64;
   return 30;
 }
 

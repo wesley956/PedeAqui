@@ -87,4 +87,24 @@ describe("thermal print templates", () => {
     expect(text).not.toContain("Troco para");
     expect(text).not.toMatch(/\nTroco\s/);
   });
+
+  it("separates configured drink categories while keeping add-ons with their product", () => {
+    const drinkCategoryId = "22222222-2222-4222-8222-222222222222";
+    const text = renderPrintDocument({
+      ...payload,
+      items: [
+        { ...payload.items[0], category_id: "11111111-1111-4111-8111-111111111111" },
+        { name: "Refrigerante", quantity: 1, category_id: drinkCategoryId, line_total_cents: 500, modifiers: [] },
+      ],
+    }, "receipt", 80, false, {
+      item_layout: "sections",
+      order_section_title: "PEDIDO",
+      drinks_section_title: "BEBIDAS",
+      drink_category_ids: [drinkCategoryId],
+    });
+
+    expect(text.indexOf("PEDIDO")).toBeLessThan(text.indexOf("2x X-Burger"));
+    expect(text.indexOf("Adicionais:")).toBeLessThan(text.indexOf("BEBIDAS"));
+    expect(text.indexOf("BEBIDAS")).toBeLessThan(text.indexOf("1x Refrigerante"));
+  });
 });
