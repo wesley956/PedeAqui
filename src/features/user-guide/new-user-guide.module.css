@@ -249,6 +249,16 @@
   .coachActions { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 900px) {
+  .trigger {
+    right: var(--space-3);
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    width: 48px;
+    padding: 7px;
+  }
+  .triggerText { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .backdrop, .dialog, .coach { animation: none; }
   .progressBar, .trigger { transition: none; }
