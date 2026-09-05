@@ -8,6 +8,12 @@ const root = process.cwd();
 const read = (relativePath: string) => fs.readFileSync(path.join(root, relativePath), "utf8");
 
 describe("public menu readiness PA-DIAG-021 to PA-DIAG-025", () => {
+  it("rejects malformed product ids before calling the UUID RPC", () => {
+    const service = read("src/server/menu/public-menu-service.ts");
+    expect(service).toContain("if (!UUID_PATTERN.test(productId)) return null");
+    expect(service.indexOf("if (!UUID_PATTERN.test(productId)) return null")).toBeLessThan(service.indexOf('supabase.rpc("get_public_product"'));
+  });
+
   it("hides empty categories and distinguishes an empty catalog from an empty search", () => {
     const browser = read("src/features/menu/menu-browser.tsx");
     expect(browser).toContain("category.products.length > 0");
