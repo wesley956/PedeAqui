@@ -59,6 +59,16 @@ describe("full mobile layout QA [314]", () => {
     expect(mobileCss).toContain('.app-topbar[data-driver-only="true"] .app-topbar-actions button { min-height: 44px;');
   });
 
+  it("reflows the operational header and compacts the guide at high browser zoom", () => {
+    const mobileCss = read("src/app/mobile.css");
+    const guideCss = read("src/features/user-guide/new-user-guide.module.css");
+    expect(mobileCss).toContain(".app-topbar-actions { flex: 1 0 100%; width: 100%; min-width: 0; flex-wrap: wrap;");
+    expect(mobileCss).toContain(".app-topbar-context > strong { max-width: 100%; overflow-wrap: normal; word-break: normal;");
+    expect(guideCss).toContain("@media (max-width: 900px)");
+    expect(guideCss).toContain("bottom: calc(80px + env(safe-area-inset-bottom))");
+    expect(guideCss).toContain(".triggerText { display: none; }");
+  });
+
   it("loads mobile overrides globally after shell rules", () => {
     const layout = read("src/app/layout.tsx");
     expect(layout.indexOf('import "./mobile.css"')).toBeGreaterThan(layout.indexOf('import "./shell.css"'));
