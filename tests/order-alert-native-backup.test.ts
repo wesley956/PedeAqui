@@ -72,7 +72,7 @@ describe("optional native new-order alert backup", () => {
   it("ships the backup through the existing self-updater without a second installer", () => {
     expect(manifest.version).toBe("0.7.1");
     expect(manifest.files).toContain("src/order-alert.mjs");
-    expect(read("print-agent/package.json")).toContain('"version": "0.7.0"');
-    expect(agentIndex).toContain('const version = "0.7.0"');
+    expect(read("print-agent/package.json")).toContain('"version": "0.7.1"');
+    expect(agentIndex).toContain('const version = "0.7.1"');
   });
 });
