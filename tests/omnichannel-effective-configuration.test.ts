@@ -6,33 +6,36 @@ import {
   EXTERNAL_CAPABILITY_KEYS,
   externalCapabilitiesOff,
   type ExternalCapabilityKey,
-  type ExternalCapabilityState,
 } from "@/server/integrations/core/capabilities";
 import { resolveEffectiveStoreConfiguration } from "@/server/integrations/core/effective-store-configuration";
 
 function moduleAvailability(overrides: Partial<Record<ModuleKey, boolean>> = {}) {
-  return Object.fromEntries(MODULE_KEYS.map((moduleKey) => {
+  const result = {} as Record<ModuleKey, ModuleAvailability>;
+  for (const moduleKey of MODULE_KEYS) {
     const available = overrides[moduleKey] ?? true;
-    return [moduleKey, {
+    result[moduleKey] = {
       moduleKey,
       available,
       reason: available ? "available" : "disabled_by_store",
       missingDependencies: [],
-    } satisfies ModuleAvailability];
-  })) as Record<ModuleKey, ModuleAvailability>;
+    };
+  }
+  return result;
 }
 
 function moduleRbac(overrides: Partial<Record<ModuleKey, boolean>> = {}) {
-  return Object.fromEntries(MODULE_KEYS.map((moduleKey) => {
+  const result = {} as Record<ModuleKey, ModuleRbacDecision>;
+  for (const moduleKey of MODULE_KEYS) {
     const allowed = overrides[moduleKey] ?? true;
-    return [moduleKey, {
+    result[moduleKey] = {
       moduleKey,
       allowed,
       visible: allowed,
       reason: allowed ? "allowed" : "permission_denied",
       permissionTrace: [],
-    } satisfies ModuleRbacDecision];
-  })) as Record<ModuleKey, ModuleRbacDecision>;
+    };
+  }
+  return result;
 }
 
 function capabilitiesOn(keys: readonly ExternalCapabilityKey[]) {
@@ -50,15 +53,11 @@ describe("omnichannel effective store configuration invariants", () => {
   });
 
   it("does not change workflow lanes when every provider capability is enabled", () => {
-    const allOn = Object.fromEntries(
-      EXTERNAL_CAPABILITY_KEYS.map((key) => [key, { enabled: true, health: "connected" } satisfies ExternalCapabilityState]),
-    ) as Record<ExternalCapabilityKey, ExternalCapabilityState>;
-
     const result = resolveEffectiveStoreConfiguration({
       workflow,
       moduleAvailability: moduleAvailability(),
       moduleRbac: moduleRbac(),
-      externalCapabilities: allOn,
+      externalCapabilities: capabilitiesOn(EXTERNAL_CAPABILITY_KEYS),
     });
 
     expect(result.workflow).toEqual({ revision: "wf-3-cards", lanes: ["new", "preparing", "ready"] });
