@@ -104,7 +104,7 @@ describe("canonical external order validation", () => {
 
   it("rejects modifier arithmetic drift", () => {
     const order = validOrder();
-    order.items[0].modifiers[0].totalCents = 400;
+    order.items[0]!.modifiers[0]!.totalCents = 400;
     const result = validateCanonicalExternalOrder(order);
     expect(result.valid).toBe(false);
     if (!result.valid) expect(result.errors).toContain("item_0_modifier_0_total_invariant_failed");
@@ -112,10 +112,10 @@ describe("canonical external order validation", () => {
 
   it("rejects item totals that do not match base plus modifiers times quantity", () => {
     const order = validOrder();
-    order.items[0].totalCents = 2600;
+    order.items[0]!.totalCents = 2600;
     order.money.subtotalCents = 2600;
     order.money.totalCents = 3000;
-    order.payments[0].amountCents = 3000;
+    order.payments[0]!.amountCents = 3000;
     const result = validateCanonicalExternalOrder(order);
     expect(result.valid).toBe(false);
     if (!result.valid) expect(result.errors).toContain("item_0_total_invariant_failed");
@@ -125,7 +125,7 @@ describe("canonical external order validation", () => {
     const order = validOrder();
     order.money.subtotalCents = 2600;
     order.money.totalCents = 3000;
-    order.payments[0].amountCents = 3000;
+    order.payments[0]!.amountCents = 3000;
     const result = validateCanonicalExternalOrder(order);
     expect(result.valid).toBe(false);
     if (!result.valid) expect(result.errors).toContain("item_subtotal_invariant_failed");
@@ -133,7 +133,7 @@ describe("canonical external order validation", () => {
 
   it("rejects payment totals that do not cover the canonical total", () => {
     const order = validOrder();
-    order.payments[0].amountCents = 2800;
+    order.payments[0]!.amountCents = 2800;
     const result = validateCanonicalExternalOrder(order);
     expect(result.valid).toBe(false);
     if (!result.valid) expect(result.errors).toContain("payment_total_invariant_failed");
