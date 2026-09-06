@@ -62,6 +62,7 @@ readonly isolated_delta_migrations=(
   "20260906044000_omnichannel_integration_core.sql"
   "20260906050000_omnichannel_runtime_claims.sql"
   "20260906054000_omnichannel_canonical_order_import.sql"
+  "20260906054500_omnichannel_external_discount_compat.sql"
 )
 for migration_name in "${isolated_delta_migrations[@]}"; do
   migration_file="${parked_migrations}/${migration_name}"
