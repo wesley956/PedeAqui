@@ -6,14 +6,14 @@ import { SemanticStatus } from "@/components/ui/status";
 import { ProductService } from "@/server/catalog/product-service";
 import { CategoryService } from "@/server/catalog/category-service";
 import { formatCents } from "@/server/catalog/money";
-import { duplicateProductAction, removeProductAction, setProductAvailabilityAction } from "@/features/catalog/actions";
+import { duplicateProductAction, removeProductAction, setProductAvailabilityFormAction } from "@/features/catalog/actions";
 import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import styles from "../catalog-management.module.css";
 
 const labels = {
   available: "Disponível",
   sold_out: "Esgotado",
-  inactive: "Inativo",
+  inactive: "Pausado",
 } as const;
 
 const statusPresentation = {
@@ -117,13 +117,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   </div>
                   <div className={styles.productActions}>
                     <Link href={`/cardapio/produtos/${product.id}`}>Editar</Link>
-                    <form action={setProductAvailabilityAction}>
+                    <ResilientMutationForm action={setProductAvailabilityFormAction} className={styles.quickAvailabilityForm}>
                       <input type="hidden" name="productId" value={product.id} />
-                      <input type="hidden" name="availability" value={product.availability === "available" ? "sold_out" : "available"} />
+                      <input type="hidden" name="availability" value={product.availability === "available" ? "inactive" : "available"} />
                       <Button type="submit" tone="secondary">
-                        {product.availability === "available" ? "Marcar esgotado" : "Marcar disponível"}
+                        {product.availability === "available" ? "Pausar produto" : "Reativar produto"}
                       </Button>
-                    </form>
+                    </ResilientMutationForm>
                     <form action={duplicateProductAction}>
                       <input type="hidden" name="productId" value={product.id} />
                       <Button type="submit" tone="secondary">Duplicar</Button>

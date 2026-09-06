@@ -20,7 +20,7 @@ describe("catalog management UI", () => {
   });
 
   it("preserves server-side availability and duplication actions", () => {
-    expect(productsPage).toContain("setProductAvailabilityAction");
+    expect(productsPage).toContain("setProductAvailabilityFormAction");
     expect(productsPage).toContain("duplicateProductAction");
     expect(productsPage).not.toContain("supabase");
   });
