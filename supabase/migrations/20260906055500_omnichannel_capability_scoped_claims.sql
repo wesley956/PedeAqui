@@ -1,0 +1,72 @@
+-- Omnichannel worker isolation (#936/#937).
+-- A specialized worker must never lease events owned by another capability.
+
+-- Remove the previous 3-argument signature so PostgREST/RPC resolution cannot
+-- become ambiguous with the new optional capability filter.
+drop function if exists public.integration_claim_events(integer, text, integer);
+
+create function public.integration_claim_events(
+  p_limit integer,
+  p_worker_id text,
+  p_lease_seconds integer default 120,
+  p_capabilities text[] default null
+)
+returns setof public.integration_events
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if p_worker_id is null or pg_catalog.btrim(p_worker_id) = '' then
+    raise exception 'worker id is required';
+  end if;
+
+  if p_capabilities is not null and exists (
+    select 1
+    from pg_catalog.unnest(p_capabilities) capability
+    where capability is null or pg_catalog.btrim(capability) = ''
+  ) then
+    raise exception 'capability filter contains an empty value';
+  end if;
+
+  return query
+  with candidates as (
+    select e.id
+    from public.integration_events e
+    where (
+      (e.status in ('pending', 'retry') and e.available_at <= pg_catalog.now())
+      or (
+        e.status = 'processing'
+        and e.locked_at is not null
+        and e.locked_at <= pg_catalog.now() - pg_catalog.make_interval(secs => pg_catalog.greatest(p_lease_seconds, 30))
+      )
+    )
+      and (p_capabilities is null or e.capability = any(p_capabilities))
+    order by e.available_at asc, e.received_at asc
+    for update skip locked
+    limit pg_catalog.greatest(1, pg_catalog.least(pg_catalog.coalesce(p_limit, 1), 100))
+  )
+  update public.integration_events e
+     set status = 'processing',
+         attempts = e.attempts + 1,
+         locked_at = pg_catalog.now(),
+         locked_by = p_worker_id,
+         last_error = null,
+         last_error_kind = null
+    from candidates c
+   where e.id = c.id
+  returning e.*;
+end;
+$$;
+
+create index if not exists integration_events_capability_pending_idx
+  on public.integration_events(capability, status, available_at, received_at)
+  where status in ('pending', 'retry', 'processing');
+
+revoke all on function public.integration_claim_events(integer, text, integer, text[])
+  from public, anon, authenticated;
+grant execute on function public.integration_claim_events(integer, text, integer, text[])
+  to service_role;
+
+comment on function public.integration_claim_events(integer, text, integer, text[]) is
+  'Atomically leases due inbox events with optional capability isolation. Stale leases are reclaimable; execution is service-role only.';
