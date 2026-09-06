@@ -38,7 +38,7 @@ describe("presentation diagnostics 031–035", () => {
 
   it("subscribes the manager incrementally and presents menu/table labels cleanly", () => {
     expect(manager).toContain("useOperationalRealtime");
-    expect(manager).toContain("notifyNewOrder()");
+    expect(manager).toContain("notifyNewOrder(row.display_number, row.id)");
     expect(manager).toContain('digital_menu: "Cardápio"');
     expect(manager).toContain('type === "dine_in" || type === "table"');
     expect(orderService).toContain("scheduled_for");
