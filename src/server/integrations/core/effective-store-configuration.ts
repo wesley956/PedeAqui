@@ -81,9 +81,9 @@ export function resolveEffectiveStoreConfiguration(input: {
       if (!HEALTH_USABLE.has(state.health)) blockers.push(`provider_${state.health}`);
 
       for (const moduleKey of CAPABILITY_MODULE_REQUIREMENTS[capability]) {
-        const module = modules[moduleKey];
-        if (!module.available) blockers.push(`module_${moduleKey}_${module.reason}`);
-        else if (!module.allowed) blockers.push(`module_${moduleKey}_permission_denied`);
+        const moduleDecision = modules[moduleKey];
+        if (!moduleDecision.available) blockers.push(`module_${moduleKey}_${moduleDecision.reason}`);
+        else if (!moduleDecision.allowed) blockers.push(`module_${moduleKey}_permission_denied`);
       }
 
       return [capability, {
