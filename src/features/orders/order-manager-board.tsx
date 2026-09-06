@@ -133,7 +133,7 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
       seen.current.add(row.id);
       if (row.order_status === "pending_confirmation") {
         setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
-        void notifyNewOrder();
+        void notifyNewOrder(row.display_number, row.id);
       }
     },
   });
