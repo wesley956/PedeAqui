@@ -19,17 +19,19 @@ import { OrderWorkflowSettingsService } from "@/server/orders/order-workflow-set
 import { fulfillmentIsComplete, paymentAllowsOrderCompletion, type FulfillmentStatus, type PaymentStatus } from "@/server/orders/state-machines";
 
 function rbacSnapshotForEffectiveConfiguration(moduleSnapshot: Awaited<ReturnType<typeof ModuleAccessService.load>>) {
-  return Object.fromEntries(MODULE_KEYS.map((moduleKey) => {
+  const snapshot = {} as Record<ModuleKey, ModuleRbacDecision>;
+  for (const moduleKey of MODULE_KEYS) {
     const availability = moduleSnapshot.availability[moduleKey];
     const permissionDenied = availability.reason === "permission_denied";
-    return [moduleKey, {
+    snapshot[moduleKey] = {
       moduleKey,
       allowed: !permissionDenied,
       visible: !permissionDenied,
       reason: permissionDenied ? "permission_denied" : "allowed",
       permissionTrace: [],
-    } satisfies ModuleRbacDecision];
-  })) as Record<ModuleKey, ModuleRbacDecision>;
+    };
+  }
+  return snapshot;
 }
 
 export default async function OrdersPage() {
