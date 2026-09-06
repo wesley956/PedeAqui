@@ -10,7 +10,10 @@ import type {
 } from "@/server/integrations/core/contracts";
 import { IntegrationConfigurationError, IntegrationProviderError } from "@/server/integrations/core/errors";
 import { IntegrationProviderRegistry } from "@/server/integrations/core/provider-registry";
-import { createExternalOrderInboxHandler } from "@/server/integrations/runtime/external-order-inbox-handler";
+import {
+  createExternalOrderInboxHandler,
+  type ExternalOrderImporter,
+} from "@/server/integrations/runtime/external-order-inbox-handler";
 import type { IntegrationInboxEvent } from "@/server/integrations/runtime/runtime-repository";
 import { processInboxBatch } from "@/server/integrations/runtime/workers";
 
@@ -35,6 +38,12 @@ const event: IntegrationInboxEvent = {
   locked_at: "2026-09-06T20:00:00.000Z",
   locked_by: "worker-1",
 };
+
+const unusedImporter: ExternalOrderImporter = async () => ({
+  order_id: "11111111-1111-4111-8111-111111111111",
+  display_number: 10,
+  created: true,
+});
 
 function makeCanonicalOrder(snapshot: ExternalOrderSnapshot): CanonicalExternalOrder {
   return {
@@ -121,13 +130,7 @@ class MockSalesAdapter implements SalesChannelAdapter {
     return makeCanonicalOrder(snapshot);
   }
 
-  async executeOrderCommand(_input: {
-    externalOrderId: string;
-    merchantExternalId: string;
-    command: SalesChannelOrderCommand;
-    idempotencyKey: string;
-    payload?: unknown;
-  }): Promise<AdapterCommandResult> {
+  async executeOrderCommand(): Promise<AdapterCommandResult> {
     return { accepted: true, externalReference: null, retryable: false };
   }
 }
@@ -191,7 +194,10 @@ describe("omnichannel external order inbox handler", () => {
 
   it("refuses a non-order capability instead of silently consuming another integration event", async () => {
     const adapter = new MockSalesAdapter();
-    const handler = createExternalOrderInboxHandler({ registry: registryWith(adapter) });
+    const handler = createExternalOrderInboxHandler({
+      registry: registryWith(adapter),
+      importOrder: unusedImporter,
+    });
 
     await expect(handler({ ...event, capability: "ifood_catalog" }))
       .rejects.toBeInstanceOf(IntegrationConfigurationError);
@@ -216,7 +222,10 @@ describe("omnichannel external order inbox handler", () => {
   it("keeps transient provider failure in retry and never acknowledges it", async () => {
     const adapter = new MockSalesAdapter();
     adapter.fetchFailure = new IntegrationProviderError("temporary provider outage", "provider_5xx", true);
-    const handler = createExternalOrderInboxHandler({ registry: registryWith(adapter) });
+    const handler = createExternalOrderInboxHandler({
+      registry: registryWith(adapter),
+      importOrder: unusedImporter,
+    });
     const finishes: Array<Record<string, unknown>> = [];
     let acknowledged = false;
 
@@ -244,7 +253,10 @@ describe("omnichannel external order inbox handler", () => {
   it("cannot resolve an adapter from another tenant/store/account scope", async () => {
     const adapter = new MockSalesAdapter();
     const otherEvent = { ...event, store_id: "store-other" };
-    const handler = createExternalOrderInboxHandler({ registry: registryWith(adapter, event) });
+    const handler = createExternalOrderInboxHandler({
+      registry: registryWith(adapter, event),
+      importOrder: unusedImporter,
+    });
 
     await expect(handler(otherEvent)).rejects.toBeInstanceOf(IntegrationConfigurationError);
   });
