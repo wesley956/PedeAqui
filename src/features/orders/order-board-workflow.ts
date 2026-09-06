@@ -1,5 +1,6 @@
-import type { BoardWorkflowMode } from "@/features/orders/order-manager-board";
 import type { WorkflowConfiguration } from "@/server/integrations/core/effective-store-configuration";
+
+export type BoardWorkflowMode = "standard" | "simplified";
 
 export const STANDARD_ORDER_BOARD_LANES = ["new", "preparing", "ready", "queued"] as const;
 export const SIMPLIFIED_ORDER_BOARD_LANES = ["start", "ready", "completed"] as const;
