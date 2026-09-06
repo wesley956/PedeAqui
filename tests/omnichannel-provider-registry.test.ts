@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import type { CanonicalExternalOrder } from "@/server/integrations/core/canonical-external-order";
 import type {
   AdapterCommandResult,
+  ExternalOrderReference,
   ExternalOrderSnapshot,
   IntegrationEventEnvelope,
   SalesChannelAdapter,
@@ -8,6 +10,44 @@ import type {
 } from "@/server/integrations/core/contracts";
 import { IntegrationConfigurationError, IntegrationProviderError, classifyIntegrationError } from "@/server/integrations/core/errors";
 import { IntegrationProviderRegistry, type IntegrationAdapterScope } from "@/server/integrations/core/provider-registry";
+
+function canonicalOrder(snapshot: ExternalOrderSnapshot): CanonicalExternalOrder {
+  return {
+    provider: "ifood",
+    externalMerchantId: snapshot.externalMerchantId,
+    externalOrderId: snapshot.externalOrderId,
+    externalDisplayId: "IF-1",
+    orderType: "takeout",
+    timing: "immediate",
+    createdAt: "2026-09-06T00:00:00.000Z",
+    scheduledFor: null,
+    recommendedPreparationAt: null,
+    customer: { name: "Cliente Mock", phone: null },
+    deliveryAddress: null,
+    items: [{
+      externalId: "item-1",
+      name: "Item Mock",
+      quantity: 1,
+      unitBasePriceCents: 1000,
+      totalCents: 1000,
+      notes: null,
+      modifiers: [],
+    }],
+    money: {
+      subtotalCents: 1000,
+      deliveryFeeCents: 0,
+      discountCents: 0,
+      additionalFeeCents: 0,
+      totalCents: 1000,
+    },
+    payments: [{ method: "provider_wallet", prepaid: true, amountCents: 1000, providerStatus: "PAID" }],
+    paymentOwner: "provider",
+    logisticsOwner: "merchant",
+    pickupCode: null,
+    deliveryCode: null,
+    providerMetadata: { source: "mock" },
+  };
+}
 
 class MockSalesAdapter implements SalesChannelAdapter {
   readonly provider = "ifood" as const;
@@ -26,6 +66,14 @@ class MockSalesAdapter implements SalesChannelAdapter {
     }];
   }
 
+  async resolveOrderReference(event: IntegrationEventEnvelope): Promise<ExternalOrderReference | null> {
+    if (event.eventType === "HEARTBEAT") return null;
+    return {
+      externalOrderId: "order-1",
+      externalMerchantId: event.merchantExternalId ?? "merchant-1",
+    };
+  }
+
   async fetchOrder(externalOrderId: string, merchantExternalId: string): Promise<ExternalOrderSnapshot> {
     return {
       provider: this.provider,
@@ -35,6 +83,10 @@ class MockSalesAdapter implements SalesChannelAdapter {
       revision: null,
       payload: { source: "mock" },
     };
+  }
+
+  async normalizeOrder(snapshot: ExternalOrderSnapshot): Promise<CanonicalExternalOrder> {
+    return canonicalOrder(snapshot);
   }
 
   async executeOrderCommand(input: {
@@ -68,7 +120,12 @@ describe("omnichannel provider registry", () => {
 
     const adapter = registry.resolve("sales", storeA);
     const events = await adapter.normalizeEvent({ anything: true });
-    const order = await adapter.fetchOrder("order-1", "merchant-1");
+    const envelope = events[0];
+    expect(envelope).toBeDefined();
+    const reference = await adapter.resolveOrderReference(envelope!);
+    expect(reference).not.toBeNull();
+    const order = await adapter.fetchOrder(reference!.externalOrderId, reference!.externalMerchantId);
+    const normalized = await adapter.normalizeOrder(order);
     const result = await adapter.executeOrderCommand({
       externalOrderId: order.externalOrderId,
       merchantExternalId: order.externalMerchantId,
@@ -78,6 +135,7 @@ describe("omnichannel provider registry", () => {
 
     expect(events[0]?.eventType).toBe("UNKNOWN_PROVIDER_ENUM");
     expect(order.rawStatus).toBe("UNRECOGNIZED_STATUS");
+    expect(normalized.externalOrderId).toBe("order-1");
     expect(result.accepted).toBe(true);
     expect(mock.commands).toEqual(["confirm"]);
   });
