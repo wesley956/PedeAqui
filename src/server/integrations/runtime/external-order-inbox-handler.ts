@@ -12,12 +12,18 @@ import {
   type CanonicalOrderImportResult,
 } from "@/server/integrations/runtime/canonical-order-import-service";
 import type { IntegrationInboxEvent } from "@/server/integrations/runtime/runtime-repository";
-import type { InboxHandlerResult } from "@/server/integrations/runtime/workers";
+import {
+  processInboxBatch,
+  type InboxHandlerResult,
+  type InboxRuntimeRepository,
+} from "@/server/integrations/runtime/workers";
 
 const SALES_ORDER_CAPABILITY_BY_PROVIDER = {
   ifood: "ifood_orders",
   "99food": "99food_orders",
 } as const satisfies Record<ExternalSalesProvider, string>;
+
+export const EXTERNAL_ORDER_INBOX_CAPABILITIES = ["ifood_orders", "99food_orders"] as const;
 
 type ImportOrderInput = Parameters<typeof CanonicalOrderImportService.import>[0];
 type ImportOrder = (input: ImportOrderInput) => Promise<CanonicalOrderImportResult>;
@@ -140,4 +146,34 @@ export function createExternalOrderInboxHandler(input: {
 
     return { status: "processed", acknowledge: true };
   };
+}
+
+/**
+ * Executable sales-order worker wiring. The capability filter is passed all the
+ * way to the database claim RPC so this worker cannot lease catalog/logistics
+ * events even under concurrent workers.
+ */
+export async function processExternalOrderInboxBatch(input: {
+  repository: InboxRuntimeRepository;
+  registry: IntegrationProviderRegistry;
+  workerId: string;
+  acknowledge?: (event: IntegrationInboxEvent) => Promise<void>;
+  importOrder?: ImportOrder;
+  limit?: number;
+  leaseSeconds?: number;
+  maxAttempts?: number;
+}) {
+  return processInboxBatch({
+    repository: input.repository,
+    workerId: input.workerId,
+    handler: createExternalOrderInboxHandler({
+      registry: input.registry,
+      importOrder: input.importOrder,
+    }),
+    acknowledge: input.acknowledge,
+    capabilities: EXTERNAL_ORDER_INBOX_CAPABILITIES,
+    limit: input.limit,
+    leaseSeconds: input.leaseSeconds,
+    maxAttempts: input.maxAttempts,
+  });
 }
