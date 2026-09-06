@@ -3,15 +3,34 @@ import { CustomOrderWorkflowBoard } from "@/features/orders/custom-order-workflo
 import { Alert } from "@/components/ui/feedback";
 import { OrderManagerBoard } from "@/features/orders/order-manager-board";
 import { OrderListPosition } from "@/features/orders/order-navigation-memory";
+import { orderBoardWorkflowConfiguration, type BoardWorkflowMode } from "@/features/orders/order-board-workflow";
 import styles from "@/features/orders/order-manager.module.css";
 import type { OrderManagerRow } from "@/features/orders/manager-model";
 import { DEFAULT_STORE_TIMEZONE, formatStoreDateTime } from "@/lib/store-date-time";
 import { isManualDeliveryMode } from "@/modules/manual-delivery";
+import { MODULE_KEYS, type ModuleKey } from "@/modules/module-catalog";
+import type { ModuleRbacDecision } from "@/modules/module-rbac";
 import { isDeliveredWithPaymentPending, isFlexiblePaymentQueue, type PaymentCompletionPolicy } from "@/modules/payment-completion-policy";
+import { externalCapabilitiesOff } from "@/server/integrations/core/capabilities";
+import { resolveEffectiveStoreConfiguration } from "@/server/integrations/core/effective-store-configuration";
 import { ModuleAccessService } from "@/server/modules/module-access-service";
 import { OrderService } from "@/server/orders/order-service";
 import { OrderWorkflowSettingsService } from "@/server/orders/order-workflow-settings-service";
 import { fulfillmentIsComplete, paymentAllowsOrderCompletion, type FulfillmentStatus, type PaymentStatus } from "@/server/orders/state-machines";
+
+function rbacSnapshotForEffectiveConfiguration(moduleSnapshot: Awaited<ReturnType<typeof ModuleAccessService.load>>) {
+  return Object.fromEntries(MODULE_KEYS.map((moduleKey) => {
+    const availability = moduleSnapshot.availability[moduleKey];
+    const permissionDenied = availability.reason === "permission_denied";
+    return [moduleKey, {
+      moduleKey,
+      allowed: !permissionDenied,
+      visible: !permissionDenied,
+      reason: permissionDenied ? "permission_denied" : "allowed",
+      permissionTrace: [],
+    } satisfies ModuleRbacDecision];
+  })) as Record<ModuleKey, ModuleRbacDecision>;
+}
 
 export default async function OrdersPage() {
   const [{ context, orders, recentFinalized, recentFinalizedWindowMinutes, workflowMode: legacyWorkflowMode, deliveryOperationLevel, paymentCompletionPolicy }, { settings }, moduleSnapshot] = await Promise.all([
@@ -30,6 +49,19 @@ export default async function OrdersPage() {
   const manualDeliveryMode = isManualDeliveryMode(moduleSnapshot.enabledModuleKeys, deliveryOperationLevel);
   const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
 
+  const effectiveBoardConfiguration = workflowMode === "custom"
+    ? null
+    : resolveEffectiveStoreConfiguration({
+      workflow: orderBoardWorkflowConfiguration(workflowMode as BoardWorkflowMode),
+      moduleAvailability: moduleSnapshot.availability,
+      moduleRbac: rbacSnapshotForEffectiveConfiguration(moduleSnapshot),
+      // Until #948 loads persisted provider health/capabilities, the safe runtime baseline is explicitly OFF.
+      externalCapabilities: externalCapabilitiesOff(),
+    });
+  const effectiveBoardWorkflowMode: BoardWorkflowMode = effectiveBoardConfiguration?.workflow.revision === "orders:simplified:v1"
+    ? "simplified"
+    : "standard";
+
   return (
     <section className={styles.page}>
       <OrderListPosition storageKey="orders:active" />
@@ -45,7 +77,7 @@ export default async function OrdersPage() {
         </div>
       </header>
 
-      <div className={styles.workflowNote}>
+      <div className={styles.workflowNote} data-workflow-revision={effectiveBoardConfiguration?.workflow.revision ?? "orders:custom"}>
         {workflowMode === "simplified"
           ? manualDeliveryMode
             ? "Fluxo simplificado: Iniciar → Pronto → Finalizados. A entrega manual continua dentro do próprio pedido."
@@ -69,7 +101,7 @@ export default async function OrdersPage() {
 
       {workflowMode === "custom"
         ? <CustomOrderWorkflowBoard storeId={context.storeId} orders={rows} config={settings.custom} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} />
-        : <OrderManagerBoard storeId={context.storeId} orders={rows} workflowMode={workflowMode} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />}
+        : <OrderManagerBoard storeId={context.storeId} orders={rows} workflowMode={effectiveBoardWorkflowMode} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />}
 
       <section className={styles.recentFinalized} aria-labelledby="recent-finalized-title">
         <div className={styles.recentFinalizedHeader}>
