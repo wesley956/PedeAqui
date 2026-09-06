@@ -7,6 +7,8 @@ import {
   createModifierGroupFormAction,
   removeModifierAction,
   removeModifierGroupAction,
+  setModifierActiveFormAction,
+  setModifierGroupActiveFormAction,
   updateModifierFormAction,
   updateModifierGroupFormAction,
 } from "@/features/catalog/actions";
@@ -93,8 +95,14 @@ export default async function ModifiersPage() {
                   {quantityMode ? <div className="muted" style={{ fontSize: 12 }}>O máximo é um teto. O cliente pode continuar antes dele assim que o mínimo estiver atendido.</div> : null}
                   {equalSplitMode ? <div className="muted" style={{ fontSize: 12 }}>O cliente escolhe entre o mínimo e o máximo de opções; o total configurado é repartido igualmente entre elas.</div> : null}
                 </div>
-                <span className="muted">{group.active ? "Ativo" : "Inativo"}</span>
+                <span className="muted">{group.active ? "Ativo" : "Pausado"}</span>
               </div>
+
+              <ResilientMutationForm action={setModifierGroupActiveFormAction} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                <input type="hidden" name="modifierGroupId" value={group.id} />
+                <input type="hidden" name="active" value={group.active ? "false" : "true"} />
+                <Button type="submit" tone="secondary">{group.active ? "Pausar grupo" : "Reativar grupo"}</Button>
+              </ResilientMutationForm>
 
               <details>
                 <summary style={{ cursor: "pointer", fontWeight: 700 }}>Editar grupo</summary>
@@ -124,9 +132,15 @@ export default async function ModifiersPage() {
                 {items.length === 0 ? <span className="muted">Nenhuma opção neste grupo.</span> : items.map((item) => (
                   <section key={item.id} style={{ display: "grid", gap: 10, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                      <span>{item.name} {!item.active ? <span className="muted">· inativo</span> : null}</span>
+                      <span>{item.name} {!item.active ? <span className="muted">· pausado</span> : null}</span>
                       <span className="muted">+ {formatCents(item.price_cents)}{pricedPerUnit ? " por unidade" : ""}</span>
                     </div>
+                    <ResilientMutationForm action={setModifierActiveFormAction} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                      <input type="hidden" name="modifierId" value={item.id} />
+                      <input type="hidden" name="active" value={item.active ? "false" : "true"} />
+                      <Checkbox name="allMatching" label="Aplicar ao mesmo sabor em todos os grupos" defaultChecked />
+                      <Button type="submit" tone="secondary">{item.active ? "Pausar opção" : "Reativar opção"}</Button>
+                    </ResilientMutationForm>
                     <details>
                       <summary style={{ cursor: "pointer" }}>Editar opção</summary>
                       <ResilientMutationForm action={updateModifierFormAction} successReset={false} style={{ display: "grid", gap: 10, marginTop: 12 }}>

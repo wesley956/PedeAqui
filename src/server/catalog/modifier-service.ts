@@ -19,6 +19,10 @@ function requireStoreId(storeId: string | null): string {
   return storeId;
 }
 
+function normalizedCatalogName(value: string): string {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLocaleLowerCase("pt-BR");
+}
+
 export class ModifierService {
   static async listGroups() {
     const context = await authorize(PERMISSIONS.PRODUCTS_VIEW);
@@ -97,6 +101,25 @@ export class ModifierService {
       .select("id, name, description, min_selection, max_selection, required, selection_mode, distribution_total, sort_order, active").single();
     if (error) throw error;
     await AuditService.record(context, { action: "modifier_group.updated", entityType: "modifier_group", entityId: id, before, after });
+    return after;
+  }
+
+  static async setGroupActive(groupId: string, active: boolean) {
+    const id = uuidSchema.parse(groupId);
+    const context = await authorize(PERMISSIONS.PRODUCTS_EDIT);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const { data: before, error: beforeError } = await admin.from("modifier_groups")
+      .select("id, name, active")
+      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
+    if (beforeError) throw beforeError;
+    const { data: after, error } = await admin.from("modifier_groups")
+      .update({ active, updated_by: context.userId, updated_at: new Date().toISOString() })
+      .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId)
+      .select("id, name, active").single();
+    if (error) throw error;
+    await AuditService.record(context, { action: "modifier_group.availability_changed", entityType: "modifier_group", entityId: id, before, after });
+    await EventService.enqueue(context, { type: "modifier_group.availability_changed", entityType: "modifier_group", entityId: id, payload: { active } });
     return after;
   }
 
@@ -182,16 +205,45 @@ export class ModifierService {
     await AuditService.record(context, { action: "modifier.deleted", entityType: "modifier", entityId: id, before, after: { ...before, active: false, deleted_at: deletedAt } });
   }
 
-  static async setModifierActive(modifierId: string, active: boolean) {
+  static async setModifierActive(modifierId: string, active: boolean, scope: "single" | "matching_name" = "single") {
     const id = uuidSchema.parse(modifierId);
     const context = await authorize(PERMISSIONS.PRODUCTS_EDIT);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const { data: before, error: beforeError } = await admin.from("modifiers").select("id, active").eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
-    if (beforeError) throw beforeError;
-    const { data: after, error } = await admin.from("modifiers").update({ active, updated_by: context.userId, updated_at: new Date().toISOString() }).eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).select("id, active").single();
+    const { data: target, error: targetError } = await admin.from("modifiers").select("id, modifier_group_id, name, active").eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).single();
+    if (targetError) throw targetError;
+
+    const { data: storeModifiers, error: modifiersError } = await admin.from("modifiers")
+      .select("id, modifier_group_id, name, active")
+      .eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null);
+    if (modifiersError) throw modifiersError;
+    const affected = scope === "matching_name"
+      ? (storeModifiers ?? []).filter((item) => normalizedCatalogName(item.name) === normalizedCatalogName(target.name))
+      : [target];
+    const affectedIds = affected.map((item) => item.id);
+    const affectedIdSet = new Set(affectedIds);
+    const affectedGroupIds = [...new Set(affected.map((item) => item.modifier_group_id))];
+
+    if (!active && affectedGroupIds.length > 0) {
+      const { data: groups, error: groupsError } = await admin.from("modifier_groups")
+        .select("id, name, min_selection, selection_mode, active")
+        .eq("organization_id", context.organizationId).eq("store_id", storeId).in("id", affectedGroupIds).is("deleted_at", null);
+      if (groupsError) throw groupsError;
+      for (const group of groups ?? []) {
+        if (!group.active || Number(group.min_selection) === 0) continue;
+        const remaining = (storeModifiers ?? []).filter((item) => item.modifier_group_id === group.id && item.active && !affectedIdSet.has(item.id)).length;
+        const requiredChoices = group.selection_mode === "quantity_per_option" ? 1 : Number(group.min_selection);
+        if (remaining < requiredChoices) {
+          throw new Error(`Não é possível pausar esta opção: o grupo obrigatório “${group.name}” ficaria sem escolhas suficientes.`);
+        }
+      }
+    }
+
+    const before = affected.map(({ id: itemId, modifier_group_id, name, active: currentActive }) => ({ id: itemId, modifier_group_id, name, active: currentActive }));
+    const { data: after, error } = await admin.from("modifiers").update({ active, updated_by: context.userId, updated_at: new Date().toISOString() }).in("id", affectedIds).eq("organization_id", context.organizationId).eq("store_id", storeId).select("id, modifier_group_id, name, active");
     if (error) throw error;
-    await AuditService.record(context, { action: "modifier.availability_changed", entityType: "modifier", entityId: id, before, after });
+    await AuditService.record(context, { action: "modifier.availability_changed", entityType: "modifier", entityId: id, before, after: { items: after, scope, affectedCount: affectedIds.length } });
+    await EventService.enqueue(context, { type: "modifier.availability_changed", entityType: "modifier", entityId: id, payload: { active, scope, affected_count: affectedIds.length } });
     return after;
   }
 

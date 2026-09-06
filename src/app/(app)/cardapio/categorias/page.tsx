@@ -5,7 +5,7 @@ import { CategoryService } from "@/server/catalog/category-service";
 import { createCategoryFormAction } from "@/features/catalog/actions";
 import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
-import { removeCategoryAction, updateCategoryFormAction } from "@/features/catalog/actions";
+import { removeCategoryAction, setCategoryActiveFormAction, updateCategoryFormAction } from "@/features/catalog/actions";
 import styles from "../catalog-management.module.css";
 
 export default async function CategoriesPage() {
@@ -40,8 +40,13 @@ export default async function CategoriesPage() {
                 <strong>{category.name}</strong>
                 <div className="muted" style={{ fontSize: 13 }}>Ordem {category.sort_order}</div>
               </div>
-              <span className="muted">{category.active ? "Ativa" : "Inativa"}</span>
+              <span className="muted">{category.active ? "Ativa" : "Pausada"}</span>
             </div>
+            <ResilientMutationForm action={setCategoryActiveFormAction} className={styles.quickAvailabilityForm}>
+              <input type="hidden" name="categoryId" value={category.id} />
+              <input type="hidden" name="active" value={category.active ? "false" : "true"} />
+              <Button type="submit" tone="secondary">{category.active ? "Pausar categoria" : "Reativar categoria"}</Button>
+            </ResilientMutationForm>
             <details className={styles.editDetails}>
               <summary>Editar categoria</summary>
               <ResilientMutationForm action={updateCategoryFormAction} successReset={false} className={styles.editBody}>

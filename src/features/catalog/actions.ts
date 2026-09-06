@@ -166,6 +166,19 @@ export async function removeCategoryAction(formData: FormData) {
   }
 }
 
+export async function setCategoryActiveFormAction(formData: FormData) {
+  try {
+    const active = formData.get("active") === "true";
+    await CategoryService.setActive(String(formData.get("categoryId") ?? ""), active);
+    revalidatePath("/cardapio/categorias");
+    revalidatePath("/cardapio/produtos");
+    return { ok: true, message: active ? "Categoria reativada no cardápio." : "Categoria pausada no cardápio." };
+  } catch (error) {
+    logCatalogMutationFailure("set_category_active", error);
+    return { ok: false, message: "Não foi possível alterar a disponibilidade da categoria." };
+  }
+}
+
 export async function createCategoryFormAction(formData: FormData) {
   try {
     await createCategoryAction(formData);
@@ -234,6 +247,20 @@ export async function setProductAvailabilityAction(formData: FormData) {
   revalidatePath("/cardapio/produtos");
 }
 
+export async function setProductAvailabilityFormAction(formData: FormData) {
+  try {
+    const productId = String(formData.get("productId") ?? "");
+    const availability = productAvailabilitySchema.parse(formData.get("availability"));
+    await ProductService.setAvailability(productId, availability);
+    revalidatePath("/cardapio/produtos");
+    revalidatePath(`/cardapio/produtos/${productId}`);
+    return { ok: true, message: availability === "available" ? "Produto reativado no cardápio." : "Produto pausado no cardápio." };
+  } catch (error) {
+    logCatalogMutationFailure("set_product_availability", error);
+    return { ok: false, message: "Não foi possível alterar a disponibilidade do produto." };
+  }
+}
+
 export async function duplicateProductAction(formData: FormData) {
   await ProductService.duplicate(String(formData.get("productId") ?? ""));
   revalidatePath("/cardapio/produtos");
@@ -276,6 +303,19 @@ export async function removeModifierGroupAction(formData: FormData) {
   }
 }
 
+export async function setModifierGroupActiveFormAction(formData: FormData) {
+  try {
+    const active = formData.get("active") === "true";
+    await ModifierService.setGroupActive(String(formData.get("modifierGroupId") ?? ""), active);
+    revalidatePath("/cardapio/adicionais");
+    revalidatePath("/cardapio/produtos");
+    return { ok: true, message: active ? "Grupo reativado no cardápio." : "Grupo pausado no cardápio." };
+  } catch (error) {
+    logCatalogMutationFailure("set_modifier_group_active", error);
+    return { ok: false, message: "Não foi possível alterar a disponibilidade do grupo." };
+  }
+}
+
 export async function createModifierAction(formData: FormData) {
   await ModifierService.createModifier(modifierInput(formData));
   revalidatePath("/cardapio/adicionais");
@@ -310,6 +350,24 @@ export async function removeModifierAction(formData: FormData) {
   } catch (error) {
     logCatalogMutationFailure("remove_modifier", error);
     return { ok: false, message: "Não foi possível remover o adicional. Pedidos foram preservados." };
+  }
+}
+
+export async function setModifierActiveFormAction(formData: FormData) {
+  try {
+    const active = formData.get("active") === "true";
+    const scope = formData.get("allMatching") === "on" ? "matching_name" : "single";
+    const updated = await ModifierService.setModifierActive(String(formData.get("modifierId") ?? ""), active, scope);
+    revalidatePath("/cardapio/adicionais");
+    revalidatePath("/cardapio/produtos");
+    const count = updated?.length ?? 0;
+    return { ok: true, message: active ? `${count} opção(ões) reativada(s) no cardápio.` : `${count} opção(ões) pausada(s) no cardápio.` };
+  } catch (error) {
+    logCatalogMutationFailure("set_modifier_active", error);
+    const message = error instanceof Error && error.message.startsWith("Não é possível pausar")
+      ? error.message
+      : "Não foi possível alterar a disponibilidade da opção.";
+    return { ok: false, message };
   }
 }
 

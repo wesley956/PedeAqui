@@ -39,7 +39,7 @@ describe("UX residual for orders and catalog", () => {
     const products = read("src/app/(app)/cardapio/produtos/page.tsx");
     const editor = read("src/app/(app)/cardapio/produtos/[id]/page.tsx");
     const modifiers = read("src/app/(app)/cardapio/adicionais/page.tsx");
-    expect(products).toContain("Marcar esgotado");
+    expect(products).toContain("Pausar produto");
     for (const field of ["price", "promotionalPrice", "imageFile", "availability"]) expect(editor).toContain(`name="${field}"`);
     for (const rule of ["minSelection", "maxSelection", "distributionTotal", "selectionMode"]) expect(modifiers).toContain(`name="${rule}"`);
   });
