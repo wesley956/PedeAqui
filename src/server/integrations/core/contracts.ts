@@ -1,4 +1,5 @@
 import type { IntegrationProvider } from "@/server/integrations/core/capabilities";
+import type { CanonicalExternalOrder } from "@/server/integrations/core/canonical-external-order";
 
 export type IntegrationEventEnvelope<TPayload = unknown> = {
   provider: IntegrationProvider;
@@ -18,6 +19,11 @@ export type AdapterCommandResult<TData = unknown> = {
   data?: TData;
 };
 
+export type ExternalOrderReference = {
+  externalOrderId: string;
+  externalMerchantId: string;
+};
+
 export type ExternalOrderSnapshot = {
   provider: IntegrationProvider;
   externalOrderId: string;
@@ -35,11 +41,13 @@ export type SalesChannelOrderCommand =
   | "complete"
   | "request_cancellation";
 
-/** Provider-specific HTTP/auth stays behind this boundary. */
+/** Provider-specific HTTP/auth and payload parsing stay behind this boundary. */
 export interface SalesChannelAdapter {
   readonly provider: IntegrationProvider;
   normalizeEvent(input: unknown): Promise<IntegrationEventEnvelope[]>;
+  resolveOrderReference(event: IntegrationEventEnvelope): Promise<ExternalOrderReference | null>;
   fetchOrder(externalOrderId: string, merchantExternalId: string): Promise<ExternalOrderSnapshot>;
+  normalizeOrder(snapshot: ExternalOrderSnapshot): Promise<CanonicalExternalOrder>;
   executeOrderCommand(input: {
     externalOrderId: string;
     merchantExternalId: string;
