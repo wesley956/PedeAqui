@@ -67,6 +67,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 ## APIs e agentes adicionados posteriormente
 
 - `/api/order-alert/presence` — heartbeat autenticado do painel para o fallback nativo distinguir painel ativo de navegador fechado e respeitar a preferência explícita de som.
+- `/api/order-alert/events` — fallback autenticado do painel web para recuperar eventos recentes de novos pedidos quando o Realtime oscila; usa a loja ativa da sessão, evita alertas duplicados por pedido e não substitui o caminho Realtime.
 - `/api/product-experience/events` — captura autenticada e não bloqueante de eventos de praticidade allowlisted, isolados por organização/unidade e sem dados pessoais desnecessários.
 - `/api/print-agent/order-alerts` — endpoint autenticado pelo token do Print Agent para consumir eventos imutáveis de novos pedidos quando o painel não está ativo; não substitui nem bloqueia o alerta web.
 - `/api/print-agent/job-style` — endpoint autenticado e restrito ao job atribuído ao Print Agent para recuperar o espaçamento entre linhas preservado no próprio job de impressão.
