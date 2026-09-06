@@ -104,11 +104,17 @@ export class IntegrationRuntimeRepository {
     return { id: String(existing.data.id), duplicate: true };
   }
 
-  async claimEvents(workerId: string, limit = 10, leaseSeconds = 120): Promise<IntegrationInboxEvent[]> {
+  async claimEvents(
+    workerId: string,
+    limit = 10,
+    leaseSeconds = 120,
+    capabilities?: readonly string[],
+  ): Promise<IntegrationInboxEvent[]> {
     const { data, error } = await this.db.rpc("integration_claim_events", {
       p_limit: limit,
       p_worker_id: workerId,
       p_lease_seconds: leaseSeconds,
+      p_capabilities: capabilities ? [...capabilities] : null,
     });
     throwIfDbError(error, "integration event claim failed");
     return (data ?? []) as IntegrationInboxEvent[];
