@@ -15,6 +15,7 @@ export type NativeOrderAlertAgentContext = {
 
 type NativeOrderAlertRow = {
   id: string;
+  orderId: string;
   displayNumber: number | null;
   occurredAt: string;
 };
@@ -88,14 +89,10 @@ export class OrderAlertBackupService {
     return data?.id == null ? "0" : String(data.id);
   }
 
-  static async pollForAgent(agent: NativeOrderAlertAgentContext, cursor: string | null) {
-    const { panelActive, nativeEnabled } = await this.statusForAgent(agent);
-
+  static async pollEvents(agent: NativeOrderAlertAgentContext, cursor: string | null) {
     if (!cursor) {
       return {
         cursor: await this.baselineCursor(agent),
-        panelActive,
-        nativeEnabled,
         orders: [] as NativeOrderAlertRow[],
       };
     }
@@ -104,7 +101,7 @@ export class OrderAlertBackupService {
     const admin = createAdminClient();
     const { data, error } = await admin
       .from("order_alert_events")
-      .select("id, display_number, occurred_at")
+      .select("id, order_id, display_number, occurred_at")
       .eq("organization_id", agent.organization_id)
       .eq("store_id", agent.store_id)
       .gt("id", safeCursor)
@@ -114,11 +111,21 @@ export class OrderAlertBackupService {
 
     const orders: NativeOrderAlertRow[] = (data ?? []).map((event) => ({
       id: String(event.id),
+      orderId: String(event.order_id),
       displayNumber: event.display_number == null ? null : Number(event.display_number),
       occurredAt: String(event.occurred_at),
     }));
     const nextCursor = orders.at(-1)?.id ?? safeCursor;
 
-    return { cursor: nextCursor, panelActive, nativeEnabled, orders };
+    return { cursor: nextCursor, orders };
+  }
+
+  static async pollForAgent(agent: NativeOrderAlertAgentContext, cursor: string | null) {
+    const [{ panelActive, nativeEnabled }, events] = await Promise.all([
+      this.statusForAgent(agent),
+      this.pollEvents(agent, cursor),
+    ]);
+
+    return { ...events, panelActive, nativeEnabled };
   }
 }

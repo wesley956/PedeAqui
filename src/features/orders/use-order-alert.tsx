@@ -10,8 +10,15 @@ import {
   writeOrderAlertPreference,
 } from "@/features/orders/order-alert-tone";
 
-export type OrderAlertStatus = "off" | "needs_activation" | "ready";
+export type OrderAlertStatus = "off" | "armed" | "needs_activation" | "ready";
 type MessageHandler = (message: string) => void;
+type OrderAlertResult = "disabled" | "needs_activation" | "blocked" | "played";
+type FallbackOrderAlertEvent = {
+  id: string;
+  orderId: string;
+  displayNumber: number | null;
+  occurredAt: string;
+};
 
 type OrderAlertContextValue = {
   status: OrderAlertStatus;
@@ -19,7 +26,7 @@ type OrderAlertContextValue = {
   primaryLabel: string;
   toggle: (onMessage?: MessageHandler) => Promise<boolean>;
   test: (onMessage?: MessageHandler) => Promise<boolean>;
-  notifyNewOrder: (displayNumber?: number, onMessage?: MessageHandler) => Promise<"disabled" | "needs_activation" | "blocked" | "played">;
+  notifyNewOrder: (displayNumber?: number, orderId?: string, onMessage?: MessageHandler) => Promise<OrderAlertResult>;
 };
 
 const OrderAlertContext = createContext<OrderAlertContextValue | null>(null);
@@ -27,6 +34,12 @@ const presenceBrowserKey = "pedeaqui:orders:alert-browser-id";
 const presenceHeartbeatMs = 20_000;
 const realtimeRefreshCoalesceMs = 200;
 const realtimeDegradedRefreshMs = 30_000;
+const fallbackFastPollMs = 5_000;
+const fallbackHealthyPollMs = 30_000;
+const fallbackRecentEventMs = 5 * 60_000;
+const fallbackCursorPrefix = "pedeaqui:orders:alert-cursor:";
+const alertedOrdersPrefix = "pedeaqui:orders:alerted:";
+const alertedOrdersLimit = 100;
 
 function getPresenceBrowserId() {
   try {
@@ -54,6 +67,60 @@ async function reportPanelPresence(browserId: string, active: boolean, soundEnab
   }).catch(() => undefined);
 }
 
+function fallbackCursorKey(storeId: string) {
+  return `${fallbackCursorPrefix}${storeId}`;
+}
+
+function readFallbackCursor(storeId: string) {
+  try {
+    const raw = window.localStorage.getItem(fallbackCursorKey(storeId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { cursor?: unknown; updatedAt?: unknown };
+    if (typeof parsed.cursor !== "string" || !/^\d+$/.test(parsed.cursor)) return null;
+    if (typeof parsed.updatedAt !== "number" || Date.now() - parsed.updatedAt > fallbackRecentEventMs) return null;
+    return parsed.cursor;
+  } catch {
+    return null;
+  }
+}
+
+function writeFallbackCursor(storeId: string, cursor: string) {
+  try {
+    window.localStorage.setItem(fallbackCursorKey(storeId), JSON.stringify({ cursor, updatedAt: Date.now() }));
+  } catch {
+    // O fallback continua funcionando durante a sessão mesmo sem armazenamento persistente.
+  }
+}
+
+function alertedOrdersKey(storeId: string) {
+  return `${alertedOrdersPrefix}${storeId}`;
+}
+
+function readAlertedOrders(storeId: string) {
+  try {
+    const raw = window.localStorage.getItem(alertedOrdersKey(storeId));
+    if (!raw) return [] as string[];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [] as string[];
+    return parsed.filter((value): value is string => typeof value === "string").slice(0, alertedOrdersLimit);
+  } catch {
+    return [] as string[];
+  }
+}
+
+function wasOrderAlerted(storeId: string, orderId: string) {
+  return readAlertedOrders(storeId).includes(orderId);
+}
+
+function rememberAlertedOrder(storeId: string, orderId: string) {
+  try {
+    const current = readAlertedOrders(storeId).filter((value) => value !== orderId);
+    window.localStorage.setItem(alertedOrdersKey(storeId), JSON.stringify([orderId, ...current].slice(0, alertedOrdersLimit)));
+  } catch {
+    // O Set em memória ainda evita duplicidade dentro da sessão atual.
+  }
+}
+
 function showBackgroundNotification(displayNumber?: number) {
   if (typeof document === "undefined" || !document.hidden) return;
   if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
@@ -78,6 +145,10 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const browserIdRef = useRef<string | null>(null);
   const realtimeRefreshTimerRef = useRef<number | null>(null);
+  const realtimeConnectedRef = useRef(false);
+  const fallbackPollInFlightRef = useRef(false);
+  const alertingOrderIdsRef = useRef(new Set<string>());
+  const alertedOrderIdsRef = useRef(new Set<string>());
 
   const updateStatus = useCallback((next: OrderAlertStatus) => {
     statusRef.current = next;
@@ -96,7 +167,7 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
     audioRef.current = audio;
     configuredRef.current = configured;
     const restoreTimer = window.setTimeout(() => {
-      updateStatus(configured ? "needs_activation" : "off");
+      updateStatus(configured ? "armed" : "off");
     }, 0);
 
     return () => {
@@ -106,6 +177,10 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
       audioRef.current = null;
     };
   }, [updateStatus]);
+
+  useEffect(() => {
+    alertedOrderIdsRef.current = new Set(storeId ? readAlertedOrders(storeId) : []);
+  }, [storeId]);
 
   useEffect(() => {
     let unlockInFlight = false;
@@ -226,7 +301,7 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
   }, [syncPresence, updateStatus]);
 
   const toggle = useCallback(async (onMessage?: MessageHandler) => {
-    if (statusRef.current === "ready") {
+    if (statusRef.current === "ready" || statusRef.current === "armed") {
       deactivate(onMessage);
       return false;
     }
@@ -250,21 +325,96 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
     return true;
   }, [reproduceAndValidate, updateStatus]);
 
-  const notifyNewOrder = useCallback(async (displayNumber?: number, onMessage?: MessageHandler) => {
-    showBackgroundNotification(displayNumber);
-    if (!configuredRef.current) return "disabled" as const;
-    if (statusRef.current !== "ready") {
-      onMessage?.("Novo pedido recebido. O som está salvo, mas precisa ser liberado neste navegador.");
-      return "needs_activation" as const;
+  const notifyNewOrder = useCallback(async (displayNumber?: number, orderId?: string, onMessage?: MessageHandler): Promise<OrderAlertResult> => {
+    if (orderId && storeId) {
+      if (alertingOrderIdsRef.current.has(orderId)) return "played";
+      if (alertedOrderIdsRef.current.has(orderId) || wasOrderAlerted(storeId, orderId)) {
+        alertedOrderIdsRef.current.add(orderId);
+        return "played";
+      }
+      alertingOrderIdsRef.current.add(orderId);
     }
 
-    const played = await reproduceAndValidate();
-    if (!played) {
-      onMessage?.("Novo pedido recebido, mas o navegador bloqueou o áudio. Toque em Liberar som para reativar.");
-      return "blocked" as const;
+    try {
+      showBackgroundNotification(displayNumber);
+      if (!configuredRef.current) return "disabled";
+
+      const played = await reproduceAndValidate();
+      if (!played) {
+        onMessage?.("Novo pedido recebido, mas o navegador bloqueou o áudio. Toque em Liberar som para reativar.");
+        return statusRef.current === "needs_activation" ? "needs_activation" : "blocked";
+      }
+
+      if (orderId && storeId) {
+        alertedOrderIdsRef.current.add(orderId);
+        rememberAlertedOrder(storeId, orderId);
+      }
+      return "played";
+    } finally {
+      if (orderId) alertingOrderIdsRef.current.delete(orderId);
     }
-    return "played" as const;
-  }, [reproduceAndValidate]);
+  }, [reproduceAndValidate, storeId]);
+
+  useEffect(() => {
+    if (!storeId) return;
+
+    let active = true;
+    let cursor = readFallbackCursor(storeId);
+    let lastPollAt = 0;
+
+    const pollFallback = async (force = false) => {
+      if (!active || !navigator.onLine || fallbackPollInFlightRef.current) return;
+      const minimumInterval = realtimeConnectedRef.current ? fallbackHealthyPollMs : fallbackFastPollMs;
+      if (!force && Date.now() - lastPollAt < minimumInterval) return;
+
+      lastPollAt = Date.now();
+      fallbackPollInFlightRef.current = true;
+      try {
+        const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : "";
+        const response = await fetch(`/api/order-alert/events${query}`, {
+          method: "GET",
+          credentials: "same-origin",
+          cache: "no-store",
+        });
+        if (!response.ok) return;
+        const payload = await response.json() as { cursor?: unknown; orders?: unknown };
+        if (typeof payload.cursor !== "string" || !/^\d+$/.test(payload.cursor)) return;
+
+        const orders = Array.isArray(payload.orders) ? payload.orders as FallbackOrderAlertEvent[] : [];
+        for (const event of orders) {
+          if (!event || typeof event.orderId !== "string" || typeof event.occurredAt !== "string") continue;
+          const occurredAt = Date.parse(event.occurredAt);
+          if (!Number.isFinite(occurredAt) || Date.now() - occurredAt > fallbackRecentEventMs) continue;
+          await notifyNewOrder(event.displayNumber ?? undefined, event.orderId);
+        }
+
+        cursor = payload.cursor;
+        writeFallbackCursor(storeId, cursor);
+      } catch {
+        // O Realtime continua sendo o caminho principal; o fallback tenta novamente no próximo ciclo.
+      } finally {
+        fallbackPollInFlightRef.current = false;
+      }
+    };
+
+    void pollFallback(true);
+    const timer = window.setInterval(() => void pollFallback(), fallbackFastPollMs);
+    const pollAfterOnline = () => void pollFallback(true);
+    const pollAfterVisibility = () => {
+      if (document.visibilityState === "visible") void pollFallback(true);
+    };
+
+    window.addEventListener("online", pollAfterOnline);
+    document.addEventListener("visibilitychange", pollAfterVisibility);
+
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      window.removeEventListener("online", pollAfterOnline);
+      document.removeEventListener("visibilitychange", pollAfterVisibility);
+      fallbackPollInFlightRef.current = false;
+    };
+  }, [notifyNewOrder, storeId]);
 
   useEffect(() => {
     if (!storeId) return;
@@ -272,7 +422,7 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
     const supabase = createClient();
     const isOrdersPage = pathname === "/pedidos" || pathname.startsWith("/pedidos/");
     let active = true;
-    let realtimeConnected = false;
+    realtimeConnectedRef.current = false;
 
     const scheduleRefresh = () => {
       if (!active || realtimeRefreshTimerRef.current !== null) return;
@@ -288,27 +438,27 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
         "postgres_changes",
         { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
         (payload) => {
-          const row = payload.new as { order_status?: string; display_number?: number };
+          const row = payload.new as { id?: string; order_status?: string; display_number?: number };
           if (!isOrdersPage && payload.eventType === "INSERT" && row.order_status === "pending_confirmation") {
-            void notifyNewOrder(row.display_number);
+            void notifyNewOrder(row.display_number, row.id);
           }
           scheduleRefresh();
         },
       )
       .subscribe((next) => {
-        realtimeConnected = next === "SUBSCRIBED";
+        realtimeConnectedRef.current = next === "SUBSCRIBED";
         if (["CHANNEL_ERROR", "TIMED_OUT", "CLOSED"].includes(next)) scheduleRefresh();
       });
 
     const refreshAfterReconnect = () => {
-      realtimeConnected = false;
+      realtimeConnectedRef.current = false;
       scheduleRefresh();
     };
     const refreshAfterVisibility = () => {
-      if (document.visibilityState === "visible" && !realtimeConnected) scheduleRefresh();
+      if (document.visibilityState === "visible" && !realtimeConnectedRef.current) scheduleRefresh();
     };
     const degradedRefresh = window.setInterval(() => {
-      if (!realtimeConnected && navigator.onLine) scheduleRefresh();
+      if (!realtimeConnectedRef.current && navigator.onLine) scheduleRefresh();
     }, realtimeDegradedRefreshMs);
 
     window.addEventListener("online", refreshAfterReconnect);
@@ -316,6 +466,7 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
 
     return () => {
       active = false;
+      realtimeConnectedRef.current = false;
       window.removeEventListener("online", refreshAfterReconnect);
       document.removeEventListener("visibilitychange", refreshAfterVisibility);
       window.clearInterval(degradedRefresh);
@@ -329,8 +480,14 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
 
   const value = useMemo<OrderAlertContextValue>(() => ({
     status,
-    soundEnabled: status === "ready",
-    primaryLabel: status === "ready" ? "Som ativo ✓" : status === "needs_activation" ? "Liberar som" : "Ativar som",
+    soundEnabled: status !== "off",
+    primaryLabel: status === "ready"
+      ? "Som ativo ✓"
+      : status === "armed"
+        ? "Som preparado ✓"
+        : status === "needs_activation"
+          ? "Liberar som"
+          : "Ativar som",
     toggle,
     test,
     notifyNewOrder,
@@ -349,6 +506,6 @@ export function useOrderAlert(onMessage?: MessageHandler) {
     primaryLabel: alert.primaryLabel,
     toggle: () => alert.toggle(onMessage),
     test: () => alert.test(onMessage),
-    notifyNewOrder: (displayNumber?: number) => alert.notifyNewOrder(displayNumber, onMessage),
+    notifyNewOrder: (displayNumber?: number, orderId?: string) => alert.notifyNewOrder(displayNumber, orderId, onMessage),
   }), [alert, onMessage]);
 }
