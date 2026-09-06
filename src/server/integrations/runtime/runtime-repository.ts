@@ -100,6 +100,7 @@ export class IntegrationRuntimeRepository {
       .eq("external_event_id", input.externalEventId)
       .single();
     throwIfDbError(existing.error, "integration event dedupe lookup failed");
+    if (!existing.data?.id) throw new Error("integration event dedupe lookup returned no row");
     return { id: String(existing.data.id), duplicate: true };
   }
 
@@ -173,6 +174,7 @@ export class IntegrationRuntimeRepository {
       .eq("idempotency_key", input.idempotencyKey)
       .single();
     throwIfDbError(existing.error, "integration outbox dedupe lookup failed");
+    if (!existing.data?.id) throw new Error("integration outbox dedupe lookup returned no row");
     return { id: String(existing.data.id), duplicate: true };
   }
 
