@@ -55,6 +55,21 @@ while IFS= read -r schema_name; do
   psql "${local_db_url}" -X -v ON_ERROR_STOP=1 -f "${schema_file}" >/dev/null
 done < <(find supabase/sql -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC_ALL=C sort -t_ -k1,1n -k2,2)
 
+# New unpromoted OMNI deltas are not yet represented in supabase/sql. Apply only
+# these explicitly so this disposable gate actually validates the same SQL that
+# the PR proposes without replaying historical migrations already in the baseline.
+readonly isolated_delta_migrations=(
+  "20260906044000_omnichannel_integration_core.sql"
+  "20260906050000_omnichannel_runtime_claims.sql"
+)
+for migration_name in "${isolated_delta_migrations[@]}"; do
+  migration_file="${parked_migrations}/${migration_name}"
+  if [[ -f "${migration_file}" ]]; then
+    echo "ISOLATED_DELTA_APPLY=${migration_name}"
+    psql "${local_db_url}" -X -v ON_ERROR_STOP=1 -f "${migration_file}" >/dev/null
+  fi
+done
+
 # Prove that the disposable database survives a controlled infrastructure restart.
 supabase stop
 supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
@@ -65,6 +80,7 @@ readonly scenarios=(
   "supabase/tests/e2e_cash_register.sql"
   "supabase/tests/e2e_pdv_to_kitchen.sql"
   "supabase/tests/quality_rls_isolation.sql"
+  "supabase/tests/e2e_omnichannel_runtime.sql"
 )
 
 for pass in 1 2 3; do
