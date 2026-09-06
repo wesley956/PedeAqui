@@ -5,7 +5,12 @@ import type {
 } from "@/server/integrations/runtime/runtime-repository";
 
 export interface InboxRuntimeRepository {
-  claimEvents(workerId: string, limit?: number, leaseSeconds?: number): Promise<IntegrationInboxEvent[]>;
+  claimEvents(
+    workerId: string,
+    limit?: number,
+    leaseSeconds?: number,
+    capabilities?: readonly string[],
+  ): Promise<IntegrationInboxEvent[]>;
   finishEvent(input: {
     eventId: string;
     workerId: string;
@@ -38,11 +43,17 @@ export async function processInboxBatch(input: {
   workerId: string;
   handler: (event: IntegrationInboxEvent) => Promise<InboxHandlerResult>;
   acknowledge?: (event: IntegrationInboxEvent) => Promise<void>;
+  capabilities?: readonly string[];
   limit?: number;
   leaseSeconds?: number;
   maxAttempts?: number;
 }): Promise<{ claimed: number; processed: number; ignored: number; retried: number; deadLettered: number; ackFailed: number }> {
-  const events = await input.repository.claimEvents(input.workerId, input.limit, input.leaseSeconds);
+  const events = await input.repository.claimEvents(
+    input.workerId,
+    input.limit,
+    input.leaseSeconds,
+    input.capabilities,
+  );
   const summary = { claimed: events.length, processed: 0, ignored: 0, retried: 0, deadLettered: 0, ackFailed: 0 };
 
   for (const event of events) {
