@@ -23,8 +23,8 @@ begin
 
   if p_capabilities is not null and exists (
     select 1
-    from pg_catalog.unnest(p_capabilities) capability
-    where capability is null or pg_catalog.btrim(capability) = ''
+    from pg_catalog.unnest(p_capabilities) as filtered_capability(value)
+    where value is null or pg_catalog.btrim(value) = ''
   ) then
     raise exception 'capability filter contains an empty value';
   end if;
