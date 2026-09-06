@@ -1,16 +1,10 @@
-import "server-only";
-
+import type { CanonicalExternalOrder, ExternalSalesProvider } from "@/server/integrations/core/canonical-external-order";
 import type { IntegrationEventEnvelope } from "@/server/integrations/core/contracts";
-import type { ExternalSalesProvider } from "@/server/integrations/core/canonical-external-order";
 import {
   IntegrationConfigurationError,
   IntegrationProviderError,
 } from "@/server/integrations/core/errors";
 import type { IntegrationProviderRegistry } from "@/server/integrations/core/provider-registry";
-import {
-  CanonicalOrderImportService,
-  type CanonicalOrderImportResult,
-} from "@/server/integrations/runtime/canonical-order-import-service";
 import type { IntegrationInboxEvent } from "@/server/integrations/runtime/runtime-repository";
 import {
   processInboxBatch,
@@ -25,8 +19,26 @@ const SALES_ORDER_CAPABILITY_BY_PROVIDER = {
 
 export const EXTERNAL_ORDER_INBOX_CAPABILITIES = ["ifood_orders", "99food_orders"] as const;
 
-type ImportOrderInput = Parameters<typeof CanonicalOrderImportService.import>[0];
-type ImportOrder = (input: ImportOrderInput) => Promise<CanonicalOrderImportResult>;
+export type ExternalOrderImportInput = {
+  organizationId: string;
+  storeId: string;
+  integrationAccountId: string;
+  externalEventId?: string | null;
+  externalStatus?: string | null;
+  externalRevision?: string | null;
+  correlationId?: string | null;
+  order: CanonicalExternalOrder;
+};
+
+export type ExternalOrderImportResult = {
+  order_id: string;
+  display_number: number;
+  created: boolean;
+};
+
+export type ExternalOrderImporter = (
+  input: ExternalOrderImportInput,
+) => Promise<ExternalOrderImportResult>;
 
 function isExternalSalesProvider(provider: IntegrationInboxEvent["provider"]): provider is ExternalSalesProvider {
   return provider === "ifood" || provider === "99food";
@@ -46,20 +58,18 @@ function durableEventEnvelope(event: IntegrationInboxEvent): IntegrationEventEnv
 }
 
 /**
- * Bridges one durably-ingested marketplace order event into the existing
- * PedeAqui `orders` aggregate. Provider-specific payload parsing stays inside
- * the adapter; this handler owns only scope, identity checks and orchestration.
+ * Pure orchestration boundary for one durably-ingested marketplace order event.
+ * Provider-specific payload parsing stays inside the adapter and database access
+ * stays behind the injected importer. This module is intentionally testable
+ * without importing server-only infrastructure.
  *
  * Returning `acknowledge: true` is safe because `processInboxBatch` performs the
  * provider ACK only after `finishEvent` succeeds for the current lease owner.
  */
 export function createExternalOrderInboxHandler(input: {
   registry: IntegrationProviderRegistry;
-  importOrder?: ImportOrder;
+  importOrder: ExternalOrderImporter;
 }) {
-  const importOrder: ImportOrder = input.importOrder
-    ?? ((orderInput) => CanonicalOrderImportService.import(orderInput));
-
   return async (event: IntegrationInboxEvent): Promise<InboxHandlerResult> => {
     if (!isExternalSalesProvider(event.provider)) {
       throw new IntegrationConfigurationError(
@@ -133,7 +143,7 @@ export function createExternalOrderInboxHandler(input: {
       );
     }
 
-    await importOrder({
+    await input.importOrder({
       organizationId: event.organization_id,
       storeId: event.store_id,
       integrationAccountId: event.integration_account_id,
@@ -148,21 +158,23 @@ export function createExternalOrderInboxHandler(input: {
   };
 }
 
-/**
- * Executable sales-order worker wiring. The capability filter is passed all the
- * way to the database claim RPC so this worker cannot lease catalog/logistics
- * events even under concurrent workers.
- */
-export async function processExternalOrderInboxBatch(input: {
+export type ProcessExternalOrderInboxBatchInput = {
   repository: InboxRuntimeRepository;
   registry: IntegrationProviderRegistry;
   workerId: string;
+  importOrder: ExternalOrderImporter;
   acknowledge?: (event: IntegrationInboxEvent) => Promise<void>;
-  importOrder?: ImportOrder;
   limit?: number;
   leaseSeconds?: number;
   maxAttempts?: number;
-}) {
+};
+
+/**
+ * Sales-order worker orchestration. The capability filter is passed all the way
+ * to the database claim RPC so this worker cannot lease catalog/logistics events
+ * even under concurrent workers.
+ */
+export async function processExternalOrderInboxBatch(input: ProcessExternalOrderInboxBatchInput) {
   return processInboxBatch({
     repository: input.repository,
     workerId: input.workerId,
