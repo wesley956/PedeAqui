@@ -56,6 +56,21 @@
     ["20260903213314","printing_idempotency_hardening"],
     ["20260903213326","printing_manual_printer_idempotency"],
     ["20260903213354","print_agent_credential_idempotency"],
-    ["20260903213406","print_accessibility_text_size"]
+    ["20260903213406","print_accessibility_text_size"],
+    ["20260903223903","whatsapp_automation_cancel_and_custom_templates"],
+    ["20260903225628","print_line_spacing"],
+    ["20260905052804","delivery_completion_consistency"],
+    ["20260905155425","configurable_print_sections"],
+    ["20260907173611","omnichannel_integration_core"],
+    ["20260907173714","omnichannel_runtime_claims"],
+    ["20260907173852","omnichannel_canonical_order_import"],
+    ["20260907173911","omnichannel_external_discount_compat"],
+    ["20260907173930","omnichannel_external_order_side_effect_guards"],
+    ["20260907173953","omnichannel_capability_scoped_claims"],
+    ["20260907174024","omnichannel_external_snapshot_pii_minimization"],
+    ["20260907174152","omnichannel_merchant_scoped_identity"],
+    ["20260907181315","omnichannel_external_event_ordering_guard"],
+    ["20260907181550","ifood_auth_onboarding"],
+    ["20260907181756","ifood_auth_security_advisor_hardening"]
   ]
 }

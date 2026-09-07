@@ -55,28 +55,8 @@ while IFS= read -r schema_name; do
   psql "${local_db_url}" -X -v ON_ERROR_STOP=1 -f "${schema_file}" >/dev/null
 done < <(find supabase/sql -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC_ALL=C sort -t_ -k1,1n -k2,2)
 
-# New unpromoted OMNI deltas are not yet represented in supabase/sql. Apply only
-# these explicitly so this disposable gate actually validates the same SQL that
-# the PR proposes without replaying historical migrations already in the baseline.
-readonly isolated_delta_migrations=(
-  "20260906044000_omnichannel_integration_core.sql"
-  "20260906050000_omnichannel_runtime_claims.sql"
-  "20260906054000_omnichannel_canonical_order_import.sql"
-  "20260906054500_omnichannel_external_discount_compat.sql"
-  "20260906055000_omnichannel_external_order_side_effect_guards.sql"
-  "20260906055500_omnichannel_capability_scoped_claims.sql"
-  "20260906060000_omnichannel_external_snapshot_pii_minimization.sql"
-  "20260906060500_omnichannel_merchant_scoped_identity.sql"
-  "20260906061000_omnichannel_external_event_ordering_guard.sql"
-  "20260907162000_ifood_auth_onboarding.sql"
-)
-for migration_name in "${isolated_delta_migrations[@]}"; do
-  migration_file="${parked_migrations}/${migration_name}"
-  if [[ -f "${migration_file}" ]]; then
-    echo "ISOLATED_DELTA_APPLY=${migration_name}"
-    psql "${local_db_url}" -X -v ON_ERROR_STOP=1 -f "${migration_file}" >/dev/null
-  fi
-done
+# OMNI/iFood migrations promoted to production are now part of the canonical
+# append-only supabase/sql baseline. No dated migration is replayed here.
 
 # Prove that the disposable database survives a controlled infrastructure restart.
 supabase stop
