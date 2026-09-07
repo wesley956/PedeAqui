@@ -2,7 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type InternalJobKey = "campaign_messages" | "route_retention" | "payment_reconciliation" | "subscription_renewals";
+export type InternalJobKey = "campaign_messages" | "route_retention" | "payment_reconciliation" | "subscription_renewals" | "ifood_order_intake";
 
 function bearerToken(request: Request) {
   const authorization = request.headers.get("authorization") ?? "";

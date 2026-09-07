@@ -108,11 +108,12 @@ export class IfoodSalesChannelAdapter implements SalesChannelAdapter {
 
   async executeOrderCommand(_input: {
     externalOrderId: string;
-    externalMerchantId: string;
+    merchantExternalId: string;
     command: SalesChannelOrderCommand;
     idempotencyKey: string;
     payload?: unknown;
   }): Promise<AdapterCommandResult> {
+    void _input;
     throw new IntegrationConfigurationError(
       "iFood lifecycle commands are disabled until OMNI #940",
       "ifood_order_commands_not_enabled",

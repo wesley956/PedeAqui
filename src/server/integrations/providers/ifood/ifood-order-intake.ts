@@ -50,6 +50,48 @@ export type IfoodPollingSummary = {
   acknowledgmentFailed: boolean;
 };
 
+export type IfoodConfirmationSlaState = "healthy" | "risk" | "expired";
+
+export type IfoodConfirmationSlaRecord = {
+  organizationId: string;
+  storeId: string;
+  integrationAccountId: string;
+  orderId: string;
+  externalOrderId: string;
+  providerCreatedAt: string;
+  receivedAt: string;
+  importedAt: string;
+  confirmationDeadline: string;
+  providerToReceivedSeconds: number;
+  receivedToImportedSeconds: number;
+  secondsRemaining: number;
+  state: IfoodConfirmationSlaState;
+};
+
+export type IfoodConfirmationSlaSummary = {
+  tracked: number;
+  atRisk: number;
+  expired: number;
+  maxProviderLagSeconds: number;
+  maxImportLagSeconds: number;
+  minimumSecondsRemaining: number | null;
+};
+
+export function summarizeIfoodConfirmationSla(
+  rows: readonly IfoodConfirmationSlaRecord[],
+): IfoodConfirmationSlaSummary {
+  return {
+    tracked: rows.length,
+    atRisk: rows.filter((row) => row.state === "risk").length,
+    expired: rows.filter((row) => row.state === "expired").length,
+    maxProviderLagSeconds: rows.reduce((maximum, row) => Math.max(maximum, row.providerToReceivedSeconds), 0),
+    maxImportLagSeconds: rows.reduce((maximum, row) => Math.max(maximum, row.receivedToImportedSeconds), 0),
+    minimumSecondsRemaining: rows.length > 0
+      ? Math.min(...rows.map((row) => row.secondsRemaining))
+      : null,
+  };
+}
+
 function assertIfoodEnvelope(
   envelope: IntegrationEventEnvelope,
   scope: IfoodOrderPollingScope,
@@ -77,6 +119,7 @@ export async function pollIfoodOrderEvents(input: {
   repository: IfoodOrderIntakeRepositoryPort;
   http: IfoodOrdersHttpPort;
   tokenProvider: IfoodAccessTokenProvider;
+  isScopeEnabled?: () => Promise<boolean>;
   limit?: number;
 }): Promise<IfoodPollingSummary> {
   const summary: IfoodPollingSummary = {
@@ -109,6 +152,9 @@ export async function pollIfoodOrderEvents(input: {
         throw new IntegrationProviderError("One iFood polling row must normalize to one event", "ifood_event_cardinality_invalid", false);
       }
       const envelope = envelopes[0];
+      if (!envelope) {
+        throw new IntegrationProviderError("iFood adapter produced no event envelope", "ifood_envelope_missing", false);
+      }
       assertIfoodEnvelope(envelope, input.scope);
       const durable = await input.repository.ingestEvent({
         organizationId: input.scope.organizationId,
@@ -142,6 +188,7 @@ export async function pollIfoodOrderEvents(input: {
 
   if (duplicateAckIds.length > 0) {
     try {
+      if (input.isScopeEnabled && !(await input.isScopeEnabled())) return summary;
       await input.http.acknowledgeEvents({ accessToken, eventIds: duplicateAckIds });
       summary.acknowledgedDuplicates = duplicateAckIds.length;
     } catch {

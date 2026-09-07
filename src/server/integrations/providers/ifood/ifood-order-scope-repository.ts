@@ -1,7 +1,11 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { IfoodOrderPollingScope } from "@/server/integrations/providers/ifood/ifood-order-intake";
+import { z } from "zod";
+import type {
+  IfoodConfirmationSlaRecord,
+  IfoodOrderPollingScope,
+} from "@/server/integrations/providers/ifood/ifood-order-intake";
 
 type DbError = { message?: string | null } | null;
 
@@ -23,6 +27,22 @@ function accountOperational(row: { status?: unknown; connection_state?: unknown 
   return (row.status === "connected" || row.status === "attention")
     && row.connection_state === "connected";
 }
+
+const slaRecordSchema = z.object({
+  organization_id: z.string().uuid(),
+  store_id: z.string().uuid(),
+  integration_account_id: z.string().uuid(),
+  order_id: z.string().uuid(),
+  external_order_id: z.string().min(1),
+  provider_created_at: z.string().datetime({ offset: true }),
+  received_at: z.string().datetime({ offset: true }),
+  imported_at: z.string().datetime({ offset: true }),
+  confirmation_deadline: z.string().datetime({ offset: true }),
+  provider_to_received_seconds: z.coerce.number().int().nonnegative(),
+  received_to_imported_seconds: z.coerce.number().int().nonnegative(),
+  seconds_remaining: z.coerce.number().int(),
+  state: z.enum(["healthy", "risk", "expired"]),
+});
 
 /**
  * Server-role resolver for the exact store/account pairs allowed to produce
@@ -92,5 +112,33 @@ export class IfoodOrderScopeRepository {
     throwIfError(account.error, "iFood order account revalidation failed");
     if (!account.data || !accountOperational(account.data)) return false;
     return String(account.data.environment) === String(merchant.data.environment);
+  }
+
+  async pendingConfirmationSla(
+    scopes: readonly Pick<IfoodOrderPollingScope, "integrationAccountId" | "storeId">[],
+    riskSeconds = 120,
+  ): Promise<IfoodConfirmationSlaRecord[]> {
+    if (scopes.length === 0) return [];
+    const { data, error } = await this.db.rpc("integration_ifood_confirmation_sla", {
+      p_integration_account_ids: scopes.map((scope) => scope.integrationAccountId),
+      p_store_ids: scopes.map((scope) => scope.storeId),
+      p_risk_seconds: riskSeconds,
+    });
+    throwIfError(error, "iFood confirmation SLA lookup failed");
+    return slaRecordSchema.array().parse(data ?? []).map((row) => ({
+      organizationId: row.organization_id,
+      storeId: row.store_id,
+      integrationAccountId: row.integration_account_id,
+      orderId: row.order_id,
+      externalOrderId: row.external_order_id,
+      providerCreatedAt: row.provider_created_at,
+      receivedAt: row.received_at,
+      importedAt: row.imported_at,
+      confirmationDeadline: row.confirmation_deadline,
+      providerToReceivedSeconds: row.provider_to_received_seconds,
+      receivedToImportedSeconds: row.received_to_imported_seconds,
+      secondsRemaining: row.seconds_remaining,
+      state: row.state,
+    }));
   }
 }

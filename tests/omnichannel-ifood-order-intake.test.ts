@@ -238,6 +238,27 @@ describe("iFood durable polling intake", () => {
     expect(http.acknowledgeEvents).not.toHaveBeenCalled();
   });
 
+  it("revalidates capability before retrying a duplicate ACK", async () => {
+    const http = fakeHttp([pollingEvent("evt-processed")]);
+    const tokenProvider = fakeTokenProvider();
+    const repository = new MemoryInbox();
+    repository.byExternalId.set("evt-processed", { id: "durable-evt-processed", status: "processed" });
+    const adapter = new IfoodSalesChannelAdapter({ ...scope }, http, tokenProvider);
+
+    const result = await pollIfoodOrderEvents({
+      scope,
+      adapter,
+      repository,
+      http,
+      tokenProvider,
+      isScopeEnabled: async () => false,
+    });
+
+    expect(result.duplicates).toBe(1);
+    expect(result.acknowledgedDuplicates).toBe(0);
+    expect(http.acknowledgeEvents).not.toHaveBeenCalled();
+  });
+
   it("keeps ACK failure recoverable through the next polling redelivery", async () => {
     const http = fakeHttp([pollingEvent("evt-processed")]);
     http.acknowledgeEvents.mockRejectedValueOnce(new Error("provider unavailable"));
@@ -268,7 +289,7 @@ describe("iFood durable polling intake", () => {
         };
       }),
     });
-    expect(results[0].error).toBeInstanceOf(Error);
-    expect(results[1].summary?.received).toBe(0);
+    expect(results[0]!.error).toBeInstanceOf(Error);
+    expect(results[1]!.summary?.received).toBe(0);
   });
 });

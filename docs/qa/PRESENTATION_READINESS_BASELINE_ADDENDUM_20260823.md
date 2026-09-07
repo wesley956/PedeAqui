@@ -76,6 +76,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 - `/api/integrations/mercado-pago/oauth/callback` — valida o retorno OAuth, reconfirma organização/unidade e persiste as credenciais somente no servidor/Vault, mantendo o Pix desativado até ativação explícita.
 - `/api/internal/payment-reconciliation` — job interno autenticado que reconcilia em lote limitado apenas cobranças Mercado Pago pendentes e atrasadas de unidades com Pix online habilitado, recuperando notificações perdidas sem expor credenciais ou payload bruto do provedor.
 - `/api/internal/subscription-renewals` — job interno autenticado de renovação das assinaturas PedeAqui. É invocado pelo scheduler do Supabase e não depende de Vercel Cron.
+- `/api/internal/ifood-order-intake` — job interno autenticado para polling, inbox durável, importação canônica e ACK de pedidos iFood. O scheduler de 30 segundos nasce pausado e nenhuma chamada ao iFood ocorre sem capability explicitamente habilitada.
 - `/api/webhooks/subscription-billing/mercado-pago` — webhook dedicado à cobrança SaaS, com assinatura validada e reconciliação idempotente.
 - `/api/webhooks/payments/mercado-pago/[storeId]` — continua atendendo pagamentos de pedidos; na unidade que hospeda a autorização OAuth da plataforma, identifica primeiro cobranças de assinatura e preserva o fluxo normal do restaurante para os demais pagamentos.
 
