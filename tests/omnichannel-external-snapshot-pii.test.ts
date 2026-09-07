@@ -11,21 +11,28 @@ const whitelistBuilder = migration.slice(
   migration.indexOf("revoke all on function private.integration_minimal_external_order_snapshot"),
 );
 
+const persistedTopLevelKey = (key: string) => new RegExp(`^\\s{6}'${key}',`, "m");
+
 describe("omnichannel external snapshot PII minimization", () => {
   it("persists a whitelist-only reconciliation snapshot", () => {
-    expect(whitelistBuilder).toContain("'externalOrderId'");
-    expect(whitelistBuilder).toContain("'money'");
-    expect(whitelistBuilder).toContain("'payments'");
-    expect(whitelistBuilder).toContain("'itemCount'");
-    expect(whitelistBuilder).toContain("'deliveryCode'");
+    expect(whitelistBuilder).toMatch(persistedTopLevelKey("externalOrderId"));
+    expect(whitelistBuilder).toMatch(persistedTopLevelKey("money"));
+    expect(whitelistBuilder).toMatch(persistedTopLevelKey("payments"));
+    expect(whitelistBuilder).toMatch(persistedTopLevelKey("itemCount"));
+    expect(whitelistBuilder).toMatch(persistedTopLevelKey("deliveryCode"));
   });
 
-  it("does not whitelist duplicated operational PII or arbitrary provider metadata", () => {
-    expect(whitelistBuilder).not.toContain("'customer'");
-    expect(whitelistBuilder).not.toContain("'deliveryAddress'");
-    expect(whitelistBuilder).not.toContain("'items'");
-    expect(whitelistBuilder).not.toContain("'providerMetadata'");
-    expect(whitelistBuilder).not.toContain("'cardholderName'");
+  it("does not persist duplicated operational PII or arbitrary provider metadata", () => {
+    expect(whitelistBuilder).not.toMatch(persistedTopLevelKey("customer"));
+    expect(whitelistBuilder).not.toMatch(persistedTopLevelKey("deliveryAddress"));
+    expect(whitelistBuilder).not.toMatch(persistedTopLevelKey("items"));
+    expect(whitelistBuilder).not.toMatch(persistedTopLevelKey("providerMetadata"));
+    expect(whitelistBuilder).not.toMatch(persistedTopLevelKey("cardholderName"));
+  });
+
+  it("may inspect item shape only to persist a non-PII item count", () => {
+    expect(whitelistBuilder).toContain("jsonb_array_length(p_snapshot->'items')");
+    expect(whitelistBuilder).toMatch(persistedTopLevelKey("itemCount"));
   });
 
   it("enforces minimization on both insert and later snapshot updates", () => {
