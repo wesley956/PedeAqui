@@ -5,7 +5,10 @@ import {
   IntegrationProviderError,
 } from "@/server/integrations/core/errors";
 import type { IntegrationProviderRegistry } from "@/server/integrations/core/provider-registry";
-import type { IntegrationInboxEvent } from "@/server/integrations/runtime/runtime-repository";
+import type {
+  IntegrationEventClaimScope,
+  IntegrationInboxEvent,
+} from "@/server/integrations/runtime/runtime-repository";
 import {
   processInboxBatch,
   type InboxHandlerResult,
@@ -102,8 +105,6 @@ export function createExternalOrderInboxHandler(input: {
 
     const reference = await adapter.resolveOrderReference(durableEventEnvelope(event));
     if (!reference) {
-      // Provider adapter explicitly classified this orders-capability event as
-      // non-order-affecting (heartbeat/no-op/etc.). It is safe to finish + ACK.
       return { status: "ignored", acknowledge: true };
     }
 
@@ -165,7 +166,7 @@ export type ProcessExternalOrderInboxBatchInput = {
   importOrder: ExternalOrderImporter;
   acknowledge?: (event: IntegrationInboxEvent) => Promise<void>;
   capabilities?: readonly string[];
-  integrationAccountIds?: readonly string[];
+  scopes?: readonly IntegrationEventClaimScope[];
   limit?: number;
   leaseSeconds?: number;
   maxAttempts?: number;
@@ -174,7 +175,7 @@ export type ProcessExternalOrderInboxBatchInput = {
 /**
  * Sales-order worker orchestration. Filters are passed all the way to the
  * database claim RPC. Provider-specific workers can therefore require both an
- * orders capability and an explicit allowlist of currently-enabled accounts.
+ * orders capability and exact account/store scopes that are currently enabled.
  */
 export async function processExternalOrderInboxBatch(input: ProcessExternalOrderInboxBatchInput) {
   return processInboxBatch({
@@ -186,7 +187,7 @@ export async function processExternalOrderInboxBatch(input: ProcessExternalOrder
     }),
     acknowledge: input.acknowledge,
     capabilities: input.capabilities ?? EXTERNAL_ORDER_INBOX_CAPABILITIES,
-    integrationAccountIds: input.integrationAccountIds,
+    scopes: input.scopes,
     limit: input.limit,
     leaseSeconds: input.leaseSeconds,
     maxAttempts: input.maxAttempts,
