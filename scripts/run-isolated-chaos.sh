@@ -65,6 +65,7 @@ readonly isolated_delta_migrations=(
   "20260906054500_omnichannel_external_discount_compat.sql"
   "20260906055000_omnichannel_external_order_side_effect_guards.sql"
   "20260906055500_omnichannel_capability_scoped_claims.sql"
+  "20260906060000_omnichannel_external_snapshot_pii_minimization.sql"
 )
 for migration_name in "${isolated_delta_migrations[@]}"; do
   migration_file="${parked_migrations}/${migration_name}"
@@ -88,6 +89,7 @@ readonly scenarios=(
   "supabase/tests/e2e_omnichannel_external_order_import.sql"
   "supabase/tests/e2e_omnichannel_external_order_side_effects.sql"
   "supabase/tests/e2e_omnichannel_capability_claims.sql"
+  "supabase/tests/e2e_omnichannel_external_snapshot_pii.sql"
 )
 
 for pass in 1 2 3; do
