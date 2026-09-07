@@ -165,13 +165,13 @@ begin
     eo.confirmation_deadline,
     pg_catalog.greatest(
       0,
-      pg_catalog.floor(pg_catalog.extract(epoch from (eo.received_at - eo.provider_created_at)))
+      pg_catalog.floor(pg_catalog.date_part('epoch', eo.received_at - eo.provider_created_at))
     )::bigint,
     pg_catalog.greatest(
       0,
-      pg_catalog.floor(pg_catalog.extract(epoch from (eo.imported_at - eo.received_at)))
+      pg_catalog.floor(pg_catalog.date_part('epoch', eo.imported_at - eo.received_at))
     )::bigint,
-    pg_catalog.floor(pg_catalog.extract(epoch from (eo.confirmation_deadline - pg_catalog.now())))::bigint,
+    pg_catalog.floor(pg_catalog.date_part('epoch', eo.confirmation_deadline - pg_catalog.now()))::bigint,
     case
       when eo.confirmation_deadline <= pg_catalog.now() then 'expired'
       when eo.confirmation_deadline <= pg_catalog.now() + pg_catalog.make_interval(secs => p_risk_seconds) then 'risk'
