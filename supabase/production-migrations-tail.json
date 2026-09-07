@@ -71,6 +71,8 @@
     ["20260907174152","omnichannel_merchant_scoped_identity"],
     ["20260907181315","omnichannel_external_event_ordering_guard"],
     ["20260907181550","ifood_auth_onboarding"],
-    ["20260907181756","ifood_auth_security_advisor_hardening"]
+    ["20260907181756","ifood_auth_security_advisor_hardening"],
+    ["20260907235136","omnichannel_account_scoped_event_claims"],
+    ["20260907235213","ifood_order_intake_runtime_sla"]
   ]
 }

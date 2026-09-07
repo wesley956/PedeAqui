@@ -5,7 +5,10 @@ import {
   IntegrationProviderError,
 } from "@/server/integrations/core/errors";
 import type { IntegrationProviderRegistry } from "@/server/integrations/core/provider-registry";
-import type { IntegrationInboxEvent } from "@/server/integrations/runtime/runtime-repository";
+import type {
+  IntegrationEventClaimScope,
+  IntegrationInboxEvent,
+} from "@/server/integrations/runtime/runtime-repository";
 import {
   processInboxBatch,
   type InboxHandlerResult,
@@ -40,6 +43,14 @@ export type ExternalOrderImporter = (
   input: ExternalOrderImportInput,
 ) => Promise<ExternalOrderImportResult>;
 
+export type ExternalOrderScopeValidator = (input: {
+  organizationId: string;
+  storeId: string;
+  integrationAccountId: string;
+  provider: ExternalSalesProvider;
+  capability: string;
+}) => Promise<boolean>;
+
 function isExternalSalesProvider(provider: IntegrationInboxEvent["provider"]): provider is ExternalSalesProvider {
   return provider === "ifood" || provider === "99food";
 }
@@ -69,6 +80,7 @@ function durableEventEnvelope(event: IntegrationInboxEvent): IntegrationEventEnv
 export function createExternalOrderInboxHandler(input: {
   registry: IntegrationProviderRegistry;
   importOrder: ExternalOrderImporter;
+  isScopeEnabled?: ExternalOrderScopeValidator;
 }) {
   return async (event: IntegrationInboxEvent): Promise<InboxHandlerResult> => {
     if (!isExternalSalesProvider(event.provider)) {
@@ -102,8 +114,6 @@ export function createExternalOrderInboxHandler(input: {
 
     const reference = await adapter.resolveOrderReference(durableEventEnvelope(event));
     if (!reference) {
-      // Provider adapter explicitly classified this orders-capability event as
-      // non-order-affecting (heartbeat/no-op/etc.). It is safe to finish + ACK.
       return { status: "ignored", acknowledge: true };
     }
 
@@ -115,6 +125,24 @@ export function createExternalOrderInboxHandler(input: {
         "invalid_external_order_reference",
         false,
       );
+    }
+
+    // A capability can be disabled after a batch was leased. Revalidate at the
+    // last safe point before provider HTTP; retry keeps the durable event pending
+    // for a future re-enable instead of acknowledging or losing it.
+    if (input.isScopeEnabled) {
+      const stillEnabled = await input.isScopeEnabled({
+        ...scope,
+        provider: event.provider,
+        capability: event.capability,
+      });
+      if (!stillEnabled) {
+        throw new IntegrationProviderError(
+          "External order scope was disabled before provider fetch",
+          "external_order_scope_disabled",
+          true,
+        );
+      }
     }
 
     const snapshot = await adapter.fetchOrder(externalOrderId, externalMerchantId);
@@ -164,15 +192,18 @@ export type ProcessExternalOrderInboxBatchInput = {
   workerId: string;
   importOrder: ExternalOrderImporter;
   acknowledge?: (event: IntegrationInboxEvent) => Promise<void>;
+  isScopeEnabled?: ExternalOrderScopeValidator;
+  capabilities?: readonly string[];
+  scopes?: readonly IntegrationEventClaimScope[];
   limit?: number;
   leaseSeconds?: number;
   maxAttempts?: number;
 };
 
 /**
- * Sales-order worker orchestration. The capability filter is passed all the way
- * to the database claim RPC so this worker cannot lease catalog/logistics events
- * even under concurrent workers.
+ * Sales-order worker orchestration. Filters are passed all the way to the
+ * database claim RPC. Provider-specific workers can therefore require both an
+ * orders capability and exact account/store scopes that are currently enabled.
  */
 export async function processExternalOrderInboxBatch(input: ProcessExternalOrderInboxBatchInput) {
   return processInboxBatch({
@@ -181,9 +212,11 @@ export async function processExternalOrderInboxBatch(input: ProcessExternalOrder
     handler: createExternalOrderInboxHandler({
       registry: input.registry,
       importOrder: input.importOrder,
+      isScopeEnabled: input.isScopeEnabled,
     }),
     acknowledge: input.acknowledge,
-    capabilities: EXTERNAL_ORDER_INBOX_CAPABILITIES,
+    capabilities: input.capabilities ?? EXTERNAL_ORDER_INBOX_CAPABILITIES,
+    scopes: input.scopes,
     limit: input.limit,
     leaseSeconds: input.leaseSeconds,
     maxAttempts: input.maxAttempts,

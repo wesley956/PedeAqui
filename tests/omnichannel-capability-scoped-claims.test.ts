@@ -42,6 +42,6 @@ describe("omnichannel capability-scoped inbox claims", () => {
 
   it("binds the external-order worker only to sales-order capabilities", () => {
     expect(orderWorker).toContain('EXTERNAL_ORDER_INBOX_CAPABILITIES = ["ifood_orders", "99food_orders"]');
-    expect(orderWorker).toContain("capabilities: EXTERNAL_ORDER_INBOX_CAPABILITIES");
+    expect(orderWorker).toContain("capabilities: input.capabilities ?? EXTERNAL_ORDER_INBOX_CAPABILITIES");
   });
 });

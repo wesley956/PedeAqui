@@ -25,6 +25,11 @@ export type IntegrationInboxEvent = {
   locked_by: string | null;
 };
 
+export type IntegrationEventClaimScope = {
+  integrationAccountId: string;
+  storeId: string;
+};
+
 export type IntegrationOutboxCommand = {
   id: string;
   organization_id: string;
@@ -105,18 +110,51 @@ export class IntegrationRuntimeRepository {
     return { id: String(existing.data.id), duplicate: true };
   }
 
+  async eventStatus(input: {
+    eventId: string;
+    organizationId: string;
+    storeId: string;
+    integrationAccountId: string;
+  }): Promise<IntegrationInboxEvent["status"] | null> {
+    const { data, error } = await this.db
+      .from("integration_events")
+      .select("status")
+      .eq("id", input.eventId)
+      .eq("organization_id", input.organizationId)
+      .eq("store_id", input.storeId)
+      .eq("integration_account_id", input.integrationAccountId)
+      .maybeSingle();
+    throwIfDbError(error, "integration event status lookup failed");
+    return (data?.status as IntegrationInboxEvent["status"] | undefined) ?? null;
+  }
+
   async claimEvents(
     workerId: string,
     limit = 10,
     leaseSeconds = 120,
     capabilities?: readonly string[],
+    scopes?: readonly IntegrationEventClaimScope[],
   ): Promise<IntegrationInboxEvent[]> {
-    const { data, error } = await this.db.rpc("integration_claim_events", {
-      p_limit: limit,
-      p_worker_id: workerId,
-      p_lease_seconds: leaseSeconds,
-      p_capabilities: capabilities ? [...capabilities] : null,
-    });
+    if (scopes && scopes.length === 0) return [];
+
+    const rpcName = scopes ? "integration_claim_events_scoped" : "integration_claim_events";
+    const args = scopes
+      ? {
+          p_limit: limit,
+          p_worker_id: workerId,
+          p_integration_account_ids: scopes.map((scope) => scope.integrationAccountId),
+          p_store_ids: scopes.map((scope) => scope.storeId),
+          p_lease_seconds: leaseSeconds,
+          p_capabilities: capabilities ? [...capabilities] : null,
+        }
+      : {
+          p_limit: limit,
+          p_worker_id: workerId,
+          p_lease_seconds: leaseSeconds,
+          p_capabilities: capabilities ? [...capabilities] : null,
+        };
+
+    const { data, error } = await this.db.rpc(rpcName, args);
     throwIfDbError(error, "integration event claim failed");
     return (data ?? []) as IntegrationInboxEvent[];
   }
@@ -170,7 +208,6 @@ export class IntegrationRuntimeRepository {
       })
       .select("id")
       .maybeSingle();
-
     throwIfDbError(error, "integration outbox enqueue failed");
     if (data?.id) return { id: String(data.id), duplicate: false };
 

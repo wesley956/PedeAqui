@@ -1,5 +1,6 @@
 import { decideIntegrationRetry } from "@/server/integrations/runtime/retry-policy";
 import type {
+  IntegrationEventClaimScope,
   IntegrationInboxEvent,
   IntegrationOutboxCommand,
 } from "@/server/integrations/runtime/runtime-repository";
@@ -10,6 +11,7 @@ export interface InboxRuntimeRepository {
     limit?: number,
     leaseSeconds?: number,
     capabilities?: readonly string[],
+    scopes?: readonly IntegrationEventClaimScope[],
   ): Promise<IntegrationInboxEvent[]>;
   finishEvent(input: {
     eventId: string;
@@ -44,6 +46,7 @@ export async function processInboxBatch(input: {
   handler: (event: IntegrationInboxEvent) => Promise<InboxHandlerResult>;
   acknowledge?: (event: IntegrationInboxEvent) => Promise<void>;
   capabilities?: readonly string[];
+  scopes?: readonly IntegrationEventClaimScope[];
   limit?: number;
   leaseSeconds?: number;
   maxAttempts?: number;
@@ -53,6 +56,7 @@ export async function processInboxBatch(input: {
     input.limit,
     input.leaseSeconds,
     input.capabilities,
+    input.scopes,
   );
   const summary = { claimed: events.length, processed: 0, ignored: 0, retried: 0, deadLettered: 0, ackFailed: 0 };
 
