@@ -7,6 +7,10 @@ import { StoreInformationSheet } from "@/features/menu/store-information-sheet";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
 import styles from "./public-menu.module.css";
 
+// Keep the public menu fresh while allowing Vercel to serve repeated anonymous
+// visits from the cache instead of invoking a server function for every hit.
+export const revalidate = 30;
+
 const statusCopy = { open: ["Aberto", "Aceitando pedidos"], closed: ["Fechado", "Você pode consultar o cardápio"], paused: ["Pausado", "Novos pedidos estão temporariamente pausados"] } as const;
 function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
 

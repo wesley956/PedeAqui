@@ -5,14 +5,14 @@ import { listSpool, removeSpool, saveSpool } from "./spool.mjs";
 
 const apiUrl = (process.env.PEDEAQUI_URL || "").replace(/\/$/, "");
 const token = process.env.PEDEAQUI_PRINT_AGENT_TOKEN || "";
-const pollMs = Math.max(1000, Number(process.env.PEDEAQUI_PRINT_POLL_MS || 2000));
-const heartbeatMs = Math.max(5000, Number(process.env.PEDEAQUI_PRINT_HEARTBEAT_MS || 15000));
-const orderAlertPollMs = Math.max(2000, Number(process.env.PEDEAQUI_NATIVE_ORDER_ALERT_POLL_MS || 3000));
+const pollMs = Math.max(1000, Number(process.env.PEDEAQUI_PRINT_POLL_MS || 5000));
+const heartbeatMs = Math.max(5000, Number(process.env.PEDEAQUI_PRINT_HEARTBEAT_MS || 60000));
+const orderAlertPollMs = Math.max(2000, Number(process.env.PEDEAQUI_NATIVE_ORDER_ALERT_POLL_MS || 6000));
 const requestTimeoutMs = Math.max(3000, Number(process.env.PEDEAQUI_PRINT_REQUEST_TIMEOUT_MS || 8000));
 const updateCheckMs = Math.max(60000, Number(process.env.PEDEAQUI_PRINT_UPDATE_CHECK_MS || 6 * 60 * 60 * 1000));
 const watchdogEnabled = process.env.PEDEAQUI_AGENT_WATCHDOG === "1";
 const remoteManifestUrl = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent/manifest.json";
-const version = "0.7.1";
+const version = "0.7.2";
 const printers = new Map();
 const deliveryFailures = new Map();
 const deliveryFailureHoldMs = 5 * 60 * 1000;
