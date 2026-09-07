@@ -69,13 +69,13 @@ begin
           e.status = 'processing'
           and e.locked_at is not null
           and e.locked_at <= pg_catalog.now()
-            - pg_catalog.make_interval(secs => pg_catalog.greatest(p_lease_seconds, 30))
+            - pg_catalog.make_interval(secs => greatest(p_lease_seconds, 30))
         )
       )
       and (p_capabilities is null or e.capability = any(p_capabilities))
     order by e.available_at asc, e.received_at asc
     for update skip locked
-    limit pg_catalog.greatest(1, pg_catalog.least(pg_catalog.coalesce(p_limit, 1), 100))
+    limit greatest(1, least(coalesce(p_limit, 1), 100))
   )
   update public.integration_events e
      set status = 'processing',

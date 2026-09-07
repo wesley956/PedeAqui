@@ -167,11 +167,11 @@ begin
     eo.received_at,
     eo.imported_at,
     eo.confirmation_deadline,
-    pg_catalog.greatest(
+    greatest(
       0,
       pg_catalog.floor(pg_catalog.date_part('epoch', eo.received_at - eo.provider_created_at))
     )::bigint,
-    pg_catalog.greatest(
+    greatest(
       0,
       pg_catalog.floor(pg_catalog.date_part('epoch', eo.imported_at - eo.received_at))
     )::bigint,
