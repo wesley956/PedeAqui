@@ -342,6 +342,7 @@ export class IfoodAuthRepository {
       .single();
     if (created.error?.code === "23505") throw new IfoodMerchantBindingConflictError();
     dbError(created.error, "iFood merchant binding failed");
+    if (!created.data?.id) throw new Error("iFood merchant binding returned no id");
     return String(created.data.id);
   }
 
