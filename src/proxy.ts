@@ -9,9 +9,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // The public storefront (/m/...) is anonymous and must not pay the auth-proxy
-    // cost on every menu, cart, checkout and product request. Authentication for
-    // back-office routes remains unchanged.
-    "/((?!m(?:/|$)|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Public storefront requests and Print Agent API traffic use their own
+    // authentication boundaries and must not pay the Supabase session-proxy cost.
+    // Back-office routes continue through updateSession unchanged.
+    "/((?!m(?:/|$)|api/print-agent(?:/|$)|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp3)$).*)",
   ],
 };
