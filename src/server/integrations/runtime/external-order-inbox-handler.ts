@@ -43,6 +43,14 @@ export type ExternalOrderImporter = (
   input: ExternalOrderImportInput,
 ) => Promise<ExternalOrderImportResult>;
 
+export type ExternalOrderScopeValidator = (input: {
+  organizationId: string;
+  storeId: string;
+  integrationAccountId: string;
+  provider: ExternalSalesProvider;
+  capability: string;
+}) => Promise<boolean>;
+
 function isExternalSalesProvider(provider: IntegrationInboxEvent["provider"]): provider is ExternalSalesProvider {
   return provider === "ifood" || provider === "99food";
 }
@@ -72,6 +80,7 @@ function durableEventEnvelope(event: IntegrationInboxEvent): IntegrationEventEnv
 export function createExternalOrderInboxHandler(input: {
   registry: IntegrationProviderRegistry;
   importOrder: ExternalOrderImporter;
+  isScopeEnabled?: ExternalOrderScopeValidator;
 }) {
   return async (event: IntegrationInboxEvent): Promise<InboxHandlerResult> => {
     if (!isExternalSalesProvider(event.provider)) {
@@ -116,6 +125,24 @@ export function createExternalOrderInboxHandler(input: {
         "invalid_external_order_reference",
         false,
       );
+    }
+
+    // A capability can be disabled after a batch was leased. Revalidate at the
+    // last safe point before provider HTTP; retry keeps the durable event pending
+    // for a future re-enable instead of acknowledging or losing it.
+    if (input.isScopeEnabled) {
+      const stillEnabled = await input.isScopeEnabled({
+        ...scope,
+        provider: event.provider,
+        capability: event.capability,
+      });
+      if (!stillEnabled) {
+        throw new IntegrationProviderError(
+          "External order scope was disabled before provider fetch",
+          "external_order_scope_disabled",
+          true,
+        );
+      }
     }
 
     const snapshot = await adapter.fetchOrder(externalOrderId, externalMerchantId);
@@ -165,6 +192,7 @@ export type ProcessExternalOrderInboxBatchInput = {
   workerId: string;
   importOrder: ExternalOrderImporter;
   acknowledge?: (event: IntegrationInboxEvent) => Promise<void>;
+  isScopeEnabled?: ExternalOrderScopeValidator;
   capabilities?: readonly string[];
   scopes?: readonly IntegrationEventClaimScope[];
   limit?: number;
@@ -184,6 +212,7 @@ export async function processExternalOrderInboxBatch(input: ProcessExternalOrder
     handler: createExternalOrderInboxHandler({
       registry: input.registry,
       importOrder: input.importOrder,
+      isScopeEnabled: input.isScopeEnabled,
     }),
     acknowledge: input.acknowledge,
     capabilities: input.capabilities ?? EXTERNAL_ORDER_INBOX_CAPABILITIES,
