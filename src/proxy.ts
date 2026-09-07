@@ -9,6 +9,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // The public storefront (/m/...) is anonymous and must not pay the auth-proxy
+    // cost on every menu, cart, checkout and product request. Authentication for
+    // back-office routes remains unchanged.
+    "/((?!m(?:/|$)|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
