@@ -25,8 +25,10 @@ begin
      or pg_catalog.cardinality(p_integration_account_ids) <> pg_catalog.cardinality(p_store_ids)
      or exists (
        select 1
-       from pg_catalog.unnest(p_integration_account_ids, p_store_ids)
-         as allowed_scope(account_id, store_id)
+       from rows from (
+         pg_catalog.unnest(p_integration_account_ids),
+         pg_catalog.unnest(p_store_ids)
+       ) as allowed_scope(account_id, store_id)
        where account_id is null or store_id is null
      ) then
     raise exception 'integration account/store allowlist is required and must contain matching pairs';
@@ -43,8 +45,10 @@ begin
   return query
   with allowed_scopes as (
     select account_id, store_id
-    from pg_catalog.unnest(p_integration_account_ids, p_store_ids)
-      as allowed_scope(account_id, store_id)
+    from rows from (
+      pg_catalog.unnest(p_integration_account_ids),
+      pg_catalog.unnest(p_store_ids)
+    ) as allowed_scope(account_id, store_id)
   ),
   candidates as (
     select e.id
@@ -93,4 +97,3 @@ grant execute on function public.integration_claim_events_scoped(integer, text, 
 
 comment on function public.integration_claim_events_scoped(integer, text, uuid[], uuid[], integer, text[]) is
   'Atomically leases due inbox events only for explicit account/store pairs, with optional capability isolation. Empty or mismatched allowlists fail closed; execution is service-role only.';
-

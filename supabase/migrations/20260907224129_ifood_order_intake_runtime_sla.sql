@@ -137,8 +137,10 @@ begin
      or pg_catalog.cardinality(p_integration_account_ids) <> pg_catalog.cardinality(p_store_ids)
      or exists (
        select 1
-       from pg_catalog.unnest(p_integration_account_ids, p_store_ids)
-         as allowed_scope(account_id, allowed_store_id)
+       from rows from (
+         pg_catalog.unnest(p_integration_account_ids),
+         pg_catalog.unnest(p_store_ids)
+       ) as allowed_scope(account_id, allowed_store_id)
        where account_id is null or allowed_store_id is null
      ) then
     raise exception 'integration account/store allowlist is required and must contain matching pairs';
@@ -150,8 +152,10 @@ begin
   return query
   with allowed_scopes as (
     select account_id, allowed_store_id
-    from pg_catalog.unnest(p_integration_account_ids, p_store_ids)
-      as allowed_scope(account_id, allowed_store_id)
+    from rows from (
+      pg_catalog.unnest(p_integration_account_ids),
+      pg_catalog.unnest(p_store_ids)
+    ) as allowed_scope(account_id, allowed_store_id)
   )
   select
     eo.organization_id,
