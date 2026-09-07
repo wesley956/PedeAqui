@@ -68,6 +68,7 @@ readonly isolated_delta_migrations=(
   "20260906060000_omnichannel_external_snapshot_pii_minimization.sql"
   "20260906060500_omnichannel_merchant_scoped_identity.sql"
   "20260906061000_omnichannel_external_event_ordering_guard.sql"
+  "20260907162000_ifood_auth_onboarding.sql"
 )
 for migration_name in "${isolated_delta_migrations[@]}"; do
   migration_file="${parked_migrations}/${migration_name}"
@@ -94,6 +95,7 @@ readonly scenarios=(
   "supabase/tests/e2e_omnichannel_external_snapshot_pii.sql"
   "supabase/tests/e2e_omnichannel_merchant_identity_replay.sql"
   "supabase/tests/e2e_omnichannel_out_of_order_events.sql"
+  "supabase/tests/e2e_ifood_auth_onboarding.sql"
 )
 
 for pass in 1 2 3; do
