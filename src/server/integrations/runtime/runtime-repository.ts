@@ -84,7 +84,7 @@ export class IntegrationRuntimeRepository {
         occurred_at: input.occurredAt ?? null,
         received_at: input.receivedAt ?? new Date().toISOString(),
       }, {
-        onConflict: "integration_account_id,external_event_id",
+        onConflict: "integration_account_id,store_id,external_event_id",
         ignoreDuplicates: true,
       })
       .select("id")
@@ -97,6 +97,7 @@ export class IntegrationRuntimeRepository {
       .from("integration_events")
       .select("id")
       .eq("integration_account_id", input.integrationAccountId)
+      .eq("store_id", input.storeId)
       .eq("external_event_id", input.externalEventId)
       .single();
     throwIfDbError(existing.error, "integration event dedupe lookup failed");
