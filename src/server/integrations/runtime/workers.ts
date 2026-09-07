@@ -10,6 +10,7 @@ export interface InboxRuntimeRepository {
     limit?: number,
     leaseSeconds?: number,
     capabilities?: readonly string[],
+    integrationAccountIds?: readonly string[],
   ): Promise<IntegrationInboxEvent[]>;
   finishEvent(input: {
     eventId: string;
@@ -44,6 +45,7 @@ export async function processInboxBatch(input: {
   handler: (event: IntegrationInboxEvent) => Promise<InboxHandlerResult>;
   acknowledge?: (event: IntegrationInboxEvent) => Promise<void>;
   capabilities?: readonly string[];
+  integrationAccountIds?: readonly string[];
   limit?: number;
   leaseSeconds?: number;
   maxAttempts?: number;
@@ -53,6 +55,7 @@ export async function processInboxBatch(input: {
     input.limit,
     input.leaseSeconds,
     input.capabilities,
+    input.integrationAccountIds,
   );
   const summary = { claimed: events.length, processed: 0, ignored: 0, retried: 0, deadLettered: 0, ackFailed: 0 };
 
