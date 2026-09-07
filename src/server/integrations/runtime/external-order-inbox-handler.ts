@@ -164,15 +164,17 @@ export type ProcessExternalOrderInboxBatchInput = {
   workerId: string;
   importOrder: ExternalOrderImporter;
   acknowledge?: (event: IntegrationInboxEvent) => Promise<void>;
+  capabilities?: readonly string[];
+  integrationAccountIds?: readonly string[];
   limit?: number;
   leaseSeconds?: number;
   maxAttempts?: number;
 };
 
 /**
- * Sales-order worker orchestration. The capability filter is passed all the way
- * to the database claim RPC so this worker cannot lease catalog/logistics events
- * even under concurrent workers.
+ * Sales-order worker orchestration. Filters are passed all the way to the
+ * database claim RPC. Provider-specific workers can therefore require both an
+ * orders capability and an explicit allowlist of currently-enabled accounts.
  */
 export async function processExternalOrderInboxBatch(input: ProcessExternalOrderInboxBatchInput) {
   return processInboxBatch({
@@ -183,7 +185,8 @@ export async function processExternalOrderInboxBatch(input: ProcessExternalOrder
       importOrder: input.importOrder,
     }),
     acknowledge: input.acknowledge,
-    capabilities: EXTERNAL_ORDER_INBOX_CAPABILITIES,
+    capabilities: input.capabilities ?? EXTERNAL_ORDER_INBOX_CAPABILITIES,
+    integrationAccountIds: input.integrationAccountIds,
     limit: input.limit,
     leaseSeconds: input.leaseSeconds,
     maxAttempts: input.maxAttempts,
