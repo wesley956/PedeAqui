@@ -25,6 +25,11 @@ export type IntegrationInboxEvent = {
   locked_by: string | null;
 };
 
+export type IntegrationEventClaimScope = {
+  integrationAccountId: string;
+  storeId: string;
+};
+
 export type IntegrationOutboxCommand = {
   id: string;
   organization_id: string;
@@ -120,7 +125,7 @@ export class IntegrationRuntimeRepository {
       .eq("integration_account_id", input.integrationAccountId)
       .maybeSingle();
     throwIfDbError(error, "integration event status lookup failed");
-    return data?.status as IntegrationInboxEvent["status"] | null ?? null;
+    return (data?.status as IntegrationInboxEvent["status"] | undefined) ?? null;
   }
 
   async claimEvents(
@@ -128,18 +133,17 @@ export class IntegrationRuntimeRepository {
     limit = 10,
     leaseSeconds = 120,
     capabilities?: readonly string[],
-    integrationAccountIds?: readonly string[],
+    scopes?: readonly IntegrationEventClaimScope[],
   ): Promise<IntegrationInboxEvent[]> {
-    if (integrationAccountIds && integrationAccountIds.length === 0) return [];
+    if (scopes && scopes.length === 0) return [];
 
-    const rpcName = integrationAccountIds
-      ? "integration_claim_events_scoped"
-      : "integration_claim_events";
-    const args = integrationAccountIds
+    const rpcName = scopes ? "integration_claim_events_scoped" : "integration_claim_events";
+    const args = scopes
       ? {
           p_limit: limit,
           p_worker_id: workerId,
-          p_integration_account_ids: [...integrationAccountIds],
+          p_integration_account_ids: scopes.map((scope) => scope.integrationAccountId),
+          p_store_ids: scopes.map((scope) => scope.storeId),
           p_lease_seconds: leaseSeconds,
           p_capabilities: capabilities ? [...capabilities] : null,
         }
