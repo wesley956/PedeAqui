@@ -6,6 +6,7 @@ const read = (relative: string) => fs.readFileSync(path.join(process.cwd(), rela
 const board = read("src/features/orders/order-manager-board.tsx");
 const customBoard = read("src/features/orders/custom-order-workflow-board.tsx");
 const actions = read("src/features/orders/actions.ts");
+const lifecycleRouter = read("src/server/orders/order-manager-lifecycle-router.ts");
 const actionForm = read("src/features/orders/order-action-form.tsx");
 const css = read("src/features/orders/order-manager.module.css");
 
@@ -13,8 +14,11 @@ describe("order manager click reduction", () => {
   it("combines accept and production start only in the simplified workflow", () => {
     expect(actionForm).toContain('| "accept_and_start"');
     expect(actions).toContain('"accept_and_start"');
-    expect(actions).toContain("await OrderService.confirm(orderId)");
-    expect(actions).toContain("await OrderService.startProduction(orderId)");
+    expect(actions).toContain("routeOrderManagerLifecycle");
+    expect(lifecycleRouter).toContain('case "accept_and_start"');
+    expect(lifecycleRouter).toContain("await OrderService.confirm(input.orderId)");
+    expect(lifecycleRouter).toContain("await OrderService.startProduction(input.orderId)");
+    expect(lifecycleRouter).toContain('afterConfirmation: "start_preparation"');
     expect(board).toContain('workflowMode === "simplified"');
     expect(board).toContain('{ intent: "accept_and_start", label: "Aceitar e iniciar" }');
     expect(customBoard).not.toContain('intent="accept_and_start"');
