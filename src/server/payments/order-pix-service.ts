@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resolveExternalPaymentPolicy } from "@/server/payments/external-payment-policy";
 import {
   forceRefreshMercadoPagoCredentials,
   getUsableMercadoPagoCredentials,
@@ -180,6 +181,15 @@ export class OrderPixService {
       .maybeSingle();
     if (orderError) throw orderError;
     if (!order || order.payment_method_snapshot !== "pix") return null;
+
+    const { data: externalPayment, error: externalPaymentError } = await admin.from("external_orders")
+      .select("provider, payment_owner")
+      .eq("organization_id", order.organization_id)
+      .eq("store_id", order.store_id)
+      .eq("order_id", order.id)
+      .maybeSingle();
+    if (externalPaymentError) throw externalPaymentError;
+    if (!resolveExternalPaymentPolicy(externalPayment).allowsOnlinePix) return null;
 
     const ready = await OrderPaymentProviderConfigService.isOnlinePixReady(order.organization_id, order.store_id);
     if (!ready) return null;
