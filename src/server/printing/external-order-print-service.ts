@@ -11,7 +11,7 @@ type Scope = {
 };
 
 type FallbackResult =
-  | { kind: "not_external" | "not_confirmed" | "existing" | "no_route" }
+  | { kind: "not_external" | "not_confirmed" | "existing" | "local_mapping_present" | "no_route" }
   | { kind: "queued" | "duplicate"; jobId: string };
 
 /**
@@ -124,6 +124,7 @@ export class ExternalOrderPrintService {
     if (itemsResult.error) throw itemsResult.error;
     const items = itemsResult.data ?? [];
     if (items.length === 0) return { kind: "no_route" };
+    if (items.some((item) => Boolean(item.product_id))) return { kind: "local_mapping_present" };
 
     const itemIds = items.map((item) => item.id);
     const modifiersResult = await admin.from("order_item_modifiers")
