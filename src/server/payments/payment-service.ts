@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
+import { externalPaymentOwnerLabel, resolveExternalPaymentPolicy } from "@/server/payments/external-payment-policy";
 import { summarizePayments, type PaymentMethod, type PaymentRecordStatus } from "@/server/payments/payment-model";
 
 const uuid = z.string().uuid();
@@ -26,6 +27,20 @@ const confirmSchema = z.object({
 function requireStore(storeId: string | null) {
   if (!storeId) throw new Error("An active store is required");
   return storeId;
+}
+
+async function assertInternalPaymentMutation(admin: ReturnType<typeof createAdminClient>, organizationId: string, storeId: string, orderId: string) {
+  const { data, error } = await admin.from("external_orders")
+    .select("provider, payment_owner")
+    .eq("organization_id", organizationId)
+    .eq("store_id", storeId)
+    .eq("order_id", orderId)
+    .maybeSingle();
+  if (error) throw error;
+  const policy = resolveExternalPaymentPolicy(data);
+  if (!policy.allowsInternalMutation) {
+    throw new Error(`O pagamento deste pedido é controlado pelo ${externalPaymentOwnerLabel(policy)} e não pode ser alterado manualmente no PedeAqui.`);
+  }
 }
 
 export class PaymentService {
@@ -56,6 +71,7 @@ export class PaymentService {
       .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (orderError) throw orderError;
     if (!order) throw new Error("Order not found");
+    await assertInternalPaymentMutation(admin, context.organizationId, storeId, values.orderId);
     const { data, error } = await admin.rpc("payment_create_intent_internal", {
       p_order_id: values.orderId,
       p_method: values.method,
@@ -81,6 +97,7 @@ export class PaymentService {
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (scopedError) throw scopedError;
     if (!scoped) throw new Error("Payment not found");
+    await assertInternalPaymentMutation(admin, context.organizationId, storeId, scoped.order_id);
     const { data, error } = await admin.rpc("payment_confirm_internal", {
       p_payment_id: id,
       p_cash_received_cents: scoped.method === "cash" ? (values.cashReceivedCents ?? null) : null,
@@ -118,6 +135,7 @@ export class PaymentService {
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (scopedError) throw scopedError;
     if (!scoped) throw new Error("Payment not found");
+    await assertInternalPaymentMutation(admin, context.organizationId, storeId, scoped.order_id);
     const { data, error } = await admin.rpc("payment_fail_internal", {
       p_payment_id: id,
       p_reason: safeReason,
@@ -140,6 +158,7 @@ export class PaymentService {
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (scopedError) throw scopedError;
     if (!scoped) throw new Error("Payment not found");
+    await assertInternalPaymentMutation(admin, context.organizationId, storeId, scoped.order_id);
     if (scoped.method === "cash") await authorize(PERMISSIONS.CASH_WITHDRAW, context);
 
     const { data, error } = await admin.rpc("payment_refund_internal", {
