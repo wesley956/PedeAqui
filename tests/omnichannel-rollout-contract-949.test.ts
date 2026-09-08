@@ -50,4 +50,22 @@ describe("#949 rollout execution contracts", () => {
     expect(docs).toContain("Mocks e fixtures fabricadas não satisfazem");
     expect(docs).toContain("iFood Catalog permanece fora do rollout");
   });
+
+  it("locks the current official iFood Orders/Events homologation flow into the release checklist", () => {
+    for (const expected of [
+      "30 segundos",
+      "ACK dos eventos recebidos",
+      "readyToPickup",
+      "dispatch",
+      "confirmação",
+      "cancelamento",
+      "conclusão",
+      "plataforma de negociação",
+      "rate limits",
+      "webhook com polling como fallback",
+    ]) {
+      expect(docs).toContain(expected);
+    }
+    expect(docs).toContain("não reintroduz sincronização de catálogo");
+  });
 });
