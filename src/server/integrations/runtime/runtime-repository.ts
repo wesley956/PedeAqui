@@ -265,4 +265,18 @@ export class IntegrationRuntimeRepository {
     throwIfDbError(error, "integration event reprocess failed");
     return data === true;
   }
+
+  async reprocessOutbox(input: {
+    outboxId: string;
+    actorUserId?: string | null;
+    correlationId?: string | null;
+  }): Promise<boolean> {
+    const { data, error } = await this.db.rpc("integration_reprocess_outbox", {
+      p_outbox_id: input.outboxId,
+      p_actor_user_id: input.actorUserId ?? null,
+      p_correlation_id: input.correlationId ?? null,
+    });
+    throwIfDbError(error, "integration outbox reprocess failed");
+    return data === true;
+  }
 }

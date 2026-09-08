@@ -1,17 +1,22 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { IfoodIntegrationSettingsService } from "@/server/integrations/providers/ifood/ifood-integration-settings-service";
+import { IfoodIntegrationSettingsService, type IfoodCapabilityKey } from "@/server/integrations/providers/ifood/ifood-integration-settings-service";
 import { isIfoodEnvironment, sanitizeIfoodError, type IfoodEnvironment, type IfoodStartConnectionResult } from "@/server/integrations/providers/ifood/ifood-auth-model";
 
 export type IfoodUiActionResult =
   | { ok: true; flow: IfoodStartConnectionResult }
   | { ok: true; connected: true }
   | { ok: true; disconnected: true }
+  | { ok: true; capabilityUpdated: true }
   | { ok: false; error: string };
 
 function safeMessage(error: unknown): string {
+  const raw = error instanceof Error ? error.message : "";
   const value = sanitizeIfoodError(error).toLowerCase();
+  if (raw.includes("cardápio e preços independentes")) return raw;
+  if (raw.includes("não foi liberada para produção")) return raw;
+  if (raw.includes("conexão iFood saudável")) return raw;
   if (value.includes("credentials are not configured") || value.includes("client id is not configured") || value.includes("client secret is not configured")) {
     return "As credenciais do aplicativo iFood ainda não estão configuradas para este ambiente.";
   }
@@ -24,13 +29,27 @@ function safeMessage(error: unknown): string {
   if (value.includes("refresh is already in progress")) {
     return "A conexão está sendo renovada. Tente novamente em instantes.";
   }
-  return "Não foi possível concluir a conexão com o iFood agora. Nenhuma configuração operacional foi alterada.";
+  return "Não foi possível concluir a operação com o iFood agora. Nenhuma configuração operacional foi alterada.";
 }
 
 function refresh() {
   revalidatePath("/configuracoes");
   revalidatePath("/configuracoes/integracoes");
   revalidatePath("/platform/integracoes");
+}
+
+export async function setIfoodCapabilityAction(input: {
+  merchantId: string;
+  capability: IfoodCapabilityKey;
+  enabled: boolean;
+}): Promise<IfoodUiActionResult> {
+  try {
+    await IfoodIntegrationSettingsService.setCapability({ ...input, reason: input.enabled ? "restaurant_enable" : "restaurant_rollback" });
+    refresh();
+    return { ok: true, capabilityUpdated: true };
+  } catch (error) {
+    return { ok: false, error: safeMessage(error) };
+  }
 }
 
 export async function startIfoodConnectionAction(environment: string): Promise<IfoodUiActionResult> {
