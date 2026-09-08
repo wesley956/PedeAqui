@@ -6,6 +6,7 @@ import { isManualDeliveryMode, isOfflineDeliveryPayment } from "@/modules/manual
 import type { PaymentCompletionPolicy } from "@/modules/payment-completion-policy";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
+import { ExternalDeliveryPolicyService } from "@/server/delivery/external-delivery-policy-service";
 import { ModuleAccessService } from "@/server/modules/module-access-service";
 import { OrderService } from "@/server/orders/order-service";
 import { PaymentService } from "@/server/payments/payment-service";
@@ -33,6 +34,7 @@ async function loadManualContext() {
 
 async function loadOrder(orderId: string) {
   const id = uuid.parse(orderId);
+  await ExternalDeliveryPolicyService.assertInternalOwnership(id);
   const { context, storeId, paymentCompletionPolicy } = await loadManualContext();
   const admin = createAdminClient();
   const { data, error } = await admin.from("orders")

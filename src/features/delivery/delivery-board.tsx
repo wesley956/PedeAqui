@@ -24,6 +24,12 @@ type DeliveryRow = {
   payment_status: string;
   production_status: string;
   fulfillment_status: string;
+  external_delivery: {
+    provider: "ifood" | "99food";
+    providerLabel: "iFood" | "99Food";
+    logisticsOwner: "ifood" | "99food" | "99entrega";
+    logisticsLabel: string;
+  } | null;
   delivery: { id: string; driver_id: string | null; promised_by_at: string | null; delivered_at: string | null } | null;
 };
 
@@ -88,32 +94,36 @@ export function DeliveryBoard({ deliveries, drivers, driverNames }: {
 function DeliveryCard({ order, drivers, driverNames, now }: { order: DeliveryRow; drivers: DriverOption[]; driverNames: Record<string, string>; now: number }) {
   const delivery = order.delivery;
   const late = isLate(order, now);
-  const canStart = order.fulfillment_status === "pending" && ["ready", "not_required"].includes(order.production_status);
-  const canAssign = ["awaiting_assignment", "assigned"].includes(order.fulfillment_status) || canStart;
-  const status = order.fulfillment_status === "pending" ? "Pronta para expedição"
-    : order.fulfillment_status === "awaiting_assignment" ? "Aguardando entregador"
-      : order.fulfillment_status === "assigned" ? "Entregador atribuído"
-        : order.fulfillment_status === "picked_up" ? "Retirada no restaurante" : "Em rota";
+  const externallyManaged = Boolean(order.external_delivery);
+  const canStart = !externallyManaged && order.fulfillment_status === "pending" && ["ready", "not_required"].includes(order.production_status);
+  const canAssign = !externallyManaged && (["awaiting_assignment", "assigned"].includes(order.fulfillment_status) || canStart);
+  const status = externallyManaged
+    ? `${order.external_delivery?.logisticsLabel} · sincronização pelo canal integrado`
+    : order.fulfillment_status === "pending" ? "Pronta para expedição"
+      : order.fulfillment_status === "awaiting_assignment" ? "Aguardando entregador"
+        : order.fulfillment_status === "assigned" ? "Entregador atribuído"
+          : order.fulfillment_status === "picked_up" ? "Retirada no restaurante" : "Em rota";
 
-  return <article className={styles.card} data-late={late || undefined}>
+  return <article className={styles.card} data-late={late || undefined} data-logistics={order.external_delivery?.logisticsOwner ?? "internal"}>
     <div className={styles.cardHeader}>
       <div><div className={styles.orderTitle}>#{order.display_number} · {order.customer_name_snapshot}</div><div className={styles.status}>{status} · Produção: {order.production_status}</div></div>
       <div className={styles.deadline}><DeliverySla promisedByAt={delivery?.promised_by_at ?? null} deliveredAt={delivery?.delivered_at ?? null} /></div>
     </div>
     <div className={styles.infoGrid}>
       <Info label="Endereço" value={fullAddress(order) || "Endereço não informado"} wide />
-      <Info label="Entregador" value={delivery?.driver_id ? driverNames[delivery.driver_id] ?? "Entregador" : "Não atribuído"} />
+      <Info label={externallyManaged ? "Logística" : "Entregador"} value={order.external_delivery?.logisticsLabel ?? (delivery?.driver_id ? driverNames[delivery.driver_id] ?? "Entregador" : "Não atribuído")} />
       <Info label="Frete" value={money(order.delivery_fee_cents)} accent />
       <Info label="Telefone" value={order.customer_phone_snapshot || "Não informado"} />
       <Info label="Estimativa do pedido" value={order.delivery_estimated_min_minutes && order.delivery_estimated_max_minutes ? `${order.delivery_estimated_min_minutes}–${order.delivery_estimated_max_minutes} min` : "Não informada"} />
     </div>
     {order.address_reference_snapshot ? <div className={styles.reference}><strong>Referência:</strong> {order.address_reference_snapshot}</div> : null}
+    {externallyManaged ? <div className={styles.reference}><strong>Operação externa:</strong> não atribua entregador do PedeAqui. O status de entrega será reconciliado pelo {order.external_delivery?.providerLabel}.</div> : null}
     <div className={styles.actions}>
       {canStart && !delivery ? <DeliveryOperationForm intent="waiting" orderId={order.id} /> : null}
       {canAssign ? <DeliveryOperationForm intent="assign" orderId={order.id} drivers={drivers} currentDriverId={delivery?.driver_id ?? null} /> : null}
-      {order.fulfillment_status === "assigned" && delivery ? <DeliveryOperationForm intent="picked_up" deliveryId={delivery.id} /> : null}
-      {order.fulfillment_status === "picked_up" && delivery ? <DeliveryOperationForm intent="out_for_delivery" deliveryId={delivery.id} /> : null}
-      {order.fulfillment_status === "out_for_delivery" && delivery ? <DeliveryOperationForm intent="delivered" deliveryId={delivery.id} paymentPending={order.payment_status !== "paid"} /> : null}
+      {!externallyManaged && order.fulfillment_status === "assigned" && delivery ? <DeliveryOperationForm intent="picked_up" deliveryId={delivery.id} /> : null}
+      {!externallyManaged && order.fulfillment_status === "picked_up" && delivery ? <DeliveryOperationForm intent="out_for_delivery" deliveryId={delivery.id} /> : null}
+      {!externallyManaged && order.fulfillment_status === "out_for_delivery" && delivery ? <DeliveryOperationForm intent="delivered" deliveryId={delivery.id} paymentPending={order.payment_status !== "paid"} /> : null}
     </div>
   </article>;
 }

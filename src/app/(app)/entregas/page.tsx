@@ -4,6 +4,7 @@ import { DeliveryRealtime } from "@/features/delivery/delivery-realtime";
 import { DeliverySla } from "@/features/delivery/delivery-sla";
 import styles from "@/features/delivery/delivery.module.css";
 import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
+import { ExternalDeliveryPolicyService } from "@/server/delivery/external-delivery-policy-service";
 import { RouteTrackingService } from "@/server/delivery/route-tracking-service";
 import { RouteTrackingPanel } from "@/features/delivery/route-tracking-panel";
 
@@ -13,8 +14,12 @@ function address(order: Awaited<ReturnType<typeof DeliveryOperationsService.load
 }
 
 export default async function DeliveryOperationsPage() {
-  const [data, tracking] = await Promise.all([DeliveryOperationsService.loadOperations(), RouteTrackingService.loadOwnerPanel()]);
+  const data = await DeliveryOperationsService.loadOperations();
   if (!data.context.storeId) throw new Error("Uma unidade ativa é necessária");
+  const [tracking, externalDeliveryByOrder] = await Promise.all([
+    RouteTrackingService.loadOwnerPanel(),
+    ExternalDeliveryPolicyService.presentationsForOrders(data.deliveries.map((order) => order.id)),
+  ]);
 
   const open = data.deliveries.filter((item) => item.fulfillment_status !== "delivered");
   const delivered = data.deliveries.filter((item) => item.fulfillment_status === "delivered").slice(-20).reverse();
@@ -27,7 +32,12 @@ export default async function DeliveryOperationsPage() {
     activeDeliveries: driver.activeDeliveries,
   }));
   const driverNames = Object.fromEntries(data.drivers.map((driver) => [driver.id, driver.name]));
-  const boardDeliveries = open.map((order) => ({ ...order, delivery_fee_cents: Number(order.delivery_fee_cents) }));
+  const boardDeliveries = open.map((order) => ({
+    ...order,
+    delivery_fee_cents: Number(order.delivery_fee_cents),
+    external_delivery: externalDeliveryByOrder[order.id] ?? null,
+  }));
+  const externallyManagedOpen = boardDeliveries.filter((order) => Boolean(order.external_delivery)).length;
 
   return <section className={styles.page}>
     <header className={styles.header}>
@@ -47,6 +57,7 @@ export default async function DeliveryOperationsPage() {
       <Metric label="Abertas" value={open.length} />
       <Metric label="Aguardando" value={open.filter((item) => ["pending", "awaiting_assignment"].includes(item.fulfillment_status)).length} />
       <Metric label="Em rota" value={open.filter((item) => item.fulfillment_status === "out_for_delivery").length} />
+      <Metric label="Entrega por parceiros" value={externallyManagedOpen} />
       <Metric label="Entregadores em serviço" value={data.drivers.filter((driver) => driver.active && driver.on_duty).length} />
     </div>
 

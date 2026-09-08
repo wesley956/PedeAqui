@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize, AuthorizationError } from "@/server/access/authorize";
 import { PERMISSIONS, type PermissionKey } from "@/server/access/permissions";
+import { ExternalDeliveryPolicyService } from "@/server/delivery/external-delivery-policy-service";
 
 const uuid = z.string().uuid();
 const idempotency = z.string().trim().min(8).max(240);
@@ -143,13 +144,15 @@ export class DeliveryOperationsService {
         .order("created_at", { ascending: true }).limit(50)
       : { data: [], error: null };
     if (availableResult.error) throw availableResult.error;
+    const availableRows = availableResult.data ?? [];
+    const externalAvailable = await ExternalDeliveryPolicyService.presentationsForOrders(availableRows.map((order) => order.id));
 
     return {
       context,
       driver,
       selfClaimEnabled,
       activeDeliveryCount,
-      availableDeliveries: availableResult.data ?? [],
+      availableDeliveries: availableRows.filter((order) => !externalAvailable[order.id]),
       deliveries: enrichedDeliveries,
     };
   }
@@ -196,6 +199,7 @@ export class DeliveryOperationsService {
 
   static async markWaiting(orderId: string, key: string = randomUUID()) {
     const id = uuid.parse(orderId);
+    await ExternalDeliveryPolicyService.assertInternalOwnership(id);
     const safeKey = idempotency.parse(key);
     const context = await authorize(PERMISSIONS.DELIVERY_ASSIGN);
     const storeId = requireStore(context.storeId);
@@ -211,6 +215,7 @@ export class DeliveryOperationsService {
 
   static async assign(orderId: string, driverId: string, reason: string | null, key: string = randomUUID()) {
     const order = uuid.parse(orderId);
+    await ExternalDeliveryPolicyService.assertInternalOwnership(order);
     const driver = uuid.parse(driverId);
     const safeKey = idempotency.parse(key);
     const context = await authorize(PERMISSIONS.DELIVERY_ASSIGN);
@@ -236,6 +241,7 @@ export class DeliveryOperationsService {
 
   static async selfClaim(orderId: string, key: string = randomUUID()) {
     const order = uuid.parse(orderId);
+    await ExternalDeliveryPolicyService.assertInternalOwnership(order);
     const safeKey = idempotency.parse(key);
     const context = await authorize(PERMISSIONS.DELIVERY_UPDATE);
     const storeId = requireStore(context.storeId);
@@ -262,9 +268,10 @@ export class DeliveryOperationsService {
     const storeId = requireStore(context.storeId);
     const admin = createAdminClient();
     const { data: delivery, error: deliveryError } = await admin.from("deliveries")
-      .select("id,driver_id").eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
+      .select("id,driver_id,order_id").eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (deliveryError) throw deliveryError;
     if (!delivery?.driver_id) throw new Error("Entrega não encontrada ou sem entregador");
+    await ExternalDeliveryPolicyService.assertInternalOwnership(delivery.order_id);
 
     const canOperateAll = await hasPermission(PERMISSIONS.DELIVERY_ASSIGN, context);
     if (!canOperateAll) {
