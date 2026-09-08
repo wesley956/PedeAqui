@@ -181,7 +181,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
       seen.current.add(row.id);
       if (row.order_status === "pending_confirmation") {
         setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
-        void notifyNewOrder(row.display_number, row.id);
+        void notifyNewOrder();
       }
     },
   });
