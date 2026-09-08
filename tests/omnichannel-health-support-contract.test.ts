@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(path, "utf8");
 const settings = read("src/server/integrations/providers/ifood/ifood-integration-settings-service.ts");
+const productionApproval = read("src/server/integrations/rollout/production-capability-approval.ts");
 const settingsCard = read("src/app/(app)/configuracoes/integracoes/ifood-connection-card.tsx");
 const platformPage = read("src/app/platform/integracoes/page.tsx");
 const support = read("src/server/platform/platform-omnichannel-support-service.ts");
@@ -23,11 +24,13 @@ describe("omnichannel health/support contract", () => {
     expect(settingsCard).toContain("preserva histórico");
   });
 
-  it("keeps iFood catalog independent and production activation behind approval", () => {
+  it("keeps iFood catalog independent and production activation behind store-scoped approval", () => {
     expect(settings).toContain('input.capability === "ifood_catalog" && input.enabled');
     expect(settings).toContain("cardápio e preços independentes");
     expect(settings).toContain('accountResult.data.environment === "production"');
-    expect(settings).toContain("production_capability_approvals");
+    expect(settings).toContain("isProductionCapabilityApproved(accountResult.data.metadata, storeId, input.capability)");
+    expect(productionApproval).toContain("production_capability_approvals");
+    expect(productionApproval).toContain("root[storeId]");
     expect(settingsCard).toContain("Aguardando liberação");
   });
 
