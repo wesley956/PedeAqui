@@ -15,7 +15,13 @@ export async function saveOrderWorkflowSettingsAction(formData: FormData) {
     pickup: selectedStagesFromForm(formData, "pickup"),
   });
 
-  await OrderWorkflowSettingsService.save({ mode, custom });
+  await OrderWorkflowSettingsService.save(
+    { mode, custom },
+    {
+      source: "user_action",
+      reason: "workflow_settings_form",
+    },
+  );
   revalidatePath("/configuracoes");
   revalidatePath("/configuracoes/fluxo-pedidos");
   revalidatePath("/pedidos");
