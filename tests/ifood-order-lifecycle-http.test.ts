@@ -53,18 +53,24 @@ describe("iFood order lifecycle HTTP client", () => {
       { code: "OUT_OF_STOCK", description: "Item indisponível" },
       { code: "STORE_CLOSED", description: "Loja fechada" },
     ]);
+    const selectedReason = reasons[0];
+    expect(selectedReason).toBeDefined();
 
     await client.requestCancellation({
       accessToken: "token-2",
       orderId: "abc",
-      reason: reasons[0].code,
+      reason: selectedReason!.code,
     });
 
-    expect(calls[0].url).toBe("https://merchant.test/order/v1.0/orders/abc/cancellationReasons");
-    expect(calls[0].init?.method).toBe("GET");
-    expect(calls[1].url).toBe("https://merchant.test/order/v1.0/orders/abc/requestCancellation");
-    expect(calls[1].init?.method).toBe("POST");
-    expect(JSON.parse(String(calls[1].init?.body))).toEqual({ reason: "OUT_OF_STOCK" });
+    const reasonsCall = calls[0];
+    const cancellationCall = calls[1];
+    expect(reasonsCall).toBeDefined();
+    expect(cancellationCall).toBeDefined();
+    expect(reasonsCall!.url).toBe("https://merchant.test/order/v1.0/orders/abc/cancellationReasons");
+    expect(reasonsCall!.init?.method).toBe("GET");
+    expect(cancellationCall!.url).toBe("https://merchant.test/order/v1.0/orders/abc/requestCancellation");
+    expect(cancellationCall!.init?.method).toBe("POST");
+    expect(JSON.parse(String(cancellationCall!.init?.body))).toEqual({ reason: "OUT_OF_STOCK" });
   });
 
   it("rejects malformed cancellation-reason payloads instead of accepting an unsafe free-text fallback", async () => {
