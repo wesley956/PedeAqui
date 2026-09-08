@@ -36,7 +36,8 @@ export type ManagerIntent =
 const routedDeliveryIntents = new Set<ManagerIntent>(["courier_assigned", "courier_picked_up", "out_for_delivery", "delivered"]);
 
 type CancellationReasonState = {
-  loading: boolean;
+  checking: boolean;
+  external: boolean | null;
   reasons: Array<{ code: string; description: string }>;
   error: string | null;
 };
@@ -54,44 +55,55 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
   externalProvider?: "ifood" | null;
 }) {
   const [state, action, pending] = useActionState(orderManagerAction, initialOrderManagerActionState);
+  const isCancellationIntent = (intent === "cancel" || intent === "reject") && Boolean(reasonLabel);
   const [cancellationReasons, setCancellationReasons] = useState<CancellationReasonState>({
-    loading: false,
+    checking: isCancellationIntent,
+    external: externalProvider === "ifood" ? true : null,
     reasons: [],
     error: null,
   });
   const iconOnlyPrint = intent === "print" && compact && !reasonLabel;
-  const needsIfoodCancellationReason = externalProvider === "ifood"
-    && (intent === "cancel" || intent === "reject")
-    && Boolean(reasonLabel);
 
   useEffect(() => {
-    if (!needsIfoodCancellationReason) return;
+    if (!isCancellationIntent) return;
     let active = true;
-    setCancellationReasons({ loading: true, reasons: [], error: null });
+    setCancellationReasons((current) => ({
+      ...current,
+      checking: true,
+      external: externalProvider === "ifood" ? true : null,
+      reasons: [],
+      error: null,
+    }));
     void getExternalCancellationReasonsAction(orderId).then((result) => {
       if (!active) return;
       setCancellationReasons({
-        loading: false,
+        checking: false,
+        external: result.external,
         reasons: result.reasons,
-        error: result.error ?? (result.reasons.length === 0 ? "O iFood não liberou motivos de cancelamento para este pedido." : null),
+        error: result.error ?? (result.external && result.reasons.length === 0
+          ? "O iFood não liberou motivos de cancelamento para este pedido."
+          : null),
       });
     }).catch(() => {
       if (!active) return;
       setCancellationReasons({
-        loading: false,
+        checking: false,
+        external: externalProvider === "ifood" ? true : null,
         reasons: [],
         error: "Não foi possível consultar os motivos de cancelamento do iFood.",
       });
     });
     return () => { active = false; };
-  }, [needsIfoodCancellationReason, orderId]);
+  }, [externalProvider, isCancellationIntent, orderId]);
 
   if (routedDeliveryIntents.has(intent)) {
     return <Link href="/entregas" style={{ ...buttonStyle("secondary"), display: "grid", placeItems: "center", textDecoration: "none" }}>{label} → Entregas</Link>;
   }
 
+  const needsIfoodCancellationReason = isCancellationIntent && cancellationReasons.external === true;
+  const resolvingOrderOrigin = isCancellationIntent && cancellationReasons.checking;
   const providerReasonUnavailable = needsIfoodCancellationReason
-    && (cancellationReasons.loading || cancellationReasons.reasons.length === 0);
+    && (cancellationReasons.checking || cancellationReasons.reasons.length === 0);
 
   return (
     <form action={action} onSubmit={confirmPayment ? (event) => { if (!window.confirm("Você recebeu o pagamento deste pedido? Ao confirmar, o PedeAqui dará a baixa financeira.")) event.preventDefault(); } : undefined} style={{ display: "grid", gap: 6 }}>
@@ -101,9 +113,13 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
       {printJobId ? <input type="hidden" name="printJobId" value={printJobId} /> : null}
       {reasonLabel ? <label style={{ display: "grid", gap: 4 }}>
         <span style={{ fontSize: 11, fontWeight: 800 }}>{needsIfoodCancellationReason ? "Motivo aceito pelo iFood" : reasonLabel}</span>
-        {needsIfoodCancellationReason ? (
+        {resolvingOrderOrigin ? (
+          <select disabled style={inputStyle} defaultValue="checking">
+            <option value="checking">Verificando origem do pedido…</option>
+          </select>
+        ) : needsIfoodCancellationReason ? (
           <select name="reason" required disabled={providerReasonUnavailable} style={inputStyle} defaultValue="">
-            <option value="" disabled>{cancellationReasons.loading ? "Consultando iFood…" : "Selecione um motivo"}</option>
+            <option value="" disabled>Selecione um motivo</option>
             {cancellationReasons.reasons.map((reason) => (
               <option key={reason.code} value={reason.code}>{reason.description}</option>
             ))}
@@ -111,16 +127,16 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
         ) : (
           <input name="reason" required minLength={3} maxLength={500} placeholder={reasonPlaceholder} style={inputStyle} />
         )}
-        {needsIfoodCancellationReason && cancellationReasons.error ? (
+        {isCancellationIntent && cancellationReasons.error ? (
           <span role="alert" style={{ color: "#f97066", fontSize: 11 }}>{cancellationReasons.error}</span>
         ) : null}
       </label> : null}
       <button
         type="submit"
-        disabled={pending || providerReasonUnavailable}
+        disabled={pending || resolvingOrderOrigin || providerReasonUnavailable}
         aria-label={iconOnlyPrint ? label : undefined}
         title={iconOnlyPrint ? label : undefined}
-        style={{ ...buttonStyle(tone), ...(compact ? compactStyle : null), ...(iconOnlyPrint ? iconOnlyPrintStyle : null), opacity: pending || providerReasonUnavailable ? 0.65 : 1 }}
+        style={{ ...buttonStyle(tone), ...(compact ? compactStyle : null), ...(iconOnlyPrint ? iconOnlyPrintStyle : null), opacity: pending || resolvingOrderOrigin || providerReasonUnavailable ? 0.65 : 1 }}
       >
         {iconOnlyPrint ? <PrinterIcon pending={pending} /> : pending ? "Processando…" : label}
       </button>
