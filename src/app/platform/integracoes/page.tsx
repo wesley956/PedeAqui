@@ -77,7 +77,7 @@ export default async function PlatformIntegrationsPage() {
         <div>
           <p className={styles.eyebrow}>PAINEL DO PROPRIETÁRIO · SAÚDE</p>
           <h1>Integrações</h1>
-          <p>Saúde operacional, filas, divergências e suporte seguro por unidade e capability, sem expor credenciais ou payload bruto.</p>
+          <p>Saúde operacional, filas, divergências e suporte seguro por unidade e capability, sem expor credenciais ou conteúdo técnico bruto.</p>
         </div>
       </header>
 
@@ -213,7 +213,7 @@ export default async function PlatformIntegrationsPage() {
       </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionHeader}><div><h2>Como interpretar</h2><p>Esta central observa e oferece recuperação idempotente; pedidos nativos e outras lojas permanecem isolados.</p></div></div>
+        <div className={styles.sectionHeader}><div><h2>Como interpretar</h2><p>Esta central observa e oferece recuperação idempotente; não altera estado financeiro ou operacional e mantém pedidos nativos e outras lojas isolados.</p></div></div>
         <div className={styles.supportGrid}>
           <Info title="Conectado" text="Capability habilitada, conexão saudável e nenhum sinal de fila/divergência que exija atenção." />
           <Info title="Atenção" text="Existe retry, dead-letter, divergência ou lag. A falha permanece isolada à capability afetada." />
