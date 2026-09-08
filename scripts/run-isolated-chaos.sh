@@ -76,6 +76,7 @@ readonly scenarios=(
   "supabase/tests/e2e_omnichannel_merchant_identity_replay.sql"
   "supabase/tests/e2e_omnichannel_out_of_order_events.sql"
   "supabase/tests/e2e_omnichannel_event_payload_retention.sql"
+  "supabase/tests/e2e_omnichannel_support_retry.sql"
   "supabase/tests/e2e_ifood_auth_onboarding.sql"
   "supabase/tests/e2e_ifood_order_intake_runtime.sql"
 )
