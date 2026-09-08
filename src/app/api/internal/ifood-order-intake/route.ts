@@ -1,4 +1,5 @@
 import { authorizeInternalJob } from "@/server/jobs/internal-job-auth";
+import { runConfiguredIfoodOrderCommands } from "@/server/integrations/providers/ifood/ifood-order-command-worker";
 import { runConfiguredIfoodOrderIntake } from "@/server/integrations/providers/ifood/ifood-order-worker";
 
 export const runtime = "nodejs";
@@ -13,8 +14,16 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await runConfiguredIfoodOrderIntake();
-    return Response.json({ ok: true, ...result }, {
+    // Keep inbound polling authoritative and available even if the outbound
+    // command runner has a temporary failure during staged rollout.
+    const intake = await runConfiguredIfoodOrderIntake();
+    let commands: Awaited<ReturnType<typeof runConfiguredIfoodOrderCommands>> | { failed: true };
+    try {
+      commands = await runConfiguredIfoodOrderCommands();
+    } catch {
+      commands = { failed: true };
+    }
+    return Response.json({ ok: true, ...intake, commands }, {
       headers: { "Cache-Control": "no-store" },
     });
   } catch {
