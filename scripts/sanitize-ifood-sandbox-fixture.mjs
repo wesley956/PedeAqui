@@ -48,9 +48,9 @@ export function sanitizeIfoodSandboxOrder(input) {
       if ("neighborhood" in address) address.neighborhood = "SANITIZED NEIGHBORHOOD";
       if ("district" in address) address.district = "SANITIZED DISTRICT";
       address.city = "SANITIZED CITY";
-      address.state = "SP";
-      if ("postalCode" in address) address.postalCode = "00000000";
-      if ("zipCode" in address) address.zipCode = "00000000";
+      address.state = "SANITIZED STATE";
+      if ("postalCode" in address) address.postalCode = "SANITIZED POSTAL CODE";
+      if ("zipCode" in address) address.zipCode = "SANITIZED POSTAL CODE";
       if ("complement" in address && address.complement) address.complement = "[SANITIZED]";
       if ("reference" in address && address.reference) address.reference = "[SANITIZED]";
       if (address.coordinates && typeof address.coordinates === "object") {
