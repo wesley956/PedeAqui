@@ -145,7 +145,6 @@ export async function runIfoodOrderIntakeCycle(input: {
     pollingSummary.duplicates += result.summary.duplicates;
     pollingSummary.rejected += result.summary.rejected;
     pollingSummary.acknowledgedDuplicates += result.summary.acknowledgedDuplicates;
-    pollingSummary.acknowledgmentFailures += result.summary.acknowledgedDuplicates;
     if (result.summary.acknowledgmentFailed) pollingSummary.acknowledgmentFailures += 1;
   }
 
