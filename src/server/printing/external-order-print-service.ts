@@ -196,6 +196,8 @@ export class ExternalOrderPrintService {
     }, external);
 
     const idempotencyKey = `order:${scope.orderId}:confirmed:external-fallback:${station.id}:${printer.id}:kitchen`;
+    const priority = Math.min(10_000, Math.max(0, Number(route.priority ?? 100)));
+    const copies = Math.min(10, Math.max(1, Number(route.copies ?? printer.default_copies ?? 1)));
     const insertResult = await admin.from("print_jobs").insert({
       organization_id: scope.organizationId,
       store_id: scope.storeId,
@@ -206,10 +208,10 @@ export class ExternalOrderPrintService {
       template_key: "order_kitchen",
       template_version: 1,
       payload,
-      priority: Number(route.priority ?? 100),
-      copies: Number(route.copies ?? printer.default_copies ?? 1),
+      priority,
+      copies,
       idempotency_key: idempotencyKey,
-      source: "order_confirmed_external_fallback",
+      source: "integration",
     }).select("id").single();
     if (insertResult.error) {
       if (insertResult.error.code === "23505") {
@@ -225,7 +227,7 @@ export class ExternalOrderPrintService {
       throw insertResult.error;
     }
 
-    await admin.from("domain_events").insert({
+    const eventResult = await admin.from("domain_events").insert({
       organization_id: scope.organizationId,
       store_id: scope.storeId,
       event_type: "print.external_fallback_enqueued",
@@ -241,6 +243,7 @@ export class ExternalOrderPrintService {
       attempts: 0,
       occurred_at: new Date().toISOString(),
     });
+    if (eventResult.error) throw eventResult.error;
 
     return { kind: "queued", jobId: insertResult.data.id };
   }
