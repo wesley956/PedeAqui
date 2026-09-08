@@ -8,6 +8,7 @@ const manager = read("src/features/orders/order-manager-board.tsx");
 const customManager = read("src/features/orders/custom-order-workflow-board.tsx");
 const soundAlert = read("src/features/orders/use-order-alert.tsx");
 const actions = read("src/features/orders/actions.ts");
+const lifecycleRouter = read("src/server/orders/order-manager-lifecycle-router.ts");
 const detail = read("src/app/(app)/pedidos/[id]/page.tsx");
 const publicRefresh = read("src/features/orders/public-order-refresh.tsx");
 const realtime = read("src/features/orders/order-realtime.tsx");
@@ -50,7 +51,11 @@ describe("presentation diagnostics 036–040", () => {
 
   it("supports friendly accept, reject and cancel actions with pending feedback", () => {
     expect(actions).toContain('"accept", "reject", "cancel"');
-    expect(actions).toContain('case "cancel": await OrderService.cancel');
+    expect(actions).toContain("routeOrderManagerLifecycle");
+    expect(lifecycleRouter).toContain('case "reject":');
+    expect(lifecycleRouter).toContain('case "cancel":');
+    expect(lifecycleRouter).toContain("await OrderService.cancel(input.orderId, input.reason ?? \"\")");
+    expect(lifecycleRouter).toContain('command: "request_cancellation"');
     expect(detail).toContain('intent="accept"');
     expect(detail).toContain('intent="reject"');
     expect(detail).toContain('intent="cancel"');
