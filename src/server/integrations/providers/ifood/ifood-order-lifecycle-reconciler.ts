@@ -6,6 +6,7 @@ import {
   resolveIfoodLifecycleMilestone,
   type IfoodOrderLifecycleMilestone,
 } from "@/server/integrations/providers/ifood/ifood-order-lifecycle-milestones";
+import { ExternalOrderPrintService } from "@/server/printing/external-order-print-service";
 
 export async function reconcileIfoodOrderLifecycle(input: {
   organizationId: string;
@@ -41,5 +42,26 @@ export async function reconcileIfoodOrderLifecycle(input: {
       { cause: error },
     );
   }
+
+  // Confirmation remains database-triggered. This provider-neutral fallback only
+  // fills the gap when external snapshot items have no local product/station
+  // mapping, and it refuses to create a second original print job.
+  if (milestone !== "canceled") {
+    try {
+      await ExternalOrderPrintService.ensureConfirmedOrder({
+        organizationId: input.organizationId,
+        storeId: input.storeId,
+        orderId: input.orderId,
+      });
+    } catch (printError) {
+      throw new IntegrationProviderError(
+        "The iFood order was reconciled, but its canonical print routing needs another attempt",
+        "ifood_order_print_reconcile_failed",
+        true,
+        { cause: printError },
+      );
+    }
+  }
+
   return { milestone };
 }
