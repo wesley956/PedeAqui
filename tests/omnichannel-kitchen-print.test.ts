@@ -49,9 +49,11 @@ describe("omnichannel kitchen + printing", () => {
     expect(serialized).not.toContain("logisticsOwner");
   });
 
-  it("guards the fallback with existing originals and a dedicated idempotency key", () => {
+  it("guards the fallback with existing originals, absent local mapping and a dedicated idempotency key", () => {
     const source = readFileSync(join(process.cwd(), "src/server/printing/external-order-print-service.ts"), "utf8");
     expect(source).toContain('.eq("is_reprint", false)');
+    expect(source).toContain('items.some((item) => Boolean(item.product_id))');
+    expect(source).toContain('kind: "local_mapping_present"');
     expect(source).toContain("external-fallback");
     expect(source).toContain('source: "integration"');
     expect(source).not.toContain('source: "order_confirmed_external_fallback"');
