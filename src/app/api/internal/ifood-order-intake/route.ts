@@ -1,6 +1,7 @@
 import { authorizeInternalJob } from "@/server/jobs/internal-job-auth";
 import { runConfiguredIfoodOrderCommands } from "@/server/integrations/providers/ifood/ifood-order-command-worker";
 import { runConfiguredIfoodOrderIntake } from "@/server/integrations/providers/ifood/ifood-order-worker";
+import { PlatformOmnichannelHealthService } from "@/server/platform/platform-omnichannel-health-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,8 +15,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Keep inbound polling authoritative and available even if the outbound
-    // command runner has a temporary failure during staged rollout.
+    // Keep inbound polling authoritative and available even if outbound commands
+    // or observability have a temporary failure during staged rollout.
     const intake = await runConfiguredIfoodOrderIntake();
     let commands: Awaited<ReturnType<typeof runConfiguredIfoodOrderCommands>> | { failed: true };
     try {
@@ -23,7 +24,15 @@ export async function GET(request: Request) {
     } catch {
       commands = { failed: true };
     }
-    return Response.json({ ok: true, ...intake, commands }, {
+
+    let observability: Awaited<ReturnType<typeof PlatformOmnichannelHealthService.syncIncidents>> | { failed: true };
+    try {
+      observability = await PlatformOmnichannelHealthService.syncIncidents();
+    } catch {
+      observability = { failed: true };
+    }
+
+    return Response.json({ ok: true, ...intake, commands, observability }, {
       headers: { "Cache-Control": "no-store" },
     });
   } catch {
