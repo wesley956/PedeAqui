@@ -10,7 +10,9 @@ import { OrderNotificationContextService } from "@/server/conversations/order-no
 import { scheduleOrderWhatsAppNotifications } from "@/server/conversations/order-notification-dispatch";
 import { CustomerRecognitionService } from "@/server/customers/recognition-service";
 import { CUSTOMER_RECOGNITION_MAX_AGE_SECONDS, customerRecognitionCookieName } from "@/server/customers/recognition-token";
+import { IfoodOrderLifecycleService } from "@/server/integrations/providers/ifood/ifood-order-lifecycle-service";
 import { orderCookieName } from "@/server/orders/order-token";
+import { routeOrderManagerLifecycle } from "@/server/orders/order-manager-lifecycle-router";
 import { OrderService } from "@/server/orders/order-service";
 import { logger } from "@/server/observability/logger";
 import { scheduleOrderPixCharge } from "@/server/payments/order-pix-dispatch";
@@ -99,21 +101,29 @@ function refreshOrder(orderId: string) {
 export async function cancelOrderAction(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "");
   const reason = String(formData.get("reason") ?? "");
-  await OrderService.cancel(orderId, reason);
-  scheduleOrderWhatsAppNotifications("order.canceled");
+  const routed = await routeOrderManagerLifecycle({ orderId, intent: "cancel", reason });
+  if (!routed.external) scheduleOrderWhatsAppNotifications("order.canceled");
   refreshOrder(orderId);
 }
 export async function confirmOrderAction(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "");
-  await OrderService.confirm(orderId);
-  scheduleOrderWhatsAppNotifications("order.confirmed");
+  const routed = await routeOrderManagerLifecycle({ orderId, intent: "accept" });
+  if (!routed.external) scheduleOrderWhatsAppNotifications("order.confirmed");
   refreshOrder(orderId);
 }
 export async function transitionProductionAction(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "");
   const status = String(formData.get("status") ?? "") as ProductionStatus;
-  await OrderService.setProduction(orderId, status);
-  scheduleOrderWhatsAppNotifications(`production.${status}`);
+  if (status === "preparing") {
+    const routed = await routeOrderManagerLifecycle({ orderId, intent: "start_production" });
+    if (!routed.external) scheduleOrderWhatsAppNotifications(`production.${status}`);
+  } else if (status === "ready") {
+    const routed = await routeOrderManagerLifecycle({ orderId, intent: "mark_ready" });
+    if (!routed.external) scheduleOrderWhatsAppNotifications(`production.${status}`);
+  } else {
+    await OrderService.setProduction(orderId, status);
+    scheduleOrderWhatsAppNotifications(`production.${status}`);
+  }
   refreshOrder(orderId);
 }
 export async function transitionPaymentAction(formData: FormData) {
@@ -135,6 +145,21 @@ export async function transitionFulfillmentAction(formData: FormData) {
   refreshOrder(orderId);
 }
 
+export type ExternalCancellationReasonsState = {
+  external: boolean;
+  reasons: Array<{ code: string; description: string }>;
+  error: string | null;
+};
+
+export async function getExternalCancellationReasonsAction(orderId: string): Promise<ExternalCancellationReasonsState> {
+  try {
+    const reasons = await IfoodOrderLifecycleService.cancellationReasonsIfExternal(orderId);
+    return { external: reasons !== null, reasons: reasons ?? [], error: null };
+  } catch (error) {
+    return { external: true, reasons: [], error: friendlyOrderActionError(error) };
+  }
+}
+
 const managerIntentSchema = z.enum([
   "accept", "reject", "cancel", "accept_and_start", "start_production", "mark_ready", "mark_paid", "mark_paid_and_complete",
   "await_pickup", "customer_picked_up", "await_courier", "manual_out_for_delivery", "manual_finish_delivery",
@@ -151,21 +176,23 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
 
   try {
     let message: string | null = null;
+    let externalLifecycleCommand = false;
     switch (parsed.data) {
-      case "accept": await OrderService.confirm(orderId); break;
-      case "accept_and_start": {
-        await OrderService.confirm(orderId);
-        try {
-          await OrderService.startProduction(orderId);
-        } catch {
-          message = "Pedido aceito. O preparo não iniciou automaticamente; use Iniciar produção.";
-        }
+      case "accept":
+      case "accept_and_start":
+      case "reject":
+      case "cancel":
+      case "start_production":
+      case "mark_ready": {
+        const routed = await routeOrderManagerLifecycle({
+          orderId,
+          intent: parsed.data,
+          reason: String(formData.get("reason") ?? ""),
+        });
+        externalLifecycleCommand = routed.external;
+        message = routed.message;
         break;
       }
-      case "reject": await OrderService.reject(orderId, String(formData.get("reason") ?? "")); break;
-      case "cancel": await OrderService.cancel(orderId, String(formData.get("reason") ?? "")); break;
-      case "start_production": await OrderService.startProduction(orderId); break;
-      case "mark_ready": await OrderService.setProduction(orderId, "ready"); break;
       case "mark_paid": await PaymentService.confirmDefaultForOrder(orderId); break;
       case "mark_paid_and_complete": {
         await PaymentService.confirmDefaultForOrder(orderId);
@@ -214,7 +241,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
         break;
       }
     }
-    if (!["print", "reprint", "manual_out_for_delivery", "manual_finish_delivery"].includes(parsed.data)) {
+    if (!externalLifecycleCommand && !["print", "reprint", "manual_out_for_delivery", "manual_finish_delivery"].includes(parsed.data)) {
       scheduleOrderWhatsAppNotifications(`order_manager.${parsed.data}`);
     }
     refreshOrder(orderId);
