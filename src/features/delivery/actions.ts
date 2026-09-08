@@ -5,6 +5,7 @@ import { parseMoneyToCents } from "@/server/catalog/money";
 import { scheduleOrderWhatsAppNotifications } from "@/server/conversations/order-notification-dispatch";
 import { DeliveryService } from "@/server/delivery/delivery-service";
 import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
+import { ExternalDeliveryPolicyService } from "@/server/delivery/external-delivery-policy-service";
 import { DriverMutationService } from "@/server/delivery/driver-mutation-service";
 import { DriverMobileAccessService } from "@/server/delivery/driver-mobile-access-service";
 import { RouteTrackingService } from "@/server/delivery/route-tracking-service";
@@ -95,6 +96,7 @@ function friendly(error: unknown) {
   const raw = errorMessage(error);
   const lower = raw.toLocaleLowerCase("pt-BR");
   const rules: Array<[string, string]> = [
+    ["entrega gerenciada externamente", raw],
     ["delivery already claimed", "Este pedido já foi pego por outro entregador."],
     ["order is not available for self claim", "Este pedido não está mais disponível."],
     ["driver self claim is disabled", "A retirada livre de pedidos está desativada nesta loja."],
@@ -178,19 +180,25 @@ export async function deliveryOperationAction(_previous: DeliveryActionState, fo
   const intent = text(formData, "intent");
   try {
     if (intent === "waiting") {
-      await DeliveryOperationsService.markWaiting(text(formData, "orderId"), text(formData, "idempotencyKey"));
+      const orderId = text(formData, "orderId");
+      await ExternalDeliveryPolicyService.assertInternalOwnership(orderId);
+      await DeliveryOperationsService.markWaiting(orderId, text(formData, "idempotencyKey"));
       scheduleOrderWhatsAppNotifications("delivery.waiting");
       refreshOperations();
       return { ok: true, message: "Pedido enviado para a fila de entregas.", error: null };
     }
     if (intent === "claim") {
-      await DeliveryOperationsService.selfClaim(text(formData, "orderId"), text(formData, "idempotencyKey"));
+      const orderId = text(formData, "orderId");
+      await ExternalDeliveryPolicyService.assertInternalOwnership(orderId);
+      await DeliveryOperationsService.selfClaim(orderId, text(formData, "idempotencyKey"));
       scheduleOrderWhatsAppNotifications("delivery.assigned");
       refreshOperations();
       return { ok: true, message: "Pedido adicionado às suas entregas.", error: null };
     }
     if (intent === "assign") {
-      await DeliveryOperationsService.assign(text(formData, "orderId"), text(formData, "driverId"), optional(formData, "reason"), text(formData, "idempotencyKey"));
+      const orderId = text(formData, "orderId");
+      await ExternalDeliveryPolicyService.assertInternalOwnership(orderId);
+      await DeliveryOperationsService.assign(orderId, text(formData, "driverId"), optional(formData, "reason"), text(formData, "idempotencyKey"));
       scheduleOrderWhatsAppNotifications("delivery.assigned");
       refreshOperations();
       return { ok: true, message: "Entregador atribuído.", error: null };
