@@ -8,6 +8,13 @@ import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { StatusBadge, type OperationalStatusKey } from "@/components/ui/status";
 import { OrderActionForm, type ManagerIntent } from "@/features/orders/order-action-form";
+import {
+  externalLogisticsLabel,
+  externalPaymentLabel,
+  externalSyncLabel,
+  orderChannelBadgeLabel,
+} from "@/features/orders/external-order-presentation";
+import { resolveOrderManagerRealtimeAction } from "@/features/orders/order-realtime-actions";
 import { useOrderAlert } from "@/features/orders/use-order-alert";
 import { useRememberedOrderSearch } from "@/features/orders/order-navigation-memory";
 import { OperationalRealtimeBadge, useOperationalRealtime } from "@/features/operations/use-operational-realtime";
@@ -35,10 +42,14 @@ const fulfillmentLabels: Record<string, string> = {
   awaiting_pickup: "Aguardando retirada", picked_up_by_customer: "Retirado", served: "Servido",
   canceled: "Fulfillment cancelado", not_required: "Sem fulfillment",
 };
-const channelLabels: Record<string, string> = { menu: "Cardápio", digital_menu: "Cardápio", pdv: "PDV", dining: "Salão", whatsapp: "WhatsApp", manual: "Manual" };
+const channelLabels: Record<string, string> = { menu: "Cardápio", digital_menu: "Cardápio", pdv: "PDV", dining: "Salão", whatsapp: "WhatsApp", manual: "Manual", ifood: "iFood", "99food": "99Food" };
 export type BoardWorkflowMode = "standard" | "simplified";
 export type OrderActionSpec = { intent: ManagerIntent; label: string; tone?: "primary" | "secondary" | "danger"; confirmPayment?: boolean };
 const isOperationalOrder = (order: OrderManagerRow) => !["completed", "canceled", "rejected"].includes(order.order_status);
+
+async function resolveOrderRow(raw: Record<string, unknown>) {
+  return typeof raw.id === "string" ? resolveOrderManagerRealtimeAction(raw.id) : null;
+}
 
 function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
@@ -128,6 +139,7 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
     initialRows: initialOrders,
     surface: "orders",
     isOperational: isOperationalOrder,
+    resolveRow: resolveOrderRow,
     onInsert: (row) => {
       if (seen.current.has(row.id)) return;
       seen.current.add(row.id);
@@ -150,12 +162,17 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("pt-BR");
     if (!needle) return orders;
-    return orders.filter((order) =>
-      String(order.display_number).includes(needle)
-      || order.customer_name_snapshot.toLocaleLowerCase("pt-BR").includes(needle)
-      || order.fulfillment_type.toLocaleLowerCase("pt-BR").includes(needle)
-      || order.channel.toLocaleLowerCase("pt-BR").includes(needle),
-    );
+    return orders.filter((order) => {
+      const external = order.external;
+      return String(order.display_number).includes(needle)
+        || order.customer_name_snapshot.toLocaleLowerCase("pt-BR").includes(needle)
+        || order.fulfillment_type.toLocaleLowerCase("pt-BR").includes(needle)
+        || order.channel.toLocaleLowerCase("pt-BR").includes(needle)
+        || orderChannelBadgeLabel(order.channel, external).toLocaleLowerCase("pt-BR").includes(needle)
+        || Boolean(external?.externalDisplayId?.toLocaleLowerCase("pt-BR").includes(needle))
+        || Boolean(external?.externalOrderId.toLocaleLowerCase("pt-BR").includes(needle))
+        || Boolean(external && externalSyncLabel(external.syncStatus).toLocaleLowerCase("pt-BR").includes(needle));
+    });
   }, [orders, query]);
 
   const grouped = useMemo(() => {
@@ -197,7 +214,7 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Número, cliente, canal ou modalidade"
+            placeholder="Número, cliente, canal, código externo ou sync"
           />
         </div>
         <Button type="button" tone="secondary" onClick={() => void toggle()} aria-pressed={soundEnabled}>
@@ -289,9 +306,15 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, payme
   const scheduledLabel = order.scheduled_for
     ? formatStoreDateTime(order.scheduled_for, timeZone, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
     : null;
+  const external = order.external;
+  const channelBadge = orderChannelBadgeLabel(order.channel, external);
+  const logisticsLabel = external ? externalLogisticsLabel(external) : null;
+  const recommendedPreparationLabel = external?.recommendedPreparationAt
+    ? formatStoreDateTime(external.recommendedPreparationAt, timeZone, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+    : null;
 
   return (
-    <article className={styles.orderCard} data-bucket={bucket} data-late={late || undefined}>
+    <article className={styles.orderCard} data-bucket={bucket} data-late={late || undefined} data-channel={external?.provider ?? "pedeaqui"}>
       <div className={styles.cardTop}>
         <div className={styles.orderIdentity}>
           <span className={styles.orderNumber}>#{order.display_number}</span>
@@ -307,9 +330,15 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, payme
         <div className={styles.statusRow}>
           <StatusBadge status={status.status} label={status.label} />
           {late ? <StatusBadge status="order_late" /> : null}
+          <Tag>{channelBadge}</Tag>
+          {external ? <Tag>{externalSyncLabel(external.syncStatus)}</Tag> : null}
         </div>
-        <span className={styles.metaText}>{fulfillmentTypeLabel(order.fulfillment_type)} · {paymentLabels[order.payment_status] ?? order.payment_status} · {channelLabels[order.channel] ?? order.channel}</span>
+        <span className={styles.metaText}>{fulfillmentTypeLabel(order.fulfillment_type)} · {paymentLabels[order.payment_status] ?? order.payment_status} · {channelLabels[order.channel] ?? channelBadge}</span>
+        {external?.externalDisplayId ? <Tag>Cód. {external.externalDisplayId}</Tag> : null}
+        {external ? <Tag>{externalPaymentLabel(external)}</Tag> : null}
+        {logisticsLabel ? <Tag>{logisticsLabel}</Tag> : null}
         {scheduledLabel ? <Tag>Agendado {scheduledLabel}</Tag> : null}
+        {recommendedPreparationLabel ? <Tag>Preparar a partir de {recommendedPreparationLabel}</Tag> : null}
       </div>
 
       {primaryAction ? (
@@ -317,7 +346,6 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, payme
           <OrderActionForm orderId={order.id} intent={primaryAction.intent} label={primaryAction.label} tone={primaryAction.tone} confirmPayment={primaryAction.confirmPayment} compact />
         </div>
       ) : null}
-
 
       {continueInDeliveryCenter ? (
         <div className={styles.primaryAction}>
@@ -333,6 +361,7 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, payme
           <div className={styles.stateLine}>
             {orderStatusLabels[order.order_status]} · {productionStatusLabels[order.production_status]} · {fulfillmentLabels[order.fulfillment_status] ?? order.fulfillment_status}
           </div>
+          {external ? <div className={styles.stateLine}>Origem: {channelBadge}{external.externalDisplayId ? ` · código ${external.externalDisplayId}` : ""} · {externalSyncLabel(external.syncStatus)}</div> : null}
           <Link href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.detailsLink}>Abrir detalhes</Link>
           {canMarkPaidSecondary ? <OrderActionForm orderId={order.id} intent="mark_paid" label="Marcar pago" tone="secondary" compact /> : null}
           {order.order_status === "pending_confirmation" ? (

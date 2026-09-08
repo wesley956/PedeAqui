@@ -1,3 +1,4 @@
+import type { ExternalOrderPresentation } from "@/features/orders/external-order-presentation";
 import type { FulfillmentStatus, OrderStatus, PaymentStatus, ProductionStatus } from "@/server/orders/state-machines";
 import { paymentAllowsOrderCompletion } from "@/server/orders/state-machines";
 
@@ -15,6 +16,7 @@ export type OrderManagerRow = {
   scheduled_for?: string | null;
   created_at: string;
   updated_at: string;
+  external?: ExternalOrderPresentation | null;
 };
 
 export type OrderLane = "new" | "confirmed" | "preparing" | "ready" | "finished";
