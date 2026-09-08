@@ -14,6 +14,7 @@ import { isDeliveredWithPaymentPending, isFlexiblePaymentQueue, type PaymentComp
 import { externalCapabilitiesOff } from "@/server/integrations/core/capabilities";
 import { resolveEffectiveStoreConfiguration } from "@/server/integrations/core/effective-store-configuration";
 import { ModuleAccessService } from "@/server/modules/module-access-service";
+import { OrderPresentationService } from "@/server/orders/order-presentation-service";
 import { OrderService } from "@/server/orders/order-service";
 import { OrderWorkflowSettingsService } from "@/server/orders/order-workflow-settings-service";
 import { fulfillmentIsComplete, paymentAllowsOrderCompletion, type FulfillmentStatus, type PaymentStatus } from "@/server/orders/state-machines";
@@ -43,7 +44,11 @@ export default async function OrdersPage() {
   if (!context.storeId) throw new Error("An active store is required");
   const workflowMode = settings.mode === "custom" ? "custom" : legacyWorkflowMode;
   const paymentPolicy = paymentCompletionPolicy as PaymentCompletionPolicy | null;
-  const rows = (orders as OrderManagerRow[]).filter((order) => !isFlexiblePaymentQueue(paymentPolicy) || !isDeliveredWithPaymentPending(order));
+  const [enrichedOrders, enrichedRecentFinalized] = await Promise.all([
+    OrderPresentationService.enrichRows(orders as OrderManagerRow[]),
+    OrderPresentationService.enrichRows(recentFinalized as OrderManagerRow[]),
+  ]);
+  const rows = enrichedOrders.filter((order) => !isFlexiblePaymentQueue(paymentPolicy) || !isDeliveredWithPaymentPending(order));
   const activeCount = rows.filter((order) => !["completed", "canceled", "rejected"].includes(order.order_status)).length;
   const finalFulfillment = rows.filter((order) => order.order_status === "confirmed" && fulfillmentIsComplete(order.fulfillment_status as FulfillmentStatus));
   const readyToReconcile = finalFulfillment.filter((order) => paymentAllowsOrderCompletion(order.payment_status as PaymentStatus));
@@ -114,11 +119,11 @@ export default async function OrdersPage() {
           <Link href="/pedidos/historico" className={styles.detailsLink}>Abrir histórico completo</Link>
         </div>
         <div className={styles.recentFinalizedGrid}>
-          {(recentFinalized as OrderManagerRow[]).map((order) => <Link key={order.id} href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.recentFinalizedItem}>
+          {enrichedRecentFinalized.map((order) => <Link key={order.id} href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.recentFinalizedItem}>
             <strong>#{order.display_number} · {order.customer_name_snapshot}</strong>
             <span>{order.order_status === "completed" ? "Concluído" : order.order_status === "canceled" ? "Cancelado" : "Recusado"} · {formatStoreDateTime(order.updated_at, timeZone, { hour: "2-digit", minute: "2-digit" })}</span>
           </Link>)}
-          {recentFinalized.length === 0 ? <p className={styles.emptyLane}>Nenhum pedido finalizado nas últimas {recentFinalizedWindowMinutes / 60} horas.</p> : null}
+          {enrichedRecentFinalized.length === 0 ? <p className={styles.emptyLane}>Nenhum pedido finalizado nas últimas {recentFinalizedWindowMinutes / 60} horas.</p> : null}
         </div>
       </section>
     </section>
