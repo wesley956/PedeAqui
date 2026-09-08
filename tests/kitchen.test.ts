@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   filterKitchenOrdersByStation,
+  isKitchenOrderEligibleNow,
   kitchenElapsedLabel,
   kitchenUrgency,
   type KitchenOrder,
@@ -10,10 +11,13 @@ const baseOrder: KitchenOrder = {
   id: "11111111-1111-4111-8111-111111111111",
   displayNumber: 42,
   customerName: "Cliente",
+  channel: "digital_menu",
   fulfillmentType: "pickup",
   productionStatus: "preparing",
   confirmedAt: "2026-08-10T22:00:00.000Z",
+  scheduledFor: null,
   createdAt: "2026-08-10T21:55:00.000Z",
+  external: null,
   items: [
     {
       id: "22222222-2222-4222-8222-222222222222",
@@ -68,5 +72,48 @@ describe("kitchen model", () => {
     const order = { ...baseOrder, confirmedAt: null };
     const now = new Date("2026-08-10T22:05:00.000Z").getTime();
     expect(kitchenElapsedLabel(order, now)).toBe("10 min");
+  });
+
+  it("keeps scheduled external orders out of production until the provider preparation time", () => {
+    const order: KitchenOrder = {
+      ...baseOrder,
+      channel: "ifood",
+      scheduledFor: "2026-08-10T23:00:00.000Z",
+      external: {
+        provider: "ifood",
+        externalOrderId: "external-42",
+        externalDisplayId: "IFOOD-42",
+        syncStatus: "synced",
+        paymentOwner: "provider",
+        prepaid: true,
+        logisticsOwner: "ifood",
+        timing: "scheduled",
+        recommendedPreparationAt: "2026-08-10T22:40:00.000Z",
+      },
+    };
+
+    expect(isKitchenOrderEligibleNow(order, new Date("2026-08-10T22:39:59.000Z").getTime())).toBe(false);
+    expect(isKitchenOrderEligibleNow(order, new Date("2026-08-10T22:40:00.000Z").getTime())).toBe(true);
+  });
+
+  it("fails open when a scheduled provider omits preparation timing and never delays native orders", () => {
+    const externalWithoutRecommendation: KitchenOrder = {
+      ...baseOrder,
+      channel: "ifood",
+      external: {
+        provider: "ifood",
+        externalOrderId: "external-43",
+        externalDisplayId: null,
+        syncStatus: "attention",
+        paymentOwner: "merchant",
+        prepaid: null,
+        logisticsOwner: "merchant",
+        timing: "scheduled",
+        recommendedPreparationAt: null,
+      },
+    };
+
+    expect(isKitchenOrderEligibleNow(externalWithoutRecommendation, 0)).toBe(true);
+    expect(isKitchenOrderEligibleNow(baseOrder, 0)).toBe(true);
   });
 });

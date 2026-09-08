@@ -1,3 +1,5 @@
+import type { ExternalOrderPresentation } from "@/features/orders/external-order-presentation";
+
 export type KitchenProductionStatus = "pending_confirmation" | "queued" | "preparing" | "ready";
 
 export type KitchenStation = {
@@ -26,10 +28,13 @@ export type KitchenOrder = {
   id: string;
   displayNumber: number;
   customerName: string;
+  channel: string;
   fulfillmentType: string;
   productionStatus: KitchenProductionStatus;
   confirmedAt: string | null;
+  scheduledFor: string | null;
   createdAt: string;
+  external: ExternalOrderPresentation | null;
   items: KitchenItem[];
 };
 
@@ -62,6 +67,20 @@ export function kitchenUrgency(order: Pick<KitchenOrder, "confirmedAt" | "create
   if (minutes >= KITCHEN_LATE_MINUTES) return "late";
   if (minutes >= KITCHEN_ATTENTION_MINUTES) return "attention";
   return "fresh";
+}
+
+/**
+ * External scheduled orders stay in the realtime dataset so they can become
+ * visible without a refresh, but the kitchen only exposes them once the
+ * provider-recommended preparation time is reached. If the provider omitted
+ * that timestamp we fail open instead of risking a late order.
+ */
+export function isKitchenOrderEligibleNow(order: KitchenOrder, now = Date.now()) {
+  if (order.external?.timing !== "scheduled") return true;
+  const recommended = order.external.recommendedPreparationAt;
+  if (!recommended) return true;
+  const availableAt = new Date(recommended).getTime();
+  return !Number.isFinite(availableAt) || now >= availableAt;
 }
 
 export function filterKitchenOrdersByStation(orders: KitchenOrder[], stationId: string | null) {

@@ -5,7 +5,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
+import { sanitizeExternalOrderPresentation } from "@/features/orders/external-order-presentation";
 import { hashPrintAgentToken } from "@/server/printing/agent-token";
+import { prependExternalPrintIdentity, withExternalPrintIdentity } from "@/server/printing/external-print-presentation";
 import { renderPrintDocument, resolveOrderPrintPreferences, type PrintDocumentType } from "@/server/printing/templates";
 
 const uuid = z.string().uuid();
@@ -51,7 +53,19 @@ export class PrintQueueService {
     if (jobs.length === 0) return [];
 
     const printerIds = [...new Set(jobs.map((job) => String(job.printer_id)))];
-    const [{ data: printers, error: printerError }, { data: preferences, error: preferencesError }] = await Promise.all([
+    const orderIds = [...new Set(jobs.map((job) => typeof job.order_id === "string" ? job.order_id : null).filter((id): id is string => Boolean(id)))];
+    const externalPromise = orderIds.length > 0
+      ? admin.from("external_orders")
+        .select("order_id, provider, external_order_id, payment_owner, logistics_owner, sync_status, last_snapshot")
+        .eq("organization_id", agent.organization_id)
+        .eq("store_id", agent.store_id)
+        .in("order_id", orderIds)
+      : Promise.resolve({ data: [], error: null });
+    const [
+      { data: printers, error: printerError },
+      { data: preferences, error: preferencesError },
+      { data: externalRows, error: externalError },
+    ] = await Promise.all([
       admin.from("printers")
         .select("id, name, connection_type, connection_address, connection_port, paper_width_mm")
         .eq("organization_id", agent.organization_id)
@@ -62,11 +76,25 @@ export class PrintQueueService {
         .eq("organization_id", agent.organization_id)
         .eq("store_id", agent.store_id)
         .maybeSingle(),
+      externalPromise,
     ]);
     if (printerError) throw printerError;
     if (preferencesError) throw preferencesError;
+    if (externalError) throw externalError;
     const printPreferences = resolveOrderPrintPreferences(preferences);
     const byId = new Map((printers ?? []).map((printer) => [printer.id, printer]));
+    const externalByOrderId = new Map<string, NonNullable<ReturnType<typeof sanitizeExternalOrderPresentation>>>();
+    for (const row of externalRows ?? []) {
+      const external = sanitizeExternalOrderPresentation({
+        provider: String(row.provider ?? ""),
+        external_order_id: String(row.external_order_id ?? ""),
+        payment_owner: String(row.payment_owner ?? ""),
+        logistics_owner: typeof row.logistics_owner === "string" ? row.logistics_owner : null,
+        sync_status: String(row.sync_status ?? "attention"),
+        last_snapshot: row.last_snapshot,
+      });
+      if (external && typeof row.order_id === "string") externalByOrderId.set(row.order_id, external);
+    }
 
     const ready = [];
     for (const job of jobs) {
@@ -78,16 +106,21 @@ export class PrintQueueService {
       try {
         const jobTextSize = textSize.catch("normal").parse(job.text_size);
         const jobPreferences = { ...printPreferences, text_size: jobTextSize };
-        const rendered = job.rendered_content || renderPrintDocument(
-          job.payload,
-          String(job.document_type) as PrintDocumentType,
-          Number(printer.paper_width_mm),
-          Boolean(job.is_reprint),
-          jobPreferences,
-        );
+        const external = typeof job.order_id === "string" ? externalByOrderId.get(job.order_id) ?? null : null;
+        const payload = external ? withExternalPrintIdentity(job.payload, external) : job.payload;
+        const rendered = job.rendered_content || (() => {
+          const document = renderPrintDocument(
+            payload,
+            String(job.document_type) as PrintDocumentType,
+            Number(printer.paper_width_mm),
+            Boolean(job.is_reprint),
+            jobPreferences,
+          );
+          return external ? prependExternalPrintIdentity(document, external) : document;
+        })();
         if (!job.rendered_content) {
           const { error: updateError } = await admin.from("print_jobs")
-            .update({ rendered_content: rendered, updated_at: new Date().toISOString() })
+            .update({ rendered_content: rendered, payload, updated_at: new Date().toISOString() })
             .eq("id", job.id).eq("claimed_by_agent_id", agent.id).eq("status", "processing");
           if (updateError) throw updateError;
         }
