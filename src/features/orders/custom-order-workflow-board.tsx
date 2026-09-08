@@ -1,11 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { formatStoreDateTime } from "@/lib/store-date-time";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { OrderActionForm } from "@/features/orders/order-action-form";
+import {
+  externalLogisticsLabel,
+  externalPaymentLabel,
+  externalSyncLabel,
+  orderChannelBadgeLabel,
+} from "@/features/orders/external-order-presentation";
+import { resolveOrderManagerRealtimeAction } from "@/features/orders/order-realtime-actions";
 import { elapsedLabel, type OrderManagerRow } from "@/features/orders/manager-model";
 import { useOrderAlert } from "@/features/orders/use-order-alert";
 import { useRememberedOrderSearch } from "@/features/orders/order-navigation-memory";
@@ -22,6 +30,10 @@ import {
 import styles from "./order-manager.module.css";
 
 const isOperationalOrder = (order: OrderManagerRow) => !["completed", "canceled", "rejected"].includes(order.order_status);
+
+async function resolveOrderRow(raw: Record<string, unknown>) {
+  return typeof raw.id === "string" ? resolveOrderManagerRealtimeAction(raw.id) : null;
+}
 
 function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
@@ -78,29 +90,49 @@ function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean, payment
   return null;
 }
 
-function Card({ order, now, manualDeliveryMode, paymentPolicy }: { order: OrderManagerRow; now: number; manualDeliveryMode: boolean; paymentPolicy: PaymentCompletionPolicy | null }) {
+function Card({ order, now, manualDeliveryMode, paymentPolicy, timeZone }: { order: OrderManagerRow; now: number; manualDeliveryMode: boolean; paymentPolicy: PaymentCompletionPolicy | null; timeZone: string }) {
   const action = nextAction(order, manualDeliveryMode, paymentPolicy);
   const modality = order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : "Atendimento";
-  return <article className={styles.orderCard}>
+  const external = order.external;
+  const channelBadge = orderChannelBadgeLabel(order.channel, external);
+  const logisticsLabel = external ? externalLogisticsLabel(external) : null;
+  const scheduledLabel = order.scheduled_for
+    ? formatStoreDateTime(order.scheduled_for, timeZone, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+    : null;
+  const recommendedPreparationLabel = external?.recommendedPreparationAt
+    ? formatStoreDateTime(external.recommendedPreparationAt, timeZone, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+    : null;
+
+  return <article className={styles.orderCard} data-channel={external?.provider ?? "pedeaqui"}>
     <div className={styles.cardTop}>
       <div className={styles.orderIdentity}><span className={styles.orderNumber}>#{order.display_number}</span><strong className={styles.customer}>{order.customer_name_snapshot}</strong></div>
       <div className={styles.moneyTime}><span className={styles.total}>{money(order.total_cents)}</span><span className={styles.elapsed}>{elapsedLabel(order.created_at, now)}</span></div>
     </div>
     <div className={styles.compactMeta}>
+      <div className={styles.statusRow}>
+        <Tag>{channelBadge}</Tag>
+        {external ? <Tag>{externalSyncLabel(external.syncStatus)}</Tag> : null}
+      </div>
       <span className={styles.metaText}>{modality} · {order.payment_status === "paid" ? "Pago" : "Pagamento pendente"} · {workflowStageLabels[rawStage(order)]}</span>
+      {external?.externalDisplayId ? <Tag>Cód. {external.externalDisplayId}</Tag> : null}
+      {external ? <Tag>{externalPaymentLabel(external)}</Tag> : null}
+      {logisticsLabel ? <Tag>{logisticsLabel}</Tag> : null}
+      {scheduledLabel ? <Tag>Agendado {scheduledLabel}</Tag> : null}
+      {recommendedPreparationLabel ? <Tag>Preparar a partir de {recommendedPreparationLabel}</Tag> : null}
     </div>
     {action ? <div className={styles.primaryAction}>{action}</div> : null}
     <details className={styles.cardMore}>
       <summary>Mais</summary>
       <div className={styles.cardMoreBody}>
         <div className={styles.stateLine}>Etapa operacional: {workflowStageLabels[rawStage(order)]}</div>
+        {external ? <div className={styles.stateLine}>Origem: {channelBadge}{external.externalDisplayId ? ` · código ${external.externalDisplayId}` : ""} · {externalSyncLabel(external.syncStatus)}</div> : null}
         <Link href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.detailsLink}>Ver pedido</Link>
       </div>
     </details>
   </article>;
 }
 
-function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, paymentPolicy }: {
+function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, paymentPolicy, timeZone }: {
   title: string;
   stages: readonly WorkflowStage[];
   orders: OrderManagerRow[];
@@ -108,6 +140,7 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, p
   now: number;
   manualDeliveryMode: boolean;
   paymentPolicy: PaymentCompletionPolicy | null;
+  timeZone: string;
 }) {
   return <section style={{ display: "grid", gap: 10 }}>
     <header style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}><h2 style={{ margin: 0, fontSize: 17 }}>{title}</h2><span className="muted" style={{ fontSize: 12 }}>{orders.length} pedido(s)</span></header>
@@ -116,19 +149,20 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, p
         const stageOrders = orders.filter((order) => visibleStage(order, config) === stage);
         return <section key={stage} className={styles.lane} data-bucket={stage} aria-label={`${title}: ${workflowStageLabels[stage]}`}>
           <header className={styles.laneHeader}><strong>{workflowStageLabels[stage]}</strong><span className={styles.laneCount}>{stageOrders.length}</span></header>
-          <div className={styles.laneBody}>{stageOrders.map((order) => <Card key={order.id} order={order} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} />)}{stageOrders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
+          <div className={styles.laneBody}>{stageOrders.map((order) => <Card key={order.id} order={order} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />)}{stageOrders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
         </section>;
       })}
     </div>
   </section>;
 }
 
-export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, config, manualDeliveryMode = false, paymentPolicy = null }: {
+export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, config, manualDeliveryMode = false, paymentPolicy = null, timeZone }: {
   storeId: string;
   orders: OrderManagerRow[];
   config: CustomWorkflowConfig;
   manualDeliveryMode?: boolean;
   paymentPolicy?: PaymentCompletionPolicy | null;
+  timeZone: string;
 }) {
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -141,12 +175,13 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
     initialRows: initialOrders,
     surface: "orders",
     isOperational: isOperationalOrder,
+    resolveRow: resolveOrderRow,
     onInsert: (row) => {
       if (seen.current.has(row.id)) return;
       seen.current.add(row.id);
       if (row.order_status === "pending_confirmation") {
         setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
-        void notifyNewOrder();
+        void notifyNewOrder(row.display_number, row.id);
       }
     },
   });
@@ -163,7 +198,15 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("pt-BR");
     if (!needle) return orders;
-    return orders.filter((order) => String(order.display_number).includes(needle) || order.customer_name_snapshot.toLocaleLowerCase("pt-BR").includes(needle));
+    return orders.filter((order) => {
+      const external = order.external;
+      return String(order.display_number).includes(needle)
+        || order.customer_name_snapshot.toLocaleLowerCase("pt-BR").includes(needle)
+        || orderChannelBadgeLabel(order.channel, external).toLocaleLowerCase("pt-BR").includes(needle)
+        || Boolean(external?.externalDisplayId?.toLocaleLowerCase("pt-BR").includes(needle))
+        || Boolean(external?.externalOrderId.toLocaleLowerCase("pt-BR").includes(needle))
+        || Boolean(external && externalSyncLabel(external.syncStatus).toLocaleLowerCase("pt-BR").includes(needle));
+    });
   }, [orders, query]);
 
   const deliveryOrders = filtered.filter((order) => order.fulfillment_type === "delivery");
@@ -171,7 +214,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
 
   return <div className={styles.board}>
     <div className={styles.toolbar}>
-      <div className={styles.search}><Input label="Buscar pedido" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Número ou cliente" /></div>
+      <div className={styles.search}><Input label="Buscar pedido" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Número, cliente, canal ou código externo" /></div>
       <Button type="button" tone="secondary" onClick={() => void toggle()} aria-pressed={soundEnabled}>{primaryLabel}</Button>
       <Button type="button" tone="secondary" onClick={() => void test()}>Testar som</Button>
       <div className={styles.toolbarMeta}>Fluxo personalizado · {filtered.length} pedido(s)</div>
@@ -180,7 +223,11 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
     <div className={styles.noticeSlot} aria-live="polite">
       {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}
     </div>
-    <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} />
-    <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} />
+    <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />
+    <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />
   </div>;
+}
+
+function Tag({ children }: { children: ReactNode }) {
+  return <span className={styles.tag}>{children}</span>;
 }
