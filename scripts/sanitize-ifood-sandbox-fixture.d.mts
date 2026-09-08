@@ -1,2 +1,2 @@
-export function sanitizeIfoodSandboxOrder(input: Record<string, unknown>): any;
-export function assertFixtureHasNoObviousPii(input: any): true;
+export function sanitizeIfoodSandboxOrder<T extends Record<string, unknown>>(input: T): T;
+export function assertFixtureHasNoObviousPii<T extends Record<string, unknown>>(input: T): true;
