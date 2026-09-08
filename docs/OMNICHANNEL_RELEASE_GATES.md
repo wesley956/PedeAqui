@@ -51,6 +51,29 @@ Todos precisam estar verdes:
 
 Depois disso ainda é necessária uma ação explícita de super admin com uma referência de aprovação. O serviço registra `production_canary_approved` com `activation_performed=false`.
 
+## iFood Orders — checklist oficial vigente
+
+Referência conferida em 08/09/2026 na documentação oficial de homologação de **Order** e **Events**. Antes de marcar `provider_sandbox` e `official_homologation` como aprovados, a aplicação final precisa demonstrar, conforme o fluxo aplicável:
+
+- conta profissional/CNPJ, Client ID/Secret de teste e loja de teste;
+- consumo de eventos por polling ou webhook;
+- quando polling for usado, ciclo periódico de aproximadamente 30 segundos e ACK dos eventos recebidos;
+- sincronização do estado quando outro sistema altera o pedido;
+- processamento dos eventos aplicáveis da plataforma de negociação;
+- consulta dos detalhes completos do pedido e importação idempotente;
+- confirmação do pedido;
+- cancelamento pelo fluxo oficial e motivos válidos/dinâmicos;
+- TAKEOUT: `readyToPickup` quando estiver pronto;
+- DELIVERY com entrega própria: `dispatch` quando sair para entrega;
+- conclusão do pedido no processo de homologação;
+- notas de entrega visíveis no ticket para restaurante;
+- renovação de token de acordo com expiração e respeito aos rate limits documentados;
+- reconciliação do estado retornado pelo iFood com o agregado interno, sem criar status específico de provider.
+
+O assistente de homologação do iFood valida conectividade e, no fluxo publicado, passa por confirmação, cancelamento, dispatch e conclusão. Se o desenho usar webhook com polling como fallback, o cenário combinado precisa ser testado manualmente porque o assistente automatizado valida um método por vez.
+
+Este checklist é específico de **Orders/Events**. Ele não reintroduz sincronização de catálogo no PedeAqui.
+
 ## Canário real
 
 Somente após aprovação explícita para uma unidade escolhida:
