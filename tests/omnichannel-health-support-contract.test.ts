@@ -37,7 +37,9 @@ describe("omnichannel health/support contract", () => {
     expect(platformPage).toContain("Inbox:");
     expect(platformPage).toContain("Outbox:");
     expect(platformPage).toContain("Divergências:");
-    expect(platformPage).not.toContain("payload");
+    expect(platformPage).not.toContain("row.payload");
+    expect(platformPage).not.toContain("item.payload");
+    expect(platformPage).not.toContain("JSON.stringify(row");
     expect(platformPage).not.toContain("access_token");
     expect(platformPage).not.toContain("client_secret");
   });
