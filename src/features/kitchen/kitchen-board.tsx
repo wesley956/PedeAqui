@@ -5,12 +5,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { OrderActionForm } from "@/features/orders/order-action-form";
+import { orderChannelBadgeLabel } from "@/features/orders/external-order-presentation";
 import { OperationalRealtimeBadge, useOperationalRealtime } from "@/features/operations/use-operational-realtime";
 import { resolveKitchenRealtimeOrderAction } from "@/features/kitchen/actions";
 import { businessVocabulary, productionStatusLabelForBusiness } from "@/modules/business-vocabulary";
 import type { BusinessType } from "@/modules/module-catalog";
 import {
   filterKitchenOrdersByStation,
+  isKitchenOrderEligibleNow,
   kitchenElapsedLabel,
   kitchenUrgency,
   type KitchenOrder,
@@ -49,7 +51,9 @@ export function KitchenBoard({ storeId, stations, orders: initialOrders, initial
     return () => window.clearInterval(timer);
   }, []);
 
-  const filteredOrders = useMemo(() => filterKitchenOrdersByStation(orders, stationId), [orders, stationId]);
+  const eligibleOrders = useMemo(() => orders.filter((order) => isKitchenOrderEligibleNow(order, now)), [now, orders]);
+  const deferredScheduledCount = orders.length - eligibleOrders.length;
+  const filteredOrders = useMemo(() => filterKitchenOrdersByStation(eligibleOrders, stationId), [eligibleOrders, stationId]);
   const visibleOrders = useMemo(() => filteredOrders.slice(0, visibleCount), [filteredOrders, visibleCount]);
   const stationNames = useMemo(() => new Map(stations.map((station) => [station.id, station.name])), [stations]);
   const counts = useMemo(() => {
@@ -78,6 +82,7 @@ export function KitchenBoard({ storeId, stations, orders: initialOrders, initial
         <Summary label="Na fila" value={filteredOrders.length} />
         <Summary label="Atenção" value={counts.attention} tone="warning" />
         <Summary label="Atrasados" value={counts.late} tone="danger" />
+        {deferredScheduledCount > 0 ? <Summary label="Agendados" value={deferredScheduledCount} /> : null}
       </div>
 
       {filteredOrders.length > initialVisibleCount ? <div className={styles.overload} role="alert">
@@ -107,12 +112,24 @@ function KitchenCard({ order, now, stationNames, filteredByStation, businessType
   const canStart = ["pending_confirmation", "queued"].includes(order.productionStatus);
   const canReady = order.productionStatus === "preparing";
   const vocabulary = businessVocabulary(businessType);
+  const channelLabel = orderChannelBadgeLabel(order.channel, order.external);
+  const externalCode = order.external?.externalDisplayId ?? null;
+  const fulfillmentLabel = order.fulfillmentType === "delivery" ? "Entrega" : order.fulfillmentType === "pickup" ? "Retirada" : order.fulfillmentType;
 
   return (
-    <article className={styles.card} data-urgency={urgency}>
+    <article className={styles.card} data-urgency={urgency} data-channel={order.external?.provider ?? "pedeaqui"}>
       <header className={styles.cardHeader}>
-        <div><div className={styles.orderNumber}>#{order.displayNumber}</div><strong className={styles.customer}>{order.customerName}</strong><div className={styles.fulfillment}>{order.fulfillmentType === "delivery" ? "Entrega" : order.fulfillmentType === "pickup" ? "Retirada" : order.fulfillmentType}</div></div>
-        <div className={styles.timerBlock}><div className={styles.timer}>{kitchenElapsedLabel(order, now)}</div><div className={styles.production}>{productionStatusLabelForBusiness(order.productionStatus, businessType)}</div>{urgency !== "fresh" ? <div className={styles.urgency}>{urgency === "late" ? "Atrasado" : "Atenção"}</div> : null}</div>
+        <div>
+          <div className={styles.orderNumber}>#{order.displayNumber}</div>
+          <strong className={styles.customer}>{order.customerName}</strong>
+          <div className={styles.fulfillment}>{fulfillmentLabel}{order.external ? ` · ${channelLabel}${externalCode ? ` · Cód. ${externalCode}` : ""}` : ""}</div>
+        </div>
+        <div className={styles.timerBlock}>
+          <div className={styles.timer}>{kitchenElapsedLabel(order, now)}</div>
+          <div className={styles.production}>{productionStatusLabelForBusiness(order.productionStatus, businessType)}</div>
+          {order.external?.timing === "scheduled" ? <div className={styles.production}>Agendado</div> : null}
+          {urgency !== "fresh" ? <div className={styles.urgency}>{urgency === "late" ? "Atrasado" : "Atenção"}</div> : null}
+        </div>
       </header>
 
       <div className={styles.items}>
@@ -120,7 +137,7 @@ function KitchenCard({ order, now, stationNames, filteredByStation, businessType
           <div className={styles.itemMain}><strong className={styles.quantity}>{item.quantity}×</strong><strong className={styles.itemName}>{item.name}</strong></div>
           {item.modifiers.length > 0 ? <div className={styles.modifiers}>{item.modifiers.map((modifier, index) => <div key={`${item.id}:${modifier.groupName}:${modifier.name}:${index}`}>+ {modifier.name}</div>)}</div> : null}
           {item.note ? <div className={styles.note}>Observação: {item.note}</div> : null}
-          {!filteredByStation ? <div className={styles.stations}>{item.stationIds.length > 0 ? item.stationIds.map((id) => <span className={styles.stationTag} key={id}>{stationNames.get(id) ?? "Estação"}</span>) : <span className={styles.stationTag} data-warning="true">Sem estação</span>}</div> : null}
+          {!filteredByStation ? <div className={styles.stations}>{item.stationIds.length > 0 ? item.stationIds.map((id) => <span className={styles.stationTag} key={id}>{stationNames.get(id) ?? "Estação"}</span>) : <span className={styles.stationTag} data-warning="true">{order.external ? "Sem estação local · pedido externo" : "Sem estação"}</span>}</div> : null}
         </div>)}
       </div>
 
