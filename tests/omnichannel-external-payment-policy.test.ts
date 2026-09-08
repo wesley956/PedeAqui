@@ -34,9 +34,9 @@ describe("omnichannel external payment policy", () => {
 
   it("guards OrderPixService before Mercado Pago readiness or charge reservation", () => {
     const pix = source("src/server/payments/order-pix-service.ts");
-    const ownership = pix.indexOf('from("external_orders")');
-    const ready = pix.indexOf("OrderPaymentProviderConfigService.isOnlinePixReady");
-    const reserve = pix.indexOf('admin.rpc("order_payment_provider_reserve_charge_internal"');
+    const ownership = pix.indexOf('const { data: externalPayment, error: externalPaymentError } = await admin.from("external_orders")');
+    const ready = pix.indexOf("const ready = await OrderPaymentProviderConfigService.isOnlinePixReady");
+    const reserve = pix.indexOf('const { data: reserved, error: reserveError } = await admin.rpc("order_payment_provider_reserve_charge_internal"');
     expect(ownership).toBeGreaterThan(-1);
     expect(ownership).toBeLessThan(ready);
     expect(ownership).toBeLessThan(reserve);
