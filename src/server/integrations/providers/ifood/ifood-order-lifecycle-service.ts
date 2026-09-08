@@ -157,6 +157,7 @@ export class IfoodOrderLifecycleService {
     orderId: string;
     command: IfoodLifecycleCommand;
     cancellationReason?: string | null;
+    afterConfirmation?: "start_preparation" | null;
   }): Promise<{ queued: true; duplicate: boolean; outboxId: string; command: IfoodLifecycleCommand } | null> {
     const permission = input.command === "request_cancellation"
       ? PERMISSIONS.ORDERS_CANCEL
@@ -171,6 +172,12 @@ export class IfoodOrderLifecycleService {
         "ifood_cancellation_reason_missing",
       );
     }
+    if (input.afterConfirmation && input.command !== "confirm") {
+      throw new IntegrationConfigurationError(
+        "A ação encadeada do iFood só pode ser usada após uma confirmação.",
+        "ifood_after_confirmation_invalid",
+      );
+    }
 
     const idempotencyKey = [
       "ifood-order",
@@ -179,6 +186,12 @@ export class IfoodOrderLifecycleService {
       cancellationReason ?? "-",
     ].join(":");
     const runtime = new IntegrationRuntimeRepository();
+    const payload = {
+      externalOrderId: resolved.target.externalOrderId,
+      externalMerchantId: resolved.target.externalMerchantId,
+      ...(cancellationReason ? { reason: cancellationReason } : {}),
+      ...(input.afterConfirmation ? { afterConfirmation: input.afterConfirmation } : {}),
+    };
     const queued = await runtime.enqueueOutbox({
       organizationId: resolved.target.organizationId,
       storeId: resolved.target.storeId,
@@ -188,14 +201,22 @@ export class IfoodOrderLifecycleService {
       capability: "ifood_orders",
       operation: input.command,
       idempotencyKey,
-      payload: {
-        externalOrderId: resolved.target.externalOrderId,
-        externalMerchantId: resolved.target.externalMerchantId,
-        ...(cancellationReason ? { reason: cancellationReason } : {}),
-      },
+      payload,
     });
 
     const db = createAdminClient();
+    if (queued.duplicate && input.afterConfirmation) {
+      // Upgrade an already queued confirmation without sending a duplicate
+      // provider command. The follow-up remains gated by the confirmation event.
+      const upgrade = await db
+        .from("integration_outbox")
+        .update({ payload })
+        .eq("id", queued.id)
+        .eq("integration_account_id", resolved.target.integrationAccountId)
+        .in("status", ["pending", "processing", "sent", "retry"]);
+      if (upgrade.error) throw upgrade.error;
+    }
+
     const sync = await db
       .from("external_orders")
       .update({ sync_status: "pending", updated_at: new Date().toISOString() })
@@ -218,6 +239,7 @@ export class IfoodOrderLifecycleService {
         order_id: input.orderId,
         external_order_id: resolved.target.externalOrderId,
         command: input.command,
+        ...(input.afterConfirmation ? { after_confirmation: input.afterConfirmation } : {}),
       },
     });
     if (audit.error) throw audit.error;
