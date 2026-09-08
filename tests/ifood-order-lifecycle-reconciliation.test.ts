@@ -52,7 +52,7 @@ function adapterWithSequence(sequence: string[]): SalesChannelAdapter {
     fetchOrder: vi.fn(async () => {
       sequence.push("fetch-order");
       return {
-        provider: "ifood",
+        provider: "ifood" as const,
         externalOrderId: "external-order-1",
         externalMerchantId: "merchant-1",
         rawStatus: "CONFIRMED",
