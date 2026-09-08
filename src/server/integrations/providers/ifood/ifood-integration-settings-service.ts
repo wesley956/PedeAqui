@@ -5,6 +5,10 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { createIfoodAuthService } from "@/server/integrations/providers/ifood/ifood-auth-runtime";
 import { isIfoodEnvironment, type IfoodEnvironment, type IfoodStartConnectionResult } from "@/server/integrations/providers/ifood/ifood-auth-model";
+import {
+  isProductionCapabilityApproved,
+  productionCapabilityApprovalsForStore,
+} from "@/server/integrations/rollout/production-capability-approval";
 
 export type IfoodCapabilityKey = "ifood_orders" | "ifood_catalog" | "ifood_shipping";
 
@@ -19,13 +23,6 @@ function missingInfrastructure(error: DbError): boolean {
   if (!error) return false;
   const text = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
   return text.includes("42p01") || text.includes("pgrst205") || text.includes("integration_accounts") && (text.includes("does not exist") || text.includes("schema cache"));
-}
-
-function capabilityApprovals(metadata: unknown): Record<string, boolean> {
-  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return {};
-  const raw = (metadata as Record<string, unknown>).production_capability_approvals;
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
-  return Object.fromEntries(Object.entries(raw as Record<string, unknown>).map(([key, value]) => [key, value === true]));
 }
 
 function isIfoodCapability(value: string): value is IfoodCapabilityKey {
@@ -120,7 +117,7 @@ export class IfoodIntegrationSettingsService {
           connectionState: typeof account?.connection_state === "string" ? account.connection_state : "not_connected",
           lastHealthAt: typeof account?.last_health_at === "string" ? account.last_health_at : null,
           lastHealthErrorCode: typeof account?.last_health_error_code === "string" ? account.last_health_error_code : null,
-          productionApprovals: capabilityApprovals(account?.metadata),
+          productionApprovals: productionCapabilityApprovalsForStore(account?.metadata, storeId),
           merchant: merchant ? {
             id: String(merchant.id),
             externalMerchantId: String(merchant.external_merchant_id),
@@ -169,8 +166,8 @@ export class IfoodIntegrationSettingsService {
       if (accountResult.data.status !== "connected" || accountResult.data.connection_state !== "connected") {
         throw new Error("A capability só pode ser ativada depois de uma conexão iFood saudável.");
       }
-      if (accountResult.data.environment === "production" && capabilityApprovals(accountResult.data.metadata)[input.capability] !== true) {
-        throw new Error("Esta capability ainda não foi liberada para produção pela homologação/rollout controlado.");
+      if (accountResult.data.environment === "production" && !isProductionCapabilityApproved(accountResult.data.metadata, storeId, input.capability)) {
+        throw new Error("Esta capability ainda não foi liberada para produção nesta unidade pela homologação/rollout controlado.");
       }
     }
 
