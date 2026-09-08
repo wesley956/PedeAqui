@@ -6,6 +6,8 @@ import { PERMISSIONS } from "@/server/access/permissions";
 import { createIfoodAuthService } from "@/server/integrations/providers/ifood/ifood-auth-runtime";
 import { isIfoodEnvironment, type IfoodEnvironment, type IfoodStartConnectionResult } from "@/server/integrations/providers/ifood/ifood-auth-model";
 
+export type IfoodCapabilityKey = "ifood_orders" | "ifood_catalog" | "ifood_shipping";
+
 type DbError = { code?: string | null; message?: string | null } | null;
 
 function requireStore(storeId: string | null): string {
@@ -19,6 +21,17 @@ function missingInfrastructure(error: DbError): boolean {
   return text.includes("42p01") || text.includes("pgrst205") || text.includes("integration_accounts") && (text.includes("does not exist") || text.includes("schema cache"));
 }
 
+function capabilityApprovals(metadata: unknown): Record<string, boolean> {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return {};
+  const raw = (metadata as Record<string, unknown>).production_capability_approvals;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  return Object.fromEntries(Object.entries(raw as Record<string, unknown>).map(([key, value]) => [key, value === true]));
+}
+
+function isIfoodCapability(value: string): value is IfoodCapabilityKey {
+  return value === "ifood_orders" || value === "ifood_catalog" || value === "ifood_shipping";
+}
+
 export type IfoodSettingsEnvironmentSnapshot = {
   environment: IfoodEnvironment;
   applicationConfigured: boolean;
@@ -28,6 +41,7 @@ export type IfoodSettingsEnvironmentSnapshot = {
   connectionState: string;
   lastHealthAt: string | null;
   lastHealthErrorCode: string | null;
+  productionApprovals: Record<string, boolean>;
   merchant: {
     id: string;
     externalMerchantId: string;
@@ -49,7 +63,7 @@ export class IfoodIntegrationSettingsService {
 
     const accounts = await admin
       .from("integration_accounts")
-      .select("id,status,environment,auth_mode,connection_state,last_health_at,last_health_error_code")
+      .select("id,status,environment,auth_mode,connection_state,last_health_at,last_health_error_code,metadata")
       .eq("organization_id", context.organizationId)
       .eq("provider", "ifood");
 
@@ -65,6 +79,7 @@ export class IfoodIntegrationSettingsService {
           connectionState: "not_connected",
           lastHealthAt: null,
           lastHealthErrorCode: null,
+          productionApprovals: {},
           merchant: null,
         })),
       };
@@ -105,6 +120,7 @@ export class IfoodIntegrationSettingsService {
           connectionState: typeof account?.connection_state === "string" ? account.connection_state : "not_connected",
           lastHealthAt: typeof account?.last_health_at === "string" ? account.last_health_at : null,
           lastHealthErrorCode: typeof account?.last_health_error_code === "string" ? account.last_health_error_code : null,
+          productionApprovals: capabilityApprovals(account?.metadata),
           merchant: merchant ? {
             id: String(merchant.id),
             externalMerchantId: String(merchant.external_merchant_id),
@@ -114,6 +130,83 @@ export class IfoodIntegrationSettingsService {
         } satisfies IfoodSettingsEnvironmentSnapshot;
       }),
     };
+  }
+
+  static async setCapability(input: {
+    merchantId: string;
+    capability: IfoodCapabilityKey;
+    enabled: boolean;
+    reason?: string | null;
+  }): Promise<void> {
+    if (!isIfoodCapability(input.capability)) throw new Error("Invalid iFood capability");
+    if (input.capability === "ifood_catalog" && input.enabled) {
+      throw new Error("O PedeAqui mantém cardápio e preços independentes do iFood; sincronização de catálogo permanece desligada.");
+    }
+
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
+    const storeId = requireStore(context.storeId);
+    const admin = createAdminClient();
+    const merchantResult = await admin
+      .from("integration_merchants")
+      .select("id,integration_account_id,capabilities")
+      .eq("id", input.merchantId)
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .eq("provider", "ifood")
+      .single();
+    if (merchantResult.error) throw merchantResult.error;
+
+    const accountResult = await admin
+      .from("integration_accounts")
+      .select("id,status,environment,connection_state,metadata")
+      .eq("id", merchantResult.data.integration_account_id)
+      .eq("organization_id", context.organizationId)
+      .eq("provider", "ifood")
+      .single();
+    if (accountResult.error) throw accountResult.error;
+
+    if (input.enabled) {
+      if (accountResult.data.status !== "connected" || accountResult.data.connection_state !== "connected") {
+        throw new Error("A capability só pode ser ativada depois de uma conexão iFood saudável.");
+      }
+      if (accountResult.data.environment === "production" && capabilityApprovals(accountResult.data.metadata)[input.capability] !== true) {
+        throw new Error("Esta capability ainda não foi liberada para produção pela homologação/rollout controlado.");
+      }
+    }
+
+    const current = merchantResult.data.capabilities && typeof merchantResult.data.capabilities === "object" && !Array.isArray(merchantResult.data.capabilities)
+      ? merchantResult.data.capabilities as Record<string, unknown>
+      : {};
+    const before = current[input.capability] === true;
+    if (before === input.enabled) return;
+    const capabilities = { ...current, [input.capability]: input.enabled };
+
+    const update = await admin
+      .from("integration_merchants")
+      .update({ capabilities, updated_at: new Date().toISOString() })
+      .eq("id", input.merchantId)
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId);
+    if (update.error) throw update.error;
+
+    const audit = await admin.from("integration_audit_log").insert({
+      organization_id: context.organizationId,
+      store_id: storeId,
+      integration_account_id: accountResult.data.id,
+      actor_user_id: context.userId,
+      provider: "ifood",
+      capability: input.capability,
+      action: input.enabled ? "capability_enabled" : "capability_disabled",
+      source: "user_action",
+      correlation_id: crypto.randomUUID(),
+      metadata: {
+        before,
+        after: input.enabled,
+        environment: accountResult.data.environment,
+        reason: input.reason?.trim() || (input.enabled ? "store_enable" : "store_rollback"),
+      },
+    });
+    if (audit.error) throw audit.error;
   }
 
   static async startConnection(environment: IfoodEnvironment): Promise<IfoodStartConnectionResult> {
