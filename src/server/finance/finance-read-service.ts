@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize,AuthorizationError } from "@/server/access/authorize";
 import type { PermissionKey } from "@/server/access/permissions";
+import { resolveExternalPaymentPolicy } from "@/server/payments/external-payment-policy";
 
 const dateText=z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 function permission(value:string){ return value as PermissionKey; }
@@ -34,8 +35,18 @@ export class FinanceReadService {
     const suppliers=(suppliersResult.data??[]).map((supplier)=>({ ...supplier,config:supplierConfigMap.get(supplier.id)??null }));
     let report:unknown=null;
     if(canReports){ const reportResult=await admin.rpc("financial_report_internal",{ p_store_id:storeId,p_from:selectedPeriod.from,p_to:selectedPeriod.to }); if(reportResult.error) throw reportResult.error; report=reportResult.data; }
-    const pendingDeliveryPaymentsResult=await admin.from("orders").select("id,display_number,customer_name_snapshot,total_cents,payment_method_snapshot,updated_at").eq("organization_id",context.organizationId).eq("store_id",storeId).eq("order_status","confirmed").eq("fulfillment_status","delivered").in("payment_status",["pending","authorized","failed"]).order("updated_at",{ascending:true}).limit(100);
+    const pendingDeliveryPaymentsResult=await admin.from("orders").select("id,display_number,channel,customer_name_snapshot,total_cents,payment_method_snapshot,updated_at").eq("organization_id",context.organizationId).eq("store_id",storeId).eq("order_status","confirmed").eq("fulfillment_status","delivered").in("payment_status",["pending","authorized","failed"]).order("updated_at",{ascending:true}).limit(100);
     if(pendingDeliveryPaymentsResult.error) throw pendingDeliveryPaymentsResult.error;
-    return { context,storeId,store:storeResult.data,period:selectedPeriod,accounts,categories:categoriesResult.data??[],obligations:obligationsResult.data??[],transactions:transactionsResult.data??[],suppliers,pendingDeliveryPayments:pendingDeliveryPaymentsResult.data??[],report,canManage,canSettle,canReports };
+    const pendingRows=pendingDeliveryPaymentsResult.data??[];
+    const pendingIds=pendingRows.map((row)=>row.id);
+    const externalPaymentsResult=pendingIds.length
+      ? await admin.from("external_orders").select("order_id,provider,payment_owner").eq("organization_id",context.organizationId).eq("store_id",storeId).in("order_id",pendingIds)
+      : { data:[],error:null };
+    if(externalPaymentsResult.error) throw externalPaymentsResult.error;
+    const externalPaymentByOrder=new Map((externalPaymentsResult.data??[]).map((row)=>[row.order_id,row]));
+    const pendingDeliveryPayments=pendingRows
+      .filter((row)=>resolveExternalPaymentPolicy(externalPaymentByOrder.get(row.id)).allowsInternalMutation)
+      .map((row)=>({ ...row,external_payment:externalPaymentByOrder.get(row.id)??null }));
+    return { context,storeId,store:storeResult.data,period:selectedPeriod,accounts,categories:categoriesResult.data??[],obligations:obligationsResult.data??[],transactions:transactionsResult.data??[],suppliers,pendingDeliveryPayments,report,canManage,canSettle,canReports };
   }
 }
