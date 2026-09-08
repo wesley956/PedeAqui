@@ -268,9 +268,10 @@ export class DeliveryOperationsService {
     const storeId = requireStore(context.storeId);
     const admin = createAdminClient();
     const { data: delivery, error: deliveryError } = await admin.from("deliveries")
-      .select("id,driver_id").eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
+      .select("id,driver_id,order_id").eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (deliveryError) throw deliveryError;
     if (!delivery?.driver_id) throw new Error("Entrega não encontrada ou sem entregador");
+    await ExternalDeliveryPolicyService.assertInternalOwnership(delivery.order_id);
 
     const canOperateAll = await hasPermission(PERMISSIONS.DELIVERY_ASSIGN, context);
     if (!canOperateAll) {
