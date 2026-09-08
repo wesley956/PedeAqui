@@ -56,13 +56,19 @@ describe("iFood real sandbox fixture sanitizer", () => {
     expect(sanitized.customer.name).toBe("SANITIZED CUSTOMER");
     expect(sanitized.customer.phone.number).toBe("00000000000");
     expect(sanitized.delivery.deliveryAddress.streetName).toBe("SANITIZED STREET");
-    expect(sanitized.items[0].observations).toBe("[SANITIZED OBSERVATION]");
 
-    expect(sanitized.items[0].name).toBe(raw.items[0].name);
-    expect(sanitized.items[0].quantity).toBe(2);
-    expect(sanitized.items[0].unitPrice).toBe(20);
-    expect(sanitized.items[0].options[0].name).toBe("Bacon");
-    expect(sanitized.items[0].options[0].addition).toBe(2);
+    const sanitizedItem = sanitized.items.at(0);
+    const rawItem = raw.items.at(0);
+    if (!sanitizedItem || !rawItem) throw new Error("sandbox fixture must contain one item");
+    const sanitizedOption = sanitizedItem.options.at(0);
+    if (!sanitizedOption) throw new Error("sandbox fixture must contain one option");
+
+    expect(sanitizedItem.observations).toBe("[SANITIZED OBSERVATION]");
+    expect(sanitizedItem.name).toBe(rawItem.name);
+    expect(sanitizedItem.quantity).toBe(2);
+    expect(sanitizedItem.unitPrice).toBe(20);
+    expect(sanitizedOption.name).toBe("Bacon");
+    expect(sanitizedOption.addition).toBe(2);
     expect(sanitized.total).toEqual(raw.total);
     expect(sanitized.payments).toEqual(raw.payments);
   });
