@@ -107,7 +107,7 @@ export default async function OrdersPage() {
       </Alert> : null}
 
       {workflowMode === "custom"
-        ? <CustomOrderWorkflowBoard storeId={context.storeId} orders={rows} config={settings.custom} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} />
+        ? <CustomOrderWorkflowBoard storeId={context.storeId} orders={rows} config={settings.custom} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />
         : <OrderManagerBoard storeId={context.storeId} orders={rows} workflowMode={effectiveBoardWorkflowMode} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />}
 
       <section className={styles.recentFinalized} aria-labelledby="recent-finalized-title">
