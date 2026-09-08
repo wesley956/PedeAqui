@@ -43,6 +43,17 @@ export type ExternalOrderImporter = (
   input: ExternalOrderImportInput,
 ) => Promise<ExternalOrderImportResult>;
 
+export type ExternalOrderPostImportHook = (input: {
+  event: IntegrationInboxEvent;
+  eventEnvelope: IntegrationEventEnvelope;
+  externalOrderId: string;
+  externalMerchantId: string;
+  externalStatus: string;
+  externalRevision: string | null;
+  order: CanonicalExternalOrder;
+  importResult: ExternalOrderImportResult;
+}) => Promise<void>;
+
 export type ExternalOrderScopeValidator = (input: {
   organizationId: string;
   storeId: string;
@@ -80,6 +91,7 @@ function durableEventEnvelope(event: IntegrationInboxEvent): IntegrationEventEnv
 export function createExternalOrderInboxHandler(input: {
   registry: IntegrationProviderRegistry;
   importOrder: ExternalOrderImporter;
+  afterImport?: ExternalOrderPostImportHook;
   isScopeEnabled?: ExternalOrderScopeValidator;
 }) {
   return async (event: IntegrationInboxEvent): Promise<InboxHandlerResult> => {
@@ -112,7 +124,8 @@ export function createExternalOrderInboxHandler(input: {
       );
     }
 
-    const reference = await adapter.resolveOrderReference(durableEventEnvelope(event));
+    const eventEnvelope = durableEventEnvelope(event);
+    const reference = await adapter.resolveOrderReference(eventEnvelope);
     if (!reference) {
       return { status: "ignored", acknowledge: true };
     }
@@ -171,7 +184,7 @@ export function createExternalOrderInboxHandler(input: {
       );
     }
 
-    await input.importOrder({
+    const importResult = await input.importOrder({
       organizationId: event.organization_id,
       storeId: event.store_id,
       integrationAccountId: event.integration_account_id,
@@ -182,6 +195,22 @@ export function createExternalOrderInboxHandler(input: {
       order,
     });
 
+    // Provider-specific lifecycle reconciliation happens only after the
+    // canonical snapshot is durable and before the inbox event can be marked
+    // processed/acknowledged. A hook failure therefore safely retries the event.
+    if (input.afterImport) {
+      await input.afterImport({
+        event,
+        eventEnvelope,
+        externalOrderId,
+        externalMerchantId,
+        externalStatus: snapshot.rawStatus,
+        externalRevision: snapshot.revision,
+        order,
+        importResult,
+      });
+    }
+
     return { status: "processed", acknowledge: true };
   };
 }
@@ -191,6 +220,7 @@ export type ProcessExternalOrderInboxBatchInput = {
   registry: IntegrationProviderRegistry;
   workerId: string;
   importOrder: ExternalOrderImporter;
+  afterImport?: ExternalOrderPostImportHook;
   acknowledge?: (event: IntegrationInboxEvent) => Promise<void>;
   isScopeEnabled?: ExternalOrderScopeValidator;
   capabilities?: readonly string[];
@@ -212,6 +242,7 @@ export async function processExternalOrderInboxBatch(input: ProcessExternalOrder
     handler: createExternalOrderInboxHandler({
       registry: input.registry,
       importOrder: input.importOrder,
+      afterImport: input.afterImport,
       isScopeEnabled: input.isScopeEnabled,
     }),
     acknowledge: input.acknowledge,
