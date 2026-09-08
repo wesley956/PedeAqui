@@ -6,10 +6,11 @@ import {
   bindIfoodMerchantAction,
   completeIfoodAuthorizationAction,
   disconnectIfoodAction,
+  setIfoodCapabilityAction,
   startIfoodConnectionAction,
 } from "@/features/integrations/ifood/actions";
 import type { IfoodStartConnectionResult } from "@/server/integrations/providers/ifood/ifood-auth-model";
-import type { IfoodSettingsEnvironmentSnapshot } from "@/server/integrations/providers/ifood/ifood-integration-settings-service";
+import type { IfoodCapabilityKey, IfoodSettingsEnvironmentSnapshot } from "@/server/integrations/providers/ifood/ifood-integration-settings-service";
 import styles from "./integracoes.module.css";
 
 type Props = {
@@ -25,6 +26,11 @@ const statusLabel: Record<IfoodSettingsEnvironmentSnapshot["status"], string> = 
 };
 
 const environmentLabel = { sandbox: "Sandbox / testes", production: "Produção" } as const;
+const capabilityLabel: Record<IfoodCapabilityKey, string> = {
+  ifood_orders: "Pedidos",
+  ifood_catalog: "Cardápio",
+  ifood_shipping: "Entrega",
+};
 
 export function IfoodConnectionCard({ environment }: Props) {
   const router = useRouter();
@@ -84,6 +90,16 @@ export function IfoodConnectionCard({ environment }: Props) {
     });
   }
 
+  function toggleCapability(capability: IfoodCapabilityKey, enabled: boolean) {
+    if (!environment.merchant) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await setIfoodCapabilityAction({ merchantId: environment.merchant!.id, capability, enabled });
+      if (!result.ok) return setError(result.error);
+      router.refresh();
+    });
+  }
+
   return (
     <article className={styles.card} data-connected={connected ? "true" : "false"}>
       <div className={styles.cardHeader}>
@@ -104,12 +120,34 @@ export function IfoodConnectionCard({ environment }: Props) {
       )}
 
       <div className={styles.capabilities} aria-label="Capacidades iFood">
-        {(["ifood_orders", "ifood_catalog", "ifood_shipping"] as const).map((key) => (
-          <span key={key} data-enabled={environment.merchant?.capabilities[key] === true ? "true" : "false"}>
-            {key === "ifood_orders" ? "Pedidos" : key === "ifood_catalog" ? "Cardápio" : "Entrega"} · {environment.merchant?.capabilities[key] === true ? "ativo" : "desligado"}
-          </span>
-        ))}
+        {(["ifood_orders", "ifood_catalog", "ifood_shipping"] as const).map((key) => {
+          const enabled = environment.merchant?.capabilities[key] === true;
+          const productionApproved = environment.environment !== "production" || environment.productionApprovals[key] === true;
+          const catalogLocked = key === "ifood_catalog";
+          const canEnable = connected && productionApproved && !catalogLocked;
+          return (
+            <span key={key} data-enabled={enabled ? "true" : "false"}>
+              {capabilityLabel[key]} · {enabled ? "ativo" : "desligado"}
+              {environment.merchant ? (
+                <button
+                  type="button"
+                  className={styles.secondary}
+                  disabled={pending || (!enabled && !canEnable)}
+                  onClick={() => toggleCapability(key, !enabled)}
+                  title={catalogLocked ? "O cardápio do PedeAqui permanece independente do iFood." : !productionApproved ? "Aguardando homologação/liberação controlada." : undefined}
+                >
+                  {enabled ? "Desligar" : catalogLocked ? "Independente" : !productionApproved ? "Aguardando liberação" : "Ativar"}
+                </button>
+              ) : null}
+            </span>
+          );
+        })}
       </div>
+
+      {environment.environment === "production" && environment.merchant ? (
+        <p className={styles.meta}>Capabilities de produção só podem ser ativadas após homologação/rollout aprovado. Desligar continua disponível como rollback e preserva histórico.</p>
+      ) : null}
+      <p className={styles.meta}>Cardápio e preços do PedeAqui permanecem independentes do iFood.</p>
 
       {!environment.applicationConfigured ? (
         <p className={styles.notice}>Aplicativo iFood ainda não configurado para este ambiente. Nenhuma operação da loja é afetada.</p>
