@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
+import type { CustomWorkflowConfig } from "@/features/orders/workflow-config";
 import {
   hasWorkflowStructureChanged,
   requireWorkflowSettingsMutationSource,
+  type WorkflowStructureSnapshot,
 } from "@/features/orders/workflow-settings-mutation";
 
-const custom = {
+const custom: CustomWorkflowConfig = {
   delivery: ["new", "preparing", "ready", "delivering", "finished"],
   pickup: ["new", "preparing", "ready", "awaiting_pickup", "finished"],
-} as const;
+};
 
 describe("workflow settings structural mutation guard", () => {
   it.each(["user_action", "migration", "admin"])("accepts explicit structural source %s", (source) => {
@@ -20,7 +22,7 @@ describe("workflow settings structural mutation guard", () => {
   });
 
   it("detects mode and lane changes but ignores identical workflow snapshots", () => {
-    const before = { mode: "standard", custom } as const;
+    const before: WorkflowStructureSnapshot = { mode: "standard", custom };
 
     expect(hasWorkflowStructureChanged(before, before)).toBe(false);
     expect(hasWorkflowStructureChanged(before, { mode: "simplified", custom })).toBe(true);
