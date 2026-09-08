@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe,expect,it } from "vitest";
 
 function read(path:string){ return readFileSync(join(process.cwd(),path),"utf8").toLowerCase(); }
+function compact(value:string){ return value.replace(/\s+/g,""); }
 const core=read("supabase/sql/66_finance_core.sql");
 const operations=read("supabase/sql/67_finance_operations.sql");
 const integrations=read("supabase/sql/68_finance_integrations.sql");
@@ -11,7 +12,9 @@ const reporting=read("supabase/sql/70_finance_reporting.sql");
 const boundaries=read("supabase/sql/72_finance_domain_boundaries.sql");
 const mutationService=read("src/server/finance/finance-service.ts");
 const readService=read("src/server/finance/finance-read-service.ts");
+const compactReadService=compact(readService);
 const page=read("src/app/(app)/financeiro/page.tsx");
+const compactPage=compact(page);
 const permissions=read("src/server/access/permissions.ts");
 
 describe("finance ledger contracts",()=>{
@@ -104,9 +107,9 @@ describe("finance idempotency and access",()=>{
 
   it("only loads DRE/report after finance.reports permission",()=>{
     expect(mutationService).not.toContain("financial_report_internal");
-    expect(readService).toContain("can(\"finance.reports\",context)");
-    expect(readService).toContain("if(canreports)");
-    expect(readService.indexOf("if(canreports)")).toBeLessThan(readService.indexOf("financial_report_internal"));
-    expect(page).toContain("data.canreports&&report");
+    expect(compactReadService).toContain("can(\"finance.reports\",context)");
+    expect(compactReadService).toContain("if(canreports)");
+    expect(compactReadService.indexOf("if(canreports)")).toBeLessThan(compactReadService.indexOf("financial_report_internal"));
+    expect(compactPage).toContain("data.canreports&&report");
   });
 });
