@@ -115,6 +115,11 @@ function fakeHttp(rows: unknown[] = []) {
     pollEvents: vi.fn(async () => rows),
     acknowledgeEvents: vi.fn(async () => undefined),
     getOrder: vi.fn(async () => orderFixture()),
+    confirmOrder: vi.fn(async () => undefined),
+    startPreparation: vi.fn(async () => undefined),
+    readyToPickup: vi.fn(async () => undefined),
+    getCancellationReasons: vi.fn(async () => []),
+    requestCancellation: vi.fn(async () => undefined),
   };
 }
 

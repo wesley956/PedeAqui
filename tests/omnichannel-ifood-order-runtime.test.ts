@@ -62,12 +62,23 @@ function orderDetails() {
   };
 }
 
+function lifecycleHttpStubs() {
+  return {
+    confirmOrder: vi.fn(async () => undefined),
+    startPreparation: vi.fn(async () => undefined),
+    readyToPickup: vi.fn(async () => undefined),
+    getCancellationReasons: vi.fn(async () => []),
+    requestCancellation: vi.fn(async () => undefined),
+  };
+}
+
 describe("configured iFood order intake cycle", () => {
   it("does no token, HTTP, claim or SLA work with zero enabled scopes", async () => {
     const http = {
       pollEvents: vi.fn(),
       acknowledgeEvents: vi.fn(),
       getOrder: vi.fn(),
+      ...lifecycleHttpStubs(),
     };
     const runtime = {
       ingestEvent: vi.fn(),
@@ -108,6 +119,7 @@ describe("configured iFood order intake cycle", () => {
       acknowledgeEvents: vi.fn(async () => {
         sequence.push("ack");
       }),
+      ...lifecycleHttpStubs(),
     };
     const runtime = {
       ingestEvent: vi.fn(async () => ({ id: event.id, duplicate: false })),
@@ -176,6 +188,7 @@ describe("configured iFood order intake cycle", () => {
       pollEvents: vi.fn(async () => []),
       getOrder: vi.fn(async () => orderDetails()),
       acknowledgeEvents: vi.fn(async () => undefined),
+      ...lifecycleHttpStubs(),
     };
     const result = await runIfoodOrderIntakeCycle({
       scopeRepository: {

@@ -16,6 +16,7 @@ import {
 import {
   processExternalOrderInboxBatch,
   type ExternalOrderImporter,
+  type ExternalOrderPostImportHook,
 } from "@/server/integrations/runtime/external-order-inbox-handler";
 import type { IntegrationInboxEvent } from "@/server/integrations/runtime/runtime-repository";
 import type { InboxRuntimeRepository } from "@/server/integrations/runtime/workers";
@@ -82,6 +83,7 @@ export async function runIfoodOrderIntakeCycle(input: {
   tokenProvider: IfoodAccessTokenProvider;
   http: IfoodOrdersHttpPort;
   importOrder: ExternalOrderImporter;
+  reconcileLifecycle?: ExternalOrderPostImportHook;
   workerId: string;
   pollLimit?: number;
   processLimit?: number;
@@ -143,7 +145,7 @@ export async function runIfoodOrderIntakeCycle(input: {
     pollingSummary.duplicates += result.summary.duplicates;
     pollingSummary.rejected += result.summary.rejected;
     pollingSummary.acknowledgedDuplicates += result.summary.acknowledgedDuplicates;
-    pollingSummary.acknowledgmentFailures += result.summary.acknowledgmentFailed ? 1 : 0;
+    if (result.summary.acknowledgmentFailed) pollingSummary.acknowledgmentFailures += 1;
   }
 
   const scopeEnabled = async (scope: {
@@ -185,6 +187,7 @@ export async function runIfoodOrderIntakeCycle(input: {
     registry,
     workerId: input.workerId,
     importOrder: input.importOrder,
+    afterImport: input.reconcileLifecycle,
     acknowledge,
     isScopeEnabled: scopeEnabled,
     capabilities: ["ifood_orders"],
