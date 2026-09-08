@@ -43,11 +43,12 @@ export async function routeOrderManagerLifecycle(input: {
       const external = await IfoodOrderLifecycleService.enqueueIfExternal({
         orderId: input.orderId,
         command: "confirm",
+        afterConfirmation: "start_preparation",
       });
       if (external) {
         return {
           external: true,
-          message: "Confirmação enviada ao iFood. O preparo será liberado após o evento de confirmação.",
+          message: "Confirmação enviada ao iFood. O preparo será enviado automaticamente após a confirmação da plataforma.",
         };
       }
       await OrderService.confirm(input.orderId);
