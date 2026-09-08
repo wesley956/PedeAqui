@@ -11,6 +11,7 @@ import {
   IntegrationConfigurationError,
   IntegrationProviderError,
 } from "@/server/integrations/core/errors";
+import { IfoodHttpError } from "@/server/integrations/providers/ifood/ifood-auth-http-client";
 import type { IfoodOrdersHttpPort } from "@/server/integrations/providers/ifood/ifood-orders-http-client";
 import {
   ifoodOrderDetailsSchema,
@@ -30,10 +31,13 @@ export type IfoodSalesAdapterScope = {
   externalMerchantId: string;
 };
 
-/**
- * iFood implementation of the provider-neutral sales adapter. #939 deliberately
- * implements read/intake only; lifecycle writes stay blocked until #940.
- */
+function cancellationReasonFromPayload(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") return null;
+  const reason = (payload as { reason?: unknown }).reason;
+  return typeof reason === "string" && reason.trim() ? reason.trim() : null;
+}
+
+/** iFood implementation of the provider-neutral sales adapter. */
 export class IfoodSalesChannelAdapter implements SalesChannelAdapter {
   readonly provider = "ifood" as const;
 
@@ -106,17 +110,93 @@ export class IfoodSalesChannelAdapter implements SalesChannelAdapter {
     return order;
   }
 
-  async executeOrderCommand(_input: {
+  async executeOrderCommand(input: {
     externalOrderId: string;
     merchantExternalId: string;
     command: SalesChannelOrderCommand;
     idempotencyKey: string;
     payload?: unknown;
   }): Promise<AdapterCommandResult> {
-    void _input;
-    throw new IntegrationConfigurationError(
-      "iFood lifecycle commands are disabled until OMNI #940",
-      "ifood_order_commands_not_enabled",
+    if (input.merchantExternalId !== this.scope.externalMerchantId) {
+      throw new IntegrationProviderError(
+        "iFood order command merchant does not match adapter binding",
+        "ifood_command_merchant_mismatch",
+        false,
+      );
+    }
+    if (!input.externalOrderId.trim()) {
+      throw new IntegrationConfigurationError("iFood order id is required", "ifood_order_id_missing");
+    }
+
+    const accessToken = await this.tokenProvider.validAccessToken(
+      this.scope.organizationId,
+      this.scope.integrationAccountId,
     );
+
+    try {
+      switch (input.command) {
+        case "confirm":
+          await this.http.confirmOrder({ accessToken, orderId: input.externalOrderId });
+          break;
+        case "start_preparation":
+          await this.http.startPreparation({ accessToken, orderId: input.externalOrderId });
+          break;
+        case "mark_ready":
+          await this.http.readyToPickup({ accessToken, orderId: input.externalOrderId });
+          break;
+        case "request_cancellation": {
+          const reason = cancellationReasonFromPayload(input.payload);
+          if (!reason) {
+            throw new IntegrationConfigurationError(
+              "Choose a valid iFood cancellation reason",
+              "ifood_cancellation_reason_missing",
+            );
+          }
+          const validReasons = await this.http.getCancellationReasons({
+            accessToken,
+            orderId: input.externalOrderId,
+          });
+          if (!validReasons.some((item) => item.code === reason)) {
+            throw new IntegrationProviderError(
+              "The selected iFood cancellation reason is no longer available for this order",
+              "ifood_cancellation_reason_invalid",
+              false,
+            );
+          }
+          await this.http.requestCancellation({
+            accessToken,
+            orderId: input.externalOrderId,
+            reason,
+          });
+          break;
+        }
+        case "dispatch":
+        case "complete":
+          throw new IntegrationConfigurationError(
+            `iFood order command ${input.command} is not enabled in OMNI #940`,
+            "ifood_order_command_not_enabled",
+          );
+      }
+    } catch (error) {
+      if (error instanceof IfoodHttpError) {
+        throw new IntegrationProviderError(
+          error.message,
+          error.code ?? `ifood_http_${error.status}`,
+          error.retryable,
+          { cause: error },
+        );
+      }
+      throw error;
+    }
+
+    // iFood's lifecycle endpoints accept the request asynchronously. The
+    // canonical order remains unchanged until the corresponding polling event
+    // is imported, so accepted is intentionally not equivalent to confirmed.
+    void input.idempotencyKey;
+    return {
+      accepted: true,
+      externalReference: input.externalOrderId,
+      retryable: false,
+    };
   }
 }
