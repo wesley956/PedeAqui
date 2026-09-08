@@ -36,7 +36,7 @@ export type ManagerIntent =
 const routedDeliveryIntents = new Set<ManagerIntent>(["courier_assigned", "courier_picked_up", "out_for_delivery", "delivered"]);
 
 type CancellationReasonState = {
-  checking: boolean;
+  resolvedFor: string | null;
   external: boolean | null;
   reasons: Array<{ code: string; description: string }>;
   error: string | null;
@@ -56,8 +56,9 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
 }) {
   const [state, action, pending] = useActionState(orderManagerAction, initialOrderManagerActionState);
   const isCancellationIntent = (intent === "cancel" || intent === "reject") && Boolean(reasonLabel);
+  const cancellationRequestKey = `${orderId}:${intent}:${externalProvider ?? "native"}`;
   const [cancellationReasons, setCancellationReasons] = useState<CancellationReasonState>({
-    checking: isCancellationIntent,
+    resolvedFor: null,
     external: externalProvider === "ifood" ? true : null,
     reasons: [],
     error: null,
@@ -67,17 +68,10 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
   useEffect(() => {
     if (!isCancellationIntent) return;
     let active = true;
-    setCancellationReasons((current) => ({
-      ...current,
-      checking: true,
-      external: externalProvider === "ifood" ? true : null,
-      reasons: [],
-      error: null,
-    }));
     void getExternalCancellationReasonsAction(orderId).then((result) => {
       if (!active) return;
       setCancellationReasons({
-        checking: false,
+        resolvedFor: cancellationRequestKey,
         external: result.external,
         reasons: result.reasons,
         error: result.error ?? (result.external && result.reasons.length === 0
@@ -87,23 +81,25 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
     }).catch(() => {
       if (!active) return;
       setCancellationReasons({
-        checking: false,
+        resolvedFor: cancellationRequestKey,
         external: externalProvider === "ifood" ? true : null,
         reasons: [],
         error: "Não foi possível consultar os motivos de cancelamento do iFood.",
       });
     });
     return () => { active = false; };
-  }, [externalProvider, isCancellationIntent, orderId]);
+  }, [cancellationRequestKey, externalProvider, isCancellationIntent, orderId]);
 
   if (routedDeliveryIntents.has(intent)) {
     return <Link href="/entregas" style={{ ...buttonStyle("secondary"), display: "grid", placeItems: "center", textDecoration: "none" }}>{label} → Entregas</Link>;
   }
 
-  const needsIfoodCancellationReason = isCancellationIntent && cancellationReasons.external === true;
-  const resolvingOrderOrigin = isCancellationIntent && cancellationReasons.checking;
-  const providerReasonUnavailable = needsIfoodCancellationReason
-    && (cancellationReasons.checking || cancellationReasons.reasons.length === 0);
+  const resolvingOrderOrigin = isCancellationIntent && cancellationReasons.resolvedFor !== cancellationRequestKey;
+  const needsIfoodCancellationReason = isCancellationIntent
+    && !resolvingOrderOrigin
+    && cancellationReasons.external === true;
+  const providerReasonUnavailable = needsIfoodCancellationReason && cancellationReasons.reasons.length === 0;
+  const cancellationError = !resolvingOrderOrigin ? cancellationReasons.error : null;
 
   return (
     <form action={action} onSubmit={confirmPayment ? (event) => { if (!window.confirm("Você recebeu o pagamento deste pedido? Ao confirmar, o PedeAqui dará a baixa financeira.")) event.preventDefault(); } : undefined} style={{ display: "grid", gap: 6 }}>
@@ -127,8 +123,8 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
         ) : (
           <input name="reason" required minLength={3} maxLength={500} placeholder={reasonPlaceholder} style={inputStyle} />
         )}
-        {isCancellationIntent && cancellationReasons.error ? (
-          <span role="alert" style={{ color: "#f97066", fontSize: 11 }}>{cancellationReasons.error}</span>
+        {isCancellationIntent && cancellationError ? (
+          <span role="alert" style={{ color: "#f97066", fontSize: 11 }}>{cancellationError}</span>
         ) : null}
       </label> : null}
       <button
