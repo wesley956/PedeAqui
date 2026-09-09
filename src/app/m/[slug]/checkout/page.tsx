@@ -51,12 +51,41 @@ const errorMessages: Record<string, string> = {
   identity_required: "Confirme seu nome e WhatsApp antes de reutilizar um endereço.",
 };
 
+type CheckoutStageId = "fulfillment" | "identity" | "address" | "payment" | "review";
+
+const errorStage: Partial<Record<string, CheckoutStageId>> = {
+  invalid_fulfillment: "fulfillment",
+  pickup_disabled: "fulfillment",
+  delivery_disabled: "fulfillment",
+  invalid_phone: "identity",
+  invalid_identity: "identity",
+  pix_email_required: "identity",
+  invalid_address: "address",
+  delivery_not_selected: "address",
+  delivery_minimum: "address",
+  neighborhood_not_served: "address",
+  saved_address_invalid: "address",
+  recognition_required: "address",
+  identity_required: "address",
+  invalid_payment: "payment",
+  payment_unavailable: "payment",
+  invalid_change: "payment",
+  invalid_schedule: "review",
+  checkout_not_ready: "review",
+  benefit_invalid: "review",
+  benefit_unavailable: "review",
+};
+
+function stageHref(slug: string, stage: CheckoutStageId) {
+  return `/m/${slug}/checkout?etapa=${stage}`;
+}
+
 export default async function CheckoutPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ erro?: string }>;
+  searchParams: Promise<{ erro?: string; etapa?: string }>;
 }) {
   const { slug } = await params;
   const query = await searchParams;
@@ -80,16 +109,45 @@ export default async function CheckoutPage({
   const identityName = session?.customer_name ?? recognizedCustomer?.customer.name ?? "";
   const identityPhone = session?.customer_phone ?? recognizedCustomer?.customer.phone ?? "";
   const identityEmail = session?.customer_email ?? recognizedCustomer?.customer.email ?? "";
-  const totalSteps = deliverySelected ? 5 : 4;
-  const completedSteps = [
-    fulfillmentComplete,
-    identityComplete,
-    ...(deliverySelected ? [addressComplete] : []),
-    paymentComplete,
-  ].filter(Boolean).length;
-  const progress = Math.round((completedSteps / totalSteps) * 100);
-  const fulfillmentSummary = deliverySelected ? "Entrega" : session?.fulfillment_type === "pickup" ? "Retirada no local" : "Escolha como receber";
-  const addressSummary = session?.address_street && session?.address_number ? `${session.address_street}, ${session.address_number}` : "Informe o endereço";
+  const stageOrder: CheckoutStageId[] = deliverySelected
+    ? ["fulfillment", "identity", "address", "payment", "review"]
+    : ["fulfillment", "identity", "payment", "review"];
+  const firstIncomplete: CheckoutStageId = !fulfillmentComplete
+    ? "fulfillment"
+    : !identityComplete
+      ? "identity"
+      : deliverySelected && !addressComplete
+        ? "address"
+        : !paymentComplete
+          ? "payment"
+          : "review";
+  const requestedStage = stageOrder.includes(query.etapa as CheckoutStageId) ? query.etapa as CheckoutStageId : null;
+  const requestedAllowed = requestedStage === "fulfillment"
+    || (requestedStage === "identity" && fulfillmentComplete)
+    || (requestedStage === "address" && deliverySelected && fulfillmentComplete && identityComplete)
+    || (requestedStage === "payment" && fulfillmentComplete && identityComplete && addressComplete)
+    || (requestedStage === "review" && paymentComplete);
+  const stageFromError = query.erro ? errorStage[query.erro] : null;
+  const errorAllowed = stageFromError && stageOrder.includes(stageFromError)
+    && (stageFromError !== "address" || deliverySelected);
+  const activeStage: CheckoutStageId = errorAllowed
+    ? stageFromError
+    : requestedStage && requestedAllowed
+      ? requestedStage
+      : firstIncomplete;
+  const activeIndex = stageOrder.indexOf(activeStage);
+  const totalSteps = stageOrder.length;
+  const progress = Math.round(((activeIndex + 1) / totalSteps) * 100);
+  const backHref = activeStage === "fulfillment"
+    ? `/m/${slug}/carrinho`
+    : activeStage === "identity"
+      ? stageHref(slug, "fulfillment")
+      : activeStage === "address"
+        ? stageHref(slug, "identity")
+        : activeStage === "payment"
+          ? stageHref(slug, deliverySelected ? "address" : "identity")
+          : stageHref(slug, "payment");
+  const backLabel = activeStage === "fulfillment" ? "Carrinho" : "Voltar";
   const paymentSummary = selectedPayment ? paymentMethodLabels[selectedPayment as keyof typeof paymentMethodLabels] : "Escolha a forma de pagamento";
   const storeTimeZone = menu.store.timezone || "America/Sao_Paulo";
   const scheduledFor = session?.scheduled_for ?? null;
@@ -103,217 +161,215 @@ export default async function CheckoutPage({
 
   return (
     <main className={styles.root}>
-      <div className={styles.container}>
-        <div className={styles.topbar}>
-          <Link href={`/m/${slug}/carrinho`} className={styles.back}>← Carrinho</Link>
-          <PedeAquiLogo size="xs" decorative />
-        </div>
-
-        <header className={styles.header}>
-          <p className={styles.eyebrow}>{menu.store.name}</p>
-          <h1>Finalizar pedido</h1>
-          <p>Preencha somente o necessário. Cada etapa concluída fica resumida para você seguir rápido.</p>
-          <div className={styles.progressHeader}><strong>{completedSteps} de {totalSteps} etapas</strong><span>{progress}%</span></div>
-          <div className={styles.progressTrack} aria-label={`${progress}% do checkout concluído`}><div className={styles.progressFill} style={{ width: `${progress}%` }} /></div>
+      <div className={styles.appShell}>
+        <header className={styles.topbar}>
+          <Link href={backHref} className={styles.back} aria-label={`${backLabel} no checkout`}>← {backLabel}</Link>
+          <div className={styles.topTitle}>
+            <PedeAquiLogo size="xs" decorative />
+            <span>{menu.store.name}</span>
+          </div>
+          <span className={styles.stepCounter}>{activeIndex + 1}/{totalSteps}</span>
         </header>
 
-        {query.erro ? <div role="alert" className={`card ${styles.alert}`}>{errorMessages[query.erro] ?? "Não foi possível continuar. Confira os dados e tente novamente."}</div> : null}
+        <div className={styles.progressTrack} aria-label={`${progress}% do checkout concluído`}>
+          <div className={styles.progressFill} style={{ width: `${progress}%` }} />
+        </div>
 
-        <Step number="1" title="Como vai receber?" summary={fulfillmentSummary} complete={fulfillmentComplete}>
-          <form action={saveCheckoutFulfillmentAction} className={styles.choices}>
-            <input type="hidden" name="storeSlug" value={slug} />
-            {menu.settings.allow_delivery && menu.delivery.enabled ? (
-              <button type="submit" name="fulfillmentType" value="delivery" className={`${styles.choice} ${deliverySelected ? styles.choiceSelected : ""}`}>
-                <strong>🛵 Entrega</strong>
-                <span className={styles.choiceDetail}>Receba em casa · previsão de {menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span>
-              </button>
-            ) : null}
-            {menu.settings.allow_pickup ? (
-              <button type="submit" name="fulfillmentType" value="pickup" className={`${styles.choice} ${session?.fulfillment_type === "pickup" ? styles.choiceSelected : ""}`}>
-                <strong>🛍️ Retirada</strong>
-                <span className={styles.choiceDetail}>Você busca no estabelecimento · sem taxa de entrega</span>
-              </button>
-            ) : null}
-          </form>
-        </Step>
+        <div className={styles.stageViewport}>
+          {query.erro ? <div role="alert" className={styles.alert}>{errorMessages[query.erro] ?? "Não foi possível continuar. Confira os dados e tente novamente."}</div> : null}
 
-        {fulfillmentComplete ? (
-          <Step number="2" title="Seus dados" summary={identityComplete ? `${session?.customer_name} · ${session?.customer_phone}` : "Nome e WhatsApp"} complete={identityComplete} forceOpen={query.erro === "pix_email_required"}>
-            {recognizedCustomer && !identityComplete ? <p className="muted">Que bom ter você de volta. Confira seus dados para continuar com segurança.</p> : null}
-            <form action={saveCheckoutIdentityAction} className={styles.form}>
-              <input type="hidden" name="storeSlug" value={slug} />
-              <div className={styles.grid2}>
+          {activeStage === "fulfillment" ? (
+            <CheckoutStage number="1" title="Como vai receber?" eyebrow="Recebimento" description="Escolha a opção que faz sentido para este pedido.">
+              <form action={saveCheckoutFulfillmentAction} className={styles.receiveGrid}>
+                <input type="hidden" name="storeSlug" value={slug} />
+                {menu.settings.allow_delivery && menu.delivery.enabled ? (
+                  <button type="submit" name="fulfillmentType" value="delivery" className={`${styles.receiveChoice} ${deliverySelected ? styles.choiceSelected : ""}`}>
+                    <span className={styles.choiceIcon}>🛵</span>
+                    <strong>Entrega</strong>
+                    <span className={styles.choiceDetail}>Receba em casa</span>
+                    <span className={styles.choiceMeta}>{menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span>
+                  </button>
+                ) : null}
+                {menu.settings.allow_pickup ? (
+                  <button type="submit" name="fulfillmentType" value="pickup" className={`${styles.receiveChoice} ${session?.fulfillment_type === "pickup" ? styles.choiceSelected : ""}`}>
+                    <span className={styles.choiceIcon}>🛍️</span>
+                    <strong>Retirada</strong>
+                    <span className={styles.choiceDetail}>Busque no estabelecimento</span>
+                    <span className={styles.choiceMeta}>Sem taxa de entrega</span>
+                  </button>
+                ) : null}
+              </form>
+            </CheckoutStage>
+          ) : null}
+
+          {activeStage === "identity" ? (
+            <CheckoutStage number="2" title="Seus dados" eyebrow="Identificação" description="Só precisamos do essencial para identificar e acompanhar seu pedido.">
+              {recognizedCustomer && !identityComplete ? <div className={styles.returningHint}>Que bom ter você de volta. Confira seus dados para continuar com segurança.</div> : null}
+              <form action={saveCheckoutIdentityAction} className={styles.form}>
+                <input type="hidden" name="storeSlug" value={slug} />
                 <Field label="WhatsApp" name="phone" type="tel" inputMode="tel" autoComplete="tel" defaultValue={identityPhone ?? ""} placeholder="(19) 99999-9999" required />
                 <Field label="Nome" name="name" autoComplete="name" defaultValue={identityName} required />
-              </div>
-              <details className={styles.inlineOptional} open={Boolean(identityEmail) || query.erro === "pix_email_required"}>
-                <summary>E-mail {query.erro === "pix_email_required" ? "· necessário para o Pix selecionado" : "· opcional"}</summary>
-                <div className={styles.inlineOptionalBody}><Field label="E-mail" name="email" type="email" autoComplete="email" defaultValue={identityEmail ?? ""} required={query.erro === "pix_email_required"} /></div>
-              </details>
-              <ActionButton>Continuar</ActionButton>
-            </form>
-          </Step>
-        ) : null}
-
-        {fulfillmentComplete && identityComplete && deliverySelected ? (
-          <Step number="3" title="Onde entregar?" summary={addressComplete ? addressSummary : "Informe onde devemos entregar"} complete={addressComplete}>
-            {recognizedForSession && recognizedCustomer && recognizedCustomer.addresses.length > 0 ? (
-              <div className={styles.form}>
-                <p className="muted">Você pode reutilizar um endereço salvo:</p>
-                <div className={styles.choices}>
-                  {recognizedCustomer.addresses.map((address, index) => (
-                    <form action={useSavedCheckoutAddressAction} key={`${address.postalCode}-${address.street}-${address.number}-${index}`}>
-                      <input type="hidden" name="storeSlug" value={slug} />
-                      <input type="hidden" name="addressIndex" value={index} />
-                      <button type="submit" className={styles.choice}>
-                        <strong>{address.isDefault ? "📍 Endereço principal" : `📍 ${address.label}`}</strong>
-                        <span className={styles.choiceDetail}>{address.street}, {address.number}{address.complement ? ` · ${address.complement}` : ""}<br />{address.district} · {address.city}/{address.state}</span>
-                        <span className={styles.choiceDetail}><strong>Usar este endereço →</strong></span>
-                      </button>
-                    </form>
-                  ))}
-                </div>
-                <p className="muted">Ou informe outro endereço:</p>
-              </div>
-            ) : recognizedCustomer && !recognizedForSession ? <div className={styles.deliveryError}>Por segurança, confirme o endereço novamente para este WhatsApp.</div> : null}
-
-            <form action={saveCheckoutAddressAction} className={styles.form}>
-              <input type="hidden" name="storeSlug" value={slug} />
-
-              {useRegisteredNeighborhoods ? (
-                <NeighborhoodSelect
-                  neighborhoods={deliveryNeighborhoods}
-                  defaultNeighborhoodId={selectedNeighborhoodId}
-                  inputClassName={styles.input}
-                  fieldClassName={styles.field}
-                  choicesClassName={styles.choices}
-                  choiceClassName={styles.choice}
-                  selectedClassName={styles.choiceSelected}
-                  detailClassName={styles.choiceDetail}
-                  secondaryButtonClassName={styles.neighborhoodChange}
-                />
-              ) : (
-                <div className={styles.grid2}>
-                  <Field label="Bairro" name="district" autoComplete="address-level3" defaultValue={session?.address_district ?? ""} required />
-                  <Field label="Cidade" name="city" autoComplete="address-level2" defaultValue={session?.address_city ?? menu.store.city ?? ""} required />
-                  <Field label="UF" name="state" autoComplete="address-level1" defaultValue={session?.address_state ?? menu.store.state ?? ""} maxLength={2} required />
-                </div>
-              )}
-
-              <div className={styles.addressRow}>
-                <Field label="Rua" name="street" autoComplete="street-address" defaultValue={session?.address_street ?? ""} required />
-                <Field label="Número" name="number" defaultValue={session?.address_number ?? ""} required />
-              </div>
-              <Field label="Complemento (opcional)" name="complement" defaultValue={session?.address_complement ?? ""} />
-              <Field label="Referência (opcional)" name="reference" defaultValue={session?.address_reference ?? ""} placeholder="Ex.: portão preto" />
-              <Field label="CEP (opcional)" name="postalCode" inputMode="numeric" autoComplete="postal-code" defaultValue={session?.address_postal_code ?? ""} />
-              {session?.delivery_quote_status === "valid" ? <div className={styles.deliveryOk}><strong>Entrega disponível</strong><br />{money(Number(session.delivery_fee_cents))} · previsão de {session.delivery_estimated_min_minutes}–{session.delivery_estimated_max_minutes} min</div> : null}
-              {session?.delivery_quote_status === "unserviceable" ? <div className={styles.deliveryError}>Ainda não entregamos neste endereço. Selecione outro bairro ou escolha retirada.</div> : null}
-              <ActionButton>Continuar</ActionButton>
-            </form>
-          </Step>
-        ) : null}
-
-        {identityComplete && fulfillmentComplete && addressComplete ? (
-          <Step number={deliverySelected ? "4" : "3"} title="Pagamento" summary={paymentSummary} complete={paymentComplete}>
-            <form action={saveCheckoutPaymentAction} className={styles.form}>
-              <input type="hidden" name="storeSlug" value={slug} />
-              {enabledMethods.length === 0 ? <div className={styles.deliveryError}>Este estabelecimento não tem uma forma de pagamento disponível no momento.</div> : (
-                <PaymentMethodFields
-                  methods={enabledMethods.map((item) => ({
-                    method: item.method,
-                    label: paymentMethodLabels[item.method],
-                    help: paymentMethodHelp[item.method],
-                  }))}
-                  defaultMethod={selectedPayment}
-                  defaultChangeFor={changeForValue}
-                  choicesClassName={styles.choices}
-                  choiceClassName={styles.choice}
-                  selectedClassName={styles.choiceSelected}
-                  paymentChoiceClassName={styles.paymentChoice}
-                  detailClassName={styles.choiceDetail}
-                  inputClassName={styles.input}
-                  fieldClassName={styles.field}
-                  cashChoicesClassName={styles.cashChoices}
-                  cashChoiceClassName={styles.cashChoice}
-                  cashSelectedClassName={styles.cashChoiceSelected}
-                />
-              )}
-              {enabledMethods.length > 0 ? <ActionButton>Continuar</ActionButton> : null}
-            </form>
-          </Step>
-        ) : null}
-
-        {paymentComplete && growthEnabled && benefits ? (
-          <details className={styles.optional} open={totalDiscount > 0}>
-            <summary>Tenho cupom, cashback ou pontos{totalDiscount > 0 ? ` · economia ${money(totalDiscount)}` : ""}</summary>
-            <div className={styles.optionalBody}>
-              <form action={applyCheckoutBenefitsAction} className={styles.form}>
-                <input type="hidden" name="storeSlug" value={slug} />
-                <div className={styles.grid2}>
-                  <Field label="Cupom" name="couponCode" defaultValue={benefits.current.couponCode ?? ""} placeholder="Ex.: VOLTA20" />
-                  <Field label={`Cashback${benefits.customerIdentified ? ` · saldo ${money(benefits.cashbackBalanceCents)}` : ""}`} name="cashbackAmount" inputMode="decimal" defaultValue={benefits.current.cashbackRedeemCents ? (benefits.current.cashbackRedeemCents / 100).toFixed(2).replace(".", ",") : ""} disabled={!benefits.cashbackEnabled || !benefits.customerIdentified} />
-                  <Field label={`Pontos${benefits.customerIdentified ? ` · saldo ${benefits.loyaltyBalancePoints}` : ""}`} name="loyaltyPoints" type="number" min={0} defaultValue={benefits.current.loyaltyRedeemPoints || ""} disabled={!benefits.loyaltyEnabled || !benefits.customerIdentified} />
-                </div>
-                <div className={styles.benefitActions}>
-                  <ActionButton>Aplicar benefício</ActionButton>
-                  {totalDiscount > 0 ? <button formAction={clearCheckoutBenefitsAction} type="submit" className={styles.secondary}>Remover</button> : null}
-                </div>
+                <details className={styles.inlineOptional} open={Boolean(identityEmail) || query.erro === "pix_email_required"}>
+                  <summary>E-mail {query.erro === "pix_email_required" ? "· necessário para o Pix selecionado" : "· opcional"}</summary>
+                  <div className={styles.inlineOptionalBody}><Field label="E-mail" name="email" type="email" autoComplete="email" defaultValue={identityEmail ?? ""} required={query.erro === "pix_email_required"} /></div>
+                </details>
+                <ActionButton>Continuar</ActionButton>
               </form>
-              {totalDiscount > 0 ? <div className={styles.benefitSummary}><strong>Você economizou {money(totalDiscount)}</strong></div> : null}
-            </div>
-          </details>
-        ) : null}
+            </CheckoutStage>
+          ) : null}
 
-        {paymentComplete ? (
-          <section className={`card ${styles.review}`}>
-            <div className={styles.reviewTop}>
-              <p className={styles.eyebrow}>{deliverySelected ? "5. Revisar e confirmar" : "4. Revisar e confirmar"}</p>
-              <h2>Revisar e confirmar</h2>
-              <p>Confira os principais dados. Ao confirmar, o PedeAqui valida tudo novamente antes de enviar para {menu.store.name}.</p>
-            </div>
-            <FinalOrderOptions
-              fulfillmentType={session?.fulfillment_type}
-              address={{ street: session?.address_street, number: session?.address_number, district: session?.address_district }}
-              deliveryMinutes={{ min: session?.delivery_estimated_min_minutes, max: session?.delivery_estimated_max_minutes }}
-              paymentMethod={selectedPayment}
-              cashChangeForCents={session?.cash_change_for_cents === null || session?.cash_change_for_cents === undefined ? null : Number(session.cash_change_for_cents)}
-              scheduledFor={scheduledFor}
-              timeZone={storeTimeZone}
-            />
-            <div className={styles.summaryRows}>
-              <SummaryLine label="Subtotal" value={money(Number(cart.subtotal_cents))} />
-              {totalDiscount > 0 ? <SummaryLine label="Descontos" value={`− ${money(totalDiscount)}`} /> : null}
-              <SummaryLine label="Entrega" value={Number(cart.delivery_fee_cents) > 0 ? money(Number(cart.delivery_fee_cents)) : deliverySelected ? "Grátis" : "Retirada"} />
-              <div className={styles.divider} />
-              <SummaryLine label="Total" value={money(Number(cart.total_cents))} strong />
-            </div>
-          </section>
-        ) : null}
-      </div>
+          {activeStage === "address" && fulfillmentComplete && identityComplete && deliverySelected ? (
+            <CheckoutStage number="3" title="Onde entregar?" eyebrow="Entrega" description="Informe um endereço atendido pela loja. A taxa e a previsão continuam sendo validadas no servidor.">
+              {recognizedForSession && recognizedCustomer && recognizedCustomer.addresses.length > 0 ? (
+                <div className={styles.savedAddressBlock}>
+                  <p className={styles.sectionLabel}>Endereços usados neste dispositivo</p>
+                  <div className={styles.choices}>
+                    {recognizedCustomer.addresses.map((address, index) => (
+                      <form action={useSavedCheckoutAddressAction} key={`${address.postalCode}-${address.street}-${address.number}-${index}`}>
+                        <input type="hidden" name="storeSlug" value={slug} />
+                        <input type="hidden" name="addressIndex" value={index} />
+                        <button type="submit" className={styles.choice}>
+                          <strong>{address.isDefault ? "📍 Endereço principal" : `📍 ${address.label}`}</strong>
+                          <span className={styles.choiceDetail}>{address.street}, {address.number}{address.complement ? ` · ${address.complement}` : ""}<br />{address.district} · {address.city}/{address.state}</span>
+                          <span className={styles.choiceMeta}>Usar este endereço →</span>
+                        </button>
+                      </form>
+                    ))}
+                  </div>
+                  <div className={styles.orDivider}><span>ou informe outro endereço</span></div>
+                </div>
+              ) : recognizedCustomer && !recognizedForSession ? <div className={styles.deliveryError}>Por segurança, confirme o endereço novamente para este WhatsApp.</div> : null}
 
-      {paymentComplete ? (
-        <div className={styles.stickySummary}>
-          <form action={confirmCheckoutOrderAction} className={styles.stickyForm}>
-            <input type="hidden" name="storeSlug" value={slug} />
-            <SubmitOrderButton className={styles.finalAction} label={`Confirmar pedido · ${money(Number(cart.total_cents))}`} />
-          </form>
+              <form action={saveCheckoutAddressAction} className={styles.form}>
+                <input type="hidden" name="storeSlug" value={slug} />
+                {useRegisteredNeighborhoods ? (
+                  <NeighborhoodSelect
+                    neighborhoods={deliveryNeighborhoods}
+                    defaultNeighborhoodId={selectedNeighborhoodId}
+                    inputClassName={styles.input}
+                    fieldClassName={styles.field}
+                    choicesClassName={styles.choices}
+                    choiceClassName={styles.choice}
+                    selectedClassName={styles.choiceSelected}
+                    detailClassName={styles.choiceDetail}
+                    secondaryButtonClassName={styles.neighborhoodChange}
+                  />
+                ) : (
+                  <div className={styles.grid2}>
+                    <Field label="Bairro" name="district" autoComplete="address-level3" defaultValue={session?.address_district ?? ""} required />
+                    <Field label="Cidade" name="city" autoComplete="address-level2" defaultValue={session?.address_city ?? menu.store.city ?? ""} required />
+                    <Field label="UF" name="state" autoComplete="address-level1" defaultValue={session?.address_state ?? menu.store.state ?? ""} maxLength={2} required />
+                  </div>
+                )}
+                <div className={styles.addressRow}>
+                  <Field label="Rua" name="street" autoComplete="street-address" defaultValue={session?.address_street ?? ""} required />
+                  <Field label="Número" name="number" defaultValue={session?.address_number ?? ""} required />
+                </div>
+                <Field label="Complemento (opcional)" name="complement" defaultValue={session?.address_complement ?? ""} />
+                <Field label="Referência (opcional)" name="reference" defaultValue={session?.address_reference ?? ""} placeholder="Ex.: portão preto" />
+                <Field label="CEP (opcional)" name="postalCode" inputMode="numeric" autoComplete="postal-code" defaultValue={session?.address_postal_code ?? ""} />
+                {session?.delivery_quote_status === "valid" ? <div className={styles.deliveryOk}><strong>✓ Entregamos aí</strong><span>{money(Number(session.delivery_fee_cents))} · previsão de {session.delivery_estimated_min_minutes}–{session.delivery_estimated_max_minutes} min</span></div> : null}
+                {session?.delivery_quote_status === "unserviceable" ? <div className={styles.deliveryError}>Ainda não entregamos neste endereço. Selecione outro bairro ou escolha retirada.</div> : null}
+                <ActionButton>Continuar</ActionButton>
+              </form>
+            </CheckoutStage>
+          ) : null}
+
+          {activeStage === "payment" && identityComplete && fulfillmentComplete && addressComplete ? (
+            <CheckoutStage number={deliverySelected ? "4" : "3"} title="Pagamento" eyebrow="Pagamento" description={paymentSummary}>
+              <form action={saveCheckoutPaymentAction} className={styles.form}>
+                <input type="hidden" name="storeSlug" value={slug} />
+                {enabledMethods.length === 0 ? <div className={styles.deliveryError}>Este estabelecimento não tem uma forma de pagamento disponível no momento.</div> : (
+                  <PaymentMethodFields
+                    methods={enabledMethods.map((item) => ({ method: item.method, label: paymentMethodLabels[item.method], help: paymentMethodHelp[item.method] }))}
+                    defaultMethod={selectedPayment}
+                    defaultChangeFor={changeForValue}
+                    choicesClassName={styles.choices}
+                    choiceClassName={styles.choice}
+                    selectedClassName={styles.choiceSelected}
+                    paymentChoiceClassName={styles.paymentChoice}
+                    detailClassName={styles.choiceDetail}
+                    inputClassName={styles.input}
+                    fieldClassName={styles.field}
+                    cashChoicesClassName={styles.cashChoices}
+                    cashChoiceClassName={styles.cashChoice}
+                    cashSelectedClassName={styles.cashChoiceSelected}
+                  />
+                )}
+                {enabledMethods.length > 0 ? <ActionButton>Continuar</ActionButton> : null}
+              </form>
+            </CheckoutStage>
+          ) : null}
+
+          {activeStage === "review" && paymentComplete ? (
+            <CheckoutStage number={deliverySelected ? "5" : "4"} title="Revisar e confirmar" eyebrow="Última etapa" description={`Confira os principais dados antes de enviar para ${menu.store.name}.`}>
+              {growthEnabled && benefits ? (
+                <details className={styles.optional} open={totalDiscount > 0}>
+                  <summary>Tenho cupom, cashback ou pontos{totalDiscount > 0 ? ` · economia ${money(totalDiscount)}` : ""}</summary>
+                  <div className={styles.optionalBody}>
+                    <form action={applyCheckoutBenefitsAction} className={styles.form}>
+                      <input type="hidden" name="storeSlug" value={slug} />
+                      <div className={styles.grid2}>
+                        <Field label="Cupom" name="couponCode" defaultValue={benefits.current.couponCode ?? ""} placeholder="Ex.: VOLTA20" />
+                        <Field label={`Cashback${benefits.customerIdentified ? ` · saldo ${money(benefits.cashbackBalanceCents)}` : ""}`} name="cashbackAmount" inputMode="decimal" defaultValue={benefits.current.cashbackRedeemCents ? (benefits.current.cashbackRedeemCents / 100).toFixed(2).replace(".", ",") : ""} disabled={!benefits.cashbackEnabled || !benefits.customerIdentified} />
+                        <Field label={`Pontos${benefits.customerIdentified ? ` · saldo ${benefits.loyaltyBalancePoints}` : ""}`} name="loyaltyPoints" type="number" min={0} defaultValue={benefits.current.loyaltyRedeemPoints || ""} disabled={!benefits.loyaltyEnabled || !benefits.customerIdentified} />
+                      </div>
+                      <div className={styles.benefitActions}>
+                        <ActionButton>Aplicar benefício</ActionButton>
+                        {totalDiscount > 0 ? <button formAction={clearCheckoutBenefitsAction} type="submit" className={styles.secondary}>Remover</button> : null}
+                      </div>
+                    </form>
+                    {totalDiscount > 0 ? <div className={styles.benefitSummary}><strong>Você economizou {money(totalDiscount)}</strong></div> : null}
+                  </div>
+                </details>
+              ) : null}
+
+              <section className={styles.review}>
+                <FinalOrderOptions
+                  fulfillmentType={session?.fulfillment_type}
+                  address={{ street: session?.address_street, number: session?.address_number, district: session?.address_district }}
+                  deliveryMinutes={{ min: session?.delivery_estimated_min_minutes, max: session?.delivery_estimated_max_minutes }}
+                  paymentMethod={selectedPayment}
+                  cashChangeForCents={session?.cash_change_for_cents === null || session?.cash_change_for_cents === undefined ? null : Number(session.cash_change_for_cents)}
+                  scheduledFor={scheduledFor}
+                  timeZone={storeTimeZone}
+                />
+                <div className={styles.summaryRows}>
+                  <SummaryLine label="Subtotal" value={money(Number(cart.subtotal_cents))} />
+                  {totalDiscount > 0 ? <SummaryLine label="Descontos" value={`− ${money(totalDiscount)}`} /> : null}
+                  <SummaryLine label="Entrega" value={Number(cart.delivery_fee_cents) > 0 ? money(Number(cart.delivery_fee_cents)) : deliverySelected ? "Grátis" : "Retirada"} />
+                  <div className={styles.divider} />
+                  <SummaryLine label="Total" value={money(Number(cart.total_cents))} strong />
+                </div>
+              </section>
+            </CheckoutStage>
+          ) : null}
         </div>
-      ) : null}
+
+        <footer className={styles.footer}>
+          <div className={styles.footerTotal}><span>Total do pedido</span><strong>{money(Number(cart.total_cents))}</strong></div>
+          {activeStage === "review" && paymentComplete ? (
+            <form action={confirmCheckoutOrderAction} className={styles.stickyForm}>
+              <input type="hidden" name="storeSlug" value={slug} />
+              <SubmitOrderButton className={styles.finalAction} label={`Confirmar pedido · ${money(Number(cart.total_cents))}`} />
+            </form>
+          ) : null}
+        </footer>
+      </div>
     </main>
   );
 }
 
-function Step({ number, title, summary, complete, forceOpen = false, children }: { number: string; title: string; summary: string; complete: boolean; forceOpen?: boolean; children: ReactNode }) {
+function CheckoutStage({ number, title, eyebrow, description, children }: { number: string; title: string; eyebrow: string; description: string; children: ReactNode }) {
   return (
-    <details className={`${styles.step} ${complete ? styles.stepComplete : ""}`} open={forceOpen || !complete}>
-      <summary className={styles.stepSummary}>
-        <span className={styles.stepBadge}>{complete ? "✓" : number}</span>
-        <span className={styles.stepCopy}><strong>{title}</strong><span>{summary}</span></span>
-        {complete ? <span className={styles.edit}>Editar</span> : null}
-      </summary>
-      <div className={styles.stepBody}>{children}</div>
-    </details>
+    <section className={styles.stage} aria-labelledby={`checkout-stage-${number}`}>
+      <header className={styles.stageHeader}>
+        <p className={styles.eyebrow}>{eyebrow}</p>
+        <h1 id={`checkout-stage-${number}`}>{title}</h1>
+        <p>{description}</p>
+      </header>
+      <div className={styles.stageBody}>{children}</div>
+    </section>
   );
 }
 
