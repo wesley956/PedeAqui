@@ -8,6 +8,7 @@ import {
   saveCheckoutFulfillmentAction,
   saveCheckoutIdentityAction,
   saveCheckoutPaymentAction,
+  saveCheckoutScheduleAction,
   useSavedCheckoutAddressAction,
 } from "@/features/checkout/actions";
 import { applyCheckoutBenefitsAction, clearCheckoutBenefitsAction } from "@/features/checkout/benefit-actions";
@@ -27,6 +28,21 @@ function money(cents: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 }
 
+function dateTimeLocalValue(iso: string | null, timeZone: string) {
+  if (!iso) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(iso));
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}T${value.hour}:${value.minute}`;
+}
+
 const errorMessages: Record<string, string> = {
   cart_empty: "Seu carrinho está vazio.",
   invalid_phone: "Informe um WhatsApp válido.",
@@ -34,7 +50,7 @@ const errorMessages: Record<string, string> = {
   invalid_fulfillment: "Escolha entrega ou retirada.",
   invalid_address: "Confira rua, número e selecione um bairro atendido.",
   invalid_payment: "Escolha uma forma de pagamento válida.",
-  invalid_schedule: "Escolha um horário válido.",
+  invalid_schedule: "Escolha um horário válido entre 15 minutos e 7 dias a partir de agora.",
   pickup_disabled: "Retirada não está disponível nesta loja.",
   delivery_disabled: "Entrega não está disponível nesta loja.",
   delivery_not_selected: "Escolha entrega antes de informar o endereço.",
@@ -151,6 +167,7 @@ export default async function CheckoutPage({
   const paymentSummary = selectedPayment ? paymentMethodLabels[selectedPayment as keyof typeof paymentMethodLabels] : "Escolha a forma de pagamento";
   const storeTimeZone = menu.store.timezone || "America/Sao_Paulo";
   const scheduledFor = session?.scheduled_for ?? null;
+  const scheduledLocalValue = dateTimeLocalValue(scheduledFor, storeTimeZone);
   const changeForValue = session?.cash_change_for_cents ? (Number(session.cash_change_for_cents) / 100).toFixed(2).replace(".", ",") : "";
   const useRegisteredNeighborhoods = menu.delivery.fee_mode === "neighborhood" && deliveryNeighborhoods.length > 0;
   const selectedNeighborhoodId = deliveryNeighborhoods.find((item) =>
@@ -176,7 +193,11 @@ export default async function CheckoutPage({
         </div>
 
         <div className={styles.stageViewport}>
-          {query.erro ? <div role="alert" className={styles.alert}>{errorMessages[query.erro] ?? "Não foi possível continuar. Confira os dados e tente novamente."}</div> : null}
+          {query.erro ? (
+            <div role="alert" aria-live="assertive" data-error-stage={activeStage} className={styles.alert}>
+              {errorMessages[query.erro] ?? "Não foi possível continuar. Confira os dados e tente novamente."}
+            </div>
+          ) : null}
 
           {activeStage === "fulfillment" ? (
             <CheckoutStage number="1" title="Como vai receber?" eyebrow="Recebimento" description="Escolha a opção que faz sentido para este pedido.">
@@ -222,7 +243,7 @@ export default async function CheckoutPage({
             <CheckoutStage number="3" title="Onde entregar?" eyebrow="Entrega" description="Informe um endereço atendido pela loja. A taxa e a previsão continuam sendo validadas no servidor.">
               {recognizedForSession && recognizedCustomer && recognizedCustomer.addresses.length > 0 ? (
                 <div className={styles.savedAddressBlock}>
-                  <p className={styles.sectionLabel}>Endereços usados neste dispositivo</p>
+                  <p className={styles.sectionLabel}>Você pode reutilizar um endereço salvo</p>
                   <div className={styles.choices}>
                     {recognizedCustomer.addresses.map((address, index) => (
                       <form action={useSavedCheckoutAddressAction} key={`${address.postalCode}-${address.street}-${address.number}-${index}`}>
@@ -236,7 +257,7 @@ export default async function CheckoutPage({
                       </form>
                     ))}
                   </div>
-                  <div className={styles.orDivider}><span>ou informe outro endereço</span></div>
+                  <div className={styles.orDivider}><span>Ou informe outro endereço</span></div>
                 </div>
               ) : recognizedCustomer && !recognizedForSession ? <div className={styles.deliveryError}>Por segurança, confirme o endereço novamente para este WhatsApp.</div> : null}
 
@@ -276,7 +297,8 @@ export default async function CheckoutPage({
           ) : null}
 
           {activeStage === "payment" && identityComplete && fulfillmentComplete && addressComplete ? (
-            <CheckoutStage number={deliverySelected ? "4" : "3"} title="Pagamento" eyebrow="Pagamento" description={paymentSummary}>
+            <CheckoutStage number={deliverySelected ? "4" : "3"} title="Pagamento" eyebrow="Pagamento" description="Escolha somente entre as formas habilitadas pelo estabelecimento.">
+              <div className={styles.paymentHeader}><strong>{paymentSummary}</strong><span>O valor final continua sendo validado no servidor.</span></div>
               <form action={saveCheckoutPaymentAction} className={styles.form}>
                 <input type="hidden" name="storeSlug" value={slug} />
                 {enabledMethods.length === 0 ? <div className={styles.deliveryError}>Este estabelecimento não tem uma forma de pagamento disponível no momento.</div> : (
@@ -303,8 +325,15 @@ export default async function CheckoutPage({
 
           {activeStage === "review" && paymentComplete ? (
             <CheckoutStage number={deliverySelected ? "5" : "4"} title="Revisar e confirmar" eyebrow="Última etapa" description={`Confira os principais dados antes de enviar para ${menu.store.name}.`}>
+              <nav className={styles.reviewEditNav} aria-label="Alterar dados do checkout">
+                <Link href={stageHref(slug, "fulfillment")}>Alterar recebimento</Link>
+                <Link href={stageHref(slug, "identity")}>Alterar dados</Link>
+                {deliverySelected ? <Link href={stageHref(slug, "address")}>Alterar endereço</Link> : null}
+                <Link href={stageHref(slug, "payment")}>Alterar pagamento</Link>
+              </nav>
+
               {paymentComplete && growthEnabled && benefits ? (
-                <details className={styles.optional} open={totalDiscount > 0}>
+                <details className={styles.optional} open={totalDiscount > 0 || query.erro === "benefit_invalid" || query.erro === "benefit_unavailable"}>
                   <summary>Tenho cupom, cashback ou pontos{totalDiscount > 0 ? ` · economia ${money(totalDiscount)}` : ""}</summary>
                   <div className={styles.optionalBody}>
                     <form action={applyCheckoutBenefitsAction} className={styles.form}>
@@ -319,10 +348,25 @@ export default async function CheckoutPage({
                         {totalDiscount > 0 ? <button formAction={clearCheckoutBenefitsAction} type="submit" className={styles.secondary}>Remover</button> : null}
                       </div>
                     </form>
-                    {totalDiscount > 0 ? <div className={styles.benefitSummary}><strong>Você economizou {money(totalDiscount)}</strong></div> : null}
+                    {totalDiscount > 0 ? <div className={styles.benefitSummary}><strong>Você economizou {money(totalDiscount)}</strong><span>O total abaixo já inclui o desconto oficial.</span></div> : null}
                   </div>
                 </details>
               ) : null}
+
+              <details className={styles.optional} open={Boolean(scheduledFor) || query.erro === "invalid_schedule"}>
+                <summary>{scheduledFor ? "Pedido agendado · alterar horário" : "Quero agendar este pedido"}</summary>
+                <div className={styles.optionalBody}>
+                  <p className={styles.optionalHint}>O horário é interpretado no fuso do estabelecimento ({storeTimeZone}).</p>
+                  <form action={saveCheckoutScheduleAction} className={styles.form}>
+                    <input type="hidden" name="storeSlug" value={slug} />
+                    <Field label="Data e hora" name="localDateTime" type="datetime-local" defaultValue={scheduledLocalValue} />
+                    <div className={styles.scheduleActions}>
+                      <button type="submit" name="mode" value="asap" className={styles.secondary}>O mais rápido possível</button>
+                      <button type="submit" name="mode" value="scheduled" className={styles.action}>Agendar</button>
+                    </div>
+                  </form>
+                </div>
+              </details>
 
               <section className={styles.review}>
                 <FinalOrderOptions
@@ -341,6 +385,7 @@ export default async function CheckoutPage({
                   <div className={styles.divider} />
                   <SummaryLine label="Total" value={money(Number(cart.total_cents))} strong />
                 </div>
+                <p className={styles.serverReviewNote}>Ao confirmar, o PedeAqui revisa novamente carrinho, loja, recebimento, endereço, pagamento e totais antes de criar o pedido.</p>
               </section>
             </CheckoutStage>
           ) : null}
