@@ -65,8 +65,8 @@ describe("[324] privacy and persistence contracts", () => {
     expect(checkout).toContain("return this.saveAddress(storeSlug, token");
     expect(checkout).toContain("DeliveryQuoteService.quote");
     expect(page).toContain("useSavedCheckoutAddressAction");
-    expect(page).toContain("Você pode reutilizar um endereço salvo");
-    expect(page).toContain("Ou informe outro endereço");
+    expect(page).toContain("Endereços usados neste dispositivo");
+    expect(page).toContain("ou informe outro endereço");
     expect(page).toContain("Usar este endereço");
   });
 
