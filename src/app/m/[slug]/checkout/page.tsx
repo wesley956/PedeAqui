@@ -127,14 +127,14 @@ export default async function CheckoutPage({
     || (requestedStage === "address" && deliverySelected && fulfillmentComplete && identityComplete)
     || (requestedStage === "payment" && fulfillmentComplete && identityComplete && addressComplete)
     || (requestedStage === "review" && paymentComplete);
-  const stageFromError = query.erro ? errorStage[query.erro] : null;
-  const errorAllowed = stageFromError && stageOrder.includes(stageFromError)
-    && (stageFromError !== "address" || deliverySelected);
-  const activeStage: CheckoutStageId = errorAllowed
+  const stageFromError = query.erro ? errorStage[query.erro] ?? null : null;
+  const validErrorStage: CheckoutStageId | null = stageFromError
+    && stageOrder.includes(stageFromError)
+    && (stageFromError !== "address" || deliverySelected)
     ? stageFromError
-    : requestedStage && requestedAllowed
-      ? requestedStage
-      : firstIncomplete;
+    : null;
+  const activeStage: CheckoutStageId = validErrorStage
+    ?? (requestedStage && requestedAllowed ? requestedStage : firstIncomplete);
   const activeIndex = stageOrder.indexOf(activeStage);
   const totalSteps = stageOrder.length;
   const progress = Math.round(((activeIndex + 1) / totalSteps) * 100);
@@ -303,7 +303,7 @@ export default async function CheckoutPage({
 
           {activeStage === "review" && paymentComplete ? (
             <CheckoutStage number={deliverySelected ? "5" : "4"} title="Revisar e confirmar" eyebrow="Última etapa" description={`Confira os principais dados antes de enviar para ${menu.store.name}.`}>
-              {growthEnabled && benefits ? (
+              {paymentComplete && growthEnabled && benefits ? (
                 <details className={styles.optional} open={totalDiscount > 0}>
                   <summary>Tenho cupom, cashback ou pontos{totalDiscount > 0 ? ` · economia ${money(totalDiscount)}` : ""}</summary>
                   <div className={styles.optionalBody}>
