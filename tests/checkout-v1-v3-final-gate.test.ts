@@ -76,7 +76,7 @@ describe("[982] final functional gate contracts", () => {
   it("keeps post-order recognition, Pix and notification hooks", () => {
     expect(orderAction).toContain("CustomerRecognitionService.issueFromOrder");
     expect(orderAction).toContain("scheduleOrderPixCharge");
-    expect(orderAction).toContain("scheduleOrderNotifications");
+    expect(orderAction).toContain("scheduleOrderWhatsAppNotifications");
     expect(orderAction).toContain("cartCookieName");
   });
 });
