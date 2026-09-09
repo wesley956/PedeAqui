@@ -22,12 +22,13 @@ describe("progressive checkout UI", () => {
     expect(review).toBeGreaterThan(payment);
   });
 
-  it("shows delivery address only after identity while pickup skips it", () => {
+  it("derives delivery and pickup stages from the persisted server state", () => {
     expect(page).toContain('const deliverySelected = session?.fulfillment_type === "delivery"');
-    expect(page).toContain("{fulfillmentComplete ? (");
-    expect(page).toContain("{fulfillmentComplete && identityComplete && deliverySelected ? (");
-    expect(page).toContain("{identityComplete && fulfillmentComplete && addressComplete ? (");
-    expect(page).toContain("{paymentComplete ? (");
+    expect(page).toContain('["fulfillment", "identity", "address", "payment", "review"]');
+    expect(page).toContain('["fulfillment", "identity", "payment", "review"]');
+    expect(page).toContain('activeStage === "address" && fulfillmentComplete && identityComplete && deliverySelected');
+    expect(page).toContain('activeStage === "payment" && identityComplete && fulfillmentComplete && addressComplete');
+    expect(page).toContain('activeStage === "review" && paymentComplete');
   });
 
   it("preserves checkout actions and uses one final confirmation action", () => {
@@ -54,19 +55,25 @@ describe("progressive checkout UI", () => {
     expect(service).toContain('StoreModuleStateService.isEnabled(cartResult.store.organization_id, cartResult.store.id, "growth")');
   });
 
-  it("collapses completed steps while allowing targeted error reopening", () => {
-    expect(page).toContain("open={forceOpen || !complete}");
-    expect(page).toContain('forceOpen={query.erro === "pix_email_required"}');
-    expect(page).toContain('complete ? <span className={styles.edit}>Editar</span> : null');
+  it("restores the active stage from persisted completion and targeted errors", () => {
+    expect(page).toContain("const firstIncomplete: CheckoutStageId");
+    expect(page).toContain("const errorStage:");
+    expect(page).toContain('pix_email_required: "identity"');
+    expect(page).toContain('neighborhood_not_served: "address"');
+    expect(page).toContain("const validErrorStage: CheckoutStageId | null");
+    expect(page).toContain("requestedStage && requestedAllowed");
   });
 
-  it("keeps the single primary completion action prominent", () => {
+  it("keeps one prominent final completion action with the authoritative total", () => {
     expect(page).toContain("Confirmar pedido ·");
-    expect(page).toContain("styles.stickySummary");
-    expect(styles).toContain("position:fixed");
+    expect(page).toContain("styles.footer");
+    expect(page).toContain("cart.total_cents");
+    expect(styles).toContain("grid-template-rows:auto auto minmax(0,1fr) auto");
   });
 
-  it("has responsive step and form layouts", () => {
+  it("uses a fullscreen responsive shell with safe overflow fallback", () => {
+    expect(styles).toContain("height:100dvh");
+    expect(styles).toContain("overflow-y:auto");
     expect(styles).toContain("@media(max-width:720px)");
     expect(styles).toContain("@media(max-width:480px)");
     expect(styles).toContain("grid-template-columns:1fr");
