@@ -7,6 +7,7 @@ const baseline = read("docs/PUBLIC_FLOW_V1_V3_BASELINE.md");
 const browserHomologation = read("scripts/browser-homologation.mjs");
 const menuPage = read("src/app/m/[slug]/page.tsx");
 const menuBrowser = read("src/features/menu/menu-browser.tsx");
+const productCard = read("src/features/menu/public-product-card.tsx");
 const menuCss = read("src/features/menu/menu-browser.module.css");
 const productPage = read("src/app/m/[slug]/produto/[id]/page.tsx");
 const productCss = read("src/app/m/[slug]/produto/[id]/public-product.module.css");
@@ -30,7 +31,8 @@ describe("PUBLIC FLOW V1+V3 final gate #993/#994", () => {
   it("keeps menu exploration, product configuration and cart entry linked by real routes", () => {
     expect(menuPage).toContain("MenuBrowser");
     expect(menuPage).toContain("PublicCartBar");
-    expect(menuBrowser).toContain("/produto/");
+    expect(menuBrowser).toContain("PublicProductCard");
+    expect(productCard).toContain("/produto/${product.id}");
     expect(productPage).toContain("addToCartAction");
     expect(productPage).toContain("ModifierGroupSelector");
     expect(productPage).toContain("ComplementCategorySection");
