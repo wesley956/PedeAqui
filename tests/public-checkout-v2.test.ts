@@ -13,9 +13,11 @@ const paymentFields = readFileSync("src/features/checkout/payment-method-fields.
 
 describe("refined public checkout", () => {
   it("starts with fulfillment, then identity, and removes delivery address from pickup", () => {
-    expect(page).toContain('<Step number="1" title="Como vai receber?"');
+    expect(page).toContain('<CheckoutStage number="1" title="Como vai receber?"');
     expect(page.indexOf('title="Seus dados"')).toBeLessThan(page.indexOf('title="Onde entregar?"'));
-    expect(page).toContain("fulfillmentComplete && identityComplete && deliverySelected");
+    expect(page).toContain('activeStage === "address" && fulfillmentComplete && identityComplete && deliverySelected');
+    expect(page).toContain('["fulfillment", "identity", "address", "payment", "review"]');
+    expect(page).toContain('["fulfillment", "identity", "payment", "review"]');
     expect(page).toContain('value="delivery"');
     expect(page).toContain('value="pickup"');
   });
@@ -30,6 +32,7 @@ describe("refined public checkout", () => {
   it("keeps email secondary but reopens identity when Pix requires it", () => {
     expect(page).toContain("styles.inlineOptional");
     expect(page).toContain('query.erro === "pix_email_required"');
+    expect(page).toContain('pix_email_required: "identity"');
     expect(service).toContain('values.method === "pix" && !session?.customer_email');
     expect(service).toContain("pix_email_required");
   });
