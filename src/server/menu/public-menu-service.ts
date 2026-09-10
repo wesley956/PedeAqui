@@ -5,6 +5,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import type { BusinessType } from "@/modules/module-catalog";
 import { isOpenAt } from "@/server/menu/schedule";
 import { publicMenuSchema, publicProductSchema, type PublicMenu, type PublicProduct } from "@/server/menu/schemas";
+import { PromotionService } from "@/server/promotions/promotion-service";
 
 export type PublicMenuState = PublicMenu & {
   businessType: BusinessType;
@@ -32,6 +33,7 @@ export type PublicProductState = PublicProduct & {
 };
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const PROMOTIONS_CATEGORY_ID = "00000000-0000-4000-8000-000000000999";
 
 function operationalState({
   status,
@@ -50,6 +52,55 @@ function operationalState({
   const canOrder = scheduleOpen && acceptingOrders;
   const label = (!acceptingOrders ? "paused" : scheduleOpen ? "open" : "closed") as "open" | "closed" | "paused";
   return { scheduleOpen, acceptingOrders, canOrder, label };
+}
+
+async function applyScheduledPromotions(menu: PublicMenu, now: Date): Promise<PublicMenu> {
+  const promotions = await PromotionService.activeForStore(menu.store.id, menu.store.timezone, now);
+  if (promotions.length === 0) return menu;
+  const byProduct = new Map(promotions.map((promotion) => [promotion.product_id, promotion]));
+  const promotedProducts: PublicMenu["categories"][number]["products"] = [];
+  const seen = new Set<string>();
+  const categories = menu.categories.map((category) => ({
+    ...category,
+    products: category.products.map((product) => {
+      const promotion = byProduct.get(product.id);
+      if (!promotion || promotion.promotional_price_cents > product.price_cents) return product;
+      const decorated = {
+        ...product,
+        promotional_price_cents: promotion.promotional_price_cents,
+        promotion_label: promotion.label,
+      };
+      if (product.availability === "available" && !seen.has(product.id)) {
+        seen.add(product.id);
+        promotedProducts.push(decorated);
+      }
+      return decorated;
+    }),
+  }));
+  if (promotedProducts.length === 0) return { ...menu, categories };
+  return {
+    ...menu,
+    categories: [{
+      id: PROMOTIONS_CATEGORY_ID,
+      name: "🔥 Promoções",
+      description: "Ofertas ativas agora",
+      image_url: null,
+      products: promotedProducts,
+    }, ...categories],
+  };
+}
+
+async function applyScheduledPromotionToProduct(productState: PublicProduct, now: Date): Promise<PublicProduct> {
+  const promotion = await PromotionService.activeForProduct(productState.store.id, productState.product.id, productState.store.timezone, now);
+  if (!promotion || promotion.promotional_price_cents > productState.product.price_cents) return productState;
+  return {
+    ...productState,
+    product: {
+      ...productState.product,
+      promotional_price_cents: promotion.promotional_price_cents,
+      promotion_label: promotion.label,
+    },
+  };
 }
 
 async function publicGasOption(organizationStoreId: string, productId: string): Promise<PublicGasProductOption | null> {
@@ -92,7 +143,8 @@ export class PublicMenuService {
     if (error) throw error;
     if (!data) return null;
 
-    const menu = publicMenuSchema.parse(data);
+    const parsed = publicMenuSchema.parse(data);
+    const menu = await applyScheduledPromotions(parsed, now);
     const businessType = menu.store.business_type;
     const operational = operationalState({
       status: menu.store.status,
@@ -114,7 +166,7 @@ export class PublicMenuService {
     });
     if (error) throw error;
     if (!data) return null;
-    const parsed = publicProductSchema.parse(data);
+    const parsed = await applyScheduledPromotionToProduct(publicProductSchema.parse(data), now);
     const businessType = parsed.store.business_type;
     const operational = operationalState({
       status: parsed.store.status,
