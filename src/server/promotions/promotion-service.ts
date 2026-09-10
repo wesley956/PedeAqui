@@ -61,7 +61,7 @@ function localParts(now: Date, timeZone: string) {
 
 function timeMinutes(value: string | null) {
   if (!value) return null;
-  const [hour, minute] = value.slice(0, 5).split(":").map(Number);
+  const [hour = 0, minute = 0] = value.slice(0, 5).split(":").map(Number);
   return hour * 60 + minute;
 }
 
@@ -78,8 +78,6 @@ export function isPromotionActive(promotion: ProductPromotion, timeZone: string,
 
   if (!promotion.weekdays.includes(applicableWeekday)) return false;
 
-  // Date boundaries are evaluated in the store timezone. For an overnight window,
-  // the after-midnight portion belongs to the previous scheduled day.
   let applicableDate = local.date;
   if (afterMidnight) {
     const localNoon = new Date(`${local.date}T12:00:00Z`);
