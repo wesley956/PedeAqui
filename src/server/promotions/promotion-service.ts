@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createPublicClient } from "@/lib/supabase/public";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
@@ -110,6 +111,22 @@ function normalizeInput(input: PromotionInput) {
   return { ...input, weekdays, label, active: input.active ?? true };
 }
 
+function isMissingPromotionRpc(error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  return error.code === "42883" || error.code === "42P01" || /get_public_product_promotions|product_promotions/i.test(error.message ?? "") && /does not exist|schema cache/i.test(error.message ?? "");
+}
+
+async function publicSchedules(storeId: string): Promise<ProductPromotion[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase.rpc("get_public_product_promotions", { p_store_id: storeId });
+  // Additive rollout compatibility: code may briefly reach an instance before the migration.
+  // In that case scheduled promotions are simply absent and legacy pricing keeps working.
+  if (error && isMissingPromotionRpc(error)) return [];
+  if (error) throw error;
+  if (!Array.isArray(data)) return [];
+  return data as ProductPromotion[];
+}
+
 export class PromotionService {
   static async list() {
     const context = await authorize(PERMISSIONS.PRODUCTS_VIEW);
@@ -187,22 +204,31 @@ export class PromotionService {
     await EventService.enqueue(context, { type: "promotion.deleted", entityType: "product_promotion", entityId: promotionId, payload: { product_id: before.product_id } });
   }
 
+  static async schedulesForStore(storeId: string) {
+    return publicSchedules(storeId);
+  }
+
+  static async scheduleForProduct(storeId: string, productId: string) {
+    const schedules = await publicSchedules(storeId);
+    return schedules.find((row) => row.product_id === productId) ?? null;
+  }
+
   static async activeForStore(storeId: string, timeZone: string, now = new Date()) {
-    const admin = createAdminClient();
-    const { data, error } = await admin.from("product_promotions")
-      .select("id,organization_id,store_id,product_id,promotional_price_cents,weekdays,starts_on,ends_on,starts_at,ends_at,label,active")
-      .eq("store_id", storeId).eq("active", true);
-    if (error) throw error;
-    return (data ?? []).filter((row) => isPromotionActive(row as ProductPromotion, timeZone, now)) as ProductPromotion[];
+    const schedules = await publicSchedules(storeId);
+    return schedules.filter((row) => isPromotionActive(row, timeZone, now));
   }
 
   static async activeForProduct(storeId: string, productId: string, timeZone: string, now = new Date()) {
-    const admin = createAdminClient();
-    const { data, error } = await admin.from("product_promotions")
-      .select("id,organization_id,store_id,product_id,promotional_price_cents,weekdays,starts_on,ends_on,starts_at,ends_at,label,active")
-      .eq("store_id", storeId).eq("product_id", productId).eq("active", true).maybeSingle();
-    if (error) throw error;
-    if (!data || !isPromotionActive(data as ProductPromotion, timeZone, now)) return null;
-    return data as ProductPromotion;
+    const promotion = await this.scheduleForProduct(storeId, productId);
+    if (!promotion || !isPromotionActive(promotion, timeZone, now)) return null;
+    return promotion;
+  }
+
+  static async effectiveForProduct(storeId: string, productId: string, timeZone: string, now = new Date()) {
+    const schedule = await this.scheduleForProduct(storeId, productId);
+    return {
+      hasSchedule: Boolean(schedule),
+      promotion: schedule && isPromotionActive(schedule, timeZone, now) ? schedule : null,
+    };
   }
 }
