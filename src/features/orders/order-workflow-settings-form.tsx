@@ -73,6 +73,7 @@ export function OrderWorkflowSettingsForm({ mode: initialMode, custom }: Props) 
   const [mode, setMode] = useState<OrderWorkflowMode>(initialMode);
   const [delivery, setDelivery] = useState<WorkflowStage[]>([...custom.delivery]);
   const [pickup, setPickup] = useState<WorkflowStage[]>([...custom.pickup]);
+  const [quickFinish, setQuickFinish] = useState(custom.quickFinish);
 
   return <form action={saveOrderWorkflowSettingsAction} className={styles.form}>
     <fieldset className={styles.modeGrid}>
@@ -85,6 +86,14 @@ export function OrderWorkflowSettingsForm({ mode: initialMode, custom }: Props) 
 
     {mode === "custom" ? <div className={styles.customArea}>
       <div className={styles.notice}><strong>Personalização segura</strong><span>Ocultar um checkpoint muda o que aparece no quadro. As regras internas de pagamento, produção e entrega continuam sendo respeitadas.</span></div>
+      <label className={styles.modeCard} data-selected={quickFinish || undefined}>
+        <input type="checkbox" name="quickFinish" checked={quickFinish} onChange={(event) => setQuickFinish(event.target.checked)} />
+        <span className={styles.modeText}>
+          <strong>Finalização rápida em 1 clique</strong>
+          <small>Quando o fluxo visível tiver apenas Novo e Finalizado, o card ganha uma ação única que conclui as etapas internas necessárias sem abrir telas intermediárias.</small>
+          <em>{quickFinish ? "Ativa nesta unidade" : "Desativada nesta unidade"}</em>
+        </span>
+      </label>
       <WorkflowPicker title="Entrega" prefix="delivery" canonical={deliveryWorkflowStages} selected={delivery} onChange={setDelivery} />
       <WorkflowPicker title="Retirada" prefix="pickup" canonical={pickupWorkflowStages} selected={pickup} onChange={setPickup} />
     </div> : null}
