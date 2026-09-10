@@ -30,6 +30,7 @@ import {
 import styles from "./order-manager.module.css";
 
 const isOperationalOrder = (order: OrderManagerRow) => !["completed", "canceled", "rejected"].includes(order.order_status);
+const settledPaymentStatuses = new Set(["paid", "partially_refunded", "refunded"]);
 
 async function resolveOrderRow(raw: Record<string, unknown>) {
   return typeof raw.id === "string" ? resolveOrderManagerRealtimeAction(raw.id) : null;
@@ -61,7 +62,24 @@ function visibleStage(order: OrderManagerRow, config: CustomWorkflowConfig) {
   return foldStageToVisible(pickupRaw as (typeof pickupWorkflowStages)[number], config.pickup, pickupWorkflowStages);
 }
 
-function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean, paymentPolicy: PaymentCompletionPolicy | null) {
+function isQuickFinishFlow(order: OrderManagerRow, config: CustomWorkflowConfig, manualDeliveryMode: boolean) {
+  if (!config.quickFinish || order.external) return false;
+  if (order.fulfillment_type === "delivery" && !manualDeliveryMode) return false;
+  const stages = order.fulfillment_type === "delivery" ? config.delivery : config.pickup;
+  return stages.length === 2 && stages[0] === "new" && stages[1] === "finished";
+}
+
+function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean, paymentPolicy: PaymentCompletionPolicy | null, config: CustomWorkflowConfig) {
+  if (isQuickFinishFlow(order, config, manualDeliveryMode)) {
+    const paymentSettled = settledPaymentStatuses.has(order.payment_status);
+    return <OrderActionForm
+      orderId={order.id}
+      intent="quick_finish"
+      label={paymentSettled ? "Finalizar pedido" : "Receber e finalizar"}
+      paymentReceived={!paymentSettled}
+      compact
+    />;
+  }
   if (order.order_status === "pending_confirmation") return <OrderActionForm orderId={order.id} intent="accept" label="Aceitar" compact />;
   if (order.order_status !== "confirmed") return null;
   if (["pending_confirmation", "queued"].includes(order.production_status)) return <OrderActionForm orderId={order.id} intent="start_production" label="Iniciar preparo" compact />;
@@ -90,8 +108,8 @@ function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean, payment
   return null;
 }
 
-function Card({ order, now, manualDeliveryMode, paymentPolicy, timeZone }: { order: OrderManagerRow; now: number; manualDeliveryMode: boolean; paymentPolicy: PaymentCompletionPolicy | null; timeZone: string }) {
-  const action = nextAction(order, manualDeliveryMode, paymentPolicy);
+function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone }: { order: OrderManagerRow; now: number; config: CustomWorkflowConfig; manualDeliveryMode: boolean; paymentPolicy: PaymentCompletionPolicy | null; timeZone: string }) {
+  const action = nextAction(order, manualDeliveryMode, paymentPolicy, config);
   const modality = order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : "Atendimento";
   const external = order.external;
   const channelBadge = orderChannelBadgeLabel(order.channel, external);
@@ -149,7 +167,7 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, p
         const stageOrders = orders.filter((order) => visibleStage(order, config) === stage);
         return <section key={stage} className={styles.lane} data-bucket={stage} aria-label={`${title}: ${workflowStageLabels[stage]}`}>
           <header className={styles.laneHeader}><strong>{workflowStageLabels[stage]}</strong><span className={styles.laneCount}>{stageOrders.length}</span></header>
-          <div className={styles.laneBody}>{stageOrders.map((order) => <Card key={order.id} order={order} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />)}{stageOrders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
+          <div className={styles.laneBody}>{stageOrders.map((order) => <Card key={order.id} order={order} now={now} config={config} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />)}{stageOrders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
         </section>;
       })}
     </div>

@@ -9,6 +9,7 @@ export type OrderManagerRow = {
   fulfillment_type: string;
   order_status: OrderStatus;
   payment_status: PaymentStatus;
+  payment_method_snapshot?: string | null;
   production_status: ProductionStatus;
   fulfillment_status: FulfillmentStatus;
   customer_name_snapshot: string;

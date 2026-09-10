@@ -45,6 +45,7 @@ function orderedUnique<T extends string>(canonical: readonly T[]) {
 export const customWorkflowConfigSchema = z.object({
   delivery: z.array(deliveryStageSchema).min(2).max(deliveryWorkflowStages.length).superRefine(orderedUnique(deliveryWorkflowStages)),
   pickup: z.array(pickupStageSchema).min(2).max(pickupWorkflowStages.length).superRefine(orderedUnique(pickupWorkflowStages)),
+  quickFinish: z.boolean().default(false),
 });
 
 export type CustomWorkflowConfig = z.infer<typeof customWorkflowConfigSchema>;
@@ -52,6 +53,7 @@ export type CustomWorkflowConfig = z.infer<typeof customWorkflowConfigSchema>;
 export const defaultCustomWorkflowConfig: CustomWorkflowConfig = {
   delivery: [...deliveryWorkflowStages],
   pickup: [...pickupWorkflowStages],
+  quickFinish: false,
 };
 
 export function parseCustomWorkflowConfig(value: unknown): CustomWorkflowConfig {

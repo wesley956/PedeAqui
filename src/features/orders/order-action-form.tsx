@@ -30,6 +30,7 @@ export type ManagerIntent =
   | "manual_finish_delivery"
   | "served"
   | "complete"
+  | "quick_finish"
   | "print"
   | "reprint";
 
@@ -42,7 +43,7 @@ type CancellationReasonState = {
   error: string | null;
 };
 
-export function OrderActionForm({ orderId, intent, label, tone = "primary", reasonLabel, reasonPlaceholder, printJobId, compact = false, confirmPayment = false, externalProvider = null }: {
+export function OrderActionForm({ orderId, intent, label, tone = "primary", reasonLabel, reasonPlaceholder, printJobId, compact = false, confirmPayment = false, paymentReceived = false, externalProvider = null }: {
   orderId: string;
   intent: ManagerIntent;
   label: string;
@@ -52,6 +53,7 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
   printJobId?: string;
   compact?: boolean;
   confirmPayment?: boolean;
+  paymentReceived?: boolean;
   externalProvider?: "ifood" | null;
 }) {
   const [state, action, pending] = useActionState(orderManagerAction, initialOrderManagerActionState);
@@ -105,7 +107,7 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
     <form action={action} onSubmit={confirmPayment ? (event) => { if (!window.confirm("Você recebeu o pagamento deste pedido? Ao confirmar, o PedeAqui dará a baixa financeira.")) event.preventDefault(); } : undefined} style={{ display: "grid", gap: 6 }}>
       <input type="hidden" name="orderId" value={orderId} />
       <input type="hidden" name="intent" value={intent} />
-      {confirmPayment ? <input type="hidden" name="paymentReceived" value="yes" /> : null}
+      {confirmPayment || paymentReceived ? <input type="hidden" name="paymentReceived" value="yes" /> : null}
       {printJobId ? <input type="hidden" name="printJobId" value={printJobId} /> : null}
       {reasonLabel ? <label style={{ display: "grid", gap: 4 }}>
         <span style={{ fontSize: 11, fontWeight: 800 }}>{needsIfoodCancellationReason ? "Motivo aceito pelo iFood" : reasonLabel}</span>
