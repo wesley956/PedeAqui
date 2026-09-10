@@ -5,6 +5,7 @@ import { createCartToken, hashCartToken } from "@/server/cart/cart-token";
 import { addCartItemSchema, type AddCartItemInput, type GasSaleMode } from "@/server/cart/schemas";
 import { PricingError, PricingService, type PricingProduct } from "@/server/pricing/pricing-service";
 import { isOpenAt } from "@/server/menu/schedule";
+import { PromotionService } from "@/server/promotions/promotion-service";
 
 const CART_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 type AdminClient = ReturnType<typeof createAdminClient>;
@@ -57,10 +58,14 @@ export class CartService {
     const { data: product, error } = await admin.from("products").select("id, name, image_url, price_cents, promotional_price_cents, active, availability, deleted_at").eq("id", productId).eq("organization_id", store.organization_id).eq("store_id", store.id).maybeSingle();
     if (error) throw error;
     if (!product || !product.active || product.deleted_at || product.availability !== "available") return null;
+    const scheduledPromotion = await PromotionService.activeForProduct(store.id, product.id, store.timezone);
+    const promotionalPriceCents = scheduledPromotion && scheduledPromotion.promotional_price_cents <= product.price_cents
+      ? scheduledPromotion.promotional_price_cents
+      : product.promotional_price_cents;
     const { data: links, error: linksError } = await admin.from("product_modifier_groups").select("modifier_group_id, sort_order").eq("organization_id", store.organization_id).eq("store_id", store.id).eq("product_id", product.id).order("sort_order");
     if (linksError) throw linksError;
     const groupIds = (links ?? []).map((row) => row.modifier_group_id);
-    if (groupIds.length === 0) return { id: product.id, name: product.name, imageUrl: product.image_url, priceCents: product.price_cents, promotionalPriceCents: product.promotional_price_cents, available: true, modifierGroups: [] };
+    if (groupIds.length === 0) return { id: product.id, name: product.name, imageUrl: product.image_url, priceCents: product.price_cents, promotionalPriceCents, available: true, modifierGroups: [] };
     const [{ data: groups, error: groupsError }, { data: modifiers, error: modifiersError }] = await Promise.all([
       admin.from("modifier_groups").select("id, name, min_selection, max_selection, required, selection_mode, distribution_total, active, deleted_at").eq("organization_id", store.organization_id).eq("store_id", store.id).in("id", groupIds),
       admin.from("modifiers").select("id, modifier_group_id, name, price_cents, active, deleted_at, sort_order").eq("organization_id", store.organization_id).eq("store_id", store.id).in("modifier_group_id", groupIds).order("sort_order"),
@@ -72,7 +77,7 @@ export class CartService {
       id: group.id, name: group.name, minSelection: group.min_selection, maxSelection: group.max_selection, required: group.required, selectionMode: group.selection_mode ?? "distinct_choices", distributionTotal: group.distribution_total ?? null,
       modifiers: (modifiers ?? []).filter((modifier) => modifier.modifier_group_id === group.id && modifier.active && !modifier.deleted_at).map((modifier) => ({ id: modifier.id, groupId: group.id, groupName: group.name, name: modifier.name, priceCents: modifier.price_cents })),
     }));
-    return { id: product.id, name: product.name, imageUrl: product.image_url, priceCents: product.price_cents, promotionalPriceCents: product.promotional_price_cents, available: true, modifierGroups: orderedGroups };
+    return { id: product.id, name: product.name, imageUrl: product.image_url, priceCents: product.price_cents, promotionalPriceCents, available: true, modifierGroups: orderedGroups };
   }
 
   static async addItem(input: AddCartItemInput, existingToken?: string | null) {

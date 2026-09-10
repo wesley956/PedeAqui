@@ -55,7 +55,7 @@ export const publicModifierGroupSchema = z.object({
 
 export const publicProductSummarySchema = z.object({
   id: z.string().uuid(), name: z.string(), description: z.string().nullable(), image_url: z.string().nullable(),
-  price_cents: z.number().int().nonnegative(), promotional_price_cents: z.number().int().nonnegative().nullable(),
+  price_cents: z.number().int().nonnegative(), promotional_price_cents: z.number().int().nonnegative().nullable(), promotion_label: z.string().nullable().default(null),
   preparation_time_minutes: z.number().int().nonnegative(), availability: z.enum(["available", "sold_out"]),
 });
 export const publicCategorySchema = z.object({ id: z.string().uuid(), name: z.string(), description: z.string().nullable(), image_url: z.string().nullable(), products: z.array(publicProductSummarySchema) });

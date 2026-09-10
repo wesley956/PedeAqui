@@ -52,6 +52,7 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 ## Gestão do cardápio
 
 - `/cardapio/sugestoes` — configuração de categorias complementares sugeridas durante a montagem do pedido. É merchandising da unidade, permanece isolada por organização/loja, não ativa módulos e não altera contrato comercial. Para restaurantes, uma única categoria ativa chamada `Bebidas` pode ser sugerida como bootstrap seguro; depois a configuração é persistida e administrada por ID.
+- `/cardapio/promocoes` — gestão de promoções programadas por produto, com preço promocional, dias da semana, datas, horários e texto curto opcional. O preço normal permanece preservado, a oferta é calculada no timezone da loja, o produto continua na categoria original e a seção virtual de promoções só aparece quando existir oferta ativa e vendável.
 
 ## Operação de pedidos
 

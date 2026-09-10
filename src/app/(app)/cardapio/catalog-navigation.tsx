@@ -9,6 +9,7 @@ const links = [
   { label: "Categorias", href: "/cardapio/categorias", hint: "Organização do cardápio", icon: "▦" },
   { label: "Adicionais", href: "/cardapio/adicionais", hint: "Opções e complementos", icon: "+" },
   { label: "Sugestões", href: "/cardapio/sugestoes", hint: "Itens para acompanhar", icon: "✨" },
+  { label: "Promoções", href: "/cardapio/promocoes", hint: "Ofertas por dia e horário", icon: "🏷️" },
 ] as const;
 
 export function CatalogNavigation() {
