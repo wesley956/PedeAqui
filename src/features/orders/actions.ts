@@ -13,6 +13,7 @@ import { CUSTOMER_RECOGNITION_MAX_AGE_SECONDS, customerRecognitionCookieName } f
 import { IfoodOrderLifecycleService } from "@/server/integrations/providers/ifood/ifood-order-lifecycle-service";
 import { orderCookieName } from "@/server/orders/order-token";
 import { routeOrderManagerLifecycle } from "@/server/orders/order-manager-lifecycle-router";
+import { OrderQuickFinishService } from "@/server/orders/order-quick-finish-service";
 import { OrderService } from "@/server/orders/order-service";
 import { logger } from "@/server/observability/logger";
 import { scheduleOrderPixCharge } from "@/server/payments/order-pix-dispatch";
@@ -163,7 +164,7 @@ export async function getExternalCancellationReasonsAction(orderId: string): Pro
 const managerIntentSchema = z.enum([
   "accept", "reject", "cancel", "accept_and_start", "start_production", "mark_ready", "mark_paid", "mark_paid_and_complete",
   "await_pickup", "customer_picked_up", "await_courier", "manual_out_for_delivery", "manual_finish_delivery",
-  "served", "complete", "print", "reprint",
+  "served", "complete", "quick_finish", "print", "reprint",
 ]);
 
 export type OrderManagerActionState = { ok: boolean; message: string | null; error: string | null };
@@ -225,6 +226,11 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
       }
       case "served": await OrderService.setFulfillment(orderId, "served"); break;
       case "complete": await OrderService.reconcileCompletion(orderId); break;
+      case "quick_finish": {
+        const result = await OrderQuickFinishService.finish(orderId, formData.get("paymentReceived") === "yes");
+        message = result.message;
+        break;
+      }
       case "print": {
         const result = await PrintService.requestConfirmedOrderPrint(orderId);
         if (result.kind === "no_route") throw new Error("No active print routes");
@@ -253,7 +259,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
       await_courier: "Pedido enviado para a central de entregas.",
       manual_out_for_delivery: "Pedido marcado como saiu para entrega.", manual_finish_delivery: "Entrega confirmada.",
       served: "Atendimento de balcão concluído.",
-      complete: "Pedido reconciliado e concluído.", print: "Pedido enviado para impressão.", reprint: "Reimpressão solicitada.",
+      complete: "Pedido reconciliado e concluído.", quick_finish: "Pedido finalizado.", print: "Pedido enviado para impressão.", reprint: "Reimpressão solicitada.",
     };
     return { ok: true, message: message ?? labels[parsed.data], error: null };
   } catch (error) {
