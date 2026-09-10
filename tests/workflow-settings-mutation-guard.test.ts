@@ -9,6 +9,7 @@ import {
 const custom: CustomWorkflowConfig = {
   delivery: ["new", "preparing", "ready", "delivering", "finished"],
   pickup: ["new", "preparing", "ready", "awaiting_pickup", "finished"],
+  quickFinish: false,
 };
 
 describe("workflow settings structural mutation guard", () => {
@@ -21,7 +22,7 @@ describe("workflow settings structural mutation guard", () => {
       .toThrow('Workflow structural configuration cannot be mutated from source "provider_event".');
   });
 
-  it("detects mode and lane changes but ignores identical workflow snapshots", () => {
+  it("detects mode, lane and quick-finish changes but ignores identical workflow snapshots", () => {
     const before: WorkflowStructureSnapshot = { mode: "standard", custom };
 
     expect(hasWorkflowStructureChanged(before, before)).toBe(false);
@@ -31,7 +32,12 @@ describe("workflow settings structural mutation guard", () => {
       custom: {
         delivery: ["new", "preparing", "ready", "finished"],
         pickup: [...custom.pickup],
+        quickFinish: false,
       },
+    })).toBe(true);
+    expect(hasWorkflowStructureChanged(before, {
+      mode: "standard",
+      custom: { ...custom, quickFinish: true },
     })).toBe(true);
   });
 });
