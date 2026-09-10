@@ -13,6 +13,7 @@ export async function saveOrderWorkflowSettingsAction(formData: FormData) {
   const custom = customWorkflowConfigSchema.parse({
     delivery: selectedStagesFromForm(formData, "delivery"),
     pickup: selectedStagesFromForm(formData, "pickup"),
+    quickFinish: formData.get("quickFinish") === "on",
   });
 
   await OrderWorkflowSettingsService.save(
