@@ -15,7 +15,7 @@ export function PublicProductCard({ product, storeSlug, showImage, canOrder }: {
       <div className={styles.productText}>
         <div className={styles.productTitleRow}>
           <strong className={styles.productTitle}>{product.name}</strong>
-          {soldOut ? <span className={styles.soldOut}>ESGOTADO</span> : hasPromotion ? <span className={styles.promo}>PROMOÇÃO</span> : null}
+          {soldOut ? <span className={styles.soldOut}>ESGOTADO</span> : hasPromotion ? <span className={styles.promo}>OFERTA</span> : null}
         </div>
         {product.promotion_label && hasPromotion ? <small className={styles.promo}>{product.promotion_label}</small> : null}
         {product.description ? <p className={styles.description}>{product.description}</p> : null}
