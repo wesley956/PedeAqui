@@ -63,10 +63,10 @@ export default async function PromotionsPage() {
             <div><strong>{product?.name ?? "Produto removido"}</strong><div className="muted">{product ? `${money(product.price_cents)} → ${money(promotion.promotional_price_cents)}` : money(promotion.promotional_price_cents)}</div></div>
             <span>{promotion.active ? "Ativa" : "Desativada"}</span>
           </div>
-          <div className="muted">{promotion.weekdays.map((day) => days.find(([value]) => value === day)?.[1]).filter(Boolean).join(", ")} · {promotion.starts_on ?? "sem data inicial"} até {promotion.ends_on ?? "sem data final"} · {time(promotion.starts_at) || "dia inteiro"}{promotion.ends_at ? `–${time(promotion.ends_at)}` : ""}{promotion.label ? ` · “${promotion.label}”` : ""}</div>
+          <div className="muted">{promotion.weekdays.map((day: number) => days.find(([value]) => value === day)?.[1]).filter(Boolean).join(", ")} · {promotion.starts_on ?? "sem data inicial"} até {promotion.ends_on ?? "sem data final"} · {time(promotion.starts_at) || "dia inteiro"}{promotion.ends_at ? `–${time(promotion.ends_at)}` : ""}{promotion.label ? ` · “${promotion.label}”` : ""}</div>
           <ResilientMutationForm action={removePromotionAction} successReset={false}>
             <input type="hidden" name="promotionId" value={promotion.id} />
-            <Button type="submit" variant="secondary">Remover programação</Button>
+            <Button type="submit">Remover programação</Button>
           </ResilientMutationForm>
         </article>;
       })}
