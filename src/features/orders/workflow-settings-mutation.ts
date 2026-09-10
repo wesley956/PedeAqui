@@ -20,6 +20,7 @@ export function hasWorkflowStructureChanged(
   after: WorkflowStructureSnapshot,
 ) {
   if (before.mode !== after.mode) return true;
+  if (before.custom.quickFinish !== after.custom.quickFinish) return true;
   if (before.custom.delivery.length !== after.custom.delivery.length) return true;
   if (before.custom.pickup.length !== after.custom.pickup.length) return true;
 
