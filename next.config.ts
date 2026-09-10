@@ -56,6 +56,20 @@ const nextConfig: NextConfig = {
     : {}),
   ...(!isGitHubPages
     ? {
+        async redirects() {
+          return [
+            {
+              source: "/m/loja-santa-rita-1",
+              destination: "/m/dona-maria-salgados-e-porcoes",
+              permanent: true,
+            },
+            {
+              source: "/m/loja-santa-rita-1/:path*",
+              destination: "/m/dona-maria-salgados-e-porcoes/:path*",
+              permanent: true,
+            },
+          ];
+        },
         async headers() {
           return [{ source: "/(.*)", headers: [...securityHeaders] }];
         },
