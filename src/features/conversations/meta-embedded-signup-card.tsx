@@ -219,6 +219,10 @@ export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Stat
           mode,
         });
         controller.abort();
+        if (!result.ok) {
+          setMessage(result.message);
+          return;
+        }
         setMessage(result.displayPhoneNumber ? `WhatsApp ${result.displayPhoneNumber} conectado com sucesso.` : "WhatsApp conectado com sucesso.");
         window.location.reload();
       } catch (error) {
