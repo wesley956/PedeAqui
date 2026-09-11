@@ -185,8 +185,8 @@ export class PromotionService {
     for (const item of values.items) {
       const product = productMap.get(item.productId);
       if (!product) throw new Error("Produto não encontrado na loja ativa.");
-      if (item.promotionalPriceCents > Number(product.price_cents)) {
-        throw new Error(`O preço promocional de ${product.name} não pode ser maior que o preço normal.`);
+      if (item.promotionalPriceCents >= Number(product.price_cents)) {
+        throw new Error(`O preço promocional de ${product.name} precisa ser menor que o preço normal.`);
       }
     }
 
