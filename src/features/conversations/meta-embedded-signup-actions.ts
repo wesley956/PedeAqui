@@ -33,7 +33,7 @@ export async function completeWhatsAppEmbeddedSignupAction(input: {
     const result = await MetaEmbeddedSignupService.complete(input);
     revalidatePath("/configuracoes/conversas");
     revalidatePath("/conversas");
-    return { ok: true as const, ...result };
+    return result;
   } catch {
     revalidatePath("/configuracoes/conversas");
     return {
