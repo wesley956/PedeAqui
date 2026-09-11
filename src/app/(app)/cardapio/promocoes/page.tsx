@@ -130,6 +130,7 @@ export default async function PromotionsPage() {
     </article> : <div className={styles.managementList}>
       {campaigns.map(([groupId, rows]) => {
         const first = rows[0];
+        if (!first) return null;
         const selectedDays = first.weekdays.map((day: number) => days.find(([value]) => value === day)?.[1]).filter(Boolean).join(", ");
         const startDate = dateLabel(first.starts_on);
         const endDate = dateLabel(first.ends_on);
