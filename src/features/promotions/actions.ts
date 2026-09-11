@@ -8,22 +8,27 @@ function optionalString(value: FormDataEntryValue | null) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-function promotionPaths(productId?: string) {
+function promotionPaths(productIds: string[] = []) {
   revalidatePath("/cardapio/promocoes");
   revalidatePath("/cardapio/produtos");
   revalidatePath("/m/[slug]", "page");
   revalidatePath("/m/[slug]/produto/[id]", "page");
-  if (productId) revalidatePath(`/cardapio/produtos/${productId}`);
+  for (const productId of productIds) revalidatePath(`/cardapio/produtos/${productId}`);
   revalidatePath("/", "layout");
 }
 
 export async function savePromotionAction(formData: FormData) {
   try {
-    const productId = String(formData.get("productId") ?? "");
+    const productIds = formData.getAll("productId").map(String).filter(Boolean);
     const weekdays = formData.getAll("weekday").map(Number);
-    await PromotionService.save({
+    const items = productIds.map((productId) => ({
       productId,
-      promotionalPriceCents: parseMoneyToCents(formData.get("promotionalPrice")),
+      promotionalPriceCents: parseMoneyToCents(formData.get(`price_${productId}`)),
+    }));
+
+    await PromotionService.saveCampaign({
+      campaignName: optionalString(formData.get("campaignName")),
+      items,
       weekdays,
       startsOn: optionalString(formData.get("startsOn")),
       endsOn: optionalString(formData.get("endsOn")),
@@ -32,8 +37,8 @@ export async function savePromotionAction(formData: FormData) {
       label: optionalString(formData.get("label")),
       active: formData.get("active") === "on",
     });
-    promotionPaths(productId);
-    return { ok: true, message: "Promoção salva e programada com sucesso." };
+    promotionPaths(productIds);
+    return { ok: true, message: "Promoção criada com sucesso para os produtos selecionados." };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "Não foi possível salvar a promoção." };
   }
@@ -41,9 +46,9 @@ export async function savePromotionAction(formData: FormData) {
 
 export async function removePromotionAction(formData: FormData) {
   try {
-    await PromotionService.remove(String(formData.get("promotionId") ?? ""));
+    await PromotionService.removeCampaign(String(formData.get("promotionGroupId") ?? ""));
     promotionPaths();
-    return { ok: true, message: "Promoção removida. O preço normal continua preservado." };
+    return { ok: true, message: "Promoção removida. Os preços normais continuam preservados." };
   } catch {
     return { ok: false, message: "Não foi possível remover a promoção." };
   }
