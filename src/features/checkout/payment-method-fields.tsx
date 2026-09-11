@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import { CashChangeFields } from "@/features/checkout/cash-change-fields";
+import type { PaymentMethod } from "@/server/checkout/schemas";
 
 type Method = {
-  method: "cash" | "pix" | "credit_card" | "debit_card";
+  value: string;
+  method: PaymentMethod;
   label: string;
   help: string;
 };
 
 type Props = {
   methods: Method[];
-  defaultMethod?: Method["method"] | null;
+  defaultValue?: string | null;
   defaultChangeFor?: string;
   choicesClassName?: string;
   choiceClassName?: string;
@@ -31,7 +33,7 @@ function classes(...values: Array<string | undefined | false>) {
 
 export function PaymentMethodFields({
   methods,
-  defaultMethod = null,
+  defaultValue = null,
   defaultChangeFor = "",
   choicesClassName,
   choiceClassName,
@@ -44,20 +46,21 @@ export function PaymentMethodFields({
   cashChoiceClassName,
   cashSelectedClassName,
 }: Props) {
-  const [method, setMethod] = useState<Method["method"] | null>(defaultMethod);
+  const [selection, setSelection] = useState<string | null>(defaultValue);
+  const selected = methods.find((item) => item.value === selection) ?? null;
 
   return (
     <>
       <div className={choicesClassName}>
         {methods.map((item) => (
-          <label key={item.method} className={classes(choiceClassName, method === item.method && selectedClassName)}>
+          <label key={item.value} className={classes(choiceClassName, selection === item.value && selectedClassName)}>
             <span className={paymentChoiceClassName}>
               <input
                 type="radio"
                 name="paymentMethod"
-                value={item.method}
-                checked={method === item.method}
-                onChange={() => setMethod(item.method)}
+                value={item.value}
+                checked={selection === item.value}
+                onChange={() => setSelection(item.value)}
                 required
               />
               <strong>{item.label}</strong>
@@ -67,7 +70,7 @@ export function PaymentMethodFields({
         ))}
       </div>
 
-      {method === "cash" ? (
+      {selected?.method === "cash" ? (
         <CashChangeFields
           defaultChangeFor={defaultChangeFor}
           inputClassName={inputClassName}
