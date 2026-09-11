@@ -15,6 +15,29 @@ export async function savePaymentMethodsAction(formData: FormData) {
   refreshPaymentSettings();
 }
 
+export async function addCustomPaymentMethodAction(formData: FormData) {
+  await StorePaymentMethodService.createCustom(String(formData.get("name") ?? ""));
+  refreshPaymentSettings();
+}
+
+export async function renameCustomPaymentMethodAction(formData: FormData) {
+  const id = z.string().uuid().parse(String(formData.get("id") ?? ""));
+  await StorePaymentMethodService.renameCustom(id, String(formData.get("name") ?? ""));
+  refreshPaymentSettings();
+}
+
+export async function toggleCustomPaymentMethodAction(formData: FormData) {
+  const id = z.string().uuid().parse(String(formData.get("id") ?? ""));
+  await StorePaymentMethodService.setCustomEnabled(id, formData.get("enabled") === "on");
+  refreshPaymentSettings();
+}
+
+export async function archiveCustomPaymentMethodAction(formData: FormData) {
+  const id = z.string().uuid().parse(String(formData.get("id") ?? ""));
+  await StorePaymentMethodService.archiveCustom(id);
+  refreshPaymentSettings();
+}
+
 const onlinePixConfigSchema = z.object({
   environment: z.enum(["test", "production"]),
   accessToken: z.string().trim().max(500).optional(),
