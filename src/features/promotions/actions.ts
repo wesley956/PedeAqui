@@ -20,25 +20,24 @@ function promotionPaths(productIds: string[] = []) {
 export async function savePromotionAction(formData: FormData) {
   try {
     const productIds = formData.getAll("productId").map(String).filter(Boolean);
-    const weekdays = formData.getAll("weekday").map(Number);
     const items = productIds.map((productId) => ({
       productId,
       promotionalPriceCents: parseMoneyToCents(formData.get(`price_${productId}`)),
+      weekdays: formData.getAll(`weekday_${productId}`).map(Number),
+      startsOn: optionalString(formData.get(`startsOn_${productId}`)),
+      endsOn: optionalString(formData.get(`endsOn_${productId}`)),
+      startsAt: optionalString(formData.get(`startsAt_${productId}`)),
+      endsAt: optionalString(formData.get(`endsAt_${productId}`)),
     }));
 
     await PromotionService.saveCampaign({
       campaignName: optionalString(formData.get("campaignName")),
       items,
-      weekdays,
-      startsOn: optionalString(formData.get("startsOn")),
-      endsOn: optionalString(formData.get("endsOn")),
-      startsAt: optionalString(formData.get("startsAt")),
-      endsAt: optionalString(formData.get("endsAt")),
       label: optionalString(formData.get("label")),
       active: formData.get("active") === "on",
     });
     promotionPaths(productIds);
-    return { ok: true, message: "Promoção criada com sucesso para os produtos selecionados." };
+    return { ok: true, message: "Promoção criada com programação individual para cada produto." };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "Não foi possível salvar a promoção." };
   }
