@@ -102,19 +102,43 @@ async function resolveAuthorizedPhoneNumber(wabaId: string, suppliedPhoneNumberI
   throw new MetaGraphError(409, "phone_selection_ambiguous");
 }
 
-async function assignPedeAquiSystemUser(wabaId: string) {
+async function canInspectPhone(phoneNumberId: string, token: string) {
+  try {
+    await new WhatsAppCloudProvider(token).inspectPhoneNumber(phoneNumberId);
+    return true;
+  } catch (error) {
+    if (error instanceof WhatsAppProviderError) return false;
+    throw error;
+  }
+}
+
+async function ensurePedeAquiSystemUserAccess(wabaId: string, phoneNumberId: string, onboardingToken: string) {
   const systemUserId = requiredEnv("META_SYSTEM_USER_ID");
-  const providerBusinessId = requiredEnv("META_BUSINESS_ID");
   const adminToken = requiredEnv("META_SYSTEM_USER_ACCESS_TOKEN");
-  const assigned = await graphRequest<{ data?: Array<{ id?: string }> }>(`${encodeURIComponent(wabaId)}/assigned_users?business=${encodeURIComponent(providerBusinessId)}`, adminToken);
-  if (!assigned.data?.some((user) => user.id === systemUserId)) {
-    const query = new URLSearchParams({ user: systemUserId, tasks: JSON.stringify(["MANAGE"]) });
-    await graphRequest<Record<string, unknown>>(`${encodeURIComponent(wabaId)}/assigned_users?${query.toString()}`, adminToken, { method: "POST" });
+
+  // Tech Provider Embedded Signup can provision/share the WABA with the provider
+  // as part of the official flow. In that case the long-lived system token already
+  // has access and there is nothing to assign manually.
+  if (await canInspectPhone(phoneNumberId, adminToken)) return adminToken;
+
+  // If the asset was authorized by the customer but is not yet visible to the
+  // provider system user, perform the assignment with the short-lived onboarding
+  // token that is authoritative for this customer's WABA. Using the provider token
+  // here causes Meta error 100 for customer-owned WABAs because that token does not
+  // own the asset yet.
+  const query = new URLSearchParams({ user: systemUserId, tasks: JSON.stringify(["MANAGE"]) });
+  await graphRequest<Record<string, unknown>>(`${encodeURIComponent(wabaId)}/assigned_users?${query.toString()}`, onboardingToken, { method: "POST" });
+
+  // Never persist/use the onboarding token for normal operations. The platform's
+  // long-lived system user token must see the phone after assignment so every
+  // restaurant remains isolated while using the same PedeAqui Meta app.
+  if (!await canInspectPhone(phoneNumberId, adminToken)) {
+    throw new MetaGraphError(403, "system_user_access_missing");
   }
   return adminToken;
 }
-async function subscribePedeAquiApp(wabaId: string, systemToken: string) {
-  await graphRequest<Record<string, unknown>>(`${encodeURIComponent(wabaId)}/subscribed_apps`, systemToken, { method: "POST", body: JSON.stringify({}) });
+async function subscribePedeAquiApp(wabaId: string, token: string) {
+  await graphRequest<Record<string, unknown>>(`${encodeURIComponent(wabaId)}/subscribed_apps`, token, { method: "POST", body: JSON.stringify({}) });
 }
 async function registerPhone(phoneNumberId: string, pin: string, systemToken: string) {
   await graphRequest<Record<string, unknown>>(`${encodeURIComponent(phoneNumberId)}/register`, systemToken, {
@@ -287,9 +311,9 @@ export class MetaEmbeddedSignupService {
       if (duplicateError) throw duplicateError;
       if (existingPhone) throw new Error("Este número já está conectado a outra unidade do PedeAqui.");
 
-      const systemToken = await assignPedeAquiSystemUser(values.wabaId);
+      const systemToken = await ensurePedeAquiSystemUserAccess(values.wabaId, phoneNumberId, onboardingToken);
       await updateSession(values.sessionId, { status: "subscribing_webhooks" });
-      await subscribePedeAquiApp(values.wabaId, systemToken);
+      await subscribePedeAquiApp(values.wabaId, onboardingToken);
 
       if (mode === "cloud_api") {
         await updateSession(values.sessionId, { status: "registering_phone" });
