@@ -29,10 +29,18 @@ export async function completeWhatsAppEmbeddedSignupAction(input: {
   businessId?: string | null;
   mode: WhatsAppConnectionMode;
 }) {
-  const result = await MetaEmbeddedSignupService.complete(input);
-  revalidatePath("/configuracoes/conversas");
-  revalidatePath("/conversas");
-  return result;
+  try {
+    const result = await MetaEmbeddedSignupService.complete(input);
+    revalidatePath("/configuracoes/conversas");
+    revalidatePath("/conversas");
+    return { ok: true as const, ...result };
+  } catch {
+    revalidatePath("/configuracoes/conversas");
+    return {
+      ok: false as const,
+      message: "A Meta autorizou seu WhatsApp, mas o PedeAqui não conseguiu finalizar a configuração. Tente novamente em alguns instantes. Se continuar, fale com o suporte.",
+    };
+  }
 }
 
 export async function disconnectWhatsAppAction() {
