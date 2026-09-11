@@ -28,16 +28,16 @@ export type ProductPromotion = {
 export type PromotionCampaignItemInput = {
   productId: string;
   promotionalPriceCents: number;
-};
-
-export type PromotionCampaignInput = {
-  campaignName?: string | null;
-  items: PromotionCampaignItemInput[];
   weekdays: number[];
   startsOn?: string | null;
   endsOn?: string | null;
   startsAt?: string | null;
   endsAt?: string | null;
+};
+
+export type PromotionCampaignInput = {
+  campaignName?: string | null;
+  items: PromotionCampaignItemInput[];
   label?: string | null;
   active?: boolean;
 };
@@ -103,24 +103,33 @@ export function isPromotionActive(promotion: ProductPromotion, timeZone: string,
   return local.minutes >= start! || local.minutes < end!;
 }
 
-function normalizeInput(input: PromotionCampaignInput) {
-  const weekdays = [...new Set(input.weekdays)].sort((a, b) => a - b);
-  if (weekdays.length === 0 || weekdays.some((day) => !Number.isInteger(day) || day < 0 || day > 6)) {
-    throw new Error("Selecione pelo menos um dia válido para a promoção.");
+function normalizeWeekdays(weekdays: number[], productId: string) {
+  const normalized = [...new Set(weekdays)].sort((a, b) => a - b);
+  if (normalized.length === 0 || normalized.some((day) => !Number.isInteger(day) || day < 0 || day > 6)) {
+    throw new Error(`Selecione pelo menos um dia válido para o produto ${productId}.`);
   }
-  const items = input.items.filter((item) => item.productId);
+  return normalized;
+}
+
+function normalizeInput(input: PromotionCampaignInput) {
+  const items = input.items.filter((item) => item.productId).map((item) => ({
+    ...item,
+    weekdays: normalizeWeekdays(item.weekdays, item.productId),
+  }));
   if (items.length === 0) throw new Error("Selecione pelo menos um produto para a promoção.");
   if (items.some((item) => !Number.isInteger(item.promotionalPriceCents) || item.promotionalPriceCents < 0)) {
     throw new Error("Informe um preço promocional válido para cada produto selecionado.");
   }
-  if (input.startsOn && input.endsOn && input.endsOn < input.startsOn) {
-    throw new Error("A data final não pode ser anterior à data inicial.");
+  for (const item of items) {
+    if (item.startsOn && item.endsOn && item.endsOn < item.startsOn) {
+      throw new Error("A data final não pode ser anterior à data inicial.");
+    }
   }
   const campaignName = input.campaignName?.trim() || null;
   if (campaignName && campaignName.length > 80) throw new Error("O nome da promoção deve ter no máximo 80 caracteres.");
   const label = input.label?.trim() || null;
   if (label && label.length > 48) throw new Error("O texto da promoção deve ter no máximo 48 caracteres.");
-  return { ...input, items, weekdays, campaignName, label, active: input.active ?? true };
+  return { ...input, items, campaignName, label, active: input.active ?? true };
 }
 
 function isMissingPromotionRpc(error: { code?: string; message?: string } | null) {
@@ -190,11 +199,11 @@ export class PromotionService {
       store_id: context.storeId,
       product_id: item.productId,
       promotional_price_cents: item.promotionalPriceCents,
-      weekdays: values.weekdays,
-      starts_on: values.startsOn || null,
-      ends_on: values.endsOn || null,
-      starts_at: values.startsAt || null,
-      ends_at: values.endsAt || null,
+      weekdays: item.weekdays,
+      starts_on: item.startsOn || null,
+      ends_on: item.endsOn || null,
+      starts_at: item.startsAt || null,
+      ends_at: item.endsAt || null,
       label: values.label,
       active: values.active,
       created_by: context.userId,

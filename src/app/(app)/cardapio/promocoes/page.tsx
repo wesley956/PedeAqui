@@ -22,6 +22,10 @@ function dateLabel(value: string | null) {
   return `${day}/${month}/${year}`;
 }
 
+function weekdayLabel(values: number[]) {
+  return values.map((day) => days.find(([value]) => value === day)?.[1]).filter(Boolean).join(", ");
+}
+
 export default async function PromotionsPage() {
   const [products, promotions] = await Promise.all([ProductService.list(), PromotionService.list()]);
   const productMap = new Map(products.map((product) => [product.id, product]));
@@ -39,7 +43,7 @@ export default async function PromotionsPage() {
     <header className={styles.header}>
       <div className={styles.headerCopy}>
         <h1>Promoções</h1>
-        <p className="muted">Crie quantas promoções quiser, para um ou vários produtos. Uma promoção não substitui outra.</p>
+        <p className="muted">Crie campanhas com vários produtos e defina dias, horários e períodos diferentes para cada item.</p>
       </div>
     </header>
 
@@ -53,63 +57,65 @@ export default async function PromotionsPage() {
       <div className={styles.promotionFormHeader}>
         <div>
           <h2>Nova promoção</h2>
-          <p className="muted">Dê um nome à campanha, selecione os produtos e informe o preço promocional de cada um.</p>
+          <p className="muted">Selecione os produtos e programe cada um do jeito que quiser dentro da mesma campanha.</p>
         </div>
-        <span className={styles.metaChip}>Sem limite</span>
+        <span className={styles.metaChip}>Programação por produto</span>
       </div>
 
       <label>Nome da promoção
-        <input name="campaignName" maxLength={80} placeholder="Ex.: Quinta da Coxinha, Sábado Especial" />
+        <input name="campaignName" maxLength={80} placeholder="Ex.: Promoção da semana" />
       </label>
 
       <div className={styles.promotionSectionHeader}>
         <div>
           <h3>Produtos da promoção</h3>
-          <p className="muted">Marque um ou vários produtos. Cada produto pode participar de outras promoções também.</p>
+          <p className="muted">Marque os produtos desejados. Cada produto pode ter preço, dias e horários próprios.</p>
         </div>
       </div>
 
       <div className={styles.managementList}>
-        {eligibleProducts.map((product) => <label key={product.id} className={`card ${styles.managementCard}`} style={{ cursor: "pointer" }}>
+        {eligibleProducts.map((product) => <article key={product.id} className={`card ${styles.managementCard}`}>
           <div className={styles.managementTop}>
             <div className={styles.productMain}>
               <div className={styles.productTitleRow}>
-                <input type="checkbox" name="productId" value={product.id} />
-                <span className={styles.productName}>{product.name}</span>
+                <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <input type="checkbox" name="productId" value={product.id} />
+                  <span className={styles.productName}>{product.name}</span>
+                </label>
               </div>
               <span className="muted">Preço normal: {money(product.price_cents)}</span>
             </div>
-            <div style={{ minWidth: 180 }}>
-              <span className="muted">Preço promocional</span>
+            <label style={{ minWidth: 180 }}>Preço promocional
               <input name={`price_${product.id}`} inputMode="decimal" placeholder="Ex.: 6,50" aria-label={`Preço promocional de ${product.name}`} />
-            </div>
+            </label>
           </div>
-        </label>)}
+
+          <fieldset className={styles.promotionDays}>
+            <legend>Dias desse produto</legend>
+            <div className={styles.dayChips}>
+              {days.map(([value, label]) => <label key={value} className={styles.dayChip}>
+                <input type="checkbox" name={`weekday_${product.id}`} value={value} />
+                <span>{label}</span>
+              </label>)}
+            </div>
+          </fieldset>
+
+          <details className={styles.promotionAdvanced}>
+            <summary>Horário e período desse produto</summary>
+            <p className="muted">Opcional. Sem data final, ele continua recorrente nos dias marcados.</p>
+            <div className={styles.formGrid}>
+              <label>Começa em<input type="date" name={`startsOn_${product.id}`} /></label>
+              <label>Termina em<input type="date" name={`endsOn_${product.id}`} /></label>
+              <label>Horário inicial<input type="time" name={`startsAt_${product.id}`} /></label>
+              <label>Horário final<input type="time" name={`endsAt_${product.id}`} /></label>
+            </div>
+          </details>
+        </article>)}
       </div>
 
-      <fieldset className={styles.promotionDays}>
-        <legend>Dias da semana</legend>
-        <div className={styles.dayChips}>
-          {days.map(([value, label]) => <label key={value} className={styles.dayChip}>
-            <input type="checkbox" name="weekday" value={value} />
-            <span>{label}</span>
-          </label>)}
-        </div>
-      </fieldset>
-
-      <details className={styles.promotionAdvanced}>
-        <summary>Datas, horários e texto da oferta</summary>
-        <p className="muted">Opcional. Sem data final, a promoção fica recorrente nos dias selecionados.</p>
-        <div className={styles.formGrid}>
-          <label>Começa em<input type="date" name="startsOn" /></label>
-          <label>Termina em<input type="date" name="endsOn" /></label>
-          <label>Horário inicial<input type="time" name="startsAt" /></label>
-          <label>Horário final<input type="time" name="endsAt" /></label>
-        </div>
-        <label>Texto curto
-          <input name="label" maxLength={48} placeholder="Ex.: Só hoje, Até 20h, Oferta especial" />
-        </label>
-      </details>
+      <label>Texto curto da campanha
+        <input name="label" maxLength={48} placeholder="Ex.: Oferta especial" />
+      </label>
 
       <div className={styles.promotionFormActions}>
         <label className={styles.promotionActiveToggle}><input type="checkbox" name="active" defaultChecked /> Ativar promoção ao salvar</label>
@@ -120,7 +126,7 @@ export default async function PromotionsPage() {
     <div className={styles.promotionSectionHeader}>
       <div>
         <h2>Promoções cadastradas</h2>
-        <p className="muted">Cada promoção é independente. Criar outra não altera as que já existem.</p>
+        <p className="muted">Dentro de cada campanha, cada produto mostra sua própria programação.</p>
       </div>
     </div>
 
@@ -131,10 +137,6 @@ export default async function PromotionsPage() {
       {campaigns.map(([groupId, rows]) => {
         const first = rows[0];
         if (!first) return null;
-        const selectedDays = first.weekdays.map((day: number) => days.find(([value]) => value === day)?.[1]).filter(Boolean).join(", ");
-        const startDate = dateLabel(first.starts_on);
-        const endDate = dateLabel(first.ends_on);
-        const schedule = `${time(first.starts_at) || "Dia inteiro"}${first.ends_at ? ` – ${time(first.ends_at)}` : ""}`;
         const active = rows.some((row) => row.active);
         return <article className={`card ${styles.managementCard} ${styles.promotionCard}`} key={groupId}>
           <div className={styles.managementTop}>
@@ -145,9 +147,6 @@ export default async function PromotionsPage() {
               </div>
               <div className={styles.productMeta}>
                 <span className={styles.metaChip}>{rows.length} {rows.length === 1 ? "produto" : "produtos"}</span>
-                <span className={styles.metaChip}>{selectedDays || "Sem dias"}</span>
-                <span className={styles.metaChip}>{schedule}</span>
-                {(startDate || endDate) ? <span className={styles.metaChip}>{startDate ?? "Sem início"} → {endDate ?? "Sem fim"}</span> : null}
                 {first.label ? <span className={styles.metaChip}>{first.label}</span> : null}
               </div>
             </div>
@@ -156,8 +155,18 @@ export default async function PromotionsPage() {
           <div className={styles.managementList}>
             {rows.map((promotion) => {
               const product = productMap.get(promotion.product_id);
+              const startDate = dateLabel(promotion.starts_on);
+              const endDate = dateLabel(promotion.ends_on);
+              const schedule = `${time(promotion.starts_at) || "Dia inteiro"}${promotion.ends_at ? ` – ${time(promotion.ends_at)}` : ""}`;
               return <div key={promotion.id} className={styles.managementTop}>
-                <span>{product?.name ?? "Produto removido"}</span>
+                <div className={styles.productMain}>
+                  <strong>{product?.name ?? "Produto removido"}</strong>
+                  <div className={styles.productMeta}>
+                    <span className={styles.metaChip}>{weekdayLabel(promotion.weekdays) || "Sem dias"}</span>
+                    <span className={styles.metaChip}>{schedule}</span>
+                    {(startDate || endDate) ? <span className={styles.metaChip}>{startDate ?? "Sem início"} → {endDate ?? "Sem fim"}</span> : null}
+                  </div>
+                </div>
                 <div className={styles.promotionPriceBlock}>
                   {product ? <span className={styles.promotionOldPrice}>{money(product.price_cents)}</span> : null}
                   <strong>{money(promotion.promotional_price_cents)}</strong>
@@ -167,7 +176,7 @@ export default async function PromotionsPage() {
           </div>
 
           <div className={styles.managementActions}>
-            <span className="muted">Se houver duas promoções válidas para o mesmo produto, o menor preço é aplicado automaticamente.</span>
+            <span className="muted">Cada produto segue sua própria programação. Em sobreposição, vale o menor preço ativo.</span>
             <ResilientMutationForm action={removePromotionAction} successReset={false}>
               <input type="hidden" name="promotionGroupId" value={groupId} />
               <Button type="submit" tone="secondary">Remover promoção</Button>
