@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createPublicClient } from "@/lib/supabase/public";
 import { authorize } from "@/server/access/authorize";
@@ -9,6 +10,8 @@ import { EventService } from "@/server/events/event-service";
 
 export type ProductPromotion = {
   id: string;
+  promotion_group_id: string;
+  campaign_name: string | null;
   organization_id: string;
   store_id: string;
   product_id: string;
@@ -22,9 +25,14 @@ export type ProductPromotion = {
   active: boolean;
 };
 
-export type PromotionInput = {
+export type PromotionCampaignItemInput = {
   productId: string;
   promotionalPriceCents: number;
+};
+
+export type PromotionCampaignInput = {
+  campaignName?: string | null;
+  items: PromotionCampaignItemInput[];
   weekdays: number[];
   startsOn?: string | null;
   endsOn?: string | null;
@@ -95,20 +103,24 @@ export function isPromotionActive(promotion: ProductPromotion, timeZone: string,
   return local.minutes >= start! || local.minutes < end!;
 }
 
-function normalizeInput(input: PromotionInput) {
+function normalizeInput(input: PromotionCampaignInput) {
   const weekdays = [...new Set(input.weekdays)].sort((a, b) => a - b);
   if (weekdays.length === 0 || weekdays.some((day) => !Number.isInteger(day) || day < 0 || day > 6)) {
     throw new Error("Selecione pelo menos um dia válido para a promoção.");
   }
-  if (!Number.isInteger(input.promotionalPriceCents) || input.promotionalPriceCents < 0) {
-    throw new Error("Informe um preço promocional válido.");
+  const items = input.items.filter((item) => item.productId);
+  if (items.length === 0) throw new Error("Selecione pelo menos um produto para a promoção.");
+  if (items.some((item) => !Number.isInteger(item.promotionalPriceCents) || item.promotionalPriceCents < 0)) {
+    throw new Error("Informe um preço promocional válido para cada produto selecionado.");
   }
   if (input.startsOn && input.endsOn && input.endsOn < input.startsOn) {
     throw new Error("A data final não pode ser anterior à data inicial.");
   }
+  const campaignName = input.campaignName?.trim() || null;
+  if (campaignName && campaignName.length > 80) throw new Error("O nome da promoção deve ter no máximo 80 caracteres.");
   const label = input.label?.trim() || null;
   if (label && label.length > 48) throw new Error("O texto da promoção deve ter no máximo 48 caracteres.");
-  return { ...input, weekdays, label, active: input.active ?? true };
+  return { ...input, items, weekdays, campaignName, label, active: input.active ?? true };
 }
 
 function isMissingPromotionRpc(error: { code?: string; message?: string } | null) {
@@ -119,12 +131,16 @@ function isMissingPromotionRpc(error: { code?: string; message?: string } | null
 async function publicSchedules(storeId: string): Promise<ProductPromotion[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase.rpc("get_public_product_promotions", { p_store_id: storeId });
-  // Additive rollout compatibility: code may briefly reach an instance before the migration.
-  // In that case scheduled promotions are simply absent and legacy pricing keeps working.
   if (error && isMissingPromotionRpc(error)) return [];
   if (error) throw error;
   if (!Array.isArray(data)) return [];
   return data as ProductPromotion[];
+}
+
+function cheapestActive(schedules: ProductPromotion[], timeZone: string, now: Date) {
+  return schedules
+    .filter((row) => isPromotionActive(row, timeZone, now))
+    .sort((a, b) => a.promotional_price_cents - b.promotional_price_cents)[0] ?? null;
 }
 
 export class PromotionService {
@@ -133,7 +149,7 @@ export class PromotionService {
     if (!context.storeId) throw new Error("An active store is required for promotions");
     const admin = createAdminClient();
     const { data, error } = await admin.from("product_promotions")
-      .select("id,organization_id,store_id,product_id,promotional_price_cents,weekdays,starts_on,ends_on,starts_at,ends_at,label,active,created_at,updated_at")
+      .select("id,promotion_group_id,campaign_name,organization_id,store_id,product_id,promotional_price_cents,weekdays,starts_on,ends_on,starts_at,ends_at,label,active,created_at,updated_at")
       .eq("organization_id", context.organizationId)
       .eq("store_id", context.storeId)
       .order("updated_at", { ascending: false });
@@ -141,29 +157,39 @@ export class PromotionService {
     return data ?? [];
   }
 
-  static async save(input: PromotionInput) {
+  static async saveCampaign(input: PromotionCampaignInput) {
     const values = normalizeInput(input);
     const context = await authorize(PERMISSIONS.PRODUCTS_EDIT);
     if (!context.storeId) throw new Error("An active store is required for promotions");
     const admin = createAdminClient();
-    const { data: product, error: productError } = await admin.from("products")
+    const productIds = [...new Set(values.items.map((item) => item.productId))];
+    const { data: products, error: productError } = await admin.from("products")
       .select("id,name,price_cents,active,availability,deleted_at")
-      .eq("id", values.productId)
+      .in("id", productIds)
       .eq("organization_id", context.organizationId)
       .eq("store_id", context.storeId)
-      .is("deleted_at", null)
-      .maybeSingle();
+      .is("deleted_at", null);
     if (productError) throw productError;
-    if (!product) throw new Error("Produto não encontrado na loja ativa.");
-    if (values.promotionalPriceCents > Number(product.price_cents)) {
-      throw new Error("O preço promocional não pode ser maior que o preço normal.");
+    if (!products || products.length !== productIds.length) throw new Error("Um ou mais produtos não foram encontrados na loja ativa.");
+
+    const productMap = new Map(products.map((product) => [product.id, product]));
+    for (const item of values.items) {
+      const product = productMap.get(item.productId);
+      if (!product) throw new Error("Produto não encontrado na loja ativa.");
+      if (item.promotionalPriceCents > Number(product.price_cents)) {
+        throw new Error(`O preço promocional de ${product.name} não pode ser maior que o preço normal.`);
+      }
     }
 
-    const row = {
+    const groupId = randomUUID();
+    const now = new Date().toISOString();
+    const rows = values.items.map((item) => ({
+      promotion_group_id: groupId,
+      campaign_name: values.campaignName,
       organization_id: context.organizationId,
       store_id: context.storeId,
-      product_id: values.productId,
-      promotional_price_cents: values.promotionalPriceCents,
+      product_id: item.productId,
+      promotional_price_cents: item.promotionalPriceCents,
       weekdays: values.weekdays,
       starts_on: values.startsOn || null,
       ends_on: values.endsOn || null,
@@ -171,46 +197,55 @@ export class PromotionService {
       ends_at: values.endsAt || null,
       label: values.label,
       active: values.active,
+      created_by: context.userId,
       updated_by: context.userId,
-      updated_at: new Date().toISOString(),
-    };
-    const { data: before } = await admin.from("product_promotions")
-      .select("*")
-      .eq("organization_id", context.organizationId)
-      .eq("store_id", context.storeId)
-      .eq("product_id", values.productId)
-      .maybeSingle();
+      created_at: now,
+      updated_at: now,
+    }));
+
     const { data, error } = await admin.from("product_promotions")
-      .upsert({ ...row, created_by: before?.created_by ?? context.userId }, { onConflict: "organization_id,store_id,product_id" })
-      .select("id,organization_id,store_id,product_id,promotional_price_cents,weekdays,starts_on,ends_on,starts_at,ends_at,label,active")
-      .single();
+      .insert(rows)
+      .select("id,promotion_group_id,campaign_name,organization_id,store_id,product_id,promotional_price_cents,weekdays,starts_on,ends_on,starts_at,ends_at,label,active");
     if (error) throw error;
-    await AuditService.record(context, { action: before ? "promotion.updated" : "promotion.created", entityType: "product_promotion", entityId: data.id, before, after: data });
-    await EventService.enqueue(context, { type: before ? "promotion.updated" : "promotion.created", entityType: "product_promotion", entityId: data.id, payload: { product_id: product.id, product_name: product.name } });
-    return data;
+
+    await AuditService.record(context, { action: "promotion.campaign_created", entityType: "promotion_campaign", entityId: groupId, before: null, after: data });
+    await EventService.enqueue(context, { type: "promotion.campaign_created", entityType: "promotion_campaign", entityId: groupId, payload: { product_ids: productIds, campaign_name: values.campaignName } });
+    return data ?? [];
   }
 
-  static async remove(promotionId: string) {
+  static async removeCampaign(groupId: string) {
     const context = await authorize(PERMISSIONS.PRODUCTS_EDIT);
     if (!context.storeId) throw new Error("An active store is required for promotions");
     const admin = createAdminClient();
     const { data: before, error: beforeError } = await admin.from("product_promotions")
-      .select("*").eq("id", promotionId).eq("organization_id", context.organizationId).eq("store_id", context.storeId).maybeSingle();
+      .select("*")
+      .eq("promotion_group_id", groupId)
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", context.storeId);
     if (beforeError) throw beforeError;
-    if (!before) return;
-    const { error } = await admin.from("product_promotions").delete().eq("id", promotionId).eq("organization_id", context.organizationId).eq("store_id", context.storeId);
+    if (!before || before.length === 0) return;
+    const { error } = await admin.from("product_promotions")
+      .delete()
+      .eq("promotion_group_id", groupId)
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", context.storeId);
     if (error) throw error;
-    await AuditService.record(context, { action: "promotion.deleted", entityType: "product_promotion", entityId: promotionId, before, after: null });
-    await EventService.enqueue(context, { type: "promotion.deleted", entityType: "product_promotion", entityId: promotionId, payload: { product_id: before.product_id } });
+    await AuditService.record(context, { action: "promotion.campaign_deleted", entityType: "promotion_campaign", entityId: groupId, before, after: null });
+    await EventService.enqueue(context, { type: "promotion.campaign_deleted", entityType: "promotion_campaign", entityId: groupId, payload: { product_ids: before.map((row) => row.product_id) } });
   }
 
   static async schedulesForStore(storeId: string) {
     return publicSchedules(storeId);
   }
 
-  static async scheduleForProduct(storeId: string, productId: string) {
+  static async schedulesForProduct(storeId: string, productId: string) {
     const schedules = await publicSchedules(storeId);
-    return schedules.find((row) => row.product_id === productId) ?? null;
+    return schedules.filter((row) => row.product_id === productId);
+  }
+
+  static async scheduleForProduct(storeId: string, productId: string) {
+    const schedules = await this.schedulesForProduct(storeId, productId);
+    return schedules[0] ?? null;
   }
 
   static async activeForStore(storeId: string, timeZone: string, now = new Date()) {
@@ -219,16 +254,15 @@ export class PromotionService {
   }
 
   static async activeForProduct(storeId: string, productId: string, timeZone: string, now = new Date()) {
-    const promotion = await this.scheduleForProduct(storeId, productId);
-    if (!promotion || !isPromotionActive(promotion, timeZone, now)) return null;
-    return promotion;
+    const schedules = await this.schedulesForProduct(storeId, productId);
+    return cheapestActive(schedules, timeZone, now);
   }
 
   static async effectiveForProduct(storeId: string, productId: string, timeZone: string, now = new Date()) {
-    const schedule = await this.scheduleForProduct(storeId, productId);
+    const schedules = await this.schedulesForProduct(storeId, productId);
     return {
-      hasSchedule: Boolean(schedule),
-      promotion: schedule && isPromotionActive(schedule, timeZone, now) ? schedule : null,
+      hasSchedule: schedules.length > 0,
+      promotion: cheapestActive(schedules, timeZone, now),
     };
   }
 }

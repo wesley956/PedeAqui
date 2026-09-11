@@ -57,24 +57,32 @@ function operationalState({
 async function applyScheduledPromotions(menu: PublicMenu, now: Date): Promise<PublicMenu> {
   const schedules = await PromotionService.schedulesForStore(menu.store.id);
   if (schedules.length === 0) return menu;
-  const byProduct = new Map(schedules.map((promotion) => [promotion.product_id, promotion]));
+
+  const byProduct = new Map<string, typeof schedules>();
+  for (const promotion of schedules) {
+    byProduct.set(promotion.product_id, [...(byProduct.get(promotion.product_id) ?? []), promotion]);
+  }
+
   const promotedProducts: PublicMenu["categories"][number]["products"] = [];
   const seen = new Set<string>();
   const categories = menu.categories.map((category) => ({
     ...category,
     products: category.products.map((product) => {
-      const schedule = byProduct.get(product.id);
-      if (!schedule) return product;
-      const active = isPromotionActive(schedule, menu.store.timezone, now) && schedule.promotional_price_cents <= product.price_cents;
-      if (!active) {
-        // Once a product opts into scheduling, the schedule owns its promotional state.
-        // Outside the window the regular price is restored instead of falling back to a legacy static promo.
+      const productSchedules = byProduct.get(product.id) ?? [];
+      if (productSchedules.length === 0) return product;
+
+      const activeSchedule = productSchedules
+        .filter((schedule) => isPromotionActive(schedule, menu.store.timezone, now) && schedule.promotional_price_cents <= product.price_cents)
+        .sort((a, b) => a.promotional_price_cents - b.promotional_price_cents)[0] ?? null;
+
+      if (!activeSchedule) {
         return { ...product, promotional_price_cents: null, promotion_label: null };
       }
+
       const decorated = {
         ...product,
-        promotional_price_cents: schedule.promotional_price_cents,
-        promotion_label: schedule.label,
+        promotional_price_cents: activeSchedule.promotional_price_cents,
+        promotion_label: activeSchedule.label ?? activeSchedule.campaign_name,
       };
       if (product.availability === "available" && !seen.has(product.id)) {
         seen.add(product.id);
@@ -83,6 +91,7 @@ async function applyScheduledPromotions(menu: PublicMenu, now: Date): Promise<Pu
       return decorated;
     }),
   }));
+
   if (promotedProducts.length === 0) return { ...menu, categories };
   return {
     ...menu,
@@ -97,15 +106,16 @@ async function applyScheduledPromotions(menu: PublicMenu, now: Date): Promise<Pu
 }
 
 async function applyScheduledPromotionToProduct(productState: PublicProduct, now: Date): Promise<PublicProduct> {
-  const schedule = await PromotionService.scheduleForProduct(productState.store.id, productState.product.id);
-  if (!schedule) return productState;
-  const active = isPromotionActive(schedule, productState.store.timezone, now) && schedule.promotional_price_cents <= productState.product.price_cents;
+  const effective = await PromotionService.effectiveForProduct(productState.store.id, productState.product.id, productState.store.timezone, now);
+  if (!effective.hasSchedule) return productState;
+  const promotion = effective.promotion;
+  const active = promotion && promotion.promotional_price_cents <= productState.product.price_cents;
   return {
     ...productState,
     product: {
       ...productState.product,
-      promotional_price_cents: active ? schedule.promotional_price_cents : null,
-      promotion_label: active ? schedule.label : null,
+      promotional_price_cents: active ? promotion.promotional_price_cents : null,
+      promotion_label: active ? (promotion.label ?? promotion.campaign_name) : null,
     },
   };
 }
