@@ -72,7 +72,7 @@ async function applyScheduledPromotions(menu: PublicMenu, now: Date): Promise<Pu
       if (productSchedules.length === 0) return product;
 
       const activeSchedule = productSchedules
-        .filter((schedule) => isPromotionActive(schedule, menu.store.timezone, now) && schedule.promotional_price_cents <= product.price_cents)
+        .filter((schedule) => isPromotionActive(schedule, menu.store.timezone, now) && schedule.promotional_price_cents < product.price_cents)
         .sort((a, b) => a.promotional_price_cents - b.promotional_price_cents)[0] ?? null;
 
       if (!activeSchedule) {
@@ -109,7 +109,7 @@ async function applyScheduledPromotionToProduct(productState: PublicProduct, now
   const effective = await PromotionService.effectiveForProduct(productState.store.id, productState.product.id, productState.store.timezone, now);
   if (!effective.hasSchedule) return productState;
   const promotion = effective.promotion;
-  const active = promotion && promotion.promotional_price_cents <= productState.product.price_cents;
+  const active = promotion && promotion.promotional_price_cents < productState.product.price_cents;
   return {
     ...productState,
     product: {
