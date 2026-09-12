@@ -27,9 +27,10 @@ export function contextualOrderQuestion(text: string | null | undefined): WhatsA
     return { type: "list_flavors" };
   }
 
-  const availability = normalized.match(/\b(?:tem|tem de|tem sabor de|voc(?:e|es) tem|voces tem)\s+(.{2,60})$/i);
+  const availability = normalized.match(/\b(?:tem sabor de|tem de|voc(?:e|es) tem|voces tem|tem)\s+(.{2,60})$/i);
   if (!availability?.[1]) return null;
   const query = availability[1]
+    .replace(/^sabor de\s+/i, "")
     .replace(/\b(?:nesse|nessa|neste|nesta|na caixa|no pastel|nos salgados|de salgado|do salgado)\b/g, " ")
     .replace(/\s+/g, " ")
     .trim();
