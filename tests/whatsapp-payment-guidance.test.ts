@@ -18,9 +18,10 @@ describe("WhatsApp Pix payment guidance", () => {
     expect(asksAboutPixPayment("dinheiro")).toBe(false);
   });
 
-  it("explains that Dinheiro is the option used for Pix", () => {
+  it("explains that Dinheiro is the option used for Pix on delivery", () => {
     const message = pixPaymentGuidanceMessage();
     expect(message).toContain("1 — Dinheiro");
     expect(message).toContain("Pix");
+    expect(message.toLowerCase()).toContain("na entrega");
   });
 });
