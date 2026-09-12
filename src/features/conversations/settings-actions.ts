@@ -38,6 +38,14 @@ function restoreGreetingTokens(value: string) {
     .replaceAll("[link do cardápio]", "{link}");
 }
 
+function normalizeGreetingTemplate(value: string, menuMode: WhatsAppBotMenuMode) {
+  const restored = restoreGreetingTokens(value);
+  if (menuMode === "menu_first" && !restored.includes("{link}")) {
+    return `${restored}\n\nCardápio: {link}`;
+  }
+  return restored;
+}
+
 export async function saveConversationSettingsAction(formData: FormData) {
   const [current, structural] = await Promise.all([
     ConversationSettingsService.load(),
@@ -46,6 +54,7 @@ export async function saveConversationSettingsAction(formData: FormData) {
   const greeting = optional(formData, "greetingTemplate");
   const rawMenuMode = optional(formData, "botMenuMode");
   const botMenuMode: WhatsAppBotMenuMode = WHATSAPP_BOT_MENU_MODES.includes(rawMenuMode as WhatsAppBotMenuMode) ? rawMenuMode as WhatsAppBotMenuMode : "conversation_first";
+  const greetingTemplate = normalizeGreetingTemplate(greeting ?? DEFAULT_WHATSAPP_GREETING, botMenuMode);
   const preset = normalizeWhatsAppAutomationPreset(formData.get("orderNotificationPreset") ?? current?.order_notification_preset);
   const connectionConfigured = Boolean(current?.whatsapp_phone_number_id && current?.access_token_secret_ref && current?.app_secret_secret_ref);
   const currentPreferences = {
@@ -109,7 +118,7 @@ export async function saveConversationSettingsAction(formData: FormData) {
     aiEnabled: checked(formData, "aiEnabled"),
     whatsappOrdersEnabled: checked(formData, "whatsappOrdersEnabled"),
     greetingEnabled: connectionConfigured ? checked(formData, "greetingEnabled") : Boolean(current?.greeting_enabled),
-    greetingTemplate: greeting ? restoreGreetingTokens(greeting) : DEFAULT_WHATSAPP_GREETING,
+    greetingTemplate,
     greetingFallbackMessage: optional(formData, "greetingFallbackMessage") ?? DEFAULT_WHATSAPP_GREETING_FALLBACK,
     botMenuMode,
     botDisplayName: optional(formData, "botDisplayName"),
