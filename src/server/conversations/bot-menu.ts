@@ -1,6 +1,7 @@
 import { normalizeWhatsAppIdentifier } from "@/server/conversations/model";
 import { workflowStageLabels, type WorkflowStage } from "@/features/orders/workflow-config";
 import type { CustomerBenefits, CustomerCouponBenefit } from "@/server/growth/customer-benefits";
+import { normalizeInformalPortuguese } from "@/server/conversations/language-normalization";
 
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
 export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "benefit_handoff" | "hours" | "payment" | "delivery" | "order_start" | "benefits" | "cashback" | "points" | "coupons" | "promotions" | "unknown";
@@ -129,13 +130,10 @@ const promotionWords = new Set(["promocao", "promocoes", "qual promocao esta ati
 const benefitWords = new Set(["beneficio", "beneficios", "meus beneficios", "tenho desconto", "tem desconto para mim", "qual desconto eu tenho"]);
 
 export function normalizeBotInput(value: string | null | undefined) {
-  return (value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+  return normalizeInformalPortuguese(value)
     .replace(/[!?.,;:]+/g, " ")
     .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
+    .trim();
 }
 
 function containsAny(value: string, words: Set<string>) {
