@@ -85,9 +85,20 @@ function parseRemainderLabel(raw: string) {
   return match?.[1]?.trim() ?? null;
 }
 
+function compositionPayload(text: string) {
+  const normalized = normalizeInformalPortuguese(text);
+  const inlineMarkers = [...normalized.matchAll(/\bcom\s+(?=\d{1,3}\s+)/g)];
+  const lastInlineMarker = inlineMarkers[inlineMarkers.length - 1];
+  if (lastInlineMarker?.index !== undefined) {
+    return normalized.slice(lastInlineMarker.index + lastInlineMarker[0].length).trim();
+  }
+  return normalized;
+}
+
 export function parseOrderComposition(text: string | null | undefined, expectedTotal?: number | null): OrderComposition | null {
   if (!text) return null;
-  const pieces = text
+  const source = compositionPayload(text);
+  const pieces = source
     .split(/[\n,;]+|\s+e\s+(?=(?:\d|o\s+resto\b|resto\b|restante\b|que\s+falta\b))/i)
     .map((part) => part.trim())
     .filter(Boolean);
