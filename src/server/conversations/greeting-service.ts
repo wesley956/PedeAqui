@@ -3,15 +3,18 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   appendWhatsAppBotMenu,
+  buildCustomerBenefitsMessage,
   buildOrderLookupMessage,
   buildWhatsAppBotMenu,
   phonesBelongToSameCustomer,
+  isGrowthBenefitIntent,
   resolveWhatsAppBotIntent,
   TRACKING_CODE_PROMPT,
   TRACKING_NOT_FOUND_MESSAGE,
   trackingCodeFromInput,
   type WhatsAppBotStep,
 } from "@/server/conversations/bot-menu";
+import { loadCustomerBenefits } from "@/server/growth/customer-benefits";
 import { visibleWorkflowStage } from "@/server/conversations/order-workflow-visibility";
 import { buildPublicMenuUrl, renderGreetingTemplate } from "@/server/conversations/greeting";
 import type { WhatsAppBotMenuMode } from "@/server/conversations/greeting";
@@ -218,13 +221,13 @@ export class ConversationGreetingService {
         .eq("store_id", conversation.store_id)
         .maybeSingle(),
       admin.from("contacts")
-        .select("external_id, phone_normalized")
+        .select("external_id, phone_normalized, customer_id")
         .eq("organization_id", conversation.organization_id)
         .eq("store_id", conversation.store_id)
         .eq("id", conversation.contact_id)
         .maybeSingle(),
       admin.from("stores")
-        .select("name, slug, status")
+        .select("name, slug, status, timezone")
         .eq("organization_id", conversation.organization_id)
         .eq("id", conversation.store_id)
         .maybeSingle(),
@@ -362,16 +365,29 @@ export class ConversationGreetingService {
     const intent = resolveWhatsAppBotIntent(inbound?.content_type === "text" || inbound?.content_type === "interactive" ? inbound.body : "", activeStep);
     const responseKey = `auto:menu:${ingest.message_id}`;
 
-    if (intent === "handoff") {
+    if (intent === "handoff" || intent === "benefit_handoff") {
       await sendBotText(botContext, settings.handoff_message, responseKey);
       await admin.rpc("conversation_transition_internal", {
         p_conversation_id: conversation.id,
         p_target_state: "waiting_agent",
         p_assigned_user_id: null,
-        p_reason: "Cliente solicitou atendimento humano pelo menu do WhatsApp",
+        p_reason: intent === "benefit_handoff" ? "Cliente contestou saldo ou benefício no WhatsApp" : "Cliente solicitou atendimento humano pelo menu do WhatsApp",
         p_actor_user_id: null,
         p_source: "bot",
       });
+      return;
+    }
+
+    if (isGrowthBenefitIntent(intent)) {
+      const benefits = await loadCustomerBenefits({
+        organizationId: conversation.organization_id,
+        storeId: conversation.store_id,
+        customerId: contact.customer_id,
+        contactId: conversation.contact_id,
+        timeZone: store.timezone || "America/Sao_Paulo",
+      });
+      await sendBotText(botContext, buildCustomerBenefitsMessage(intent, benefits, menuUrl), responseKey);
+      await updateBotSession(conversation.id, "menu", ingest.message_id);
       return;
     }
 

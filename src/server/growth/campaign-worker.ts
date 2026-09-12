@@ -11,6 +11,7 @@ type Job = {
   organization_id: string;
   store_id: string;
   campaign_id: string;
+  occurrence_id: string | null;
   customer_id: string;
   customer_name_snapshot: string;
   phone_snapshot: string | null;
@@ -47,14 +48,17 @@ async function deferIfSuppressed(job: Job, workerId: string, messageId?: string)
 async function processOne(job: Job, workerId: string) {
   const admin = createAdminClient();
   const moduleEnabledPromise = StoreModuleStateService.isEnabled(job.organization_id, job.store_id, "growth");
-  const [campaign, preference, customer, settings, channel] = await Promise.all([
+  const [campaign, occurrence, preference, customer, settings, channel] = await Promise.all([
     admin.from("campaigns").select("id,status,template_name,template_language,template_data,content,content_version").eq("id", job.campaign_id).eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
+    job.occurrence_id
+      ? admin.from("campaign_occurrences").select("id,status,content_snapshot,content_version,template_name_snapshot,template_language_snapshot,template_data_snapshot").eq("id", job.occurrence_id).eq("campaign_id", job.campaign_id).eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
     admin.from("customer_marketing_preferences").select("status").eq("organization_id", job.organization_id).eq("store_id", job.store_id).eq("customer_id", job.customer_id).eq("channel", "whatsapp").maybeSingle(),
     admin.from("customers").select("name,phone_normalized").eq("id", job.customer_id).eq("organization_id", job.organization_id).is("deleted_at", null).maybeSingle(),
     admin.from("store_operational_settings").select("growth_campaigns_enabled").eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
     admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
   ]);
-  for (const result of [campaign, preference, customer, settings, channel]) if (result.error) throw result.error;
+  for (const result of [campaign, occurrence, preference, customer, settings, channel]) if (result.error) throw result.error;
   if (!(await moduleEnabledPromise)) { await finish(job, workerId, { status: "failed_transient", errorCode: "growth_module_disabled", reason: "Crescimento está pausado para a unidade.", retryAfterSeconds: 3600 }); return "skipped" as const; }
   if (!campaign.data || !["running", "scheduled"].includes(campaign.data.status)) { await finish(job, workerId, { status: "failed_permanent", errorCode: "campaign_unavailable", reason: "Campanha encerrada ou indisponível." }); return "failed" as const; }
   if (!settings.data?.growth_campaigns_enabled) { await finish(job, workerId, { status: "failed_permanent", errorCode: "campaigns_disabled", reason: "Campanhas foram desativadas para a unidade." }); return "failed" as const; }
@@ -63,17 +67,31 @@ async function processOne(job: Job, workerId: string) {
   if (!channel.data?.whatsapp_enabled || channel.data.connection_status !== "connected" || !channel.data.whatsapp_phone_number_id || !channel.data.access_token_secret_ref) {
     await finish(job, workerId, { status: "failed_transient", errorCode: "channel_unavailable", reason: "Canal oficial indisponível; a fila tentará novamente.", retryAfterSeconds: Math.max(900, retrySeconds(job.attempts)) }); return "failed" as const;
   }
-  if (!campaign.data.template_name) { await finish(job, workerId, { status: "failed_permanent", errorCode: "template_missing", reason: "Template aprovado não configurado." }); return "failed" as const; }
+  if (job.occurrence_id && (!occurrence.data || occurrence.data.status === "canceled")) { await finish(job, workerId, { status: "failed_permanent", errorCode: "occurrence_unavailable", reason: "Ocorrência encerrada ou indisponível." }); return "failed" as const; }
   if (await deferIfSuppressed(job, workerId)) return "skipped" as const;
   const customerName = customer.data.name;
+  const delivery = occurrence.data ? {
+    content: occurrence.data.content_snapshot,
+    contentVersion: occurrence.data.content_version,
+    templateName: occurrence.data.template_name_snapshot,
+    templateLanguage: occurrence.data.template_language_snapshot,
+    templateData: occurrence.data.template_data_snapshot,
+  } : {
+    content: campaign.data.content,
+    contentVersion: campaign.data.content_version,
+    templateName: campaign.data.template_name,
+    templateLanguage: campaign.data.template_language,
+    templateData: campaign.data.template_data,
+  };
+  if (!delivery.templateName) { await finish(job, workerId, { status: "failed_permanent", errorCode: "template_missing", reason: "Template aprovado não configurado." }); return "failed" as const; }
 
   const { data: conversation, error: resolveError } = await admin.rpc("conversation_resolve_outbound_internal", {
     p_store_id: job.store_id, p_phone_normalized: customer.data.phone_normalized, p_contact_name: customer.data.name, p_customer_id: job.customer_id,
   });
   if (resolveError) throw resolveError;
   if (!conversation?.conversation_id || !conversation.external_id) throw new Error("Campaign conversation resolution failed");
-  const clientMessageId = `campaign:${job.campaign_id}:recipient:${job.id}:v${campaign.data.content_version}`;
-  const body = campaign.data.content || `Campanha ${campaign.data.template_name}`;
+  const clientMessageId = `campaign:${job.campaign_id}:recipient:${job.id}:v${delivery.contentVersion}`;
+  const body = delivery.content || `Campanha ${delivery.templateName}`;
   const { data: message, error: messageError } = await admin.rpc("conversation_create_outbound_internal", {
     p_conversation_id: conversation.conversation_id, p_body: body, p_client_message_id: clientMessageId, p_sender_type: "system", p_actor_user_id: null,
   });
@@ -102,13 +120,13 @@ async function processOne(job: Job, workerId: string) {
 
   try {
     const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(sendChannel.data.access_token_secret_ref));
-    const templateData = campaign.data.template_data as { body_parameters?: unknown } | null;
+    const templateData = delivery.templateData as { body_parameters?: unknown } | null;
     const approvedParameters = Array.isArray(templateData?.body_parameters) ? templateData.body_parameters : [];
     const bodyParameters = approvedParameters.map((parameter) => {
       if (parameter !== "customer_name") throw new Error("Parâmetro de template não aprovado.");
       return customerName.slice(0, 100);
     });
-    const sent = await provider.sendTemplate({ phoneNumberId: sendChannel.data.whatsapp_phone_number_id, recipient: conversation.external_id, templateName: campaign.data.template_name, languageCode: campaign.data.template_language || "pt_BR", bodyParameters });
+    const sent = await provider.sendTemplate({ phoneNumberId: sendChannel.data.whatsapp_phone_number_id, recipient: conversation.external_id, templateName: delivery.templateName, languageCode: delivery.templateLanguage || "pt_BR", bodyParameters });
     await admin.rpc("conversation_mark_outbound_result_internal", { p_message_id: message.id, p_external_message_id: sent.externalMessageId, p_status: "sent", p_error_code: null, p_error_message: null });
     await finish(job, workerId, { status: "sent", providerMessageId: sent.externalMessageId }); return "sent" as const;
   } catch (error) {

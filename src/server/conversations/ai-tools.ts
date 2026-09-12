@@ -2,11 +2,13 @@ import "server-only";
 
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { loadCustomerBenefits } from "@/server/growth/customer-benefits";
 
 export const AI_TOOL_NAMES = [
   "menu.search",
   "order.status",
   "customer.summary",
+  "customer.benefits",
   "handoff.request",
 ] as const;
 
@@ -94,23 +96,42 @@ async function customerSummary(context: ToolContext, rawInput: unknown) {
   emptySchema.parse(rawInput);
   if (!context.customerId) return { identified: false };
   const admin = createAdminClient();
-  const [{ data: customer, error }, { data: cashback, error: cashbackError }, { data: loyalty, error: loyaltyError }] = await Promise.all([
+  const [{ data: customer, error }, { data: balances, error: balancesError }] = await Promise.all([
     admin.from("customers").select("name, orders_count, last_order_at").eq("organization_id", context.organizationId).eq("id", context.customerId).is("deleted_at", null).maybeSingle(),
-    admin.from("cashback_accounts").select("balance_cents").eq("organization_id", context.organizationId).eq("store_id", context.storeId).eq("customer_id", context.customerId).maybeSingle(),
-    admin.from("loyalty_accounts").select("balance_points").eq("organization_id", context.organizationId).eq("store_id", context.storeId).eq("customer_id", context.customerId).maybeSingle(),
+    admin.rpc("growth_customer_available_balances_internal", { p_store_id: context.storeId, p_customer_id: context.customerId }),
   ]);
   if (error) throw error;
-  if (cashbackError) throw cashbackError;
-  if (loyaltyError) throw loyaltyError;
+  if (balancesError) throw balancesError;
   if (!customer) return { identified: false };
+  const available = (balances ?? {}) as { cashback_balance_cents?: unknown; loyalty_balance_points?: unknown };
   return {
     identified: true,
     name: customer.name,
     ordersCount: customer.orders_count,
     lastOrderAt: customer.last_order_at,
-    cashbackBalanceCents: Number(cashback?.balance_cents ?? 0),
-    loyaltyBalancePoints: Number(loyalty?.balance_points ?? 0),
+    cashbackBalanceCents: Number(available.cashback_balance_cents ?? 0),
+    loyaltyBalancePoints: Number(available.loyalty_balance_points ?? 0),
   };
+}
+
+async function customerBenefits(context: ToolContext, rawInput: unknown) {
+  const input = z.object({ subtotalCents: z.number().int().nonnegative().nullable().optional() }).parse(rawInput);
+  const admin = createAdminClient();
+  const { data: store, error } = await admin.from("stores")
+    .select("timezone")
+    .eq("organization_id", context.organizationId)
+    .eq("id", context.storeId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!store) throw new Error("Loja da conversa não encontrada.");
+  return loadCustomerBenefits({
+    organizationId: context.organizationId,
+    storeId: context.storeId,
+    customerId: context.customerId,
+    contactId: context.contactId,
+    timeZone: store.timezone || "America/Sao_Paulo",
+    subtotalCents: input.subtotalCents ?? null,
+  });
 }
 
 async function requestHandoff(context: ToolContext, rawInput: unknown) {
@@ -134,6 +155,7 @@ export async function executeConversationAiTool(conversationId: string, toolName
   if (toolName === "menu.search") return searchMenu(context, input);
   if (toolName === "order.status") return orderStatus(context, input);
   if (toolName === "customer.summary") return customerSummary(context, input);
+  if (toolName === "customer.benefits") return customerBenefits(context, input);
   if (toolName === "handoff.request") return requestHandoff(context, input);
   throw new Error("Ferramenta de IA não autorizada.");
 }

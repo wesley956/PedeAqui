@@ -402,18 +402,18 @@ export class GrowthService {
     const admin = createAdminClient();
     const { cart, store } = current;
     const customerId = cart.customer_id as string | null;
-    const [settings, cashback, loyalty] = await Promise.all([
+    const [settings, balances] = await Promise.all([
       admin.from("store_growth_settings").select("cashback_enabled, cashback_rate_bps, loyalty_enabled, loyalty_redeem_cents_per_point").eq("organization_id", store.organization_id).eq("store_id", store.id).maybeSingle(),
-      customerId ? admin.from("cashback_accounts").select("balance_cents").eq("organization_id", store.organization_id).eq("store_id", store.id).eq("customer_id", customerId).maybeSingle() : Promise.resolve({ data: null, error: null }),
-      customerId ? admin.from("loyalty_accounts").select("balance_points").eq("organization_id", store.organization_id).eq("store_id", store.id).eq("customer_id", customerId).maybeSingle() : Promise.resolve({ data: null, error: null }),
+      customerId ? admin.rpc("growth_customer_available_balances_internal", { p_store_id: store.id, p_customer_id: customerId }) : Promise.resolve({ data: null, error: null }),
     ]);
-    for (const result of [settings, cashback, loyalty]) if (result.error) throw result.error;
+    for (const result of [settings, balances]) if (result.error) throw result.error;
+    const available = (balances.data ?? {}) as { cashback_balance_cents?: unknown; loyalty_balance_points?: unknown };
     return {
       customerIdentified: Boolean(customerId),
       cashbackEnabled: Boolean(settings.data?.cashback_enabled),
       loyaltyEnabled: Boolean(settings.data?.loyalty_enabled),
-      cashbackBalanceCents: moneyNumber(cashback.data?.balance_cents),
-      loyaltyBalancePoints: moneyNumber(loyalty.data?.balance_points),
+      cashbackBalanceCents: moneyNumber(available.cashback_balance_cents),
+      loyaltyBalancePoints: moneyNumber(available.loyalty_balance_points),
       loyaltyRedeemCentsPerPoint: moneyNumber(settings.data?.loyalty_redeem_cents_per_point ?? 1),
       current: {
         couponCode: cart.coupon_code_snapshot as string | null,
