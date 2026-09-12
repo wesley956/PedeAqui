@@ -153,11 +153,11 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
 }
 
 function orderMenuLine(includeWhatsAppOrders: boolean) {
-  return includeWhatsAppOrders ? "\n7 — Fazer meu pedido por aqui" : "";
+  return includeWhatsAppOrders ? "\n7 — Fazer pedido pelo WhatsApp" : "";
 }
 
 function menuOptions(includeWhatsAppOrders: boolean) {
-  return `1 — Ver o cardápio\n2 — Acompanhar meu pedido\n3 — Falar com a equipe\n4 — Ver horários\n5 — Formas de pagamento\n6 — Entrega e taxa${orderMenuLine(includeWhatsAppOrders)}`;
+  return `1 — Ver cardápio\n2 — Acompanhar pedido\n3 — Falar com o restaurante\n4 — Horários\n5 — Formas de pagamento\n6 — Entrega e taxa${orderMenuLine(includeWhatsAppOrders)}`;
 }
 
 export function appendWhatsAppBotMenu(introduction: string, includeWhatsAppOrders = false) {
@@ -165,7 +165,7 @@ export function appendWhatsAppBotMenu(introduction: string, includeWhatsAppOrder
 }
 
 export function buildWhatsAppBotMenu(storeName: string, includeWhatsAppOrders = false) {
-  return `Oi! 😊 Estou por aqui para ajudar com a ${storeName.trim()}.\nVocê pode escrever normalmente o que precisa ou escolher uma opção:\n\n${menuOptions(includeWhatsAppOrders)}`;
+  return `Oi! 😊 Estou por aqui para ajudar com ${storeName.trim()}.\nVocê pode escrever normalmente o que precisa ou escolher uma opção:\n\n${menuOptions(includeWhatsAppOrders)}`;
 }
 
 export function phonesBelongToSameCustomer(left: string | null | undefined, right: string | null | undefined) {
@@ -178,11 +178,11 @@ export function phonesBelongToSameCustomer(left: string | null | undefined, righ
 }
 
 const orderStatusLabels: Record<string, string> = {
-  pending_confirmation: "está aguardando a confirmação do restaurante",
-  confirmed: "já foi confirmado",
-  rejected: "foi recusado",
-  canceled: "foi cancelado",
-  completed: "foi concluído",
+  pending_confirmation: "aguardando confirmação do restaurante",
+  confirmed: "confirmado",
+  rejected: "recusado",
+  canceled: "cancelado",
+  completed: "concluído",
 };
 
 const productionStatusLabels: Record<string, string> = {
@@ -197,7 +197,7 @@ const productionStatusLabels: Record<string, string> = {
 const fulfillmentStatusLabels: Record<string, string> = {
   pending: "aguardando expedição",
   awaiting_assignment: "aguardando entregador",
-  assigned: "com entregador definido",
+  assigned: "entregador definido",
   picked_up: "retirado pelo entregador",
   out_for_delivery: "saiu para entrega",
   delivered: "entregue",
@@ -215,11 +215,11 @@ export function buildOrderLookupMessage(input: {
   fulfillmentStatus: string;
   trackingUrl?: string | null;
 }) {
-  const order = orderStatusLabels[input.orderStatus] ?? "está sendo atualizado";
+  const order = orderStatusLabels[input.orderStatus] ?? "em atualização";
   const production = productionStatusLabels[input.productionStatus] ?? "em atualização";
   const fulfillment = fulfillmentStatusLabels[input.fulfillmentStatus] ?? "em atualização";
-  const link = input.trackingUrl ? `\n\nVocê também pode acompanhar por aqui: ${input.trackingUrl}` : "";
-  return `Achei seu pedido #${input.displayNumber} 😊\nEle ${order}.\nPreparo: ${production}.\nEntrega/retirada: ${fulfillment}.${link}`;
+  const link = input.trackingUrl ? `\nAcompanhe os detalhes com segurança: ${input.trackingUrl}` : "";
+  return `Achei seu pedido #${input.displayNumber} 😊\nPedido #${input.displayNumber}: ${order}. Preparo: ${production}. Entrega/retirada: ${fulfillment}.${link}`;
 }
 
 export const TRACKING_CODE_PROMPT = "Claro! Me manda o número do seu pedido que aparece na confirmação 😊 Pode enviar só o número, por exemplo: 42. Se quiser voltar, é só escrever menu.";
