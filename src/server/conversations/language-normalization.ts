@@ -4,6 +4,7 @@
 
 const PHRASE_ALIASES: ReadonlyArray<[RegExp, string]> = [
   [/\bbot menu open\b/g, "bot_menu_open"],
+  [/\bcoz\s+inha\b/g, "coxinha"], [/\bcox\s+inha\b/g, "coxinha"], [/\bco\s+xinha\b/g, "coxinha"],
   [/\bme ve ai\b/g, "quero"], [/\bme ve\b/g, "quero"], [/\bme arruma\b/g, "quero"],
   [/\bmanda ai\b/g, "quero"], [/\bmanda pra mim\b/g, "quero"], [/\bsepara pra mim\b/g, "quero"],
   [/\bpode manda\b/g, "quero"], [/\bpode mandar\b/g, "quero"], [/\bja manda\b/g, "quero"],
