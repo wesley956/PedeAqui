@@ -18,7 +18,6 @@ const PHRASE_ALIASES: ReadonlyArray<[RegExp, string]> = [
 ];
 
 const WORD_ALIASES: Readonly<Record<string, string>> = {
-  // chat / confirmations
   blz: "beleza", bza: "beleza", belza: "beleza", fmz: "beleza", suave: "beleza", fechow: "fechou",
   flw: "beleza", vlw: "valeu", obg: "obrigado", obgd: "obrigado", obgdo: "obrigado", brigado: "obrigado",
   ss: "sim", sss: "sim", siim: "sim", siiim: "sim", yep: "sim", yup: "sim", okk: "ok", okay: "ok",
@@ -27,14 +26,10 @@ const WORD_ALIASES: Readonly<Record<string, string>> = {
   pq: "porque", q: "que", qro: "quero", qeru: "quero", keru: "quero", keria: "queria", queriaa: "queria",
   vcs: "voces", vc: "voce", cm: "com", c: "com", pra: "para", pro: "para", p: "para",
   agr: "agora", hj: "hoje", dps: "depois", antesd: "antes", ae: "ai", aiin: "ai",
-
-  // order / quantity vocabulary
   qtd: "quantidade", qnt: "quantidade", qnts: "quantidade", qtas: "quantidade",
   un: "unidade", und: "unidade", unid: "unidade", unds: "unidades", unids: "unidades",
   cx: "caixa", cxa: "caixa", cxs: "caixas", caixinha: "caixa", pct: "pacote", pc: "pacote", pcte: "pacote",
   dz: "duzia", dzia: "duzia", cento: "100", meia: "metade",
-
-  // food vocabulary / common mobile typos
   coxina: "coxinha", cochinha: "coxinha", coxinh: "coxinha", coxinhaa: "coxinha", coxinhas: "coxinha",
   coxinaaa: "coxinha", cochinaa: "coxinha", cochina: "coxinha",
   frgo: "frango", frg: "frango", frangoa: "frango", frangos: "frango", frangoos: "frango",
@@ -45,16 +40,14 @@ const WORD_ALIASES: Readonly<Record<string, string>> = {
   risoli: "risoles", risole: "risoles", risoles: "risoles", enroladinho: "enrolado",
   churro: "churros", xurros: "churros", churroses: "churros",
   refri: "refrigerante", refrig: "refrigerante", refrigerantes: "refrigerante", refrigerant: "refrigerante",
-  coca: "coca cola", cocacola: "coca cola", coca-cola: "coca cola", coke: "coca cola",
+  coca: "coca cola", cocacola: "coca cola", "coca-cola": "coca cola", coke: "coca cola",
   guarana: "guarana", guaranaa: "guarana", fanta: "fanta", spritee: "sprite",
   hamb: "hamburguer", hamburger: "hamburguer", hamburgueres: "hamburguer", amburguer: "hamburguer", burguer: "hamburguer",
   xburguer: "x burger", xburger: "x burger", xbacon: "x bacon", xsalada: "x salada", xfrango: "x frango",
   batatafrita: "batata frita", fritas: "batata frita", batatinha: "batata frita",
-  pizzaa: "pizza", pizzas: "pizza", calabreza: "calabresa", calabresa: "calabresa", mussarela: "mucarela", muçarela: "mucarela",
-  acai: "acai", açai: "acai", assai: "acai", pacoca: "pacoca", paçoca: "pacoca",
+  pizzaa: "pizza", pizzas: "pizza", calabreza: "calabresa", calabresa: "calabresa", mussarela: "mucarela",
+  acai: "acai", assai: "acai", pacoca: "pacoca",
   catupiry: "catupiry", catupiri: "catupiry", cheddar: "cheddar", baconz: "bacon",
-
-  // payment / fulfillment informal forms
   pixx: "pix", piks: "pix", pic: "pix", din: "dinheiro", dindin: "dinheiro", cash: "dinheiro",
   cartao: "cartao", cartaoo: "cartao", creditoo: "credito", debitoo: "debito",
   entregaa: "entrega", entreg: "entrega", delivery: "entrega", delivry: "entrega", entregar: "entrega",
