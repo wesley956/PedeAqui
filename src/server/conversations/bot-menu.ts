@@ -45,12 +45,16 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
   return "unknown";
 }
 
-export function appendWhatsAppBotMenu(introduction: string) {
-  return `${introduction.trim()}\n\nDigite uma opção:\n1 — Ver cardápio\n2 — Acompanhar pedido\n3 — Falar com o restaurante\n4 — Horários\n5 — Formas de pagamento\n6 — Entrega e taxa\n7 — Fazer pedido pelo WhatsApp`;
+function orderMenuLine(includeWhatsAppOrders: boolean) {
+  return includeWhatsAppOrders ? "\n7 — Fazer pedido pelo WhatsApp" : "";
 }
 
-export function buildWhatsAppBotMenu(storeName: string) {
-  return `Como posso ajudar com ${storeName.trim()}?\n\nDigite uma opção:\n1 — Ver cardápio\n2 — Acompanhar pedido\n3 — Falar com o restaurante\n4 — Horários\n5 — Formas de pagamento\n6 — Entrega e taxa\n7 — Fazer pedido pelo WhatsApp`;
+export function appendWhatsAppBotMenu(introduction: string, includeWhatsAppOrders = false) {
+  return `${introduction.trim()}\n\nDigite uma opção:\n1 — Ver cardápio\n2 — Acompanhar pedido\n3 — Falar com o restaurante\n4 — Horários\n5 — Formas de pagamento\n6 — Entrega e taxa${orderMenuLine(includeWhatsAppOrders)}`;
+}
+
+export function buildWhatsAppBotMenu(storeName: string, includeWhatsAppOrders = false) {
+  return `Como posso ajudar com ${storeName.trim()}?\n\nDigite uma opção:\n1 — Ver cardápio\n2 — Acompanhar pedido\n3 — Falar com o restaurante\n4 — Horários\n5 — Formas de pagamento\n6 — Entrega e taxa${orderMenuLine(includeWhatsAppOrders)}`;
 }
 
 export function phonesBelongToSameCustomer(left: string | null | undefined, right: string | null | undefined) {
