@@ -425,7 +425,11 @@ export function OrderAlertProvider({ children, storeId }: { children: ReactNode;
     realtimeConnectedRef.current = false;
 
     const scheduleRefresh = () => {
-      if (!active || realtimeRefreshTimerRef.current !== null) return;
+      // A detecção do pedido continua global por Realtime/fallback e o som/notificação
+      // continuam funcionando fora de /pedidos. O refresh completo do Next só é útil
+      // quando o operador está olhando a tela de pedidos; nas demais telas ele apenas
+      // recriava a página no servidor e aumentava a carga sem melhorar o alerta.
+      if (!isOrdersPage || !active || realtimeRefreshTimerRef.current !== null) return;
       realtimeRefreshTimerRef.current = window.setTimeout(() => {
         realtimeRefreshTimerRef.current = null;
         if (active) router.refresh();
