@@ -9,6 +9,11 @@ import {
   type WhatsAppOrderHandleResult,
   type WhatsAppOrderStep,
 } from "@/server/conversations/whatsapp-learning-order-service";
+import {
+  isOrderEditRequest,
+  repairSuspiciousPackageQuantity,
+  restartOrderMessage,
+} from "@/server/conversations/whatsapp-order-corrections";
 import { asksAboutPixPayment, pixPaymentGuidanceMessage } from "@/server/conversations/whatsapp-payment-guidance";
 
 export { isWhatsAppOrderStep, looksLikeWhatsAppOrderItems, whatsappOrderStartMessage };
@@ -18,6 +23,15 @@ type OrderInput = Parameters<typeof EnhancedWhatsAppOrderService.handle>[0];
 
 export class WhatsAppOrderService {
   static async handle(input: OrderInput): Promise<WhatsAppOrderHandleResult> {
+    if (isOrderEditRequest(input.text)) {
+      return {
+        handled: true,
+        body: restartOrderMessage(),
+        nextStep: "order_items",
+        context: { channel: "whatsapp_order", version: 1 },
+      };
+    }
+
     if (input.step === "order_payment" && asksAboutPixPayment(input.text)) {
       return {
         handled: true,
@@ -29,6 +43,7 @@ export class WhatsAppOrderService {
       };
     }
 
-    return EnhancedWhatsAppOrderService.handle(input);
+    const repairedContext = repairSuspiciousPackageQuantity(input.context, input.text);
+    return EnhancedWhatsAppOrderService.handle({ ...input, context: repairedContext });
   }
 }
