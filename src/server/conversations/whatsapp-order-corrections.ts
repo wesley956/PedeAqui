@@ -28,7 +28,7 @@ export function isOrderEditRequest(text: string | null | undefined) {
 
 function explicitlyRequestsManyPackages(text: string, quantity: number) {
   const normalized = normalizeBotInput(text);
-  return new RegExp(`\\b${quantity}\\s+(?:caixas|copos|combos|kits|pacotes|porcoes)\\b`, "i").test(normalized);
+  return new RegExp(`\\b${quantity}\\s+(?:caixa|caixas|copo|copos|combo|combos|kit|kits|pacote|pacotes|porcao|porcoes)\\b`, "i").test(normalized);
 }
 
 function looksLikeNamedPackageSelection(text: string) {
