@@ -3,6 +3,7 @@
 // in the store catalog.
 
 const PHRASE_ALIASES: ReadonlyArray<[RegExp, string]> = [
+  [/\bbot menu open\b/g, "bot_menu_open"],
   [/\bme ve ai\b/g, "quero"], [/\bme ve\b/g, "quero"], [/\bme arruma\b/g, "quero"],
   [/\bmanda ai\b/g, "quero"], [/\bmanda pra mim\b/g, "quero"], [/\bsepara pra mim\b/g, "quero"],
   [/\bpode manda\b/g, "quero"], [/\bpode mandar\b/g, "quero"], [/\bja manda\b/g, "quero"],
@@ -123,7 +124,9 @@ export function normalizeInformalPortuguese(value: string | null | undefined) {
     .replace(/\s*\n\s*/g, "\n")
     .trim();
 
-  return withAliases.replace(/^(caixa|pacote|combo|kit)\b/, "uma $1");
+  if (/^caixa\b/.test(withAliases)) return withAliases.replace(/^caixa\b/, "uma caixa");
+  if (/^(pacote|combo|kit)\b/.test(withAliases)) return withAliases.replace(/^(pacote|combo|kit)\b/, "um $1");
+  return withAliases;
 }
 
 export function singularizeLoosePortuguese(token: string) {
@@ -147,6 +150,7 @@ export function looseTokenSimilarity(left: string, right: string) {
 
 export function normalizeProductLanguage(value: string | null | undefined) {
   return normalizeInformalPortuguese(value)
+    .replace(/^(?:uma|um)\s+(?=(?:caixa|pacote|combo|kit)\b)/, "")
     .replace(/(\d+)\s*(?:litro|litros|lt|lts)\b/g, "$1l")
     .replace(/(\d+)\s*(?:mililitro|mililitros|ml)\b/g, "$1ml")
     .replace(/[^a-z0-9]+/g, " ")
