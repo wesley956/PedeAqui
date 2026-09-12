@@ -1,12 +1,15 @@
 import { normalizeWhatsAppIdentifier } from "@/server/conversations/model";
 
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
-export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "unknown";
+export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "hours" | "payment" | "delivery" | "unknown";
 
 const menuWords = new Set(["menu", "inicio", "iniciar", "oi", "ola", "bom dia", "boa tarde", "boa noite"]);
 const menuLinkWords = new Set(["1", "cardapio", "ver cardapio", "fazer pedido", "pedir"]);
 const trackingWords = new Set(["2", "acompanhar", "acompanhar pedido", "meu pedido", "pedido"]);
 const handoffWords = new Set(["3", "atendente", "humano", "falar com restaurante", "falar com o restaurante", "ajuda"]);
+const hoursWords = new Set(["4", "horario", "horarios", "funcionamento", "abre", "fecha", "aberto", "aberta"]);
+const paymentWords = new Set(["5", "pagamento", "pagamentos", "formas de pagamento", "pagar", "cartao", "pix", "dinheiro", "credito", "debito", "ticket", "alelo", "vr"]);
+const deliveryWords = new Set(["6", "entrega", "delivery", "taxa", "taxa de entrega", "frete", "bairro", "entregam"]);
 
 export function normalizeBotInput(value: string | null | undefined) {
   return (value ?? "")
@@ -15,6 +18,11 @@ export function normalizeBotInput(value: string | null | undefined) {
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
+}
+
+function containsAny(value: string, words: Set<string>) {
+  if (words.has(value)) return true;
+  return [...words].some((word) => word.length > 3 && value.includes(word));
 }
 
 export function trackingCodeFromInput(value: string | null | undefined) {
@@ -26,18 +34,21 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
   const normalized = normalizeBotInput(value);
   if (step === "awaiting_tracking_code" && trackingCodeFromInput(normalized) !== null) return "track_code";
   if (menuWords.has(normalized)) return "menu";
-  if (menuLinkWords.has(normalized)) return "menu_link";
-  if (trackingWords.has(normalized)) return "track_start";
-  if (handoffWords.has(normalized)) return "handoff";
+  if (containsAny(normalized, menuLinkWords)) return "menu_link";
+  if (containsAny(normalized, trackingWords)) return "track_start";
+  if (containsAny(normalized, handoffWords)) return "handoff";
+  if (containsAny(normalized, hoursWords)) return "hours";
+  if (containsAny(normalized, paymentWords)) return "payment";
+  if (containsAny(normalized, deliveryWords)) return "delivery";
   return "unknown";
 }
 
 export function appendWhatsAppBotMenu(introduction: string) {
-  return `${introduction.trim()}\n\nDigite uma opção:\n1 — Ver cardápio\n2 — Acompanhar pedido\n3 — Falar com o restaurante`;
+  return `${introduction.trim()}\n\nDigite uma opção:\n1 — Ver cardápio\n2 — Acompanhar pedido\n3 — Falar com o restaurante\n4 — Horários\n5 — Formas de pagamento\n6 — Entrega e taxa`;
 }
 
 export function buildWhatsAppBotMenu(storeName: string) {
-  return `Como posso ajudar com ${storeName.trim()}?\n\nDigite uma opção:\n1 — Ver cardápio\n2 — Acompanhar pedido\n3 — Falar com o restaurante`;
+  return `Como posso ajudar com ${storeName.trim()}?\n\nDigite uma opção:\n1 — Ver cardápio\n2 — Acompanhar pedido\n3 — Falar com o restaurante\n4 — Horários\n5 — Formas de pagamento\n6 — Entrega e taxa`;
 }
 
 export function phonesBelongToSameCustomer(left: string | null | undefined, right: string | null | undefined) {
