@@ -10,6 +10,7 @@ import { NavigationAccessService } from "@/server/access/navigation-access-servi
 import { OperationHeaderService, type OperationHeaderData } from "@/server/access/operation-header-service";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { SubscriptionLifecycleService } from "@/server/billing/subscription-lifecycle-service";
+import { HumanAttentionAlertService } from "@/server/conversations/human-attention-alert-service";
 import { OnboardingReadinessService, type OnboardingReadiness } from "@/server/onboarding/onboarding-readiness-service";
 import { UserGuideService } from "@/server/onboarding/user-guide-service";
 import { BrandingReadService, type ResolvedBranding } from "@/server/platform/branding-read-service";
@@ -60,7 +61,14 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
     throw error;
   }
 
-  const userGuide = await UserGuideService.load(user.id);
+  const canSeeConversations = Boolean(
+    navigationAccess.context.storeId
+    && navigationAccess.permissionKeys.includes(PERMISSIONS.CONVERSATIONS_VIEW),
+  );
+  const [userGuide, humanAttentionAlert] = await Promise.all([
+    UserGuideService.load(user.id),
+    canSeeConversations ? HumanAttentionAlertService.load() : Promise.resolve(null),
+  ]);
   const guideSteps = buildUserGuideSteps(
     navigationAccess.items,
     navigationAccess.roleKeys,
@@ -79,6 +87,7 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
       guideSteps={guideSteps}
       experienceMode={navigationAccess.experienceMode}
       storeId={navigationAccess.context.storeId}
+      humanAttentionAlert={humanAttentionAlert}
     >
       {children}
     </AppShell>

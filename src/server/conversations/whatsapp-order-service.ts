@@ -46,12 +46,18 @@ type Input = {
 };
 
 type ParsedItem = { quantity: number; query: string };
+type ProductCandidate = { id: string; name: string; description: string | null; price_cents: number; promotional_price_cents: number | null };
 
 const paymentLabels: Record<string, string> = {
   cash: "dinheiro",
   credit_card: "cartão de crédito",
   debit_card: "cartão de débito",
 };
+
+const productStopWords = new Set([
+  "a", "as", "o", "os", "de", "da", "das", "do", "dos", "com", "em", "no", "na", "nos", "nas",
+  "un", "und", "unid", "unidade", "unidades", "uma", "um", "pra", "para",
+]);
 
 function money(cents: number | string | null | undefined) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents ?? 0) / 100);
@@ -70,32 +76,41 @@ function normalizeContext(value: unknown): WhatsAppOrderContext {
   };
 }
 
+function cleanOrderSegment(raw: string) {
+  return raw
+    .replace(/\b(oi|ola|olá|quero|gostaria|pedido|pedir|preciso de|me ve|me vê|manda|mandar|pode ser)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseLeadingQuantity(segment: string) {
+  const numeric = segment.match(/^(\d{1,4})\s*(?:x|un|unid(?:ade)?s?)?\s+(.+)$/i);
+  if (numeric) return { quantity: Number(numeric[1]!), query: numeric[2]!.replace(/^[xX]\s*/, "").trim() };
+  const word = segment.match(/^(?:um|uma)\s+(.+)$/i);
+  if (word) return { quantity: 1, query: word[1]!.trim() };
+  return null;
+}
+
 export function looksLikeWhatsAppOrderItems(text: string | null | undefined) {
   if (!text) return false;
-  return text.split(/[\n;,]+/).some((segment) => /^\s*\d{1,4}\s*(?:x|un|unid(?:ade)?s?)?\s+\S+/i.test(segment));
+  return text.split(/[\n;,]+/).some((segment) => Boolean(parseLeadingQuantity(cleanOrderSegment(segment))));
 }
 
 export function parseWhatsAppOrderItems(text: string): ParsedItem[] {
   const segments = text.split(/[\n;,]+/).map((item) => item.trim()).filter(Boolean);
   const parsed: ParsedItem[] = [];
   for (const raw of segments) {
-    const segment = raw
-      .replace(/\b(quero|gostaria|pedido|pedir|preciso de|me ve|me vê)\b/gi, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    const match = segment.match(/^(\d{1,4})\s*(?:x|un|unid(?:ade)?s?)?\s+(.+)$/i);
+    const match = parseLeadingQuantity(cleanOrderSegment(raw));
     if (!match) continue;
-    const quantity = Number(match[1]!);
-    const query = match[2]!.replace(/^[xX]\s*/, "").trim();
-    if (quantity > 0 && quantity <= 99 && query.length >= 2) parsed.push({ quantity, query });
+    if (match.quantity > 0 && match.quantity <= 99 && match.query.length >= 2) parsed.push(match);
   }
   return parsed;
 }
 
 function hasUnsupportedQuantity(text: string) {
   return text.split(/[\n;,]+/).some((segment) => {
-    const match = segment.trim().match(/^(\d{1,4})\s*(?:x|un|unid(?:ade)?s?)?\s+\S+/i);
-    return Boolean(match && Number(match[1]!) > 99);
+    const match = parseLeadingQuantity(cleanOrderSegment(segment));
+    return Boolean(match && match.quantity > 99);
   });
 }
 
@@ -145,29 +160,76 @@ function parseAddress(text: string) {
   };
 }
 
+function normalizeProductText(value: string) {
+  return normalizeBotInput(value)
+    .replace(/(\d+)\s*(?:litro|litros|lt|lts)\b/g, "$1l")
+    .replace(/(\d+)\s*(?:mililitro|mililitros|ml)\b/g, "$1ml")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function productTokens(value: string) {
+  return normalizeProductText(value)
+    .split(" ")
+    .filter((token) => token.length > 0 && !productStopWords.has(token));
+}
+
+function productMatchScore(query: string, candidate: ProductCandidate) {
+  const queryTokens = [...new Set(productTokens(query))];
+  const nameTokens = new Set(productTokens(candidate.name));
+  if (queryTokens.length === 0) return 0;
+
+  const queryNumbers = queryTokens.filter((token) => /^\d/.test(token));
+  if (queryNumbers.some((number) => !nameTokens.has(number))) return 0;
+
+  const matched = queryTokens.filter((token) => nameTokens.has(token)).length;
+  const coverage = matched / queryTokens.length;
+  const nameCoverage = matched / Math.max(nameTokens.size, 1);
+  const normalizedQuery = normalizeProductText(query);
+  const normalizedName = normalizeProductText(candidate.name);
+  const directBonus = normalizedName.includes(normalizedQuery) || normalizedQuery.includes(normalizedName) ? 0.22 : 0;
+  return Math.min(1, coverage * 0.72 + nameCoverage * 0.28 + directBonus);
+}
+
 async function findProduct(organizationId: string, storeId: string, query: string) {
   const admin = createAdminClient();
-  const safe = query.replace(/[,%()]/g, " ").replace(/\s+/g, " ").trim();
-  const { data, error } = await admin.from("products")
-    .select("id, name, price_cents, promotional_price_cents")
+  const terms = productTokens(query).filter((token) => token.length >= 3 && !/^\d/.test(token)).slice(-4);
+  const filters = terms.flatMap((term) => [`name.ilike.%${term}%`, `description.ilike.%${term}%`]);
+  let productQuery = admin.from("products")
+    .select("id, name, description, price_cents, promotional_price_cents")
     .eq("organization_id", organizationId)
     .eq("store_id", storeId)
     .eq("active", true)
     .eq("availability", "available")
     .is("deleted_at", null)
-    .or(`name.ilike.%${safe}%,description.ilike.%${safe}%`)
     .order("name")
-    .limit(6);
+    .limit(40);
+  if (filters.length > 0) productQuery = productQuery.or(filters.join(","));
+
+  const { data, error } = await productQuery;
   if (error) throw error;
-  const rows = data ?? [];
+  const rows = (data ?? []) as ProductCandidate[];
   if (rows.length === 0) return { kind: "missing" as const, options: [] as string[] };
-  const normalizedQuery = normalizeBotInput(query);
-  const exact = rows.find((row) => normalizeBotInput(row.name) === normalizedQuery);
+
+  const normalizedQuery = normalizeProductText(query);
+  const exact = rows.find((row) => normalizeProductText(row.name) === normalizedQuery);
   if (exact) return { kind: "found" as const, product: exact };
-  if (rows.length === 1) return { kind: "found" as const, product: rows[0]! };
-  const starts = rows.filter((row) => normalizeBotInput(row.name).startsWith(normalizedQuery));
-  if (starts.length === 1) return { kind: "found" as const, product: starts[0]! };
-  return { kind: "ambiguous" as const, options: rows.slice(0, 5).map((row) => row.name) };
+
+  const ranked = rows
+    .map((product) => ({ product, score: productMatchScore(query, product) }))
+    .filter((item) => item.score >= 0.42)
+    .sort((left, right) => right.score - left.score || left.product.name.localeCompare(right.product.name, "pt-BR"));
+
+  const best = ranked[0];
+  const second = ranked[1];
+  if (best && best.score >= 0.74 && (!second || best.score - second.score >= 0.12)) {
+    return { kind: "found" as const, product: best.product };
+  }
+  if (ranked.length > 0) {
+    return { kind: "ambiguous" as const, options: ranked.slice(0, 5).map((item) => item.product.name) };
+  }
+  return { kind: "missing" as const, options: rows.slice(0, 5).map((row) => row.name) };
 }
 
 async function addRequestedItems(input: Input, items: ParsedItem[]) {
@@ -176,10 +238,11 @@ async function addRequestedItems(input: Input, items: ParsedItem[]) {
   for (const request of items) {
     const found = await findProduct(input.organizationId, input.storeId, request.query);
     if (found.kind === "missing") {
-      return { ok: false as const, message: `Não encontrei “${request.query}” no cardápio ativo. Tente usar o nome que aparece no cardápio ou digite 1 para abrir o cardápio online.` };
+      const suggestion = found.options.length > 0 ? ` Talvez você queira: ${found.options.join(", ")}.` : "";
+      return { ok: false as const, message: `Ainda não consegui identificar “${request.query}” com segurança.${suggestion} Envie o nome mais parecido com o cardápio ou digite 1 para abrir o cardápio online.` };
     }
     if (found.kind === "ambiguous") {
-      return { ok: false as const, message: `Encontrei mais de uma opção para “${request.query}”: ${found.options.join(", ")}. Envie novamente usando o nome exato do item.` };
+      return { ok: false as const, message: `Encontrei algumas opções parecidas com “${request.query}”:\n${found.options.map((name, index) => `${index + 1} — ${name}`).join("\n")}\n\nResponda novamente com o nome da opção desejada.` };
     }
     const product = found.product;
     try {
@@ -197,12 +260,12 @@ async function addRequestedItems(input: Input, items: ParsedItem[]) {
       added.push({ name: product.name, quantity: request.quantity, lineTotalCents: unit * request.quantity });
     } catch (error) {
       if (error instanceof PricingError && error.code === "invalid_modifiers") {
-        return { ok: false as const, message: `O item “${product.name}” precisa escolher sabor, tamanho ou adicional. Por segurança, ainda não vou criar esse item automaticamente. Digite 1 para montar esse produto no cardápio online ou escolha um item sem opções obrigatórias.` };
+        return { ok: false as const, message: `Encontrei “${product.name}”, mas esse item precisa escolher sabor, tamanho ou adicional. Por segurança, ainda não vou adivinhar essa escolha. Digite 1 para montar esse produto no cardápio online ou escolha um item sem opções obrigatórias.` };
       }
       throw error;
     }
   }
-  if (!token || added.length === 0) return { ok: false as const, message: "Não consegui montar o pedido. Envie cada item com quantidade, por exemplo: 2 Coxinha." };
+  if (!token || added.length === 0) return { ok: false as const, message: "Não consegui montar o pedido. Você pode escrever de forma natural, por exemplo: 2 Coxinhas ou 1 copo de 13 mini churros." };
   return { ok: true as const, token, added };
 }
 
@@ -242,7 +305,7 @@ export function isWhatsAppOrderStep(step: string | null | undefined): step is Wh
 }
 
 export function whatsappOrderStartMessage(storeName: string) {
-  return `Vamos montar seu pedido pelo WhatsApp em ${storeName}.\n\nEnvie os itens com quantidade, um por linha. Exemplo:\n2 Coxinha de frango\n1 Refrigerante lata\n\nEu só criarei o pedido depois que você conferir e responder SIM.`;
+  return `Vamos montar seu pedido pelo WhatsApp em ${storeName}.\n\nPode escrever do seu jeito, sempre informando a quantidade. Exemplos:\n2 Coxinhas de frango\n1 Refrigerante lata\n1 copo de 13 unidades de mini churros\n\nEu só criarei o pedido depois que você conferir e responder SIM.`;
 }
 
 export class WhatsAppOrderService {
@@ -255,7 +318,7 @@ export class WhatsAppOrderService {
       }
       const items = parseWhatsAppOrderItems(input.text);
       if (items.length === 0) {
-        return { handled: true, body: "Envie a quantidade antes do nome de cada item. Exemplo:\n2 Coxinha de frango\n1 Refrigerante lata", nextStep: "order_items", context };
+        return { handled: true, body: "Me diga a quantidade e o produto. Pode escrever naturalmente, por exemplo:\n2 Coxinhas de frango\n1 copo de 13 mini churros", nextStep: "order_items", context };
       }
       const result = await addRequestedItems(input, items);
       if (!result.ok) return { handled: true, body: result.message, nextStep: "order_items", context };

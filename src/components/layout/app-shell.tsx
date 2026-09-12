@@ -4,15 +4,17 @@ import { DesktopNavigation, type ShellNavigationItem } from "@/components/layout
 import { MobileNavigation } from "@/components/layout/mobile-navigation";
 import { OperationTopbar } from "@/components/layout/operation-topbar";
 import type { OperationalContext } from "@/components/layout/navigation-model";
+import { HumanAttentionAlert } from "@/features/conversations/human-attention-alert";
 import { OrderAlertProvider } from "@/features/orders/use-order-alert";
 import { NewUserGuide } from "@/features/user-guide/new-user-guide";
 import type { UserGuideStep } from "@/features/user-guide/guide-model";
 import type { ExperienceMode } from "@/modules/user-experience";
 import type { OperationHeaderData } from "@/server/access/operation-header-service";
+import type { HumanAttentionAlertData } from "@/server/conversations/human-attention-alert-service";
 import type { UserGuideState } from "@/server/onboarding/user-guide-service";
 import type { ResolvedBranding } from "@/server/platform/branding-read-service";
 
-export function AppShell({ children, email, branding, navigationItems, operationalContexts, operationHeader, userGuide, guideSteps, experienceMode, storeId }: { children: ReactNode; email: string | null; branding: ResolvedBranding; navigationItems: readonly ShellNavigationItem[]; operationalContexts: readonly OperationalContext[]; operationHeader: OperationHeaderData; userGuide: UserGuideState; guideSteps: readonly UserGuideStep[]; experienceMode: ExperienceMode; storeId: string | null }) {
+export function AppShell({ children, email, branding, navigationItems, operationalContexts, operationHeader, userGuide, guideSteps, experienceMode, storeId, humanAttentionAlert }: { children: ReactNode; email: string | null; branding: ResolvedBranding; navigationItems: readonly ShellNavigationItem[]; operationalContexts: readonly OperationalContext[]; operationHeader: OperationHeaderData; userGuide: UserGuideState; guideSteps: readonly UserGuideStep[]; experienceMode: ExperienceMode; storeId: string | null; humanAttentionAlert: HumanAttentionAlertData | null }) {
   const style = {
     ...(branding.primaryColor ? { "--accent": branding.primaryColor } : {}),
     ...(branding.secondaryColor ? { "--accent-strong": branding.secondaryColor } : {}),
@@ -35,6 +37,7 @@ export function AppShell({ children, email, branding, navigationItems, operation
         </aside>
         <div className="app-main">
           <OperationTopbar email={email} data={operationHeader} storeId={storeId} experienceMode={experienceMode} driverOnly={driverOnly} />
+          {storeId && humanAttentionAlert ? <HumanAttentionAlert storeId={storeId} alert={humanAttentionAlert} /> : null}
           <main id="main-content" className="app-content" tabIndex={-1}>{children}</main>
           {!branding.hidePedeAquiBranding && !usesPlatformDefault ? <footer className="platform-footer" aria-label="Tecnologia PedeAqui"><span>Tecnologia</span><PedeAquiLogo size="xs" decorative /></footer> : null}
         </div>
