@@ -12,6 +12,7 @@ import {
   trackingCodeFromInput,
   type WhatsAppBotStep,
 } from "@/server/conversations/bot-menu";
+import { visibleWorkflowStage } from "@/server/conversations/order-workflow-visibility";
 import { buildPublicMenuUrl, renderGreetingTemplate } from "@/server/conversations/greeting";
 import type { WhatsAppBotMenuMode } from "@/server/conversations/greeting";
 import { buildOrderTrackingUrl } from "@/server/conversations/order-notification-model";
@@ -449,7 +450,7 @@ export class ConversationGreetingService {
       const { data: order, error: orderError } = displayNumber === null
         ? { data: null, error: null }
         : await admin.from("orders")
-          .select("id, display_number, customer_phone_snapshot, order_status, production_status, fulfillment_status")
+          .select("id, display_number, customer_phone_snapshot, fulfillment_type, order_status, production_status, fulfillment_status")
           .eq("organization_id", conversation.organization_id)
           .eq("store_id", conversation.store_id)
           .eq("display_number", displayNumber)
@@ -462,13 +463,21 @@ export class ConversationGreetingService {
         return;
       }
 
-      const { data: trackingContext, error: trackingError } = await admin.from("order_notification_contexts")
-        .select("tracking_access_token")
-        .eq("organization_id", conversation.organization_id)
-        .eq("store_id", conversation.store_id)
-        .eq("order_id", order.id)
-        .maybeSingle();
+      const [{ data: trackingContext, error: trackingError }, { data: workflowSettings, error: workflowError }] = await Promise.all([
+        admin.from("order_notification_contexts")
+          .select("tracking_access_token")
+          .eq("organization_id", conversation.organization_id)
+          .eq("store_id", conversation.store_id)
+          .eq("order_id", order.id)
+          .maybeSingle(),
+        admin.from("store_operational_settings")
+          .select("orders_workflow_mode, orders_custom_workflow")
+          .eq("organization_id", conversation.organization_id)
+          .eq("store_id", conversation.store_id)
+          .maybeSingle(),
+      ]);
       if (trackingError) throw trackingError;
+      if (workflowError) throw workflowError;
       const trackingUrl = trackingContext?.tracking_access_token
         ? buildOrderTrackingUrl(appUrl, store.slug, order.id, trackingContext.tracking_access_token)
         : null;
@@ -477,6 +486,12 @@ export class ConversationGreetingService {
         orderStatus: order.order_status,
         productionStatus: order.production_status,
         fulfillmentStatus: order.fulfillment_status,
+        visibleStage: visibleWorkflowStage({
+          fulfillmentType: order.fulfillment_type,
+          orderStatus: order.order_status,
+          productionStatus: order.production_status,
+          fulfillmentStatus: order.fulfillment_status,
+        }, workflowSettings ?? {}),
         trackingUrl,
       }), responseKey);
       await updateBotSession(conversation.id, "menu", ingest.message_id);

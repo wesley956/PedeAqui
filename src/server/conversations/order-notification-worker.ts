@@ -18,6 +18,7 @@ import {
   type WhatsAppAutomationCapability,
 } from "@/server/conversations/whatsapp-automation-capability";
 import { WhatsAppAutomationCapabilityService } from "@/server/conversations/whatsapp-automation-capability-service";
+import { resolveNotificationWorkflowVisibility } from "@/server/conversations/order-workflow-visibility";
 import { WhatsAppCloudProvider, WhatsAppProviderError, resolveWhatsAppAccessToken } from "@/server/conversations/provider";
 import { recordFailure } from "@/server/observability/failure";
 
@@ -60,6 +61,7 @@ function hasCustomerSupportWindow(createdAt: string | null | undefined) {
 function capabilityErrorCode(capability: WhatsAppAutomationCapability) {
   switch (capability.state) {
     case "available_disabled": return "notification_disabled";
+    case "unavailable_workflow": return "workflow_stage_hidden";
     case "suspended_module": return "automation_suspended_module";
     case "suspended_entitlement": return "automation_suspended_entitlement";
     case "suspended_channel": return "automation_suspended_channel";
@@ -89,6 +91,21 @@ async function finish(input: {
     p_retry_after_seconds: input.retryAfterSeconds ?? null,
   });
   if (error) throw error;
+}
+
+async function claimWorkflowCheckpoint(input: {
+  notificationId: string;
+  workerId: string;
+  checkpoint: string;
+}) {
+  const admin = createAdminClient();
+  const { data, error } = await admin.rpc("order_notification_claim_workflow_checkpoint_internal", {
+    p_notification_id: input.notificationId,
+    p_worker_id: input.workerId,
+    p_checkpoint: input.checkpoint,
+  });
+  if (error) throw error;
+  return data === true;
 }
 
 async function processOne(job: QueueRow, workerId: string) {
@@ -167,6 +184,7 @@ async function processOne(job: QueueRow, workerId: string) {
     preferences,
     onlinePaymentReady: structural.onlinePaymentReady,
     deliveryOperationEnabled: structural.deliveryOperationEnabled,
+    workflowEligibility: structural.workflowEligibility,
   });
   const capability = capabilities[job.notification_type];
 
@@ -207,6 +225,21 @@ async function processOne(job: QueueRow, workerId: string) {
   }
   if ((job.notification_type === "out_for_delivery" || job.notification_type === "delivered") && order.fulfillment_type !== "delivery") {
     await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "not_delivery", errorMessage: "Notificação não se aplica à modalidade do pedido." });
+    return "skipped" as const;
+  }
+  const workflowVisibility = resolveNotificationWorkflowVisibility({
+    type: job.notification_type,
+    fulfillmentType: order.fulfillment_type,
+    settings: structural.workflowSettings,
+  });
+  if (!workflowVisibility.eligible || !workflowVisibility.checkpoint) {
+    await finish({
+      notificationId: job.id,
+      workerId,
+      status: "skipped",
+      errorCode: "workflow_stage_hidden",
+      errorMessage: "A etapa está oculta no fluxo de pedidos da unidade.",
+    });
     return "skipped" as const;
   }
   if (!customer?.phone_normalized) {
@@ -275,6 +308,22 @@ async function processOne(job: QueueRow, workerId: string) {
       status: "skipped",
       errorCode: "template_required",
       errorMessage: "Aviso não enviado porque a Meta exige um modelo aprovado fora da janela de atendimento.",
+    });
+    return "skipped" as const;
+  }
+
+  const checkpointClaimed = await claimWorkflowCheckpoint({
+    notificationId: job.id,
+    workerId,
+    checkpoint: workflowVisibility.checkpoint,
+  });
+  if (!checkpointClaimed) {
+    await finish({
+      notificationId: job.id,
+      workerId,
+      status: "skipped",
+      errorCode: "workflow_checkpoint_duplicate",
+      errorMessage: "Outro evento já comunicou este checkpoint visível do pedido.",
     });
     return "skipped" as const;
   }

@@ -60,6 +60,7 @@ export default async function ConversationSettingsPage() {
     preferences,
     onlinePaymentReady: structural.onlinePaymentReady,
     deliveryOperationEnabled: structural.deliveryOperationEnabled,
+    workflowEligibility: structural.workflowEligibility,
   });
 
   return (
@@ -84,7 +85,7 @@ export default async function ConversationSettingsPage() {
         <Card style={{ display: "grid", gap: 12 }}>
           <div>
             <h2 style={{ margin: 0, fontSize: 18 }}>Avisos do andamento do pedido</h2>
-            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Escolha um fluxo pronto ou personalize as etapas e textos. Os avisos são disparados somente por estados reais do pedido no PedeAqui e nunca mudam o andamento do pedido.</p>
+            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Escolha um fluxo pronto ou personalize as etapas e textos. Os avisos são sincronizados com o fluxo de pedidos da unidade, disparados somente por estados reais e nunca mudam o andamento do pedido.</p>
           </div>
 
           <WhatsAppAutomationSettings
@@ -105,6 +106,11 @@ export default async function ConversationSettingsPage() {
               notifyOrderCanceled: preferences.order_canceled,
             }}
           />
+
+          <div style={{ display: "grid", gap: 5, padding: 12, borderRadius: 10, border: "1px solid var(--border)" }}>
+            <strong>Sincronizado com o fluxo de pedidos ✓</strong>
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Etapas ocultas no fluxo Completo, Simplificado ou Personalizado não são anunciadas ao cliente. As preferências ficam guardadas caso a etapa volte a ser usada.</p>
+          </div>
 
           <div style={{ display: "grid", gap: 5, padding: 12, borderRadius: 10, border: "1px solid var(--border)" }}>
             <strong>Envio seguro pelo WhatsApp</strong>
