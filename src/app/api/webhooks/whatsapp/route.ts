@@ -69,11 +69,19 @@ export async function POST(request: Request) {
       const result = await ConversationService.ingestWhatsAppEvent(event);
       processed += 1;
       if (event.kind === "message") {
+        let orderHandled = false;
         try {
-          const orderHandled = await WhatsAppDirectOrderOrchestrator.afterInbound(result, requestContext.requestId);
-          if (!orderHandled) await ConversationGreetingService.afterInbound(result, requestContext.requestId);
+          orderHandled = await WhatsAppDirectOrderOrchestrator.afterInbound(result, requestContext.requestId);
         } catch (error) {
-          recordFailure("whatsapp.automation.failed", error, { requestId: requestContext.requestId });
+          recordFailure("whatsapp.order_automation.failed", error, { requestId: requestContext.requestId });
+        }
+
+        if (!orderHandled) {
+          try {
+            await ConversationGreetingService.afterInbound(result, requestContext.requestId);
+          } catch (error) {
+            recordFailure("whatsapp.greeting.failed", error, { requestId: requestContext.requestId });
+          }
         }
       }
     }
