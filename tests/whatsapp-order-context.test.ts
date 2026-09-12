@@ -19,6 +19,11 @@ describe("WhatsApp order conversational context", () => {
     expect(resolvePendingChoiceReference("segunda", choices)?.value).toBe("produto-50");
   });
 
+  it("understands natural references to a uniquely sized package", () => {
+    expect(resolvePendingChoiceReference("quero aquela de 30", choices)?.value).toBe("produto-30");
+    expect(resolvePendingChoiceReference("a caixa de 50", choices)?.value).toBe("produto-50");
+  });
+
   it("does not guess 'essa mesma' when more than one option is still possible", () => {
     expect(resolvePendingChoiceReference("essa msm", choices)).toBeNull();
     expect(resolvePendingChoiceReference("essa msm", [choices[0]!])?.value).toBe("produto-30");
