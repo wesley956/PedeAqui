@@ -209,7 +209,7 @@ export class WhatsAppOrderService {
     const context = normalizeContext(input.context);
     if (input.step === "order_items") {
       if (context.pendingComposition) {
-        const composition = parseOrderComposition(input.text);
+        const composition = parseOrderComposition(input.text, context.pendingComposition.distributionTotal);
         if (!composition) return { handled: true, body: `Estou montando ${context.pendingComposition.name}. Informe a composição com quantidades, por exemplo: 15 coxinhas, 10 bolinhas de queijo e 5 salsichas. O total precisa dar ${context.pendingComposition.distributionTotal}.`, nextStep: "order_items", context };
         const profile = await loadCompositionProfile(input, context.pendingComposition.productId);
         if (!profile) return { handled: true, body: "As opções desse produto mudaram no cardápio. Envie o produto novamente para eu atualizar a escolha.", nextStep: "order_items", context: { ...context, pendingComposition: undefined } };

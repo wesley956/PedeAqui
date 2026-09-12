@@ -79,18 +79,49 @@ function parsePart(raw: string): OrderCompositionPart | null {
   return { quantity, label, normalizedLabel: normalizeProductLanguage(label) };
 }
 
-export function parseOrderComposition(text: string | null | undefined): OrderComposition | null {
+function parseRemainderLabel(raw: string) {
+  const normalized = compact(raw);
+  const match = normalized.match(/^(?:o\s+)?(?:resto|restante|que\s+falta)(?:\s+de)?\s+(.{2,})$/);
+  return match?.[1]?.trim() ?? null;
+}
+
+export function parseOrderComposition(text: string | null | undefined, expectedTotal?: number | null): OrderComposition | null {
   if (!text) return null;
   const pieces = text
-    .split(/[\n,;]+|\s+e\s+(?=\d)/i)
+    .split(/[\n,;]+|\s+e\s+(?=(?:\d|o\s+resto\b|resto\b|restante\b|que\s+falta\b))/i)
     .map((part) => part.trim())
     .filter(Boolean);
 
-  const parts = pieces.map(parsePart).filter((part): part is OrderCompositionPart => Boolean(part));
-  if (parts.length < 2) return null;
-  const total = parts.reduce((sum, part) => sum + part.quantity, 0);
+  const explicitParts: OrderCompositionPart[] = [];
+  let remainderLabel: string | null = null;
+  for (const piece of pieces) {
+    const parsed = parsePart(piece);
+    if (parsed) {
+      explicitParts.push(parsed);
+      continue;
+    }
+    const remainder = parseRemainderLabel(piece);
+    if (!remainder || remainderLabel) return null;
+    remainderLabel = remainder;
+  }
+
+  if (remainderLabel) {
+    if (!Number.isInteger(expectedTotal) || Number(expectedTotal) < 2 || Number(expectedTotal) > 100) return null;
+    const explicitTotal = explicitParts.reduce((sum, part) => sum + part.quantity, 0);
+    const remainderQuantity = Number(expectedTotal) - explicitTotal;
+    if (explicitParts.length < 1 || remainderQuantity < 1 || remainderQuantity > 100) return null;
+    const remainderPart: OrderCompositionPart = {
+      quantity: remainderQuantity,
+      label: remainderLabel,
+      normalizedLabel: normalizeProductLanguage(remainderLabel),
+    };
+    return { total: Number(expectedTotal), parts: [...explicitParts, remainderPart] };
+  }
+
+  if (explicitParts.length < 2 || explicitParts.length !== pieces.length) return null;
+  const total = explicitParts.reduce((sum, part) => sum + part.quantity, 0);
   if (total < 2 || total > 100) return null;
-  return { total, parts };
+  return { total, parts: explicitParts };
 }
 
 export function inferProductCapacityFromName(name: string | null | undefined) {
@@ -102,7 +133,7 @@ export function inferProductCapacityFromName(name: string | null | undefined) {
 }
 
 export function compositionFitsProduct(text: string, productName: string) {
-  const composition = parseOrderComposition(text);
   const capacity = inferProductCapacityFromName(productName);
+  const composition = parseOrderComposition(text, capacity);
   return Boolean(composition && capacity && composition.total === capacity);
 }
