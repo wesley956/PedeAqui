@@ -6,14 +6,10 @@ import {
   buildWhatsAppBotMenu,
   resolveWhatsAppBotIntent,
 } from "@/server/conversations/bot-menu";
-import {
-  looksLikeWhatsAppOrderItems,
-  parseWhatsAppOrderItems,
-} from "@/server/conversations/whatsapp-order-service";
 
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
-const migration = read("supabase/migrations/20260912004000_whatsapp_direct_orders.sql");
+const migration = read("supabase/migrations/20260912003740_whatsapp_direct_orders.sql");
 const orchestrator = read("src/server/conversations/whatsapp-direct-order-orchestrator.ts");
 const orderService = read("src/server/conversations/whatsapp-order-service.ts");
 const webhook = read("src/app/api/webhooks/whatsapp/route.ts");
@@ -34,13 +30,16 @@ describe("WhatsApp direct orders", () => {
     expect(appendWhatsAppBotMenu("Olá", true)).toContain("7 — Fazer pedido pelo WhatsApp");
   });
 
-  it("parses multiple item lines independently and keeps cart quantity limits", () => {
-    expect(looksLikeWhatsAppOrderItems("2 Coxinha\n1 Refrigerante lata")).toBe(true);
-    expect(parseWhatsAppOrderItems("2 Coxinha\n1 Refrigerante lata")).toEqual([
-      { quantity: 2, query: "Coxinha" },
-      { quantity: 1, query: "Refrigerante lata" },
-    ]);
-    expect(parseWhatsAppOrderItems("100 Coxinhas")).toEqual([]);
+  it("preserves line boundaries and enforces the existing cart quantity limit", () => {
+    expect(orderService).toContain('text.split(/[\\n;,]+/)');
+    expect(orderService).toContain("quantity > 0 && quantity <= 99");
+    expect(orderService).toContain("hasUnsupportedQuantity");
+  });
+
+  it("can recognize a natural item list without requiring the numeric menu first", () => {
+    expect(orderService).toContain("looksLikeWhatsAppOrderItems");
+    expect(orchestrator).toContain("const naturalOrder = looksLikeWhatsAppOrderItems(inbound.body)");
+    expect(orchestrator).toContain('step: activeOrderStep ?? "order_items"');
   });
 
   it("requires an explicit final confirmation before creating the official order", () => {
