@@ -3,6 +3,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { WhatsAppCloudProvider, WhatsAppProviderError, resolveWhatsAppAccessToken } from "@/server/conversations/provider";
+import { StoreModuleStateService } from "@/server/modules/store-module-state-service";
 import { recordFailure } from "@/server/observability/failure";
 
 type Job = {
@@ -30,6 +31,7 @@ async function finish(job: Job, workerId: string, input: { status: string; provi
 
 async function processOne(job: Job, workerId: string) {
   const admin = createAdminClient();
+  const moduleEnabledPromise = StoreModuleStateService.isEnabled(job.organization_id, job.store_id, "growth");
   const [campaign, preference, customer, settings, channel] = await Promise.all([
     admin.from("campaigns").select("id,status,template_name,template_language,template_data,content,content_version").eq("id", job.campaign_id).eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
     admin.from("customer_marketing_preferences").select("status").eq("organization_id", job.organization_id).eq("store_id", job.store_id).eq("customer_id", job.customer_id).eq("channel", "whatsapp").maybeSingle(),
@@ -38,6 +40,7 @@ async function processOne(job: Job, workerId: string) {
     admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
   ]);
   for (const result of [campaign, preference, customer, settings, channel]) if (result.error) throw result.error;
+  if (!(await moduleEnabledPromise)) { await finish(job, workerId, { status: "failed_transient", errorCode: "growth_module_disabled", reason: "Crescimento está pausado para a unidade.", retryAfterSeconds: 3600 }); return "skipped" as const; }
   if (!campaign.data || !["running", "scheduled"].includes(campaign.data.status)) { await finish(job, workerId, { status: "failed_permanent", errorCode: "campaign_unavailable", reason: "Campanha encerrada ou indisponível." }); return "failed" as const; }
   if (!settings.data?.growth_campaigns_enabled) { await finish(job, workerId, { status: "failed_permanent", errorCode: "campaigns_disabled", reason: "Campanhas foram desativadas para a unidade." }); return "failed" as const; }
   if (preference.data?.status !== "consented") { await finish(job, workerId, { status: "skipped_opt_out", errorCode: "not_eligible", reason: "Consentimento ausente ou opt-out registrado antes do envio." }); return "skipped" as const; }
@@ -62,15 +65,17 @@ async function processOne(job: Job, workerId: string) {
   if (["sent", "delivered", "read"].includes(String(message?.delivery_status))) { await finish(job, workerId, { status: "sent", providerMessageId: message.external_message_id ?? null }); return "sent" as const; }
 
   // Releitura imediatamente antes do provider reduz a janela entre opt-out/cancelamento e envio.
-  const [sendCampaign, sendPreference, sendCustomer, sendSettings, sendChannel] = await Promise.all([
+  const [sendCampaign, sendPreference, sendCustomer, sendSettings, sendChannel, sendModuleEnabled] = await Promise.all([
     admin.from("campaigns").select("status").eq("id", job.campaign_id).eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
     admin.from("customer_marketing_preferences").select("status").eq("organization_id", job.organization_id).eq("store_id", job.store_id).eq("customer_id", job.customer_id).eq("channel", "whatsapp").maybeSingle(),
     admin.from("customers").select("phone_normalized").eq("id", job.customer_id).eq("organization_id", job.organization_id).is("deleted_at", null).maybeSingle(),
     admin.from("store_operational_settings").select("growth_campaigns_enabled").eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
     admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
+    StoreModuleStateService.isEnabled(job.organization_id, job.store_id, "growth"),
   ]);
   for (const result of [sendCampaign, sendPreference, sendCustomer, sendSettings, sendChannel]) if (result.error) throw result.error;
   if (!sendCampaign.data || sendCampaign.data.status !== "running") { await finish(job, workerId, { status: "failed_permanent", errorCode: "campaign_canceled", reason: "Campanha cancelada antes do envio." }); return "failed" as const; }
+  if (!sendModuleEnabled) { await finish(job, workerId, { status: "failed_transient", errorCode: "growth_module_disabled", reason: "Crescimento foi pausado antes do envio.", retryAfterSeconds: 3600 }); return "skipped" as const; }
   if (sendPreference.data?.status !== "consented") { await finish(job, workerId, { status: "skipped_opt_out", errorCode: "not_eligible", reason: "Consentimento removido antes do envio." }); return "skipped" as const; }
   if (!sendCustomer.data?.phone_normalized || sendCustomer.data.phone_normalized !== job.phone_snapshot) { await finish(job, workerId, { status: "skipped_invalid_contact", errorCode: "invalid_contact", reason: "Telefone alterado antes do envio." }); return "skipped" as const; }
   if (!sendSettings.data?.growth_campaigns_enabled) { await finish(job, workerId, { status: "failed_permanent", errorCode: "campaigns_disabled", reason: "Campanhas desativadas antes do envio." }); return "failed" as const; }

@@ -6,6 +6,7 @@ import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { CartService } from "@/server/cart/cart-service";
 import { hashCartToken } from "@/server/cart/cart-token";
+import { ModuleAccessService } from "@/server/modules/module-access-service";
 import {
   automationInputSchema,
   campaignInputSchema,
@@ -31,9 +32,15 @@ function moneyNumber(value: unknown) {
   return Number.isSafeInteger(number) ? number : 0;
 }
 
+async function authorizeGrowth(permission: Parameters<typeof authorize>[0]) {
+  const context = await authorize(permission);
+  await ModuleAccessService.require("growth", context);
+  return context;
+}
+
 export class GrowthService {
   static async loadOverview() {
-    const context = await authorize(PERMISSIONS.GROWTH_VIEW);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_VIEW);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
 
@@ -84,7 +91,7 @@ export class GrowthService {
 
   static async saveSettings(input: GrowthSettingsInput) {
     const values = growthSettingsSchema.parse(input);
-    const context = await authorize(PERMISSIONS.GROWTH_MANAGE);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_MANAGE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const row = {
@@ -108,7 +115,7 @@ export class GrowthService {
 
   static async createCoupon(input: CouponInput) {
     const values = couponInputSchema.parse(input);
-    const context = await authorize(PERMISSIONS.GROWTH_MANAGE);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_MANAGE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data, error } = await admin.from("coupons").insert({
@@ -135,7 +142,7 @@ export class GrowthService {
 
   static async createSegment(input: SegmentInput) {
     const values = segmentInputSchema.parse(input);
-    const context = await authorize(PERMISSIONS.GROWTH_MANAGE);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_MANAGE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const rules: Record<string, number | boolean> = {};
@@ -157,7 +164,7 @@ export class GrowthService {
 
   static async createCampaign(input: CampaignInput) {
     const values = campaignInputSchema.parse(input);
-    const context = await authorize(PERMISSIONS.GROWTH_CAMPAIGNS);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     if (values.channel === "whatsapp") {
@@ -180,7 +187,7 @@ export class GrowthService {
 
   static async createAutomation(input: AutomationInput) {
     const values = automationInputSchema.parse(input);
-    const context = await authorize(PERMISSIONS.GROWTH_CAMPAIGNS);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const conditions: Record<string, number | string> = {};
@@ -202,7 +209,7 @@ export class GrowthService {
   }
 
   static async prepareCampaign(campaignId: string) {
-    const context = await authorize(PERMISSIONS.GROWTH_CAMPAIGNS);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data: campaign, error: campaignError } = await admin.from("campaigns").select("id").eq("id", campaignId)
@@ -215,7 +222,7 @@ export class GrowthService {
   }
 
   static async loadCampaignCenter() {
-    const context = await authorize(PERMISSIONS.GROWTH_CAMPAIGNS);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const [settings, campaigns, segments, customers, customerOrders, preferences, recipients, whatsapp] = await Promise.all([
@@ -253,7 +260,7 @@ export class GrowthService {
   }
 
   static async setMarketingPreference(customerId: string, status: "consented" | "opted_out" | "not_consented") {
-    const context = await authorize(PERMISSIONS.GROWTH_CAMPAIGNS);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data, error } = await admin.rpc("customer_marketing_preference_internal", {
@@ -265,7 +272,7 @@ export class GrowthService {
   }
 
   static async enqueueCampaign(campaignId: string) {
-    const context = await authorize(PERMISSIONS.GROWTH_CAMPAIGNS);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const [campaignResult, channelResult] = await Promise.all([
@@ -286,7 +293,7 @@ export class GrowthService {
   }
 
   static async cancelCampaign(campaignId: string, reason: string) {
-    const context = await authorize(PERMISSIONS.GROWTH_CAMPAIGNS);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data: campaign, error: readError } = await admin.from("campaigns").select("id")
@@ -301,7 +308,7 @@ export class GrowthService {
   }
 
   static async runScheduled(referenceDate?: string) {
-    const context = await authorize(PERMISSIONS.GROWTH_CAMPAIGNS);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data, error } = await admin.rpc("growth_run_scheduled_automations_internal", {
