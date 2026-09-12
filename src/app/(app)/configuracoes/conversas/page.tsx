@@ -125,6 +125,13 @@ export default async function ConversationSettingsPage() {
           <h2 style={{ margin: 0, fontSize: 18 }}>Atendimento automático</h2>
           <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="botEnabled" defaultChecked={settings?.default_bot_enabled ?? true} /><span>Responder automaticamente quando não houver atendente</span></label>
           <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="aiEnabled" defaultChecked={Boolean(settings?.ai_enabled)} /><span>Usar o assistente inteligente nas conversas</span></label>
+          <label style={{ display: "flex", gap: 9, alignItems: "flex-start", padding: 12, borderRadius: 10, border: "1px solid var(--border)" }}>
+            <input type="checkbox" name="whatsappOrdersEnabled" defaultChecked={Boolean(settings?.whatsapp_orders_enabled)} disabled={!connectionConfigured} style={{ marginTop: 3 }} />
+            <span>
+              <strong>Aceitar pedidos pelo WhatsApp</strong>
+              <span className="muted" style={{ display: "block", fontSize: 12, marginTop: 3 }}>O bot pode montar um carrinho pela conversa, perguntar entrega ou retirada, forma de pagamento e só cria o pedido depois da confirmação do cliente.</span>
+            </span>
+          </label>
           <p className="muted" style={{ margin: 0, fontSize: 12 }}>O assistente só utiliza as funções autorizadas do PedeAqui e respeita o acesso configurado para esta unidade.</p>
         </Card>
 

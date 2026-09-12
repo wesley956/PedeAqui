@@ -61,9 +61,6 @@ export async function saveConversationSettingsAction(formData: FormData) {
     deliveryOperationEnabled: structural.deliveryOperationEnabled,
   });
 
-  // Campo desabilitado não é enviado pelo browser. Em modo Personalizado preservamos
-  // a preferência se a capability estiver suspensa/incompatível; desligar módulo,
-  // entitlement, entrega ou pagamento online nunca apaga a escolha anterior.
   const selected = resolveOrderNotificationSelection(preset, {
     notifyOrderReceived: capabilities.order_received.configurable ? checked(formData, "notifyOrderReceived") : currentPreferences.order_received,
     notifyOrderConfirmed: capabilities.order_confirmed.configurable ? checked(formData, "notifyOrderConfirmed") : currentPreferences.order_confirmed,
@@ -101,6 +98,7 @@ export async function saveConversationSettingsAction(formData: FormData) {
     appSecretSecretRef: current?.app_secret_secret_ref ?? null,
     botEnabled: checked(formData, "botEnabled"),
     aiEnabled: checked(formData, "aiEnabled"),
+    whatsappOrdersEnabled: checked(formData, "whatsappOrdersEnabled"),
     greetingEnabled: connectionConfigured ? checked(formData, "greetingEnabled") : Boolean(current?.greeting_enabled),
     greetingTemplate: greeting ? restoreGreetingTokens(greeting) : DEFAULT_WHATSAPP_GREETING,
     greetingFallbackMessage: optional(formData, "greetingFallbackMessage") ?? DEFAULT_WHATSAPP_GREETING_FALLBACK,

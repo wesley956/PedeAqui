@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { ConversationService } from "@/server/conversations/conversation-service";
 import { WhatsAppCoexistenceService } from "@/server/conversations/coexistence-service";
 import { ConversationGreetingService } from "@/server/conversations/greeting-service";
+import { WhatsAppDirectOrderOrchestrator } from "@/server/conversations/whatsapp-direct-order-orchestrator";
 import { resolveWhatsAppWebhookRouting } from "@/server/conversations/webhook-routing";
 import { parseWhatsAppWebhook, verifyMetaWebhookSignature, webhookPhoneNumberIds } from "@/server/conversations/whatsapp-webhook";
 import { recordFailure } from "@/server/observability/failure";
@@ -68,10 +69,19 @@ export async function POST(request: Request) {
       const result = await ConversationService.ingestWhatsAppEvent(event);
       processed += 1;
       if (event.kind === "message") {
+        let orderHandled = false;
         try {
-          await ConversationGreetingService.afterInbound(result, requestContext.requestId);
+          orderHandled = await WhatsAppDirectOrderOrchestrator.afterInbound(result, requestContext.requestId);
         } catch (error) {
-          recordFailure("whatsapp.greeting.failed", error, { requestId: requestContext.requestId });
+          recordFailure("whatsapp.order_automation.failed", error, { requestId: requestContext.requestId });
+        }
+
+        if (!orderHandled) {
+          try {
+            await ConversationGreetingService.afterInbound(result, requestContext.requestId);
+          } catch (error) {
+            recordFailure("whatsapp.greeting.failed", error, { requestId: requestContext.requestId });
+          }
         }
       }
     }
