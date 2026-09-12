@@ -85,8 +85,8 @@ export function parseWhatsAppOrderItems(text: string): ParsedItem[] {
       .trim();
     const match = segment.match(/^(\d{1,4})\s*(?:x|un|unid(?:ade)?s?)?\s+(.+)$/i);
     if (!match) continue;
-    const quantity = Number(match[1]);
-    const query = match[2].replace(/^[xX]\s*/, "").trim();
+    const quantity = Number(match[1]!);
+    const query = match[2]!.replace(/^[xX]\s*/, "").trim();
     if (quantity > 0 && quantity <= 99 && query.length >= 2) parsed.push({ quantity, query });
   }
   return parsed;
@@ -95,7 +95,7 @@ export function parseWhatsAppOrderItems(text: string): ParsedItem[] {
 function hasUnsupportedQuantity(text: string) {
   return text.split(/[\n;,]+/).some((segment) => {
     const match = segment.trim().match(/^(\d{1,4})\s*(?:x|un|unid(?:ade)?s?)?\s+\S+/i);
-    return Boolean(match && Number(match[1]) > 99);
+    return Boolean(match && Number(match[1]!) > 99);
   });
 }
 
@@ -127,7 +127,12 @@ function parsePayment(text: string): "cash" | "credit_card" | "debit_card" | nul
 function parseAddress(text: string) {
   const parts = text.split(",").map((item) => item.trim()).filter(Boolean);
   if (parts.length < 5) return null;
-  const [street, number, district, city, state, ...rest] = parts;
+  const street = parts[0]!;
+  const number = parts[1]!;
+  const district = parts[2]!;
+  const city = parts[3]!;
+  const state = parts[4]!;
+  const rest = parts.slice(5);
   return {
     postalCode: "",
     street,
@@ -159,9 +164,9 @@ async function findProduct(organizationId: string, storeId: string, query: strin
   const normalizedQuery = normalizeBotInput(query);
   const exact = rows.find((row) => normalizeBotInput(row.name) === normalizedQuery);
   if (exact) return { kind: "found" as const, product: exact };
-  if (rows.length === 1) return { kind: "found" as const, product: rows[0] };
+  if (rows.length === 1) return { kind: "found" as const, product: rows[0]! };
   const starts = rows.filter((row) => normalizeBotInput(row.name).startsWith(normalizedQuery));
-  if (starts.length === 1) return { kind: "found" as const, product: starts[0] };
+  if (starts.length === 1) return { kind: "found" as const, product: starts[0]! };
   return { kind: "ambiguous" as const, options: rows.slice(0, 5).map((row) => row.name) };
 }
 
@@ -176,10 +181,11 @@ async function addRequestedItems(input: Input, items: ParsedItem[]) {
     if (found.kind === "ambiguous") {
       return { ok: false as const, message: `Encontrei mais de uma opção para “${request.query}”: ${found.options.join(", ")}. Envie novamente usando o nome exato do item.` };
     }
+    const product = found.product;
     try {
       const result = await CartService.addItem({
         storeSlug: input.storeSlug,
-        productId: found.product.id,
+        productId: product.id,
         quantity: request.quantity,
         note: "Pedido iniciado pelo WhatsApp",
         modifierIds: [],
@@ -187,11 +193,11 @@ async function addRequestedItems(input: Input, items: ParsedItem[]) {
         gasSaleMode: null,
       }, token);
       token = result.token;
-      const unit = Number(found.product.promotional_price_cents ?? found.product.price_cents);
-      added.push({ name: found.product.name, quantity: request.quantity, lineTotalCents: unit * request.quantity });
+      const unit = Number(product.promotional_price_cents ?? product.price_cents);
+      added.push({ name: product.name, quantity: request.quantity, lineTotalCents: unit * request.quantity });
     } catch (error) {
       if (error instanceof PricingError && error.code === "invalid_modifiers") {
-        return { ok: false as const, message: `O item “${found.product.name}” precisa escolher sabor, tamanho ou adicional. Por segurança, ainda não vou criar esse item automaticamente. Digite 1 para montar esse produto no cardápio online ou escolha um item sem opções obrigatórias.` };
+        return { ok: false as const, message: `O item “${product.name}” precisa escolher sabor, tamanho ou adicional. Por segurança, ainda não vou criar esse item automaticamente. Digite 1 para montar esse produto no cardápio online ou escolha um item sem opções obrigatórias.` };
       }
       throw error;
     }
