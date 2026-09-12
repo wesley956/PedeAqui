@@ -32,6 +32,22 @@ function moneyNumber(value: unknown) {
   return Number.isSafeInteger(number) ? number : 0;
 }
 
+function maskPhone(value: string | null | undefined) {
+  if (!value) return null;
+  const digits = value.replace(/\D/g, "");
+  return digits.length >= 4 ? `•••• ${digits.slice(-4)}` : "Telefone cadastrado";
+}
+
+type GrowthGroupSummary = {
+  group_key: string; segment_id: string | null; name: string; group_kind: "preset" | "custom"; rules: Record<string, unknown>;
+  members: number; eligible_whatsapp: number; opted_out: number; not_consented: number; invalid_contact: number;
+};
+
+type GrowthStoreCustomer = {
+  customer_id: string; name: string; phone_normalized: string | null; orders_count: number; last_order_at: string | null;
+  preference_status: "consented" | "opted_out" | "not_consented"; contact_valid: boolean; eligible_whatsapp: boolean;
+};
+
 async function authorizeGrowth(permission: Parameters<typeof authorize>[0]) {
   const context = await authorize(permission);
   await ModuleAccessService.require("growth", context);
@@ -44,7 +60,7 @@ export class GrowthService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
 
-    const [settings, coupons, segments, campaigns, rules, cashback, loyalty, customers, runs] = await Promise.all([
+    const [settings, coupons, segments, campaigns, rules, cashback, loyalty, customers, runs, groupSummaries] = await Promise.all([
       admin.from("store_growth_settings").select("*").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
       admin.from("coupons").select("*").eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null).order("created_at", { ascending: false }),
       admin.from("customer_segments").select("*").eq("organization_id", context.organizationId).eq("store_id", storeId).order("created_at", { ascending: false }),
@@ -54,9 +70,10 @@ export class GrowthService {
       admin.from("loyalty_accounts").select("customer_id, balance_points, lifetime_earned_points, lifetime_redeemed_points").eq("organization_id", context.organizationId).eq("store_id", storeId).order("balance_points", { ascending: false }).limit(100),
       admin.from("customers").select("id, name, phone, email, orders_count, total_spent_cents, last_order_at").eq("organization_id", context.organizationId).is("deleted_at", null).order("last_order_at", { ascending: false, nullsFirst: false }).limit(250),
       admin.from("automation_runs").select("id, rule_id, customer_id, order_id, status, result, error_message, started_at, completed_at").eq("organization_id", context.organizationId).eq("store_id", storeId).order("started_at", { ascending: false }).limit(30),
+      admin.rpc("growth_group_summaries_internal", { p_store_id: storeId }),
     ]);
 
-    for (const result of [settings, coupons, segments, campaigns, rules, cashback, loyalty, customers, runs]) {
+    for (const result of [settings, coupons, segments, campaigns, rules, cashback, loyalty, customers, runs, groupSummaries]) {
       if (result.error) throw result.error;
     }
 
@@ -86,6 +103,7 @@ export class GrowthService {
       automationRules: rules.data ?? [],
       automationRuns: runs.data ?? [],
       balances,
+      groupSummaries: (groupSummaries.data ?? []) as GrowthGroupSummary[],
     };
   }
 
@@ -147,6 +165,7 @@ export class GrowthService {
     const admin = createAdminClient();
     const rules: Record<string, number | boolean> = {};
     if (values.ordersCountMin !== undefined) rules.orders_count_min = values.ordersCountMin;
+    if (values.ordersCountMax !== undefined) rules.orders_count_max = values.ordersCountMax;
     if (values.totalSpentCentsMin !== undefined) rules.total_spent_cents_min = values.totalSpentCentsMin;
     if (values.averageTicketCentsMin !== undefined) rules.average_ticket_cents_min = values.averageTicketCentsMin;
     if (values.inactiveDaysMin !== undefined) rules.inactive_days_min = values.inactiveDaysMin;
@@ -225,36 +244,34 @@ export class GrowthService {
     const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const [settings, campaigns, segments, customers, customerOrders, preferences, recipients, whatsapp] = await Promise.all([
+    const [settings, campaigns, segments, customers, recipients, whatsapp, groupSummaries] = await Promise.all([
       admin.from("store_operational_settings").select("growth_campaigns_enabled,campaign_rate_per_minute").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
       admin.from("campaigns").select("id,name,objective,channel,content,template_name,template_language,status,audience_summary,created_at,queued_at,completed_at").eq("organization_id", context.organizationId).eq("store_id", storeId).order("created_at", { ascending: false }),
       admin.from("customer_segments").select("id,name,active").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("active", true).order("name"),
-      admin.from("customers").select("id,name,phone_normalized,orders_count,last_order_at").eq("organization_id", context.organizationId).is("deleted_at", null).order("name").limit(500),
-      admin.from("orders").select("customer_id").eq("organization_id", context.organizationId).eq("store_id", storeId).not("customer_id", "is", null),
-      admin.from("customer_marketing_preferences").select("customer_id,status,source,consented_at,opted_out_at").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("channel", "whatsapp"),
+      admin.rpc("growth_store_customers_internal", { p_store_id: storeId }),
       admin.from("campaign_recipients").select("campaign_id,status").eq("organization_id", context.organizationId).eq("store_id", storeId),
       admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
+      admin.rpc("growth_group_summaries_internal", { p_store_id: storeId }),
     ]);
-    for (const result of [settings, campaigns, segments, customers, customerOrders, preferences, recipients, whatsapp]) if (result.error) throw result.error;
-    const preferenceMap = new Map((preferences.data ?? []).map((item) => [item.customer_id, item]));
+    for (const result of [settings, campaigns, segments, customers, recipients, whatsapp, groupSummaries]) if (result.error) throw result.error;
     const recipientCounts = new Map<string, Record<string, number>>();
     for (const recipient of recipients.data ?? []) {
       const counts = recipientCounts.get(recipient.campaign_id) ?? {};
       counts[recipient.status] = (counts[recipient.status] ?? 0) + 1;
       recipientCounts.set(recipient.campaign_id, counts);
     }
-    const storeCustomerIds = new Set((customerOrders.data ?? []).map((order) => order.customer_id).filter(Boolean));
-    const customerRows = (customers.data ?? []).filter((customer) => storeCustomerIds.has(customer.id)).map((customer) => ({ ...customer, preference: preferenceMap.get(customer.id) ?? null }));
+    const customerRows = ((customers.data ?? []) as GrowthStoreCustomer[]).map((customer) => ({ ...customer, masked_phone: maskPhone(customer.phone_normalized) }));
     return {
       context,
       enabled: Boolean(settings.data?.growth_campaigns_enabled),
       ratePerMinute: Number(settings.data?.campaign_rate_per_minute ?? 10),
       whatsappReady: Boolean(whatsapp.data?.whatsapp_enabled && whatsapp.data?.connection_status === "connected" && whatsapp.data?.whatsapp_phone_number_id && whatsapp.data?.access_token_secret_ref),
-      eligibleCustomers: customerRows.filter((customer) => customer.preference?.status === "consented" && customer.phone_normalized).length,
-      optedOutCustomers: customerRows.filter((customer) => customer.preference?.status === "opted_out").length,
-      notConsentedCustomers: customerRows.filter((customer) => !customer.preference || customer.preference.status === "not_consented").length,
+      eligibleCustomers: customerRows.filter((customer) => customer.eligible_whatsapp).length,
+      optedOutCustomers: customerRows.filter((customer) => customer.preference_status === "opted_out").length,
+      notConsentedCustomers: customerRows.filter((customer) => customer.preference_status === "not_consented").length,
       customers: customerRows,
       segments: segments.data ?? [],
+      groupSummaries: (groupSummaries.data ?? []) as GrowthGroupSummary[],
       campaigns: (campaigns.data ?? []).map((campaign) => ({ ...campaign, recipientCounts: recipientCounts.get(campaign.id) ?? {} })),
     };
   }

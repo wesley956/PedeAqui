@@ -15,7 +15,7 @@ describe("growth commercial workspace [335]", () => {
   });
 
   it("keeps creation forms collapsed until the restaurant asks for them", () => {
-    for (const summary of ["Editar regras de fidelidade", "Criar novo cupom", "Criar grupo de clientes", "Criar campanha", "Criar automação"]) expect(page).toContain(`<summary>${summary}</summary>`);
+    for (const summary of ["Editar regras de fidelidade", "Criar novo cupom", "Criar grupo personalizado", "Criar campanha", "Criar automação"]) expect(page).toContain(`<summary>${summary}</summary>`);
     expect(page.match(/<details/g)?.length).toBeGreaterThanOrEqual(5);
     expect(page).toContain("Modo avançado");
     expect(page).not.toContain('<details className={styles.advanced} open>');
