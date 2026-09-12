@@ -82,6 +82,7 @@ export async function createSegmentAction(formData: FormData) {
     name: String(formData.get("name") ?? ""),
     description: optional(formData, "description"),
     ordersCountMin: optionalPositiveInt(formData, "ordersCountMin"),
+    ordersCountMax: optionalPositiveInt(formData, "ordersCountMax"),
     totalSpentCentsMin: optionalMoney(formData, "totalSpentMin"),
     averageTicketCentsMin: optionalMoney(formData, "averageTicketMin"),
     inactiveDaysMin: optionalPositiveInt(formData, "inactiveDaysMin"),

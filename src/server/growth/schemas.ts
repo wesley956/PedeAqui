@@ -32,12 +32,16 @@ export const segmentInputSchema = z.object({
   name: z.string().trim().min(2).max(120),
   description: z.string().trim().max(500).nullable(),
   ordersCountMin: optionalInteger,
+  ordersCountMax: optionalInteger,
   totalSpentCentsMin: optionalInteger,
   averageTicketCentsMin: optionalInteger,
   inactiveDaysMin: z.number().int().positive().optional(),
   lastOrderDaysMax: z.number().int().positive().optional(),
   hasCashbackBalance: z.boolean().optional(),
   hasLoyaltyBalance: z.boolean().optional(),
+}).refine((value) => value.ordersCountMin === undefined || value.ordersCountMax === undefined || value.ordersCountMax >= value.ordersCountMin, {
+  message: "O máximo de pedidos deve ser maior ou igual ao mínimo.",
+  path: ["ordersCountMax"],
 });
 
 export const campaignInputSchema = z.object({

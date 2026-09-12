@@ -7,6 +7,7 @@ const statusLabels: Record<string, string> = { draft: "Rascunho", scheduled: "Ag
 
 export default async function CampaignCenterPage() {
   const data = await GrowthService.loadCampaignCenter();
+  const allGroup = data.groupSummaries.find((group) => group.group_key === "preset:all");
   return <main className={styles.root}>
     <header className={styles.hero}><div><p className={styles.eyebrow}>GROWTH · CAMPANHAS</p><h1>Campanhas pelo WhatsApp oficial</h1><p>Envie templates aprovados somente para clientes elegíveis. A fila controla volume, retry, opt-out e isolamento da unidade.</p></div><Link href="/crescimento" className={styles.secondary}>Voltar ao Growth</Link></header>
 
@@ -22,13 +23,13 @@ export default async function CampaignCenterPage() {
     {data.enabled && !data.whatsappReady ? <section className={styles.section}><div className={styles.empty}><strong>Conecte o WhatsApp oficial antes de enviar.</strong><p>Rascunhos e preferências continuam disponíveis; pedidos e entregas não são afetados.</p></div></section> : null}
 
     <section className={styles.section}>
-      <div className={styles.sectionHeader}><div><h2>Nova campanha</h2><p>“Todos” significa todos os clientes consentidos, com telefone válido e sem opt-out.</p></div></div>
+      <div className={styles.sectionHeader}><div><h2>Nova campanha</h2><p>Todos os elegíveis: o grupo tem {Number(allGroup?.members ?? 0)} clientes; {Number(allGroup?.eligible_whatsapp ?? 0)} podem receber no WhatsApp.</p></div></div>
       <form action={createCampaignAction} className={styles.detailsBody}>
         <input type="hidden" name="channel" value="whatsapp" />
         <div className={styles.formGrid}>
           <label className={styles.label}>Nome interno<input className={styles.field} name="name" required minLength={2} maxLength={140} /></label>
           <label className={styles.label}>Objetivo<input className={styles.field} name="objective" maxLength={240} /></label>
-          <label className={styles.label}>Público<select className={styles.field} name="segmentId"><option value="">Todos os elegíveis</option>{data.segments.map((segment) => <option value={segment.id} key={segment.id}>{segment.name}</option>)}</select></label>
+          <label className={styles.label}>Grupo de clientes<select className={styles.field} name="segmentId"><option value="">Todos · {Number(allGroup?.members ?? 0)} no grupo / {Number(allGroup?.eligible_whatsapp ?? 0)} elegíveis</option>{data.segments.map((segment) => { const count = data.groupSummaries.find((group) => group.segment_id === segment.id); return <option value={segment.id} key={segment.id}>{segment.name} · {Number(count?.members ?? 0)} / {Number(count?.eligible_whatsapp ?? 0)} elegíveis</option>; })}</select></label>
           <label className={styles.label}>Template aprovado da Meta<input className={styles.field} name="templateName" required placeholder="promocao_semana" /></label>
           <label className={styles.label}>Idioma do template<input className={styles.field} name="templateLanguage" defaultValue="pt_BR" required /></label>
         </div>
@@ -50,8 +51,8 @@ export default async function CampaignCenterPage() {
     </section>
 
     <section className={styles.section}>
-      <div className={styles.sectionHeader}><div><h2>Consentimento por cliente</h2><p>Pedido e mensagem transacional não viram automaticamente autorização para promoção.</p></div></div>
-      <div className={styles.list}>{data.customers.slice(0, 150).map((customer) => <article className={styles.item} key={customer.id}><div className={styles.itemMain}><strong>{customer.name}</strong><span className={styles.itemMeta}>{customer.phone_normalized ?? "Sem telefone"} · {customer.preference?.status === "consented" ? "Consentido" : customer.preference?.status === "opted_out" ? "Opt-out" : "Sem consentimento"}</span></div><form action={setMarketingPreferenceAction}><input type="hidden" name="customerId" value={customer.id} /><select className={styles.field} name="status" defaultValue={customer.preference?.status ?? "not_consented"}><option value="not_consented">Sem consentimento</option><option value="consented">Consentiu</option><option value="opted_out">Opt-out</option></select><button className={styles.secondary} type="submit">Salvar</button></form></article>)}{data.customers.length === 0 ? <div className={styles.empty}>Nenhum cliente cadastrado nesta organização.</div> : null}</div>
+      <div className={styles.sectionHeader}><div><h2>Consentimento por cliente</h2><p>Pedido e mensagem transacional não viram automaticamente autorização para promoção. Opt-out sempre prevalece.</p></div></div>
+      <div className={styles.list}>{data.customers.slice(0, 150).map((customer) => <article className={styles.item} key={customer.customer_id}><div className={styles.itemMain}><strong>{customer.name}</strong><span className={styles.itemMeta}>{customer.masked_phone ?? "Sem telefone válido"} · {customer.preference_status === "consented" ? "Consentido" : customer.preference_status === "opted_out" ? "Opt-out protegido" : "Sem consentimento"}</span></div>{customer.preference_status === "opted_out" ? <span className={styles.itemMeta}>Somente o próprio cliente pode autorizar novamente.</span> : <form action={setMarketingPreferenceAction}><input type="hidden" name="customerId" value={customer.customer_id} /><select className={styles.field} name="status" defaultValue={customer.preference_status}><option value="not_consented">Sem consentimento</option><option value="consented">Consentiu</option><option value="opted_out">Opt-out</option></select><button className={styles.secondary} type="submit">Salvar</button></form>}</article>)}{data.customers.length === 0 ? <div className={styles.empty}>Nenhum cliente com compra concluída nesta unidade.</div> : null}</div>
     </section>
   </main>;
 }
