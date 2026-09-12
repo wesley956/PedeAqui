@@ -72,6 +72,10 @@ const productTokens = /\b(?:salgad[oa]s?|pasteis?|pastel|coxinh[ao]s?|kibe?s?|qu
 const compositionTokens = /\b(?:sortido|variado|misturado|resto|restante|coxinh[ao]s?|kibe?s?|quibe?s?|bolinhas?|queijo|salsichas?|calabresa|presunto)\b/;
 const quantityToken = /\b\d{1,4}\b/;
 
+function numericTokens(value: string) {
+  return [...value.matchAll(/\b\d{1,12}\b/g)].map((match) => match[0]);
+}
+
 export function classifyWhatsAppIntelligenceIntent(
   text: string | null | undefined,
   phase: WhatsAppIntelligencePhase,
@@ -88,6 +92,7 @@ export function classifyWhatsAppIntelligenceIntent(
   if (phase === "order_confirmation") {
     if (/^(?:sim|confirmo|pode confirmar|pode fechar|confirma)$/.test(normalized)) return result("confirmation", 0.99, "explicit-confirmation");
     if (/\b(?:espera|calma|pera|perai|pera ai)\b/.test(normalized)) return result("clarify", 0.98, "confirmation-hold");
+    if (/\b(?:acho que sim|talvez|pode ser|creio que sim)\b/.test(normalized)) return result("clarify", 0.94, "non-explicit-confirmation");
   }
 
   if (hasAny(normalized, flavorQuestionPatterns)) return result("flavor_question", 0.97, "flavor-question");
@@ -97,9 +102,11 @@ export function classifyWhatsAppIntelligenceIntent(
 
   if (hasAny(normalized, orderStartPatterns)) return result("order_start", 0.97, "new-order-language");
 
+  const trackingNumbers = numericTokens(normalized);
   const explicitTrackingCode = normalized.match(/\b(?:pedido|codigo)\s*#?\s*(\d{1,12})\b/);
   if (explicitTrackingCode) return result("track_code", 0.99, "explicit-order-code");
-  if (phase === "awaiting_tracking_code" && /^#?\d{1,12}$/.test(normalized)) return result("track_code", 0.99, "tracking-step-number");
+  if (phase === "awaiting_tracking_code" && trackingNumbers.length === 1) return result("track_code", 0.99, "tracking-step-single-number");
+  if (/\b(?:pedido|codigo)\b/.test(normalized) && trackingNumbers.length === 1) return result("track_code", 0.97, "tracking-context-single-number");
   if (hasAny(normalized, trackingPatterns)) return result("track_start", 0.95, "tracking-language");
 
   if (/\b(?:atendente|humano|falar com (?:o )?restaurante|falar com uma pessoa|chama alguem)\b/.test(normalized)) {
