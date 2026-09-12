@@ -73,8 +73,10 @@ describe("WhatsApp direct orders", () => {
 
   it("runs direct ordering before the generic greeting bot", () => {
     expect(webhook).toContain("WhatsAppDirectOrderOrchestrator.afterInbound");
-    expect(webhook).toContain("if (!orderHandled) await ConversationGreetingService.afterInbound");
+    expect(webhook).toContain("if (!orderHandled)");
+    expect(webhook).toContain("ConversationGreetingService.afterInbound");
     expect(webhook.indexOf("WhatsAppDirectOrderOrchestrator.afterInbound")).toBeLessThan(webhook.indexOf("ConversationGreetingService.afterInbound"));
+    expect(webhook).toContain('recordFailure("whatsapp.greeting.failed"');
   });
 
   it("is opt-in per store and configurable from Conversas", () => {
