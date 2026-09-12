@@ -29,6 +29,7 @@ const WORD_ALIASES: Readonly<Record<string, string>> = {
   qtd: "quantidade", qnt: "quantidade", qnts: "quantidade", qtas: "quantidade",
   un: "unidade", und: "unidade", unid: "unidade", unds: "unidades", unids: "unidades",
   cx: "caixa", cxa: "caixa", cxs: "caixas", caixinha: "caixa", pct: "pacote", pc: "pacote", pcte: "pacote",
+  dez: "10", vinte: "20", trinta: "30", quarenta: "40", cinquenta: "50", sessenta: "60", setenta: "70", oitenta: "80", noventa: "90", cem: "100",
   dz: "duzia", dzia: "duzia", cento: "100", meia: "metade",
   coxina: "coxinha", cochinha: "coxinha", coxinh: "coxinha", coxinhaa: "coxinha", coxinhas: "coxinha",
   coxinaaa: "coxinha", cochinaa: "coxinha", cochina: "coxinha",
@@ -110,7 +111,7 @@ function autocorrectSafeToken(token: string) {
 export function normalizeInformalPortuguese(value: string | null | undefined) {
   let normalized = base(value ?? "");
   for (const [pattern, replacement] of PHRASE_ALIASES) normalized = normalized.replace(pattern, replacement);
-  return normalized
+  const withAliases = normalized
     .split(/(\s+|\n|,|;)/)
     .map((part) => {
       if (/^(\s+|\n|,|;)$/.test(part)) return part;
@@ -121,6 +122,8 @@ export function normalizeInformalPortuguese(value: string | null | undefined) {
     .replace(/[ \t]+/g, " ")
     .replace(/\s*\n\s*/g, "\n")
     .trim();
+
+  return withAliases.replace(/^(caixa|pacote|combo|kit)\b/, "uma $1");
 }
 
 export function singularizeLoosePortuguese(token: string) {
