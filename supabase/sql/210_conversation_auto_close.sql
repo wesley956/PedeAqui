@@ -95,7 +95,7 @@ as $$
       )
     )
   order by coalesce(c.last_message_at, c.opened_at), c.id
-  limit pg_catalog.greatest(1, pg_catalog.least(coalesce(p_limit, 100), 250));
+  limit greatest(1, least(coalesce(p_limit, 100), 250));
 $$;
 
 revoke all on function public.conversation_auto_close_candidates_internal(integer)
