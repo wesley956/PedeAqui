@@ -8,6 +8,7 @@ import {
   safeWhatsAppFailureMessage,
 } from "@/server/conversations/provider";
 import { recordFailure } from "@/server/observability/failure";
+import { recordGrowthOperationalEvent } from "@/server/growth/growth-observability";
 
 type Candidate = {
   conversation_id: string;
@@ -30,6 +31,7 @@ type CloseResult = {
 };
 
 export async function runConversationAutoCloseWorker(input?: { limit?: number }) {
+  const startedAt = Date.now();
   const admin = createAdminClient();
   const requestId = `conversation-auto-close:${randomUUID()}`;
   const limit = Math.max(1, Math.min(input?.limit ?? 100, 250));
@@ -38,6 +40,7 @@ export async function runConversationAutoCloseWorker(input?: { limit?: number })
 
   const candidates = (data ?? []) as Candidate[];
   const totals = { candidates: candidates.length, closed: 0, messagesSent: 0, messageFailures: 0, skipped: 0 };
+  const stores = new Map<string, { organizationId: string; storeId: string; closed: number; messagesSent: number; messageFailures: number }>();
 
   for (const candidate of candidates) {
     const { data: rawResult, error: closeError } = await admin.rpc("conversation_auto_close_internal", {
@@ -56,6 +59,12 @@ export async function runConversationAutoCloseWorker(input?: { limit?: number })
       continue;
     }
     totals.closed += 1;
+    if (result.organization_id && result.store_id) {
+      const key = `${result.organization_id}:${result.store_id}`;
+      const store = stores.get(key) ?? { organizationId: result.organization_id, storeId: result.store_id, closed: 0, messagesSent: 0, messageFailures: 0 };
+      store.closed += 1;
+      stores.set(key, store);
+    }
 
     if (!result.message_id || !result.message_body || !result.recipient || !result.phone_number_id || !result.access_token_secret_ref) continue;
     try {
@@ -74,8 +83,12 @@ export async function runConversationAutoCloseWorker(input?: { limit?: number })
       });
       if (markError) throw markError;
       totals.messagesSent += 1;
+      const store = result.organization_id && result.store_id ? stores.get(`${result.organization_id}:${result.store_id}`) : null;
+      if (store) store.messagesSent += 1;
     } catch (sendError) {
       totals.messageFailures += 1;
+      const store = result.organization_id && result.store_id ? stores.get(`${result.organization_id}:${result.store_id}`) : null;
+      if (store) store.messageFailures += 1;
       const sanitized = safeWhatsAppFailureMessage(sendError);
       recordFailure("conversation.auto_close.message_failed", sendError, {
         requestId,
@@ -92,6 +105,18 @@ export async function runConversationAutoCloseWorker(input?: { limit?: number })
       });
     }
   }
+
+  await Promise.all([...stores.values()].map((store) => recordGrowthOperationalEvent({
+    organizationId: store.organizationId,
+    storeId: store.storeId,
+    eventType: "conversation.auto_close",
+    outcome: store.messageFailures > 0 ? "partial" : "success",
+    reasonCode: store.messageFailures > 0 ? "closing_message_failed" : null,
+    source: "conversation_auto_close_worker",
+    counts: { closed: store.closed, messages_sent: store.messagesSent, message_failures: store.messageFailures },
+    durationMs: Date.now() - startedAt,
+    requestId,
+  })));
 
   return totals;
 }
