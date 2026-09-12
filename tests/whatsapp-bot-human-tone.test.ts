@@ -28,7 +28,7 @@ describe("WhatsApp bot human tone", () => {
     const menu = buildWhatsAppBotMenu("Dona Maria", true);
     expect(menu).toContain("pode escrever normalmente");
     expect(menu).toContain("Dona Maria");
-    expect(menu).toContain("7 — Fazer meu pedido por aqui");
+    expect(menu).toContain("7 — Fazer pedido pelo WhatsApp");
   });
 
   it("uses warmer tracking language while preserving order facts", () => {
