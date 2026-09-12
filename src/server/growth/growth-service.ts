@@ -10,12 +10,14 @@ import { ModuleAccessService } from "@/server/modules/module-access-service";
 import {
   automationInputSchema,
   campaignInputSchema,
+  campaignPolicySchema,
   cartBenefitsSchema,
   couponInputSchema,
   growthSettingsSchema,
   segmentInputSchema,
   type AutomationInput,
   type CampaignInput,
+  type CampaignPolicyInput,
   type CartBenefitsInput,
   type CouponInput,
   type GrowthSettingsInput,
@@ -197,10 +199,61 @@ export class GrowthService {
       name: values.name, objective: values.objective, channel: values.channel, content: values.content,
       template_name: values.templateName ?? null, template_language: values.templateLanguage,
       template_data: { body_parameters: values.includeCustomerNameParameter ? ["customer_name"] : [] },
+      schedule_type: values.scheduleType, local_send_time: values.localSendTime,
+      schedule_starts_on: values.scheduleStartsOn, schedule_ends_on: values.scheduleEndsOn,
+      recurrence_weekdays: values.recurrenceWeekdays,
       status: "draft", created_by: context.userId, updated_by: context.userId,
     }).select("*").single();
     if (error) throw error;
+    if (values.scheduleType !== "now") {
+      const { error: scheduleError } = await admin.rpc("campaign_schedule_internal", { p_campaign_id: data.id, p_actor_user_id: context.userId });
+      if (scheduleError) throw scheduleError;
+    }
     await AuditService.record(context, { action: "growth.campaign_created", entityType: "campaign", entityId: data.id, after: data });
+    return data;
+  }
+
+  static async pauseCampaign(campaignId: string, paused: boolean) {
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const { data: campaign, error: readError } = await admin.from("campaigns").select("id").eq("id", campaignId).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
+    if (readError) throw readError;
+    if (!campaign) throw new Error("Campanha não encontrada nesta unidade.");
+    const { data, error } = await admin.rpc("campaign_pause_internal", { p_campaign_id: campaignId, p_paused: paused, p_actor_user_id: context.userId });
+    if (error) throw error;
+    return data;
+  }
+
+  static async saveCampaignPolicy(input: CampaignPolicyInput) {
+    const values = campaignPolicySchema.parse(input);
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const { data, error } = await admin.from("store_operational_settings").update({
+      promotional_min_interval_hours: values.minimumIntervalHours,
+      promotional_daily_limit: values.dailyLimit,
+      promotional_weekly_limit: values.weeklyLimit,
+      updated_by: context.userId, updated_at: new Date().toISOString(),
+    }).eq("organization_id", context.organizationId).eq("store_id", storeId).select("*").single();
+    if (error) throw error;
+    await AuditService.record(context, { action: "growth.campaign_policy_updated", entityType: "store_operational_settings", entityId: storeId, after: values });
+    return data;
+  }
+
+  static async updateCampaignContent(campaignId: string, input: Pick<CampaignInput, "content" | "templateName" | "templateLanguage" | "includeCustomerNameParameter">) {
+    const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
+    const storeId = requireStoreId(context.storeId);
+    const values = campaignInputSchema.pick({ content: true, templateName: true, templateLanguage: true, includeCustomerNameParameter: true }).parse(input);
+    const admin = createAdminClient();
+    const { data: campaign, error: readError } = await admin.from("campaigns").select("id").eq("id", campaignId).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
+    if (readError) throw readError;
+    if (!campaign) throw new Error("Campanha não encontrada nesta unidade.");
+    const { data, error } = await admin.rpc("campaign_update_content_internal", {
+      p_campaign_id: campaignId, p_content: values.content, p_template_name: values.templateName,
+      p_template_language: values.templateLanguage, p_template_data: { body_parameters: values.includeCustomerNameParameter ? ["customer_name"] : [] }, p_actor_user_id: context.userId,
+    });
+    if (error) throw error;
     return data;
   }
 
@@ -244,16 +297,17 @@ export class GrowthService {
     const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const [settings, campaigns, segments, customers, recipients, whatsapp, groupSummaries] = await Promise.all([
-      admin.from("store_operational_settings").select("growth_campaigns_enabled,campaign_rate_per_minute").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
-      admin.from("campaigns").select("id,name,objective,channel,content,template_name,template_language,status,audience_summary,created_at,queued_at,completed_at").eq("organization_id", context.organizationId).eq("store_id", storeId).order("created_at", { ascending: false }),
+    const [settings, campaigns, segments, customers, recipients, whatsapp, groupSummaries, occurrences] = await Promise.all([
+      admin.from("store_operational_settings").select("growth_campaigns_enabled,campaign_rate_per_minute,promotional_min_interval_hours,promotional_daily_limit,promotional_weekly_limit").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
+      admin.from("campaigns").select("id,name,objective,channel,content,template_name,template_language,template_data,status,audience_summary,created_at,queued_at,completed_at,schedule_type,local_send_time,recurrence_weekdays,schedule_starts_on,schedule_ends_on,next_run_at,paused_at").eq("organization_id", context.organizationId).eq("store_id", storeId).order("created_at", { ascending: false }),
       admin.from("customer_segments").select("id,name,active").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("active", true).order("name"),
       admin.rpc("growth_store_customers_internal", { p_store_id: storeId }),
       admin.from("campaign_recipients").select("campaign_id,status").eq("organization_id", context.organizationId).eq("store_id", storeId),
       admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
       admin.rpc("growth_group_summaries_internal", { p_store_id: storeId }),
+      admin.from("campaign_occurrences").select("id,campaign_id,scheduled_for,status,member_count,eligible_count,excluded_count,completed_at").eq("organization_id", context.organizationId).eq("store_id", storeId).order("scheduled_for", { ascending: false }).limit(100),
     ]);
-    for (const result of [settings, campaigns, segments, customers, recipients, whatsapp, groupSummaries]) if (result.error) throw result.error;
+    for (const result of [settings, campaigns, segments, customers, recipients, whatsapp, groupSummaries, occurrences]) if (result.error) throw result.error;
     const recipientCounts = new Map<string, Record<string, number>>();
     for (const recipient of recipients.data ?? []) {
       const counts = recipientCounts.get(recipient.campaign_id) ?? {};
@@ -265,6 +319,11 @@ export class GrowthService {
       context,
       enabled: Boolean(settings.data?.growth_campaigns_enabled),
       ratePerMinute: Number(settings.data?.campaign_rate_per_minute ?? 10),
+      campaignPolicy: {
+        minimumIntervalHours: Number(settings.data?.promotional_min_interval_hours ?? 24),
+        dailyLimit: Number(settings.data?.promotional_daily_limit ?? 1),
+        weeklyLimit: Number(settings.data?.promotional_weekly_limit ?? 3),
+      },
       whatsappReady: Boolean(whatsapp.data?.whatsapp_enabled && whatsapp.data?.connection_status === "connected" && whatsapp.data?.whatsapp_phone_number_id && whatsapp.data?.access_token_secret_ref),
       eligibleCustomers: customerRows.filter((customer) => customer.eligible_whatsapp).length,
       optedOutCustomers: customerRows.filter((customer) => customer.preference_status === "opted_out").length,
@@ -272,7 +331,7 @@ export class GrowthService {
       customers: customerRows,
       segments: segments.data ?? [],
       groupSummaries: (groupSummaries.data ?? []) as GrowthGroupSummary[],
-      campaigns: (campaigns.data ?? []).map((campaign) => ({ ...campaign, recipientCounts: recipientCounts.get(campaign.id) ?? {} })),
+      campaigns: (campaigns.data ?? []).map((campaign) => ({ ...campaign, recipientCounts: recipientCounts.get(campaign.id) ?? {}, occurrences: (occurrences.data ?? []).filter((item) => item.campaign_id === campaign.id) })),
     };
   }
 

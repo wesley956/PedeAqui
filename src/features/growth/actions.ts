@@ -95,6 +95,7 @@ export async function createSegmentAction(formData: FormData) {
 }
 
 export async function createCampaignAction(formData: FormData) {
+  const scheduleType = String(formData.get("scheduleType") ?? "now") as "now" | "once" | "daily" | "weekly";
   await GrowthService.createCampaign({
     name: String(formData.get("name") ?? ""),
     objective: optional(formData, "objective"),
@@ -104,9 +105,38 @@ export async function createCampaignAction(formData: FormData) {
     templateName: optional(formData, "templateName"),
     templateLanguage: optional(formData, "templateLanguage") ?? "pt_BR",
     includeCustomerNameParameter: formData.get("includeCustomerNameParameter") === "on",
+    scheduleType,
+    localSendTime: scheduleType === "now" ? null : optional(formData, "localSendTime"),
+    scheduleStartsOn: scheduleType === "now" ? null : optional(formData, "scheduleStartsOn"),
+    scheduleEndsOn: scheduleType === "now" ? null : optional(formData, "scheduleEndsOn"),
+    recurrenceWeekdays: formData.getAll("recurrenceWeekdays").map(Number).filter((value) => Number.isInteger(value)),
   });
   revalidatePath("/crescimento");
+  revalidatePath("/crescimento/campanhas");
   finishGuidedAction(formData);
+}
+
+export async function pauseCampaignAction(formData: FormData) {
+  await GrowthService.pauseCampaign(String(formData.get("campaignId") ?? ""), formData.get("paused") === "true");
+  revalidatePath("/crescimento/campanhas");
+}
+
+export async function saveCampaignPolicyAction(formData: FormData) {
+  await GrowthService.saveCampaignPolicy({
+    minimumIntervalHours: Number(formData.get("minimumIntervalHours") ?? 24),
+    dailyLimit: Number(formData.get("dailyLimit") ?? 1),
+    weeklyLimit: Number(formData.get("weeklyLimit") ?? 3),
+  });
+  revalidatePath("/crescimento/campanhas");
+}
+
+export async function updateCampaignContentAction(formData: FormData) {
+  await GrowthService.updateCampaignContent(String(formData.get("campaignId") ?? ""), {
+    content: String(formData.get("content") ?? ""), templateName: optional(formData, "templateName"),
+    templateLanguage: optional(formData, "templateLanguage") ?? "pt_BR",
+    includeCustomerNameParameter: formData.get("includeCustomerNameParameter") === "on",
+  });
+  revalidatePath("/crescimento/campanhas");
 }
 
 export async function enqueueCampaignAction(formData: FormData) {

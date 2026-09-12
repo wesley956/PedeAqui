@@ -53,7 +53,22 @@ export const campaignInputSchema = z.object({
   templateName: z.string().trim().regex(/^[a-z0-9_]{1,512}$/, "Nome de template inválido.").nullable().optional(),
   templateLanguage: z.string().trim().regex(/^[a-z]{2}_[A-Z]{2}$/, "Idioma de template inválido.").default("pt_BR"),
   includeCustomerNameParameter: z.boolean().default(false),
+  scheduleType: z.enum(["now", "once", "daily", "weekly"]).default("now"),
+  localSendTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable().default(null),
+  scheduleStartsOn: z.string().date().nullable().default(null),
+  scheduleEndsOn: z.string().date().nullable().default(null),
+  recurrenceWeekdays: z.array(z.number().int().min(1).max(7)).max(7).default([]),
+}).superRefine((value, ctx) => {
+  if (value.scheduleType !== "now" && (!value.localSendTime || !value.scheduleStartsOn)) ctx.addIssue({ code: "custom", message: "Informe a data inicial e o horário local." });
+  if (value.scheduleType === "weekly" && value.recurrenceWeekdays.length === 0) ctx.addIssue({ code: "custom", message: "Escolha pelo menos um dia da semana." });
+  if (value.scheduleStartsOn && value.scheduleEndsOn && value.scheduleEndsOn < value.scheduleStartsOn) ctx.addIssue({ code: "custom", message: "A data final não pode ser anterior à inicial." });
 });
+
+export const campaignPolicySchema = z.object({
+  minimumIntervalHours: z.number().int().min(1).max(168),
+  dailyLimit: z.number().int().min(1).max(3),
+  weeklyLimit: z.number().int().min(1).max(10),
+}).refine((value) => value.weeklyLimit >= value.dailyLimit, { message: "O limite semanal não pode ser menor que o diário.", path: ["weeklyLimit"] });
 
 export const automationInputSchema = z.object({
   name: z.string().trim().min(2).max(140),
@@ -81,5 +96,6 @@ export type GrowthSettingsInput = z.infer<typeof growthSettingsSchema>;
 export type CouponInput = z.infer<typeof couponInputSchema>;
 export type SegmentInput = z.infer<typeof segmentInputSchema>;
 export type CampaignInput = z.infer<typeof campaignInputSchema>;
+export type CampaignPolicyInput = z.infer<typeof campaignPolicySchema>;
 export type AutomationInput = z.infer<typeof automationInputSchema>;
 export type CartBenefitsInput = z.infer<typeof cartBenefitsSchema>;
