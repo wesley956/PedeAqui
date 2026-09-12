@@ -21,6 +21,7 @@ import { WhatsAppAutomationCapabilityService } from "@/server/conversations/what
 import { resolveNotificationWorkflowVisibility } from "@/server/conversations/order-workflow-visibility";
 import { WhatsAppCloudProvider, WhatsAppProviderError, resolveWhatsAppAccessToken } from "@/server/conversations/provider";
 import { recordFailure } from "@/server/observability/failure";
+import { recordGrowthOperationalEvent } from "@/server/growth/growth-observability";
 
 type QueueRow = {
   id: string;
@@ -401,6 +402,7 @@ async function processOne(job: QueueRow, workerId: string) {
 }
 
 export async function runOrderWhatsAppNotificationWorker(options?: { workerId?: string; limit?: number }) {
+  const startedAt = Date.now();
   const admin = createAdminClient();
   const workerId = options?.workerId ?? `order-whatsapp:${randomUUID()}`;
   const limit = Math.min(Math.max(options?.limit ?? 20, 1), 100);
@@ -409,10 +411,16 @@ export async function runOrderWhatsAppNotificationWorker(options?: { workerId?: 
 
   const jobs = (data ?? []) as QueueRow[];
   const result = { claimed: jobs.length, sent: 0, failed: 0, skipped: 0 };
+  const stores = new Map<string, { organizationId: string; storeId: string; claimed: number; sent: number; failed: number; skipped: number }>();
   for (const job of jobs) {
+    const key = `${job.organization_id}:${job.store_id}`;
+    const store = stores.get(key) ?? { organizationId: job.organization_id, storeId: job.store_id, claimed: 0, sent: 0, failed: 0, skipped: 0 };
+    store.claimed += 1;
+    stores.set(key, store);
     try {
       const status = await processOne(job, workerId);
       result[status] += 1;
+      store[status] += 1;
     } catch (error) {
       const safe = safeError(error);
       try {
@@ -428,7 +436,19 @@ export async function runOrderWhatsAppNotificationWorker(options?: { workerId?: 
         notificationType: job.notification_type,
       });
       result.failed += 1;
+      store.failed += 1;
     }
   }
+  await Promise.all([...stores.values()].map((store) => recordGrowthOperationalEvent({
+    organizationId: store.organizationId,
+    storeId: store.storeId,
+    eventType: "order.notification",
+    outcome: store.failed > 0 ? (store.sent > 0 ? "partial" : "failed") : store.skipped > 0 && store.sent === 0 ? "blocked" : "success",
+    reasonCode: store.failed > 0 ? "notification_failures" : store.skipped > 0 ? "workflow_or_capability_suppressed" : null,
+    source: "order_notification_worker",
+    counts: { claimed: store.claimed, sent: store.sent, failed: store.failed, skipped: store.skipped },
+    durationMs: Date.now() - startedAt,
+    requestId: workerId,
+  })));
   return result;
 }
