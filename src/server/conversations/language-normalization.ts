@@ -5,6 +5,7 @@
 const PHRASE_ALIASES: ReadonlyArray<[RegExp, string]> = [
   [/\bbot menu open\b/g, "bot_menu_open"],
   [/\bcoz\s+inha\b/g, "coxinha"], [/\bcox\s+inha\b/g, "coxinha"], [/\bco\s+xinha\b/g, "coxinha"],
+  [/\beu quero\b/g, "quero"], [/\beu queria\b/g, "quero"],
   [/\bme ve ai\b/g, "quero"], [/\bme ve\b/g, "quero"], [/\bme arruma\b/g, "quero"],
   [/\bmanda ai\b/g, "quero"], [/\bmanda pra mim\b/g, "quero"], [/\bsepara pra mim\b/g, "quero"],
   [/\bpode manda\b/g, "quero"], [/\bpode mandar\b/g, "quero"], [/\bja manda\b/g, "quero"],
@@ -27,7 +28,7 @@ const WORD_ALIASES: Readonly<Record<string, string>> = {
   msm: "mesmo", memo: "mesmo", mermo: "mesmo", tb: "tambem", tbm: "tambem", tmb: "tambem",
   pq: "porque", q: "que", qro: "quero", qeru: "quero", keru: "quero", keria: "queria", queriaa: "queria",
   vcs: "voces", vc: "voce", cm: "com", c: "com", pra: "para", pro: "para", p: "para",
-  agr: "agora", hj: "hoje", dps: "depois", antesd: "antes", ae: "ai", aiin: "ai",
+  agr: "agora", hj: "hoje", dps: "depois", antesd: "antes", ae: "ai", aiin: "ai", seila: "sei la",
   qtd: "quantidade", qnt: "quantidade", qnts: "quantidade", qtas: "quantidade",
   un: "unidade", und: "unidade", unid: "unidade", unds: "unidades", unids: "unidades",
   cx: "caixa", cxa: "caixa", cxs: "caixas", caixinha: "caixa", pct: "pacote", pc: "pacote", pcte: "pacote",
@@ -71,6 +72,7 @@ function base(value: string) {
     .toLowerCase()
     .replace(/[“”‘’]/g, "\"")
     .replace(/(.)\1{2,}/g, "$1$1")
+    .replace(/\b(\d{1,3})(unidade|unidades|unid|unds?|und)\b/g, "$1 $2")
     .replace(/[^a-z0-9\n,;:/+\- ]+/g, " ")
     .replace(/[ \t]+/g, " ")
     .trim();
@@ -152,6 +154,7 @@ export function looseTokenSimilarity(left: string, right: string) {
 export function normalizeProductLanguage(value: string | null | undefined) {
   return normalizeInformalPortuguese(value)
     .replace(/^(?:uma|um)\s+(?=(?:caixa|pacote|combo|kit)\b)/, "")
+    .replace(/\b(?:entao|sei la|seila|tipo)\b/g, " ")
     .replace(/(\d+)\s*(?:litro|litros|lt|lts)\b/g, "$1l")
     .replace(/(\d+)\s*(?:mililitro|mililitros|ml)\b/g, "$1ml")
     .replace(/[^a-z0-9]+/g, " ")
