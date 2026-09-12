@@ -3,19 +3,126 @@ import { normalizeWhatsAppIdentifier } from "@/server/conversations/model";
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
 export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "hours" | "payment" | "delivery" | "order_start" | "unknown";
 
-const menuWords = new Set(["menu", "inicio", "iniciar", "oi", "ola", "bom dia", "boa tarde", "boa noite"]);
-const menuLinkWords = new Set(["1", "cardapio", "ver cardapio", "abrir cardapio"]);
-const trackingWords = new Set(["2", "acompanhar", "acompanhar pedido", "meu pedido", "pedido"]);
-const handoffWords = new Set(["3", "atendente", "humano", "falar com restaurante", "falar com o restaurante", "ajuda"]);
-const hoursWords = new Set(["4", "horario", "horarios", "funcionamento", "abre", "fecha", "aberto", "aberta"]);
-const paymentWords = new Set(["5", "pagamento", "pagamentos", "formas de pagamento", "pagar", "cartao", "pix", "dinheiro", "credito", "debito", "ticket", "alelo", "vr"]);
-const deliveryWords = new Set(["6", "entrega", "delivery", "taxa", "taxa de entrega", "frete", "bairro", "entregam"]);
-const orderStartWords = new Set(["7", "fazer pedido", "quero pedir", "pedido pelo whatsapp", "pedir pelo whatsapp", "montar pedido"]);
+const menuWords = new Set([
+  "menu",
+  "inicio",
+  "iniciar",
+  "oi",
+  "ola",
+  "oie",
+  "oi tudo bem",
+  "ola tudo bem",
+  "bom dia",
+  "boa tarde",
+  "boa noite",
+  "tudo bem",
+]);
+const menuLinkWords = new Set([
+  "1",
+  "cardapio",
+  "ver cardapio",
+  "abrir cardapio",
+  "manda o cardapio",
+  "me manda o cardapio",
+  "quero ver o cardapio",
+  "tem cardapio",
+  "link do cardapio",
+]);
+const trackingWords = new Set([
+  "2",
+  "acompanhar",
+  "acompanhar pedido",
+  "meu pedido",
+  "pedido",
+  "onde esta meu pedido",
+  "como esta meu pedido",
+  "status do pedido",
+  "meu pedido ja saiu",
+]);
+const handoffWords = new Set([
+  "3",
+  "atendente",
+  "humano",
+  "falar com restaurante",
+  "falar com o restaurante",
+  "falar com atendente",
+  "falar com uma pessoa",
+  "quero falar com alguem",
+  "me chama um atendente",
+  "preciso falar com alguem",
+  "ajuda",
+]);
+const hoursWords = new Set([
+  "4",
+  "horario",
+  "horarios",
+  "funcionamento",
+  "abre",
+  "fecha",
+  "aberto",
+  "aberta",
+  "que horas abre",
+  "que horas fecha",
+  "esta aberto",
+  "esta aberta",
+  "voces estao abertos",
+  "voces estao abertas",
+]);
+const paymentWords = new Set([
+  "5",
+  "pagamento",
+  "pagamentos",
+  "formas de pagamento",
+  "pagar",
+  "cartao",
+  "pix",
+  "dinheiro",
+  "credito",
+  "debito",
+  "ticket",
+  "alelo",
+  "vr",
+  "vale refeicao",
+  "aceita pix",
+  "aceita cartao",
+  "aceita dinheiro",
+  "como posso pagar",
+]);
+const deliveryWords = new Set([
+  "6",
+  "entrega",
+  "delivery",
+  "taxa",
+  "taxa de entrega",
+  "frete",
+  "bairro",
+  "entregam",
+  "voces entregam",
+  "tem entrega",
+  "quanto e a entrega",
+  "quanto custa a entrega",
+  "quanto tempo demora",
+  "tempo de entrega",
+  "entrega aqui",
+]);
+const orderStartWords = new Set([
+  "7",
+  "fazer pedido",
+  "quero pedir",
+  "pedido pelo whatsapp",
+  "pedir pelo whatsapp",
+  "montar pedido",
+  "quero fazer um pedido",
+  "quero fazer pedido",
+  "posso pedir por aqui",
+  "quero comprar",
+]);
 
 export function normalizeBotInput(value: string | null | undefined) {
   return (value ?? "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[!?.,;:]+/g, " ")
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
@@ -46,15 +153,19 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
 }
 
 function orderMenuLine(includeWhatsAppOrders: boolean) {
-  return includeWhatsAppOrders ? "\n7 — Fazer pedido pelo WhatsApp" : "";
+  return includeWhatsAppOrders ? "\n7 — Fazer meu pedido por aqui" : "";
+}
+
+function menuOptions(includeWhatsAppOrders: boolean) {
+  return `1 — Ver o cardápio\n2 — Acompanhar meu pedido\n3 — Falar com a equipe\n4 — Ver horários\n5 — Formas de pagamento\n6 — Entrega e taxa${orderMenuLine(includeWhatsAppOrders)}`;
 }
 
 export function appendWhatsAppBotMenu(introduction: string, includeWhatsAppOrders = false) {
-  return `${introduction.trim()}\n\nDigite uma opção:\n1 — Ver cardápio\n2 — Acompanhar pedido\n3 — Falar com o restaurante\n4 — Horários\n5 — Formas de pagamento\n6 — Entrega e taxa${orderMenuLine(includeWhatsAppOrders)}`;
+  return `${introduction.trim()}\n\nSe quiser, pode me dizer com suas palavras o que precisa 😊\nOu escolha uma opção:\n${menuOptions(includeWhatsAppOrders)}`;
 }
 
 export function buildWhatsAppBotMenu(storeName: string, includeWhatsAppOrders = false) {
-  return `Como posso ajudar com ${storeName.trim()}?\n\nDigite uma opção:\n1 — Ver cardápio\n2 — Acompanhar pedido\n3 — Falar com o restaurante\n4 — Horários\n5 — Formas de pagamento\n6 — Entrega e taxa${orderMenuLine(includeWhatsAppOrders)}`;
+  return `Oi! 😊 Estou por aqui para ajudar com a ${storeName.trim()}.\nVocê pode escrever normalmente o que precisa ou escolher uma opção:\n\n${menuOptions(includeWhatsAppOrders)}`;
 }
 
 export function phonesBelongToSameCustomer(left: string | null | undefined, right: string | null | undefined) {
@@ -67,11 +178,11 @@ export function phonesBelongToSameCustomer(left: string | null | undefined, righ
 }
 
 const orderStatusLabels: Record<string, string> = {
-  pending_confirmation: "aguardando confirmação do restaurante",
-  confirmed: "confirmado",
-  rejected: "recusado",
-  canceled: "cancelado",
-  completed: "concluído",
+  pending_confirmation: "está aguardando a confirmação do restaurante",
+  confirmed: "já foi confirmado",
+  rejected: "foi recusado",
+  canceled: "foi cancelado",
+  completed: "foi concluído",
 };
 
 const productionStatusLabels: Record<string, string> = {
@@ -86,7 +197,7 @@ const productionStatusLabels: Record<string, string> = {
 const fulfillmentStatusLabels: Record<string, string> = {
   pending: "aguardando expedição",
   awaiting_assignment: "aguardando entregador",
-  assigned: "entregador definido",
+  assigned: "com entregador definido",
   picked_up: "retirado pelo entregador",
   out_for_delivery: "saiu para entrega",
   delivered: "entregue",
@@ -104,12 +215,12 @@ export function buildOrderLookupMessage(input: {
   fulfillmentStatus: string;
   trackingUrl?: string | null;
 }) {
-  const order = orderStatusLabels[input.orderStatus] ?? "em atualização";
+  const order = orderStatusLabels[input.orderStatus] ?? "está sendo atualizado";
   const production = productionStatusLabels[input.productionStatus] ?? "em atualização";
   const fulfillment = fulfillmentStatusLabels[input.fulfillmentStatus] ?? "em atualização";
-  const link = input.trackingUrl ? `\nAcompanhe os detalhes com segurança: ${input.trackingUrl}` : "";
-  return `Pedido #${input.displayNumber}: ${order}. Preparo: ${production}. Entrega/retirada: ${fulfillment}.${link}`;
+  const link = input.trackingUrl ? `\n\nVocê também pode acompanhar por aqui: ${input.trackingUrl}` : "";
+  return `Achei seu pedido #${input.displayNumber} 😊\nEle ${order}.\nPreparo: ${production}.\nEntrega/retirada: ${fulfillment}.${link}`;
 }
 
-export const TRACKING_CODE_PROMPT = "Digite somente o código do pedido que aparece na confirmação (por exemplo: 42). Para voltar, digite menu.";
-export const TRACKING_NOT_FOUND_MESSAGE = "Não encontrei esse pedido para o seu número neste restaurante. Confira o código ou digite 3 para falar com a equipe.";
+export const TRACKING_CODE_PROMPT = "Claro! Me manda o número do seu pedido que aparece na confirmação 😊 Pode enviar só o número, por exemplo: 42. Se quiser voltar, é só escrever menu.";
+export const TRACKING_NOT_FOUND_MESSAGE = "Hmm, não encontrei esse pedido ligado ao seu número neste restaurante. Confira o código e tente de novo. Se preferir, escreva \"falar com atendente\" que eu chamo a equipe para você.";
