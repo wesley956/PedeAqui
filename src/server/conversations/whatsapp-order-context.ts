@@ -66,7 +66,7 @@ function parsePart(raw: string): OrderCompositionPart | null {
   if (!match) return null;
   const quantity = Number(match[1]);
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100) return null;
-  const label = match[2].trim();
+  const label = match[2]!.trim();
   return { quantity, label, normalizedLabel: normalizeProductLanguage(label) };
 }
 
