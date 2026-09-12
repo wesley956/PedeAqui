@@ -12,7 +12,7 @@ import {
   whatsappOrderStartMessage,
   type WhatsAppOrderContext,
   type WhatsAppOrderStep,
-} from "@/server/conversations/whatsapp-learning-order-service";
+} from "@/server/conversations/whatsapp-smart-order-service";
 import { recordFailure } from "@/server/observability/failure";
 
 type IngestResult = {
