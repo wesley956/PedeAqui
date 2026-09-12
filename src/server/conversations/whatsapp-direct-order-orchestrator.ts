@@ -1,7 +1,9 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buildWhatsAppBotMenu, normalizeBotInput, resolveWhatsAppBotIntent } from "@/server/conversations/bot-menu";
+import { buildCustomerBenefitsMessage, buildWhatsAppBotMenu, isGrowthBenefitIntent, normalizeBotInput, resolveWhatsAppBotIntent } from "@/server/conversations/bot-menu";
+import { buildPublicMenuUrl } from "@/server/conversations/greeting";
+import { loadCustomerBenefits } from "@/server/growth/customer-benefits";
 import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import {
   isWhatsAppOrderStep,
@@ -120,13 +122,13 @@ export class WhatsAppDirectOrderOrchestrator {
         .eq("store_id", conversation.store_id)
         .maybeSingle(),
       admin.from("contacts")
-        .select("external_id, phone_normalized, name")
+        .select("external_id, phone_normalized, name, customer_id")
         .eq("organization_id", conversation.organization_id)
         .eq("store_id", conversation.store_id)
         .eq("id", conversation.contact_id)
         .maybeSingle(),
       admin.from("stores")
-        .select("name, slug, status")
+        .select("name, slug, status, timezone")
         .eq("organization_id", conversation.organization_id)
         .eq("id", conversation.store_id)
         .maybeSingle(),
@@ -182,7 +184,7 @@ export class WhatsAppDirectOrderOrchestrator {
       return true;
     }
 
-    if (activeOrderStep && wantsHuman(inbound.body)) {
+    if (activeOrderStep && (wantsHuman(inbound.body) || intent === "benefit_handoff")) {
       await sendBotText({
         ...sendBase,
         body: `Parei a montagem do pedido. ${settings.handoff_message}`,
@@ -192,11 +194,26 @@ export class WhatsAppDirectOrderOrchestrator {
         p_conversation_id: conversation.id,
         p_target_state: "waiting_agent",
         p_assigned_user_id: null,
-        p_reason: "Cliente pediu atendimento humano durante pedido pelo WhatsApp",
+        p_reason: intent === "benefit_handoff" ? "Cliente contestou saldo ou benefício durante pedido pelo WhatsApp" : "Cliente pediu atendimento humano durante pedido pelo WhatsApp",
         p_actor_user_id: null,
         p_source: "bot",
       });
       await saveSession(conversation.id, "menu", ingest.message_id, null);
+      return true;
+    }
+
+    if (activeOrderStep && isGrowthBenefitIntent(intent)) {
+      const menuUrl = process.env.APP_URL ? buildPublicMenuUrl(process.env.APP_URL, store.slug) : "o cardápio da loja";
+      const benefits = await loadCustomerBenefits({
+        organizationId: conversation.organization_id,
+        storeId: conversation.store_id,
+        customerId: contact.customer_id,
+        contactId: conversation.contact_id,
+        timeZone: store.timezone || "America/Sao_Paulo",
+      });
+      const body = `${buildCustomerBenefitsMessage(intent, benefits, menuUrl)}\n\nNão apliquei nem consumi nada no pedido por aqui. Sua montagem continua aberta; pode seguir enviando os itens ou escrever menu.`;
+      await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:benefits:${ingest.message_id}` });
+      await saveSession(conversation.id, activeOrderStep, ingest.message_id, session?.context as WhatsAppOrderContext);
       return true;
     }
 
