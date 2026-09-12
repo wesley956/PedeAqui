@@ -11,6 +11,11 @@ import {
   type WhatsAppOrderStep,
 } from "@/server/conversations/whatsapp-order-service";
 import {
+  assortedRequestedFlavorCount,
+  buildEqualSplitCompositionText,
+  isAssortedCompositionRequest,
+} from "@/server/conversations/whatsapp-assorted-composition";
+import {
   classifyOrderLearningOutcome,
   sanitizeLearningPhrase,
   WhatsAppLanguageLearningService,
@@ -37,6 +42,12 @@ type SavedAddress = {
 type ContextWithEnhancements = WhatsAppOrderContext & {
   learningPendingPhrase?: string;
   savedAddressChoices?: SavedAddress[];
+};
+
+type AssortedRewrite = {
+  text: string;
+  total: number;
+  flavorCount: number;
 };
 
 function pendingLearningPhrase(context: unknown) {
@@ -73,6 +84,42 @@ function addressContext(value: unknown): ContextWithEnhancements {
 function clearSavedAddresses(context: ContextWithEnhancements): WhatsAppOrderContext {
   const { savedAddressChoices: _savedAddressChoices, ...rest } = context;
   return rest;
+}
+
+async function rewriteAssortedComposition(input: OrderInput): Promise<AssortedRewrite | WhatsAppOrderHandleResult | null> {
+  if (input.step !== "order_items" || !isAssortedCompositionRequest(input.text) || !input.context || typeof input.context !== "object") return null;
+  const pending = (input.context as Record<string, unknown>).pendingComposition;
+  if (!pending || typeof pending !== "object") return null;
+  const raw = pending as Record<string, unknown>;
+  const groupId = typeof raw.groupId === "string" ? raw.groupId : null;
+  const total = typeof raw.distributionTotal === "number" ? raw.distributionTotal : null;
+  if (!groupId || !Number.isInteger(total) || !total || total < 1) return null;
+
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("modifiers")
+    .select("id, name")
+    .eq("organization_id", input.organizationId)
+    .eq("store_id", input.storeId)
+    .eq("modifier_group_id", groupId)
+    .eq("active", true)
+    .is("deleted_at", null)
+    .order("sort_order");
+  if (error) throw error;
+  const modifiers = (data ?? []).filter((item) => typeof item.name === "string" && item.name.trim());
+  if (modifiers.length < 2) return null;
+
+  const requestedCount = assortedRequestedFlavorCount(input.text);
+  if (requestedCount !== null && requestedCount !== modifiers.length) {
+    return {
+      handled: true,
+      body: `Encontrei ${modifiers.length} sabores disponíveis para essa caixa. Para fazer sortido automaticamente, posso distribuir entre todos os ${modifiers.length}. Se quiser apenas ${requestedCount}, me diga quais sabores deseja.`,
+      nextStep: "order_items",
+      context: input.context as WhatsAppOrderContext,
+    };
+  }
+
+  const text = buildEqualSplitCompositionText(total, modifiers.map((item) => item.name));
+  return text ? { text, total, flavorCount: modifiers.length } : null;
 }
 
 function normalizePhone(value: string) {
@@ -253,8 +300,12 @@ export class WhatsAppOrderService {
     const savedAddressResult = await handleSavedAddressStep(input, context);
     if (savedAddressResult) return savedAddressResult;
 
+    const assorted = await rewriteAssortedComposition(input);
+    if (assorted && "handled" in assorted) return assorted;
+    const effectiveInput = assorted ? { ...input, text: assorted.text } : input;
+
     const previousPending = pendingLearningPhrase(input.context);
-    let result = await BaseWhatsAppOrderService.handle(input);
+    let result = await BaseWhatsAppOrderService.handle(effectiveInput);
     let outcome = classifyOrderLearningOutcome(result.body);
 
     if (
@@ -314,6 +365,13 @@ export class WhatsAppOrderService {
       } catch (error) {
         console.warn("whatsapp saved address lookup skipped", error instanceof Error ? error.message : "unknown error");
       }
+    }
+
+    if (assorted && outcome === "resolved") {
+      return {
+        ...result,
+        body: `Perfeito 😊 Distribuí as ${assorted.total} unidades o mais igualmente possível entre os ${assorted.flavorCount} sabores disponíveis.\n\n${result.body}`,
+      };
     }
 
     return result;
