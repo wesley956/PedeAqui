@@ -56,6 +56,15 @@ export function resolvePendingChoiceReference(text: string | null | undefined, c
     return choices.length === 1 ? choices[0] : null;
   }
 
+  const mentionedNumbers = [...normalized.matchAll(/\b(\d{1,3})\b/g)].map((match) => match[1]!);
+  if (mentionedNumbers.length > 0) {
+    const byNumber = choices.filter((choice) => {
+      const labelNumbers = new Set([...compact(choice.label).matchAll(/\b(\d{1,3})\b/g)].map((match) => match[1]!));
+      return mentionedNumbers.every((number) => labelNumbers.has(number));
+    });
+    if (byNumber.length === 1) return byNumber[0]!;
+  }
+
   const exact = choices.find((choice) => compact(choice.label) === normalized || compact(choice.value) === normalized);
   return exact ?? null;
 }
