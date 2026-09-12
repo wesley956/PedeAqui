@@ -32,7 +32,7 @@ describe("WhatsApp direct orders", () => {
 
   it("preserves line boundaries and enforces the existing cart quantity limit", () => {
     expect(orderService).toContain('text.split(/[\\n;,]+/)');
-    expect(orderService).toContain("match.quantity > 0 && match.quantity <= 99");
+    expect(orderService).toContain("item.quantity > 0 && item.quantity <= 99");
     expect(orderService).toContain("hasUnsupportedQuantity");
   });
 
@@ -40,7 +40,7 @@ describe("WhatsApp direct orders", () => {
     expect(orderService).toContain('segment.match(/^(?:um|uma)\\s+(.+)$/i)');
     expect(orderService).toContain("productMatchScore");
     expect(orderService).toContain("productStopWords");
-    expect(orderService).toContain("1 copo de 13 unidades de mini churros");
+    expect(orderService).toContain("1 caixa de 30 salgados");
     expect(orderService).toContain("Encontrei algumas opções parecidas");
   });
 
@@ -70,7 +70,7 @@ describe("WhatsApp direct orders", () => {
     expect(orderService).toContain('.eq("organization_id", organizationId)');
     expect(orderService).toContain('.eq("store_id", storeId)');
     expect(orderService).toContain('error.code === "invalid_modifiers"');
-    expect(orderService).toContain("precisa escolher sabor, tamanho ou adicional");
+    expect(orderService).toContain("exige uma escolha de sabor, tamanho ou adicional");
   });
 
   it("lets customers exit to the menu or request a human during checkout", () => {
