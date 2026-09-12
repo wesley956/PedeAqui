@@ -38,9 +38,22 @@ describe("WhatsApp order conversational context", () => {
     expect(composition?.parts[2]?.normalizedLabel).toContain("salsicha");
   });
 
+  it("calculates 'o resto' from the known package total", () => {
+    const composition = parseOrderComposition("15 frango, 10 queijo e o resto salsicha", 30);
+    expect(composition?.total).toBe(30);
+    expect(composition?.parts).toHaveLength(3);
+    expect(composition?.parts[2]).toMatchObject({ quantity: 5, label: "salsicha" });
+  });
+
+  it("refuses remainder wording without a known total or when it would be zero", () => {
+    expect(parseOrderComposition("15 frango, 10 queijo e o resto salsicha")).toBeNull();
+    expect(parseOrderComposition("20 frango, 10 queijo e o resto salsicha", 30)).toBeNull();
+  });
+
   it("recognizes when a composition matches a package capacity", () => {
     expect(inferProductCapacityFromName("Caixa com 30 salgados")).toBe(30);
     expect(compositionFitsProduct("15 coxinha, 10 bolinha, 5 salsicha", "Caixa com 30 salgados")).toBe(true);
+    expect(compositionFitsProduct("15 coxinha, 10 bolinha e o resto salsicha", "Caixa com 30 salgados")).toBe(true);
     expect(compositionFitsProduct("15 coxinha, 10 bolinha, 5 salsicha", "Caixa com 50 salgados")).toBe(false);
   });
 });
