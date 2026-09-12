@@ -7,6 +7,7 @@ import { AuditService } from "@/server/audit/audit-service";
 import { CartService } from "@/server/cart/cart-service";
 import { hashCartToken } from "@/server/cart/cart-token";
 import { ModuleAccessService } from "@/server/modules/module-access-service";
+import { emptyGrowthMetrics, type GrowthMetrics } from "@/server/growth/growth-observability";
 import {
   automationInputSchema,
   campaignInputSchema,
@@ -297,7 +298,7 @@ export class GrowthService {
     const context = await authorizeGrowth(PERMISSIONS.GROWTH_CAMPAIGNS);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const [settings, campaigns, segments, customers, recipients, whatsapp, groupSummaries, occurrences] = await Promise.all([
+    const [settings, campaigns, segments, customers, recipients, whatsapp, groupSummaries, occurrences, metrics] = await Promise.all([
       admin.from("store_operational_settings").select("growth_campaigns_enabled,campaign_rate_per_minute,promotional_min_interval_hours,promotional_daily_limit,promotional_weekly_limit").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
       admin.from("campaigns").select("id,name,objective,channel,content,template_name,template_language,template_data,status,audience_summary,created_at,queued_at,completed_at,schedule_type,local_send_time,recurrence_weekdays,schedule_starts_on,schedule_ends_on,next_run_at,paused_at").eq("organization_id", context.organizationId).eq("store_id", storeId).order("created_at", { ascending: false }),
       admin.from("customer_segments").select("id,name,active").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("active", true).order("name"),
@@ -306,8 +307,9 @@ export class GrowthService {
       admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
       admin.rpc("growth_group_summaries_internal", { p_store_id: storeId }),
       admin.from("campaign_occurrences").select("id,campaign_id,scheduled_for,status,member_count,eligible_count,excluded_count,completed_at").eq("organization_id", context.organizationId).eq("store_id", storeId).order("scheduled_for", { ascending: false }).limit(100),
+      admin.rpc("growth_campaign_metrics_internal", { p_organization_id: context.organizationId, p_store_id: storeId, p_window_days: 30, p_attribution_days: 7 }),
     ]);
-    for (const result of [settings, campaigns, segments, customers, recipients, whatsapp, groupSummaries, occurrences]) if (result.error) throw result.error;
+    for (const result of [settings, campaigns, segments, customers, recipients, whatsapp, groupSummaries, occurrences, metrics]) if (result.error) throw result.error;
     const recipientCounts = new Map<string, Record<string, number>>();
     for (const recipient of recipients.data ?? []) {
       const counts = recipientCounts.get(recipient.campaign_id) ?? {};
@@ -331,7 +333,13 @@ export class GrowthService {
       customers: customerRows,
       segments: segments.data ?? [],
       groupSummaries: (groupSummaries.data ?? []) as GrowthGroupSummary[],
-      campaigns: (campaigns.data ?? []).map((campaign) => ({ ...campaign, recipientCounts: recipientCounts.get(campaign.id) ?? {}, occurrences: (occurrences.data ?? []).filter((item) => item.campaign_id === campaign.id) })),
+      metrics: (metrics.data ?? emptyGrowthMetrics()) as GrowthMetrics,
+      campaigns: (campaigns.data ?? []).map((campaign) => ({
+        ...campaign,
+        recipientCounts: recipientCounts.get(campaign.id) ?? {},
+        metrics: ((metrics.data as GrowthMetrics | null)?.campaigns ?? []).find((item) => item.campaign_id === campaign.id) ?? null,
+        occurrences: (occurrences.data ?? []).filter((item) => item.campaign_id === campaign.id),
+      })),
     };
   }
 

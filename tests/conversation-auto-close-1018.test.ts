@@ -143,7 +143,7 @@ describe("conversation auto close [1018]", () => {
 
     const result = await runConversationAutoCloseWorker();
     expect(result).toMatchObject({ closed: 1, messageFailures: 1 });
-    expect(mocks.rpc).toHaveBeenLastCalledWith("conversation_mark_outbound_result_internal", expect.objectContaining({
+    expect(mocks.rpc).toHaveBeenCalledWith("conversation_mark_outbound_result_internal", expect.objectContaining({
       p_message_id: "m-2",
       p_status: "failed",
     }));

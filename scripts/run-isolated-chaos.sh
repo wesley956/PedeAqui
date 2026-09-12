@@ -79,6 +79,7 @@ readonly scenarios=(
   "supabase/tests/e2e_omnichannel_support_retry.sql"
   "supabase/tests/e2e_ifood_auth_onboarding.sql"
   "supabase/tests/e2e_ifood_order_intake_runtime.sql"
+  "supabase/tests/e2e_growth_observability.sql"
 )
 
 for pass in 1 2 3; do

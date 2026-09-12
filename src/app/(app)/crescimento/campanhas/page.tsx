@@ -4,6 +4,17 @@ import { GrowthService } from "@/server/growth/growth-service";
 import styles from "../growth.module.css";
 
 const statusLabels: Record<string, string> = { draft: "Rascunho", scheduled: "Agendada", running: "Em envio", completed: "Concluída", partially_failed: "Concluída com falhas", canceled: "Cancelada" };
+const operationLabels: Record<string, string> = {
+  "campaign.worker": "Envio de campanhas", "campaign.scheduler": "Agendamento", "conversation.auto_close": "Encerramento de conversas",
+  "bot.intent": "Atendimento do robô", "order.notification": "Avisos de pedido",
+};
+const reasonLabels: Record<string, string> = {
+  active_human_conversation: "atendimento humano em andamento", active_order: "pedido em andamento", whatsapp_order_active: "pedido pelo WhatsApp em andamento",
+  daily_limit: "limite diário", weekly_limit: "limite semanal", minimum_interval: "intervalo mínimo", channel_unavailable: "WhatsApp indisponível",
+  template_missing: "template ausente", unknown_intent: "pedido não compreendido", handoff: "transferência para atendente",
+};
+const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+function money(cents: number) { return currency.format(cents / 100); }
 
 export default async function CampaignCenterPage() {
   const data = await GrowthService.loadCampaignCenter();
@@ -17,6 +28,19 @@ export default async function CampaignCenterPage() {
       <Metric label="Sem consentimento" value={data.notConsentedCustomers} />
       <Metric label="Limite por minuto" value={data.ratePerMinute} />
       <Metric label="Canal oficial" value={data.whatsappReady ? "Pronto" : "Revisar"} />
+    </section>
+
+    <section className={styles.section} aria-label="Resultados reais dos últimos 30 dias">
+      <div className={styles.sectionHeader}><div><h2>Resultados dos últimos 30 dias</h2><p>{data.metrics.methodology}</p></div></div>
+      <div className={styles.metrics}>
+        <Metric label="Cashback concedido" value={money(data.metrics.benefits.cashback_earned_cents)} />
+        <Metric label="Cashback usado" value={money(data.metrics.benefits.cashback_redeemed_cents)} />
+        <Metric label="Pontos concedidos" value={data.metrics.benefits.points_earned} />
+        <Metric label="Pontos usados" value={data.metrics.benefits.points_redeemed} />
+        <Metric label="Automações concluídas" value={data.metrics.automations.completed} />
+        <Metric label="Automações puladas/falhas" value={data.metrics.automations.skipped + data.metrics.automations.failed} />
+      </div>
+      {data.metrics.operations.length > 0 ? <div className={styles.chips} aria-label="Diagnóstico operacional">{data.metrics.operations.slice(0, 12).map((event) => <span className={styles.chip} key={`${event.event_type}:${event.outcome}:${event.reason_code ?? "none"}`}><strong>{operationLabels[event.event_type] ?? event.event_type}</strong>{event.count} · {event.reason_code ? reasonLabels[event.reason_code] ?? event.reason_code : event.outcome}</span>)}</div> : <p className={styles.itemMeta}>Nenhum alerta operacional registrado no período.</p>}
     </section>
 
     <section className={styles.section}>
@@ -58,10 +82,9 @@ export default async function CampaignCenterPage() {
       <div className={styles.sectionHeader}><div><h2>Histórico e fila</h2><p>Atualize a página para acompanhar resultados consolidados do backend.</p></div></div>
       <div className={styles.list}>{data.campaigns.map((campaign) => {
         const counts = campaign.recipientCounts;
-        const queued = (counts.queued ?? 0) + (counts.sending ?? 0) + (counts.failed_transient ?? 0);
-        const sent = (counts.sent ?? 0) + (counts.delivered ?? 0) + (counts.read ?? 0);
-        const excluded = (counts.skipped_opt_out ?? 0) + (counts.skipped_invalid_contact ?? 0);
-        return <CampaignCard campaign={campaign} queued={queued} sent={sent} excluded={excluded} enabled={data.enabled} whatsappReady={data.whatsappReady} key={campaign.id} />;
+        const queued = campaign.metrics?.queued ?? ((counts.queued ?? 0) + (counts.sending ?? 0) + (counts.failed_transient ?? 0));
+        const excluded = (campaign.metrics?.opted_out ?? counts.skipped_opt_out ?? 0) + (campaign.metrics?.invalid_contact ?? counts.skipped_invalid_contact ?? 0);
+        return <CampaignCard campaign={campaign} queued={queued} excluded={excluded} enabled={data.enabled} whatsappReady={data.whatsappReady} key={campaign.id} />;
       })}{data.campaigns.length === 0 ? <div className={styles.empty}>Nenhuma campanha criada.</div> : null}</div>
     </section>
 
@@ -75,15 +98,18 @@ export default async function CampaignCenterPage() {
 function Metric({ label, value }: { label: string; value: string | number }) { return <div className={styles.metric}><span>{label}</span><strong>{value}</strong></div>; }
 
 type CampaignCardProps = {
-  campaign: { id: string; name: string; status: string; content: string; template_name: string | null; template_language: string; template_data: { body_parameters?: unknown[] } | null; schedule_type: string; next_run_at: string | null; paused_at: string | null; occurrences: Array<{ id: string; scheduled_for: string; status: string; member_count: number; eligible_count: number; excluded_count: number }> };
-  queued: number; sent: number; excluded: number; enabled: boolean; whatsappReady: boolean;
+  campaign: { id: string; name: string; status: string; content: string; template_name: string | null; template_language: string; template_data: { body_parameters?: unknown[] } | null; schedule_type: string; next_run_at: string | null; paused_at: string | null; metrics: { prepared: number; sent: number; delivered: number; read: number; failed: number; responses: number; assisted_orders: number; assisted_revenue_cents: number; coupons_used: number; suppressed: number } | null; occurrences: Array<{ id: string; scheduled_for: string; status: string; member_count: number; eligible_count: number; excluded_count: number }> };
+  queued: number; excluded: number; enabled: boolean; whatsappReady: boolean;
 };
 
-function CampaignCard({ campaign, queued, sent, excluded, enabled, whatsappReady }: CampaignCardProps) {
+function CampaignCard({ campaign, queued, excluded, enabled, whatsappReady }: CampaignCardProps) {
   const scheduled = campaign.schedule_type !== "now";
+  const metrics = campaign.metrics;
   return <article className={styles.item}>
     <div className={styles.itemMain}><div className={styles.itemTitle}><strong>{campaign.name}</strong><span className={styles.status} data-active={!['completed','canceled'].includes(campaign.status)}>{campaign.paused_at ? "Pausada" : statusLabels[campaign.status] ?? campaign.status}</span></div>
-      <span className={styles.itemMeta}>Template: {campaign.template_name ?? "não configurado"} · fila {queued} · enviados {sent} · excluídos {excluded}</span>
+      <span className={styles.itemMeta}>Template: {campaign.template_name ?? "não configurado"} · preparados {metrics?.prepared ?? 0} · fila {queued} · excluídos {excluded}</span>
+      <span className={styles.itemMeta}>Enviados {metrics?.sent ?? 0} · entregues {metrics?.delivered ?? 0} · lidos {metrics?.read ?? 0} · respostas {metrics?.responses ?? 0} · falhas {metrics?.failed ?? 0}</span>
+      <span className={styles.itemMeta}>Retorno assistido em 7 dias: {metrics?.assisted_orders ?? 0} pedido(s), {money(metrics?.assisted_revenue_cents ?? 0)} · {metrics?.coupons_used ?? 0} cupom(ns) usado(s) · {metrics?.suppressed ?? 0} suprimido(s)</span>
       <span className={styles.itemMeta}>{scheduled ? `Próximo envio: ${campaign.next_run_at ? new Date(campaign.next_run_at).toLocaleString("pt-BR") : "sem nova ocorrência"}` : "Envio único após confirmação"}</span>
       {campaign.occurrences.slice(0, 3).map((occurrence) => <span className={styles.itemMeta} key={occurrence.id}>Ocorrência {new Date(occurrence.scheduled_for).toLocaleString("pt-BR")}: {occurrence.eligible_count} elegíveis, {occurrence.excluded_count} excluídos · {occurrence.status}</span>)}
     </div>
