@@ -1,10 +1,11 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { resolveWhatsAppBotIntent } from "@/server/conversations/bot-menu";
+import { buildWhatsAppBotMenu, normalizeBotInput, resolveWhatsAppBotIntent } from "@/server/conversations/bot-menu";
 import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import {
   isWhatsAppOrderStep,
+  looksLikeWhatsAppOrderItems,
   WhatsAppOrderService,
   whatsappOrderStartMessage,
   type WhatsAppOrderContext,
@@ -94,6 +95,11 @@ async function saveSession(conversationId: string, step: WhatsAppOrderStep | "me
   if (error) throw error;
 }
 
+function wantsHuman(text: string) {
+  const normalized = normalizeBotInput(text);
+  return normalized === "3" || normalized.includes("atendente") || normalized.includes("humano") || normalized.includes("falar com restaurante");
+}
+
 export class WhatsAppDirectOrderOrchestrator {
   static async afterInbound(result: unknown, requestId: string): Promise<boolean> {
     const ingest = result && typeof result === "object" ? result as IngestResult : null;
@@ -156,7 +162,8 @@ export class WhatsAppDirectOrderOrchestrator {
     const active = session?.state === "active" && (!session.expires_at || Date.parse(session.expires_at) > Date.now());
     const activeOrderStep = active && isWhatsAppOrderStep(session?.step) ? session.step : null;
     const intent = resolveWhatsAppBotIntent(inbound.body, "menu");
-    if (!activeOrderStep && intent !== "order_start") return false;
+    const naturalOrder = looksLikeWhatsAppOrderItems(inbound.body);
+    if (!activeOrderStep && intent !== "order_start" && !naturalOrder) return false;
 
     const sendBase = {
       requestId,
@@ -168,7 +175,32 @@ export class WhatsAppDirectOrderOrchestrator {
       recipient: contact.external_id,
     };
 
-    if (!activeOrderStep) {
+    if (activeOrderStep && normalizeBotInput(inbound.body) === "menu") {
+      const body = buildWhatsAppBotMenu(store.name, true);
+      await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:menu:${ingest.message_id}` });
+      await saveSession(conversation.id, "menu", ingest.message_id, null);
+      return true;
+    }
+
+    if (activeOrderStep && wantsHuman(inbound.body)) {
+      await sendBotText({
+        ...sendBase,
+        body: "Certo! Parei a montagem do pedido e encaminhei sua conversa para a equipe do restaurante.",
+        clientMessageId: `auto:wa-order:handoff:${ingest.message_id}`,
+      });
+      await admin.rpc("conversation_transition_internal", {
+        p_conversation_id: conversation.id,
+        p_target_state: "waiting_agent",
+        p_assigned_user_id: null,
+        p_reason: "Cliente pediu atendimento humano durante pedido pelo WhatsApp",
+        p_actor_user_id: null,
+        p_source: "bot",
+      });
+      await saveSession(conversation.id, "menu", ingest.message_id, null);
+      return true;
+    }
+
+    if (!activeOrderStep && intent === "order_start" && !naturalOrder) {
       const body = whatsappOrderStartMessage(store.name);
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:start:${ingest.message_id}` });
       await saveSession(conversation.id, "order_items", ingest.message_id, { channel: "whatsapp_order", version: 1 });
@@ -183,8 +215,8 @@ export class WhatsAppDirectOrderOrchestrator {
       contactName: contact.name,
       contactPhone: contact.phone_normalized ?? contact.external_id,
       text: inbound.body,
-      step: activeOrderStep,
-      context: session?.context,
+      step: activeOrderStep ?? "order_items",
+      context: activeOrderStep ? session?.context : { channel: "whatsapp_order", version: 1 },
     });
     await sendBotText({ ...sendBase, body: handled.body, clientMessageId: `auto:wa-order:${ingest.message_id}` });
     await saveSession(conversation.id, handled.nextStep, ingest.message_id, handled.context);
