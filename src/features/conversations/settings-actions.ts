@@ -61,6 +61,7 @@ export async function saveConversationSettingsAction(formData: FormData) {
     preferences: currentPreferences,
     onlinePaymentReady: structural.onlinePaymentReady,
     deliveryOperationEnabled: structural.deliveryOperationEnabled,
+    workflowEligibility: structural.workflowEligibility,
   });
 
   const selected = resolveOrderNotificationSelection(preset, {

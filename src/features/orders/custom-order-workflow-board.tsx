@@ -20,13 +20,11 @@ import { useRememberedOrderSearch } from "@/features/orders/order-navigation-mem
 import { OperationalRealtimeBadge, useOperationalRealtime } from "@/features/operations/use-operational-realtime";
 import type { PaymentCompletionPolicy } from "@/modules/payment-completion-policy";
 import {
-  deliveryWorkflowStages,
-  foldStageToVisible,
-  pickupWorkflowStages,
   workflowStageLabels,
   type CustomWorkflowConfig,
   type WorkflowStage,
 } from "@/features/orders/workflow-config";
+import { rawWorkflowStage, visibleWorkflowStage } from "@/server/conversations/order-workflow-visibility";
 import styles from "./order-manager.module.css";
 
 const isOperationalOrder = (order: OrderManagerRow) => !["completed", "canceled", "rejected"].includes(order.order_status);
@@ -41,25 +39,24 @@ function money(cents: number | string) {
 }
 
 function rawStage(order: OrderManagerRow): WorkflowStage {
-  if (["completed", "canceled", "rejected"].includes(order.order_status)) return "finished";
-  if (order.order_status === "pending_confirmation") return "new";
-  if (["pending_confirmation", "queued", "preparing"].includes(order.production_status)) return "preparing";
-  if (order.fulfillment_type === "delivery") {
-    if (["assigned", "picked_up", "out_for_delivery", "delivered"].includes(order.fulfillment_status)) return "delivering";
-    return "ready";
-  }
-  if (["awaiting_pickup"].includes(order.fulfillment_status)) return "awaiting_pickup";
-  if (["picked_up_by_customer", "served"].includes(order.fulfillment_status)) return "finished";
-  return "ready";
+  return rawWorkflowStage({
+    fulfillmentType: order.fulfillment_type,
+    orderStatus: order.order_status,
+    productionStatus: order.production_status,
+    fulfillmentStatus: order.fulfillment_status,
+  });
 }
 
 function visibleStage(order: OrderManagerRow, config: CustomWorkflowConfig) {
-  const raw = rawStage(order);
-  if (order.fulfillment_type === "delivery") {
-    return foldStageToVisible(raw as (typeof deliveryWorkflowStages)[number], config.delivery, deliveryWorkflowStages);
-  }
-  const pickupRaw = raw === "delivering" ? "ready" : raw;
-  return foldStageToVisible(pickupRaw as (typeof pickupWorkflowStages)[number], config.pickup, pickupWorkflowStages);
+  return visibleWorkflowStage({
+    fulfillmentType: order.fulfillment_type,
+    orderStatus: order.order_status,
+    productionStatus: order.production_status,
+    fulfillmentStatus: order.fulfillment_status,
+  }, {
+    orders_workflow_mode: "custom",
+    orders_custom_workflow: config,
+  });
 }
 
 function isQuickFinishFlow(order: OrderManagerRow, config: CustomWorkflowConfig, manualDeliveryMode: boolean) {

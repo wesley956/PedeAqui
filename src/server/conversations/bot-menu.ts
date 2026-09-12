@@ -1,4 +1,5 @@
 import { normalizeWhatsAppIdentifier } from "@/server/conversations/model";
+import { workflowStageLabels, type WorkflowStage } from "@/features/orders/workflow-config";
 
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
 export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "hours" | "payment" | "delivery" | "order_start" | "unknown";
@@ -217,11 +218,18 @@ export function buildOrderLookupMessage(input: {
   productionStatus: string;
   fulfillmentStatus: string;
   trackingUrl?: string | null;
+  visibleStage?: WorkflowStage | null;
 }) {
   const order = orderStatusLabels[input.orderStatus] ?? "em atualização";
   const production = productionStatusLabels[input.productionStatus] ?? "em atualização";
   const fulfillment = fulfillmentStatusLabels[input.fulfillmentStatus] ?? "em atualização";
   const link = input.trackingUrl ? `\nAcompanhe os detalhes com segurança: ${input.trackingUrl}` : "";
+  if (input.orderStatus === "canceled" || input.orderStatus === "rejected") {
+    return `Achei seu pedido #${input.displayNumber} 😊\nPedido #${input.displayNumber}: ${order}.${link}`;
+  }
+  if (input.visibleStage) {
+    return `Achei seu pedido #${input.displayNumber} 😊\nEtapa atual: ${workflowStageLabels[input.visibleStage]}.${link}`;
+  }
   return `Achei seu pedido #${input.displayNumber} 😊\nPedido #${input.displayNumber}: ${order}. Preparo: ${production}. Entrega/retirada: ${fulfillment}.${link}`;
 }
 

@@ -5,6 +5,7 @@ import type { OrderNotificationType } from "@/server/conversations/order-notific
 export type WhatsAppAutomationState =
   | "available_disabled"
   | "enabled"
+  | "unavailable_workflow"
   | "suspended_module"
   | "suspended_entitlement"
   | "suspended_channel"
@@ -27,6 +28,7 @@ export type WhatsAppAutomationCapabilityInput = {
   preferences: WhatsAppAutomationPreferences;
   onlinePaymentReady: boolean;
   deliveryOperationEnabled: boolean;
+  workflowEligibility?: Record<OrderNotificationType, boolean>;
 };
 
 export type WhatsAppAutomationCapability = {
@@ -197,6 +199,15 @@ export function resolveWhatsAppAutomationCapability(
       ...base,
       state: "invalid_configuration",
       reason: "Nenhum pagamento online com confirmação automática está ativo. Dinheiro e cartões presenciais continuam independentes.",
+      configurable: false,
+    };
+  }
+
+  if (input.workflowEligibility?.[definition.key] === false) {
+    return {
+      ...base,
+      state: "unavailable_workflow",
+      reason: "Esta etapa está oculta no fluxo de pedidos da unidade. A preferência foi preservada.",
       configurable: false,
     };
   }

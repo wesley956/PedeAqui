@@ -71,6 +71,7 @@ const automationFields: Array<{
 const stateLabel: Record<WhatsAppAutomationCapability["state"], string> = {
   enabled: "Ativa",
   available_disabled: "Desativada",
+  unavailable_workflow: "Oculta no fluxo de pedidos",
   suspended_module: "Suspensa por operação",
   suspended_entitlement: "Suspensa pelo plano",
   suspended_channel: "Suspensa pelo WhatsApp",

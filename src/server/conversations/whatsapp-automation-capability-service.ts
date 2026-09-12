@@ -15,6 +15,8 @@ import {
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
+import { workflowEligibilityByNotification } from "@/server/conversations/order-workflow-visibility";
+import type { PersistedOrderWorkflowSettings } from "@/server/conversations/order-workflow-visibility";
 
 const AUTOMATION_MODULES = ["conversations", "production", "deliveries"] as const;
 type AutomationModuleKey = (typeof AUTOMATION_MODULES)[number];
@@ -24,6 +26,8 @@ export type WhatsAppAutomationStructuralSnapshot = {
   modules: Pick<Record<ModuleKey, ModuleAvailability>, AutomationModuleKey>;
   onlinePaymentReady: boolean;
   deliveryOperationEnabled: boolean;
+  workflowEligibility: ReturnType<typeof workflowEligibilityByNotification>;
+  workflowSettings: PersistedOrderWorkflowSettings;
 };
 
 function entitlementFeatureKey(moduleKey: ModuleKey) {
@@ -110,7 +114,7 @@ export class WhatsAppAutomationCapabilityService {
 
   static async loadForStore(organizationId: string, storeId: string): Promise<WhatsAppAutomationStructuralSnapshot> {
     const admin = createAdminClient();
-    const [moduleSnapshot, onlinePaymentReady, deliverySettings] = await Promise.all([
+    const [moduleSnapshot, onlinePaymentReady, deliverySettings, workflowSettings] = await Promise.all([
       structuralModules(organizationId, storeId),
       OrderPaymentProviderConfigService.isOnlinePixReady(organizationId, storeId),
       admin.from("store_delivery_settings")
@@ -118,13 +122,22 @@ export class WhatsAppAutomationCapabilityService {
         .eq("organization_id", organizationId)
         .eq("store_id", storeId)
         .maybeSingle(),
+      admin.from("store_operational_settings")
+        .select("orders_workflow_mode, orders_custom_workflow")
+        .eq("organization_id", organizationId)
+        .eq("store_id", storeId)
+        .maybeSingle(),
     ]);
     if (deliverySettings.error) throw deliverySettings.error;
+    if (workflowSettings.error) throw workflowSettings.error;
 
+    const persistedWorkflow = workflowSettings.data ?? {};
     return {
       ...moduleSnapshot,
       onlinePaymentReady,
       deliveryOperationEnabled: deliverySettings.data?.enabled ?? true,
+      workflowEligibility: workflowEligibilityByNotification(persistedWorkflow),
+      workflowSettings: persistedWorkflow,
     };
   }
 }
