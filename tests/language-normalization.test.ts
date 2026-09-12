@@ -24,6 +24,17 @@ describe("informal Brazilian Portuguese normalization", () => {
     expect(normalizeProductLanguage("Refri 2 litros")).toBe("refrigerante 2l");
   });
 
+  it("separates glued quantities from unit words", () => {
+    expect(normalizeInformalPortuguese("Caixa de 30unidade")).toContain("30 unidade");
+    expect(normalizeProductLanguage("Caixa de 30unidade")).toBe("caixa de 30 unidade");
+  });
+
+  it("removes conversational filler from product matching", () => {
+    expect(normalizeInformalPortuguese("Eu quero uma caixa")).toBe("quero uma caixa");
+    expect(normalizeProductLanguage("caixa de 30 salgado então")).toBe("caixa de 30 salgado");
+    expect(normalizeProductLanguage("caixa de 30 salgado seila")).toBe("caixa de 30 salgado");
+  });
+
   it("handles close spelling mistakes with bounded similarity", () => {
     expect(looseTokenSimilarity("coxina", "coxinha")).toBeGreaterThan(0.9);
     expect(looseTokenSimilarity("cochinha", "coxinha")).toBeGreaterThan(0.8);
