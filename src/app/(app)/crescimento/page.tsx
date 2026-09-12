@@ -9,6 +9,7 @@ import {
   saveGrowthSettingsAction,
 } from "@/features/growth/actions";
 import { GrowthService } from "@/server/growth/growth-service";
+import { GrowthObjectiveWizard } from "./growth-objective-wizard";
 import styles from "./growth.module.css";
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -37,8 +38,13 @@ const campaignStatusLabels: Record<string, string> = {
 const triggerLabels: Record<string, string> = { "order.completed": "Pedido concluído", "customer.inactive": "Cliente inativo", "customer.birthday": "Aniversário" };
 const actionLabels: Record<string, string> = { bonus_cashback: "Cashback bônus", bonus_points: "Pontos bônus", campaign: "Adicionar à campanha" };
 const runStatusLabels: Record<string, string> = { pending: "Aguardando", running: "Em andamento", completed: "Concluída", success: "Concluída", failed: "Precisa de atenção", skipped: "Não necessária" };
+const createdLabels: Record<string, string> = {
+  fidelidade: "Regras de fidelidade salvas.", cupom: "Cupom criado como ativo.", grupo: "Grupo de clientes criado.",
+  automacao: "Ação automática criada.", campanha: "Campanha criada como rascunho; nenhum envio foi realizado.",
+};
 
-export default async function GrowthPage() {
+export default async function GrowthPage({ searchParams }: { searchParams: Promise<{ criado?: string }> }) {
+  const query = await searchParams;
   const data = await GrowthService.loadOverview();
   const settings = data.settings;
   const activeCoupons = data.coupons.filter((item) => item.active).length;
@@ -56,15 +62,21 @@ export default async function GrowthPage() {
         </div>
       </header>
 
-      <section className={styles.objectives} aria-labelledby="growth-next-action">
-        <div className={styles.objectivesHeader}><h2 id="growth-next-action">O que você quer fazer agora?</h2><p>Escolha um objetivo; as configurações avançadas continuam disponíveis abaixo.</p></div>
-        <div className={styles.objectiveGrid}>
-          <a className={styles.objectiveCard} href="#fidelidade"><strong>Fidelizar clientes</strong><span>Configure cashback ou pontos para premiar novas compras.</span><b>Configurar fidelidade →</b></a>
-          <a className={styles.objectiveCard} href="#campanhas"><strong>Trazer clientes de volta</strong><span>Crie uma campanha para todos ou para um grupo específico.</span><b>Criar campanha →</b></a>
-          <Link className={styles.objectiveCard} href="/crescimento/campanhas"><strong>Acompanhar e enviar</strong><span>Prepare o público e acompanhe os envios autorizados pelo WhatsApp.</span><b>Abrir campanhas →</b></Link>
-        </div>
-      </section>
+      {query.criado && createdLabels[query.criado] ? <p className={styles.success} role="status">{createdLabels[query.criado]}</p> : null}
 
+      <GrowthObjectiveWizard settings={{
+        cashbackEnabled: Boolean(settings?.cashback_enabled),
+        cashbackRate: percent(settings?.cashback_rate_bps),
+        cashbackMinimum: (Number(settings?.cashback_min_order_cents ?? 0) / 100).toFixed(2).replace(".", ","),
+        cashbackExpiryDays: String(settings?.cashback_expiry_days ?? ""),
+        loyaltyEnabled: Boolean(settings?.loyalty_enabled),
+        loyaltySpendPerPoint: (Number(settings?.loyalty_spend_cents_per_point ?? 100) / 100).toFixed(2).replace(".", ","),
+        loyaltyRedeemPerPoint: (Number(settings?.loyalty_redeem_cents_per_point ?? 1) / 100).toFixed(2).replace(".", ","),
+      }} />
+
+      <details className={styles.advanced}>
+        <summary><span><strong>Modo avançado</strong><small>Veja e edite todas as regras, grupos, campanhas e automações.</small></span></summary>
+        <div className={styles.advancedBody}>
       <section className={styles.metrics} aria-label="Resumo de crescimento">
         <Metric label="Cupons ativos" value={String(activeCoupons)} />
         <Metric label="Clientes com saldo" value={String(data.balances.length)} />
@@ -119,6 +131,8 @@ export default async function GrowthPage() {
         <div className={styles.list}>{data.automationRules.map((rule) => <article key={rule.id} className={styles.item}><div className={styles.itemMain}><div className={styles.itemTitle}><strong>{rule.name}</strong><span className={styles.status} data-active={rule.active}>{rule.active ? "Ativa" : "Inativa"}</span></div><span className={styles.itemMeta}>{triggerLabels[rule.trigger_type] ?? "Evento configurado"} → {actionLabels[rule.action_type] ?? "Ação configurada"}</span></div></article>)}{data.automationRules.length === 0 ? <div className={styles.empty}>Nenhuma automação criada ainda.</div> : null}</div>
         {data.automationRuns.length > 0 ? <div><h3>Atividades recentes</h3><div className={styles.activity}>{data.automationRuns.slice(0, 12).map((run) => <div key={run.id} className={styles.activityRow}><span>{dateTime(run.started_at)}</span><strong>{runStatusLabels[run.status] ?? "Processada"}</strong></div>)}</div></div> : null}
       </section>
+        </div>
+      </details>
     </main>
   );
 }

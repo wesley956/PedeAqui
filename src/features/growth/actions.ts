@@ -8,6 +8,8 @@ import { cartCookieName } from "@/server/cart/cart-token";
 import { GrowthService } from "@/server/growth/growth-service";
 import { scheduleCampaignWorker } from "@/server/growth/campaign-dispatch";
 
+const GUIDED_RESULTS = new Set(["fidelidade", "cupom", "grupo", "automacao", "campanha"]);
+
 function optional(formData: FormData, key: string) {
   const value = String(formData.get(key) ?? "").trim();
   return value || null;
@@ -33,6 +35,11 @@ function percentToBps(value: string | null) {
   return Math.round(number * 100);
 }
 
+function finishGuidedAction(formData: FormData) {
+  const result = optional(formData, "guidedResult");
+  if (result && GUIDED_RESULTS.has(result)) redirect(`/crescimento?criado=${result}`);
+}
+
 export async function saveGrowthSettingsAction(formData: FormData) {
   await GrowthService.saveSettings({
     cashbackEnabled: formData.get("cashbackEnabled") === "on",
@@ -44,12 +51,14 @@ export async function saveGrowthSettingsAction(formData: FormData) {
     loyaltyRedeemCentsPerPoint: parseMoneyToCents(String(formData.get("loyaltyRedeemPerPoint") ?? "0,01")),
   });
   revalidatePath("/crescimento");
+  finishGuidedAction(formData);
 }
 
 export async function createCouponAction(formData: FormData) {
   const discountType = String(formData.get("discountType") ?? "fixed") as "fixed" | "percentage";
   const discountRaw = String(formData.get("discountValue") ?? "");
   const validUntilRaw = optional(formData, "validUntil");
+  const validDays = optionalPositiveInt(formData, "validDays");
   await GrowthService.createCoupon({
     code: String(formData.get("code") ?? ""),
     name: String(formData.get("name") ?? ""),
@@ -60,9 +69,12 @@ export async function createCouponAction(formData: FormData) {
     minimumOrderCents: optionalMoney(formData, "minimumOrder") ?? 0,
     usageLimitTotal: optionalPositiveInt(formData, "usageLimitTotal") ?? null,
     usageLimitPerCustomer: optionalPositiveInt(formData, "usageLimitPerCustomer") ?? null,
-    validUntil: validUntilRaw ? new Date(validUntilRaw).toISOString() : null,
+    validUntil: validUntilRaw
+      ? new Date(validUntilRaw).toISOString()
+      : validDays ? new Date(Date.now() + validDays * 86_400_000).toISOString() : null,
   });
   revalidatePath("/crescimento");
+  finishGuidedAction(formData);
 }
 
 export async function createSegmentAction(formData: FormData) {
@@ -78,6 +90,7 @@ export async function createSegmentAction(formData: FormData) {
     hasLoyaltyBalance: formData.get("hasLoyaltyBalance") === "on",
   });
   revalidatePath("/crescimento");
+  finishGuidedAction(formData);
 }
 
 export async function createCampaignAction(formData: FormData) {
@@ -92,6 +105,7 @@ export async function createCampaignAction(formData: FormData) {
     includeCustomerNameParameter: formData.get("includeCustomerNameParameter") === "on",
   });
   revalidatePath("/crescimento");
+  finishGuidedAction(formData);
 }
 
 export async function enqueueCampaignAction(formData: FormData) {
@@ -131,6 +145,7 @@ export async function createAutomationAction(formData: FormData) {
     bonusPoints: actionType === "bonus_points" ? optionalPositiveInt(formData, "bonusPoints") : undefined,
   });
   revalidatePath("/crescimento");
+  finishGuidedAction(formData);
 }
 
 export async function prepareCampaignAction(formData: FormData) {
