@@ -38,6 +38,68 @@ type BotContext = {
   recipient: string;
 };
 
+type StoreHour = {
+  weekday: number;
+  opens_at: string;
+  closes_at: string;
+  closes_next_day: boolean;
+};
+
+const weekdayLabels = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+const paymentLabels: Record<string, string> = {
+  pix: "Pix",
+  credit_card: "cartão de crédito",
+  debit_card: "cartão de débito",
+  cash: "dinheiro",
+};
+
+function shortTime(value: string) {
+  return value.slice(0, 5);
+}
+
+function money(cents: number | null | undefined) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents ?? 0) / 100);
+}
+
+function buildHoursMessage(hours: StoreHour[]) {
+  if (hours.length === 0) return "Os horários ainda não estão cadastrados no PedeAqui. Digite 3 para confirmar com a equipe do restaurante.";
+  const rows = hours.map((hour) => {
+    const day = weekdayLabels[hour.weekday] ?? `dia ${hour.weekday}`;
+    const nextDay = hour.closes_next_day ? " do dia seguinte" : "";
+    return `${day}: ${shortTime(hour.opens_at)} às ${shortTime(hour.closes_at)}${nextDay}`;
+  });
+  return `Horários de atendimento:\n${rows.join("\n")}\n\nPara voltar às opções, digite menu.`;
+}
+
+function buildPaymentMessage(methods: string[], customMethods: string[]) {
+  const labels = [...methods.map((method) => paymentLabels[method] ?? method), ...customMethods];
+  if (labels.length === 0) return "As formas de pagamento ainda não foram cadastradas no PedeAqui. Digite 3 para confirmar com a equipe do restaurante.";
+  return `Formas de pagamento aceitas: ${labels.join(", ")}.\n\nPara voltar às opções, digite menu.`;
+}
+
+function buildDeliveryMessage(input: {
+  enabled: boolean;
+  feeMode: string | null;
+  defaultFeeCents: number | null;
+  freeDeliveryOverCents: number | null;
+  minMinutes: number | null;
+  maxMinutes: number | null;
+  requireNeighborhoodMatch: boolean;
+  menuUrl: string;
+}) {
+  if (!input.enabled) return "No momento, a entrega não está habilitada para esta loja. Você pode verificar as opções disponíveis no cardápio ou digitar 3 para falar com a equipe.";
+  const parts = ["Sim, fazemos entrega."];
+  if (input.feeMode === "neighborhood" || input.requireNeighborhoodMatch) {
+    parts.push("A taxa depende do bairro/endereço e é calculada no cardápio antes de finalizar o pedido.");
+  } else if (input.defaultFeeCents !== null) {
+    parts.push(`Taxa padrão: ${money(input.defaultFeeCents)}.`);
+  }
+  if (input.freeDeliveryOverCents !== null) parts.push(`Frete grátis em pedidos a partir de ${money(input.freeDeliveryOverCents)}.`);
+  if (input.minMinutes !== null && input.maxMinutes !== null) parts.push(`Previsão de entrega: ${input.minMinutes} a ${input.maxMinutes} minutos.`);
+  parts.push(`Confira seu endereço e a taxa exata aqui: ${input.menuUrl}`);
+  return `${parts.join(" ")}\n\nPara voltar às opções, digite menu.`;
+}
+
 async function sendBotText(context: BotContext, body: string, clientMessageId: string) {
   const admin = createAdminClient();
   const { data: claim, error: claimError } = await admin.rpc("conversation_claim_bot_outbound_internal", {
@@ -96,7 +158,7 @@ async function updateBotSession(conversationId: string, step: WhatsAppBotStep, m
   const { error } = await admin.rpc("automation_session_upsert_internal", {
     p_conversation_id: conversationId,
     p_step: step,
-    p_context: { channel: "whatsapp_menu", version: 1 },
+    p_context: { channel: "whatsapp_menu", version: 2 },
     p_last_input_message_id: messageId,
     p_expires_at: expiresAt,
   });
@@ -271,6 +333,64 @@ export class ConversationGreetingService {
 
     if (intent === "menu_link") {
       await sendBotText(botContext, `Aqui está o cardápio de ${store.name}: ${menuUrl}\n\nPara voltar às opções, digite menu.`, responseKey);
+      await updateBotSession(conversation.id, "menu", ingest.message_id);
+      return;
+    }
+
+    if (intent === "hours") {
+      const { data: hours, error: hoursError } = await admin.from("store_hours")
+        .select("weekday, opens_at, closes_at, closes_next_day")
+        .eq("organization_id", conversation.organization_id)
+        .eq("store_id", conversation.store_id)
+        .eq("active", true)
+        .order("weekday")
+        .order("sort_order");
+      if (hoursError) throw hoursError;
+      await sendBotText(botContext, buildHoursMessage((hours ?? []) as StoreHour[]), responseKey);
+      await updateBotSession(conversation.id, "menu", ingest.message_id);
+      return;
+    }
+
+    if (intent === "payment") {
+      const [{ data: methods, error: methodsError }, { data: customMethods, error: customMethodsError }] = await Promise.all([
+        admin.from("store_payment_methods")
+          .select("method")
+          .eq("organization_id", conversation.organization_id)
+          .eq("store_id", conversation.store_id)
+          .eq("enabled", true)
+          .order("sort_order"),
+        admin.from("store_custom_payment_methods")
+          .select("name")
+          .eq("organization_id", conversation.organization_id)
+          .eq("store_id", conversation.store_id)
+          .eq("enabled", true)
+          .is("archived_at", null)
+          .order("sort_order"),
+      ]);
+      if (methodsError) throw methodsError;
+      if (customMethodsError) throw customMethodsError;
+      await sendBotText(botContext, buildPaymentMessage((methods ?? []).map((item) => item.method), (customMethods ?? []).map((item) => item.name)), responseKey);
+      await updateBotSession(conversation.id, "menu", ingest.message_id);
+      return;
+    }
+
+    if (intent === "delivery") {
+      const { data: delivery, error: deliveryError } = await admin.from("store_delivery_settings")
+        .select("enabled, fee_mode, default_fee_cents, free_delivery_over_cents, estimated_min_minutes, estimated_max_minutes, require_neighborhood_match")
+        .eq("organization_id", conversation.organization_id)
+        .eq("store_id", conversation.store_id)
+        .maybeSingle();
+      if (deliveryError) throw deliveryError;
+      await sendBotText(botContext, buildDeliveryMessage({
+        enabled: Boolean(delivery?.enabled),
+        feeMode: delivery?.fee_mode ?? null,
+        defaultFeeCents: delivery?.default_fee_cents ?? null,
+        freeDeliveryOverCents: delivery?.free_delivery_over_cents ?? null,
+        minMinutes: delivery?.estimated_min_minutes ?? null,
+        maxMinutes: delivery?.estimated_max_minutes ?? null,
+        requireNeighborhoodMatch: Boolean(delivery?.require_neighborhood_match),
+        menuUrl,
+      }), responseKey);
       await updateBotSession(conversation.id, "menu", ingest.message_id);
       return;
     }
