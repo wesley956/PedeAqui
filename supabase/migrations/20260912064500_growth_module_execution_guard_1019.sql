@@ -1,4 +1,4 @@
-+create or replace function private.execute_growth_automation(
+create or replace function private.execute_growth_automation(
   p_rule public.automation_rules,
   p_customer public.customers,
   p_order public.orders,
@@ -68,4 +68,3 @@ begin
 end $$;
 revoke all on function public.campaign_claim_internal(text,integer) from public,anon,authenticated;
 grant execute on function public.campaign_claim_internal(text,integer) to service_role;
-
