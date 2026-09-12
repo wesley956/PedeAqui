@@ -70,21 +70,33 @@ function normalizeContext(value: unknown): WhatsAppOrderContext {
   };
 }
 
-function parseItems(text: string): ParsedItem[] {
-  const cleaned = text
-    .replace(/\b(quero|gostaria|pedido|pedir|preciso de|me ve|me vê)\b/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  const segments = cleaned.split(/[\n;,]+/).map((item) => item.trim()).filter(Boolean);
+export function looksLikeWhatsAppOrderItems(text: string | null | undefined) {
+  if (!text) return false;
+  return text.split(/[\n;,]+/).some((segment) => /^\s*\d{1,4}\s*(?:x|un|unid(?:ade)?s?)?\s+\S+/i.test(segment));
+}
+
+export function parseWhatsAppOrderItems(text: string): ParsedItem[] {
+  const segments = text.split(/[\n;,]+/).map((item) => item.trim()).filter(Boolean);
   const parsed: ParsedItem[] = [];
-  for (const segment of segments) {
+  for (const raw of segments) {
+    const segment = raw
+      .replace(/\b(quero|gostaria|pedido|pedir|preciso de|me ve|me vê)\b/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
     const match = segment.match(/^(\d{1,4})\s*(?:x|un|unid(?:ade)?s?)?\s+(.+)$/i);
     if (!match) continue;
     const quantity = Number(match[1]);
     const query = match[2].replace(/^[xX]\s*/, "").trim();
-    if (quantity > 0 && quantity <= 9999 && query.length >= 2) parsed.push({ quantity, query });
+    if (quantity > 0 && quantity <= 99 && query.length >= 2) parsed.push({ quantity, query });
   }
   return parsed;
+}
+
+function hasUnsupportedQuantity(text: string) {
+  return text.split(/[\n;,]+/).some((segment) => {
+    const match = segment.trim().match(/^(\d{1,4})\s*(?:x|un|unid(?:ade)?s?)?\s+\S+/i);
+    return Boolean(match && Number(match[1]) > 99);
+  });
 }
 
 function isYes(text: string) {
@@ -107,8 +119,8 @@ function parseFulfillment(text: string): "delivery" | "pickup" | null {
 function parsePayment(text: string): "cash" | "credit_card" | "debit_card" | null {
   const normalized = normalizeBotInput(text);
   if (normalized === "1" || normalized.includes("dinheiro")) return "cash";
-  if (normalized === "2" || normalized.includes("credito") || normalized.includes("crédito")) return "credit_card";
-  if (normalized === "3" || normalized.includes("debito") || normalized.includes("débito")) return "debit_card";
+  if (normalized === "2" || normalized.includes("credito")) return "credit_card";
+  if (normalized === "3" || normalized.includes("debito")) return "debit_card";
   return null;
 }
 
@@ -179,7 +191,7 @@ async function addRequestedItems(input: Input, items: ParsedItem[]) {
       added.push({ name: found.product.name, quantity: request.quantity, lineTotalCents: unit * request.quantity });
     } catch (error) {
       if (error instanceof PricingError && error.code === "invalid_modifiers") {
-        return { ok: false as const, message: `O item “${found.product.name}” precisa escolher sabor, tamanho ou adicional. Por segurança, ainda não vou criar esse item automaticamente. Envie outro item simples ou digite 1 para montar esse produto no cardápio online.` };
+        return { ok: false as const, message: `O item “${found.product.name}” precisa escolher sabor, tamanho ou adicional. Por segurança, ainda não vou criar esse item automaticamente. Digite 1 para montar esse produto no cardápio online ou escolha um item sem opções obrigatórias.` };
       }
       throw error;
     }
@@ -199,6 +211,15 @@ async function paymentOptions(organizationId: string, storeId: string) {
     .order("sort_order");
   if (error) throw error;
   return new Set((data ?? []).map((row) => row.method));
+}
+
+function paymentPrompt(options: Set<string>) {
+  const lines = [
+    options.has("cash") ? "1 — Dinheiro" : null,
+    options.has("credit_card") ? "2 — Cartão de crédito" : null,
+    options.has("debit_card") ? "3 — Cartão de débito" : null,
+  ].filter(Boolean);
+  return lines.length > 0 ? `Como será o pagamento?\n${lines.join("\n")}` : "Não há uma forma de pagamento compatível com o pedido pelo WhatsApp. Digite 3 para falar com a equipe.";
 }
 
 async function reviewSummary(storeSlug: string, cartToken: string, context: WhatsAppOrderContext) {
@@ -223,7 +244,10 @@ export class WhatsAppOrderService {
     const context = normalizeContext(input.context);
 
     if (input.step === "order_items") {
-      const items = parseItems(input.text);
+      if (hasUnsupportedQuantity(input.text)) {
+        return { handled: true, body: "Por segurança, cada linha pode ter no máximo 99 unidades. Se a loja vende pacotes/centos, use o nome do pacote que aparece no cardápio. Exemplo: 2 Cento de salgados.", nextStep: "order_items", context };
+      }
+      const items = parseWhatsAppOrderItems(input.text);
       if (items.length === 0) {
         return { handled: true, body: "Envie a quantidade antes do nome de cada item. Exemplo:\n2 Coxinha de frango\n1 Refrigerante lata", nextStep: "order_items", context };
       }
@@ -265,8 +289,7 @@ export class WhatsAppOrderService {
         return { handled: true, body: "Envie o endereço neste formato:\nRua, número, bairro, cidade, UF\n\nExemplo: Rua das Flores, 123, Centro, Americana, SP", nextStep: "order_address", context: { ...context, fulfillment } };
       }
       const options = await paymentOptions(input.organizationId, input.storeId);
-      const lines = [options.has("cash") ? "1 — Dinheiro" : null, options.has("credit_card") ? "2 — Cartão de crédito" : null, options.has("debit_card") ? "3 — Cartão de débito" : null].filter(Boolean);
-      return { handled: true, body: `Como será o pagamento?\n${lines.join("\n")}`, nextStep: "order_payment", context: { ...context, fulfillment } };
+      return { handled: true, body: paymentPrompt(options), nextStep: "order_payment", context: { ...context, fulfillment } };
     }
 
     if (input.step === "order_address") {
@@ -275,8 +298,7 @@ export class WhatsAppOrderService {
       try {
         const quote = await CheckoutService.saveAddress(input.storeSlug, context.cartToken, address);
         const options = await paymentOptions(input.organizationId, input.storeId);
-        const lines = [options.has("cash") ? "1 — Dinheiro" : null, options.has("credit_card") ? "2 — Cartão de crédito" : null, options.has("debit_card") ? "3 — Cartão de débito" : null].filter(Boolean);
-        return { handled: true, body: `Endereço atendido. Taxa de entrega: ${money(quote.feeCents)}.\n\nComo será o pagamento?\n${lines.join("\n")}`, nextStep: "order_payment", context };
+        return { handled: true, body: `Endereço atendido. Taxa de entrega: ${money(quote.feeCents)}.\n\n${paymentPrompt(options)}`, nextStep: "order_payment", context };
       } catch (error) {
         if (error instanceof CheckoutError) return { handled: true, body: `${error.message}. Confira o endereço e envie novamente ou digite 3 para falar com a equipe.`, nextStep: "order_address", context };
         throw error;
