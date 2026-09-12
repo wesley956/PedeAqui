@@ -141,14 +141,23 @@ function containsAny(value: string, words: Set<string>) {
   return [...words].some((word) => word.length > 3 && value.includes(word));
 }
 
+function hasExplicitTrackingContext(value: string) {
+  return /\b(?:pedido|codigo)\b/.test(value);
+}
+
 export function trackingCodeFromInput(value: string | null | undefined) {
-  const normalized = normalizeBotInput(value).replace(/^pedido\s*/, "").replace(/^#/, "").trim();
-  return /^\d{1,12}$/.test(normalized) ? Number(normalized) : null;
+  const normalized = normalizeBotInput(value).replace(/^#/, "").trim();
+  if (/^\d{1,12}$/.test(normalized)) return Number(normalized);
+  if (!hasExplicitTrackingContext(normalized)) return null;
+  const matches = [...normalized.matchAll(/\b\d{1,12}\b/g)].map((match) => match[0]);
+  return matches.length === 1 ? Number(matches[0]) : null;
 }
 
 export function resolveWhatsAppBotIntent(value: string | null | undefined, step: WhatsAppBotStep): WhatsAppBotIntent {
   const normalized = normalizeBotInput(value);
-  if (step === "awaiting_tracking_code" && trackingCodeFromInput(normalized) !== null) return "track_code";
+  const trackingCode = trackingCodeFromInput(normalized);
+  if (step === "awaiting_tracking_code" && trackingCode !== null) return "track_code";
+  if (step === "menu" && trackingCode !== null && hasExplicitTrackingContext(normalized)) return "track_code";
   if (menuWords.has(normalized)) return "menu";
   if (containsAny(normalized, orderStartWords)) return "order_start";
   if (containsAny(normalized, benefitHandoffWords)) return "benefit_handoff";
