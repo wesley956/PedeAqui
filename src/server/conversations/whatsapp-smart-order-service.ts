@@ -14,6 +14,7 @@ import {
   repairSuspiciousPackageQuantity,
   restartOrderMessage,
 } from "@/server/conversations/whatsapp-order-corrections";
+import { answerContextualOrderQuestion } from "@/server/conversations/whatsapp-contextual-question-service";
 import { asksAboutPixPayment, pixPaymentGuidanceMessage } from "@/server/conversations/whatsapp-payment-guidance";
 
 export { isWhatsAppOrderStep, looksLikeWhatsAppOrderItems, whatsappOrderStartMessage };
@@ -31,6 +32,9 @@ export class WhatsAppOrderService {
         context: { channel: "whatsapp_order", version: 1 },
       };
     }
+
+    const contextualAnswer = await answerContextualOrderQuestion(input);
+    if (contextualAnswer) return contextualAnswer;
 
     if (input.step === "order_payment" && asksAboutPixPayment(input.text)) {
       return {
