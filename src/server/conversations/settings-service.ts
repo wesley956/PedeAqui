@@ -9,6 +9,7 @@ import { DEFAULT_WHATSAPP_GREETING, DEFAULT_WHATSAPP_GREETING_FALLBACK, DEFAULT_
 import { WHATSAPP_AUTOMATION_PRESETS } from "@/server/conversations/order-notification-model";
 import { ORDER_NOTIFICATION_TYPES, validateOrderNotificationTextTemplate } from "@/server/conversations/order-notification-template";
 import { WhatsAppCloudProvider, WhatsAppProviderError, resolveWhatsAppAccessToken, resolveWhatsAppAppSecret, resolveWhatsAppGraphVersion } from "@/server/conversations/provider";
+import { DEFAULT_CONVERSATION_AUTO_CLOSE_MESSAGE, validConversationAutoCloseMinutes } from "@/server/conversations/conversation-lifecycle";
 
 const templateNameSchema = z.string().trim().regex(/^[a-z0-9_]{1,512}$/).nullable();
 const templateLanguageSchema = z.string().trim().regex(/^[a-z]{2}_[A-Z]{2}$/);
@@ -19,6 +20,8 @@ const settingsSchema = z.object({
   accessTokenSecretRef: z.string().trim().regex(/^[A-Z][A-Z0-9_]{2,100}$/).nullable(), appSecretSecretRef: z.string().trim().regex(/^[A-Z][A-Z0-9_]{2,100}$/).nullable(),
   botEnabled: z.boolean(), aiEnabled: z.boolean(), whatsappOrdersEnabled: z.boolean(), greetingEnabled: z.boolean(), greetingTemplate: z.string().trim(), greetingFallbackMessage: z.string().trim(),
   botMenuMode: z.enum(WHATSAPP_BOT_MENU_MODES), botDisplayName: z.string().trim().max(60).nullable(), handoffMessage: z.string().trim(), unknownMessage: z.string().trim(),
+  conversationAutoCloseEnabled: z.boolean(), botAutoCloseMinutes: z.number().int(), humanAutoCloseMinutes: z.number().int(),
+  keepOpenWhileOrderActive: z.boolean(), sendAutoCloseMessage: z.boolean(), autoCloseMessage: z.string().trim(),
   orderNotificationsEnabled: z.boolean(), orderNotificationPreset: z.enum(WHATSAPP_AUTOMATION_PRESETS),
   notifyOrderReceived: z.boolean(), notifyOrderConfirmed: z.boolean(), notifyProductionPreparing: z.boolean(), notifyPaymentPaid: z.boolean(),
   notifyPickupReady: z.boolean(), notifyPickupCompleted: z.boolean(), notifyOutForDelivery: z.boolean(), notifyDelivered: z.boolean(), notifyOrderCanceled: z.boolean(),
@@ -30,6 +33,9 @@ const settingsSchema = z.object({
   if (!validateBotDisplayName(value.botDisplayName)) ctx.addIssue({ code: "custom", path: ["botDisplayName"], message: "O nome do robô deve ter entre 2 e 60 caracteres e não pode conter links." });
   if (!validateBotReplyMessage(value.handoffMessage)) ctx.addIssue({ code: "custom", path: ["handoffMessage"], message: "Revise a mensagem de transferência para atendente." });
   if (!validateBotReplyMessage(value.unknownMessage)) ctx.addIssue({ code: "custom", path: ["unknownMessage"], message: "Revise a mensagem usada quando o robô não entender." });
+  if (!validConversationAutoCloseMinutes(value.botAutoCloseMinutes)) ctx.addIssue({ code: "custom", path: ["botAutoCloseMinutes"], message: "Escolha entre 5 minutos e 24 horas para conversas com o robô." });
+  if (!validConversationAutoCloseMinutes(value.humanAutoCloseMinutes)) ctx.addIssue({ code: "custom", path: ["humanAutoCloseMinutes"], message: "Escolha entre 5 minutos e 24 horas para atendimento humano." });
+  if (!validateBotReplyMessage(value.autoCloseMessage)) ctx.addIssue({ code: "custom", path: ["autoCloseMessage"], message: "Revise a mensagem de encerramento automático." });
   if (value.orderNotificationsEnabled && !value.whatsappEnabled) ctx.addIssue({ code: "custom", path: ["orderNotificationsEnabled"], message: "Ative o WhatsApp antes das atualizações automáticas de pedido." });
   if (value.whatsappOrdersEnabled && (!value.whatsappEnabled || !value.botEnabled)) ctx.addIssue({ code: "custom", path: ["whatsappOrdersEnabled"], message: "Ative o WhatsApp e o atendimento automático antes de aceitar pedidos pela conversa." });
   for (const [key, text] of Object.entries(value.orderNotificationCustomTemplates)) {
@@ -42,7 +48,7 @@ export type WhatsAppChannelHealth = { status: "disabled" | "misconfigured" | "co
 function requireStoreId(storeId: string | null) { if (!storeId) throw new Error("Selecione uma unidade para configurar Conversas."); return storeId; }
 const emptyHealth = (status: WhatsAppChannelHealth["status"], message: string, graphVersion: string | null = null): WhatsAppChannelHealth => ({ status, message, displayPhoneNumber: null, verifiedName: null, qualityRating: null, graphVersion });
 
-const settingsSelect = "whatsapp_enabled, provider, whatsapp_phone_number_id, whatsapp_business_account_id, access_token_secret_ref, app_secret_secret_ref, default_bot_enabled, ai_enabled, whatsapp_orders_enabled, greeting_enabled, greeting_template, greeting_fallback_message, bot_menu_mode, bot_display_name, handoff_message, unknown_intent_message, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, notify_order_canceled, order_notification_custom_templates, order_notification_template_name, order_notification_template_language";
+const settingsSelect = "whatsapp_enabled, provider, whatsapp_phone_number_id, whatsapp_business_account_id, access_token_secret_ref, app_secret_secret_ref, default_bot_enabled, ai_enabled, whatsapp_orders_enabled, greeting_enabled, greeting_template, greeting_fallback_message, bot_menu_mode, bot_display_name, handoff_message, unknown_intent_message, conversation_auto_close_enabled, bot_auto_close_minutes, human_auto_close_minutes, keep_open_while_order_active, send_auto_close_message, auto_close_message, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, notify_order_canceled, order_notification_custom_templates, order_notification_template_name, order_notification_template_language";
 
 export class ConversationSettingsService {
   static async load() {
@@ -73,6 +79,8 @@ export class ConversationSettingsService {
       access_token_secret_ref: values.accessTokenSecretRef, app_secret_secret_ref: values.appSecretSecretRef, default_bot_enabled: values.botEnabled, ai_enabled: values.aiEnabled, whatsapp_orders_enabled: values.whatsappOrdersEnabled, greeting_enabled: values.greetingEnabled,
       greeting_template: values.greetingTemplate || DEFAULT_WHATSAPP_GREETING, greeting_fallback_message: values.greetingFallbackMessage || DEFAULT_WHATSAPP_GREETING_FALLBACK,
       bot_menu_mode: values.botMenuMode, bot_display_name: values.botDisplayName, handoff_message: values.handoffMessage || DEFAULT_WHATSAPP_HANDOFF_MESSAGE, unknown_intent_message: values.unknownMessage || DEFAULT_WHATSAPP_UNKNOWN_MESSAGE,
+      conversation_auto_close_enabled: values.conversationAutoCloseEnabled, bot_auto_close_minutes: values.botAutoCloseMinutes, human_auto_close_minutes: values.humanAutoCloseMinutes,
+      keep_open_while_order_active: values.keepOpenWhileOrderActive, send_auto_close_message: values.sendAutoCloseMessage, auto_close_message: values.autoCloseMessage || DEFAULT_CONVERSATION_AUTO_CLOSE_MESSAGE,
       order_notifications_enabled: values.orderNotificationsEnabled, order_notification_preset: values.orderNotificationPreset,
       notify_order_received: values.notifyOrderReceived, notify_order_confirmed: values.notifyOrderConfirmed, notify_production_preparing: values.notifyProductionPreparing,
       notify_payment_paid: values.notifyPaymentPaid, notify_pickup_ready: values.notifyPickupReady, notify_pickup_completed: values.notifyPickupCompleted,
@@ -92,6 +100,9 @@ export class ConversationSettingsService {
       order_notification_custom_template_keys: Object.keys(data.order_notification_custom_templates ?? {}),
       order_notification_template_name: data.order_notification_template_name, order_notification_template_language: data.order_notification_template_language,
       bot_menu_mode: data.bot_menu_mode, bot_display_name: data.bot_display_name,
+      conversation_auto_close_enabled: data.conversation_auto_close_enabled, bot_auto_close_minutes: data.bot_auto_close_minutes,
+      human_auto_close_minutes: data.human_auto_close_minutes, keep_open_while_order_active: data.keep_open_while_order_active,
+      send_auto_close_message: data.send_auto_close_message,
     } });
     return data;
   }

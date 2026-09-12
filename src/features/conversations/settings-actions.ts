@@ -16,6 +16,7 @@ import {
 } from "@/server/conversations/order-notification-template";
 import { resolveWhatsAppAutomationCapabilities } from "@/server/conversations/whatsapp-automation-capability";
 import { WhatsAppAutomationCapabilityService } from "@/server/conversations/whatsapp-automation-capability-service";
+import { DEFAULT_CONVERSATION_AUTO_CLOSE_MESSAGE } from "@/server/conversations/conversation-lifecycle";
 
 function optional(formData: FormData, key: string) {
   const value = String(formData.get(key) ?? "").trim();
@@ -24,6 +25,11 @@ function optional(formData: FormData, key: string) {
 
 function checked(formData: FormData, key: string) {
   return formData.get(key) === "on";
+}
+
+function minutes(formData: FormData, key: string, fallback: number) {
+  const raw = Number(formData.get(key));
+  return Number.isInteger(raw) ? raw : fallback;
 }
 
 function restoreGreetingTokens(value: string) {
@@ -109,6 +115,12 @@ export async function saveConversationSettingsAction(formData: FormData) {
     botDisplayName: optional(formData, "botDisplayName"),
     handoffMessage: optional(formData, "handoffMessage") ?? DEFAULT_WHATSAPP_HANDOFF_MESSAGE,
     unknownMessage: optional(formData, "unknownMessage") ?? DEFAULT_WHATSAPP_UNKNOWN_MESSAGE,
+    conversationAutoCloseEnabled: checked(formData, "conversationAutoCloseEnabled"),
+    botAutoCloseMinutes: minutes(formData, "botAutoCloseMinutes", current?.bot_auto_close_minutes ?? 30),
+    humanAutoCloseMinutes: minutes(formData, "humanAutoCloseMinutes", current?.human_auto_close_minutes ?? 60),
+    keepOpenWhileOrderActive: checked(formData, "keepOpenWhileOrderActive"),
+    sendAutoCloseMessage: checked(formData, "sendAutoCloseMessage"),
+    autoCloseMessage: optional(formData, "autoCloseMessage") ?? DEFAULT_CONVERSATION_AUTO_CLOSE_MESSAGE,
     orderNotificationsEnabled: connectionConfigured ? checked(formData, "orderNotificationsEnabled") : Boolean(current?.order_notifications_enabled),
     orderNotificationPreset: preset,
     notifyOrderReceived: selected.notifyOrderReceived,

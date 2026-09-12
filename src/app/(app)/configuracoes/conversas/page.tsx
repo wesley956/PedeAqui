@@ -10,6 +10,7 @@ import { normalizeOrderNotificationCustomTemplates } from "@/server/conversation
 import { ConversationSettingsService } from "@/server/conversations/settings-service";
 import { resolveWhatsAppAutomationCapabilities } from "@/server/conversations/whatsapp-automation-capability";
 import { WhatsAppAutomationCapabilityService } from "@/server/conversations/whatsapp-automation-capability-service";
+import { DEFAULT_CONVERSATION_AUTO_CLOSE_MESSAGE } from "@/server/conversations/conversation-lifecycle";
 
 const fieldStyle = {
   minHeight: 44,
@@ -189,6 +190,46 @@ export default async function ConversationSettingsPage() {
             <span style={{ fontWeight: 700 }}>Quando não entender</span>
             <textarea name="unknownMessage" defaultValue={settings?.unknown_intent_message ?? DEFAULT_WHATSAPP_UNKNOWN_MESSAGE} style={textareaStyle} />
           </label>
+        </Card>
+
+        <Card style={{ display: "grid", gap: 12 }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 18 }}>Encerramento das conversas</h2>
+            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>A própria loja escolhe quando um atendimento sem novas mensagens deve ser encerrado.</p>
+          </div>
+          <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
+            <input type="checkbox" name="conversationAutoCloseEnabled" defaultChecked={Boolean(settings?.conversation_auto_close_enabled)} />
+            <span>Encerrar conversas automaticamente por inatividade</span>
+          </label>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+            <label style={{ display: "grid", gap: 6 }}>
+              <span style={{ fontWeight: 700 }}>Conversa com o robô</span>
+              <input type="number" name="botAutoCloseMinutes" min={5} max={1440} step={1} defaultValue={settings?.bot_auto_close_minutes ?? 30} style={fieldStyle} />
+              <span className="muted" style={{ fontSize: 12 }}>Tempo em minutos. Exemplos: 15, 30, 60 ou 120.</span>
+            </label>
+            <label style={{ display: "grid", gap: 6 }}>
+              <span style={{ fontWeight: 700 }}>Atendimento humano</span>
+              <input type="number" name="humanAutoCloseMinutes" min={5} max={1440} step={1} defaultValue={settings?.human_auto_close_minutes ?? 60} style={fieldStyle} />
+              <span className="muted" style={{ fontSize: 12 }}>Pode ser diferente do tempo usado pelo robô.</span>
+            </label>
+          </div>
+          <label style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+            <input type="checkbox" name="keepOpenWhileOrderActive" defaultChecked={settings?.keep_open_while_order_active ?? true} style={{ marginTop: 3 }} />
+            <span><strong>Manter aberta enquanto houver pedido ativo</strong><span className="muted" style={{ display: "block", fontSize: 12, marginTop: 3 }}>Pedidos pendentes ou em andamento e pedidos ainda sendo montados pelo WhatsApp impedem o encerramento.</span></span>
+          </label>
+          <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
+            <input type="checkbox" name="sendAutoCloseMessage" defaultChecked={settings?.send_auto_close_message ?? true} />
+            <span>Avisar o cliente antes de encerrar</span>
+          </label>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontWeight: 700 }}>Mensagem de encerramento</span>
+            <textarea name="autoCloseMessage" defaultValue={settings?.auto_close_message ?? DEFAULT_CONVERSATION_AUTO_CLOSE_MESSAGE} style={textareaStyle} />
+            <span className="muted" style={{ fontSize: 12 }}>A tentativa de envio respeita a disponibilidade e a janela do WhatsApp. Se a Meta não permitir o envio, a conversa ainda é encerrada corretamente.</span>
+          </label>
+          <div style={{ display: "grid", gap: 5, padding: 12, borderRadius: 10, border: "1px solid var(--border)" }}>
+            <strong>Proteções automáticas</strong>
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>Conversas aguardando atendente nunca são encerradas por esta regra. Se o cliente voltar depois, uma nova conversa limpa é aberta sem apagar o histórico anterior.</p>
+          </div>
         </Card>
         <div><Button type="submit">Salvar preferências</Button></div>
       </form>
