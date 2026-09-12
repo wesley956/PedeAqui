@@ -14,6 +14,11 @@ export type ProviderSendTemplateInput = {
   bodyParameters: string[];
 };
 
+export type ProviderSendReplyButtonInput = ProviderSendTextInput & {
+  buttonId: string;
+  buttonTitle: string;
+};
+
 export type ProviderSendResult = {
   externalMessageId: string;
 };
@@ -27,6 +32,7 @@ export type WhatsAppPhoneNumberInspection = {
 
 export interface ConversationProvider {
   sendText(input: ProviderSendTextInput): Promise<ProviderSendResult>;
+  sendReplyButton?(input: ProviderSendReplyButtonInput): Promise<ProviderSendResult>;
   sendTemplate?(input: ProviderSendTemplateInput): Promise<ProviderSendResult>;
 }
 
@@ -145,6 +151,24 @@ export class WhatsAppCloudProvider implements ConversationProvider {
       to: input.recipient,
       type: "text",
       text: { body: input.body },
+    });
+  }
+
+  async sendReplyButton(input: ProviderSendReplyButtonInput): Promise<ProviderSendResult> {
+    if (!/^[a-z0-9_]{1,64}$/.test(input.buttonId)) throw new Error("Identificador do botão do WhatsApp inválido.");
+    if (input.buttonTitle.trim().length < 1 || input.buttonTitle.trim().length > 20) throw new Error("Título do botão do WhatsApp inválido.");
+    return this.sendMessage(input.phoneNumberId, {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: input.recipient,
+      type: "interactive",
+      interactive: {
+        type: "button",
+        body: { text: input.body },
+        action: {
+          buttons: [{ type: "reply", reply: { id: input.buttonId, title: input.buttonTitle.trim() } }],
+        },
+      },
     });
   }
 

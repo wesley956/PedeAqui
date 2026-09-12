@@ -115,7 +115,7 @@ export class WhatsAppDirectOrderOrchestrator {
 
     const [settingsResult, contactResult, storeResult, inboundResult, sessionResult] = await Promise.all([
       admin.from("store_conversation_settings")
-        .select("whatsapp_orders_enabled, whatsapp_enabled, whatsapp_phone_number_id, access_token_secret_ref, default_bot_enabled")
+        .select("whatsapp_orders_enabled, whatsapp_enabled, whatsapp_phone_number_id, access_token_secret_ref, default_bot_enabled, bot_display_name, handoff_message")
         .eq("organization_id", conversation.organization_id)
         .eq("store_id", conversation.store_id)
         .maybeSingle(),
@@ -176,7 +176,7 @@ export class WhatsAppDirectOrderOrchestrator {
     };
 
     if (activeOrderStep && normalizeBotInput(inbound.body) === "menu") {
-      const body = buildWhatsAppBotMenu(store.name, true);
+      const body = buildWhatsAppBotMenu(store.name, true, settings.bot_display_name);
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:menu:${ingest.message_id}` });
       await saveSession(conversation.id, "menu", ingest.message_id, null);
       return true;
@@ -185,7 +185,7 @@ export class WhatsAppDirectOrderOrchestrator {
     if (activeOrderStep && wantsHuman(inbound.body)) {
       await sendBotText({
         ...sendBase,
-        body: "Certo! Parei a montagem do pedido e encaminhei sua conversa para a equipe do restaurante.",
+        body: `Parei a montagem do pedido. ${settings.handoff_message}`,
         clientMessageId: `auto:wa-order:handoff:${ingest.message_id}`,
       });
       await admin.rpc("conversation_transition_internal", {

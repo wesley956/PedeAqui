@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/primitives";
 import { MetaEmbeddedSignupCard } from "@/features/conversations/meta-embedded-signup-card";
 import { saveConversationSettingsAction } from "@/features/conversations/settings-actions";
 import { WhatsAppAutomationSettings } from "@/features/conversations/whatsapp-automation-settings";
-import { DEFAULT_WHATSAPP_GREETING, DEFAULT_WHATSAPP_GREETING_FALLBACK } from "@/server/conversations/greeting";
+import { DEFAULT_WHATSAPP_GREETING, DEFAULT_WHATSAPP_GREETING_FALLBACK, DEFAULT_WHATSAPP_HANDOFF_MESSAGE, DEFAULT_WHATSAPP_UNKNOWN_MESSAGE } from "@/server/conversations/greeting";
 import { MetaEmbeddedSignupService } from "@/server/conversations/meta-embedded-signup-service";
 import { normalizeWhatsAppAutomationPreset } from "@/server/conversations/order-notification-model";
 import { normalizeOrderNotificationCustomTemplates } from "@/server/conversations/order-notification-template";
@@ -83,7 +83,7 @@ export default async function ConversationSettingsPage() {
 
         <Card style={{ display: "grid", gap: 12 }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: 18 }}>Automações do pedido</h2>
+            <h2 style={{ margin: 0, fontSize: 18 }}>Avisos do andamento do pedido</h2>
             <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Escolha um fluxo pronto ou personalize as etapas e textos. Os avisos são disparados somente por estados reais do pedido no PedeAqui e nunca mudam o andamento do pedido.</p>
           </div>
 
@@ -125,28 +125,63 @@ export default async function ConversationSettingsPage() {
           <h2 style={{ margin: 0, fontSize: 18 }}>Atendimento automático</h2>
           <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="botEnabled" defaultChecked={settings?.default_bot_enabled ?? true} /><span>Responder automaticamente quando não houver atendente</span></label>
           <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="aiEnabled" defaultChecked={Boolean(settings?.ai_enabled)} /><span>Usar o assistente inteligente nas conversas</span></label>
-          <label style={{ display: "flex", gap: 9, alignItems: "flex-start", padding: 12, borderRadius: 10, border: "1px solid var(--border)" }}>
-            <input type="checkbox" name="whatsappOrdersEnabled" defaultChecked={Boolean(settings?.whatsapp_orders_enabled)} disabled={!connectionConfigured} style={{ marginTop: 3 }} />
-            <span>
-              <strong>Aceitar pedidos pelo WhatsApp</strong>
-              <span className="muted" style={{ display: "block", fontSize: 12, marginTop: 3 }}>O bot pode montar um carrinho pela conversa, perguntar entrega ou retirada, forma de pagamento e só cria o pedido depois da confirmação do cliente.</span>
-            </span>
-          </label>
           <p className="muted" style={{ margin: 0, fontSize: 12 }}>O assistente só utiliza as funções autorizadas do PedeAqui e respeita o acesso configurado para esta unidade.</p>
         </Card>
 
         <Card style={{ display: "grid", gap: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Mensagem de boas-vindas</h2>
-          <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="greetingEnabled" defaultChecked={Boolean(settings?.greeting_enabled)} disabled={!connectionConfigured} /><span>Enviar uma saudação no primeiro contato e apresentar o cardápio</span></label>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 18 }}>Mensagem inicial e menu</h2>
+            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Escolha se o atendimento começa como conversa, mostra as opções imediatamente ou oferece um botão.</p>
+          </div>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontWeight: 700 }}>Como apresentar as opções</span>
+            <select name="botMenuMode" defaultValue={settings?.bot_menu_mode ?? "conversation_first"} style={fieldStyle}>
+              <option value="conversation_first">Conversa limpa + cliente digita “menu” (recomendado)</option>
+              <option value="interactive">Conversa limpa + botão “Ver opções”</option>
+              <option value="menu_first">Mostrar todas as opções logo no início</option>
+            </select>
+            <span className="muted" style={{ fontSize: 12 }}>Mesmo no modo com botão, o cliente sempre pode digitar <strong>menu</strong>. Se a Meta não aceitar o botão, o PedeAqui envia a alternativa em texto.</span>
+          </label>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontWeight: 700 }}>Nome do robô <span className="muted">(opcional)</span></span>
+            <input name="botDisplayName" defaultValue={settings?.bot_display_name ?? ""} maxLength={60} placeholder="Ex.: Maria" style={fieldStyle} />
+          </label>
+          <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="greetingEnabled" defaultChecked={Boolean(settings?.greeting_enabled)} disabled={!connectionConfigured} /><span>Enviar uma saudação no primeiro contato</span></label>
           <label style={{ display: "grid", gap: 6 }}>
             <span style={{ fontWeight: 700 }}>Mensagem enviada ao cliente</span>
             <textarea name="greetingTemplate" defaultValue={greetingForEditor(settings?.greeting_template ?? DEFAULT_WHATSAPP_GREETING)} style={textareaStyle} />
-            <span className="muted" style={{ fontSize: 12 }}>Você pode editar o texto. Mantenha <strong>[link do cardápio]</strong>; o PedeAqui troca automaticamente <strong>[nome do restaurante]</strong> e o link pelos dados corretos da unidade.</span>
+            <span className="muted" style={{ fontSize: 12 }}>O PedeAqui troca <strong>[nome do restaurante]</strong> e, quando usado, <strong>[link do cardápio]</strong> pelos dados corretos da unidade. O link é obrigatório apenas quando todas as opções aparecem logo no início.</span>
           </label>
           <label style={{ display: "grid", gap: 6 }}>
             <span style={{ fontWeight: 700 }}>Mensagem quando o cardápio estiver indisponível</span>
             <textarea name="greetingFallbackMessage" defaultValue={settings?.greeting_fallback_message ?? DEFAULT_WHATSAPP_GREETING_FALLBACK} style={textareaStyle} />
             <span className="muted" style={{ fontSize: 12 }}>Quando não for possível direcionar o cliente ao cardápio, esta mensagem mantém o contato com a equipe.</span>
+          </label>
+        </Card>
+
+        <Card style={{ display: "grid", gap: 12 }}>
+          <h2 style={{ margin: 0, fontSize: 18 }}>Pedido pelo WhatsApp</h2>
+          <label style={{ display: "flex", gap: 9, alignItems: "flex-start", padding: 12, borderRadius: 10, border: "1px solid var(--border)" }}>
+            <input type="checkbox" name="whatsappOrdersEnabled" defaultChecked={Boolean(settings?.whatsapp_orders_enabled)} disabled={!connectionConfigured} style={{ marginTop: 3 }} />
+            <span>
+              <strong>Aceitar pedidos pelo WhatsApp</strong>
+              <span className="muted" style={{ display: "block", fontSize: 12, marginTop: 3 }}>O robô monta o carrinho, pergunta entrega ou retirada e pagamento, e confirma tudo antes de criar o pedido.</span>
+            </span>
+          </label>
+        </Card>
+
+        <Card style={{ display: "grid", gap: 12 }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 18 }}>Transferência e ajuda</h2>
+            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Defina como o robô responde quando o cliente pede uma pessoa ou quando não entende a mensagem.</p>
+          </div>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontWeight: 700 }}>Ao chamar um atendente</span>
+            <textarea name="handoffMessage" defaultValue={settings?.handoff_message ?? DEFAULT_WHATSAPP_HANDOFF_MESSAGE} style={textareaStyle} />
+          </label>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontWeight: 700 }}>Quando não entender</span>
+            <textarea name="unknownMessage" defaultValue={settings?.unknown_intent_message ?? DEFAULT_WHATSAPP_UNKNOWN_MESSAGE} style={textareaStyle} />
           </label>
         </Card>
         <div><Button type="submit">Salvar preferências</Button></div>
