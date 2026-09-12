@@ -15,6 +15,7 @@ import {
   type WhatsAppBotStep,
 } from "@/server/conversations/bot-menu";
 import { loadCustomerBenefits } from "@/server/growth/customer-benefits";
+import { recordGrowthOperationalEvent } from "@/server/growth/growth-observability";
 import { visibleWorkflowStage } from "@/server/conversations/order-workflow-visibility";
 import { buildPublicMenuUrl, renderGreetingTemplate } from "@/server/conversations/greeting";
 import type { WhatsAppBotMenuMode } from "@/server/conversations/greeting";
@@ -375,6 +376,17 @@ export class ConversationGreetingService {
         p_actor_user_id: null,
         p_source: "bot",
       });
+      await recordGrowthOperationalEvent({
+        organizationId: conversation.organization_id,
+        storeId: conversation.store_id,
+        eventType: "bot.intent",
+        outcome: "success",
+        reasonCode: intent === "benefit_handoff" ? "benefit_handoff" : "handoff",
+        source: "whatsapp_bot",
+        conversationId: conversation.id,
+        counts: { handoff: 1 },
+        requestId,
+      });
       return;
     }
 
@@ -516,6 +528,19 @@ export class ConversationGreetingService {
 
     const menu = buildWhatsAppBotMenu(store.name, Boolean(settings.whatsapp_orders_enabled), settings.bot_display_name);
     await sendBotText(botContext, intent === "menu" ? menu : `${settings.unknown_intent_message}\n\n${menu}`, responseKey);
+    if (intent === "unknown") {
+      await recordGrowthOperationalEvent({
+        organizationId: conversation.organization_id,
+        storeId: conversation.store_id,
+        eventType: "bot.intent",
+        outcome: "blocked",
+        reasonCode: "unknown_intent",
+        source: "whatsapp_bot",
+        conversationId: conversation.id,
+        counts: { unknown: 1 },
+        requestId,
+      });
+    }
     await updateBotSession(conversation.id, "menu", ingest.message_id);
   }
 }
