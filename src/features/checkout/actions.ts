@@ -116,8 +116,13 @@ export async function saveCheckoutPaymentAction(formData: FormData) {
   const storeSlug = String(formData.get("storeSlug") ?? "");
   const token = await tokenFor(storeSlug);
   if (!token) redirect(`/m/${storeSlug}/carrinho`);
-  const method = String(formData.get("paymentMethod") ?? "") as "cash" | "pix" | "credit_card" | "debit_card";
+
+  const rawSelection = String(formData.get("paymentMethod") ?? "");
+  const customMatch = rawSelection.match(/^custom:([0-9a-f-]{36})$/i);
+  const method = customMatch ? "custom" : rawSelection as "cash" | "pix" | "credit_card" | "debit_card" | "custom";
+  const customPaymentMethodId = customMatch?.[1] ?? null;
   const rawChange = optional(formData.get("changeFor"));
+
   try {
     let cashChangeForCents: number | null = null;
     if (method === "cash" && rawChange) {
@@ -127,7 +132,7 @@ export async function saveCheckoutPaymentAction(formData: FormData) {
         throw new CheckoutError("invalid_change", "Informe um valor válido para o troco");
       }
     }
-    await CheckoutService.savePayment(storeSlug, token, { method, cashChangeForCents });
+    await CheckoutService.savePayment(storeSlug, token, { method, customPaymentMethodId, cashChangeForCents });
   } catch (error) {
     if (error instanceof CheckoutError) errorRedirect(storeSlug, error);
     throw error;

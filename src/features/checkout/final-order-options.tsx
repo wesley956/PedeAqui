@@ -6,6 +6,7 @@ export const paymentMethodHelp: Record<PaymentMethod, string> = {
   credit_card: "Cartão de crédito habilitado pelo estabelecimento.",
   debit_card: "Cartão de débito habilitado pelo estabelecimento.",
   cash: "Dinheiro; informe troco somente se precisar.",
+  custom: "Forma de pagamento aceita diretamente pelo estabelecimento.",
 };
 
 export function CheckoutReviewState({ reviewed, ready }: { reviewed: boolean; ready: boolean }) {
@@ -14,11 +15,12 @@ export function CheckoutReviewState({ reviewed, ready }: { reviewed: boolean; re
   return <span className={`${styles.state} ${className}`}>{ready ? "✓" : reviewed ? "!" : "○"} {label}</span>;
 }
 
-export function FinalOrderOptions({ fulfillmentType, address, deliveryMinutes, paymentMethod, cashChangeForCents, scheduledFor, timeZone }: {
+export function FinalOrderOptions({ fulfillmentType, address, deliveryMinutes, paymentMethod, customPaymentMethodName, cashChangeForCents, scheduledFor, timeZone }: {
   fulfillmentType: "delivery" | "pickup" | null | undefined;
   address?: { street?: string | null; number?: string | null; district?: string | null } | null;
   deliveryMinutes?: { min?: number | null; max?: number | null } | null;
   paymentMethod: PaymentMethod | null | undefined;
+  customPaymentMethodName?: string | null;
   cashChangeForCents?: number | null;
   scheduledFor?: string | null;
   timeZone?: string;
@@ -26,8 +28,12 @@ export function FinalOrderOptions({ fulfillmentType, address, deliveryMinutes, p
   const delivery = fulfillmentType === "delivery";
   const destination = delivery ? [address?.street, address?.number, address?.district].filter(Boolean).join(", ") : "Retirada no estabelecimento";
   const deliveryDetail = delivery && deliveryMinutes?.min && deliveryMinutes?.max ? `${deliveryMinutes.min}–${deliveryMinutes.max} min após validação` : destination;
-  const payment = paymentMethod ? paymentMethodLabels[paymentMethod] : "Não selecionado";
-  const paymentDetail = paymentMethod === "cash" ? cashChangeForCents ? `Troco para ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cashChangeForCents / 100)}` : "Sem troco" : paymentMethod ? paymentMethodHelp[paymentMethod] : "Escolha uma forma habilitada pela loja";
+  const payment = paymentMethod === "custom" && customPaymentMethodName
+    ? customPaymentMethodName
+    : paymentMethod ? paymentMethodLabels[paymentMethod] : "Não selecionado";
+  const paymentDetail = paymentMethod === "cash"
+    ? cashChangeForCents ? `Troco para ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cashChangeForCents / 100)}` : "Sem troco"
+    : paymentMethod ? paymentMethodHelp[paymentMethod] : "Escolha uma forma habilitada pela loja";
   const schedule = scheduledFor
     ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: timeZone ?? "America/Sao_Paulo" }).format(new Date(scheduledFor))
     : null;

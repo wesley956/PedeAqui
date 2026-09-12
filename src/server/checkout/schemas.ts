@@ -9,7 +9,7 @@ export const checkoutScheduleSchema = z.discriminatedUnion("mode", [
 ]);
 export type CheckoutScheduleInput = z.infer<typeof checkoutScheduleSchema>;
 
-export const paymentMethodSchema = z.enum(["cash", "pix", "credit_card", "debit_card"]);
+export const paymentMethodSchema = z.enum(["cash", "pix", "credit_card", "debit_card", "custom"]);
 export type PaymentMethod = z.infer<typeof paymentMethodSchema>;
 
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
@@ -17,6 +17,7 @@ export const paymentMethodLabels: Record<PaymentMethod, string> = {
   pix: "Pix",
   credit_card: "Cartão de crédito",
   debit_card: "Cartão de débito",
+  custom: "Outra forma de pagamento",
 };
 
 export const checkoutIdentitySchema = z.object({
@@ -47,10 +48,17 @@ export type CheckoutAddressInput = z.infer<typeof checkoutAddressSchema>;
 
 export const checkoutPaymentSchema = z.object({
   method: paymentMethodSchema,
+  customPaymentMethodId: z.string().uuid().nullable().optional(),
   cashChangeForCents: z.number().int().nonnegative().nullable().optional(),
 }).superRefine((value, ctx) => {
   if (value.method !== "cash" && value.cashChangeForCents !== null && value.cashChangeForCents !== undefined) {
     ctx.addIssue({ code: "custom", message: "Troco só pode ser informado para pagamento em dinheiro" });
+  }
+  if (value.method === "custom" && !value.customPaymentMethodId) {
+    ctx.addIssue({ code: "custom", message: "Escolha uma forma de pagamento personalizada válida" });
+  }
+  if (value.method !== "custom" && value.customPaymentMethodId) {
+    ctx.addIssue({ code: "custom", message: "Forma de pagamento personalizada inválida" });
   }
 });
 export type CheckoutPaymentInput = z.infer<typeof checkoutPaymentSchema>;
