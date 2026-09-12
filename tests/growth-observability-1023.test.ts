@@ -10,6 +10,7 @@ import { workflowEligibilityByNotification } from "@/server/conversations/order-
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 const migration = read("supabase/migrations/20260912170000_growth_observability_1023.sql");
+const indexes = read("supabase/migrations/20260912172000_growth_observability_fk_indexes_1023.sql");
 
 describe("#1023 campaign metrics and privacy", () => {
   it("preserves provider milestones instead of inventing unavailable statuses", () => {
@@ -40,6 +41,12 @@ describe("#1023 campaign metrics and privacy", () => {
     expect(migration).toContain("revoke all on function public.growth_campaign_metrics_internal(uuid,uuid,integer,integer) from public,anon,authenticated");
     expect(migration).toContain("grant execute on function public.growth_campaign_metrics_internal(uuid,uuid,integer,integer) to service_role");
     expect(migration).toContain("private.has_permission(organization_id,store_id,'growth.view')");
+  });
+
+  it("indexes every optional foreign-key dimension used by support diagnostics", () => {
+    expect(indexes).toContain("growth_operational_events_campaign_idx");
+    expect(indexes).toContain("growth_operational_events_rule_idx");
+    expect(indexes).toContain("growth_operational_events_conversation_idx");
   });
 });
 
