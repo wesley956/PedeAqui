@@ -29,6 +29,21 @@ async function finish(job: Job, workerId: string, input: { status: string; provi
   if (error) throw error;
 }
 
+async function deferIfSuppressed(job: Job, workerId: string, messageId?: string) {
+  const admin = createAdminClient();
+  const { data, error } = await admin.rpc("campaign_suppression_internal", { p_recipient_id: job.id });
+  if (error) throw error;
+  const suppression = data as { suppressed?: boolean; reason?: string; retry_after_seconds?: number } | null;
+  if (!suppression?.suppressed) return false;
+  if (messageId) await admin.rpc("conversation_mark_outbound_result_internal", { p_message_id: messageId, p_external_message_id: null, p_status: "failed", p_error_code: "campaign_deferred", p_error_message: "Envio promocional adiado por proteção operacional." });
+  const { error: deferError } = await admin.rpc("campaign_defer_internal", {
+    p_recipient_id: job.id, p_worker_id: workerId, p_reason: `Campanha adiada: ${suppression.reason ?? "proteção operacional"}.`,
+    p_retry_after_seconds: suppression.retry_after_seconds ?? 1800,
+  });
+  if (deferError) throw deferError;
+  return true;
+}
+
 async function processOne(job: Job, workerId: string) {
   const admin = createAdminClient();
   const moduleEnabledPromise = StoreModuleStateService.isEnabled(job.organization_id, job.store_id, "growth");
@@ -49,6 +64,7 @@ async function processOne(job: Job, workerId: string) {
     await finish(job, workerId, { status: "failed_transient", errorCode: "channel_unavailable", reason: "Canal oficial indisponível; a fila tentará novamente.", retryAfterSeconds: Math.max(900, retrySeconds(job.attempts)) }); return "failed" as const;
   }
   if (!campaign.data.template_name) { await finish(job, workerId, { status: "failed_permanent", errorCode: "template_missing", reason: "Template aprovado não configurado." }); return "failed" as const; }
+  if (await deferIfSuppressed(job, workerId)) return "skipped" as const;
   const customerName = customer.data.name;
 
   const { data: conversation, error: resolveError } = await admin.rpc("conversation_resolve_outbound_internal", {
@@ -74,7 +90,7 @@ async function processOne(job: Job, workerId: string) {
     StoreModuleStateService.isEnabled(job.organization_id, job.store_id, "growth"),
   ]);
   for (const result of [sendCampaign, sendPreference, sendCustomer, sendSettings, sendChannel]) if (result.error) throw result.error;
-  if (!sendCampaign.data || sendCampaign.data.status !== "running") { await finish(job, workerId, { status: "failed_permanent", errorCode: "campaign_canceled", reason: "Campanha cancelada antes do envio." }); return "failed" as const; }
+  if (!sendCampaign.data || !["running", "scheduled"].includes(sendCampaign.data.status)) { await finish(job, workerId, { status: "failed_permanent", errorCode: "campaign_canceled", reason: "Campanha cancelada antes do envio." }); return "failed" as const; }
   if (!sendModuleEnabled) { await finish(job, workerId, { status: "failed_transient", errorCode: "growth_module_disabled", reason: "Crescimento foi pausado antes do envio.", retryAfterSeconds: 3600 }); return "skipped" as const; }
   if (sendPreference.data?.status !== "consented") { await finish(job, workerId, { status: "skipped_opt_out", errorCode: "not_eligible", reason: "Consentimento removido antes do envio." }); return "skipped" as const; }
   if (!sendCustomer.data?.phone_normalized || sendCustomer.data.phone_normalized !== job.phone_snapshot) { await finish(job, workerId, { status: "skipped_invalid_contact", errorCode: "invalid_contact", reason: "Telefone alterado antes do envio." }); return "skipped" as const; }
@@ -82,6 +98,7 @@ async function processOne(job: Job, workerId: string) {
   if (!sendChannel.data?.whatsapp_enabled || sendChannel.data.connection_status !== "connected" || !sendChannel.data.whatsapp_phone_number_id || !sendChannel.data.access_token_secret_ref) {
     await finish(job, workerId, { status: "failed_transient", errorCode: "channel_unavailable", reason: "Canal oficial indisponível antes do envio.", retryAfterSeconds: Math.max(900, retrySeconds(job.attempts)) }); return "failed" as const;
   }
+  if (await deferIfSuppressed(job, workerId, message.id)) return "skipped" as const;
 
   try {
     const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(sendChannel.data.access_token_secret_ref));
