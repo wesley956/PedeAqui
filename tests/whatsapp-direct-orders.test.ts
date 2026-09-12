@@ -32,8 +32,16 @@ describe("WhatsApp direct orders", () => {
 
   it("preserves line boundaries and enforces the existing cart quantity limit", () => {
     expect(orderService).toContain('text.split(/[\\n;,]+/)');
-    expect(orderService).toContain("quantity > 0 && quantity <= 99");
+    expect(orderService).toContain("match.quantity > 0 && match.quantity <= 99");
     expect(orderService).toContain("hasUnsupportedQuantity");
+  });
+
+  it("understands natural quantity wording and approximate product descriptions", () => {
+    expect(orderService).toContain('segment.match(/^(?:um|uma)\\s+(.+)$/i)');
+    expect(orderService).toContain("productMatchScore");
+    expect(orderService).toContain("productStopWords");
+    expect(orderService).toContain("1 copo de 13 unidades de mini churros");
+    expect(orderService).toContain("Encontrei algumas opções parecidas");
   });
 
   it("can recognize a natural item list without requiring the numeric menu first", () => {
