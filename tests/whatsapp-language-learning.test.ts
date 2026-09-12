@@ -4,7 +4,7 @@ import {
   decideLearnedAlias,
   extractSingleAddedProductLabel,
   sanitizeLearningPhrase,
-} from "@/server/conversations/whatsapp-language-learning";
+} from "@/server/conversations/whatsapp-language-learning-core";
 
 describe("WhatsApp language learning", () => {
   it("normalizes a learnable product phrase without keeping raw chat noise", () => {
