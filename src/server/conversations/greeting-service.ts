@@ -13,6 +13,7 @@ import {
   type WhatsAppBotStep,
 } from "@/server/conversations/bot-menu";
 import { buildPublicMenuUrl, renderGreetingTemplate } from "@/server/conversations/greeting";
+import type { WhatsAppBotMenuMode } from "@/server/conversations/greeting";
 import { buildOrderTrackingUrl } from "@/server/conversations/order-notification-model";
 import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import { recordFailure } from "@/server/observability/failure";
@@ -100,7 +101,12 @@ function buildDeliveryMessage(input: {
   return `${parts.join(" ")}\n\nPara voltar às opções, digite menu.`;
 }
 
-async function sendBotText(context: BotContext, body: string, clientMessageId: string) {
+async function sendBotText(
+  context: BotContext,
+  body: string,
+  clientMessageId: string,
+  replyButton?: { id: string; title: string },
+) {
   const admin = createAdminClient();
   const { data: claim, error: claimError } = await admin.rpc("conversation_claim_bot_outbound_internal", {
     p_conversation_id: context.conversation.id,
@@ -113,11 +119,35 @@ async function sendBotText(context: BotContext, body: string, clientMessageId: s
 
   try {
     const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(context.settings.access_token_secret_ref));
-    const sent = await provider.sendText({
-      phoneNumberId: context.settings.whatsapp_phone_number_id,
-      recipient: context.recipient,
-      body,
-    });
+    let sent;
+    if (replyButton) {
+      try {
+        sent = await provider.sendReplyButton({
+          phoneNumberId: context.settings.whatsapp_phone_number_id,
+          recipient: context.recipient,
+          body,
+          buttonId: replyButton.id,
+          buttonTitle: replyButton.title,
+        });
+      } catch (error) {
+        recordFailure("whatsapp.bot.interactive_fallback", error, {
+          requestId: context.requestId,
+          organizationId: context.conversation.organization_id,
+          storeId: context.conversation.store_id,
+        });
+        sent = await provider.sendText({
+          phoneNumberId: context.settings.whatsapp_phone_number_id,
+          recipient: context.recipient,
+          body,
+        });
+      }
+    } else {
+      sent = await provider.sendText({
+        phoneNumberId: context.settings.whatsapp_phone_number_id,
+        recipient: context.recipient,
+        body,
+      });
+    }
     const { error } = await admin.rpc("conversation_mark_outbound_result_internal", {
       p_message_id: claimed.message_id,
       p_external_message_id: sent.externalMessageId,
@@ -182,7 +212,7 @@ export class ConversationGreetingService {
 
     const [{ data: settings, error: settingsError }, { data: contact, error: contactError }, { data: store, error: storeError }, { data: menuSettings, error: menuError }, { data: inbound, error: inboundError }, { data: session, error: sessionError }] = await Promise.all([
       admin.from("store_conversation_settings")
-        .select("whatsapp_enabled, whatsapp_phone_number_id, access_token_secret_ref, default_bot_enabled, greeting_enabled, greeting_template, greeting_fallback_message")
+        .select("whatsapp_enabled, whatsapp_phone_number_id, access_token_secret_ref, default_bot_enabled, whatsapp_orders_enabled, greeting_enabled, greeting_template, greeting_fallback_message, bot_menu_mode, bot_display_name, handoff_message, unknown_intent_message")
         .eq("organization_id", conversation.organization_id)
         .eq("store_id", conversation.store_id)
         .maybeSingle(),
@@ -234,7 +264,6 @@ export class ConversationGreetingService {
       });
       return;
     }
-    if (!settings.greeting_enabled) return;
     if (!settings.whatsapp_enabled || !settings.whatsapp_phone_number_id || !settings.access_token_secret_ref || !contact?.external_id) {
       await admin.rpc("conversation_transition_internal", {
         p_conversation_id: conversation.id,
@@ -287,27 +316,41 @@ export class ConversationGreetingService {
     }
 
     const menuUrl = buildPublicMenuUrl(appUrl, store.slug);
-    let greetingBody: string;
-    try {
-      greetingBody = appendWhatsAppBotMenu(renderGreetingTemplate(settings.greeting_template, store.name, menuUrl));
-    } catch (error) {
-      recordFailure("whatsapp.greeting.render_failed", error, { requestId, organizationId: conversation.organization_id, storeId: conversation.store_id });
-      await sendBotText(botContext, settings.greeting_fallback_message, `auto:fallback:${ingest.message_id}`);
-      await admin.rpc("conversation_transition_internal", {
-        p_conversation_id: conversation.id,
-        p_target_state: "waiting_agent",
-        p_assigned_user_id: null,
-        p_reason: "Mensagem inicial inválida para automação do WhatsApp",
-        p_actor_user_id: null,
-        p_source: "bot",
-      });
-      return;
-    }
+    const menuMode = (settings.bot_menu_mode ?? "menu_first") as WhatsAppBotMenuMode;
+    if (settings.greeting_enabled) {
+      let greetingBody: string;
+      try {
+        const rendered = renderGreetingTemplate(settings.greeting_template, store.name, menuUrl);
+        const presentation = settings.bot_display_name
+          ? `${rendered}\nEu sou ${settings.bot_display_name.trim()}, o atendimento virtual por aqui.`
+          : rendered;
+        greetingBody = menuMode === "menu_first"
+          ? appendWhatsAppBotMenu(presentation, Boolean(settings.whatsapp_orders_enabled))
+          : `${presentation}\n\nSe quiser ver as opções, digite menu.`;
+      } catch (error) {
+        recordFailure("whatsapp.greeting.render_failed", error, { requestId, organizationId: conversation.organization_id, storeId: conversation.store_id });
+        await sendBotText(botContext, settings.greeting_fallback_message, `auto:fallback:${ingest.message_id}`);
+        await admin.rpc("conversation_transition_internal", {
+          p_conversation_id: conversation.id,
+          p_target_state: "waiting_agent",
+          p_assigned_user_id: null,
+          p_reason: "Mensagem inicial inválida para automação do WhatsApp",
+          p_actor_user_id: null,
+          p_source: "bot",
+        });
+        return;
+      }
 
-    const greetingResult = await sendBotText(botContext, greetingBody, `auto:greeting:${conversation.id}`);
-    if (greetingResult !== "duplicate") {
-      if (greetingResult === "sent") await updateBotSession(conversation.id, "menu", ingest.message_id);
-      return;
+      const greetingResult = await sendBotText(
+        botContext,
+        greetingBody,
+        `auto:greeting:${conversation.id}`,
+        menuMode === "interactive" ? { id: "bot_menu_open", title: "Ver opções" } : undefined,
+      );
+      if (greetingResult !== "duplicate") {
+        if (greetingResult === "sent") await updateBotSession(conversation.id, "menu", ingest.message_id);
+        return;
+      }
     }
 
     const activeStep: WhatsAppBotStep = session?.state === "active"
@@ -319,7 +362,7 @@ export class ConversationGreetingService {
     const responseKey = `auto:menu:${ingest.message_id}`;
 
     if (intent === "handoff") {
-      await sendBotText(botContext, "Certo! Encaminhei sua conversa para a equipe do restaurante. Assim que alguém estiver disponível, continuará o atendimento por aqui.", responseKey);
+      await sendBotText(botContext, settings.handoff_message, responseKey);
       await admin.rpc("conversation_transition_internal", {
         p_conversation_id: conversation.id,
         p_target_state: "waiting_agent",
@@ -440,7 +483,8 @@ export class ConversationGreetingService {
       return;
     }
 
-    await sendBotText(botContext, intent === "menu" ? buildWhatsAppBotMenu(store.name) : `Não entendi essa opção.\n\n${buildWhatsAppBotMenu(store.name)}`, responseKey);
+    const menu = buildWhatsAppBotMenu(store.name, Boolean(settings.whatsapp_orders_enabled), settings.bot_display_name);
+    await sendBotText(botContext, intent === "menu" ? menu : `${settings.unknown_intent_message}\n\n${menu}`, responseKey);
     await updateBotSession(conversation.id, "menu", ingest.message_id);
   }
 }

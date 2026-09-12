@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ConversationSettingsService } from "@/server/conversations/settings-service";
-import { DEFAULT_WHATSAPP_GREETING, DEFAULT_WHATSAPP_GREETING_FALLBACK } from "@/server/conversations/greeting";
+import { DEFAULT_WHATSAPP_GREETING, DEFAULT_WHATSAPP_GREETING_FALLBACK, DEFAULT_WHATSAPP_HANDOFF_MESSAGE, DEFAULT_WHATSAPP_UNKNOWN_MESSAGE, WHATSAPP_BOT_MENU_MODES, type WhatsAppBotMenuMode } from "@/server/conversations/greeting";
 import {
   normalizeWhatsAppAutomationPreset,
   resolveOrderNotificationSelection,
@@ -38,6 +38,8 @@ export async function saveConversationSettingsAction(formData: FormData) {
     WhatsAppAutomationCapabilityService.loadCurrentStore(),
   ]);
   const greeting = optional(formData, "greetingTemplate");
+  const rawMenuMode = optional(formData, "botMenuMode");
+  const botMenuMode: WhatsAppBotMenuMode = WHATSAPP_BOT_MENU_MODES.includes(rawMenuMode as WhatsAppBotMenuMode) ? rawMenuMode as WhatsAppBotMenuMode : "conversation_first";
   const preset = normalizeWhatsAppAutomationPreset(formData.get("orderNotificationPreset") ?? current?.order_notification_preset);
   const connectionConfigured = Boolean(current?.whatsapp_phone_number_id && current?.access_token_secret_ref && current?.app_secret_secret_ref);
   const currentPreferences = {
@@ -102,6 +104,10 @@ export async function saveConversationSettingsAction(formData: FormData) {
     greetingEnabled: connectionConfigured ? checked(formData, "greetingEnabled") : Boolean(current?.greeting_enabled),
     greetingTemplate: greeting ? restoreGreetingTokens(greeting) : DEFAULT_WHATSAPP_GREETING,
     greetingFallbackMessage: optional(formData, "greetingFallbackMessage") ?? DEFAULT_WHATSAPP_GREETING_FALLBACK,
+    botMenuMode,
+    botDisplayName: optional(formData, "botDisplayName"),
+    handoffMessage: optional(formData, "handoffMessage") ?? DEFAULT_WHATSAPP_HANDOFF_MESSAGE,
+    unknownMessage: optional(formData, "unknownMessage") ?? DEFAULT_WHATSAPP_UNKNOWN_MESSAGE,
     orderNotificationsEnabled: connectionConfigured ? checked(formData, "orderNotificationsEnabled") : Boolean(current?.order_notifications_enabled),
     orderNotificationPreset: preset,
     notifyOrderReceived: selected.notifyOrderReceived,

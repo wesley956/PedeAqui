@@ -12,6 +12,7 @@ describe("WhatsApp greeting template [326]", () => {
     expect(validateGreetingTemplate("Abra https://evil.example e peça: {link}")).toBe(false);
     expect(validateGreetingTemplate("Olá {cliente}! Veja: {link}")).toBe(false);
     expect(validateGreetingTemplate("Olá, sem link do cardápio")).toBe(false);
+    expect(validateGreetingTemplate("Oi! Estou por aqui para ajudar com {restaurante}.", { requireMenuLink: false })).toBe(true);
     expect(validateGreetingFallback("Nosso cardápio está indisponível. Vou chamar a equipe.")).toBe(true);
     expect(validateGreetingFallback("Fale em https://evil.example")).toBe(false);
   });
@@ -27,6 +28,8 @@ describe("WhatsApp greeting template [326]", () => {
     const result = renderGreetingTemplate("Olá {restaurante}! Cardápio: {link}", "Restaurante Teste", "https://pedido.exemplo.com/m/teste");
     expect(result).toContain("Restaurante Teste");
     expect(result).toContain("https://pedido.exemplo.com/m/teste");
+    expect(renderGreetingTemplate("Oi! Estou por aqui para ajudar com {restaurante}.", "Restaurante Teste", "https://pedido.exemplo.com/m/teste"))
+      .toBe("Oi! Estou por aqui para ajudar com Restaurante Teste.");
   });
 });
 

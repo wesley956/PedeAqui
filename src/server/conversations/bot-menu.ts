@@ -16,6 +16,8 @@ const menuWords = new Set([
   "boa tarde",
   "boa noite",
   "tudo bem",
+  "ver opcoes",
+  "bot_menu_open",
 ]);
 const menuLinkWords = new Set([
   "1",
@@ -164,8 +166,9 @@ export function appendWhatsAppBotMenu(introduction: string, includeWhatsAppOrder
   return `${introduction.trim()}\n\nSe quiser, pode me dizer com suas palavras o que precisa 😊\nOu escolha uma opção:\n${menuOptions(includeWhatsAppOrders)}`;
 }
 
-export function buildWhatsAppBotMenu(storeName: string, includeWhatsAppOrders = false) {
-  return `Oi! 😊 Estou por aqui para ajudar com ${storeName.trim()}.\nVocê pode escrever normalmente o que precisa ou escolher uma opção:\n\n${menuOptions(includeWhatsAppOrders)}`;
+export function buildWhatsAppBotMenu(storeName: string, includeWhatsAppOrders = false, botName?: string | null) {
+  const identity = botName?.trim() ? ` Eu sou ${botName.trim()}, o atendimento virtual.` : "";
+  return `Oi! 😊 Estou por aqui para ajudar com ${storeName.trim()}.${identity}\nVocê pode escrever normalmente o que precisa ou escolher uma opção:\n\n${menuOptions(includeWhatsAppOrders)}`;
 }
 
 export function phonesBelongToSameCustomer(left: string | null | undefined, right: string | null | undefined) {
