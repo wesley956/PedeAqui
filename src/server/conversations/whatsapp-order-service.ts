@@ -138,8 +138,11 @@ function resolveCompositionSelections(composition: OrderComposition, profile: Co
   if (composition.total !== profile.distributionTotal) return { ok: false as const, reason: "total" as const };
   const selections: Array<{ modifierId: string; quantity: number; name: string }> = [];
   for (const part of composition.parts) {
+    const normalizedPart = normalizeProductLanguage(part.normalizedLabel);
+    const exact = profile.modifiers.find((modifier) => normalizeProductLanguage(modifier.name) === normalizedPart);
     const ranked = profile.modifiers.map((modifier) => ({ modifier, score: modifierScore(part.normalizedLabel, modifier.name) })).sort((a, b) => b.score - a.score);
-    const best = ranked[0], second = ranked[1];
+    const best = exact ? { modifier: exact, score: 1 } : ranked[0];
+    const second = exact ? undefined : ranked[1];
     if (!best || best.score < 0.68 || (second && best.score - second.score < 0.08)) return { ok: false as const, reason: "modifier" as const, label: part.label, suggestions: ranked.slice(0, 3).map((item) => item.modifier.name) };
     const existing = selections.find((item) => item.modifierId === best.modifier.id);
     if (existing) existing.quantity += part.quantity; else selections.push({ modifierId: best.modifier.id, quantity: part.quantity, name: best.modifier.name });

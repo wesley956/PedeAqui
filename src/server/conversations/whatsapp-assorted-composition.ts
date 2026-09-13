@@ -19,6 +19,15 @@ const assortedPhrases = [
   "dividir igual",
   "quantidade igual",
   "por igual",
+  "pode escolher",
+  "pode escolher para mim",
+  "escolhe para mim",
+  "escolhe voce",
+  "pode montar",
+  "monta para mim",
+  "faz sortido",
+  "faz variado",
+  "faz como voce achar melhor",
 ];
 
 export function assortedRequestedFlavorCount(text: string | null | undefined) {

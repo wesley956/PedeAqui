@@ -23,7 +23,10 @@ export function isOrderEditRequest(text: string | null | undefined) {
     "recomecar pedido",
     "recomecar o pedido",
   ].includes(normalized)
-    || /\b(?:mudar|alterar|trocar|refazer|recomecar)\b.*\bpedido\b/.test(normalized);
+    || /\b(?:mudar|alterar|trocar|refazer|recomecar)\b.*\bpedido\b/.test(normalized)
+    || /\bnao\s+quero\s+\d{1,3}\s+(?:caixa|caixas|copo|copos|combo|combos|kit|kits|pacote|pacotes|porcao|porcoes)\b/.test(normalized)
+    || /\b(?:e|eh|era)\s+so\s+(?:uma|1)\s+(?:caixa|copo|combo|kit|pacote|porcao)\b/.test(normalized)
+    || /\b(?:uma|1)\s+(?:caixa|copo|combo|kit|pacote|porcao)\s+so\b/.test(normalized);
 }
 
 function explicitlyRequestsManyPackages(text: string, quantity: number) {
@@ -38,24 +41,35 @@ function looksLikeNamedPackageSelection(text: string) {
   return /\b(?:caixa|copo|combo|kit|pacote|porcao)\b/.test(normalized);
 }
 
+function selectedChoiceIndex(text: string, length: number) {
+  const normalized = normalizeBotInput(text);
+  const numeric = normalized.match(/^(?:opcao\s+)?(\d{1,2})$/);
+  if (!numeric) return null;
+  const index = Number(numeric[1]) - 1;
+  return index >= 0 && index < length ? index : null;
+}
+
 export function repairSuspiciousPackageQuantity(context: unknown, text: string) {
   if (!context || typeof context !== "object") return context;
   const raw = context as Record<string, unknown>;
   let changed = false;
   const next: Record<string, unknown> = { ...raw };
 
-  if (Array.isArray(raw.pendingChoices) && looksLikeNamedPackageSelection(text)) {
+  if (Array.isArray(raw.pendingChoices)) {
+    const selectedIndex = selectedChoiceIndex(text, raw.pendingChoices.length);
     const mentionedNumbers = [...normalizeBotInput(text).matchAll(/\b(\d{1,3})\b/g)].map((match) => Number(match[1]));
-    next.pendingChoices = raw.pendingChoices.map((entry) => {
+    next.pendingChoices = raw.pendingChoices.map((entry, index) => {
       if (!entry || typeof entry !== "object") return entry;
       const choice = entry as Record<string, unknown>;
       const name = typeof choice.name === "string" ? choice.name : "";
       const quantity = typeof choice.quantity === "number" ? choice.quantity : null;
       const capacity = inferProductCapacityFromName(name);
+      const selectedByNumber = selectedIndex === index;
+      const namedSelection = looksLikeNamedPackageSelection(text) && capacity !== null && mentionedNumbers.includes(capacity);
       if (
         capacity
         && quantity === capacity
-        && mentionedNumbers.includes(capacity)
+        && (selectedByNumber || namedSelection)
         && !explicitlyRequestsManyPackages(text, quantity)
       ) {
         changed = true;
