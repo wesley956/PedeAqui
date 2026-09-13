@@ -3,7 +3,7 @@ import {
   asksAboutSavedAddress,
   asksForTrackingNumberHelp,
   formatSavedAddress,
-} from "@/server/conversations/whatsapp-customer-context";
+} from "@/server/conversations/whatsapp-customer-context-core";
 
 describe("WhatsApp global customer context", () => {
   it.each([
