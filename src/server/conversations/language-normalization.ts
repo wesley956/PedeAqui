@@ -22,7 +22,7 @@ const PHRASE_ALIASES: ReadonlyArray<[RegExp, string]> = [
 
 const WORD_ALIASES: Readonly<Record<string, string>> = {
   blz: "beleza", bza: "beleza", belza: "beleza", fmz: "beleza", suave: "beleza", fechow: "fechou",
-  flw: "beleza", vlw: "valeu", obg: "obrigado", obgd: "obrigado", obgdo: "obrigado", brigado: "obrigado",
+  flw: "beleza", vlw: "valeu", obg: "obrigado", obgd: "obrigado", obgdo: "obrigado", obgda: "obrigado", brigado: "obrigado",
   ss: "sim", sss: "sim", siim: "sim", siiim: "sim", yep: "sim", yup: "sim", okk: "ok", okay: "ok",
   nn: "nao", naum: "nao", n: "nao", nope: "nao", nops: "nao",
   msm: "mesmo", memo: "mesmo", mermo: "mesmo", tb: "tambem", tbm: "tambem", tmb: "tambem",
@@ -32,6 +32,7 @@ const WORD_ALIASES: Readonly<Record<string, string>> = {
   qtd: "quantidade", qnt: "quantidade", qnts: "quantidade", qtas: "quantidade",
   un: "unidade", und: "unidade", unid: "unidade", unds: "unidades", unids: "unidades",
   cx: "caixa", cxa: "caixa", cxs: "caixas", caixinha: "caixa", pct: "pacote", pc: "pacote", pcte: "pacote",
+  meni: "menu", meniu: "menu", mennu: "menu",
   dez: "10", vinte: "20", trinta: "30", quarenta: "40", cinquenta: "50", sessenta: "60", setenta: "70", oitenta: "80", noventa: "90", cem: "100",
   dz: "duzia", dzia: "duzia", cento: "100", meia: "metade",
   coxina: "coxinha", cochinha: "coxinha", coxinh: "coxinha", coxinhaa: "coxinha", coxinhas: "coxinha",
@@ -62,7 +63,7 @@ const SAFE_CANONICAL_VOCABULARY = [
   "coxinha", "frango", "queijo", "bolinha", "salsicha", "quibe", "risoles", "churros", "refrigerante",
   "hamburguer", "pizza", "calabresa", "mucarela", "catupiry", "cheddar", "bacon", "batata", "frita",
   "caixa", "pacote", "unidade", "quantidade", "pedido", "entrega", "retirada", "dinheiro", "credito", "debito",
-  "cardapio", "atendente", "promocao", "cashback", "pontos", "cupom", "confirmar", "cancelar",
+  "cardapio", "atendente", "promocao", "cashback", "pontos", "cupom", "confirmar", "cancelar", "menu",
 ] as const;
 
 function base(value: string) {
