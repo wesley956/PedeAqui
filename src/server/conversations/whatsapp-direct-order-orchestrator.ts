@@ -6,6 +6,13 @@ import { buildPublicMenuUrl } from "@/server/conversations/greeting";
 import { loadCustomerBenefits } from "@/server/growth/customer-benefits";
 import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import {
+  asksAboutSavedAddress,
+  asksForTrackingNumberHelp,
+  formatSavedAddress,
+  loadRecentOwnedOrderNumbers,
+  loadWhatsAppSavedAddresses,
+} from "@/server/conversations/whatsapp-customer-context";
+import {
   isWhatsAppOrderStep,
   looksLikeWhatsAppOrderItems,
   WhatsAppOrderService,
@@ -84,7 +91,12 @@ async function sendBotText(input: {
   }
 }
 
-async function saveSession(conversationId: string, step: WhatsAppOrderStep | "menu", messageId: string, context: WhatsAppOrderContext | null) {
+async function saveSession(
+  conversationId: string,
+  step: WhatsAppOrderStep | "menu" | "awaiting_tracking_code",
+  messageId: string,
+  context: WhatsAppOrderContext | null,
+) {
   const admin = createAdminClient();
   const expiresAt = new Date(Date.now() + 45 * 60 * 1000).toISOString();
   const { error } = await admin.rpc("automation_session_upsert_internal", {
@@ -100,6 +112,26 @@ async function saveSession(conversationId: string, step: WhatsAppOrderStep | "me
 function wantsHuman(text: string) {
   const normalized = normalizeBotInput(text);
   return normalized === "3" || normalized.includes("atendente") || normalized.includes("humano") || normalized.includes("falar com restaurante");
+}
+
+function savedAddressReply(addresses: Awaited<ReturnType<typeof loadWhatsAppSavedAddresses>>) {
+  if (!addresses.length) {
+    return "Ainda não encontrei um endereço salvo vinculado a este WhatsApp com segurança. Quando você escolher entrega, poderá informar um endereço normalmente.";
+  }
+  return `Sim 😊 Encontrei ${addresses.length === 1 ? "este endereço" : "estes endereços"} vinculado${addresses.length === 1 ? "" : "s"} ao seu WhatsApp:\n${addresses.map((address, index) => `${index + 1} — ${formatSavedAddress(address)}`).join("\n")}`;
+}
+
+function trackingRecoveryReply(orderNumbers: number[], activeOrderStep: WhatsAppOrderStep | null) {
+  if (!orderNumbers.length) {
+    return "Não encontrei um pedido recente vinculado com segurança a este WhatsApp. Se você tiver o número do pedido, envie algo como “pedido 70”. Se não tiver, posso encaminhar para atendimento.";
+  }
+  const list = orderNumbers.map((number) => `#${number}`).join(orderNumbers.length > 1 ? ", " : "");
+  if (activeOrderStep) {
+    return `Encontrei ${orderNumbers.length === 1 ? "um pedido recente" : "pedidos recentes"} vinculado${orderNumbers.length === 1 ? "" : "s"} a este WhatsApp: ${list}.\n\nSua montagem atual continua aberta. Para consultar um pedido anterior sem misturar com a quantidade do pedido novo, envie “pedido ${orderNumbers[0]}”.`;
+  }
+  return orderNumbers.length === 1
+    ? `Encontrei um pedido recente vinculado com segurança a este WhatsApp: #${orderNumbers[0]}. Se for esse, responda apenas ${orderNumbers[0]} para acompanhar.`
+    : `Encontrei estes pedidos recentes vinculados com segurança a este WhatsApp: ${list}. Responda com o número do pedido que deseja acompanhar.`;
 }
 
 export class WhatsAppDirectOrderOrchestrator {
@@ -165,7 +197,9 @@ export class WhatsAppDirectOrderOrchestrator {
     const activeOrderStep = active && isWhatsAppOrderStep(session?.step) ? session.step : null;
     const intent = resolveWhatsAppBotIntent(inbound.body, "menu");
     const naturalOrder = looksLikeWhatsAppOrderItems(inbound.body);
-    if (!activeOrderStep && intent !== "order_start" && !naturalOrder) return false;
+    const savedAddressQuestion = asksAboutSavedAddress(inbound.body);
+    const trackingNumberHelp = asksForTrackingNumberHelp(inbound.body);
+    if (!activeOrderStep && intent !== "order_start" && !naturalOrder && !savedAddressQuestion && !trackingNumberHelp) return false;
 
     const sendBase = {
       requestId,
@@ -176,6 +210,62 @@ export class WhatsAppDirectOrderOrchestrator {
       accessTokenSecretRef: settings.access_token_secret_ref,
       recipient: contact.external_id,
     };
+
+    if (savedAddressQuestion) {
+      let body: string;
+      try {
+        const addresses = await loadWhatsAppSavedAddresses({
+          organizationId: conversation.organization_id,
+          storeId: conversation.store_id,
+          contactPhone: contact.phone_normalized ?? contact.external_id,
+          customerId: contact.customer_id,
+        });
+        body = savedAddressReply(addresses);
+      } catch (error) {
+        recordFailure("whatsapp.customer_context.saved_address_failed", error, {
+          requestId,
+          organizationId: conversation.organization_id,
+          storeId: conversation.store_id,
+        });
+        body = "Não consegui consultar seus endereços agora sem arriscar mostrar um cadastro incorreto. Você pode continuar normalmente e informar o endereço quando escolher entrega.";
+      }
+      if (activeOrderStep) body += "\n\nSeu pedido continua exatamente de onde estava.";
+      await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-context:address:${ingest.message_id}` });
+      await saveSession(
+        conversation.id,
+        activeOrderStep ?? "menu",
+        ingest.message_id,
+        activeOrderStep ? session?.context as WhatsAppOrderContext : null,
+      );
+      return true;
+    }
+
+    if (trackingNumberHelp) {
+      let orderNumbers: number[] = [];
+      try {
+        orderNumbers = await loadRecentOwnedOrderNumbers({
+          organizationId: conversation.organization_id,
+          storeId: conversation.store_id,
+          contactPhone: contact.phone_normalized ?? contact.external_id,
+          limit: 3,
+        });
+      } catch (error) {
+        recordFailure("whatsapp.customer_context.tracking_recovery_failed", error, {
+          requestId,
+          organizationId: conversation.organization_id,
+          storeId: conversation.store_id,
+        });
+      }
+      const body = trackingRecoveryReply(orderNumbers, activeOrderStep);
+      await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-context:tracking:${ingest.message_id}` });
+      await saveSession(
+        conversation.id,
+        activeOrderStep ?? (orderNumbers.length ? "awaiting_tracking_code" : "menu"),
+        ingest.message_id,
+        activeOrderStep ? session?.context as WhatsAppOrderContext : null,
+      );
+      return true;
+    }
 
     if (activeOrderStep && normalizeBotInput(inbound.body) === "menu") {
       const body = buildWhatsAppBotMenu(store.name, true, settings.bot_display_name);
