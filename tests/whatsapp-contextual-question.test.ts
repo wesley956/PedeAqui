@@ -14,7 +14,7 @@ describe("WhatsApp contextual order questions", () => {
 
   it.each([
     ["tem coxinha?", "coxinha"],
-    ["vocês tem kibe", "quibe"],
+    ["vocês tem kibe", "kibe"],
     ["tem sabor de calabresa com queijo", "calabresa com queijo"],
   ])("recognizes flavor availability question: %s", (text, query) => {
     expect(contextualOrderQuestion(text)).toEqual({ type: "has_flavor", query });

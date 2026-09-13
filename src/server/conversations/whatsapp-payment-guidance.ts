@@ -7,5 +7,5 @@ export function asksAboutPixPayment(text: string | null | undefined) {
 }
 
 export function pixPaymentGuidanceMessage() {
-  return "Sim 😊 Você pode pagar via Pix *na entrega*. Como o pedido não tem uma opção separada de Pix, selecione *1 — Dinheiro*. Na hora da entrega, o pagamento poderá ser feito por Pix.\n\nResponda 1 para continuar com essa forma de pagamento, ou escolha outra opção disponível.";
+  return "As formas de pagamento válidas são as que esta loja disponibiliza no pedido 😊 Se *Pix* aparecer entre as opções, selecione Pix. Se não aparecer, eu não vou assumir que a loja aceita Pix nem transformar outra forma de pagamento em Pix. Escolha uma das opções exibidas ou peça atendimento para confirmar.";
 }

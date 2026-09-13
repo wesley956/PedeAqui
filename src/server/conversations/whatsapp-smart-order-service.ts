@@ -83,7 +83,7 @@ export class WhatsAppOrderService {
       if (quantity !== null) {
         return {
           handled: true,
-          body: `Entendi ${quantity} unidades 😊 Agora me diga de qual produto. Por exemplo: “${quantity} salgados” ou “${quantity} mini churros”.`,
+          body: `Entendi ${quantity} unidades 😊 Agora me diga de qual produto do cardápio desta loja.`,
           nextStep: "order_items",
           context: preservedContext(input),
         };

@@ -18,10 +18,11 @@ describe("WhatsApp Pix payment guidance", () => {
     expect(asksAboutPixPayment("dinheiro")).toBe(false);
   });
 
-  it("explains that Dinheiro is the option used for Pix on delivery", () => {
+  it("uses only the payment methods configured by the current store", () => {
     const message = pixPaymentGuidanceMessage();
-    expect(message).toContain("1 — Dinheiro");
     expect(message).toContain("Pix");
-    expect(message.toLowerCase()).toContain("na entrega");
+    expect(message.toLowerCase()).toContain("esta loja");
+    expect(message).not.toContain("1 — Dinheiro");
+    expect(message.toLowerCase()).not.toContain("você pode pagar via pix");
   });
 });
