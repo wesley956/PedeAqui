@@ -83,15 +83,24 @@ powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$needle=[IO.
 ) > "%APP_DIR%\\launch.vbs"\r
 icacls "%APP_DIR%" /inheritance:r /grant:r "*S-1-5-18:(OI)(CI)F" "*S-1-5-32-544:(OI)(CI)F" "*S-1-5-19:(OI)(CI)M" /T /C >nul 2>&1\r
 echo Criando inicializacao protegida junto com o Windows...\r
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $task='PedeAqui Impressao'; $action=New-ScheduledTaskAction -Execute 'wscript.exe' -Argument ('\"' + $env:ProgramData + '\\PedeAqui\\PrintAgent\\launch.vbs\"'); $trigger=New-ScheduledTaskTrigger -AtStartup; $settings=New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit (New-TimeSpan -Days 3650) -StartWhenAvailable; $principal=New-ScheduledTaskPrincipal -UserId 'NT AUTHORITY\\LOCAL SERVICE' -LogonType ServiceAccount -RunLevel Limited; Register-ScheduledTask -TaskName $task -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Force | Out-Null; Start-ScheduledTask -TaskName $task"\r
-if errorlevel 1 goto :task_error\r
+schtasks.exe /Delete /TN "PedeAqui Impressao" /F >nul 2>&1\r
+schtasks.exe /Create /TN "PedeAqui Impressao" /TR "wscript.exe \"%APP_DIR%\\launch.vbs\"" /SC ONSTART /RU SYSTEM /RL HIGHEST /F\r
+if errorlevel 1 goto :task_fallback\r
+schtasks.exe /Run /TN "PedeAqui Impressao" >nul 2>&1\r
+goto :validate\r
+:task_fallback\r
+echo O Agendador do Windows bloqueou a tarefa. Usando inicializacao alternativa...\r
+set "STARTUP_DIR=%ProgramData%\\Microsoft\\Windows\\Start Menu\\Programs\\StartUp"\r
+copy /Y "%APP_DIR%\\launch.vbs" "%STARTUP_DIR%\\PedeAqui-Impressao.vbs" >nul 2>&1\r
+start "" wscript.exe "%APP_DIR%\\launch.vbs"\r
+:validate\r
 echo [4/4] Iniciando...\r
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $task=Get-ScheduledTask -TaskName 'PedeAqui Impressao'; if ($task.State -eq 'Disabled') { throw 'A tarefa foi criada, mas esta desativada.' }; $deadline=(Get-Date).AddSeconds(30); do { Start-Sleep -Seconds 2; $process=Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'node.exe' -and $_.CommandLine -like '*PedeAqui\\PrintAgent\\src\\index.mjs*' } | Select-Object -First 1 } until ($process -or (Get-Date) -ge $deadline); if (-not $process) { throw 'O agente nao iniciou dentro de 30 segundos.' }; $headers=@{ Authorization='Bearer ${safeToken}' }; Invoke-RestMethod -Method Post -Uri '${safeUrl}/api/print-agent/config' -Headers $headers -ContentType 'application/json' -Body '{}' -TimeoutSec 15 | Out-Null"\r
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$deadline=(Get-Date).AddSeconds(30); do { Start-Sleep -Seconds 2; $process=Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'node.exe' -and $_.CommandLine -like '*PedeAqui\\PrintAgent\\src\\index.mjs*' } | Select-Object -First 1 } until ($process -or (Get-Date) -ge $deadline); if (-not $process) { exit 1 }; $headers=@{ Authorization='Bearer ${safeToken}' }; Invoke-RestMethod -Method Post -Uri '${safeUrl}/api/print-agent/config' -Headers $headers -ContentType 'application/json' -Body '{}' -TimeoutSec 15 | Out-Null"\r
 if errorlevel 1 goto :validation_error\r
 echo.\r
 echo ==============================================\r
 echo PedeAqui Impressao conectado com sucesso.\r
-echo Inicializacao no boot, recuperacao e watchdog validados.\r
+echo Inicializacao automatica e watchdog validados.\r
 echo Volte ao painel e atualize o status.\r
 echo ==============================================\r
 timeout /t 5 >nul\r
@@ -113,12 +122,6 @@ exit /b 1\r
 echo.\r
 echo O Windows bloqueou a gravacao dos arquivos do PedeAqui Impressao.\r
 echo Feche o aplicativo, execute este instalador como administrador e tente novamente.\r
-pause\r
-exit /b 1\r
-:task_error\r
-echo.\r
-echo Nao foi possivel configurar a inicializacao com o Windows.\r
-echo Execute novamente, aceite a autorizacao do Windows e tente de novo.\r
 pause\r
 exit /b 1\r
 :validation_error\r
