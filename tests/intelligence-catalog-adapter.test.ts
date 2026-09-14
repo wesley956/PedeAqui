@@ -221,7 +221,7 @@ describe("IntelligenceCatalogAdapter", () => {
   it("returns product composition without guessing required modifiers", async () => {
     const details = await adapter().productDetails(productId);
     expect(details?.modifierGroups[0]).toMatchObject({ required: true, minSelection: 2, maxSelection: 2, selectionMode: "equal_split_options" });
-    expect(details?.modifierGroups[0].modifiers.map((item) => item.name)).toEqual(["Frango", "Carne"]);
+    expect(details?.modifierGroups[0]?.modifiers.map((item) => item.name)).toEqual(["Frango", "Carne"]);
   });
 
   it("fails closed when required composition is missing", async () => {
@@ -285,6 +285,6 @@ describe("IntelligenceCatalogAdapter", () => {
       businessType,
     });
     const results = await adapter({ menuState: businessMenu, businessType }).search("coxinha");
-    expect(results[0].projection).toEqual({ businessType, catalogLabel, itemLabel, optionLabel });
+    expect(results[0]?.projection).toEqual({ businessType, catalogLabel, itemLabel, optionLabel });
   });
 });
