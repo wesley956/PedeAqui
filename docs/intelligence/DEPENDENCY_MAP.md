@@ -5,7 +5,7 @@ No item below is started by this lot.
 
 | Issue | Inputs from INT-01 | Must produce before dependants | Gate / blocked by |
 |---|---|---|---|
-| INT-02 Context/identity/trust | customer/contact/address inventory; audience rule | scoped `IntelligenceContext`, correlation, identity source/trust and safe projections | no additional disclosure vs legacy; cross-tenant negative tests |
+| INT-02 Context/identity/trust | customer/contact/address inventory; audience rule; correlation needed for the #1050 inbound-outcome diagnostic | scoped `IntelligenceContext`, correlation, identity source/trust and safe projections | no additional disclosure vs legacy; cross-tenant negative tests |
 | INT-03 Capability Snapshot | module/entitlement/RBAC/store/config sources | one snapshot combining business type, supported/enabled module, dependencies, entitlement, permission, provider health, store/mode/flag | no capability from UI/flag alone |
 | INT-04 Authority Resolver | external order/owner/provider sources | order/payment/logistics authority decision before tools | no local mutation against external ownership |
 | INT-05 Catalog/Menu/Promotion | canonical menu/catalog/promotion/pricing rows; direct-query queue | read-only adapter and customer projection | bot result equals public menu/cart; paused/modifier/price parity |
@@ -26,3 +26,10 @@ unified router or transactional tools; those remain INT-10 and INT-11.
 Each adapter must name its canonical service, audience, capability, identity and
 trust requirements, authority rule, side-effect level, confirmation policy,
 idempotency policy and safe projection. Storage rows are not adapter outputs.
+
+The #1050 production diagnostic adds downstream gates without reordering the
+critical path: INT-10 must never drop an unresolved intent silently; INT-12 must
+make `waiting_agent` ownership and concurrent handoff auditable; INT-14 must
+measure inbound-to-action/outbound latency, inbound without outcome, messages
+during waiting, empty/orphan conversation rows, duplicates/replays and avoided
+bot/human conflicts. Inbox UI cannot be used to hide an unresolved pipeline gap.
