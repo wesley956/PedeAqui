@@ -69,6 +69,13 @@ export type CatalogProductDetails = {
   projection: CatalogProjection;
 };
 
+export type CatalogAvailability = {
+  productId: string;
+  availability: "available" | "sold_out";
+  sellable: boolean;
+  operational: PublicProductState["operational"];
+};
+
 export type CatalogPromotion = {
   productId: string;
   productName: string;
@@ -98,7 +105,7 @@ export type CatalogPriceRevalidation = {
   modifiers: ReturnType<typeof PricingService.priceItem>["modifiers"];
 };
 
-type CatalogAdapterDependencies = {
+export type CatalogAdapterDependencies = {
   getMenu: (slug: string, now?: Date) => Promise<PublicMenuState | null>;
   getProduct: (slug: string, productId: string, now?: Date) => Promise<PublicProductState | null>;
   activePromotions: (storeId: string, timeZone: string, now?: Date) => Promise<ProductPromotion[]>;
@@ -117,7 +124,7 @@ export class CatalogScopeError extends Error {
   }
 }
 
-function projectionFor(businessType: string): CatalogProjection {
+function projectionFor(businessType: BusinessType): CatalogProjection {
   if (businessType === "gas") {
     return { businessType: "gas", catalogLabel: "catálogo", itemLabel: "produto", optionLabel: "opção de vasilhame" };
   }
@@ -224,7 +231,7 @@ export class IntelligenceCatalogAdapter {
     if (!storeSlug.trim()) throw new Error("storeSlug is required");
   }
 
-  private assertScope(storeId: string, businessType: string) {
+  private assertScope(storeId: string, businessType: BusinessType) {
     if (storeId !== this.context.storeId || businessType !== this.context.businessType) {
       throw new CatalogScopeError();
     }
@@ -237,19 +244,32 @@ export class IntelligenceCatalogAdapter {
     return menu;
   }
 
+  async list(options: { limit?: number; now?: Date } = {}) {
+    return this.search("", options);
+  }
+
   async search(query: string, options: { limit?: number; now?: Date } = {}): Promise<CatalogSearchResult[]> {
     const menu = await this.menu(options.now);
     if (!menu) return [];
     const normalizedQuery = normalize(query);
     const projection = projectionFor(menu.businessType);
     const limit = Math.min(Math.max(options.limit ?? 12, 1), 50);
-    const seen = new Set<string>();
 
-    return menu.categories
-      .flatMap((category) => category.products.map((product) => ({ category, product })))
-      .filter(({ product }) => product.availability === "available")
+    // PublicMenuService prepends a synthetic promotion category containing duplicated
+    // products. Keeping the last occurrence preserves the original canonical category.
+    const productsById = new Map<string, {
+      category: PublicMenuState["categories"][number];
+      product: PublicMenuState["categories"][number]["products"][number];
+    }>();
+    for (const category of menu.categories) {
+      for (const product of category.products) {
+        if (product.availability === "available") productsById.set(product.id, { category, product });
+      }
+    }
+
+    return [...productsById.values()]
       .map(({ category, product }) => ({ category, product, score: searchScore(normalizedQuery, product.name, product.description, category.name) }))
-      .filter(({ product, score }) => score > 0 && !seen.has(product.id) && seen.add(product.id))
+      .filter(({ score }) => score > 0)
       .sort((left, right) => right.score - left.score || left.product.name.localeCompare(right.product.name, "pt-BR"))
       .slice(0, limit)
       .map(({ category, product }) => ({
@@ -266,6 +286,10 @@ export class IntelligenceCatalogAdapter {
         availability: "available" as const,
         projection,
       }));
+  }
+
+  async itemDetail(productId: string, now = new Date()) {
+    return this.productDetails(productId, now);
   }
 
   async productDetails(productId: string, now = new Date()): Promise<CatalogProductDetails | null> {
@@ -298,6 +322,17 @@ export class IntelligenceCatalogAdapter {
       })),
       gas: state.gas,
       projection,
+    };
+  }
+
+  async availability(productId: string, now = new Date()): Promise<CatalogAvailability | null> {
+    const details = await this.productDetails(productId, now);
+    if (!details) return null;
+    return {
+      productId: details.id,
+      availability: details.availability,
+      sellable: details.sellable,
+      operational: details.operational,
     };
   }
 
