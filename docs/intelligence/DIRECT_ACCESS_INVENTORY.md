@@ -54,3 +54,13 @@ Every PR touching `src/server/conversations` or future `src/server/intelligence`
 must review new `.from(...)` and `.rpc(...)` calls. A cross-domain direct mutation
 is suspicious by default; a direct read requires an explicit classification here
 or in the executing ADR/issue.
+
+## Printing boundary referenced by Conversations/Intelligence
+
+Printing is not a table-query tool for Intelligence. `PrintQueueService` owns
+authentication, claim projection, ACK/fail, heartbeat, setup test and authorized
+reprint. Its service uses `print_jobs` and the internal claim/ACK/fail/heartbeat
+RPCs; those accesses are **permitido inside Printing only**. Any future direct
+access from Conversations/Intelligence is **migrar para adapter/remover**.
+
+The complete frozen subsystem map is in `PRINTING_BASELINE.md`.
