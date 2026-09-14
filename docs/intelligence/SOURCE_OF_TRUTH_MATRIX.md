@@ -26,7 +26,7 @@ Baseline: `67977c3cb990371bf7581d7f1db53ce04c35e9f8` (equal to `main` when INT-0
 | Conversations | `ConversationService`, lifecycle/state history, settings service | conversation lifecycle/idempotency RPCs; outbound provider service | customer timeline; role-filtered agent Inbox; traceable inbound outcome | `conversations`, `conversations-sql`, `whatsapp-coexistence`, `conversation-auto-close-1018`; production diagnostic in #1050 |
 | WhatsApp inbound/outbound | webhook validation/routing and provider contract | receive/create/claim/mark-result RPCs | normalized message event without provider secrets | `whatsapp-webhook-routing`, `whatsapp-live-readiness`, `order-whatsapp-notifications` |
 | Handoff/Coexistence | conversation state and `WhatsAppCoexistenceService` | `conversation_transition_internal`, echo ingestion RPC | current mode/assignee/history by permission | `whatsapp-coexistence`, `human-attention-alert`, `conversations` |
-| Printing | print config/routing/queue/presentation services | queue claim/ack/fail/retry contracts | configured copies and printable order snapshot | `printing-*`, `escpos`, `omnichannel-kitchen-print` |
+| Printing | `PrintQueueService`, print config/routing/presentation/monitor services; `print_jobs` is the durable queue | `print_agent_claim_internal`, `print_agent_ack_internal`, `print_agent_fail_internal`, heartbeat; authorized enqueue/reprint services | configured copies and printable order snapshot; health/version without token | `printing-*`, `escpos`, `omnichannel-kitchen-print`, `e2e_pdv_to_kitchen` |
 | PDV | `PdvService` | `PdvService` | cashier-authorized sale view | `pdv`, `pdv-fast-path-ui`, `pdv-advanced-ui` |
 | Dining/salon | dining services and catalog projection | `DiningService` / public dining contract | table/tab/guest appropriate projection | `dining`, `dining-flow-ui` |
 | Gas | gas container service plus cart gas contract | gas service/cart/order official flow | applicable container/exchange choice | `gas-segment-362-366`, `cart` |
@@ -52,3 +52,7 @@ Baseline: `67977c3cb990371bf7581d7f1db53ce04c35e9f8` (equal to `main` when INT-0
    rows without messages. Counts are time-bound observations; the invariant is
    structural: every inbound needs one persisted outcome and empty rows need an
    audited lifecycle classification before KPI use.
+7. The Print Agent is operational, but the current Scheduled Task + VBS + CMD
+   watchdog is provisional and production has observed `job not owned by agent`
+   during transitions/reinstalls. The professional Windows-managed agent is a
+   separate dependency before #1066; current production remains untouched.
