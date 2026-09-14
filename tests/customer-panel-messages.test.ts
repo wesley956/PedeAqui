@@ -7,7 +7,7 @@ function read(relativePath: string) { return fs.readFileSync(path.join(root, rel
 
 describe("customer panel messages", () => {
   it("keeps read receipts server-only", () => {
-    const migration = read("supabase/migrations/20260914080000_customer_panel_message_receipts.sql");
+    const migration = read("supabase/migrations/20260914071619_customer_panel_message_receipts.sql");
     expect(migration).toContain("platform_customer_message_receipts");
     expect(migration).toMatch(/unique \(message_id, user_id\)/i);
     expect(migration).toMatch(/enable row level security/i);
