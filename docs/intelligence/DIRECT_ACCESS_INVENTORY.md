@@ -27,6 +27,19 @@ changed by INT-01.
 | `app/api/webhooks/whatsapp/route.ts` | none directly | permitido | Thin validated entrypoint; preserve direct-order precedence and do not activate new event types without a consumer. |
 | `features/conversations/**`, Inbox page | actions call conversation/settings services | permitido | UI/action surface must not become a domain authority; later Inbox work remains governed by #1050. |
 
+## Production diagnostic obligations from #1050
+
+The 2026-09-14 snapshot (42 conversations, 485 messages) found 9 conversations
+whose last event was inbound with no later response, including 4 in `bot` and
+both conversations in `waiting_agent`. It also found 14 conversation rows with no
+messages. These observations do not authorize cleanup or mutation in INT-01.
+
+Future conversation access must make it possible to distinguish: reply created
+and sent, handoff requested/assumed, durable retry/defer, and persisted error.
+Direct `count(conversations)` is not a valid Inbox KPI until empty rows are
+classified by origin/lifecycle. A new inbound during `waiting_agent` must update
+queue activity and cannot disappear from ownership/latency metrics.
+
 ## RPC ownership notes
 
 Conversation RPCs for receive, create outbound, claim, mark result, delivery,
