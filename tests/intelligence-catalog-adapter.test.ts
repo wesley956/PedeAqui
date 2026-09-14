@@ -1,5 +1,19 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { BusinessType } from "@/modules/module-catalog";
+
+vi.mock("@/server/menu/public-menu-service", () => ({
+  PublicMenuService: {
+    getMenu: async () => null,
+    getProduct: async () => null,
+  },
+}));
+
+vi.mock("@/server/promotions/promotion-service", () => ({
+  PromotionService: {
+    activeForStore: async () => [],
+  },
+}));
+
 import {
   CatalogScopeError,
   IntelligenceCatalogAdapter,
@@ -8,7 +22,7 @@ import {
 } from "@/server/intelligence/catalog-adapter";
 import { createIntelligenceContext } from "@/server/intelligence/context";
 import type { PublicMenuState, PublicProductState } from "@/server/menu/public-menu-service";
-import { isPromotionActive, type ProductPromotion } from "@/server/promotions/promotion-service";
+import type { ProductPromotion } from "@/server/promotions/promotion-service";
 
 const organizationId = "61000000-0000-4000-8000-000000000001";
 const storeId = "61000000-0000-4000-8000-000000000002";
@@ -185,6 +199,7 @@ function adapter(options: {
   promotions?: ProductPromotion[];
   businessType?: BusinessType;
   contextStoreId?: string;
+  onPromotionQuery?: (storeId: string, timeZone: string, now?: Date) => void;
 } = {}) {
   const menuState = options.menuState === undefined ? menu() : options.menuState;
   const productState = options.productState === undefined ? product() : options.productState;
@@ -194,7 +209,10 @@ function adapter(options: {
     {
       getMenu: async () => menuState,
       getProduct: async () => productState,
-      activePromotions: async () => options.promotions ?? [promotion()],
+      activePromotions: async (currentStoreId, timeZone, now) => {
+        options.onPromotionQuery?.(currentStoreId, timeZone, now);
+        return options.promotions ?? [promotion()];
+      },
     },
   );
 }
@@ -216,6 +234,35 @@ describe("IntelligenceCatalogAdapter", () => {
       availability: "available",
     });
     expect(results.some((result) => result.id === soldOutId)).toBe(false);
+  });
+
+  it("deduplicates the synthetic promotion category and preserves the canonical category", async () => {
+    const base = menu();
+    const promotedProduct = base.categories[0]!.products[0]!;
+    const menuWithSyntheticPromotionCategory = menu({
+      categories: [
+        {
+          id: "61000000-0000-4000-8000-000000000099",
+          name: "🔥 Promoções",
+          description: null,
+          image_url: null,
+          products: [promotedProduct],
+        },
+        ...base.categories,
+      ],
+    });
+    const results = await adapter({ menuState: menuWithSyntheticPromotionCategory }).list();
+    expect(results.filter((result) => result.id === productId)).toHaveLength(1);
+    expect(results.find((result) => result.id === productId)?.categoryName).toBe("Salgados");
+  });
+
+  it("exposes list, item detail and availability aliases over the same canonical truth", async () => {
+    const listed = await adapter().list();
+    const details = await adapter().itemDetail(productId);
+    const availability = await adapter().availability(productId);
+    expect(listed.some((item) => item.id === productId)).toBe(true);
+    expect(details?.id).toBe(productId);
+    expect(availability).toMatchObject({ productId, availability: "available", sellable: true });
   });
 
   it("returns product composition without guessing required modifiers", async () => {
@@ -247,7 +294,7 @@ describe("IntelligenceCatalogAdapter", () => {
     });
   });
 
-  it("lists only active canonical promotions for currently sellable products", async () => {
+  it("lists only canonical active promotions for currently sellable products", async () => {
     const promotions = await adapter().promotions();
     expect(promotions).toEqual([expect.objectContaining({
       productId,
@@ -257,10 +304,15 @@ describe("IntelligenceCatalogAdapter", () => {
     })]);
   });
 
-  it("keeps overnight promotion timezone semantics delegated to PromotionService", () => {
-    const overnight = promotion({ weekdays: [6], starts_at: "22:00", ends_at: "02:00" });
-    expect(isPromotionActive(overnight, "America/Sao_Paulo", new Date("2026-09-13T04:30:00.000Z"))).toBe(true);
-    expect(isPromotionActive(overnight, "America/Sao_Paulo", new Date("2026-09-13T06:30:00.000Z"))).toBe(false);
+  it("delegates promotion timezone and evaluation instant to the canonical promotion source", async () => {
+    const now = new Date("2026-09-13T04:30:00.000Z");
+    let query: { storeId: string; timeZone: string; now?: Date } | null = null;
+    await adapter({
+      onPromotionQuery: (currentStoreId, timeZone, currentNow) => {
+        query = { storeId: currentStoreId, timeZone, now: currentNow };
+      },
+    }).promotions(now);
+    expect(query).toEqual({ storeId, timeZone: "America/Sao_Paulo", now });
   });
 
   it("does not expose a sold-out product as sellable", async () => {
