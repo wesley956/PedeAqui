@@ -6,4 +6,5 @@ export * from "@/server/intelligence/delivery-adapter";
 export * from "@/server/intelligence/disclosure-policy";
 export * from "@/server/intelligence/identity";
 export * from "@/server/intelligence/order-workflow-adapter";
+export * from "@/server/intelligence/payment-adapter";
 export * from "@/server/intelligence/projections";
