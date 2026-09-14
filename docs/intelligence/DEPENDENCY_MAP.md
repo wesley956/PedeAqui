@@ -33,3 +33,11 @@ make `waiting_agent` ownership and concurrent handoff auditable; INT-14 must
 measure inbound-to-action/outbound latency, inbound without outcome, messages
 during waiting, empty/orphan conversation rows, duplicates/replays and avoided
 bot/human conflicts. Inbox UI cannot be used to hide an unresolved pipeline gap.
+
+## Transversal printing dependency
+
+INT-01..INT-14 may continue while the current Print Agent remains protected.
+Before INT-15/#1066, a separate controlled trail must deliver and homologate a
+Windows-managed professional agent with single-instance, stable claim ownership,
+durable ACK recovery, atomic update/rollback and diagnostics. No Intelligence
+issue may silently fold that migration into its own scope.
