@@ -15,7 +15,9 @@ issue must add parity/negative coverage before rollout.
 | Payments/Pix | cash/credit/debit/custom (Ticket), provider readiness, ledger/reconciliation, external owner | payment/Pix/Mercado Pago/external-payment suites | INT-08 checkout parity |
 | Growth | cashback/points/coupons/campaigns, consent/opt-out, limits/expiry, entitlement; no consume-by-mention | Growth suites and #1045 lab | INT-09 real WhatsApp channel |
 | Notifications | all nine checkpoints and simple/complete/custom presets; Meta window/idempotency | order WhatsApp notification and automation suites | INT-06/13 parity |
-| Human/Coexistence | bot/waiting_agent/human/closed; bot silent in human; echo dedupe; auto-close; handoff preserves order | conversations/coexistence/auto-close/human alert | INT-12 under #1050 |
+| Human/Coexistence | bot/waiting_agent/human/closed; bot silent in human; echo dedupe; auto-close; handoff preserves order; waiting_agent has owner, timing and atomic assumption | conversations/coexistence/auto-close/human alert; #1050 production diagnostic | INT-12 under #1050 |
+| Inbound outcome | every persisted inbound reaches exactly one traceable reply, handoff, human assumption, durable retry/defer or persisted error; bot owns next action | #1050 production snapshot exposed current gaps | INT-10/12/14 must add outcome ledger/metrics without a parallel domain state machine |
+| Conversation lifecycle/KPI | empty conversation rows are classified before Inbox volume/health counts; new waiting messages update activity | #1050 found 14 empty rows requiring investigation | INT-12/14 audit origin, expiry, unread/auto-close and metrics |
 | Multi-tenant/RBAC/modules | org/store isolation, restaurant/gas/generic, module ON/OFF/dependencies/entitlement/permissions | access/RBAC/modular/commercial entitlement suites | INT-03 capability negatives |
 | Omnichannel/iFood | external identity, payment/logistics owner, provider sync, no mandatory catalog/price sync, snapshot operation | omnichannel and iFood suites | INT-04 authority negatives |
 | Production/KDS | production status and order snapshot; no parallel machine | kitchen/KDS/production and omnichannel kitchen-print | INT-06 regression |
@@ -29,6 +31,8 @@ Any cross-tenant leak, price/payment/status mismatch, duplicate order, automatic
 reply in human mode, lost cart/order on handoff, broken print/KDS, unauthorized
 external-order mutation, incompatible migration, unclear authority or failing
 critical regression is NO-GO. Record it and do not start a dependent issue.
+Known paths producing `inbound -> nothing` are likewise NO-GO for Inbox/Coexistence
+readiness even when provider error count is zero.
 
 ## Standard evidence per lot
 
