@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { BusinessType } from "@/modules/module-catalog";
 import {
   CatalogScopeError,
   IntelligenceCatalogAdapter,
@@ -7,7 +8,6 @@ import {
 } from "@/server/intelligence/catalog-adapter";
 import { createIntelligenceContext } from "@/server/intelligence/context";
 import type { PublicMenuState, PublicProductState } from "@/server/menu/public-menu-service";
-import { PricingError } from "@/server/pricing/pricing-service";
 import { isPromotionActive, type ProductPromotion } from "@/server/promotions/promotion-service";
 
 const organizationId = "61000000-0000-4000-8000-000000000001";
@@ -20,7 +20,7 @@ const groupId = "61000000-0000-4000-8000-000000000030";
 const modifierA = "61000000-0000-4000-8000-000000000040";
 const modifierB = "61000000-0000-4000-8000-000000000041";
 
-function context(businessType = "restaurant", currentStoreId = storeId) {
+function context(businessType: BusinessType = "restaurant", currentStoreId = storeId) {
   return createIntelligenceContext({
     requestId: "catalog-test",
     correlationId: "catalog-correlation",
@@ -183,7 +183,7 @@ function adapter(options: {
   menuState?: PublicMenuState | null;
   productState?: PublicProductState | null;
   promotions?: ProductPromotion[];
-  businessType?: string;
+  businessType?: BusinessType;
   contextStoreId?: string;
 } = {}) {
   const menuState = options.menuState === undefined ? menu() : options.menuState;
@@ -225,7 +225,7 @@ describe("IntelligenceCatalogAdapter", () => {
   });
 
   it("fails closed when required composition is missing", async () => {
-    await expect(adapter().revalidatePrice({ productId, quantity: 1 })).rejects.toMatchObject<PricingError>({ code: "invalid_modifiers" });
+    await expect(adapter().revalidatePrice({ productId, quantity: 1 })).rejects.toMatchObject({ code: "invalid_modifiers" });
   });
 
   it("revalidates promotional price and composed sortido using the cart canonical pricing engine", async () => {
@@ -264,10 +264,10 @@ describe("IntelligenceCatalogAdapter", () => {
   });
 
   it("does not expose a sold-out product as sellable", async () => {
-    const soldOut = product({ product: { ...product().product, availability: "sold_out" } });
+    const soldOut = product({ product: { ...product().product, id: soldOutId, availability: "sold_out" } });
     const details = await adapter({ productState: soldOut }).productDetails(soldOutId);
     expect(details?.sellable).toBe(false);
-    await expect(adapter({ productState: soldOut }).revalidatePrice({ productId: soldOutId, quantity: 1 })).rejects.toMatchObject<PricingError>({ code: "product_unavailable" });
+    await expect(adapter({ productState: soldOut }).revalidatePrice({ productId: soldOutId, quantity: 1 })).rejects.toMatchObject({ code: "product_unavailable" });
   });
 
   it("fails closed on cross-store scope instead of leaking another tenant catalog", async () => {
