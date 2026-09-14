@@ -23,7 +23,7 @@ Baseline: `67977c3cb990371bf7581d7f1db53ce04c35e9f8` (equal to `main` when INT-0
 | Growth | customer-benefits resolver and `GrowthService` | Growth services/RPCs and checkout application | available benefits only; never consume by mention | `growth`, `growth-bot-relationships-1022`, `growth-observability-1023` |
 | Modules/entitlement/RBAC | module access/configuration/store state services and authorization context | module services and subscription contracts | capability decision with reason, not raw commercial rows | `modular-contract-regression-matrix`, `commercial-plan-module-entitlements`, `rbac-multitenant-stabilization` |
 | Omnichannel/iFood | integration core canonical external order, presentation and provider repositories | intake/import/lifecycle/command services under provider authority | official snapshots for board/KDS/print/finance | `omnichannel-*`, `ifood-*` |
-| Conversations | `ConversationService`, lifecycle/state history, settings service | conversation lifecycle/idempotency RPCs; outbound provider service | customer timeline; role-filtered agent Inbox | `conversations`, `conversations-sql`, `whatsapp-coexistence`, `conversation-auto-close-1018` |
+| Conversations | `ConversationService`, lifecycle/state history, settings service | conversation lifecycle/idempotency RPCs; outbound provider service | customer timeline; role-filtered agent Inbox; traceable inbound outcome | `conversations`, `conversations-sql`, `whatsapp-coexistence`, `conversation-auto-close-1018`; production diagnostic in #1050 |
 | WhatsApp inbound/outbound | webhook validation/routing and provider contract | receive/create/claim/mark-result RPCs | normalized message event without provider secrets | `whatsapp-webhook-routing`, `whatsapp-live-readiness`, `order-whatsapp-notifications` |
 | Handoff/Coexistence | conversation state and `WhatsAppCoexistenceService` | `conversation_transition_internal`, echo ingestion RPC | current mode/assignee/history by permission | `whatsapp-coexistence`, `human-attention-alert`, `conversations` |
 | Printing | print config/routing/queue/presentation services | queue claim/ack/fail/retry contracts | configured copies and printable order snapshot | `printing-*`, `escpos`, `omnichannel-kitchen-print` |
@@ -47,3 +47,8 @@ Baseline: `67977c3cb990371bf7581d7f1db53ce04c35e9f8` (equal to `main` when INT-0
 4. WhatsApp order creation patches `orders.channel` after canonical creation.
 5. Customer/address and recent-order lookups are tenant/store scoped today, but
    need an explicit identity/trust adapter before becoming Intelligence tools.
+6. The #1050 production snapshot found 9 conversations ending with inbound and no
+   later response (4 still in `bot`, 2/2 in `waiting_agent`) plus 14 conversation
+   rows without messages. Counts are time-bound observations; the invariant is
+   structural: every inbound needs one persisted outcome and empty rows need an
+   audited lifecycle classification before KPI use.
