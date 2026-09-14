@@ -28,6 +28,13 @@ describe("access isolation contracts", () => {
     expect(canSurfaceModule(platform, new Set(), true)).toBe(true);
   });
 
+  it("keeps the private platform super-admin guard executable only by the server role", () => {
+    const migration = read("supabase/migrations/20260914065659_platform_super_admin_service_role_execute.sql");
+    expect(migration).toMatch(/revoke all on function private\.require_platform_super_admin\(uuid\) from public, anon, authenticated;/i);
+    expect(migration).toMatch(/grant execute on function private\.require_platform_super_admin\(uuid\) to service_role;/i);
+    expect(migration).not.toMatch(/grant execute[\s\S]+to (anon|authenticated)/i);
+  });
+
   it("keeps server authorization bound to organization/store context and has_permission", () => {
     const source = read("src/server/access/authorize.ts");
     expect(source).toContain('supabase.rpc("has_permission"');
