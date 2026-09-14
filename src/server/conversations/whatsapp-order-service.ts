@@ -3,12 +3,18 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CartService } from "@/server/cart/cart-service";
 import { CheckoutError, CheckoutService } from "@/server/checkout/checkout-service";
+import { paymentMethodLabels, paymentMethodSchema, type PaymentMethod } from "@/server/checkout/schemas";
 import { normalizeBotInput } from "@/server/conversations/bot-menu";
 import { looseTokenSimilarity, normalizeProductLanguage } from "@/server/conversations/language-normalization";
 import { parseOrderComposition, resolvePendingChoiceReference, type OrderComposition } from "@/server/conversations/whatsapp-order-context";
+import {
+  buildWhatsAppPaymentPrompt,
+  resolveWhatsAppPaymentSelection,
+} from "@/server/conversations/whatsapp-payment-methods";
 import { OrderNotificationContextService } from "@/server/conversations/order-notification-context-service";
 import { scheduleOrderWhatsAppNotifications } from "@/server/conversations/order-notification-dispatch";
 import { OrderService } from "@/server/orders/order-service";
+import { StorePaymentMethodService } from "@/server/payments/store-payment-method-service";
 import { PricingError } from "@/server/pricing/pricing-service";
 
 export type WhatsAppOrderStep = "order_items" | "order_name" | "order_fulfillment" | "order_address" | "order_payment" | "order_confirmation";
@@ -22,7 +28,10 @@ export type WhatsAppOrderContext = {
   cartToken?: string;
   customerName?: string;
   fulfillment?: "delivery" | "pickup";
-  paymentMethod?: "cash" | "credit_card" | "debit_card";
+  paymentMethod?: PaymentMethod;
+  customPaymentMethodId?: string;
+  paymentLabel?: string;
+  awaitingPixEmail?: boolean;
   pendingChoices?: PendingProductChoice[];
   pendingComposition?: PendingComposition;
 };
@@ -35,7 +44,6 @@ type ProductCandidate = { id: string; name: string; description: string | null; 
 type ModifierRow = { id: string; name: string };
 type CompositionProfile = PendingComposition & { modifiers: ModifierRow[] };
 
-const paymentLabels: Record<string, string> = { cash: "dinheiro", credit_card: "cartão de crédito", debit_card: "cartão de débito" };
 const productStopWords = new Set(["a", "as", "o", "os", "de", "da", "das", "do", "dos", "com", "em", "no", "na", "nos", "nas", "un", "und", "unid", "unidade", "unidades", "uma", "um", "pra", "para"]);
 
 function money(cents: number | string | null | undefined) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents ?? 0) / 100); }
@@ -56,12 +64,16 @@ function normalizeContext(value: unknown): WhatsAppOrderContext {
       pendingComposition = { productId: item.productId, name: item.name, quantity: item.quantity, groupId: item.groupId, groupName: item.groupName, distributionTotal: item.distributionTotal };
     }
   }
+  const paymentMethod = paymentMethodSchema.safeParse(raw.paymentMethod);
   return {
     channel: "whatsapp_order", version: 1,
     cartToken: typeof raw.cartToken === "string" ? raw.cartToken : undefined,
     customerName: typeof raw.customerName === "string" ? raw.customerName : undefined,
     fulfillment: raw.fulfillment === "delivery" || raw.fulfillment === "pickup" ? raw.fulfillment : undefined,
-    paymentMethod: raw.paymentMethod === "cash" || raw.paymentMethod === "credit_card" || raw.paymentMethod === "debit_card" ? raw.paymentMethod : undefined,
+    paymentMethod: paymentMethod.success ? paymentMethod.data : undefined,
+    customPaymentMethodId: typeof raw.customPaymentMethodId === "string" ? raw.customPaymentMethodId : undefined,
+    paymentLabel: typeof raw.paymentLabel === "string" ? raw.paymentLabel : undefined,
+    awaitingPixEmail: raw.awaitingPixEmail === true ? true : undefined,
     pendingChoices: choices?.length ? choices : undefined,
     pendingComposition,
   };
@@ -84,7 +96,6 @@ function hasUnsupportedQuantity(text: string) { return text.split(/[\n;,]+/).som
 function isYes(text: string) { return ["sim", "s", "confirmar", "confirmo", "pode confirmar", "fechar pedido", "finalizar", "fechou", "beleza", "ok"].includes(normalizeBotInput(text)); }
 function isNo(text: string) { return ["nao", "n", "cancelar", "cancela", "desistir"].includes(normalizeBotInput(text)); }
 function parseFulfillment(text: string): "delivery" | "pickup" | null { const n = normalizeBotInput(text); if (n.includes("entrega") || n === "1") return "delivery"; if (n.includes("retirada") || n.includes("buscar") || n === "2") return "pickup"; return null; }
-function parsePayment(text: string): "cash" | "credit_card" | "debit_card" | null { const n = normalizeBotInput(text); if (n === "1" || n.includes("dinheiro")) return "cash"; if (n === "2" || n.includes("credito")) return "credit_card"; if (n === "3" || n.includes("debito")) return "debit_card"; return null; }
 function parseAddress(text: string) {
   const parts = text.split(",").map((item) => item.trim()).filter(Boolean); if (parts.length < 5) return null;
   return { postalCode: "", street: parts[0]!, number: parts[1]!, district: parts[2]!, city: parts[3]!, state: parts[4]!.toUpperCase().slice(0, 2), complement: parts.length > 5 ? parts.slice(5).join(", ") : null, reference: null };
@@ -200,9 +211,16 @@ async function continueAfterAdded(input: Input, context: WhatsAppOrderContext, t
   return { handled: true, body: `Adicionei:\n${itemsText}\n\nComo você quer receber?\n1 — Entrega\n2 — Retirada`, nextStep: "order_fulfillment", context: { ...cleanContext, customerName } };
 }
 
-async function paymentOptions(organizationId: string, storeId: string) { const admin = createAdminClient(); const { data, error } = await admin.from("store_payment_methods").select("method").eq("organization_id", organizationId).eq("store_id", storeId).eq("enabled", true).in("method", ["cash", "credit_card", "debit_card"]).order("sort_order"); if (error) throw error; return new Set((data ?? []).map((row) => row.method)); }
-function paymentPrompt(options: Set<string>) { const lines = [options.has("cash") ? "1 — Dinheiro" : null, options.has("credit_card") ? "2 — Cartão de crédito" : null, options.has("debit_card") ? "3 — Cartão de débito" : null].filter(Boolean); return lines.length ? `Como será o pagamento?\n${lines.join("\n")}` : "Não há uma forma de pagamento compatível com o pedido pelo WhatsApp. Digite 3 para falar com a equipe."; }
-async function reviewSummary(storeSlug: string, cartToken: string, context: WhatsAppOrderContext) { const loaded = await CheckoutService.load(storeSlug, cartToken); const total = Number(loaded.cart.total_cents); const itemLines = loaded.cart.items.map((item) => `${item.quantity}x ${item.product_name_snapshot} — ${money(item.line_total_cents)}`); return `Confira seu pedido:\n${itemLines.join("\n")}\n\nRecebimento: ${context.fulfillment === "delivery" ? "Entrega" : "Retirada"}\nPagamento: ${context.paymentMethod ? paymentLabels[context.paymentMethod] : "não informado"}\nTotal: ${money(total)}\n\nResponda *SIM* para confirmar ou *NÃO* para cancelar.`; }
+async function paymentOptions(organizationId: string, storeId: string) {
+  return StorePaymentMethodService.listForStore(organizationId, storeId);
+}
+async function reviewSummary(storeSlug: string, cartToken: string, context: WhatsAppOrderContext) {
+  const loaded = await CheckoutService.load(storeSlug, cartToken);
+  const total = Number(loaded.cart.total_cents);
+  const itemLines = loaded.cart.items.map((item) => `${item.quantity}x ${item.product_name_snapshot} — ${money(item.line_total_cents)}`);
+  const paymentLabel = context.paymentLabel ?? (context.paymentMethod ? paymentMethodLabels[context.paymentMethod] : "não informado");
+  return `Confira seu pedido:\n${itemLines.join("\n")}\n\nRecebimento: ${context.fulfillment === "delivery" ? "Entrega" : "Retirada"}\nPagamento: ${paymentLabel}\nTotal: ${money(total)}\n\nResponda *SIM* para confirmar ou *NÃO* para cancelar.`;
+}
 
 export function isWhatsAppOrderStep(step: string | null | undefined): step is WhatsAppOrderStep { return ["order_items", "order_name", "order_fulfillment", "order_address", "order_payment", "order_confirmation"].includes(step ?? ""); }
 export function whatsappOrderStartMessage(storeName: string) { return `Vamos montar seu pedido pelo WhatsApp em ${storeName}.\n\nPode escrever do seu jeito. Exemplos:\n2 Coxinhas de frango\n1 Refrigerante lata\n15 coxinhas, 10 bolinhas de queijo e 5 salsichas\n\nEu só criarei o pedido depois que você conferir e responder SIM.`; }
@@ -277,16 +295,64 @@ export class WhatsAppOrderService {
       const fulfillment = parseFulfillment(input.text); if (!fulfillment) return { handled: true, body: "Escolha uma opção:\n1 — Entrega\n2 — Retirada", nextStep: "order_fulfillment", context };
       try { await CheckoutService.saveFulfillment(input.storeSlug, context.cartToken, fulfillment); } catch (error) { if (error instanceof CheckoutError) return { handled: true, body: `${error.message}. Escolha outra opção ou digite menu.`, nextStep: "order_fulfillment", context }; throw error; }
       if (fulfillment === "delivery") return { handled: true, body: "Envie o endereço neste formato:\nRua, número, bairro, cidade, UF", nextStep: "order_address", context: { ...context, fulfillment } };
-      const options = await paymentOptions(input.organizationId, input.storeId); return { handled: true, body: paymentPrompt(options), nextStep: "order_payment", context: { ...context, fulfillment } };
+      const options = await paymentOptions(input.organizationId, input.storeId); return { handled: true, body: buildWhatsAppPaymentPrompt(options), nextStep: "order_payment", context: { ...context, fulfillment } };
     }
     if (input.step === "order_address") {
       const address = parseAddress(input.text); if (!address) return { handled: true, body: "Não consegui entender o endereço. Envie assim:\nRua, número, bairro, cidade, UF", nextStep: "order_address", context };
-      try { const quote = await CheckoutService.saveAddress(input.storeSlug, context.cartToken, address); const options = await paymentOptions(input.organizationId, input.storeId); return { handled: true, body: `Endereço atendido. Taxa de entrega: ${money(quote.feeCents)}.\n\n${paymentPrompt(options)}`, nextStep: "order_payment", context }; } catch (error) { if (error instanceof CheckoutError) return { handled: true, body: `${error.message}. Confira o endereço e envie novamente ou digite 3 para falar com a equipe.`, nextStep: "order_address", context }; throw error; }
+      try { const quote = await CheckoutService.saveAddress(input.storeSlug, context.cartToken, address); const options = await paymentOptions(input.organizationId, input.storeId); return { handled: true, body: `Endereço atendido. Taxa de entrega: ${money(quote.feeCents)}.\n\n${buildWhatsAppPaymentPrompt(options)}`, nextStep: "order_payment", context }; } catch (error) { if (error instanceof CheckoutError) return { handled: true, body: `${error.message}. Confira o endereço e envie novamente ou digite 3 para falar com a equipe.`, nextStep: "order_address", context }; throw error; }
     }
     if (input.step === "order_payment") {
-      const method = parsePayment(input.text); if (!method) return { handled: true, body: "Escolha a forma de pagamento informada acima pelo número ou pelo nome.", nextStep: "order_payment", context };
-      const options = await paymentOptions(input.organizationId, input.storeId); if (!options.has(method)) return { handled: true, body: "Essa forma de pagamento não está ativa nesta loja. Escolha outra opção.", nextStep: "order_payment", context };
-      await CheckoutService.savePayment(input.storeSlug, context.cartToken, { method, customPaymentMethodId: null, cashChangeForCents: null }); const nextContext = { ...context, paymentMethod: method }; return { handled: true, body: await reviewSummary(input.storeSlug, context.cartToken, nextContext), nextStep: "order_confirmation", context: nextContext };
+      if (context.awaitingPixEmail && context.paymentMethod === "pix") {
+        const customerName = (context.customerName ?? input.contactName ?? "").trim();
+        try {
+          await CheckoutService.saveIdentity(input.storeSlug, context.cartToken, { name: customerName, phone: input.contactPhone, email: input.text.trim() });
+          await CheckoutService.savePayment(input.storeSlug, context.cartToken, { method: "pix", customPaymentMethodId: null, cashChangeForCents: null });
+          const nextContext: WhatsAppOrderContext = { ...context, paymentMethod: "pix", paymentLabel: paymentMethodLabels.pix, awaitingPixEmail: undefined };
+          return { handled: true, body: await reviewSummary(input.storeSlug, context.cartToken, nextContext), nextStep: "order_confirmation", context: nextContext };
+        } catch (error) {
+          if (error instanceof CheckoutError && error.code === "invalid_identity") {
+            return { handled: true, body: "Para usar Pix, envie um e-mail válido, por exemplo nome@exemplo.com.", nextStep: "order_payment", context };
+          }
+          if (error instanceof CheckoutError && error.code === "payment_unavailable") {
+            const options = await paymentOptions(input.organizationId, input.storeId);
+            return { handled: true, body: `O Pix deixou de estar disponível. Escolha outra forma de pagamento.\n\n${buildWhatsAppPaymentPrompt(options)}`, nextStep: "order_payment", context: { ...context, paymentMethod: undefined, paymentLabel: undefined, awaitingPixEmail: undefined } };
+          }
+          throw error;
+        }
+      }
+
+      const options = await paymentOptions(input.organizationId, input.storeId);
+      const selected = resolveWhatsAppPaymentSelection(input.text, options);
+      if (!selected) return { handled: true, body: `Escolha a forma de pagamento informada abaixo pelo número ou pelo nome.\n\n${buildWhatsAppPaymentPrompt(options)}`, nextStep: "order_payment", context };
+      try {
+        await CheckoutService.savePayment(input.storeSlug, context.cartToken, {
+          method: selected.method,
+          customPaymentMethodId: selected.customPaymentMethodId,
+          cashChangeForCents: null,
+        });
+      } catch (error) {
+        if (error instanceof CheckoutError && error.code === "pix_email_required" && selected.method === "pix") {
+          return {
+            handled: true,
+            body: "Para gerar o Pix online com segurança, preciso do seu e-mail. Envie um e-mail válido, por exemplo nome@exemplo.com.",
+            nextStep: "order_payment",
+            context: { ...context, paymentMethod: "pix", customPaymentMethodId: undefined, paymentLabel: selected.label, awaitingPixEmail: true },
+          };
+        }
+        if (error instanceof CheckoutError && error.code === "payment_unavailable") {
+          const currentOptions = await paymentOptions(input.organizationId, input.storeId);
+          return { handled: true, body: `Essa forma de pagamento deixou de estar disponível. Escolha outra opção.\n\n${buildWhatsAppPaymentPrompt(currentOptions)}`, nextStep: "order_payment", context };
+        }
+        throw error;
+      }
+      const nextContext: WhatsAppOrderContext = {
+        ...context,
+        paymentMethod: selected.method,
+        customPaymentMethodId: selected.customPaymentMethodId ?? undefined,
+        paymentLabel: selected.label,
+        awaitingPixEmail: undefined,
+      };
+      return { handled: true, body: await reviewSummary(input.storeSlug, context.cartToken, nextContext), nextStep: "order_confirmation", context: nextContext };
     }
     if (input.step === "order_confirmation") {
       if (isNo(input.text)) return { handled: true, body: "Pedido cancelado. Nada foi enviado para a loja. Para começar outro pedido, digite 7.", nextStep: "menu", context: null };
