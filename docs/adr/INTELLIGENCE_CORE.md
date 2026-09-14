@@ -84,6 +84,15 @@ The normative checklist is
 tenant, price, availability, payment, order status, delivery, Growth, authority,
 confirmation or bot/human mode are release blockers and produce NO-GO.
 
+The production diagnostic added to #1050 on 2026-09-14 is also normative. Every
+persisted inbound must reach exactly one traceable terminal outcome: bot reply,
+requested/confirmed handoff, assumed human service, durable retry/defer, or a
+persisted observable error. `inbound -> nothing` is forbidden. A conversation in
+`bot` owns the next action; `waiting_agent` must expose request time/reason,
+notifications, wait duration, messages received while waiting, and the atomic
+transition to an identified human. Conversation rows without messages must be
+classified before they are counted as Inbox health or volume.
+
 ## Consequences
 
 - INT-02 can add context/identity without changing domain truth.
