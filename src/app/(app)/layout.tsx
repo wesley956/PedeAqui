@@ -14,6 +14,7 @@ import { HumanAttentionAlertService } from "@/server/conversations/human-attenti
 import { OnboardingReadinessService, type OnboardingReadiness } from "@/server/onboarding/onboarding-readiness-service";
 import { UserGuideService } from "@/server/onboarding/user-guide-service";
 import { BrandingReadService, type ResolvedBranding } from "@/server/platform/branding-read-service";
+import { CustomerPanelMessageService } from "@/server/platform/customer-panel-message-service";
 
 export default async function ProtectedLayout({ children }: { children: ReactNode }) {
   const requestHeaders = await headers();
@@ -65,9 +66,10 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
     navigationAccess.context.storeId
     && navigationAccess.permissionKeys.includes(PERMISSIONS.CONVERSATIONS_VIEW),
   );
-  const [userGuide, humanAttentionAlert] = await Promise.all([
+  const [userGuide, humanAttentionAlert, customerMessages] = await Promise.all([
     UserGuideService.load(user.id),
     canSeeConversations ? HumanAttentionAlertService.load() : Promise.resolve(null),
+    CustomerPanelMessageService.load(navigationAccess.context.organizationId, user.id),
   ]);
   const guideSteps = buildUserGuideSteps(
     navigationAccess.items,
@@ -88,6 +90,7 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
       experienceMode={navigationAccess.experienceMode}
       storeId={navigationAccess.context.storeId}
       humanAttentionAlert={humanAttentionAlert}
+      customerMessages={customerMessages}
     >
       {children}
     </AppShell>
