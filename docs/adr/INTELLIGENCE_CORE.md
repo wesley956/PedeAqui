@@ -62,6 +62,13 @@ PII-minimized comparisons.
 This INT-01 change creates no runtime flag, migration, webhook subscription or
 production configuration.
 
+Printing remains an independent canonical subsystem. Intelligence can request a
+print/reprint only through its authorized service; it cannot manipulate
+`print_jobs`, claim ownership, ACK/fail, copy count or order state. The current
+Windows boot mechanism is operational but provisional. Its professional
+replacement is a separate tracked dependency before INT-15/#1066 and is not a
+reason to introduce printing behavior into the Intelligence router.
+
 ## Direct-access policy
 
 - `permitido`: storage belongs to Conversations/Meta ingestion/observability and
