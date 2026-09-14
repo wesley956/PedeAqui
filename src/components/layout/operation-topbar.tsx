@@ -1,8 +1,10 @@
 import { signOutAction } from "@/features/auth/actions";
 import { setExperienceModeAction } from "@/features/preferences/actions";
 import { Button } from "@/components/ui/button";
+import { CustomerMessageNotifications } from "@/features/customer-messages/customer-message-notifications";
 import type { ExperienceMode } from "@/modules/user-experience";
 import type { OperationHeaderData } from "@/server/access/operation-header-service";
+import type { CustomerPanelMessageState } from "@/server/platform/customer-panel-message-service";
 import { ThemeSelector } from "@/components/theme/theme-selector";
 import { OperationalHealthIndicator } from "@/features/operations/operational-health-indicator";
 import Link from "next/link";
@@ -14,7 +16,7 @@ function storeStatusLabel(status: string | null) {
   return null;
 }
 
-export function OperationTopbar({ email, data, storeId, experienceMode = "standard", driverOnly = false }: { email: string | null; data: OperationHeaderData; storeId: string | null; experienceMode?: ExperienceMode; driverOnly?: boolean }) {
+export function OperationTopbar({ email, data, storeId, experienceMode = "standard", driverOnly = false, customerMessages }: { email: string | null; data: OperationHeaderData; storeId: string | null; experienceMode?: ExperienceMode; driverOnly?: boolean; customerMessages: CustomerPanelMessageState }) {
   const storeLabel = data.storeName ?? "Operação";
   const storeStatus = storeStatusLabel(data.storeStatus);
   const cashLabel = data.cashStatus === "open"
@@ -36,6 +38,7 @@ export function OperationTopbar({ email, data, storeId, experienceMode = "standa
         {data.receiving ? <ReceivingControl state={data.receiving} /> : null}
         {!driverOnly ? <><Link className="app-operation-link" href="/movimento">Modo Movimento</Link><Link className="app-operation-link" href="/operacao">Abrir/fechar</Link></> : null}
         <OperationalHealthIndicator storeId={storeId} snapshot={data.health} />
+        <CustomerMessageNotifications state={customerMessages} />
         <form action={setExperienceModeAction} className="app-experience-toggle">
           <input type="hidden" name="mode" value={nextExperienceMode} />
           <Button tone="ghost" type="submit" aria-label={experienceMode === "easy" ? "Voltar ao modo padrão" : "Ativar modo fácil"}>
