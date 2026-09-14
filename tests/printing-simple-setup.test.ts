@@ -109,18 +109,17 @@ describe("simple printing setup", () => {
     expect(admin).not.toContain("createPrintAgentToken()");
   });
 
-  it("installs a least-privilege boot task and validates the first server communication", () => {
+  it("installs the current protected boot task with startup fallback and validates the first server communication", () => {
     const creator = read("src/features/printing/agent-token-creator-client.tsx");
-    expect(creator).toContain("New-ScheduledTaskTrigger -AtStartup");
-    expect(creator).toContain("NT AUTHORITY\\\\LOCAL SERVICE");
-    expect(creator).toContain("-LogonType ServiceAccount -RunLevel Limited");
-    expect(creator).toContain("Register-ScheduledTask");
-    expect(creator).toContain("Start-ScheduledTask");
+    expect(creator).toContain('schtasks.exe /Create /TN "PedeAqui Impressao"');
+    expect(creator).toContain("/SC ONSTART /RU SYSTEM /RL HIGHEST /F");
+    expect(creator).toContain("*S-1-5-18:(OI)(CI)F");
+    expect(creator).toContain("launch.vbs");
+    expect(creator).toContain(":task_fallback");
+    expect(creator).toContain("\\\\Start Menu\\\\Programs\\\\StartUp");
     expect(creator).toContain("/api/print-agent/config");
     expect(creator).toContain("-Method Post");
-    expect(creator).toContain(":task_error");
     expect(creator).toContain(":validation_error");
-    expect(creator).not.toContain("\\\\Start Menu\\\\Programs\\\\Startup");
   });
 });
 
