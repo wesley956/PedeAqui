@@ -21,7 +21,7 @@ issue must add parity/negative coverage before rollout.
 | Multi-tenant/RBAC/modules | org/store isolation, restaurant/gas/generic, module ON/OFF/dependencies/entitlement/permissions | access/RBAC/modular/commercial entitlement suites | INT-03 capability negatives |
 | Omnichannel/iFood | external identity, payment/logistics owner, provider sync, no mandatory catalog/price sync, snapshot operation | omnichannel and iFood suites | INT-04 authority negatives |
 | Production/KDS | production status and order snapshot; no parallel machine | kitchen/KDS/production and omnichannel kitchen-print | INT-06 regression |
-| Printing | queue/claim/retry/idempotency, routing/style/copies (including two), failure does not mutate order | printing/ESC-POS/omnichannel print suites | run on every transactional pilot |
+| Printing | durable queue; strict agent ownership from claim through ACK/fail; lease recovery; local spool and `printed_unacked`; routing/style/copies (including two); setup test/retry/reprint; failure never mutates order | printing/ESC-POS/omnichannel print and PDV-to-kitchen suites | professional Windows agent must pass the #1051 acceptance matrix before #1066; preserve current production mechanism until controlled migration |
 | Other domains | PDV, salon, gas, inventory, cash, fiscal, purchases, dashboard/finance remain service/RBAC bounded | corresponding domain suites | Merchant Intelligence stays read-only first |
 | Health/observability | optional channel failure never blocks orders; no excessive PII/secrets | monitoring/operational health/WhatsApp readiness | INT-14 shadow metrics |
 
