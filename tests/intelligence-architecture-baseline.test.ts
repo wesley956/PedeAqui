@@ -9,6 +9,7 @@ describe("PedeAqui Intelligence Core architecture baseline", () => {
   const directAccess = read("docs/intelligence/DIRECT_ACCESS_INVENTORY.md");
   const regressions = read("docs/intelligence/PROTECTED_REGRESSION_CHECKLIST.md");
   const dependencies = read("docs/intelligence/DEPENDENCY_MAP.md");
+  const printing = read("docs/intelligence/PRINTING_BASELINE.md");
 
   it("pins the audited baseline and canonical flow", () => {
     expect(adr).toContain("67977c3cb990371bf7581d7f1db53ce04c35e9f8");
@@ -48,5 +49,15 @@ describe("PedeAqui Intelligence Core architecture baseline", () => {
     expect(directAccess).toContain("14 conversation rows with no");
     expect(regressions).toContain("every persisted inbound reaches exactly one traceable");
     expect(dependencies).toContain("measure inbound-to-action/outbound latency");
+  });
+
+  it("freezes printing authority and the professional-agent gate", () => {
+    expect(printing).toContain("print_agent_claim_internal");
+    expect(printing).toContain("printed_unacked");
+    expect(printing).toContain("job not owned by agent");
+    expect(printing).toContain("`schtasks /SC ONSTART /RU SYSTEM /RL HIGHEST`");
+    expect(printing).toContain("including two copies");
+    expect(printing).toContain("Before #1066");
+    expect(dependencies).toContain("INT-01..INT-14 may continue");
   });
 });
