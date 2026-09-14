@@ -25,12 +25,20 @@ export class PlatformGovernanceService {
   static async loadCommunication() {
     const access = await ownerAccess();
     const admin = createAdminClient();
-    const [organizations, messages] = await Promise.all([
+    const [organizations, messages, receipts, activeMembers] = await Promise.all([
       admin.from("organizations").select("id,name,status").order("name"),
       admin.from("platform_customer_messages").select("id,organization_id,channel,kind,title,body,status,scheduled_at,sent_at,last_error,created_at,updated_at").order("created_at", { ascending: false }).limit(500),
+      admin.from("platform_customer_message_receipts").select("message_id,user_id,read_at").order("read_at", { ascending: false }).limit(5000),
+      admin.from("organization_members").select("organization_id,user_id").eq("status", "active"),
     ]);
-    for (const result of [organizations, messages]) if (result.error) throw result.error;
-    return { role: access.role, organizations: organizations.data ?? [], messages: messages.data ?? [] };
+    for (const result of [organizations, messages, receipts, activeMembers]) if (result.error) throw result.error;
+    return {
+      role: access.role,
+      organizations: organizations.data ?? [],
+      messages: messages.data ?? [],
+      receipts: receipts.data ?? [],
+      activeMembers: activeMembers.data ?? [],
+    };
   }
 
   static async loadSettingsAndPrivacy() {
