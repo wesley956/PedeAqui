@@ -8,7 +8,80 @@ import { OrderPixService, type PublicPixPayment } from "@/server/payments/order-
 
 const uuidSchema = z.string().uuid();
 
+export type PublicOrderTrackingProjection = {
+  store: {
+    id: string;
+    organization_id: string;
+    name: string;
+    slug: string;
+    business_type: string;
+    timezone: string | null;
+  };
+  order: {
+    id: string;
+    display_number: number;
+    channel: string;
+    fulfillment_type: string;
+    order_status: string;
+    payment_status: string;
+    production_status: string;
+    fulfillment_status: string;
+    total_cents: number;
+    scheduled_for: string | null;
+    delivery_estimated_min_minutes: number | null;
+    delivery_estimated_max_minutes: number | null;
+    confirmed_at: string | null;
+    completed_at: string | null;
+    canceled_at: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+};
+
 export class PublicOrderService {
+  /**
+   * Read-only projection for public tracking and Intelligence.
+   *
+   * This intentionally does not call OrderPixService.ensureForOrder (or any
+   * other mutation-capable path). Access remains protected by the existing
+   * public order token contract.
+   */
+  static async getTracking(storeSlug: string, orderId: string, accessToken: string): Promise<PublicOrderTrackingProjection | null> {
+    const id = uuidSchema.parse(orderId);
+    const admin = createAdminClient();
+    const { data: store, error: storeError } = await admin.from("stores")
+      .select("id, organization_id, name, slug, business_type, timezone")
+      .ilike("slug", storeSlug).maybeSingle();
+    if (storeError) throw storeError;
+    if (!store) return null;
+
+    const { data: order, error: orderError } = await admin.from("orders")
+      .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, total_cents, scheduled_for, delivery_estimated_min_minutes, delivery_estimated_max_minutes, confirmed_at, completed_at, canceled_at, created_at, updated_at")
+      .eq("id", id)
+      .eq("organization_id", store.organization_id)
+      .eq("store_id", store.id)
+      .eq("public_access_token_hash", hashOrderAccessToken(accessToken))
+      .maybeSingle();
+    if (orderError) throw orderError;
+    if (!order) return null;
+
+    return {
+      store: {
+        id: store.id,
+        organization_id: store.organization_id,
+        name: store.name,
+        slug: store.slug,
+        business_type: store.business_type,
+        timezone: store.timezone,
+      },
+      order: {
+        ...order,
+        display_number: Number(order.display_number),
+        total_cents: Number(order.total_cents),
+      },
+    };
+  }
+
   static async get(storeSlug: string, orderId: string, accessToken: string) {
     const id = uuidSchema.parse(orderId);
     const admin = createAdminClient();

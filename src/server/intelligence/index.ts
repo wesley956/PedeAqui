@@ -4,4 +4,5 @@ export * from "@/server/intelligence/catalog-adapter";
 export * from "@/server/intelligence/context";
 export * from "@/server/intelligence/disclosure-policy";
 export * from "@/server/intelligence/identity";
+export * from "@/server/intelligence/order-workflow-adapter";
 export * from "@/server/intelligence/projections";
