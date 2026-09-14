@@ -41,4 +41,12 @@ describe("PedeAqui Intelligence Core architecture baseline", () => {
     }
     expect(dependencies).toContain("They do not authorize the");
   });
+
+  it("freezes the production diagnostic outcome invariants from #1050", () => {
+    expect(adr).toContain("`inbound -> nothing` is forbidden");
+    expect(sourceMatrix).toContain("9 conversations ending with inbound");
+    expect(directAccess).toContain("14 conversation rows with no");
+    expect(regressions).toContain("every persisted inbound reaches exactly one traceable");
+    expect(dependencies).toContain("measure inbound-to-action/outbound latency");
+  });
 });
