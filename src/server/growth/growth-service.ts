@@ -152,7 +152,7 @@ export class GrowthService {
       usage_limit_total: values.usageLimitTotal,
       usage_limit_per_customer: values.usageLimitPerCustomer,
       valid_until: values.validUntil,
-      allowed_channels: ["digital_menu", "pdv", "counter", "waiter", "table_qr", "manual"],
+      allowed_channels: ["digital_menu", ...(values.whatsappEnabled ? ["whatsapp"] : []), "pdv", "counter", "waiter", "table_qr", "manual"],
       created_by: context.userId,
       updated_by: context.userId,
     }).select("*").single();
@@ -180,7 +180,7 @@ export class GrowthService {
       rules, created_by: context.userId, updated_by: context.userId,
     }).select("*").single();
     if (error) throw error;
-    await AuditService.record(context, { action: "growth.segment_created", entityType: "customer_segment", entityId: data.id, after: data });
+    await AuditService.record(context, { action: "growth.automation_created", entityType: "customer_segment", entityId: data.id, after: data });
     return data;
   }
 
