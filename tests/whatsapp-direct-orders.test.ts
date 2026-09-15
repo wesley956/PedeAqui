@@ -54,7 +54,8 @@ describe("WhatsApp direct orders", () => {
     expect(orderService).toContain('input.step === "order_confirmation"');
     expect(orderService).toContain("if (!isYes(input.text))");
     expect(orderService.indexOf("if (!isYes(input.text))")).toBeLessThan(orderService.indexOf("OrderService.createFromCheckout"));
-    expect(orderService).toContain('update({ channel: "whatsapp"');
+    expect(orderService).toContain('OrderService.createFromCheckout(input.storeSlug, context.cartToken, "whatsapp")');
+    expect(orderService).not.toContain('update({ channel: "whatsapp"');
   });
 
   it("reuses the existing pricing, checkout, delivery and order pipeline", () => {
