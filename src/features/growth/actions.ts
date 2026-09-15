@@ -72,6 +72,7 @@ export async function createCouponAction(formData: FormData) {
     validUntil: validUntilRaw
       ? new Date(validUntilRaw).toISOString()
       : validDays ? new Date(Date.now() + validDays * 86_400_000).toISOString() : null,
+    whatsappEnabled: formData.get("whatsappEnabled") === "on",
   });
   revalidatePath("/crescimento");
   finishGuidedAction(formData);
