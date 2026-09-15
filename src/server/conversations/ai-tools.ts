@@ -130,6 +130,7 @@ async function customerBenefits(context: ToolContext, rawInput: unknown) {
     customerId: context.customerId,
     contactId: context.contactId,
     timeZone: store.timezone || "America/Sao_Paulo",
+    channel: "whatsapp",
     subtotalCents: input.subtotalCents ?? null,
   });
 }
