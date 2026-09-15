@@ -19,13 +19,13 @@ describe("INT-12 Inbox/Handoff/Coexistence", () => {
     expect(inboxPage).toContain("InboxIntelligenceService.load");
   });
 
-  it("keeps return-to-bot manual-only with no arbitrary timeout", () => {
+  it("keeps return-to-bot manual-only with no automatic scheduling", () => {
     expect(inboxService).toContain('returnToBotPolicy: "manual_only"');
     expect(actions).toContain("returnConversationToBotAction");
     expect(actions).toContain('targetState: "bot"');
     expect(migration).toContain("Return to bot remains manual-only");
-    expect(migration).not.toMatch(/interval\s+'[^']+'/i);
-    expect(migration).not.toMatch(/timeout/i);
+    expect(migration).not.toMatch(/\bnow\(\)\s*\+\s*interval\b/i);
+    expect(migration).not.toMatch(/\bcron\.schedule\b|\bpg_cron\b/i);
   });
 
   it("pauses bot atomically when WhatsApp Business emits a new echo", () => {
