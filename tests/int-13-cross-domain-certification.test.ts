@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { resolveWhatsAppBotIntent } from "@/server/conversations/bot-menu";
 import { createIntelligenceContext } from "@/server/intelligence/context";
 import {
   buildCrossDomainCertificationMatrix,
@@ -110,6 +111,12 @@ describe("INT-13 cross-domain certification matrix", () => {
       expect(decision.tool).toBeNull();
       expect(decision.handoffReason).toBe("human_lock");
     }
+  });
+
+  it("normalizes polite wrappers without turning a price question into order creation", () => {
+    expect(resolveWhatsAppBotIntent("me ajuda, quero fazer um pedido por favor", "menu")).toBe("order_start");
+    expect(resolveWhatsAppBotIntent("quero 30 salgados e quanto fica a entrega", "menu")).toBe("order_start");
+    expect(resolveWhatsAppBotIntent("quero saber o preço do salgado", "menu")).not.toBe("order_start");
   });
 });
 
