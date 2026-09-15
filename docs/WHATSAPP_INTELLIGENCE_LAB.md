@@ -258,3 +258,44 @@ Uma falha real corrigida deve virar cenário permanente de regressão.
 ## Regra para futuras mudanças
 
 Nenhuma mudança de inteligência deve substituir serviço operacional existente apenas para fazer um cenário passar. O cenário deve ser resolvido usando as mesmas fontes de verdade usadas pelo restante do PedeAqui. Quando houver conflito entre uma interpretação linguística e uma regra operacional, a regra operacional vence e o bot pergunta ao cliente.
+
+## Certificação cross-domain v2 — INT-13
+
+A matriz original de 720 cenários continua sendo a fonte permanente de linguagem e regressão. A INT-13 a enriquece por composição em `cross-domain-certification.ts`; nenhum cenário, ID ou variação foi removido.
+
+Cada cenário certificado declara:
+
+- tenant, loja, canal, business type e modo da conversa;
+- intent semântico e intent esperado do Unified Router;
+- tool, capability e authority esperadas;
+- serviço canônico e projeção por audiência;
+- política de side effect, confirmação e idempotência;
+- resultado final esperado.
+
+O teste `int-13-cross-domain-certification.test.ts` executa as 720 mensagens contra o Unified Router real. As expectativas não são lidas do resultado do router: elas são derivadas do contrato permanente do cenário, evitando um teste tautológico.
+
+As seis suites de paridade obrigatórias são:
+
+1. catálogo/preço — `IntelligenceCatalogAdapter` contra `PublicMenuService`, `PricingService` e `PromotionService`;
+2. pagamentos — `PaymentAdapter` contra `StorePaymentMethodService` e serviços oficiais de Payment/Pix;
+3. entrega — `DeliveryAdapter` contra `DeliveryQuoteService` e projeções operacionais;
+4. Growth — `loadCustomerBenefits(channel=whatsapp)` contra `growth_customer_benefits_internal/private.resolve_growth_benefits`;
+5. pedido/status — `OrderWorkflowAdapter` contra `OrderService`, `PublicOrderService` e `OrderPresentationService`;
+6. workflow/notificações — checkpoint visível contra `OrderWorkflowSettingsService` e notificações oficiais.
+
+Mismatch de tenant, preço, pagamento, entrega, Growth, status, authority ou confirmação é crítico e força `NO-GO`. Cenário de risco crítico com divergência de intent/tool também bloqueia a promoção.
+
+### Diagnósticos reais permanentes
+
+Continuam obrigatórios na matriz e nas fases seguintes:
+
+- quantidade solicitada não pode ser confundida com capacidade da embalagem;
+- corrigir quantidade/composição não pode duplicar carrinho;
+- pagamento/Pix, tracking/status, cancelamento/refação e handoff interrompem uma montagem sem apagar contexto;
+- endereço fragmentado deve acumular e recuperar sem loop;
+- respostas curtas dependem da etapa ativa;
+- mídia, reaction e agradecimento não entram em fluxo transacional;
+- fallback repetido degrada para esclarecimento/handoff;
+- erro server-side sempre termina em resultado rastreável, nunca `inbound -> nada`.
+
+O relatório de release versionado fica em `docs/intelligence/INT13_CROSS_DOMAIN_CERTIFICATION_REPORT.md`.
