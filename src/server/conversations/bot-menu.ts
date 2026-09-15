@@ -168,7 +168,7 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
   if (step === "awaiting_tracking_code" && trackingCode !== null) return "track_code";
   if (step === "menu" && trackingCode !== null && hasExplicitTrackingContext(normalized)) return "track_code";
   if (menuWords.has(normalized)) return "menu";
-  if (/\b(?:quero|queria|me ve)\b.*\b(?:salgado|salgados|caixa|coca)\b/.test(normalized)) return "order_start";
+  if (/\b(?:quero|queria|me ve)\s+(?:uma?\s+)?(?:caixa\s+(?:de|com)\s+)?\d+\s+(?:salgado|salgados)\b/.test(normalized)) return "order_start";
   if (containsAny(normalized, orderStartWords)) return "order_start";
   if (containsAny(normalized, benefitHandoffWords)) return "benefit_handoff";
   if (containsAny(normalized, cashbackWords)) return "cashback";
