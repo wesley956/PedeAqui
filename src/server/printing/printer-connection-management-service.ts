@@ -86,7 +86,7 @@ export class PrinterConnectionManagementService {
 
     if ((routeLinks ?? []).some((link) => link.active)) {
       const { error: routeError } = await admin.from("station_printers")
-        .update({ active: false, updated_at: now })
+        .update({ active: false })
         .eq("organization_id", context.organizationId)
         .eq("store_id", storeId)
         .eq("printer_id", id);
