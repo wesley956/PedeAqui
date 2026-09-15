@@ -9,7 +9,6 @@ export type InboundIngestResult = {
 };
 
 export type InboundOutcome =
-  | "duplicate"
   | "outbound_recorded"
   | "waiting_agent"
   | "human"
@@ -18,9 +17,8 @@ export type InboundOutcome =
 
 export class InboundOutcomeService {
   static async finalize(result: InboundIngestResult): Promise<InboundOutcome> {
-    if (!result?.message_created) return "duplicate";
-    if (!result.conversation_id || !result.message_id) {
-      throw new Error("Inbound persistido sem referência de conversa/mensagem.");
+    if (!result?.conversation_id || !result.message_id) {
+      throw new Error("Inbound sem referência de conversa/mensagem.");
     }
 
     const admin = createAdminClient();
