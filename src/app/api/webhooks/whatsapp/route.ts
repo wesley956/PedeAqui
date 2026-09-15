@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { ConversationService } from "@/server/conversations/conversation-service";
 import { WhatsAppCoexistenceService } from "@/server/conversations/coexistence-service";
 import { ConversationGreetingService } from "@/server/conversations/greeting-service";
+import { InboundOutcomeService } from "@/server/conversations/inbound-outcome-service";
 import { WhatsAppDirectOrderOrchestrator } from "@/server/conversations/whatsapp-direct-order-orchestrator";
 import { resolveWhatsAppWebhookRouting } from "@/server/conversations/webhook-routing";
 import { parseWhatsAppWebhook, verifyMetaWebhookSignature, webhookPhoneNumberIds } from "@/server/conversations/whatsapp-webhook";
@@ -89,6 +90,16 @@ export async function POST(request: Request) {
           } catch (error) {
             recordFailure("whatsapp.greeting.failed", error, { requestId: requestContext.requestId });
           }
+        }
+
+        try {
+          await InboundOutcomeService.finalize(result);
+        } catch (error) {
+          recordFailure("whatsapp.inbound_outcome.failed", error, {
+            requestId: requestContext.requestId,
+            conversationId: result?.conversation_id ?? null,
+            messageId: result?.message_id ?? null,
+          });
         }
       }
     }
