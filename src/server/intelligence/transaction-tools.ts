@@ -138,7 +138,14 @@ export type TransactionGuardDecision = {
 };
 
 export function classifyExplicitConfirmation(value: string | null | undefined): TransactionConfirmation {
-  const normalized = (value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase().replace(/[!?.,;:]+/g, " ").replace(/\s+/g, " ");
+  const normalized = (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[!?.,;:]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!normalized) return "missing";
   if (["sim", "s", "confirmar", "confirmo", "pode confirmar", "fechar pedido", "finalizar"].includes(normalized)) return "confirmed";
   if (["nao", "n", "cancelar", "cancela", "desistir"].includes(normalized)) return "rejected";
