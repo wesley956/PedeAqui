@@ -64,17 +64,16 @@ export async function loadCustomerBenefits(input: {
   customerId: string | null;
   contactId: string;
   timeZone: string;
-  channel?: CustomerBenefitChannel;
+  channel: CustomerBenefitChannel;
   subtotalCents?: number | null;
 }): Promise<CustomerBenefits> {
   const admin = createAdminClient();
-  const channel = input.channel ?? "whatsapp";
   const [benefitsResult, promotionsResult] = await Promise.all([
     input.customerId ? admin.rpc("growth_customer_benefits_internal", {
       p_store_id: input.storeId,
       p_customer_id: input.customerId,
       p_contact_id: input.contactId,
-      p_channel: channel,
+      p_channel: input.channel,
       p_subtotal_cents: input.subtotalCents ?? null,
     }) : Promise.resolve({ data: unidentified, error: null }),
     admin.from("product_promotions")
