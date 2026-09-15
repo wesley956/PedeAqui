@@ -16,6 +16,7 @@ const conversationId = "33333333-3333-4333-8333-333333333333";
 const contactId = "44444444-4444-4444-8444-444444444444";
 const customerId = "55555555-5555-4555-8555-555555555555";
 const orderId = "66666666-6666-4666-8666-666666666666";
+const otherStoreId = "77777777-7777-4777-8777-777777777777";
 
 function context(mode: "bot" | "waiting_agent" | "human" = "bot", trust: "weak" | "verified" = "verified") {
   return createIntelligenceContext({
@@ -172,6 +173,29 @@ describe("INT-11 transaction tools", () => {
     });
     expect(decision.allowed).toBe(false);
     expect(decision.reasons).toContain("authority_denied");
+  });
+
+  it("rejects capability and authority snapshots from another store", () => {
+    const foreignCapabilities = { ...capabilities(), storeId: otherStoreId };
+    const createDecision = guardTransactionTool({
+      context: context(),
+      tool: "order.create",
+      capabilitySnapshot: foreignCapabilities,
+      confirmation: "confirmed",
+    });
+    expect(createDecision.allowed).toBe(false);
+    expect(createDecision.reasons).toContain("scope_mismatch");
+
+    const foreignAuthority = { ...authority(), storeId: otherStoreId };
+    const cancelDecision = guardTransactionTool({
+      context: context(),
+      tool: "order.requestCancellation",
+      capabilitySnapshot: capabilities(),
+      authoritySnapshot: foreignAuthority,
+      confirmation: "confirmed",
+    });
+    expect(cancelDecision.allowed).toBe(false);
+    expect(cancelDecision.reasons).toContain("scope_mismatch");
   });
 
   it("keeps every mutable tool declarative and bound to canonical contracts", () => {
