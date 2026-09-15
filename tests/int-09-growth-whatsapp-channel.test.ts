@@ -10,6 +10,22 @@ const directOrderOrchestrator = readRepoFile("src/server/conversations/whatsapp-
 const growthService = readRepoFile("src/server/growth/growth-service.ts");
 const migration = readRepoFile("supabase/migrations/20260915071500_int09_growth_whatsapp_channel.sql");
 
+function couponInput(whatsappEnabled?: boolean) {
+  return {
+    code: whatsappEnabled ? "INT09WA" : "INT09",
+    name: whatsappEnabled ? "INT-09 WhatsApp coupon" : "INT-09 canonical coupon",
+    discountType: "percentage" as const,
+    fixedDiscountCents: null,
+    percentageBps: 1000,
+    maxDiscountCents: null,
+    minimumOrderCents: 0,
+    usageLimitTotal: null,
+    usageLimitPerCustomer: null,
+    validUntil: null,
+    ...(whatsappEnabled === undefined ? {} : { whatsappEnabled }),
+  };
+}
+
 describe("INT-09 canonical Growth channel contracts", () => {
   it("requires an explicit canonical channel and forwards it to the RPC", () => {
     expect(benefitsAdapter).toContain('export type CustomerBenefitChannel = "digital_menu" | "whatsapp"');
@@ -25,33 +41,19 @@ describe("INT-09 canonical Growth channel contracts", () => {
   });
 
   it("keeps WhatsApp coupon eligibility opt-in by default", () => {
-    const parsed = couponInputSchema.parse({
-      code: "INT09",
-      name: "INT-09 canonical coupon",
-      discount_type: "percentage",
-      percentage_percent: 10,
-    });
-
+    const parsed = couponInputSchema.parse(couponInput());
     expect(parsed.whatsappEnabled).toBe(false);
   });
 
   it("allows an operator to opt a new coupon into WhatsApp explicitly", () => {
-    const parsed = couponInputSchema.parse({
-      code: "INT09WA",
-      name: "INT-09 WhatsApp coupon",
-      discount_type: "percentage",
-      percentage_percent: 10,
-      whatsappEnabled: true,
-    });
-
+    const parsed = couponInputSchema.parse(couponInput(true));
     expect(parsed.whatsappEnabled).toBe(true);
-    expect(growthService).toContain('if (input.whatsappEnabled)');
-    expect(growthService).toContain('allowedChannels.push("whatsapp")');
+    expect(growthService).toContain('...(values.whatsappEnabled ? ["whatsapp"] : [])');
   });
 
-  it("does not silently add whatsapp to the base channels for legacy-compatible coupon creation", () => {
-    expect(growthService).toContain('const allowedChannels = ["digital_menu", "pdv", "counter", "waiter", "table_qr", "manual"]');
-    expect(growthService).not.toContain('const allowedChannels = ["digital_menu", "whatsapp"');
+  it("does not silently map digital_menu coupons to whatsapp", () => {
+    expect(growthService).toContain('allowed_channels: ["digital_menu", ...(values.whatsappEnabled ? ["whatsapp"] : []), "pdv", "counter", "waiter", "table_qr", "manual"]');
+    expect(growthService).not.toContain('["digital_menu", "whatsapp", "pdv"');
   });
 
   it("accepts whatsapp in the canonical benefits RPC while keeping channel filtering", () => {
