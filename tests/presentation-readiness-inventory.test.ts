@@ -7,8 +7,9 @@ import { MODULE_KEYS } from "@/modules/module-catalog";
 const root = process.cwd();
 const baselinePath = path.join(root, "docs/qa/PRESENTATION_READINESS_BASELINE_20260822.md");
 const baselineAddendumPath = path.join(root, "docs/qa/PRESENTATION_READINESS_BASELINE_ADDENDUM_20260823.md");
+const septemberAddendumPath = path.join(root, "docs/qa/PRESENTATION_READINESS_BASELINE_ADDENDUM_20260915.md");
 const testDataPath = path.join(root, "docs/qa/PRESENTATION_TEST_DATA_20260822.md");
-const baseline = `${fs.readFileSync(baselinePath, "utf8")}\n${fs.readFileSync(baselineAddendumPath, "utf8")}`;
+const baseline = `${fs.readFileSync(baselinePath, "utf8")}\n${fs.readFileSync(baselineAddendumPath, "utf8")}\n${fs.readFileSync(septemberAddendumPath, "utf8")}`;
 const testData = fs.readFileSync(testDataPath, "utf8");
 
 function walk(directory: string): string[] {
