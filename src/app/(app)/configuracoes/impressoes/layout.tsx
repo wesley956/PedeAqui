@@ -7,6 +7,7 @@ export default function PrintingSettingsLayout({ children }: { children: ReactNo
     <div className={styles.shell}>
       <nav className={styles.nav} aria-label="Configurações de impressão">
         <Link className={styles.link} href="/configuracoes/impressoes">🖨️ Conexão e impressoras</Link>
+        <Link className={styles.link} href="/configuracoes/impressoes/gerenciar">🔌 Gerenciar impressoras</Link>
         <Link className={styles.link} href="/configuracoes/impressoes/formato">🧾 Formato e vias</Link>
       </nav>
       {children}
