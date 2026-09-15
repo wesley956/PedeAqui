@@ -121,6 +121,7 @@ export type TransactionGuardReason =
   | "audience_not_allowed"
   | "human_lock"
   | "identity_trust_insufficient"
+  | "scope_mismatch"
   | "capability_unresolved"
   | "capability_denied"
   | "authority_unresolved"
@@ -147,19 +148,26 @@ export function classifyExplicitConfirmation(value: string | null | undefined): 
 export function guardTransactionTool(input: TransactionGuardInput): TransactionGuardDecision {
   const contract = transactionToolRegistry[input.tool];
   const reasons: TransactionGuardReason[] = [];
+  const capabilityScoped = !input.capabilitySnapshot
+    || (input.capabilitySnapshot.organizationId === input.context.organizationId && input.capabilitySnapshot.storeId === input.context.storeId);
+  const authorityScoped = !input.authoritySnapshot
+    || (input.authoritySnapshot.organizationId === input.context.organizationId
+      && input.authoritySnapshot.storeId === input.context.storeId
+      && (!input.context.activeReferences.orderId || input.authoritySnapshot.orderId === input.context.activeReferences.orderId));
 
   if (!contract.audience.includes(input.context.audience)) reasons.push("audience_not_allowed");
   if (input.context.conversation.mode === "human" || input.context.conversation.mode === "waiting_agent") reasons.push("human_lock");
   if (trustRank[input.context.identity.trust] < trustRank[contract.minimumTrust]) reasons.push("identity_trust_insufficient");
+  if (!capabilityScoped || !authorityScoped) reasons.push("scope_mismatch");
 
   for (const capability of contract.requiredCapabilities) {
-    const decision = input.capabilitySnapshot?.decisions[capability];
+    const decision = capabilityScoped ? input.capabilitySnapshot?.decisions[capability] : undefined;
     if (!decision) reasons.push("capability_unresolved");
     else if (!decision.allowed) reasons.push("capability_denied");
   }
 
   if (contract.authorityPolicy !== "none" && contract.authorityPolicy !== "create_internal_order") {
-    const authorityDecision = input.authoritySnapshot?.decisions[contract.authorityPolicy];
+    const authorityDecision = authorityScoped ? input.authoritySnapshot?.decisions[contract.authorityPolicy] : undefined;
     if (!authorityDecision) reasons.push("authority_unresolved");
     else if (!authorityDecision.allowed) reasons.push("authority_denied");
   }
