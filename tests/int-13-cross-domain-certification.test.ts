@@ -76,8 +76,7 @@ describe("INT-13 cross-domain certification matrix", () => {
       return evaluateRouterDecision(scenario, decision);
     });
 
-    expect(mismatches.filter((mismatch) => mismatch.critical)).toEqual([]);
-    expect(mismatches.length).toBeLessThan(matrix.length);
+    expect(mismatches).toEqual([]);
   });
 
   it("certifies explicit confirmation and canonical idempotency for final order creation", () => {
