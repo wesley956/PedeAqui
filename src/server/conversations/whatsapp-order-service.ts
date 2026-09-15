@@ -357,7 +357,7 @@ export class WhatsAppOrderService {
     if (input.step === "order_confirmation") {
       if (isNo(input.text)) return { handled: true, body: "Pedido cancelado. Nada foi enviado para a loja. Para começar outro pedido, digite 7.", nextStep: "menu", context: null };
       if (!isYes(input.text)) return { handled: true, body: "Responda SIM para confirmar o pedido ou NÃO para cancelar.", nextStep: "order_confirmation", context };
-      const result = await OrderService.createFromCheckout(input.storeSlug, context.cartToken); const admin = createAdminClient(); const { error } = await admin.from("orders").update({ channel: "whatsapp", updated_at: new Date().toISOString() }).eq("id", result.order_id).eq("organization_id", input.organizationId).eq("store_id", input.storeId); if (error) throw error;
+      const result = await OrderService.createFromCheckout(input.storeSlug, context.cartToken, "whatsapp");
       await OrderNotificationContextService.capture(result.order_id, result.accessToken); scheduleOrderWhatsAppNotifications("checkout.order_created");
       return { handled: true, body: `Pedido #${result.display_number} criado com sucesso pelo WhatsApp ✅\nA loja recebeu o pedido. Para acompanhar, digite 2.`, nextStep: "menu", context: null };
     }
