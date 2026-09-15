@@ -13,6 +13,7 @@ import {
 import { DEFAULT_STORE_TIMEZONE, formatStoreDateTime } from "@/lib/store-date-time";
 import { getAccessContext } from "@/server/access/context";
 import { ConversationService } from "@/server/conversations/conversation-service";
+import { InboxIntelligenceService } from "@/server/conversations/inbox-intelligence-service";
 import { conversationStatusLabel, type ConversationStatus } from "@/server/conversations/model";
 import styles from "./conversations.module.css";
 
@@ -48,7 +49,7 @@ export default async function ConversationsPage({
   const selectedRow = params.conversation
     ? inbox.conversations.find((row) => row.id === params.conversation)
     : inbox.conversations[0];
-  const detail = selectedRow ? await ConversationService.loadConversation(selectedRow.id) : null;
+  const detail = selectedRow ? await InboxIntelligenceService.load(selectedRow.id) : null;
   const clientMessageId = detail ? ConversationService.newClientMessageId() : null;
 
   const filters = [
@@ -115,7 +116,7 @@ export default async function ConversationsPage({
                 const outbound = message.direction === "outbound";
                 return <div key={message.id} className={styles.message} data-direction={outbound ? "outbound" : "inbound"}>
                   <div className={styles.bubble}>{message.body || `[${message.content_type}]`}</div>
-                  <span className={styles.messageMeta}>{when(message.created_at, timeZone)} · {outbound ? message.delivery_status : "recebida"}{message.error_message ? ` · ${message.error_message}` : ""}</span>
+                  <span className={styles.messageMeta}>{when(message.created_at, timeZone)} · {message.authorLabel} · {outbound ? message.delivery_status : "recebida"}{message.error_message ? ` · ${message.error_message}` : ""}</span>
                 </div>;
               })}
             </div>
@@ -134,7 +135,7 @@ export default async function ConversationsPage({
                 <input type="hidden" name="clientMessageId" value={clientMessageId} />
                 <textarea name="body" required maxLength={16000} rows={2} placeholder="Escreva uma mensagem…" aria-label="Mensagem" className={styles.textarea} />
                 <Button type="submit">Enviar</Button>
-              </form> : <p className={styles.replyHint}>{detail.conversation.status === "closed" ? "Conversa encerrada." : "Assuma a conversa para responder como atendente. Enquanto o atendimento humano estiver ativo, o automático não responde."}</p>}
+              </form> : <p className={styles.replyHint}>{detail.conversation.status === "closed" ? "Conversa encerrada." : detail.conversation.status === "waiting_agent" ? "O atendimento automático está pausado. Assuma a conversa para responder; o retorno ao robô é somente manual." : "Assuma a conversa para responder como atendente. Enquanto o atendimento humano estiver ativo, o automático não responde."}</p>}
             </div>
           </Card> : null}
         </div>
