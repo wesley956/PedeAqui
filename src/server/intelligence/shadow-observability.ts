@@ -89,6 +89,7 @@ function expectedLegacyHandler(decision: UnifiedRouterDecision | null): LegacyIn
 }
 
 function capabilityReason(decision: UnifiedRouterDecision | null) {
+  if (decision?.requiredCapability && !decision.capabilityDecision) return "not_resolved";
   if (!decision?.capabilityDecision) return null;
   return decision.capabilityDecision.reasons.join(",").slice(0, 120) || null;
 }
@@ -149,7 +150,9 @@ export function buildIntelligenceShadowObservation(
     capability_reason: capabilityReason(decision),
     authority_operation: decision?.authorityOperation ?? null,
     authority_allowed: decision?.authorityDecision?.allowed ?? null,
-    authority_reason: decision?.authorityDecision?.reason ?? null,
+    authority_reason: decision?.authorityOperation && !decision.authorityDecision
+      ? "not_resolved"
+      : decision?.authorityDecision?.reason ?? null,
     canonical_result_class: completion.legacyOutcome,
     audience_projection: "customer",
     fallback_observed: decision?.handoffReason === "low_confidence",

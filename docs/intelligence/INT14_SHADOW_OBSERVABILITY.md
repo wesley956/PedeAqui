@@ -45,6 +45,11 @@ Metrics derive from stored rows:
 - duplicate side-effect prevention;
 - cross-tenant violations, which must remain zero.
 
+The tenant-scoped `intelligence_shadow_metrics_internal` RPC returns these
+aggregates for a bounded 1–720 hour window. Authenticated reads remain subject
+to the table RLS permission `conversations.view`; the RPC exposes no event
+payload or customer data.
+
 ## GO / NO-GO
 
 GO for the next phase requires a documented observation window with zero

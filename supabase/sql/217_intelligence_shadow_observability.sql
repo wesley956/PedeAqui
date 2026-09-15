@@ -150,5 +150,52 @@ $$;
 revoke all on function public.intelligence_record_shadow_observation_internal(jsonb) from public, anon, authenticated;
 grant execute on function public.intelligence_record_shadow_observation_internal(jsonb) to service_role;
 
+create or replace function public.intelligence_shadow_metrics_internal(
+  p_organization_id uuid,
+  p_store_id uuid,
+  p_window_hours integer default 24
+) returns jsonb
+language plpgsql
+stable
+security invoker
+set search_path = ''
+as $$
+declare
+  v_result jsonb;
+begin
+  if p_window_hours not between 1 and 720 then raise exception 'invalid shadow metrics window'; end if;
+  if not exists (
+    select 1 from public.stores where organization_id = p_organization_id and id = p_store_id
+  ) then raise exception 'shadow metrics scope mismatch'; end if;
+
+  select jsonb_build_object(
+    'window_hours', p_window_hours,
+    'generated_at', now(),
+    'total', count(*),
+    'intent_divergence', count(*) filter (where comparisons->>'intent' = 'mismatch'),
+    'tool_divergence', count(*) filter (where comparisons->>'tool' = 'mismatch'),
+    'canonical_mismatch', count(*) filter (where critical_mismatch),
+    'fallback', count(*) filter (where fallback_observed),
+    'handoff', count(*) filter (where handoff_observed),
+    'tool_error', count(*) filter (where next_error_type is not null),
+    'duplicate_side_effect_prevented', count(*) filter (where duplicate_side_effect_prevented),
+    'cross_tenant_violations', count(*) filter (where cross_tenant_violation),
+    'average_legacy_latency_ms', coalesce(round(avg(legacy_duration_ms)), 0),
+    'average_next_latency_ms', coalesce(round(avg(next_duration_ms)), 0),
+    'critical_mismatch_rate', case when count(*) = 0 then 0 else round(
+      (count(*) filter (where critical_mismatch))::numeric / count(*)::numeric, 6
+    ) end
+  ) into v_result
+  from public.intelligence_shadow_observations
+  where organization_id = p_organization_id and store_id = p_store_id
+    and occurred_at >= now() - make_interval(hours => p_window_hours);
+
+  return v_result;
+end;
+$$;
+
+revoke all on function public.intelligence_shadow_metrics_internal(uuid,uuid,integer) from public, anon;
+grant execute on function public.intelligence_shadow_metrics_internal(uuid,uuid,integer) to authenticated, service_role;
+
 comment on table public.intelligence_shadow_observations is
   'Non-authoritative, privacy-minimized INT-14 comparisons. Never contains message bodies or domain secrets.';

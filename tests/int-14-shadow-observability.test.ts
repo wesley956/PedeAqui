@@ -130,6 +130,21 @@ describe("INT-14 persistence, privacy and fail-open wiring", () => {
     expect(migration).toContain("grant execute on function public.intelligence_record_shadow_observation_internal(jsonb) to service_role");
     expect(migration).toContain("shadow observation message scope mismatch");
     expect(migration).toContain("cross_tenant_violation boolean not null default false check (cross_tenant_violation = false)");
+    expect(migration).toContain("public.intelligence_shadow_metrics_internal");
+    expect(migration).toContain("'intent_divergence'");
+    expect(migration).toContain("'tool_divergence'");
+    expect(migration).toContain("'critical_mismatch_rate'");
+  });
+
+  it("makes unresolved capability and authority explicit instead of claiming allow", () => {
+    const observation = buildIntelligenceShadowObservation(preparation(), {
+      legacyHandler: "whatsapp_order",
+      legacyDecision: { intent: "order_start", tool: "whatsapp_order" },
+      legacyOutcome: "outbound_recorded",
+      legacyDurationMs: 1,
+    });
+    expect(observation.capability_allowed).toBeNull();
+    expect(observation.capability_reason).toBe("not_resolved");
   });
 
   it("stores only technical identifiers and bounded comparison fields", () => {
