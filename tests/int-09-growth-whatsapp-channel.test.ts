@@ -7,6 +7,7 @@ const readRepoFile = (path: string) => readFileSync(path, "utf8");
 const benefitsAdapter = readRepoFile("src/server/growth/customer-benefits.ts");
 const greetingService = readRepoFile("src/server/conversations/greeting-service.ts");
 const directOrderOrchestrator = readRepoFile("src/server/conversations/whatsapp-direct-order-orchestrator.ts");
+const aiTools = readRepoFile("src/server/conversations/ai-tools.ts");
 const growthService = readRepoFile("src/server/growth/growth-service.ts");
 const migration = readRepoFile("supabase/migrations/20260915071500_int09_growth_whatsapp_channel.sql");
 
@@ -35,9 +36,10 @@ describe("INT-09 canonical Growth channel contracts", () => {
     expect(benefitsAdapter).not.toContain('p_channel: "whatsapp"');
   });
 
-  it("marks both WhatsApp benefit callers with the real whatsapp channel", () => {
+  it("marks every WhatsApp benefit caller with the real whatsapp channel", () => {
     expect(greetingService).toMatch(/loadCustomerBenefits\(\{[\s\S]*?channel: "whatsapp",[\s\S]*?\}\)/);
     expect(directOrderOrchestrator).toMatch(/loadCustomerBenefits\(\{[\s\S]*?channel: "whatsapp",[\s\S]*?\}\)/);
+    expect(aiTools).toMatch(/loadCustomerBenefits\(\{[\s\S]*?channel: "whatsapp",[\s\S]*?\}\)/);
   });
 
   it("keeps WhatsApp coupon eligibility opt-in by default", () => {
