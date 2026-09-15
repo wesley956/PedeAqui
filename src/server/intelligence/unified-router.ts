@@ -3,7 +3,7 @@ import { AuthorityResolver } from "@/server/intelligence/authority";
 import type { CapabilityDecision, CapabilityFacts, IntelligenceCapabilityKey } from "@/server/intelligence/capability";
 import { CapabilitySnapshotResolver } from "@/server/intelligence/capability";
 import type { IntelligenceContext } from "@/server/intelligence/context";
-import { resolveWhatsAppBotIntent, type WhatsAppBotIntent } from "@/server/conversations/bot-menu";
+import { normalizeBotInput, resolveWhatsAppBotIntent, type WhatsAppBotIntent } from "@/server/conversations/bot-menu";
 
 export type UnifiedRouterTool =
   | "human_handoff"
@@ -108,8 +108,16 @@ function resolveIntent(input: UnifiedRouterInput): {
     : "menu";
   const explicit = resolveWhatsAppBotIntent(input.message, menuStep);
 
-  if (input.session.active && input.session.kind === "whatsapp_order" && !ACTIVE_ORDER_ESCAPE_INTENTS.has(explicit)) {
-    return { intent: "order_continue", confidence: "contextual" };
+  if (input.session.active && input.session.kind === "whatsapp_order") {
+    const normalized = normalizeBotInput(input.message);
+    const explicitTrackingInterruption = explicit === "track_code"
+      || (explicit === "track_start" && /\b(?:acompanhar|rastrear|status|cade|onde esta|como esta|ja saiu)\b/.test(normalized));
+    if (explicit === "track_start" && !explicitTrackingInterruption) {
+      return { intent: "order_continue", confidence: "contextual" };
+    }
+    if (!ACTIVE_ORDER_ESCAPE_INTENTS.has(explicit)) {
+      return { intent: "order_continue", confidence: "contextual" };
+    }
   }
   if (explicit === "unknown") return { intent: explicit, confidence: "low" };
   return { intent: explicit, confidence: "high" };
