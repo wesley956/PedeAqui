@@ -180,7 +180,7 @@ export class GrowthService {
       rules, created_by: context.userId, updated_by: context.userId,
     }).select("*").single();
     if (error) throw error;
-    await AuditService.record(context, { action: "growth.automation_created", entityType: "customer_segment", entityId: data.id, after: data });
+    await AuditService.record(context, { action: "growth.segment_created", entityType: "customer_segment", entityId: data.id, after: data });
     return data;
   }
 
