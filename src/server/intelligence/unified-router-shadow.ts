@@ -3,6 +3,10 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createIntelligenceContext, type ConversationMode } from "@/server/intelligence/context";
 import { UnifiedIntelligenceRouter, type UnifiedRouterDecision } from "@/server/intelligence/unified-router";
+import {
+  sanitizedShadowError,
+  type IntelligenceShadowPreparation,
+} from "@/server/intelligence/shadow-observability";
 
 type IngestResult = {
   conversation_id?: string;
@@ -25,9 +29,9 @@ function sessionKind(session: SessionRow | null): "whatsapp_order" | "menu" | nu
 }
 
 export class UnifiedIntelligenceRouterShadow {
-  static async afterInbound(result: unknown, requestId: string): Promise<UnifiedRouterDecision | null> {
+  static async afterInbound(result: unknown, requestId: string): Promise<IntelligenceShadowPreparation | null> {
     const ingest = result && typeof result === "object" ? result as IngestResult : null;
-    if (!ingest?.conversation_id || !ingest.message_id || ingest.message_created === false) return null;
+    if (!ingest?.conversation_id || !ingest.message_id) return null;
 
     const admin = createAdminClient();
     const { data: conversation, error: conversationError } = await admin.from("conversations")
@@ -37,7 +41,7 @@ export class UnifiedIntelligenceRouterShadow {
     if (conversationError) throw conversationError;
     if (!conversation || conversation.channel !== "whatsapp") return null;
 
-    const [contactResult, messageResult, sessionResult] = await Promise.all([
+    const [contactResult, messageResult, sessionResult, settingsResult, storeResult] = await Promise.all([
       admin.from("contacts")
         .select("customer_id")
         .eq("organization_id", conversation.organization_id)
@@ -57,10 +61,23 @@ export class UnifiedIntelligenceRouterShadow {
         .eq("store_id", conversation.store_id)
         .eq("conversation_id", conversation.id)
         .maybeSingle(),
+      admin.from("store_conversation_settings")
+        .select("intelligence_shadow_mode")
+        .eq("organization_id", conversation.organization_id)
+        .eq("store_id", conversation.store_id)
+        .maybeSingle(),
+      admin.from("stores")
+        .select("business_type")
+        .eq("organization_id", conversation.organization_id)
+        .eq("id", conversation.store_id)
+        .maybeSingle(),
     ]);
     if (contactResult.error) throw contactResult.error;
     if (messageResult.error) throw messageResult.error;
     if (sessionResult.error) throw sessionResult.error;
+    if (settingsResult.error) throw settingsResult.error;
+    if (storeResult.error) throw storeResult.error;
+    if (!settingsResult.data?.intelligence_shadow_mode) return null;
 
     const mode = (["bot", "waiting_agent", "human", "closed"] as const).includes(conversation.status as never)
       ? conversation.status as ConversationMode
@@ -72,7 +89,7 @@ export class UnifiedIntelligenceRouterShadow {
       organizationId: conversation.organization_id,
       storeId: conversation.store_id,
       channel: "whatsapp",
-      businessType: "unresolved",
+      businessType: storeResult.data?.business_type ?? "unresolved",
       actor: { type: "customer", userId: null },
       audience: "customer",
       conversation: { id: conversation.id, mode },
@@ -90,14 +107,38 @@ export class UnifiedIntelligenceRouterShadow {
 
     const session = sessionResult.data as SessionRow | null;
     const kind = sessionKind(session);
-    return UnifiedIntelligenceRouter.route({
-      context,
-      message: messageResult.data?.body,
-      session: {
-        active: kind !== null,
-        kind,
-        step: kind ? session?.step ?? null : null,
-      },
-    });
+    const startedAt = performance.now();
+    let decision: UnifiedRouterDecision | null = null;
+    let nextErrorType: string | null = null;
+    let nextErrorCode: string | null = null;
+    try {
+      decision = UnifiedIntelligenceRouter.route({
+        context,
+        message: messageResult.data?.body,
+        session: {
+          active: kind !== null,
+          kind,
+          step: kind ? session?.step ?? null : null,
+        },
+      });
+    } catch (error) {
+      const safeError = sanitizedShadowError(error);
+      nextErrorType = safeError.type;
+      nextErrorCode = safeError.code;
+    }
+
+    return {
+      organizationId: conversation.organization_id,
+      storeId: conversation.store_id,
+      conversationId: conversation.id,
+      messageId: ingest.message_id,
+      requestId,
+      correlationId: requestId,
+      decision,
+      nextDurationMs: Math.max(0, performance.now() - startedAt),
+      nextErrorType,
+      nextErrorCode,
+      duplicateSideEffectPrevented: ingest.message_created === false,
+    };
   }
 }

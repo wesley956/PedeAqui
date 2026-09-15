@@ -10,3 +10,4 @@ export * from "@/server/intelligence/payment-adapter";
 export * from "@/server/intelligence/projections";
 export * from "@/server/intelligence/transaction-tools";
 export * from "@/server/intelligence/unified-router";
+export * from "@/server/intelligence/shadow-observability";

@@ -21,6 +21,7 @@ import {
   type WhatsAppOrderStep,
 } from "@/server/conversations/whatsapp-smart-order-service";
 import { recordFailure } from "@/server/observability/failure";
+import type { LegacyIntelligenceObserver } from "@/server/conversations/legacy-intelligence-observation";
 
 type IngestResult = {
   conversation_id?: string;
@@ -135,7 +136,7 @@ function trackingRecoveryReply(orderNumbers: number[], activeOrderStep: WhatsApp
 }
 
 export class WhatsAppDirectOrderOrchestrator {
-  static async afterInbound(result: unknown, requestId: string): Promise<boolean> {
+  static async afterInbound(result: unknown, requestId: string, observe?: LegacyIntelligenceObserver): Promise<boolean> {
     const ingest = result && typeof result === "object" ? result as IngestResult : null;
     if (!ingest?.conversation_id || !ingest.message_id || ingest.message_created === false) return false;
 
@@ -237,6 +238,7 @@ export class WhatsAppDirectOrderOrchestrator {
         ingest.message_id,
         activeOrderStep ? session?.context as WhatsAppOrderContext : null,
       );
+      observe?.({ intent: "customer_context", tool: "conversation_info" });
       return true;
     }
 
@@ -264,6 +266,7 @@ export class WhatsAppDirectOrderOrchestrator {
         ingest.message_id,
         activeOrderStep ? session?.context as WhatsAppOrderContext : null,
       );
+      observe?.({ intent: "track_start", tool: "order_tracking" });
       return true;
     }
 
@@ -271,6 +274,7 @@ export class WhatsAppDirectOrderOrchestrator {
       const body = buildWhatsAppBotMenu(store.name, true, settings.bot_display_name);
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:menu:${ingest.message_id}` });
       await saveSession(conversation.id, "menu", ingest.message_id, null);
+      observe?.({ intent: "menu", tool: "conversation_info" });
       return true;
     }
 
@@ -289,6 +293,7 @@ export class WhatsAppDirectOrderOrchestrator {
         p_source: "bot",
       });
       await saveSession(conversation.id, "menu", ingest.message_id, null);
+      observe?.({ intent, tool: "human_handoff" });
       return true;
     }
 
@@ -305,6 +310,7 @@ export class WhatsAppDirectOrderOrchestrator {
       const body = `${buildCustomerBenefitsMessage(intent, benefits, menuUrl)}\n\nNão apliquei nem consumi nada no pedido por aqui. Sua montagem continua aberta; pode seguir enviando os itens ou escrever menu.`;
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:benefits:${ingest.message_id}` });
       await saveSession(conversation.id, activeOrderStep, ingest.message_id, session?.context as WhatsAppOrderContext);
+      observe?.({ intent, tool: "growth_benefits" });
       return true;
     }
 
@@ -312,6 +318,7 @@ export class WhatsAppDirectOrderOrchestrator {
       const body = whatsappOrderStartMessage(store.name);
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:start:${ingest.message_id}` });
       await saveSession(conversation.id, "order_items", ingest.message_id, { channel: "whatsapp_order", version: 1 });
+      observe?.({ intent: "order_start", tool: "whatsapp_order" });
       return true;
     }
 
@@ -328,6 +335,7 @@ export class WhatsAppDirectOrderOrchestrator {
     });
     await sendBotText({ ...sendBase, body: handled.body, clientMessageId: `auto:wa-order:${ingest.message_id}` });
     await saveSession(conversation.id, handled.nextStep, ingest.message_id, handled.context);
+    observe?.({ intent: activeOrderStep ? "order_continue" : "order_start", tool: "whatsapp_order" });
     return true;
   }
 }
