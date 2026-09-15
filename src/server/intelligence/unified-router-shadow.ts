@@ -72,7 +72,7 @@ export class UnifiedIntelligenceRouterShadow {
       organizationId: conversation.organization_id,
       storeId: conversation.store_id,
       channel: "whatsapp",
-      businessType: "restaurant",
+      businessType: "unresolved",
       actor: { type: "customer", userId: null },
       audience: "customer",
       conversation: { id: conversation.id, mode },
