@@ -300,6 +300,7 @@ export class WhatsAppDirectOrderOrchestrator {
         customerId: contact.customer_id,
         contactId: conversation.contact_id,
         timeZone: store.timezone || "America/Sao_Paulo",
+        channel: "whatsapp",
       });
       const body = `${buildCustomerBenefitsMessage(intent, benefits, menuUrl)}\n\nNão apliquei nem consumi nada no pedido por aqui. Sua montagem continua aberta; pode seguir enviando os itens ou escrever menu.`;
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:benefits:${ingest.message_id}` });

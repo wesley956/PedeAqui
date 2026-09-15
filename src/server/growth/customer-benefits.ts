@@ -3,6 +3,8 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isPromotionActive, type ProductPromotion } from "@/server/promotions/promotion-service";
 
+export type CustomerBenefitChannel = "digital_menu" | "whatsapp";
+
 export type CustomerCouponBenefit = {
   id: string;
   code: string;
@@ -62,6 +64,7 @@ export async function loadCustomerBenefits(input: {
   customerId: string | null;
   contactId: string;
   timeZone: string;
+  channel: CustomerBenefitChannel;
   subtotalCents?: number | null;
 }): Promise<CustomerBenefits> {
   const admin = createAdminClient();
@@ -70,7 +73,7 @@ export async function loadCustomerBenefits(input: {
       p_store_id: input.storeId,
       p_customer_id: input.customerId,
       p_contact_id: input.contactId,
-      p_channel: "digital_menu",
+      p_channel: input.channel,
       p_subtotal_cents: input.subtotalCents ?? null,
     }) : Promise.resolve({ data: unidentified, error: null }),
     admin.from("product_promotions")

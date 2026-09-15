@@ -397,6 +397,7 @@ export class ConversationGreetingService {
         customerId: contact.customer_id,
         contactId: conversation.contact_id,
         timeZone: store.timezone || "America/Sao_Paulo",
+        channel: "whatsapp",
       });
       await sendBotText(botContext, buildCustomerBenefitsMessage(intent, benefits, menuUrl), responseKey);
       await updateBotSession(conversation.id, "menu", ingest.message_id);
