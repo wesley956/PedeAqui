@@ -119,7 +119,9 @@ const orderStartWords = new Set([
   "montar pedido",
   "quero fazer um pedido",
   "quero fazer pedido",
+  "quero fazer outro pedido",
   "posso pedir por aqui",
+  "poderia pedir aqui",
   "quero comprar",
 ]);
 const benefitHandoffWords = new Set(["saldo errado", "saldo esta errado", "cashback errado", "cashback esta errado", "pontos errados", "pontos estao errados", "cupom nao funciona", "cupom nao funcionou", "nao aceitou meu cupom", "contestar saldo"]);
@@ -138,7 +140,14 @@ export function normalizeBotInput(value: string | null | undefined) {
 
 function containsAny(value: string, words: Set<string>) {
   if (words.has(value)) return true;
-  return [...words].some((word) => word.length > 3 && value.includes(word));
+  return [...words].some((word) => word !== "ajuda" && word.length > 3 && value.includes(word));
+}
+
+function semanticBotInput(value: string) {
+  let semantic = value;
+  const prefixes = /^(?:oi|ola|oie|bom dia|boa tarde|boa noite|entao|me ajuda)\s+/;
+  while (prefixes.test(semantic)) semantic = semantic.replace(prefixes, "").trim();
+  return semantic.replace(/\s+por favor$/, "").trim();
 }
 
 function hasExplicitTrackingContext(value: string) {
@@ -154,11 +163,12 @@ export function trackingCodeFromInput(value: string | null | undefined) {
 }
 
 export function resolveWhatsAppBotIntent(value: string | null | undefined, step: WhatsAppBotStep): WhatsAppBotIntent {
-  const normalized = normalizeBotInput(value);
+  const normalized = semanticBotInput(normalizeBotInput(value));
   const trackingCode = trackingCodeFromInput(normalized);
   if (step === "awaiting_tracking_code" && trackingCode !== null) return "track_code";
   if (step === "menu" && trackingCode !== null && hasExplicitTrackingContext(normalized)) return "track_code";
   if (menuWords.has(normalized)) return "menu";
+  if (/\b(?:quero|queria|me ve)\b.*\b(?:salgado|salgados|caixa|coca)\b/.test(normalized)) return "order_start";
   if (containsAny(normalized, orderStartWords)) return "order_start";
   if (containsAny(normalized, benefitHandoffWords)) return "benefit_handoff";
   if (containsAny(normalized, cashbackWords)) return "cashback";
