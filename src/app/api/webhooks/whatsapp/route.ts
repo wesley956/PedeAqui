@@ -5,6 +5,7 @@ import { ConversationGreetingService } from "@/server/conversations/greeting-ser
 import { WhatsAppDirectOrderOrchestrator } from "@/server/conversations/whatsapp-direct-order-orchestrator";
 import { resolveWhatsAppWebhookRouting } from "@/server/conversations/webhook-routing";
 import { parseWhatsAppWebhook, verifyMetaWebhookSignature, webhookPhoneNumberIds } from "@/server/conversations/whatsapp-webhook";
+import { UnifiedIntelligenceRouterShadow } from "@/server/intelligence/unified-router-shadow";
 import { recordFailure } from "@/server/observability/failure";
 import { getRequestContext } from "@/server/observability/request-context";
 
@@ -69,6 +70,12 @@ export async function POST(request: Request) {
       const result = await ConversationService.ingestWhatsAppEvent(event);
       processed += 1;
       if (event.kind === "message") {
+        try {
+          await UnifiedIntelligenceRouterShadow.afterInbound(result, requestContext.requestId);
+        } catch (error) {
+          recordFailure("whatsapp.intelligence_shadow.failed", error, { requestId: requestContext.requestId });
+        }
+
         let orderHandled = false;
         try {
           orderHandled = await WhatsAppDirectOrderOrchestrator.afterInbound(result, requestContext.requestId);
