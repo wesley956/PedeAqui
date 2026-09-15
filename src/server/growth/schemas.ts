@@ -23,6 +23,7 @@ export const couponInputSchema = z.object({
   usageLimitTotal: z.number().int().positive().nullable(),
   usageLimitPerCustomer: z.number().int().positive().nullable(),
   validUntil: z.string().datetime().nullable(),
+  whatsappEnabled: z.boolean().default(false),
 }).superRefine((value, ctx) => {
   if (value.discountType === "fixed" && value.fixedDiscountCents === null) ctx.addIssue({ code: "custom", message: "Informe o desconto fixo." });
   if (value.discountType === "percentage" && value.percentageBps === null) ctx.addIssue({ code: "custom", message: "Informe o percentual." });
