@@ -40,6 +40,8 @@ type OrderModifierRow = {
   unit_price_cents: number;
 };
 
+export type OrderCreationChannel = "digital_menu" | "whatsapp";
+
 function requireStoreId(storeId: string | null) {
   if (!storeId) throw new Error("An active store is required");
   return storeId;
@@ -85,7 +87,7 @@ export class OrderService {
     return { order_id: order.id, display_number: Number(order.display_number), created: false };
   }
 
-  static async createFromCheckout(storeSlug: string, token: string) {
+  static async createFromCheckout(storeSlug: string, token: string, channel: OrderCreationChannel = "digital_menu") {
     const accessToken = deriveOrderAccessToken(token);
     const existing = await this.findExistingByCartToken(storeSlug, token);
     if (existing) return { ...existing, accessToken };
@@ -100,6 +102,7 @@ export class OrderService {
       p_store_id: reviewed.store.id,
       p_token_hash: hashCartToken(token),
       p_order_access_token_hash: hashOrderAccessToken(accessToken),
+      p_channel: channel,
     });
     if (error) throw error;
     return { ...createResultSchema.parse(data), accessToken };
