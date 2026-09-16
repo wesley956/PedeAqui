@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 const inboxService = readFileSync("src/server/conversations/inbox-intelligence-service.ts", "utf8");
 const inboxPage = readFileSync("src/app/(app)/conversas/page.tsx", "utf8");
+const timeline = readFileSync("src/app/(app)/conversas/conversation-timeline.tsx", "utf8");
 const actions = readFileSync("src/features/conversations/actions.ts", "utf8");
 const outcome = readFileSync("src/server/conversations/inbound-outcome-service.ts", "utf8");
 const route = readFileSync("src/app/api/webhooks/whatsapp/route.ts", "utf8");
@@ -50,7 +51,9 @@ describe("INT-12 Inbox/Handoff/Coexistence", () => {
     expect(inboxService).toContain('return "Robô"');
     expect(inboxService).toContain('return "Atendente PedeAqui"');
     expect(inboxService).toContain('return "Sistema"');
-    expect(inboxPage).toContain("message.authorLabel");
+    expect(inboxPage).toContain("ConversationTimeline");
+    expect(timeline).toContain("message.authorLabel");
+    expect(timeline).toContain("authorKey(message.authorLabel)");
   });
 
   it("guarantees a traceable outcome for unresolved inbound instead of silent bot state", () => {
