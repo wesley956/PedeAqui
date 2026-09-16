@@ -103,6 +103,20 @@ jobs:
             } until (($service -and $service.Status -eq "Running" -and $lock) -or (Get-Date) -ge $deadline)
             if (-not $service -or $service.Status -ne "Running" -or -not $lock) { throw "service did not become healthy enough for smoke test" }
 
+            & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "print-agent/windows/homologation-service.ps1" -Mode Audit -Root $root *> $null
+            if ($LASTEXITCODE -ne 0) { throw "homologation audit harness failed" }
+            $auditFile = Get-ChildItem (Join-Path $root "homologation-evidence\*-audit.json") | Sort-Object LastWriteTime | Select-Object -Last 1
+            if (-not $auditFile) { throw "homologation audit evidence was not created" }
+            $audit = Get-Content $auditFile.FullName -Raw | ConvertFrom-Json
+            if (-not [bool]$audit.coreHealthy) { throw "homologation audit did not certify healthy service" }
+
+            & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "print-agent/windows/homologation-service.ps1" -Mode ExerciseRecovery -Root $root *> $null
+            if ($LASTEXITCODE -ne 0) { throw "homologation recovery harness failed" }
+            $recoveryFile = Get-ChildItem (Join-Path $root "homologation-evidence\*-recovery.json") | Sort-Object LastWriteTime | Select-Object -Last 1
+            if (-not $recoveryFile) { throw "homologation recovery evidence was not created" }
+            $recovery = Get-Content $recoveryFile.FullName -Raw | ConvertFrom-Json
+            if (-not [bool]$recovery.passed -or [int]$recovery.singleInstanceExitCode -ne 73) { throw "homologation recovery evidence did not pass" }
+
             $env:PEDEAQUI_URL = "http://127.0.0.1:9"
             $env:PEDEAQUI_PRINT_AGENT_TOKEN = "ci-token-not-production"
             $env:PEDEAQUI_AGENT_ROOT = $root
