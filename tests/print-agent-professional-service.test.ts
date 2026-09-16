@@ -11,6 +11,7 @@ const launcher = read("print-agent/windows/service-launcher.ps1");
 const rollback = read("print-agent/windows/rollback-service.ps1");
 const uninstall = read("print-agent/windows/uninstall-service.ps1");
 const health = read("print-agent/windows/health-service.ps1");
+const homologation = read("print-agent/windows/homologation-service.ps1");
 const updater = read("print-agent/src/updater.mjs");
 const bootstrap = read("print-agent/src/service-bootstrap.mjs");
 const serviceState = read("print-agent/src/service-state.mjs");
@@ -93,5 +94,18 @@ describe("professional Print Agent Windows gate", () => {
     expect(health).toContain("spoolFiles");
     expect(rollback).not.toMatch(/Remove-Item[^\n]+spool/i);
     expect(uninstall).not.toMatch(/Remove-Item[^\n]+spool/i);
+  });
+
+  it("ships an assisted physical homologation harness that records sanitized evidence", () => {
+    expect(homologation).toContain('ValidateSet("Audit", "ExerciseRecovery", "PrepareReboot", "BootCapture")');
+    expect(homologation).toContain("Get-MachineFingerprint");
+    expect(homologation).toContain("Get-SpoolSummary");
+    expect(homologation).toContain("singleInstanceExitCode");
+    expect(homologation).toContain("Stop-Process -Id $oldPid -Force");
+    expect(homologation).toContain("serviceHealthyBeforeInteractiveSession");
+    expect(homologation).toContain('/SC ONSTART /RU SYSTEM /RL HIGHEST');
+    expect(homologation).toContain("homologation-evidence");
+    expect(homologation).not.toMatch(/token\s*=/i);
+    expect(homologation).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
   });
 });
