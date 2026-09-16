@@ -5,6 +5,7 @@ $ServiceName = "PedeAquiPrintAgent"
 $Root = Join-Path $env:ProgramData "PedeAqui\PrintAgent"
 $StatePath = Join-Path $Root "current.json"
 $PreviousPath = Join-Path $Root "previous.json"
+$RejectedPath = Join-Path $Root "rejected-release.json"
 $ServiceExe = Join-Path $Root "service\PedeAquiPrintAgent.exe"
 
 function Assert-Administrator {
@@ -26,6 +27,15 @@ function Write-JsonAtomic([string]$Path, $Value) {
   Move-Item -LiteralPath $temp -Destination $Path -Force
 }
 
+function Write-RejectedRelease([string]$Version, [string]$Reason) {
+  if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw "Versao rejeitada invalida." }
+  [ordered]@{
+    version = $Version
+    rejectedAt = [DateTimeOffset]::UtcNow.ToString("o")
+    reason = $Reason
+  } | ForEach-Object { Write-JsonAtomic $RejectedPath $_ }
+}
+
 Assert-Administrator
 $current = Read-Json $StatePath
 $previous = Read-Json $PreviousPath
@@ -37,6 +47,14 @@ if (Test-Path -LiteralPath $ServiceExe) {
   & $ServiceExe stop *> $null
 } else {
   Stop-Service -Name $ServiceName -Force -ErrorAction SilentlyContinue
+}
+
+if ($current -and $current.version -and [string]$current.version -ne [string]$previous.version) {
+  try {
+    Write-RejectedRelease ([string]$current.version) "manual_rollback"
+  } catch {
+    Write-Warning "Rollback continuara, mas nao foi possivel gravar a quarentena da release atual."
+  }
 }
 
 $previous.pending = $false
@@ -52,4 +70,5 @@ if (Test-Path -LiteralPath $ServiceExe) {
 }
 
 Write-Host "Rollback concluido: release ativa $($previous.version)."
+Write-Host "A release abandonada foi colocada em quarentena quando possivel."
 Write-Host "Spool, token, configuracao e historico foram preservados."
