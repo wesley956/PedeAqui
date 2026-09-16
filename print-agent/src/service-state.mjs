@@ -62,9 +62,14 @@ function normalizeReleaseState(value) {
   };
 }
 
+function parseJsonFile(filePath) {
+  const content = readFileSync(filePath, "utf8").replace(/^\uFEFF/, "");
+  return JSON.parse(content);
+}
+
 export function readReleaseState(filePath = currentStatePath()) {
   try {
-    return normalizeReleaseState(JSON.parse(readFileSync(filePath, "utf8")));
+    return normalizeReleaseState(parseJsonFile(filePath));
   } catch (error) {
     if (error?.code === "ENOENT") return null;
     throw error;
@@ -143,7 +148,7 @@ export function acquireSingleInstance() {
         if (released) return;
         released = true;
         try {
-          const owner = JSON.parse(readFileSync(lockPath, "utf8"));
+          const owner = parseJsonFile(lockPath);
           if (Number(owner?.pid) === process.pid) unlinkSync(lockPath);
         } catch (error) {
           if (error?.code !== "ENOENT") console.error("single-instance lock cleanup failed", error);
@@ -159,7 +164,7 @@ export function acquireSingleInstance() {
 
       let ownerPid = null;
       try {
-        ownerPid = Number(JSON.parse(readFileSync(lockPath, "utf8"))?.pid);
+        ownerPid = Number(parseJsonFile(lockPath)?.pid);
       } catch {}
       if (processExists(ownerPid)) {
         const conflict = new Error(`another Print Agent instance is already running (pid ${ownerPid})`);
