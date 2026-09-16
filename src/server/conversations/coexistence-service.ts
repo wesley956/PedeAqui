@@ -1,10 +1,11 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { WhatsAppCoexistenceObservability } from "@/server/conversations/coexistence-observability";
 import type { WhatsAppEchoEvent, WhatsAppSyncEvent } from "@/server/conversations/whatsapp-webhook";
 
 export class WhatsAppCoexistenceService {
-  static async ingest(event: WhatsAppEchoEvent | WhatsAppSyncEvent) {
+  static async ingest(event: WhatsAppEchoEvent | WhatsAppSyncEvent, requestId?: string) {
     const admin = createAdminClient();
     const { data: settings, error: settingsError } = await admin.from("store_conversation_settings")
       .select("organization_id, store_id, whatsapp_enabled, connection_mode")
@@ -35,7 +36,26 @@ export class WhatsAppCoexistenceService {
       p_provider_timestamp: event.providerTimestamp,
       p_metadata: event.metadata,
     });
-    if (error) throw error;
+    if (error) {
+      await WhatsAppCoexistenceObservability.recordEchoIngestFailure(
+        settings.organization_id,
+        settings.store_id,
+        "echo_persist_failed",
+        requestId,
+      );
+      throw error;
+    }
+
+    if (data && typeof data === "object" && "message_id" in data && data.message_id) {
+      await WhatsAppCoexistenceObservability.recordEchoPersisted(settings.organization_id, settings.store_id, requestId);
+    } else {
+      await WhatsAppCoexistenceObservability.recordEchoIngestFailure(
+        settings.organization_id,
+        settings.store_id,
+        "echo_persist_result_missing",
+        requestId,
+      );
+    }
     return data;
   }
 }
