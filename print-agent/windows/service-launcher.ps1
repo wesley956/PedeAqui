@@ -41,7 +41,8 @@ function Normalize-Release($State) {
 
 function Restore-PreviousIfRequired($Current) {
   if (-not $Current.pending) { return $Current }
-  $attempts = [int]($Current.attempts ?? 0)
+  $attempts = 0
+  if ($null -ne $Current.attempts) { $attempts = [int]$Current.attempts }
   if ($attempts -lt 1) {
     $Current.attempts = 1
     Write-JsonAtomic $StatePath $Current
