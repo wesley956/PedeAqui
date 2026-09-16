@@ -87,11 +87,13 @@ describe("professional Print Agent Windows gate", () => {
     expect(rollback).toContain('Write-RejectedRelease ([string]$current.version) "manual_rollback"');
   });
 
-  it("keeps diagnostics free of the persisted token and avoids destructive cleanup", () => {
+  it("keeps diagnostics free of the persisted token and exposes quarantine safely", () => {
     expect(health).not.toContain("service.env.json");
     expect(health).not.toContain("token");
     expect(health).toContain("matchingProcessCount");
     expect(health).toContain("spoolFiles");
+    expect(health).toContain("rejectedVersion");
+    expect(health).toContain("rejectedReason");
     expect(rollback).not.toMatch(/Remove-Item[^\n]+spool/i);
     expect(uninstall).not.toMatch(/Remove-Item[^\n]+spool/i);
   });
@@ -105,7 +107,8 @@ describe("professional Print Agent Windows gate", () => {
     expect(homologation).toContain("serviceHealthyBeforeInteractiveSession");
     expect(homologation).toContain('/SC ONSTART /RU SYSTEM /RL HIGHEST');
     expect(homologation).toContain("homologation-evidence");
-    expect(homologation).not.toMatch(/token\s*=/i);
+    expect(homologation).not.toContain("ConvertTo-Json $serviceEnv");
+    expect(homologation).not.toContain("Write-Host $serviceEnv.token");
     expect(homologation).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
   });
 });
