@@ -125,6 +125,28 @@ jobs:
             Start-Sleep -Seconds 5
             $restored = Get-Content (Join-Path $root "current.json") -Raw | ConvertFrom-Json
             if ([string]$restored.version -ne "0.7.2") { throw "automatic rollback did not restore previous release" }
+
+            $rejectedPath = Join-Path $root "rejected-release.json"
+            if (-not (Test-Path -LiteralPath $rejectedPath)) { throw "automatic rollback did not persist rejected release quarantine" }
+            $rejected = Get-Content $rejectedPath -Raw | ConvertFrom-Json
+            if ([string]$rejected.version -ne "9.9.9") { throw "wrong release quarantined after rollback" }
+            if ([string]$rejected.reason -ne "automatic_rollback_before_heartbeat") { throw "unexpected quarantine reason" }
+
+            Remove-Item -LiteralPath $fake -Recurse -Force
+            Remove-Item Env:PEDEAQUI_RETRY_REJECTED_RELEASE -ErrorAction SilentlyContinue
+            $probe = Join-Path $env:RUNNER_TEMP "pedeaqui-quarantine-probe.mjs"
+            @"
+          import { pathToFileURL } from "node:url";
+          globalThis.fetch = async () => new Response(JSON.stringify({ version: "9.9.9", files: ["manifest.json"] }), { status: 200 });
+          const updater = await import(pathToFileURL(process.argv[2]).href);
+          const changed = await updater.update();
+          if (changed !== false) throw new Error("quarantined release unexpectedly retried");
+          "@ | Set-Content -LiteralPath $probe -Encoding UTF8
+            & $node $probe (Join-Path $release "src\updater.mjs")
+            if ($LASTEXITCODE -ne 0) { throw "quarantine updater probe failed" }
+            $afterProbe = Get-Content (Join-Path $root "current.json") -Raw | ConvertFrom-Json
+            if ([string]$afterProbe.version -ne "0.7.2") { throw "quarantined updater changed active release" }
+            if (Test-Path -LiteralPath $fake) { throw "quarantined updater staged rejected release again" }
           } finally {
             & $winsw stop *> $null
             & $winsw uninstall *> $null
