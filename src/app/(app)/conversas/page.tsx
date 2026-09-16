@@ -175,9 +175,9 @@ export default async function ConversationsPage({
                 </Link>;
               })}
 
-              <div className={styles.listPager} aria-label="Paginação das conversas">
-                {params.cursor ? <Link href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined })}>Voltar ao início</Link> : null}
-                {inbox.pageInfo.hasMore && inbox.pageInfo.nextCursor ? <Link href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined, cursor: inbox.pageInfo.nextCursor })}>Mais conversas</Link> : null}
+              <div className={styles.filters} aria-label="Paginação das conversas">
+                {params.cursor ? <Link className={styles.filter} href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined })}>Voltar ao início</Link> : null}
+                {inbox.pageInfo.hasMore && inbox.pageInfo.nextCursor ? <Link className={styles.filter} href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined, cursor: inbox.pageInfo.nextCursor })}>Mais conversas</Link> : null}
               </div>
             </div>
           </aside>
