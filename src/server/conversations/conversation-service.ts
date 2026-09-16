@@ -9,9 +9,102 @@ import { inboxFilterSchema, conversationReplyInputSchema, conversationTransition
 import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, resolveWhatsAppAppSecret, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import type { WhatsAppWebhookEvent } from "@/server/conversations/whatsapp-webhook";
 
+const INBOX_PAGE_SIZE = 40;
+const MESSAGE_PAGE_SIZE = 80;
+
+type CursorValue = {
+  at: string;
+  id: string;
+};
+
+type InboxLoadInput = {
+  filter?: string;
+  search?: string;
+  unreadOnly?: boolean;
+  cursor?: string | null;
+};
+
+type MessagePageInput = {
+  before?: string | null;
+  after?: string | null;
+};
+
+type InboxRpcRow = {
+  id: string;
+  contact_id: string;
+  channel: string;
+  status: string;
+  assigned_user_id: string | null;
+  unread_count: number | string | null;
+  last_message_at: string | null;
+  opened_at: string;
+  closed_at: string | null;
+  contact_name: string | null;
+  phone: string | null;
+  customer_id: string | null;
+  activity_at: string;
+  preview_body: string | null;
+  preview_content_type: string | null;
+  latest_direction: string | null;
+  latest_message_created_at: string | null;
+};
+
+export type ConversationMessageRow = {
+  id: string;
+  direction: string;
+  sender_type: string | null;
+  sender_user_id: string | null;
+  content_type: string;
+  body: string | null;
+  delivery_status: string | null;
+  external_message_id: string | null;
+  error_message: string | null;
+  provider_timestamp: string | null;
+  metadata: unknown;
+  created_at: string;
+};
+
+export type ConversationMessagePage = {
+  messages: ConversationMessageRow[];
+  previousCursor: string | null;
+  latestCursor: string | null;
+  hasOlder: boolean;
+  hasNewer: boolean;
+};
+
 function requireStoreId(storeId: string | null) {
   if (!storeId) throw new Error("Selecione uma unidade para acessar Conversas.");
   return storeId;
+}
+
+function encodeCursor(value: CursorValue) {
+  return Buffer.from(JSON.stringify(value), "utf8").toString("base64url");
+}
+
+function decodeCursor(value: string | null | undefined): CursorValue | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as Partial<CursorValue>;
+    if (typeof parsed.at !== "string" || typeof parsed.id !== "string") return null;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(parsed.id)) return null;
+    const date = new Date(parsed.at);
+    if (Number.isNaN(date.getTime())) return null;
+    return { at: date.toISOString(), id: parsed.id };
+  } catch {
+    return null;
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function asRows<T>(value: unknown) {
+  return Array.isArray(value) ? value as T[] : [];
+}
+
+function normalizeSearch(value: string | null | undefined) {
+  return (value ?? "").trim().slice(0, 80);
 }
 
 async function scopedConversation(conversationId: string, organizationId: string, storeId: string) {
@@ -27,76 +120,118 @@ async function scopedConversation(conversationId: string, organizationId: string
   return data;
 }
 
+async function loadMessagePageForScope(
+  organizationId: string,
+  storeId: string,
+  conversationId: string,
+  input?: MessagePageInput,
+): Promise<ConversationMessagePage> {
+  const admin = createAdminClient();
+  const before = decodeCursor(input?.before);
+  const after = decodeCursor(input?.after);
+  if (input?.before && !before) throw new Error("Cursor de mensagens anteriores inválido.");
+  if (input?.after && !after) throw new Error("Cursor de novas mensagens inválido.");
+  if (before && after) throw new Error("Use somente um cursor de mensagens por vez.");
+
+  const { data, error } = await admin.rpc("conversation_message_page_internal", {
+    p_organization_id: organizationId,
+    p_store_id: storeId,
+    p_conversation_id: conversationId,
+    p_before_created_at: before?.at ?? null,
+    p_before_id: before?.id ?? null,
+    p_after_created_at: after?.at ?? null,
+    p_after_id: after?.id ?? null,
+    p_limit: MESSAGE_PAGE_SIZE,
+  });
+  if (error) throw error;
+
+  const payload = asRecord(data);
+  const rawRows = asRows<ConversationMessageRow>(payload.rows);
+  const hasMore = rawRows.length > MESSAGE_PAGE_SIZE;
+  const pageRows = hasMore
+    ? after
+      ? rawRows.slice(0, MESSAGE_PAGE_SIZE)
+      : rawRows.slice(rawRows.length - MESSAGE_PAGE_SIZE)
+    : rawRows;
+  const first = pageRows[0];
+  const last = pageRows[pageRows.length - 1];
+
+  return {
+    messages: pageRows,
+    previousCursor: first ? encodeCursor({ at: first.created_at, id: first.id }) : null,
+    latestCursor: last ? encodeCursor({ at: last.created_at, id: last.id }) : null,
+    hasOlder: !after && hasMore,
+    hasNewer: Boolean(after) && hasMore,
+  };
+}
+
 export class ConversationService {
-  static async loadInbox(filterInput?: string) {
+  static async loadInbox(input?: string | InboxLoadInput) {
+    const options: InboxLoadInput = typeof input === "string" ? { filter: input } : input ?? {};
     const context = await authorize(PERMISSIONS.CONVERSATIONS_VIEW);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
-    const filter = inboxFilterSchema.catch("all").parse(filterInput);
+    const filter = inboxFilterSchema.catch("all").parse(options.filter);
+    const search = normalizeSearch(options.search);
+    const cursor = decodeCursor(options.cursor);
 
-    let query = admin.from("conversations")
-      .select("id, contact_id, channel, status, assigned_user_id, unread_count, last_message_at, opened_at, closed_at")
-      .eq("organization_id", context.organizationId)
-      .eq("store_id", storeId)
-      .order("last_message_at", { ascending: false, nullsFirst: false })
-      .order("opened_at", { ascending: false })
-      .limit(120);
-    if (filter !== "all") query = query.eq("status", filter);
-
-    const [conversationResult, settingsResult] = await Promise.all([
-      query,
+    const [inboxResult, settingsResult] = await Promise.all([
+      admin.rpc("conversation_inbox_page_internal", {
+        p_organization_id: context.organizationId,
+        p_store_id: storeId,
+        p_status: filter === "all" ? null : filter,
+        p_unread_only: Boolean(options.unreadOnly),
+        p_search: search || null,
+        p_before_activity: cursor?.at ?? null,
+        p_before_id: cursor?.id ?? null,
+        p_limit: INBOX_PAGE_SIZE,
+      }),
       admin.from("store_conversation_settings")
         .select("whatsapp_enabled, whatsapp_phone_number_id, ai_enabled, default_bot_enabled")
         .eq("organization_id", context.organizationId)
         .eq("store_id", storeId)
         .maybeSingle(),
     ]);
-    if (conversationResult.error) throw conversationResult.error;
+    if (inboxResult.error) throw inboxResult.error;
     if (settingsResult.error) throw settingsResult.error;
 
-    const conversations = conversationResult.data ?? [];
-    const contactIds = [...new Set(conversations.map((row) => row.contact_id))];
-    const conversationIds = conversations.map((row) => row.id);
+    const payload = asRecord(inboxResult.data);
+    const rawRows = asRows<InboxRpcRow>(payload.rows);
+    const hasMore = rawRows.length > INBOX_PAGE_SIZE;
+    const pageRows = rawRows.slice(0, INBOX_PAGE_SIZE);
+    const last = pageRows[pageRows.length - 1];
 
-    const [contactsResult, messagesResult] = await Promise.all([
-      contactIds.length > 0
-        ? admin.from("contacts").select("id, name, phone_normalized, external_id, customer_id, channel").eq("organization_id", context.organizationId).eq("store_id", storeId).in("id", contactIds)
-        : Promise.resolve({ data: [], error: null }),
-      conversationIds.length > 0
-        ? admin.from("messages").select("conversation_id, body, content_type, direction, created_at").eq("organization_id", context.organizationId).eq("store_id", storeId).in("conversation_id", conversationIds).order("created_at", { ascending: false }).limit(500)
-        : Promise.resolve({ data: [], error: null }),
-    ]);
-    if (contactsResult.error) throw contactsResult.error;
-    if (messagesResult.error) throw messagesResult.error;
-
-    const contactMap = new Map((contactsResult.data ?? []).map((contact) => [contact.id, contact]));
-    const latestMessage = new Map<string, { body: string | null; content_type: string; direction: string; created_at: string }>();
-    for (const message of messagesResult.data ?? []) {
-      if (!latestMessage.has(message.conversation_id)) latestMessage.set(message.conversation_id, message);
-    }
-
-    const rows = conversations.map((conversation) => {
-      const contact = contactMap.get(conversation.contact_id);
-      const latest = latestMessage.get(conversation.id);
-      return {
-        ...conversation,
-        contactName: contact?.name ?? contact?.phone_normalized ?? "Contato",
-        phone: contact?.phone_normalized ?? null,
-        customerId: contact?.customer_id ?? null,
-        preview: messagePreview(latest?.body),
-        latestDirection: latest?.direction ?? null,
-      };
-    });
+    const conversations = pageRows.map((row) => ({
+      id: row.id,
+      contact_id: row.contact_id,
+      channel: row.channel,
+      status: row.status,
+      assigned_user_id: row.assigned_user_id,
+      unread_count: Number(row.unread_count ?? 0),
+      last_message_at: row.last_message_at,
+      opened_at: row.opened_at,
+      closed_at: row.closed_at,
+      contactName: row.contact_name ?? row.phone ?? "Contato",
+      phone: row.phone,
+      customerId: row.customer_id,
+      preview: messagePreview(row.preview_body),
+      latestDirection: row.latest_direction,
+      activityAt: row.activity_at,
+    }));
 
     return {
       filter,
-      conversations: rows,
+      search,
+      unreadOnly: Boolean(options.unreadOnly),
+      conversations,
+      pageInfo: {
+        hasMore,
+        nextCursor: hasMore && last ? encodeCursor({ at: last.activity_at, id: last.id }) : null,
+      },
       counts: {
-        total: conversations.length,
-        bot: conversations.filter((row) => row.status === "bot").length,
-        waiting: conversations.filter((row) => row.status === "waiting_agent").length,
-        human: conversations.filter((row) => row.status === "human").length,
-        unread: conversations.reduce((sum, row) => sum + Number(row.unread_count ?? 0), 0),
+        total: Number(payload.total ?? conversations.length),
+        unreadConversations: Number(payload.unread_conversations ?? 0),
+        unread: Number(payload.unread_messages ?? 0),
       },
       integration: {
         configured: Boolean(settingsResult.data?.whatsapp_phone_number_id),
@@ -113,22 +248,33 @@ export class ConversationService {
     const admin = createAdminClient();
     const conversation = await scopedConversation(conversationId, context.organizationId, storeId);
 
-    const [contactResult, messagesResult, historyResult] = await Promise.all([
+    const [contactResult, messagePage, historyResult] = await Promise.all([
       admin.from("contacts").select("id, name, phone_normalized, external_id, customer_id, channel").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("id", conversation.contact_id).maybeSingle(),
-      admin.from("messages").select("id, direction, sender_type, sender_user_id, content_type, body, delivery_status, external_message_id, error_message, provider_timestamp, created_at").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("conversation_id", conversation.id).order("created_at", { ascending: true }).limit(250),
+      loadMessagePageForScope(context.organizationId, storeId, conversation.id),
       admin.from("conversation_state_history").select("id, from_state, to_state, assigned_user_id, reason, source, actor_user_id, created_at").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("conversation_id", conversation.id).order("created_at", { ascending: true }).limit(100),
     ]);
     if (contactResult.error) throw contactResult.error;
-    if (messagesResult.error) throw messagesResult.error;
     if (historyResult.error) throw historyResult.error;
 
     return {
       conversation,
       contact: contactResult.data,
-      messages: messagesResult.data ?? [],
+      messages: messagePage.messages,
+      messagePagination: {
+        previousCursor: messagePage.previousCursor,
+        latestCursor: messagePage.latestCursor,
+        hasOlder: messagePage.hasOlder,
+      },
       history: historyResult.data ?? [],
       currentUserId: context.userId,
     };
+  }
+
+  static async loadConversationMessages(conversationId: string, input?: MessagePageInput) {
+    const context = await authorize(PERMISSIONS.CONVERSATIONS_VIEW);
+    const storeId = requireStoreId(context.storeId);
+    await scopedConversation(conversationId, context.organizationId, storeId);
+    return loadMessagePageForScope(context.organizationId, storeId, conversationId, input);
   }
 
   static async transition(input: ConversationTransitionInput) {
