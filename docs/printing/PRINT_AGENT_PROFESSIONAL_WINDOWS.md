@@ -28,10 +28,11 @@ The bootstrap owns the local single-instance lock and only then imports the exis
   logs\...
   current.json
   previous.json
+  rejected-release.json
   legacy-backup\...
 ```
 
-`data` is intentionally outside `releases`. A code update or rollback must never delete the token, spool or persistent installation state.
+`data` is intentionally outside `releases`. A code update or rollback must never delete the token, spool or persistent installation state. `rejected-release.json` is also outside releases so a rollback cannot forget which version failed before health confirmation.
 
 ## Installation and migration
 
@@ -55,7 +56,7 @@ The SCM service is the primary process owner. `service-bootstrap.mjs` adds a sec
 
 The installer disables the old task before starting the professional service so two supported bootstraps cannot claim concurrently during migration.
 
-## Update and rollback
+## Update, rollback and rejected-release quarantine
 
 Automatic update never copies files over the running release.
 
@@ -66,9 +67,14 @@ Automatic update never copies files over the running release.
 5. the new release becomes `current` with `pending=true` and `attempts=0`;
 6. the Windows service restarts and the launcher gives the pending release one boot attempt;
 7. `service-bootstrap.mjs` marks it healthy only after a successful `/api/print-agent/heartbeat` response;
-8. if the process restarts before that heartbeat, the launcher restores `previous.json` automatically.
+8. if the process restarts before that heartbeat, the launcher writes the failed version to `rejected-release.json` and restores `previous.json` automatically;
+9. later starts refuse to stage that same rejected version again, preventing an endless update/rollback/update loop;
+10. a different newer version is eligible normally. Retrying the exact quarantined version requires the explicit process-level override `PEDEAQUI_RETRY_REJECTED_RELEASE=1`;
+11. if that explicitly retried version later reaches a successful heartbeat, its quarantine marker is cleared.
 
-`rollback-service.ps1` performs the same previous-release switch explicitly. It does not delete persistent data.
+`rollback-service.ps1` performs the same previous-release switch explicitly and quarantines the abandoned version when possible. It does not delete persistent data.
+
+A repaired build must normally publish a new semantic version instead of replacing bytes behind an already rejected version. The explicit retry override is an operational escape hatch for controlled homologation/recovery, not an automatic production policy.
 
 The professional installer deliberately does not force-migrate existing production agents through self-update. Migration remains operator initiated until the Windows homologation gate is complete.
 
@@ -118,6 +124,8 @@ The normal CI syntax-checks every Print Agent module and executes repository tes
 - proves creation of the single-instance lock;
 - starts a second guarded runtime and requires exit code `73`;
 - simulates a failed pending release and requires automatic restoration of the previous release;
+- requires the failed version to be persisted in `rejected-release.json`;
+- mocks the remote manifest offering that same rejected version again and proves the updater does not stage or activate it;
 - uninstalls the test service in cleanup.
 
 ## Manual Windows homologation still required
@@ -136,6 +144,8 @@ Automated CI cannot prove physical paper delivery or a real workstation reboot. 
 - controlled reinstall preserving ownership/data;
 - successful update;
 - failed update followed by automatic/manual rollback;
+- rejected-release quarantine surviving restart without automatic retry;
+- controlled explicit retry only when intentionally requested;
 - uninstall/legacy restoration when intentionally requested.
 
-Any duplicated physical print, ownership loop, required manual login, lost copy configuration, cross-agent claim or missing rollback evidence is NO-GO for INT-15.
+Any duplicated physical print, ownership loop, automatic retry loop of a quarantined release, required manual login, lost copy configuration, cross-agent claim or missing rollback evidence is NO-GO for INT-15.
