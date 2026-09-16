@@ -1,10 +1,9 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
-import { ConversationService } from "@/server/conversations/conversation-service";
+import { ConversationService, type ConversationMessageRow } from "@/server/conversations/conversation-service";
 import { createIntelligenceContext } from "@/server/intelligence/context";
 
 function requireStoreId(storeId: string | null) {
@@ -26,33 +25,19 @@ function authorLabel(message: {
   return "Sistema";
 }
 
+function decorateMessages(messages: ConversationMessageRow[]) {
+  return messages.map((message) => ({
+    ...message,
+    authorLabel: authorLabel(message),
+  }));
+}
+
 export class InboxIntelligenceService {
   static async load(conversationId: string) {
     const access = await authorize(PERMISSIONS.CONVERSATIONS_VIEW);
     const storeId = requireStoreId(access.storeId);
     const detail = await ConversationService.loadConversation(conversationId);
-    const admin = createAdminClient();
-
-    const messageIds = detail.messages.map((message) => message.id);
-    const { data: metadataRows, error } = messageIds.length > 0
-      ? await admin.from("messages")
-        .select("id, metadata")
-        .eq("organization_id", access.organizationId)
-        .eq("store_id", storeId)
-        .eq("conversation_id", conversationId)
-        .in("id", messageIds)
-      : { data: [], error: null };
-    if (error) throw error;
-
-    const metadataById = new Map((metadataRows ?? []).map((row) => [row.id, row.metadata]));
-    const messages = detail.messages.map((message) => {
-      const metadata = metadataById.get(message.id) ?? {};
-      return {
-        ...message,
-        metadata,
-        authorLabel: authorLabel({ ...message, metadata }),
-      };
-    });
+    const messages = decorateMessages(detail.messages);
 
     const intelligenceContext = createIntelligenceContext({
       requestId: `inbox:${randomUUID()}`,
@@ -88,6 +73,14 @@ export class InboxIntelligenceService {
         customerId: detail.contact?.customer_id ?? null,
       },
       returnToBotPolicy: "manual_only" as const,
+    };
+  }
+
+  static async loadMessagePage(conversationId: string, input?: { before?: string | null; after?: string | null }) {
+    const page = await ConversationService.loadConversationMessages(conversationId, input);
+    return {
+      ...page,
+      messages: decorateMessages(page.messages),
     };
   }
 }
