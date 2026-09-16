@@ -1,5 +1,5 @@
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -68,25 +68,15 @@ function validateInstalledRelease(releasePath, version) {
   const packagePath = path.join(releasePath, "package.json");
   const indexPath = path.join(releasePath, "src", "index.mjs");
   const bootstrapPath = path.join(releasePath, "src", "service-bootstrap.mjs");
-  if (!existsSync(packagePath) || !existsSync(indexPath) || !existsSync(bootstrapPath)) return false;
+  const statePath = path.join(releasePath, "src", "service-state.mjs");
+  if (![packagePath, indexPath, bootstrapPath, statePath].every((value) => existsSync(value))) return false;
   try {
-    const parsed = JSON.parse(requireText(packagePath));
+    const parsed = JSON.parse(readFileSync(packagePath, "utf8").replace(/^\uFEFF/, ""));
     return String(parsed?.version || "") === version;
   } catch {
     return false;
   }
 }
-
-function requireText(filePath) {
-  return requireFsRead(filePath).replace(/^\uFEFF/, "");
-}
-
-function requireFsRead(filePath) {
-  return requireFs.readFileSync(filePath, "utf8");
-}
-
-// Kept as a tiny injected namespace so the updater remains ESM-only and easy to syntax-check.
-import * as requireFs from "node:fs";
 
 async function stageRelease(manifest, manifestBuffer) {
   const remoteVersion = String(manifest.version).trim();
@@ -111,9 +101,7 @@ async function stageRelease(manifest, manifestBuffer) {
 
     const packageJson = JSON.parse((await readFile(path.join(stagingDir, "package.json"), "utf8")).replace(/^\uFEFF/, ""));
     if (String(packageJson?.version || "") !== remoteVersion) throw new Error("package version does not match update manifest");
-    if (!existsSync(path.join(stagingDir, "src", "index.mjs"))) throw new Error("release missing index.mjs");
-    if (!existsSync(path.join(stagingDir, "src", "service-bootstrap.mjs"))) throw new Error("release missing service bootstrap");
-    if (!existsSync(path.join(stagingDir, "src", "service-state.mjs"))) throw new Error("release missing service state");
+    if (!validateInstalledRelease(stagingDir, remoteVersion)) throw new Error("staged release is incomplete");
 
     await rm(finalDir, { recursive: true, force: true });
     await rename(stagingDir, finalDir);
