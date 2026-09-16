@@ -143,16 +143,22 @@ function Exercise-Recovery {
   $oldToken = $env:PEDEAQUI_PRINT_AGENT_TOKEN
   $oldRoot = $env:PEDEAQUI_AGENT_ROOT
   $oldData = $env:PEDEAQUI_AGENT_DATA
+  $secondStdout = Join-Path $env:TEMP "pedeaqui-homologation-second.stdout.log"
+  $secondStderr = Join-Path $env:TEMP "pedeaqui-homologation-second.stderr.log"
   try {
     $env:PEDEAQUI_URL = [string]$serviceEnv.url
     $env:PEDEAQUI_PRINT_AGENT_TOKEN = [string]$serviceEnv.token
     $env:PEDEAQUI_AGENT_ROOT = $Root
     $env:PEDEAQUI_AGENT_DATA = $DataDir
-    & ([string]$serviceEnv.nodeExe) (Join-Path ([string]$current.releasePath) "src\service-bootstrap.mjs") (Join-Path ([string]$current.releasePath) "src\index.mjs") *> $null
-    $secondExit = $LASTEXITCODE
+    Remove-Item -LiteralPath $secondStdout, $secondStderr -Force -ErrorAction SilentlyContinue
+    $second = Start-Process -FilePath ([string]$serviceEnv.nodeExe) `
+      -ArgumentList @((Join-Path ([string]$current.releasePath) "src\service-bootstrap.mjs"), (Join-Path ([string]$current.releasePath) "src\index.mjs")) `
+      -RedirectStandardOutput $secondStdout -RedirectStandardError $secondStderr -PassThru -Wait -WindowStyle Hidden
+    $secondExit = [int]$second.ExitCode
   } finally {
     $env:PEDEAQUI_URL = $oldUrl; $env:PEDEAQUI_PRINT_AGENT_TOKEN = $oldToken
     $env:PEDEAQUI_AGENT_ROOT = $oldRoot; $env:PEDEAQUI_AGENT_DATA = $oldData
+    Remove-Item -LiteralPath $secondStdout, $secondStderr -Force -ErrorAction SilentlyContinue
   }
 
   $process = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
