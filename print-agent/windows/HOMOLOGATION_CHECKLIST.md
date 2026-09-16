@@ -25,14 +25,39 @@ Remove-Item Env:PEDEAQUI_INSTALL_TOKEN -ErrorAction SilentlyContinue
 Remove-Item Env:PEDEAQUI_INSTALL_URL -ErrorAction SilentlyContinue
 ```
 
-For diagnostics, use `health-service.ps1`. It does not emit the stored agent token. Record only sanitized evidence in #1090.
+## Assisted evidence harness
+
+Use `homologation-service.ps1` from the same PR branch. It writes sanitized JSON files under `%ProgramData%\PedeAqui\PrintAgent\homologation-evidence` and never serializes the agent token.
+
+Baseline audit:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\homologation-service.ps1 -Mode Audit
+```
+
+Controlled restart + second-instance guard + forced runtime crash/recovery:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\homologation-service.ps1 -Mode ExerciseRecovery
+```
+
+Prepare a one-shot boot evidence capture:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\homologation-service.ps1 -Mode PrepareReboot
+```
+
+Then reboot and **do not log in for at least 60 seconds**. A temporary SYSTEM startup task captures service/process/lock state after 45 seconds, records whether there was no interactive Explorer session, writes `*-boot.json`, and removes itself. This scheduled task exists only as a homologation probe; the Print Agent runtime remains exclusively managed by SCM/WinSW.
+
+For additional diagnostics, use `health-service.ps1`. It reports active/previous/rejected releases without reading or emitting the persisted token. Record only sanitized evidence in #1090.
 
 | Scenario | Expected result | Result | Evidence |
 | --- | --- | --- | --- |
 | Clean professional install | `PedeAquiPrintAgent` installed/running; no legacy task after validation | PENDING | |
-| Reboot without login | service reaches Running and heartbeat without interactive login | PENDING | |
+| Baseline assisted audit | `coreHealthy=true`, one runtime, lock present, legacy task absent | PENDING | |
+| Reboot without login | `*-boot.json` records `passed=true` and zero interactive Explorer sessions | PENDING | |
 | Logout/login / user switch | exactly one agent runtime remains | PENDING | |
-| Forced process crash | SCM restarts runtime; no duplicate physical print | PENDING | |
+| Forced process crash | SCM restarts runtime; assisted recovery evidence passes; no duplicate physical print | PENDING | |
 | Network loss/reconnect | no queue purge; agent recovers connectivity | PENDING | |
 | Second runtime attempt | guarded runtime exits 73 and does not claim | PENDING | |
 | Legacy/duplicate bootstrap | conflict is detected/removed during controlled migration | PENDING | |
