@@ -237,14 +237,14 @@ export function ConversationTimeline({
 
   return (
     <div ref={scrollRef} className={styles.messages} aria-label="Histórico da conversa">
-      <div className={styles.timelinePager}>
+      <div className={styles.filters}>
         {hasOlder && previousCursor ? (
-          <button type="button" onClick={() => { void loadOlder(); }} disabled={loadingOlder}>
+          <button className={styles.filter} type="button" onClick={() => { void loadOlder(); }} disabled={loadingOlder}>
             {loadingOlder ? "Carregando…" : "Carregar mensagens anteriores"}
           </button>
-        ) : messages.length > 0 ? <span>Início do histórico carregado</span> : null}
+        ) : messages.length > 0 ? <span className={styles.contextMuted}>Início do histórico carregado</span> : null}
         {syncState !== "live" ? (
-          <span role="status" className={styles.syncState}>
+          <span role="status" className={styles.contextMuted}>
             {syncState === "reconnecting" ? "Reconectando atualizações…" : "Atualização em tempo real indisponível; tentando sincronizar."}
           </span>
         ) : null}
