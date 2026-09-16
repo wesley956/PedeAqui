@@ -40,6 +40,18 @@ function Get-MachineFingerprint {
   } catch { return "unavailable" }
 }
 
+function Get-BootTime($OperatingSystem) {
+  if (-not $OperatingSystem -or -not $OperatingSystem.LastBootUpTime) { return $null }
+  try {
+    if ($OperatingSystem.LastBootUpTime -is [datetime]) {
+      return $OperatingSystem.LastBootUpTime.ToUniversalTime().ToString("o")
+    }
+    return ([Management.ManagementDateTimeConverter]::ToDateTime([string]$OperatingSystem.LastBootUpTime)).ToUniversalTime().ToString("o")
+  } catch {
+    return [string]$OperatingSystem.LastBootUpTime
+  }
+}
+
 function Get-SpoolSummary {
   $spool = Join-Path $DataDir "spool"
   $summary = [ordered]@{ total = 0; printed_unacked = 0; other = 0; unreadable = 0 }
@@ -78,7 +90,7 @@ function Get-Snapshot {
   return [ordered]@{
     capturedAt = [DateTimeOffset]::UtcNow.ToString("o")
     machine = Get-MachineFingerprint
-    windows = if ($os) { [ordered]@{ caption = [string]$os.Caption; version = [string]$os.Version; build = [string]$os.BuildNumber; lastBoot = ([Management.ManagementDateTimeConverter]::ToDateTime($os.LastBootUpTime)).ToUniversalTime().ToString("o") } } else { $null }
+    windows = if ($os) { [ordered]@{ caption = [string]$os.Caption; version = [string]$os.Version; build = [string]$os.BuildNumber; lastBoot = Get-BootTime $os } } else { $null }
     serviceInstalled = [bool]$service
     serviceState = if ($service) { [string]$service.State } else { "NotInstalled" }
     serviceStartMode = if ($service) { [string]$service.StartMode } else { $null }
