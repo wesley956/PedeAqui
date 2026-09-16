@@ -73,9 +73,7 @@ function Get-Snapshot {
   $rejected = Read-Json $RejectedPath
   $lock = Read-Json $LockPath
   $service = Get-CimInstance Win32_Service -Filter "Name='$ServiceName'" -ErrorAction SilentlyContinue
-  $legacyTask = $false
-  & schtasks.exe /Query /TN $LegacyTaskName *> $null
-  if ($LASTEXITCODE -eq 0) { $legacyTask = $true }
+  $legacyTask = [bool](Get-ScheduledTask -TaskName $LegacyTaskName -ErrorAction SilentlyContinue)
 
   $processes = @()
   if ($current -and $current.releasePath) {
@@ -203,7 +201,7 @@ function Capture-BootEvidence {
     passed = [bool]($snapshot.coreHealthy -and $snapshot.interactiveExplorerCount -eq 0)
   }
   Write-Evidence "boot" $result | Out-Null
-  & schtasks.exe /Delete /TN $BootEvidenceTask /F *> $null
+  Unregister-ScheduledTask -TaskName $BootEvidenceTask -Confirm:$false -ErrorAction SilentlyContinue
 }
 
 switch ($Mode) {
