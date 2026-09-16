@@ -5,6 +5,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
+import {
+  WhatsAppCoexistenceObservability,
+  type WhatsAppCoexistenceObservabilitySnapshot,
+} from "@/server/conversations/coexistence-observability";
+import {
+  subscriptionNeedsAction,
+  type MetaSubscriptionStatus,
+} from "@/server/conversations/coexistence-observability-model";
 import { DEFAULT_WHATSAPP_GREETING, DEFAULT_WHATSAPP_GREETING_FALLBACK, DEFAULT_WHATSAPP_HANDOFF_MESSAGE, DEFAULT_WHATSAPP_UNKNOWN_MESSAGE, validateBotDisplayName, validateBotReplyMessage, validateGreetingFallback, validateGreetingTemplate, WHATSAPP_BOT_MENU_MODES } from "@/server/conversations/greeting";
 import { WHATSAPP_AUTOMATION_PRESETS } from "@/server/conversations/order-notification-model";
 import { ORDER_NOTIFICATION_TYPES, validateOrderNotificationTextTemplate } from "@/server/conversations/order-notification-template";
@@ -44,9 +52,77 @@ const settingsSchema = z.object({
   }
 });
 export type ConversationSettingsInput = z.infer<typeof settingsSchema>;
-export type WhatsAppChannelHealth = { status: "disabled" | "misconfigured" | "connected" | "provider_unavailable" | "invalid_credentials"; message: string; displayPhoneNumber: string | null; verifiedName: string | null; qualityRating: string | null; graphVersion: string | null };
+
+export type WhatsAppCoexistenceDiagnostics = WhatsAppCoexistenceObservabilitySnapshot & {
+  enabled: true;
+  echoDeliveryObserved: boolean;
+  actionRequired: boolean;
+};
+
+export type WhatsAppChannelHealth = {
+  status: "disabled" | "misconfigured" | "connected" | "provider_unavailable" | "invalid_credentials";
+  message: string;
+  displayPhoneNumber: string | null;
+  verifiedName: string | null;
+  qualityRating: string | null;
+  graphVersion: string | null;
+  actionRequired: boolean;
+  coexistence: WhatsAppCoexistenceDiagnostics | null;
+};
 function requireStoreId(storeId: string | null) { if (!storeId) throw new Error("Selecione uma unidade para configurar Conversas."); return storeId; }
-const emptyHealth = (status: WhatsAppChannelHealth["status"], message: string, graphVersion: string | null = null): WhatsAppChannelHealth => ({ status, message, displayPhoneNumber: null, verifiedName: null, qualityRating: null, graphVersion });
+const emptyHealth = (
+  status: WhatsAppChannelHealth["status"],
+  message: string,
+  graphVersion: string | null = null,
+  coexistence: WhatsAppCoexistenceDiagnostics | null = null,
+): WhatsAppChannelHealth => ({
+  status,
+  message,
+  displayPhoneNumber: null,
+  verifiedName: null,
+  qualityRating: null,
+  graphVersion,
+  actionRequired: status === "misconfigured" || status === "invalid_credentials" || Boolean(coexistence?.actionRequired),
+  coexistence,
+});
+
+type MetaSubscribedAppsPayload = {
+  data?: Array<{ whatsapp_business_api_data?: { id?: string | number | null } | null }>;
+  error?: { code?: number; message?: string; type?: string };
+};
+
+async function inspectMetaAppSubscription(
+  wabaId: string,
+  accessToken: string,
+  graphVersion: string,
+): Promise<{ status: MetaSubscriptionStatus; errorKind: string | null }> {
+  const appId = process.env.META_APP_ID?.trim();
+  if (!appId) return { status: "action_required", errorKind: "platform_configuration_missing" };
+  try {
+    const response = await fetch(`https://graph.facebook.com/${graphVersion}/${encodeURIComponent(wabaId)}/subscribed_apps`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+    const payload = await response.json().catch(() => null) as MetaSubscribedAppsPayload | null;
+    if (!response.ok || !payload) {
+      const message = payload?.error?.message?.toLowerCase() ?? "";
+      const unsupported = message.includes("unsupported") || message.includes("not supported");
+      return {
+        status: unsupported ? "not_supported" : "action_required",
+        errorKind: payload?.error?.code == null ? `meta_http_${response.status}` : `meta_${payload.error.code}`,
+      };
+    }
+    const subscribed = (payload.data ?? []).some(
+      (entry) => String(entry.whatsapp_business_api_data?.id ?? "") === appId,
+    );
+    return subscribed
+      ? { status: "subscribed", errorKind: null }
+      : { status: "not_subscribed", errorKind: "meta_subscription_not_confirmed" };
+  } catch {
+    return { status: "action_required", errorKind: "meta_subscription_check_failed" };
+  }
+}
 
 const settingsSelect = "whatsapp_enabled, provider, whatsapp_phone_number_id, whatsapp_business_account_id, access_token_secret_ref, app_secret_secret_ref, default_bot_enabled, ai_enabled, whatsapp_orders_enabled, greeting_enabled, greeting_template, greeting_fallback_message, bot_menu_mode, bot_display_name, handoff_message, unknown_intent_message, conversation_auto_close_enabled, bot_auto_close_minutes, human_auto_close_minutes, keep_open_while_order_active, send_auto_close_message, auto_close_message, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, notify_order_canceled, order_notification_custom_templates, order_notification_template_name, order_notification_template_language";
 
@@ -58,14 +134,56 @@ export class ConversationSettingsService {
   }
   static async health(): Promise<WhatsAppChannelHealth> {
     const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE); const storeId = requireStoreId(context.storeId); const admin = createAdminClient();
-    const { data: settings, error } = await admin.from("store_conversation_settings").select("whatsapp_enabled, provider, whatsapp_phone_number_id, access_token_secret_ref, app_secret_secret_ref").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
+    const { data: settings, error } = await admin.from("store_conversation_settings")
+      .select("whatsapp_enabled, provider, whatsapp_phone_number_id, whatsapp_business_account_id, access_token_secret_ref, app_secret_secret_ref, connection_mode")
+      .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (error) throw error; if (!settings?.whatsapp_enabled) return emptyHealth("disabled", "WhatsApp desativado nesta unidade.");
     if (settings.provider !== "meta_cloud" || !settings.whatsapp_phone_number_id || !settings.access_token_secret_ref || !settings.app_secret_secret_ref) return emptyHealth("misconfigured", "O WhatsApp precisa de configuração para funcionar nesta unidade.");
     let graphVersion: string; let accessToken: string;
     try { graphVersion = resolveWhatsAppGraphVersion(); accessToken = resolveWhatsAppAccessToken(settings.access_token_secret_ref); resolveWhatsAppAppSecret(settings.app_secret_secret_ref); }
     catch { return emptyHealth("misconfigured", "A conexão do WhatsApp precisa ser revisada pelo suporte do PedeAqui."); }
-    try { const inspected = await new WhatsAppCloudProvider(accessToken).inspectPhoneNumber(settings.whatsapp_phone_number_id); return { status: "connected", message: "WhatsApp conectado e pronto para uso.", displayPhoneNumber: inspected.displayPhoneNumber, verifiedName: inspected.verifiedName, qualityRating: inspected.qualityRating, graphVersion }; }
-    catch (error) { if (error instanceof WhatsAppProviderError && !error.retryable) return emptyHealth("invalid_credentials", "A conexão com a Meta precisa ser refeita.", graphVersion); return emptyHealth("provider_unavailable", "A Meta está temporariamente indisponível. Tente novamente em alguns instantes.", graphVersion); }
+
+    let coexistence: WhatsAppCoexistenceDiagnostics | null = null;
+    if (settings.connection_mode === "coexistence") {
+      const subscription = settings.whatsapp_business_account_id
+        ? await inspectMetaAppSubscription(settings.whatsapp_business_account_id, accessToken, graphVersion)
+        : { status: "action_required" as const, errorKind: "waba_id_missing" };
+      await WhatsAppCoexistenceObservability.recordSubscriptionCheck(
+        context.organizationId,
+        storeId,
+        subscription.status,
+        subscription.errorKind,
+      );
+      const snapshot = await WhatsAppCoexistenceObservability.load(context.organizationId, storeId);
+      coexistence = {
+        ...snapshot,
+        enabled: true,
+        subscriptionStatus: subscription.status,
+        subscriptionCheckedAt: snapshot.subscriptionCheckedAt ?? new Date().toISOString(),
+        lastSubscriptionErrorKind: subscription.errorKind,
+        echoDeliveryObserved: Boolean(snapshot.lastEchoWebhookAt),
+        actionRequired: subscriptionNeedsAction(subscription.status),
+      };
+    }
+
+    try {
+      const inspected = await new WhatsAppCloudProvider(accessToken).inspectPhoneNumber(settings.whatsapp_phone_number_id);
+      const actionRequired = Boolean(coexistence?.actionRequired);
+      return {
+        status: "connected",
+        message: actionRequired ? "WhatsApp conectado, mas a assinatura da Meta precisa de revisão." : "WhatsApp conectado e pronto para uso.",
+        displayPhoneNumber: inspected.displayPhoneNumber,
+        verifiedName: inspected.verifiedName,
+        qualityRating: inspected.qualityRating,
+        graphVersion,
+        actionRequired,
+        coexistence,
+      };
+    }
+    catch (healthError) {
+      if (healthError instanceof WhatsAppProviderError && !healthError.retryable) return emptyHealth("invalid_credentials", "A conexão com a Meta precisa ser refeita.", graphVersion, coexistence);
+      return emptyHealth("provider_unavailable", "A Meta está temporariamente indisponível. Tente novamente em alguns instantes.", graphVersion, coexistence);
+    }
   }
   static async save(input: ConversationSettingsInput) {
     const values = settingsSchema.parse(input); const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE); const storeId = requireStoreId(context.storeId);

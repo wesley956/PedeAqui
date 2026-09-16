@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { ConversationService } from "@/server/conversations/conversation-service";
+import { WhatsAppCoexistenceObservability } from "@/server/conversations/coexistence-observability";
 import { WhatsAppCoexistenceService } from "@/server/conversations/coexistence-service";
 import { ConversationGreetingService } from "@/server/conversations/greeting-service";
 import { InboundOutcomeService } from "@/server/conversations/inbound-outcome-service";
@@ -58,6 +59,8 @@ export async function POST(request: Request) {
     if (!verifyMetaWebhookSignature(rawBody, request.headers.get("x-hub-signature-256"), routing.appSecret)) {
       return new Response("Invalid signature", { status: 401, headers: responseHeaders });
     }
+
+    await WhatsAppCoexistenceObservability.recordWebhookReceipt(events, requestContext.requestId);
 
     let processed = 0;
     let ignored = 0;
