@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       }
 
       if (event.kind === "echo" || event.kind === "sync") {
-        const result = await WhatsAppCoexistenceService.ingest(event, requestContext.requestId);
+        const result = await WhatsAppCoexistenceService.ingest(event);
         if (result && typeof result === "object" && "ignored" in result && result.ignored) ignored += 1;
         else processed += 1;
         continue;
