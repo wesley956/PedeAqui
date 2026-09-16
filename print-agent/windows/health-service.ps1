@@ -7,6 +7,7 @@ $Root = Join-Path $env:ProgramData "PedeAqui\PrintAgent"
 $DataDir = Join-Path $Root "data"
 $StatePath = Join-Path $Root "current.json"
 $PreviousPath = Join-Path $Root "previous.json"
+$RejectedPath = Join-Path $Root "rejected-release.json"
 $LockPath = Join-Path $DataDir "agent.lock"
 
 function Read-Json([string]$Path) {
@@ -17,6 +18,7 @@ function Read-Json([string]$Path) {
 $service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
 $current = Read-Json $StatePath
 $previous = Read-Json $PreviousPath
+$rejected = Read-Json $RejectedPath
 $lock = Read-Json $LockPath
 $legacyTask = $false
 & schtasks.exe /Query /TN $LegacyTaskName *> $null
@@ -37,6 +39,8 @@ if ($current -and $current.releasePath) {
   activePending = if ($current) { [bool]$current.pending } else { $null }
   activeAttempts = if ($current) { [int]$current.attempts } else { $null }
   previousVersion = if ($previous) { [string]$previous.version } else { $null }
+  rejectedVersion = if ($rejected) { [string]$rejected.version } else { $null }
+  rejectedReason = if ($rejected) { [string]$rejected.reason } else { $null }
   lockPid = if ($lock) { [int]$lock.pid } else { $null }
   matchingProcessCount = $processes.Count
   matchingProcessIds = @($processes | ForEach-Object { $_.ProcessId })
