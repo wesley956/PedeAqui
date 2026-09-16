@@ -22,6 +22,8 @@ import type { WhatsAppBotMenuMode } from "@/server/conversations/greeting";
 import { buildOrderTrackingUrl } from "@/server/conversations/order-notification-model";
 import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import { recordFailure } from "@/server/observability/failure";
+import type { LegacyIntelligenceObserver } from "@/server/conversations/legacy-intelligence-observation";
+import type { UnifiedRouterTool } from "@/server/intelligence/unified-router";
 
 type IngestResult = {
   conversation_id?: string;
@@ -104,6 +106,16 @@ function buildDeliveryMessage(input: {
   if (input.minMinutes !== null && input.maxMinutes !== null) parts.push(`Previsão de entrega: ${input.minMinutes} a ${input.maxMinutes} minutos.`);
   parts.push(`Confira seu endereço e a taxa exata aqui: ${input.menuUrl}`);
   return `${parts.join(" ")}\n\nPara voltar às opções, digite menu.`;
+}
+
+function legacyToolForIntent(intent: ReturnType<typeof resolveWhatsAppBotIntent>): UnifiedRouterTool {
+  if (intent === "handoff" || intent === "benefit_handoff") return "human_handoff";
+  if (isGrowthBenefitIntent(intent)) return "growth_benefits";
+  if (intent === "menu_link") return "catalog";
+  if (intent === "track_start" || intent === "track_code") return "order_tracking";
+  if (intent === "order_start") return "whatsapp_order";
+  if (intent === "unknown") return "fallback";
+  return "conversation_info";
 }
 
 async function sendBotText(
@@ -201,7 +213,7 @@ async function updateBotSession(conversationId: string, step: WhatsAppBotStep, m
 }
 
 export class ConversationGreetingService {
-  static async afterInbound(result: unknown, requestId: string) {
+  static async afterInbound(result: unknown, requestId: string, observe?: LegacyIntelligenceObserver) {
     const ingest = result && typeof result === "object" ? result as IngestResult : null;
     if (!ingest?.conversation_id || !ingest.message_id) return;
     if (ingest.message_created === false) return;
@@ -267,6 +279,7 @@ export class ConversationGreetingService {
         p_actor_user_id: null,
         p_source: "bot",
       });
+      observe?.({ intent: "unknown", tool: "fallback" });
       return;
     }
     if (!settings.whatsapp_enabled || !settings.whatsapp_phone_number_id || !settings.access_token_secret_ref || !contact?.external_id) {
@@ -278,6 +291,7 @@ export class ConversationGreetingService {
         p_actor_user_id: null,
         p_source: "bot",
       });
+      observe?.({ intent: "unknown", tool: "fallback" });
       return;
     }
 
@@ -302,6 +316,7 @@ export class ConversationGreetingService {
         p_actor_user_id: null,
         p_source: "bot",
       });
+      observe?.({ intent: "unknown", tool: "fallback" });
       return;
     }
 
@@ -317,6 +332,7 @@ export class ConversationGreetingService {
         p_actor_user_id: null,
         p_source: "bot",
       });
+      observe?.({ intent: "unknown", tool: "fallback" });
       return;
     }
 
@@ -343,6 +359,7 @@ export class ConversationGreetingService {
           p_actor_user_id: null,
           p_source: "bot",
         });
+        observe?.({ intent: "unknown", tool: "fallback" });
         return;
       }
 
@@ -354,6 +371,7 @@ export class ConversationGreetingService {
       );
       if (greetingResult !== "duplicate") {
         if (greetingResult === "sent") await updateBotSession(conversation.id, "menu", ingest.message_id);
+        observe?.({ intent: "menu", tool: "conversation_info" });
         return;
       }
     }
@@ -364,6 +382,7 @@ export class ConversationGreetingService {
       ? "awaiting_tracking_code"
       : "menu";
     const intent = resolveWhatsAppBotIntent(inbound?.content_type === "text" || inbound?.content_type === "interactive" ? inbound.body : "", activeStep);
+    observe?.({ intent, tool: legacyToolForIntent(intent) });
     const responseKey = `auto:menu:${ingest.message_id}`;
 
     if (intent === "handoff" || intent === "benefit_handoff") {

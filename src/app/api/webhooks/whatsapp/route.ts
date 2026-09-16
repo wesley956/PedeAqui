@@ -3,10 +3,16 @@ import { ConversationService } from "@/server/conversations/conversation-service
 import { WhatsAppCoexistenceService } from "@/server/conversations/coexistence-service";
 import { ConversationGreetingService } from "@/server/conversations/greeting-service";
 import { InboundOutcomeService } from "@/server/conversations/inbound-outcome-service";
+import type { LegacyIntelligenceDecision } from "@/server/conversations/legacy-intelligence-observation";
 import { WhatsAppDirectOrderOrchestrator } from "@/server/conversations/whatsapp-direct-order-orchestrator";
 import { resolveWhatsAppWebhookRouting } from "@/server/conversations/webhook-routing";
 import { parseWhatsAppWebhook, verifyMetaWebhookSignature, webhookPhoneNumberIds } from "@/server/conversations/whatsapp-webhook";
 import { UnifiedIntelligenceRouterShadow } from "@/server/intelligence/unified-router-shadow";
+import {
+  IntelligenceShadowObservability,
+  type IntelligenceShadowPreparation,
+  type LegacyIntelligenceHandler,
+} from "@/server/intelligence/shadow-observability";
 import { recordFailure } from "@/server/observability/failure";
 import { getRequestContext } from "@/server/observability/request-context";
 
@@ -71,29 +77,47 @@ export async function POST(request: Request) {
       const result = await ConversationService.ingestWhatsAppEvent(event);
       processed += 1;
       if (event.kind === "message") {
+        let shadowPreparation: IntelligenceShadowPreparation | null = null;
         try {
-          await UnifiedIntelligenceRouterShadow.afterInbound(result, requestContext.requestId);
+          shadowPreparation = await UnifiedIntelligenceRouterShadow.afterInbound(result, requestContext.requestId);
         } catch (error) {
           recordFailure("whatsapp.intelligence_shadow.failed", error, { requestId: requestContext.requestId });
         }
 
+        const legacyStartedAt = performance.now();
+        let legacyDecision: LegacyIntelligenceDecision | null = null;
+        const observeLegacy = (decision: LegacyIntelligenceDecision) => { legacyDecision = decision; };
         let orderHandled = false;
         try {
-          orderHandled = await WhatsAppDirectOrderOrchestrator.afterInbound(result, requestContext.requestId);
+          orderHandled = await WhatsAppDirectOrderOrchestrator.afterInbound(result, requestContext.requestId, observeLegacy);
         } catch (error) {
           recordFailure("whatsapp.order_automation.failed", error, { requestId: requestContext.requestId });
         }
 
         if (!orderHandled) {
           try {
-            await ConversationGreetingService.afterInbound(result, requestContext.requestId);
+            await ConversationGreetingService.afterInbound(result, requestContext.requestId, observeLegacy);
           } catch (error) {
             recordFailure("whatsapp.greeting.failed", error, { requestId: requestContext.requestId });
           }
         }
 
         try {
-          await InboundOutcomeService.finalize(result);
+          const legacyOutcome = await InboundOutcomeService.finalize(result);
+          if (shadowPreparation) {
+            let legacyHandler: LegacyIntelligenceHandler = orderHandled ? "whatsapp_order" : "greeting";
+            if (shadowPreparation.duplicateSideEffectPrevented) legacyHandler = "none";
+            if (legacyOutcome === "human" || legacyOutcome === "closed") legacyHandler = "none";
+            if (legacyOutcome === "waiting_agent" && shadowPreparation.decision?.handoffReason === "human_lock") {
+              legacyHandler = "none";
+            }
+            await IntelligenceShadowObservability.record(shadowPreparation, {
+              legacyHandler,
+              legacyDecision,
+              legacyOutcome,
+              legacyDurationMs: Math.max(0, performance.now() - legacyStartedAt),
+            });
+          }
         } catch (error) {
           recordFailure("whatsapp.inbound_outcome.failed", error, {
             requestId: requestContext.requestId,
