@@ -46,7 +46,6 @@ const settingsSchema = z.object({
   if (!validateBotReplyMessage(value.autoCloseMessage)) ctx.addIssue({ code: "custom", path: ["autoCloseMessage"], message: "Revise a mensagem de encerramento automático." });
   if (value.orderNotificationsEnabled && !value.whatsappEnabled) ctx.addIssue({ code: "custom", path: ["orderNotificationsEnabled"], message: "Ative o WhatsApp antes das atualizações automáticas de pedido." });
   if (value.whatsappOrdersEnabled && (!value.whatsappEnabled || !value.botEnabled)) ctx.addIssue({ code: "custom", path: ["whatsappOrdersEnabled"], message: "Ative o WhatsApp e o atendimento automático antes de aceitar pedidos pela conversa." });
-  if (value.greetingEnabled && (!value.whatsappEnabled || !value.botEnabled)) ctx.addIssue({ code: "custom", path: ["greetingEnabled"], message: "Ative o WhatsApp e o atendimento automático antes da saudação automática." });
   for (const [key, text] of Object.entries(value.orderNotificationCustomTemplates)) {
     const validation = validateOrderNotificationTextTemplate(text);
     if (!validation.ok) ctx.addIssue({ code: "custom", path: ["orderNotificationCustomTemplates", key], message: validation.message });
