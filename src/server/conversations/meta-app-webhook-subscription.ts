@@ -7,12 +7,15 @@ export type MetaAppWebhookField = string | {
   version?: string | null;
 };
 
+export type MetaAppWebhookSubscriptionEntry = {
+  object?: string | null;
+  active?: boolean | null;
+  fields?: MetaAppWebhookField[] | null;
+  callback_url?: string | null;
+};
+
 export type MetaAppWebhookSubscriptionsResponse = {
-  data?: Array<{
-    object?: string | null;
-    active?: boolean | null;
-    fields?: MetaAppWebhookField[] | null;
-  }>;
+  data?: MetaAppWebhookSubscriptionEntry[];
 };
 
 export type MetaAppWebhookCertification = {
@@ -21,17 +24,26 @@ export type MetaAppWebhookCertification = {
   fields: string[];
 };
 
+export type MetaAppWebhookRepairPlan = MetaAppWebhookCertification & {
+  repairable: boolean;
+  callbackUrl: string | null;
+};
+
 function normalizeFieldName(field: MetaAppWebhookField) {
   const raw = typeof field === "string" ? field : field?.name;
   return raw?.trim() ?? "";
 }
 
+function whatsappBusinessSubscription(payload: MetaAppWebhookSubscriptionsResponse) {
+  return (payload.data ?? []).find(
+    (entry) => entry.object === "whatsapp_business_account",
+  );
+}
+
 export function certifyMetaWhatsAppWebhookSubscription(
   payload: MetaAppWebhookSubscriptionsResponse,
 ): MetaAppWebhookCertification {
-  const subscription = (payload.data ?? []).find(
-    (entry) => entry.object === "whatsapp_business_account",
-  );
+  const subscription = whatsappBusinessSubscription(payload);
 
   if (!subscription) {
     return {
@@ -69,4 +81,40 @@ export function certifyMetaWhatsAppWebhookSubscription(
   }
 
   return { status: "subscribed", errorKind: null, fields };
+}
+
+export function planMetaWhatsAppWebhookRepair(
+  payload: MetaAppWebhookSubscriptionsResponse,
+): MetaAppWebhookRepairPlan {
+  const certification = certifyMetaWhatsAppWebhookSubscription(payload);
+  const subscription = whatsappBusinessSubscription(payload);
+  const callbackUrl = subscription?.callback_url?.trim() || null;
+
+  if (certification.status === "subscribed") {
+    return { ...certification, repairable: false, callbackUrl };
+  }
+
+  const echoOnlyMissing = certification.errorKind === "meta_webhook_field_missing_smb_message_echoes"
+    && certification.fields.includes("messages");
+  if (!echoOnlyMissing) {
+    return { ...certification, repairable: false, callbackUrl };
+  }
+
+  if (!callbackUrl) {
+    return {
+      status: "action_required",
+      errorKind: "meta_webhook_callback_unavailable",
+      fields: certification.fields,
+      repairable: false,
+      callbackUrl: null,
+    };
+  }
+
+  return {
+    status: certification.status,
+    errorKind: certification.errorKind,
+    fields: [...new Set([...certification.fields, "smb_message_echoes"])].sort(),
+    repairable: true,
+    callbackUrl,
+  };
 }
