@@ -251,7 +251,6 @@ export class InboxContextService {
 
     return {
       step: session.step,
-      cartId: cart.id,
       subtotalCents: Number(cart.subtotal_cents ?? 0),
       discountCents: Number(cart.discount_cents ?? 0),
       deliveryFeeCents: Number(cart.delivery_fee_cents ?? 0),
