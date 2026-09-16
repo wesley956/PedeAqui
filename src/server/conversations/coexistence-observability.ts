@@ -211,6 +211,30 @@ export class WhatsAppCoexistenceObservability {
     }
   }
 
+  static async ensureAppWebhookSubscriptionCheck(organizationId: string, storeId: string) {
+    try {
+      const admin = createAdminClient();
+      const { data, error } = await admin.from("store_conversation_settings")
+        .select("organization_id, store_id, whatsapp_phone_number_id, app_secret_secret_ref")
+        .eq("organization_id", organizationId)
+        .eq("store_id", storeId)
+        .eq("provider", "meta_cloud")
+        .eq("whatsapp_enabled", true)
+        .eq("connection_mode", "coexistence")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return;
+
+      await maybeRecordAppWebhookSubscription(data as RoutingRow, `health-${storeId}`);
+    } catch (error) {
+      recordFailure("whatsapp.coexistence_observability.health_app_webhook_check_failed", error, {
+        requestId: `health-${storeId}`,
+        organizationId,
+        storeId,
+      });
+    }
+  }
+
   static async recordEchoPersisted(organizationId: string, storeId: string, requestId?: string) {
     const now = new Date().toISOString();
     await safeUpsert({
@@ -254,6 +278,7 @@ export class WhatsAppCoexistenceObservability {
       last_subscription_error_kind: errorKind?.slice(0, 120) ?? null,
       updated_at: now,
     }, "whatsapp.coexistence_observability.subscription_marker_failed");
+    await this.ensureAppWebhookSubscriptionCheck(organizationId, storeId);
   }
 
   static async load(organizationId: string, storeId: string): Promise<WhatsAppCoexistenceObservabilitySnapshot> {
