@@ -34,6 +34,18 @@ describe("WPP-08 Coexistence observability", () => {
     expect(persistedMarker).toBeGreaterThan(rpcCall);
   });
 
+  it("lets authenticated health refresh Meta App webhook diagnostics without waiting for a webhook", () => {
+    const settingsService = readFileSync("src/server/conversations/settings-service.ts", "utf8");
+    const observability = readFileSync("src/server/conversations/coexistence-observability.ts", "utf8");
+
+    expect(settingsService).toContain("WhatsAppCoexistenceObservability.recordSubscriptionCheck(");
+    expect(observability).toContain("static async ensureAppWebhookSubscriptionCheck");
+    expect(observability).toContain("await this.ensureAppWebhookSubscriptionCheck(organizationId, storeId)");
+    expect(observability).toContain('/subscriptions`');
+    expect(observability).toContain('method: "GET"');
+    expect(observability).not.toMatch(/method:\s*"(?:POST|DELETE)"[\s\S]{0,400}\/subscriptions/);
+  });
+
   it("keeps technical telemetry isolated from conversation content and client roles", () => {
     const migration = readFileSync("supabase/migrations/20260916070000_wpp08_coexistence_observability.sql", "utf8");
     expect(migration).toContain("enable row level security");
