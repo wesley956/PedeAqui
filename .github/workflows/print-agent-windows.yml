@@ -1,0 +1,131 @@
+name: Print Agent Windows
+
+on:
+  pull_request:
+    paths:
+      - "print-agent/**"
+      - "src/features/printing/agent-token-creator-client.tsx"
+      - "tests/print-agent-professional-service.test.ts"
+      - ".github/workflows/print-agent-windows.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-service:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Parse Windows PowerShell scripts
+        shell: powershell
+        run: |
+          $failed = $false
+          Get-ChildItem print-agent/windows/*.ps1 | ForEach-Object {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $failed = $true
+              $errors | ForEach-Object { Write-Error "$($_.Extent.File):$($_.Extent.StartLineNumber) $($_.Message)" }
+            }
+          }
+          if ($failed) { exit 1 }
+
+      - name: Validate agent modules
+        shell: powershell
+        run: |
+          Get-ChildItem print-agent/src/*.mjs | ForEach-Object {
+            node --check $_.FullName
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+      - name: Install and exercise SCM service
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $root = Join-Path $env:RUNNER_TEMP "PedeAqui\PrintAgent"
+          $serviceDir = Join-Path $root "service"
+          $release = Join-Path $root "releases\0.7.2"
+          $data = Join-Path $root "data"
+          $logs = Join-Path $root "logs"
+          New-Item -ItemType Directory -Force -Path $serviceDir, $release, $data, $logs | Out-Null
+          Copy-Item print-agent/src (Join-Path $release "src") -Recurse -Force
+          Copy-Item print-agent/package.json, print-agent/manifest.json $release -Force
+          Copy-Item print-agent/windows/service-launcher.ps1 $serviceDir -Force
+
+          $node = (Get-Command node.exe).Source
+          [ordered]@{ url = "http://127.0.0.1:9"; token = "ci-token-not-production"; nodeExe = $node } |
+            ConvertTo-Json | Set-Content (Join-Path $data "service.env.json") -Encoding UTF8
+          [ordered]@{ version = "0.7.2"; releasePath = $release; pending = $false; attempts = 0; activatedAt = [DateTimeOffset]::UtcNow.ToString("o") } |
+            ConvertTo-Json | Set-Content (Join-Path $root "current.json") -Encoding UTF8
+
+          $winsw = Join-Path $serviceDir "PedeAquiPrintAgent.exe"
+          Invoke-WebRequest -UseBasicParsing -Uri "https://github.com/winsw/winsw/releases/download/v2.12.0/WinSW-x64.exe" -OutFile $winsw
+          $hash = (Get-FileHash $winsw -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hash -ne "05b82d46ad331cc16bdc00de5c6332c1ef818df8ceefcd49c726553209b3a0da") { throw "WinSW checksum mismatch" }
+
+          @"
+          <service>
+            <id>PedeAquiPrintAgent</id>
+            <name>PedeAqui Impressao CI</name>
+            <description>CI smoke test for PedeAqui Print Agent.</description>
+            <executable>powershell.exe</executable>
+            <arguments>-NoLogo -NoProfile -ExecutionPolicy Bypass -File &quot;%BASE%\service-launcher.ps1&quot;</arguments>
+            <workingdirectory>%BASE%</workingdirectory>
+            <startmode>Automatic</startmode>
+            <onfailure action="restart" delay="5 sec" />
+            <stoptimeout>20 sec</stoptimeout>
+            <logpath>%BASE%\..\logs</logpath>
+            <log mode="roll" />
+          </service>
+          "@ | Set-Content (Join-Path $serviceDir "PedeAquiPrintAgent.xml") -Encoding UTF8
+
+          try {
+            & $winsw install
+            if ($LASTEXITCODE -ne 0) { throw "WinSW install failed" }
+            & $winsw start
+            if ($LASTEXITCODE -ne 0) { throw "WinSW start failed" }
+
+            $deadline = (Get-Date).AddSeconds(35)
+            do {
+              Start-Sleep -Seconds 1
+              $service = Get-Service PedeAquiPrintAgent -ErrorAction SilentlyContinue
+              $lock = Test-Path (Join-Path $data "agent.lock")
+            } until (($service -and $service.Status -eq "Running" -and $lock) -or (Get-Date) -ge $deadline)
+            if (-not $service -or $service.Status -ne "Running" -or -not $lock) { throw "service did not become healthy enough for smoke test" }
+
+            $env:PEDEAQUI_URL = "http://127.0.0.1:9"
+            $env:PEDEAQUI_PRINT_AGENT_TOKEN = "ci-token-not-production"
+            $env:PEDEAQUI_AGENT_ROOT = $root
+            $env:PEDEAQUI_AGENT_DATA = $data
+            $env:PEDEAQUI_PRINT_SPOOL = Join-Path $data "spool"
+            $second = Start-Process -FilePath $node -ArgumentList @((Join-Path $release "src\service-bootstrap.mjs"), (Join-Path $release "src\index.mjs")) -PassThru -Wait -WindowStyle Hidden
+            if ($second.ExitCode -ne 73) { throw "single-instance guard expected exit 73, got $($second.ExitCode)" }
+
+            & $winsw stop
+            if ($LASTEXITCODE -ne 0) { throw "WinSW stop failed" }
+            $previous = Get-Content (Join-Path $root "current.json") -Raw | ConvertFrom-Json
+            $previous | ConvertTo-Json | Set-Content (Join-Path $root "previous.json") -Encoding UTF8
+            $fake = Join-Path $root "releases\9.9.9"
+            Copy-Item $release $fake -Recurse -Force
+            [ordered]@{ version = "9.9.9"; releasePath = $fake; pending = $true; attempts = 1; activatedAt = [DateTimeOffset]::UtcNow.ToString("o") } |
+              ConvertTo-Json | Set-Content (Join-Path $root "current.json") -Encoding UTF8
+
+            & $winsw start
+            if ($LASTEXITCODE -ne 0) { throw "WinSW restart failed" }
+            Start-Sleep -Seconds 5
+            $restored = Get-Content (Join-Path $root "current.json") -Raw | ConvertFrom-Json
+            if ([string]$restored.version -ne "0.7.2") { throw "automatic rollback did not restore previous release" }
+          } finally {
+            & $winsw stop *> $null
+            & $winsw uninstall *> $null
+          }
