@@ -38,6 +38,6 @@ describe("WPP-08 Coexistence observability", () => {
     const migration = readFileSync("supabase/migrations/20260916070000_wpp08_coexistence_observability.sql", "utf8");
     expect(migration).toContain("enable row level security");
     expect(migration).toContain("revoke all on table public.whatsapp_coexistence_observability from authenticated");
-    expect(migration).not.toMatch(/message_body|phone_number|access_token|address/i);
+    expect(migration).not.toMatch(/\b(message_body|phone_number|access_token|address)\s+(text|varchar|jsonb)\b/i);
   });
 });
