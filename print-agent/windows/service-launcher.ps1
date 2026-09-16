@@ -9,6 +9,7 @@ $Root = if ($env:PEDEAQUI_AGENT_ROOT) {
 $DataDir = Join-Path $Root "data"
 $StatePath = Join-Path $Root "current.json"
 $PreviousPath = Join-Path $Root "previous.json"
+$RejectedPath = Join-Path $Root "rejected-release.json"
 $EnvPath = Join-Path $DataDir "service.env.json"
 $LogDir = Join-Path $Root "logs"
 $LauncherLog = Join-Path $LogDir "service-launcher.log"
@@ -29,6 +30,15 @@ function Write-JsonAtomic([string]$Path, $Value) {
   $temp = "$Path.$PID.$([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()).tmp"
   $Value | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $temp -Encoding UTF8
   Move-Item -LiteralPath $temp -Destination $Path -Force
+}
+
+function Write-RejectedRelease([string]$Version, [string]$Reason) {
+  if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw "Versao rejeitada invalida." }
+  [ordered]@{
+    version = $Version
+    rejectedAt = [DateTimeOffset]::UtcNow.ToString("o")
+    reason = $Reason
+  } | ForEach-Object { Write-JsonAtomic $RejectedPath $_ }
 }
 
 function Normalize-Release($State) {
@@ -60,6 +70,12 @@ function Restore-PreviousIfRequired($Current) {
     return $Current
   }
   $previous = Normalize-Release $previous
+  try {
+    Write-RejectedRelease ([string]$Current.version) "automatic_rollback_before_heartbeat"
+    Write-LauncherLog "release_quarantined version=$($Current.version) reason=automatic_rollback_before_heartbeat"
+  } catch {
+    Write-LauncherLog "release_quarantine_write_failed version=$($Current.version)"
+  }
   $previous.pending = $false
   $previous.attempts = 0
   Write-JsonAtomic $StatePath $previous
