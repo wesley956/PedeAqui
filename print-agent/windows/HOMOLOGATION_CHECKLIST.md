@@ -41,14 +41,16 @@ For diagnostics, use `health-service.ps1`. It does not emit the stored agent tok
 | Two physical copies | exactly two copies when configured for two | PENDING | |
 | `printed_unacked` restart | ACK is retried; paper is not printed a second time | PENDING | |
 | Successful update | immutable new release activates and heartbeat clears `pending` | PENDING | |
-| Failed pending update | launcher restores `previous` automatically | PENDING | |
-| Manual release rollback | previous version starts with data/spool preserved | PENDING | |
+| Failed pending update | launcher restores `previous` automatically and writes `rejected-release.json` | PENDING | |
+| Rejected release quarantine | after rollback/restart, the same rejected version is not staged or activated again automatically | PENDING | |
+| Explicit rejected-release retry | a controlled retry requires `PEDEAQUI_RETRY_REJECTED_RELEASE=1`; successful heartbeat clears that version's quarantine | PENDING | |
+| Manual release rollback | previous version starts with data/spool preserved and abandoned version is quarantined | PENDING | |
 | Reinstall/reconnect | identity/data migrate without ownership loop | PENDING | |
 | Professional uninstall | service removed; data/spool preserved | PENDING | |
 | Explicit legacy restore | saved legacy bootstrap can be restored when requested | PENDING | |
 
 ## Final gate
 
-GO requires all rows above to be PASS, CI to be green, no `job not owned by agent` loop, no duplicate physical print, no lost copy configuration, and an explicit final `GO` comment on #1090.
+GO requires all rows above to be PASS, CI to be green, no `job not owned by agent` loop, no automatic retry loop for a rejected release, no duplicate physical print, no lost copy configuration, and an explicit final `GO` comment on #1090.
 
 Until then #1066 remains NO-GO.
