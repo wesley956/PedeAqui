@@ -50,7 +50,7 @@ export async function revalidateManualWhatsAppAction(formData: FormData) {
   try {
     await PlatformWhatsAppManualService.revalidate(storeId);
     const current = await PlatformWhatsAppManualService.load(storeId);
-    await WhatsAppCoexistenceObservability.ensureAppWebhookSubscriptionCheck(
+    await WhatsAppCoexistenceObservability.ensureAppWebhookSubscriptionRepair(
       current.store.organization_id,
       storeId,
     );
