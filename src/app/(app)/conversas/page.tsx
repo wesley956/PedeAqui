@@ -12,10 +12,28 @@ import {
 } from "@/features/conversations/actions";
 import { DEFAULT_STORE_TIMEZONE, formatStoreDateTime } from "@/lib/store-date-time";
 import { getAccessContext } from "@/server/access/context";
+import { formatCents } from "@/server/catalog/money";
 import { ConversationService } from "@/server/conversations/conversation-service";
+import { InboxContextService } from "@/server/conversations/inbox-context-service";
 import { InboxIntelligenceService } from "@/server/conversations/inbox-intelligence-service";
 import { conversationStatusLabel, type ConversationStatus } from "@/server/conversations/model";
 import styles from "./conversations.module.css";
+
+const orderStatusLabels: Record<string, string> = {
+  pending_confirmation: "Aguardando confirmação",
+  confirmed: "Confirmado",
+  rejected: "Recusado",
+  canceled: "Cancelado",
+  completed: "Concluído",
+};
+
+const paymentStatusLabels: Record<string, string> = {
+  pending: "Pagamento pendente",
+  paid: "Pago",
+  failed: "Falha no pagamento",
+  refunded: "Reembolsado",
+  canceled: "Pagamento cancelado",
+};
 
 function when(value: string | null | undefined, timeZone: string) {
   return formatStoreDateTime(value, timeZone);
@@ -57,6 +75,21 @@ function deliveryLabel(status: string | null | undefined) {
 
 function statusLabel(status: ConversationStatus) {
   return status === "bot" ? "Robô" : conversationStatusLabel(status);
+}
+
+function orderStatusLabel(status: string) {
+  return orderStatusLabels[status] ?? status.replaceAll("_", " ");
+}
+
+function paymentStatusLabel(status: string) {
+  return paymentStatusLabels[status] ?? status.replaceAll("_", " ");
+}
+
+function fulfillmentLabel(value: string) {
+  if (value === "delivery") return "Entrega";
+  if (value === "pickup") return "Retirada";
+  if (value === "dine_in") return "Salão";
+  return value.replaceAll("_", " ");
 }
 
 function inboxHref({
@@ -103,6 +136,7 @@ export default async function ConversationsPage({
     ? visibleConversations.find((row) => row.id === params.conversation)
     : undefined;
   const detail = selectedRow ? await InboxIntelligenceService.load(selectedRow.id) : null;
+  const detailContext = detail ? await InboxContextService.load(detail.conversation.id) : null;
   const clientMessageId = detail ? ConversationService.newClientMessageId() : null;
   const latestHistory = detail ? detail.history.slice(-1).reverse() : [];
   const unreadConversations = inbox.conversations.filter((row) => Number(row.unread_count) > 0).length;
@@ -243,18 +277,75 @@ export default async function ConversationsPage({
             <p>Abra um contato da caixa de entrada para ver o histórico e iniciar o atendimento.</p>
           </div>}
 
-          {detail ? <aside className={styles.contextPanel} aria-label="Contexto do atendimento">
+          {detail && detailContext ? <aside className={styles.contextPanel} aria-label="Contexto do atendimento">
             <section className={styles.contextSection}>
               <p className={styles.contextEyebrow}>CLIENTE</p>
               <div className={styles.contextPerson}>
-                <div className={styles.contextAvatar} aria-hidden="true">{avatarInitial(detail.contact?.name ?? detail.contact?.phone_normalized)}</div>
+                <div className={styles.contextAvatar} aria-hidden="true">{avatarInitial(detailContext.customer?.name ?? detailContext.contact.name ?? detailContext.contact.phone)}</div>
                 <div>
-                  <strong>{detail.contact?.name ?? "Contato WhatsApp"}</strong>
-                  <span>{detail.contact?.phone_normalized ?? detail.contact?.external_id ?? "Telefone não disponível"}</span>
+                  <strong>{detailContext.customer?.name ?? detailContext.contact.name ?? "Contato WhatsApp"}</strong>
+                  <span>{detailContext.customer?.phone ?? detailContext.contact.phone ?? "Telefone não disponível"}</span>
                 </div>
               </div>
-              {detail.subject.customerId ? <Link className={styles.contextAction} href={`/clientes/${detail.subject.customerId}`}>Abrir cadastro do cliente →</Link> : <p className={styles.contextMuted}>Contato ainda não vinculado ao cadastro de cliente.</p>}
+
+              {!detailContext.linkedCustomerId ? <p className={styles.contextMuted}>Contato ainda não vinculado ao cadastro de cliente.</p> : detailContext.permissions.customer === "restricted" ? <p className={styles.contextRestricted}>Seu perfil não possui acesso aos dados do cliente e endereços.</p> : detailContext.customer ? <>
+                <div className={styles.contextMetrics}>
+                  <div><span>Pedidos</span><strong>{detailContext.customer.ordersCount}</strong></div>
+                  <div><span>Total</span><strong>{formatCents(detailContext.customer.totalSpentCents)}</strong></div>
+                  <div><span>Última compra</span><strong>{detailContext.customer.lastOrderAt ? when(detailContext.customer.lastOrderAt, timeZone) : "—"}</strong></div>
+                </div>
+                <Link className={styles.contextAction} href={`/clientes/${detailContext.linkedCustomerId}`}>Abrir cadastro do cliente →</Link>
+              </> : <p className={styles.contextMuted}>O vínculo existe, mas o cadastro do cliente não está disponível.</p>}
             </section>
+
+            {detailContext.linkedCustomerId ? <section className={styles.contextSection}>
+              <p className={styles.contextEyebrow}>ENDEREÇOS</p>
+              {detailContext.permissions.customer === "restricted" ? <p className={styles.contextRestricted}>Endereços ocultos pela sua permissão atual.</p> : detailContext.addresses.length === 0 ? <p className={styles.contextMuted}>Nenhum endereço cadastrado para este cliente.</p> : <div className={styles.contextAddressList}>
+                {detailContext.addresses.slice(0, 3).map((address) => <article key={address.id} className={styles.contextAddressCard}>
+                  <div className={styles.contextCardTitle}><strong>{address.label}</strong>{address.isDefault ? <span>Principal</span> : null}</div>
+                  <p>{address.street}, {address.number}{address.complement ? ` · ${address.complement}` : ""}</p>
+                  <p>{address.district} · {address.city}/{address.state}{address.postalCode ? ` · CEP ${address.postalCode}` : ""}</p>
+                  {address.reference ? <small>Ref.: {address.reference}</small> : null}
+                </article>)}
+                {detailContext.addresses.length > 3 ? <p className={styles.contextMuted}>+ {detailContext.addresses.length - 3} endereço(s) no cadastro do cliente.</p> : null}
+              </div>}
+            </section> : null}
+
+            <section className={styles.contextSection}>
+              <p className={styles.contextEyebrow}>PEDIDO</p>
+              {detailContext.permissions.orders === "restricted" ? <p className={styles.contextRestricted}>Seu perfil não possui acesso aos pedidos desta unidade.</p> : <>
+                {detailContext.whatsappDraft ? <article className={`${styles.contextOrderCard} ${styles.contextDraftCard}`}>
+                  <div className={styles.contextCardTitle}><strong>Em montagem no WhatsApp</strong><span>Rascunho ativo</span></div>
+                  {detailContext.whatsappDraft.items.length > 0 ? <ul className={styles.contextItemList}>
+                    {detailContext.whatsappDraft.items.map((item) => <li key={item.id}><span>{item.quantity}x {item.name}</span><strong>{formatCents(item.lineTotalCents)}</strong></li>)}
+                  </ul> : <p className={styles.contextMuted}>Carrinho iniciado, ainda sem itens visíveis.</p>}
+                  <div className={styles.contextOrderTotal}><span>Total atual</span><strong>{formatCents(detailContext.whatsappDraft.totalCents)}</strong></div>
+                  <p className={styles.contextMuted}>A montagem continua no fluxo canônico do WhatsApp; esta tela não altera o carrinho.</p>
+                </article> : null}
+
+                {detailContext.currentOrder ? <article className={styles.contextOrderCard}>
+                  <div className={styles.contextOrderTop}>
+                    <div><strong>Pedido #{detailContext.currentOrder.displayNumber}</strong><span>{orderStatusLabel(detailContext.currentOrder.orderStatus)}</span></div>
+                    <strong>{formatCents(detailContext.currentOrder.totalCents)}</strong>
+                  </div>
+                  <div className={styles.contextPills}><span>{paymentStatusLabel(detailContext.currentOrder.paymentStatus)}</span><span>{fulfillmentLabel(detailContext.currentOrder.fulfillmentType)}</span></div>
+                  {detailContext.currentOrderItems.length > 0 ? <ul className={styles.contextItemList}>
+                    {detailContext.currentOrderItems.map((item) => <li key={item.id}><span>{item.quantity}x {item.name}</span><strong>{formatCents(item.lineTotalCents)}</strong></li>)}
+                  </ul> : null}
+                  <Link className={styles.contextAction} href={`/pedidos/${detailContext.currentOrder.id}`}>Abrir pedido →</Link>
+                </article> : !detailContext.whatsappDraft ? <p className={styles.contextMuted}>Nenhum pedido ativo nesta unidade.</p> : null}
+              </>}
+            </section>
+
+            {detailContext.permissions.orders === "available" && detailContext.orderHistory.length > 0 ? <section className={styles.contextSection}>
+              <p className={styles.contextEyebrow}>HISTÓRICO DE PEDIDOS</p>
+              <ol className={styles.contextOrderHistory}>
+                {detailContext.orderHistory.map((order) => <li key={order.id}>
+                  <div><strong>#{order.displayNumber} · {orderStatusLabel(order.orderStatus)}</strong><span>{when(order.createdAt, timeZone)} · {formatCents(order.totalCents)}</span></div>
+                  <Link className={styles.contextAction} href={`/pedidos/${order.id}`}>Abrir →</Link>
+                </li>)}
+              </ol>
+            </section> : null}
 
             <section className={styles.contextSection}>
               <p className={styles.contextEyebrow}>ATENDIMENTO</p>
