@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const page = readFileSync("src/app/(app)/conversas/page.tsx", "utf8");
+const timeline = readFileSync("src/app/(app)/conversas/conversation-timeline.tsx", "utf8");
 const styles = readFileSync("src/app/(app)/conversas/conversations.module.css", "utf8");
 const shell = readFileSync("src/app/shell-v3.css", "utf8");
 
@@ -26,8 +27,9 @@ describe("WPP-03 Conversations Inbox UI", () => {
 
   it("preserves the INT-12 authorship and manual handoff contracts", () => {
     expect(page).toContain("InboxIntelligenceService.load");
-    expect(page).toContain("message.authorLabel");
-    expect(page).toContain("authorKey(message.authorLabel)");
+    expect(page).toContain("ConversationTimeline");
+    expect(timeline).toContain("message.authorLabel");
+    expect(timeline).toContain("authorKey(message.authorLabel)");
     expect(page).toContain("assumeConversationAction");
     expect(page).toContain("queueConversationAction");
     expect(page).toContain("returnConversationToBotAction");
@@ -51,10 +53,13 @@ describe("WPP-03 Conversations Inbox UI", () => {
     expect(page).toContain("Esta conversa está com outro usuário");
   });
 
-  it("adds search and unread filtering without a parallel client-side state machine", () => {
+  it("keeps search and unread filtering in the canonical server-side inbox query", () => {
     expect(page).toContain('placeholder="Buscar nome ou telefone"');
     expect(page).toContain('params.view === "unread"');
-    expect(page).toContain("visibleConversations");
+    expect(page).toContain("ConversationService.loadInbox({");
+    expect(page).toContain("search,");
+    expect(page).toContain("unreadOnly,");
+    expect(page).not.toContain("visibleConversations");
     expect(page).toContain("mensagens não lidas");
     expect(styles).toContain(".filters{display:flex;gap:5px;flex-wrap:wrap;overflow:visible}");
   });
@@ -62,8 +67,8 @@ describe("WPP-03 Conversations Inbox UI", () => {
   it("sanitizes visual labels and emoji initials", () => {
     expect(page).toContain("function avatarInitial");
     expect(page).toContain("Array.from(normalized)");
-    expect(page).toContain("function deliveryLabel");
-    expect(page).toContain('read: "lida"');
+    expect(timeline).toContain("function deliveryLabel");
+    expect(timeline).toContain('read: "lida"');
     expect(page).toContain('status === "bot" ? "Robô"');
   });
 
@@ -76,7 +81,7 @@ describe("WPP-03 Conversations Inbox UI", () => {
 
   it("keeps accessibility and reduced-motion protections", () => {
     expect(page).toContain('aria-label="Lista de conversas"');
-    expect(page).toContain('aria-label="Histórico da conversa"');
+    expect(timeline).toContain('aria-label="Histórico da conversa"');
     expect(page).toContain('aria-label="Contexto do atendimento"');
     expect(styles).toContain("@media(prefers-reduced-motion:reduce)");
     expect(styles).toContain("env(safe-area-inset-bottom)");
