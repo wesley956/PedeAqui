@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   certifyMetaWhatsAppWebhookSubscription,
+  planMetaWhatsAppWebhookRepair,
 } from "@/server/conversations/meta-app-webhook-subscription";
 
 describe("Meta App WhatsApp webhook field certification", () => {
@@ -31,6 +32,48 @@ describe("Meta App WhatsApp webhook field certification", () => {
       errorKind: "meta_webhook_field_missing_smb_message_echoes",
       fields: ["messages"],
     });
+  });
+
+  it("builds a repair plan that preserves existing fields and only adds the missing echo field", () => {
+    expect(planMetaWhatsAppWebhookRepair({
+      data: [{
+        object: "whatsapp_business_account",
+        active: true,
+        callback_url: "https://pedeaqui.pp.ua/api/webhooks/whatsapp",
+        fields: ["messages", "message_template_status_update"],
+      }],
+    })).toEqual({
+      status: "not_subscribed",
+      errorKind: "meta_webhook_field_missing_smb_message_echoes",
+      fields: ["message_template_status_update", "messages", "smb_message_echoes"],
+      repairable: true,
+      callbackUrl: "https://pedeaqui.pp.ua/api/webhooks/whatsapp",
+    });
+  });
+
+  it("refuses automatic repair when the current callback URL is unavailable", () => {
+    expect(planMetaWhatsAppWebhookRepair({
+      data: [{ object: "whatsapp_business_account", active: true, fields: ["messages"] }],
+    })).toEqual({
+      status: "action_required",
+      errorKind: "meta_webhook_callback_unavailable",
+      fields: ["messages"],
+      repairable: false,
+      callbackUrl: null,
+    });
+  });
+
+  it("does not repair broader subscription damage automatically", () => {
+    const result = planMetaWhatsAppWebhookRepair({
+      data: [{
+        object: "whatsapp_business_account",
+        active: true,
+        callback_url: "https://pedeaqui.pp.ua/api/webhooks/whatsapp",
+        fields: [],
+      }],
+    });
+    expect(result.repairable).toBe(false);
+    expect(result.errorKind).toBe("meta_webhook_field_missing_messages_smb_message_echoes");
   });
 
   it("distinguishes missing object, inactive subscription and unavailable field details", () => {
