@@ -92,12 +92,13 @@ try {
   $current = Normalize-Release (Read-JsonFile $StatePath)
   $current = Restore-PreviousIfRequired $current
   $entry = Join-Path ([string]$current.releasePath) "src\service-bootstrap.mjs"
-  if (-not (Test-Path -LiteralPath $entry)) {
-    throw "Bootstrap da release ativa nao existe: $entry"
+  $indexMarker = Join-Path ([string]$current.releasePath) "src\index.mjs"
+  if (-not (Test-Path -LiteralPath $entry) -or -not (Test-Path -LiteralPath $indexMarker)) {
+    throw "Bootstrap/entrypoint da release ativa nao existe."
   }
 
   Write-LauncherLog "start version=$($current.version) pending=$($current.pending)"
-  & ([string]$serviceEnv.nodeExe) $entry
+  & ([string]$serviceEnv.nodeExe) $entry $indexMarker
   $code = $LASTEXITCODE
   Write-LauncherLog "exit version=$($current.version) code=$code"
   exit $code
