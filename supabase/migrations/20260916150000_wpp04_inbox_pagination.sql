@@ -55,7 +55,7 @@ with scoped as (
    and ct.store_id = c.store_id
   where c.organization_id = p_organization_id
     and c.store_id = p_store_id
-    and (p_status is null or c.status = p_status)
+    and (p_status is null or c.status::text = p_status)
     and (not p_unread_only or coalesce(c.unread_count, 0) > 0)
     and (
       nullif(trim(coalesce(p_search, '')), '') is null
