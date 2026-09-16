@@ -3,6 +3,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   certifyMetaWhatsAppWebhookSubscription,
+  planMetaWhatsAppWebhookRepair,
   type MetaAppWebhookSubscriptionsResponse,
 } from "@/server/conversations/meta-app-webhook-subscription";
 import {
@@ -33,6 +34,17 @@ type AppWebhookInspection = {
   errorKind: string | null;
   fields: string[];
 };
+
+type MetaAppWebhookContext = {
+  appId: string;
+  appSecret: string;
+  graphVersion: string;
+  payload: MetaAppWebhookGraphPayload;
+};
+
+type MetaAppWebhookReadResult =
+  | { ok: true; value: MetaAppWebhookContext }
+  | { ok: false; inspection: AppWebhookInspection };
 
 export type WhatsAppCoexistenceObservabilitySnapshot = {
   telemetryAvailable: boolean;
@@ -92,10 +104,25 @@ function isFreshCheck(value: string | null | undefined) {
   return Number.isFinite(timestamp) && Date.now() - timestamp < APP_WEBHOOK_CHECK_TTL_MS;
 }
 
-async function inspectMetaAppWebhookSubscription(appSecretSecretRef: string | null): Promise<AppWebhookInspection> {
+function metaGraphFailure(payload: MetaAppWebhookGraphPayload | null, status: number, prefix: string): AppWebhookInspection {
+  const message = payload?.error?.message?.toLowerCase() ?? "";
+  const unsupported = message.includes("unsupported") || message.includes("not supported");
+  return {
+    status: unsupported ? "not_supported" : "action_required",
+    errorKind: payload?.error?.code == null
+      ? `${prefix}_http_${status}`
+      : `${prefix}_${payload.error.code}`,
+    fields: [],
+  };
+}
+
+async function readMetaAppWebhookSubscription(appSecretSecretRef: string | null): Promise<MetaAppWebhookReadResult> {
   const appId = process.env.META_APP_ID?.trim();
   if (!appId) {
-    return { status: "action_required", errorKind: "platform_configuration_missing", fields: [] };
+    return {
+      ok: false,
+      inspection: { status: "action_required", errorKind: "platform_configuration_missing", fields: [] },
+    };
   }
 
   try {
@@ -112,20 +139,96 @@ async function inspectMetaAppWebhookSubscription(appSecretSecretRef: string | nu
     );
     const payload = await response.json().catch(() => null) as MetaAppWebhookGraphPayload | null;
     if (!response.ok || !payload) {
-      const message = payload?.error?.message?.toLowerCase() ?? "";
-      const unsupported = message.includes("unsupported") || message.includes("not supported");
-      return {
-        status: unsupported ? "not_supported" : "action_required",
-        errorKind: payload?.error?.code == null
-          ? `meta_app_webhook_http_${response.status}`
-          : `meta_app_webhook_${payload.error.code}`,
-        fields: [],
-      };
+      return { ok: false, inspection: metaGraphFailure(payload, response.status, "meta_app_webhook") };
     }
-    return certifyMetaWhatsAppWebhookSubscription(payload);
+    return { ok: true, value: { appId, appSecret, graphVersion, payload } };
   } catch {
-    return { status: "action_required", errorKind: "meta_app_webhook_check_failed", fields: [] };
+    return {
+      ok: false,
+      inspection: { status: "action_required", errorKind: "meta_app_webhook_check_failed", fields: [] },
+    };
   }
+}
+
+async function inspectMetaAppWebhookSubscription(appSecretSecretRef: string | null): Promise<AppWebhookInspection> {
+  const read = await readMetaAppWebhookSubscription(appSecretSecretRef);
+  if (!read.ok) return read.inspection;
+  return certifyMetaWhatsAppWebhookSubscription(read.value.payload);
+}
+
+async function repairMetaAppWebhookSubscription(appSecretSecretRef: string | null): Promise<AppWebhookInspection> {
+  const read = await readMetaAppWebhookSubscription(appSecretSecretRef);
+  if (!read.ok) return read.inspection;
+
+  const plan = planMetaWhatsAppWebhookRepair(read.value.payload);
+  if (!plan.repairable) {
+    return { status: plan.status, errorKind: plan.errorKind, fields: plan.fields };
+  }
+
+  const verifyToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN?.trim();
+  if (!verifyToken) {
+    return { status: "action_required", errorKind: "meta_webhook_verify_token_missing", fields: plan.fields };
+  }
+
+  try {
+    const body = new URLSearchParams({
+      object: "whatsapp_business_account",
+      callback_url: plan.callbackUrl!,
+      verify_token: verifyToken,
+      fields: plan.fields.join(","),
+    });
+    const response = await fetch(
+      `https://graph.facebook.com/${read.value.graphVersion}/${encodeURIComponent(read.value.appId)}/subscriptions`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${read.value.appId}|${read.value.appSecret}`,
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        },
+        body,
+        cache: "no-store",
+        signal: AbortSignal.timeout(10_000),
+      },
+    );
+    const payload = await response.json().catch(() => null) as MetaAppWebhookGraphPayload | null;
+    if (!response.ok) {
+      const failure = metaGraphFailure(payload, response.status, "meta_app_webhook_repair");
+      return { ...failure, fields: plan.fields };
+    }
+  } catch {
+    return { status: "action_required", errorKind: "meta_app_webhook_repair_failed", fields: plan.fields };
+  }
+
+  const verified = await readMetaAppWebhookSubscription(appSecretSecretRef);
+  if (!verified.ok) return verified.inspection;
+  const certification = certifyMetaWhatsAppWebhookSubscription(verified.value.payload);
+  if (certification.status !== "subscribed") {
+    return {
+      status: "action_required",
+      errorKind: "meta_app_webhook_repair_not_confirmed",
+      fields: certification.fields,
+    };
+  }
+  return certification;
+}
+
+async function recordAppWebhookInspection(
+  settings: RoutingRow,
+  inspection: AppWebhookInspection,
+  requestId: string,
+) {
+  const now = new Date().toISOString();
+  const recorded = await safeUpsert({
+    organization_id: settings.organization_id,
+    store_id: settings.store_id,
+    app_webhook_status: inspection.status,
+    app_webhook_checked_at: now,
+    app_webhook_fields: inspection.fields,
+    last_app_webhook_error_kind: inspection.errorKind,
+    updated_at: now,
+  }, "whatsapp.coexistence_observability.app_webhook_check_failed", requestId);
+  if (recorded) appWebhookCheckCache.set(settings.store_id, Date.now());
+  return recorded;
 }
 
 async function maybeRecordAppWebhookSubscription(settings: RoutingRow, requestId: string) {
@@ -147,17 +250,7 @@ async function maybeRecordAppWebhookSubscription(settings: RoutingRow, requestId
     }
 
     const inspection = await inspectMetaAppWebhookSubscription(settings.app_secret_secret_ref);
-    const now = new Date().toISOString();
-    const recorded = await safeUpsert({
-      organization_id: settings.organization_id,
-      store_id: settings.store_id,
-      app_webhook_status: inspection.status,
-      app_webhook_checked_at: now,
-      app_webhook_fields: inspection.fields,
-      last_app_webhook_error_kind: inspection.errorKind,
-      updated_at: now,
-    }, "whatsapp.coexistence_observability.app_webhook_check_failed", requestId);
-    if (recorded) appWebhookCheckCache.set(settings.store_id, Date.now());
+    await recordAppWebhookInspection(settings, inspection, requestId);
   } catch (error) {
     recordFailure("whatsapp.coexistence_observability.app_webhook_check_failed", error, {
       requestId,
@@ -165,6 +258,20 @@ async function maybeRecordAppWebhookSubscription(settings: RoutingRow, requestId
       storeId: settings.store_id,
     });
   }
+}
+
+async function loadCoexistenceSettings(organizationId: string, storeId: string) {
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("store_conversation_settings")
+    .select("organization_id, store_id, whatsapp_phone_number_id, app_secret_secret_ref")
+    .eq("organization_id", organizationId)
+    .eq("store_id", storeId)
+    .eq("provider", "meta_cloud")
+    .eq("whatsapp_enabled", true)
+    .eq("connection_mode", "coexistence")
+    .maybeSingle();
+  if (error) throw error;
+  return data ? data as RoutingRow : null;
 }
 
 export class WhatsAppCoexistenceObservability {
@@ -213,22 +320,29 @@ export class WhatsAppCoexistenceObservability {
 
   static async ensureAppWebhookSubscriptionCheck(organizationId: string, storeId: string) {
     try {
-      const admin = createAdminClient();
-      const { data, error } = await admin.from("store_conversation_settings")
-        .select("organization_id, store_id, whatsapp_phone_number_id, app_secret_secret_ref")
-        .eq("organization_id", organizationId)
-        .eq("store_id", storeId)
-        .eq("provider", "meta_cloud")
-        .eq("whatsapp_enabled", true)
-        .eq("connection_mode", "coexistence")
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) return;
-
-      await maybeRecordAppWebhookSubscription(data as RoutingRow, `health-${storeId}`);
+      const settings = await loadCoexistenceSettings(organizationId, storeId);
+      if (!settings) return;
+      await maybeRecordAppWebhookSubscription(settings, `health-${storeId}`);
     } catch (error) {
       recordFailure("whatsapp.coexistence_observability.health_app_webhook_check_failed", error, {
         requestId: `health-${storeId}`,
+        organizationId,
+        storeId,
+      });
+    }
+  }
+
+  static async ensureAppWebhookSubscriptionRepair(organizationId: string, storeId: string) {
+    const requestId = `repair-${storeId}`;
+    try {
+      const settings = await loadCoexistenceSettings(organizationId, storeId);
+      if (!settings) return;
+      appWebhookCheckCache.delete(storeId);
+      const inspection = await repairMetaAppWebhookSubscription(settings.app_secret_secret_ref);
+      await recordAppWebhookInspection(settings, inspection, requestId);
+    } catch (error) {
+      recordFailure("whatsapp.coexistence_observability.app_webhook_repair_failed", error, {
+        requestId,
         organizationId,
         storeId,
       });
