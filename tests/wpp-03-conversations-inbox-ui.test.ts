@@ -18,7 +18,8 @@ describe("WPP-03 Conversations Inbox UI", () => {
     expect(page).toContain("styles.inboxPanel");
     expect(page).toContain("styles.thread");
     expect(page).toContain("styles.contextPanel");
-    expect(page).toContain("detail.subject.customerId");
+    expect(page).toContain("InboxContextService.load");
+    expect(page).toContain("detailContext.linkedCustomerId");
     expect(page).not.toContain("detail.intelligenceContext.activeReferences.orderId");
     expect(page).not.toContain("Nenhum pedido ativo está projetado");
     expect(page).not.toMatch(/from\(["'](?:customers|orders|carts)["']\)/);
