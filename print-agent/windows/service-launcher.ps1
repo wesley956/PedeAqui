@@ -1,7 +1,11 @@
 param()
 
 $ErrorActionPreference = "Stop"
-$Root = if ($env:PEDEAQUI_AGENT_ROOT) { $env:PEDEAQUI_AGENT_ROOT } else { Join-Path $env:ProgramData "PedeAqui\PrintAgent" }
+$Root = if ($env:PEDEAQUI_AGENT_ROOT) {
+  [IO.Path]::GetFullPath($env:PEDEAQUI_AGENT_ROOT)
+} else {
+  [IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
+}
 $DataDir = Join-Path $Root "data"
 $StatePath = Join-Path $Root "current.json"
 $PreviousPath = Join-Path $Root "previous.json"
