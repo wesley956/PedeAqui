@@ -17,6 +17,7 @@ import { ConversationService } from "@/server/conversations/conversation-service
 import { InboxContextService } from "@/server/conversations/inbox-context-service";
 import { InboxIntelligenceService } from "@/server/conversations/inbox-intelligence-service";
 import { conversationStatusLabel, type ConversationStatus } from "@/server/conversations/model";
+import { ConversationTimeline } from "./conversation-timeline";
 import styles from "./conversations.module.css";
 
 const orderStatusLabels: Record<string, string> = {
@@ -45,32 +46,12 @@ function statusTone(status: string) {
   return "neutral" as const;
 }
 
-function authorKey(label: string) {
-  if (label === "Cliente") return "customer";
-  if (label === "Robô") return "bot";
-  if (label === "Atendente PedeAqui") return "agent";
-  if (label === "WhatsApp Business") return "business";
-  return "system";
-}
-
 function avatarInitial(value: string | null | undefined) {
   const normalized = (value ?? "").trim();
   for (const character of Array.from(normalized)) {
     if (/^[\p{L}\p{N}]$/u.test(character)) return character.toUpperCase();
   }
   return "C";
-}
-
-function deliveryLabel(status: string | null | undefined) {
-  const labels: Record<string, string> = {
-    pending: "enviando",
-    sent: "enviada",
-    delivered: "entregue",
-    read: "lida",
-    failed: "falhou",
-    received: "recebida",
-  };
-  return labels[status ?? ""] ?? "enviada";
 }
 
 function statusLabel(status: ConversationStatus) {
@@ -97,17 +78,20 @@ function inboxHref({
   conversation,
   q,
   view,
+  cursor,
 }: {
   status?: string;
   conversation?: string;
   q?: string;
   view?: string;
+  cursor?: string;
 }) {
   const params = new URLSearchParams();
   if (status !== "all") params.set("status", status);
   if (conversation) params.set("conversation", conversation);
   if (q) params.set("q", q);
   if (view === "unread") params.set("view", "unread");
+  if (cursor) params.set("cursor", cursor);
   const query = params.toString();
   return query ? `/conversas?${query}` : "/conversas";
 }
@@ -115,31 +99,30 @@ function inboxHref({
 export default async function ConversationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; conversation?: string; erro?: string; q?: string; view?: string }>;
+  searchParams: Promise<{ status?: string; conversation?: string; erro?: string; q?: string; view?: string; cursor?: string }>;
 }) {
   const params = await searchParams;
-  const inbox = await ConversationService.loadInbox(params.status);
+  const search = (params.q ?? "").trim().slice(0, 80);
+  const unreadOnly = params.view === "unread";
+  const inbox = await ConversationService.loadInbox({
+    filter: params.status,
+    search,
+    unreadOnly,
+    cursor: params.cursor,
+  });
   const context = await getAccessContext();
   if (!context.storeId) throw new Error("Selecione uma unidade para acessar Conversas.");
   const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
-  const search = (params.q ?? "").trim().slice(0, 80);
-  const unreadOnly = params.view === "unread";
-
-  const visibleConversations = inbox.conversations.filter((conversation) => {
-    if (unreadOnly && Number(conversation.unread_count) <= 0) return false;
-    if (!search) return true;
-    const haystack = `${conversation.contactName} ${conversation.phone ?? ""} ${conversation.preview}`.toLocaleLowerCase("pt-BR");
-    return haystack.includes(search.toLocaleLowerCase("pt-BR"));
-  });
 
   const selectedRow = params.conversation
-    ? visibleConversations.find((row) => row.id === params.conversation)
+    ? inbox.conversations.find((row) => row.id === params.conversation)
     : undefined;
-  const detail = selectedRow ? await InboxIntelligenceService.load(selectedRow.id) : null;
+  const detail = params.conversation ? await InboxIntelligenceService.load(params.conversation) : null;
   const detailContext = detail ? await InboxContextService.load(detail.conversation.id) : null;
   const clientMessageId = detail ? ConversationService.newClientMessageId() : null;
   const latestHistory = detail ? detail.history.slice(-1).reverse() : [];
-  const unreadConversations = inbox.conversations.filter((row) => Number(row.unread_count) > 0).length;
+  const unreadConversations = inbox.counts.unreadConversations;
+  void selectedRow;
 
   const filters = [
     ["all", "Todas"],
@@ -177,7 +160,7 @@ export default async function ConversationsPage({
 
       {params.erro === "send_failed" ? <div className={styles.alert} role="alert"><strong>Não foi possível enviar a mensagem.</strong><p>Confira a conexão do WhatsApp e tente novamente. A tentativa ficou registrada no histórico.</p></div> : null}
 
-      {inbox.conversations.length === 0 ? <div className={styles.empty}><EmptyState title="Nenhuma conversa nesta fila" description="Novas mensagens aparecerão aqui automaticamente quando um canal estiver conectado." /></div> : (
+      {inbox.conversations.length === 0 && !params.cursor ? <div className={styles.empty}><EmptyState title="Nenhuma conversa nesta fila" description="Novas mensagens aparecerão aqui automaticamente quando um canal estiver conectado." /></div> : (
         <div className={styles.workspace} data-selected={detail ? "true" : undefined}>
           <aside className={styles.inboxPanel} aria-label="Lista de conversas">
             <div className={styles.inboxToolbar}>
@@ -204,9 +187,9 @@ export default async function ConversationsPage({
             </div>
 
             <div className={styles.inboxList}>
-              {visibleConversations.length === 0 ? <div className={styles.listEmpty}>Nenhuma conversa corresponde aos filtros atuais.</div> : visibleConversations.map((conversation) => {
+              {inbox.conversations.length === 0 ? <div className={styles.listEmpty}>Nenhuma conversa corresponde a esta página. Volte ao início da lista.</div> : inbox.conversations.map((conversation) => {
                 const active = detail?.conversation.id === conversation.id;
-                return <Link key={conversation.id} href={inboxHref({ status: inbox.filter, conversation: conversation.id, q: search, view: unreadOnly ? "unread" : undefined })} className={styles.conversationLink} aria-current={active ? "page" : undefined}>
+                return <Link key={conversation.id} href={inboxHref({ status: inbox.filter, conversation: conversation.id, q: search, view: unreadOnly ? "unread" : undefined, cursor: params.cursor })} className={styles.conversationLink} aria-current={active ? "page" : undefined}>
                   <article className={styles.conversationCard} data-active={active || undefined}>
                     <div className={styles.conversationAvatar} aria-hidden="true">{avatarInitial(conversation.contactName)}</div>
                     <div className={styles.conversationBody}>
@@ -226,13 +209,18 @@ export default async function ConversationsPage({
                   </article>
                 </Link>;
               })}
+
+              <div className={styles.filters} aria-label="Paginação das conversas">
+                {params.cursor ? <Link className={styles.filter} href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined })}>Voltar ao início</Link> : null}
+                {inbox.pageInfo.hasMore && inbox.pageInfo.nextCursor ? <Link className={styles.filter} href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined, cursor: inbox.pageInfo.nextCursor })}>Mais conversas</Link> : null}
+              </div>
             </div>
           </aside>
 
           {detail ? <Card className={styles.thread}>
             <div className={styles.threadHeader}>
               <div className={styles.threadIdentity}>
-                <Link href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined })} className={styles.mobileBack} aria-label="Voltar para conversas">←</Link>
+                <Link href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined, cursor: params.cursor })} className={styles.mobileBack} aria-label="Voltar para conversas">←</Link>
                 <div className={styles.threadAvatar} aria-hidden="true">{avatarInitial(detail.contact?.name ?? detail.contact?.phone_normalized)}</div>
                 <div>
                   <strong>{detail.contact?.name ?? detail.contact?.phone_normalized ?? "Contato"}</strong>
@@ -244,16 +232,15 @@ export default async function ConversationsPage({
               </div>
             </div>
 
-            <div className={styles.messages} aria-label="Histórico da conversa">
-              {detail.messages.length === 0 ? <span className="muted">Sem mensagens ainda.</span> : detail.messages.map((message) => {
-                const outbound = message.direction === "outbound";
-                return <div key={message.id} className={styles.message} data-direction={outbound ? "outbound" : "inbound"}>
-                  <span className={styles.authorTag} data-author={authorKey(message.authorLabel)}>{message.authorLabel}</span>
-                  <div className={styles.bubble}>{message.body || `[${message.content_type}]`}</div>
-                  <span className={styles.messageMeta}>{when(message.created_at, timeZone)} · {outbound ? deliveryLabel(message.delivery_status) : "recebida"}{message.error_message ? ` · ${message.error_message}` : ""}</span>
-                </div>;
-              })}
-            </div>
+            <ConversationTimeline
+              conversationId={detail.conversation.id}
+              storeId={context.storeId}
+              timeZone={timeZone}
+              initialMessages={detail.messages.map((message) => ({ ...message, authorLabel: message.authorLabel }))}
+              initialPreviousCursor={detail.messagePagination.previousCursor}
+              initialLatestCursor={detail.messagePagination.latestCursor}
+              initialHasOlder={detail.messagePagination.hasOlder}
+            />
 
             <div className={styles.composer}>
               <div className={styles.actions}>
