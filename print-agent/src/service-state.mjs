@@ -33,6 +33,10 @@ export function previousStatePath() {
   return path.join(agentRoot(), "previous.json");
 }
 
+export function rejectedReleasePath() {
+  return path.join(agentRoot(), "rejected-release.json");
+}
+
 export function ensureAgentLayout() {
   mkdirSync(agentRoot(), { recursive: true });
   mkdirSync(agentDataDir(), { recursive: true });
@@ -62,6 +66,15 @@ function normalizeReleaseState(value) {
   };
 }
 
+function normalizeRejectedRelease(value) {
+  if (!value || typeof value !== "object") throw new Error("invalid rejected release state");
+  return {
+    version: safeVersion(value.version),
+    rejectedAt: String(value.rejectedAt || new Date().toISOString()),
+    reason: String(value.reason || "unspecified").trim().slice(0, 120) || "unspecified",
+  };
+}
+
 function parseJsonFile(filePath) {
   const content = readFileSync(filePath, "utf8").replace(/^\uFEFF/, "");
   return JSON.parse(content);
@@ -70,6 +83,15 @@ function parseJsonFile(filePath) {
 export function readReleaseState(filePath = currentStatePath()) {
   try {
     return normalizeReleaseState(parseJsonFile(filePath));
+  } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+export function readRejectedRelease(filePath = rejectedReleasePath()) {
+  try {
+    return normalizeRejectedRelease(parseJsonFile(filePath));
   } catch (error) {
     if (error?.code === "ENOENT") return null;
     throw error;
@@ -89,6 +111,29 @@ export function writeReleaseState(state, filePath = currentStatePath()) {
   return normalized;
 }
 
+export function markReleaseRejected(version, reason = "healthcheck_failed") {
+  const rejected = normalizeRejectedRelease({
+    version,
+    rejectedAt: new Date().toISOString(),
+    reason,
+  });
+  writeJsonAtomic(rejectedReleasePath(), rejected);
+  return rejected;
+}
+
+export function clearRejectedRelease(version) {
+  const expected = safeVersion(version);
+  const rejected = readRejectedRelease();
+  if (!rejected || rejected.version !== expected) return false;
+  try {
+    unlinkSync(rejectedReleasePath());
+    return true;
+  } catch (error) {
+    if (error?.code === "ENOENT") return false;
+    throw error;
+  }
+}
+
 export function activateRelease({ version, releasePath, previous = readReleaseState() }) {
   ensureAgentLayout();
   if (previous) writeReleaseState(previous, previousStatePath());
@@ -105,6 +150,11 @@ export function markCurrentReleaseHealthy(version) {
   const current = readReleaseState();
   if (!current || current.version !== safeVersion(version) || !current.pending) return false;
   writeReleaseState({ ...current, pending: false, attempts: 0 });
+  try {
+    clearRejectedRelease(version);
+  } catch (error) {
+    console.error("rejected release marker cleanup failed", error);
+  }
   return true;
 }
 
@@ -115,10 +165,13 @@ export function markCurrentReleaseAttempt() {
 }
 
 export function rollbackToPreviousRelease() {
+  const current = readReleaseState();
   const previous = readReleaseState(previousStatePath());
   if (!previous) return null;
-  const restored = writeReleaseState({ ...previous, pending: false, attempts: 0 });
-  return restored;
+  if (current?.version && current.version !== previous.version) {
+    markReleaseRejected(current.version, "programmatic_rollback");
+  }
+  return writeReleaseState({ ...previous, pending: false, attempts: 0 });
 }
 
 function processExists(pid) {
