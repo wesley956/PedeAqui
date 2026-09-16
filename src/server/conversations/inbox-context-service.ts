@@ -1,12 +1,10 @@
 import "server-only";
 
-import { hashCartToken } from "@/server/cart/cart-token";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize, AuthorizationError } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
+import { hashCartToken } from "@/server/cart/cart-token";
 import { isWhatsAppOrderStep } from "@/server/conversations/whatsapp-smart-order-service";
-
-const TERMINAL_ORDER_STATUSES = new Set(["completed", "rejected", "canceled"]);
 
 type Access = Awaited<ReturnType<typeof authorize>>;
 type InboxPermission = "customer" | "orders";
@@ -165,23 +163,32 @@ export class InboxContextService {
 
   private static async loadOrderContext(organizationId: string, storeId: string, customerId: string) {
     const admin = createAdminClient();
-    const { data, error } = await admin.from("orders")
-      .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, total_cents, created_at, updated_at")
-      .eq("organization_id", organizationId)
-      .eq("store_id", storeId)
-      .eq("customer_id", customerId)
-      .order("created_at", { ascending: false })
-      .limit(8);
-    if (error) throw error;
+    const orderFields = "id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, total_cents, created_at, updated_at";
+    const [currentResult, historyResult] = await Promise.all([
+      admin.from("orders")
+        .select(orderFields)
+        .eq("organization_id", organizationId)
+        .eq("store_id", storeId)
+        .eq("customer_id", customerId)
+        .not("order_status", "in", "(completed,rejected,canceled)")
+        .order("created_at", { ascending: false })
+        .limit(1),
+      admin.from("orders")
+        .select(orderFields)
+        .eq("organization_id", organizationId)
+        .eq("store_id", storeId)
+        .eq("customer_id", customerId)
+        .in("order_status", ["completed", "rejected", "canceled"])
+        .order("created_at", { ascending: false })
+        .limit(4),
+    ]);
+    if (currentResult.error) throw currentResult.error;
+    if (historyResult.error) throw historyResult.error;
 
-    const orders = (data ?? []) as InboxOrderRow[];
-    const currentRow = orders.find((order) => !TERMINAL_ORDER_STATUSES.has(order.order_status)) ?? null;
-    const history = orders
-      .filter((order) => !currentRow || order.id !== currentRow.id)
-      .slice(0, 4)
-      .map(safeOrder);
-
+    const currentRow = ((currentResult.data ?? [])[0] ?? null) as InboxOrderRow | null;
+    const history = ((historyResult.data ?? []) as InboxOrderRow[]).map(safeOrder);
     let currentItems: Array<{ id: string; name: string; quantity: number; lineTotalCents: number }> = [];
+
     if (currentRow) {
       const { data: items, error: itemError } = await admin.from("order_items")
         .select("id, product_name_snapshot, quantity, line_total_cents")
