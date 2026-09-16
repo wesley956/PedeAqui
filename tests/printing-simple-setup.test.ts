@@ -84,7 +84,10 @@ describe("simple printing setup", () => {
     expect(wrapper).toContain("intentSeed={randomUUID()}");
     expect(creator).toContain("Baixar instalador assistido (Windows)");
     expect(creator).toContain("Configuração manual");
-    expect(creator).toContain("launch.vbs");
+    expect(creator).toContain("windows/install-service.ps1");
+    expect(creator).toContain("PEDEAQUI_INSTALL_TOKEN_B64");
+    expect(creator).not.toContain("launch.vbs");
+    expect(creator).not.toContain('schtasks.exe /Create /TN "PedeAqui Impressao"');
     expect(creator).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
     expect(creator).toContain("intentSeed");
     expect(creator).toContain("intentKey(");
@@ -109,17 +112,31 @@ describe("simple printing setup", () => {
     expect(admin).not.toContain("createPrintAgentToken()");
   });
 
-  it("installs the current protected boot task with startup fallback and validates the first server communication", () => {
+  it("installs the professional Windows service with reversible legacy migration and validates the first server communication", () => {
     const creator = read("src/features/printing/agent-token-creator-client.tsx");
-    expect(creator).toContain('schtasks.exe /Create /TN "PedeAqui Impressao"');
-    expect(creator).toContain("/SC ONSTART /RU SYSTEM /RL HIGHEST /F");
-    expect(creator).toContain("*S-1-5-18:(OI)(CI)F");
-    expect(creator).toContain("launch.vbs");
-    expect(creator).toContain(":task_fallback");
-    expect(creator).toContain("\\\\Start Menu\\\\Programs\\\\StartUp");
-    expect(creator).toContain("/api/print-agent/config");
-    expect(creator).toContain("-Method Post");
-    expect(creator).toContain(":validation_error");
+    const installer = read("print-agent/windows/install-service.ps1");
+    const launcher = read("print-agent/windows/service-launcher.ps1");
+    expect(creator).toContain("windows/install-service.ps1");
+    expect(creator).toContain("serviço do Windows");
+    expect(creator).not.toContain('schtasks.exe /Create /TN "PedeAqui Impressao"');
+    expect(creator).not.toContain("launch.vbs");
+
+    expect(installer).toContain('$ServiceName = "PedeAquiPrintAgent"');
+    expect(installer).toContain("<startmode>Automatic</startmode>");
+    expect(installer).toContain("<delayedAutoStart>true</delayedAutoStart>");
+    expect(installer).toContain("*S-1-5-18:(OI)(CI)F");
+    expect(installer).toContain("Backup-And-Stop-Legacy");
+    expect(installer).toContain("Restore-Legacy $hadLegacyTask");
+    expect(installer).toContain("Validate-Service $release.Path");
+    expect(installer).toContain("/api/print-agent/config");
+    expect(installer).toContain("-Method Post");
+    expect(installer).toContain("WinSW-x64.exe");
+    expect(installer).toContain("05b82d46ad331cc16bdc00de5c6332c1ef818df8ceefcd49c726553209b3a0da");
+    expect(installer.indexOf("Validate-Service $release.Path")).toBeLessThan(
+      installer.indexOf("schtasks.exe /Delete /TN $LegacyTaskName", installer.indexOf("Validate-Service $release.Path")),
+    );
+    expect(launcher).toContain("PEDEAQUI_AGENT_DATA");
+    expect(launcher).toContain("service-bootstrap.mjs");
   });
 });
 
