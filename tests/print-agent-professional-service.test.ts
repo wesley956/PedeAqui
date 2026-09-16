@@ -73,6 +73,19 @@ describe("professional Print Agent Windows gate", () => {
     expect(rollback).toContain("Nao existe release anterior valida para rollback");
   });
 
+  it("quarantines a release rejected by rollback so restart cannot retry it forever", () => {
+    expect(serviceState).toContain("rejected-release.json");
+    expect(serviceState).toContain("markReleaseRejected");
+    expect(serviceState).toContain("clearRejectedRelease");
+    expect(updater).toContain("readRejectedRelease");
+    expect(updater).toContain("PEDEAQUI_RETRY_REJECTED_RELEASE");
+    expect(updater).toContain("automatic retry skipped");
+    expect(launcher).toContain("Write-RejectedRelease");
+    expect(launcher).toContain("automatic_rollback_before_heartbeat");
+    expect(launcher.indexOf("Write-RejectedRelease")).toBeLessThan(launcher.indexOf('Write-LauncherLog "automatic_rollback'));
+    expect(rollback).toContain('Write-RejectedRelease ([string]$current.version) "manual_rollback"');
+  });
+
   it("keeps diagnostics free of the persisted token and avoids destructive cleanup", () => {
     expect(health).not.toContain("service.env.json");
     expect(health).not.toContain("token");
