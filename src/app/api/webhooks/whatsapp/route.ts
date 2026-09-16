@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { ConversationService } from "@/server/conversations/conversation-service";
+import { WhatsAppCoexistenceObservability } from "@/server/conversations/coexistence-observability";
 import { WhatsAppCoexistenceService } from "@/server/conversations/coexistence-service";
 import { ConversationGreetingService } from "@/server/conversations/greeting-service";
 import { InboundOutcomeService } from "@/server/conversations/inbound-outcome-service";
@@ -59,6 +60,8 @@ export async function POST(request: Request) {
       return new Response("Invalid signature", { status: 401, headers: responseHeaders });
     }
 
+    await WhatsAppCoexistenceObservability.recordWebhookReceipt(events, requestContext.requestId);
+
     let processed = 0;
     let ignored = 0;
     for (const event of events) {
@@ -68,7 +71,7 @@ export async function POST(request: Request) {
       }
 
       if (event.kind === "echo" || event.kind === "sync") {
-        const result = await WhatsAppCoexistenceService.ingest(event);
+        const result = await WhatsAppCoexistenceService.ingest(event, requestContext.requestId);
         if (result && typeof result === "object" && "ignored" in result && result.ignored) ignored += 1;
         else processed += 1;
         continue;
