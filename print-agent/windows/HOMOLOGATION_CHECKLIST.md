@@ -5,6 +5,28 @@ Blocks: #1066
 
 Do not execute this checklist on a production client workstation. Record date, Windows version, machine identifier (non-PII), Print Agent release and evidence reference for each test.
 
+## Pre-merge homologation of PR #1091
+
+The professional installer supports a custom `-RawRoot`, so the exact PR branch can be homologated **without merging it to `main`**.
+
+Use an isolated Windows machine and an agent token belonging to a dedicated test store/environment. Download the installer script from the PR branch and invoke it elevated with:
+
+```powershell
+$env:PEDEAQUI_INSTALL_URL = "https://<test-pedeaqui-host>"
+$env:PEDEAQUI_INSTALL_TOKEN = "<one-time-test-agent-token>"
+& .\install-service.ps1 `
+  -RawRoot "https://raw.githubusercontent.com/wesley956/PedeAqui/printing/professional-agent-int15-gate/print-agent"
+```
+
+Do not paste a production token into issue comments, screenshots or logs. After installation, clear the session variables:
+
+```powershell
+Remove-Item Env:PEDEAQUI_INSTALL_TOKEN -ErrorAction SilentlyContinue
+Remove-Item Env:PEDEAQUI_INSTALL_URL -ErrorAction SilentlyContinue
+```
+
+For diagnostics, use `health-service.ps1`. It does not emit the stored agent token. Record only sanitized evidence in #1090.
+
 | Scenario | Expected result | Result | Evidence |
 | --- | --- | --- | --- |
 | Clean professional install | `PedeAquiPrintAgent` installed/running; no legacy task after validation | PENDING | |
