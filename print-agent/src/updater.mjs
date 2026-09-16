@@ -3,7 +3,12 @@ import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { activateRelease, agentReleasesDir, readReleaseState } from "./service-state.mjs";
+import {
+  activateRelease,
+  agentReleasesDir,
+  readRejectedRelease,
+  readReleaseState,
+} from "./service-state.mjs";
 
 const releaseRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const rawRoot = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent";
@@ -121,6 +126,16 @@ export async function update() {
     throw new Error("invalid Print Agent update manifest");
   }
   manifest.files = files;
+
+  const rejected = readRejectedRelease();
+  const explicitRetry = process.env.PEDEAQUI_RETRY_REJECTED_RELEASE === "1";
+  if (rejected?.version === remoteVersion && !explicitRetry) {
+    console.warn(`PedeAqui Print Agent update ${remoteVersion} is quarantined after rollback; automatic retry skipped.`);
+    return false;
+  }
+  if (rejected?.version === remoteVersion && explicitRetry) {
+    console.warn(`PedeAqui Print Agent explicitly retrying quarantined release ${remoteVersion}.`);
+  }
 
   const currentVersion = await localVersion();
   if (!isNewerVersion(remoteVersion, currentVersion)) return false;
