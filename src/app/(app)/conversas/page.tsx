@@ -35,10 +35,46 @@ function authorKey(label: string) {
   return "system";
 }
 
-function filterHref(status: string, conversation?: string) {
+function avatarInitial(value: string | null | undefined) {
+  const normalized = (value ?? "").trim();
+  for (const character of Array.from(normalized)) {
+    if (/^[\p{L}\p{N}]$/u.test(character)) return character.toUpperCase();
+  }
+  return "C";
+}
+
+function deliveryLabel(status: string | null | undefined) {
+  const labels: Record<string, string> = {
+    pending: "enviando",
+    sent: "enviada",
+    delivered: "entregue",
+    read: "lida",
+    failed: "falhou",
+    received: "recebida",
+  };
+  return labels[status ?? ""] ?? "enviada";
+}
+
+function statusLabel(status: ConversationStatus) {
+  return status === "bot" ? "Robô" : conversationStatusLabel(status);
+}
+
+function inboxHref({
+  status = "all",
+  conversation,
+  q,
+  view,
+}: {
+  status?: string;
+  conversation?: string;
+  q?: string;
+  view?: string;
+}) {
   const params = new URLSearchParams();
   if (status !== "all") params.set("status", status);
   if (conversation) params.set("conversation", conversation);
+  if (q) params.set("q", q);
+  if (view === "unread") params.set("view", "unread");
   const query = params.toString();
   return query ? `/conversas?${query}` : "/conversas";
 }
@@ -46,20 +82,30 @@ function filterHref(status: string, conversation?: string) {
 export default async function ConversationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; conversation?: string; erro?: string }>;
+  searchParams: Promise<{ status?: string; conversation?: string; erro?: string; q?: string; view?: string }>;
 }) {
   const params = await searchParams;
   const inbox = await ConversationService.loadInbox(params.status);
   const context = await getAccessContext();
   if (!context.storeId) throw new Error("Selecione uma unidade para acessar Conversas.");
   const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
+  const search = (params.q ?? "").trim().slice(0, 80);
+  const unreadOnly = params.view === "unread";
+
+  const visibleConversations = inbox.conversations.filter((conversation) => {
+    if (unreadOnly && Number(conversation.unread_count) <= 0) return false;
+    if (!search) return true;
+    const haystack = `${conversation.contactName} ${conversation.phone ?? ""} ${conversation.preview}`.toLocaleLowerCase("pt-BR");
+    return haystack.includes(search.toLocaleLowerCase("pt-BR"));
+  });
 
   const selectedRow = params.conversation
-    ? inbox.conversations.find((row) => row.id === params.conversation)
+    ? visibleConversations.find((row) => row.id === params.conversation)
     : undefined;
   const detail = selectedRow ? await InboxIntelligenceService.load(selectedRow.id) : null;
   const clientMessageId = detail ? ConversationService.newClientMessageId() : null;
-  const recentHistory = detail ? detail.history.slice(-3).reverse() : [];
+  const latestHistory = detail ? detail.history.slice(-1).reverse() : [];
+  const unreadConversations = inbox.conversations.filter((row) => Number(row.unread_count) > 0).length;
 
   const filters = [
     ["all", "Todas"],
@@ -69,15 +115,25 @@ export default async function ConversationsPage({
     ["closed", "Encerradas"],
   ] as const;
 
+  const isAssignedToCurrentUser = detail?.conversation.assigned_user_id === detail?.currentUserId;
+  const ownershipLabel = !detail
+    ? null
+    : detail.conversation.status === "human"
+      ? isAssignedToCurrentUser
+        ? "Atendimento com você"
+        : detail.conversation.assigned_user_id
+          ? "Atendimento com outro usuário"
+          : "Atendimento humano sem responsável identificado"
+      : statusLabel(detail.conversation.status as ConversationStatus);
+
   return (
-    <section className={styles.page}>
+    <section className={`${styles.page} conversations-workspace-route`}>
       <ConversationRealtime storeId={context.storeId} />
 
       <header className={styles.header}>
-        <div>
-          <p className={styles.eyebrow}>ATENDIMENTO</p>
+        <div className={styles.headerTitle}>
           <h1>Conversas</h1>
-          <p>Atenda pelo PedeAqui sem perder o histórico do robô ou do WhatsApp Business.</p>
+          <span>Atendimento WhatsApp</span>
         </div>
         <div className={styles.integrationStatus} aria-label="Estado do atendimento">
           <Badge tone={inbox.integration.enabled ? "success" : "neutral"}>WhatsApp {inbox.integration.enabled ? "ativo" : inbox.integration.configured ? "configurado" : "não configurado"}</Badge>
@@ -94,28 +150,31 @@ export default async function ConversationsPage({
               <div className={styles.inboxTitleRow}>
                 <div>
                   <strong>Caixa de entrada</strong>
-                  <span>{inbox.counts.total} nesta visão</span>
+                  <span>{inbox.counts.total} conversas · {unreadConversations} com não lidas</span>
                 </div>
-                {inbox.counts.unread > 0 ? <Badge tone="danger">{inbox.counts.unread} não lidas</Badge> : <Badge>Em dia</Badge>}
+                {inbox.counts.unread > 0 ? <span className={styles.unreadSummary}>{inbox.counts.unread} mensagens não lidas</span> : <Badge>Em dia</Badge>}
               </div>
 
-              <div className={styles.metrics} aria-label="Resumo das conversas">
-                <span><strong>{inbox.counts.waiting}</strong> aguardando</span>
-                <span><strong>{inbox.counts.human}</strong> humano</span>
-                <span><strong>{inbox.counts.bot}</strong> robô</span>
-              </div>
+              <form className={styles.searchForm} action="/conversas" method="get">
+                {inbox.filter !== "all" ? <input type="hidden" name="status" value={inbox.filter} /> : null}
+                {unreadOnly ? <input type="hidden" name="view" value="unread" /> : null}
+                <input className={styles.searchInput} name="q" defaultValue={search} placeholder="Buscar nome ou telefone" aria-label="Buscar conversas" />
+                <Button type="submit" tone="secondary">Buscar</Button>
+                {search ? <Link className={styles.clearSearch} href={inboxHref({ status: inbox.filter, view: unreadOnly ? "unread" : undefined })}>Limpar</Link> : null}
+              </form>
 
               <nav aria-label="Filtros das conversas" className={styles.filters}>
-                {filters.map(([value, label]) => <Link key={value} href={filterHref(value)} className={styles.filter} data-active={inbox.filter === value || undefined}>{label}</Link>)}
+                {filters.map(([value, label]) => <Link key={value} href={inboxHref({ status: value, q: search })} className={styles.filter} data-active={!unreadOnly && inbox.filter === value || undefined}>{label}</Link>)}
+                <Link href={inboxHref({ q: search, view: "unread" })} className={styles.filter} data-active={unreadOnly || undefined}>Não lidas</Link>
               </nav>
             </div>
 
             <div className={styles.inboxList}>
-              {inbox.conversations.map((conversation) => {
+              {visibleConversations.length === 0 ? <div className={styles.listEmpty}>Nenhuma conversa corresponde aos filtros atuais.</div> : visibleConversations.map((conversation) => {
                 const active = detail?.conversation.id === conversation.id;
-                return <Link key={conversation.id} href={filterHref(inbox.filter, conversation.id)} className={styles.conversationLink} aria-current={active ? "page" : undefined}>
+                return <Link key={conversation.id} href={inboxHref({ status: inbox.filter, conversation: conversation.id, q: search, view: unreadOnly ? "unread" : undefined })} className={styles.conversationLink} aria-current={active ? "page" : undefined}>
                   <article className={styles.conversationCard} data-active={active || undefined}>
-                    <div className={styles.conversationAvatar} aria-hidden="true">{conversation.contactName.slice(0, 1).toUpperCase()}</div>
+                    <div className={styles.conversationAvatar} aria-hidden="true">{avatarInitial(conversation.contactName)}</div>
                     <div className={styles.conversationBody}>
                       <div className={styles.conversationTop}>
                         <strong>{conversation.contactName}</strong>
@@ -126,7 +185,7 @@ export default async function ConversationsPage({
                         {Number(conversation.unread_count) > 0 ? <span className={styles.unreadBadge}>{conversation.unread_count}</span> : null}
                       </div>
                       <div className={styles.badges}>
-                        <Badge tone={statusTone(conversation.status)}>{conversationStatusLabel(conversation.status as ConversationStatus)}</Badge>
+                        <Badge tone={statusTone(conversation.status)}>{statusLabel(conversation.status as ConversationStatus)}</Badge>
                         {conversation.latestDirection === "inbound" ? <span className={styles.lastDirection}>Cliente respondeu</span> : null}
                       </div>
                     </div>
@@ -139,16 +198,15 @@ export default async function ConversationsPage({
           {detail ? <Card className={styles.thread}>
             <div className={styles.threadHeader}>
               <div className={styles.threadIdentity}>
-                <Link href={filterHref(inbox.filter)} className={styles.mobileBack} aria-label="Voltar para conversas">←</Link>
-                <div className={styles.threadAvatar} aria-hidden="true">{(detail.contact?.name ?? detail.contact?.phone_normalized ?? "C").slice(0, 1).toUpperCase()}</div>
+                <Link href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined })} className={styles.mobileBack} aria-label="Voltar para conversas">←</Link>
+                <div className={styles.threadAvatar} aria-hidden="true">{avatarInitial(detail.contact?.name ?? detail.contact?.phone_normalized)}</div>
                 <div>
                   <strong>{detail.contact?.name ?? detail.contact?.phone_normalized ?? "Contato"}</strong>
-                  <div className={styles.contactMeta}>{detail.contact?.phone_normalized ?? detail.contact?.external_id ?? "Sem telefone"}</div>
+                  <div className={styles.contactMeta}>{ownershipLabel}</div>
                 </div>
               </div>
               <div className={styles.threadHeaderActions}>
-                <Badge tone={statusTone(detail.conversation.status)}>{conversationStatusLabel(detail.conversation.status as ConversationStatus)}</Badge>
-                {detail.contact?.customer_id ? <Link className={styles.headerLink} href={`/clientes/${detail.contact.customer_id}`}>Cliente</Link> : null}
+                <Badge tone={statusTone(detail.conversation.status)}>{statusLabel(detail.conversation.status as ConversationStatus)}</Badge>
               </div>
             </div>
 
@@ -158,7 +216,7 @@ export default async function ConversationsPage({
                 return <div key={message.id} className={styles.message} data-direction={outbound ? "outbound" : "inbound"}>
                   <span className={styles.authorTag} data-author={authorKey(message.authorLabel)}>{message.authorLabel}</span>
                   <div className={styles.bubble}>{message.body || `[${message.content_type}]`}</div>
-                  <span className={styles.messageMeta}>{when(message.created_at, timeZone)} · {outbound ? message.delivery_status ?? "enviando" : "recebida"}{message.error_message ? ` · ${message.error_message}` : ""}</span>
+                  <span className={styles.messageMeta}>{when(message.created_at, timeZone)} · {outbound ? deliveryLabel(message.delivery_status) : "recebida"}{message.error_message ? ` · ${message.error_message}` : ""}</span>
                 </div>;
               })}
             </div>
@@ -172,12 +230,12 @@ export default async function ConversationsPage({
                 {detail.conversation.status !== "closed" ? <form action={closeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="danger" type="submit">Encerrar</Button></form> : null}
               </div>
 
-              {detail.conversation.status === "human" && detail.conversation.assigned_user_id === detail.currentUserId && clientMessageId ? <form action={sendConversationMessageAction} className={styles.sendForm}>
+              {detail.conversation.status === "human" && isAssignedToCurrentUser && clientMessageId ? <form action={sendConversationMessageAction} className={styles.sendForm}>
                 <input type="hidden" name="conversationId" value={detail.conversation.id} />
                 <input type="hidden" name="clientMessageId" value={clientMessageId} />
-                <textarea name="body" required maxLength={16000} rows={2} placeholder="Digite uma mensagem" aria-label="Mensagem" className={styles.textarea} />
+                <textarea name="body" required maxLength={16000} rows={1} placeholder="Digite uma mensagem" aria-label="Mensagem" className={styles.textarea} />
                 <Button type="submit">Enviar</Button>
-              </form> : <p className={styles.replyHint}>{detail.conversation.status === "closed" ? "Conversa encerrada." : detail.conversation.status === "waiting_agent" ? "O robô está pausado. Assuma a conversa para responder; o retorno ao robô é manual." : "Assuma a conversa para responder como atendente. Enquanto o humano estiver ativo, o robô não responde."}</p>}
+              </form> : <p className={styles.replyHint}>{detail.conversation.status === "closed" ? "Conversa encerrada." : detail.conversation.status === "human" && !isAssignedToCurrentUser ? "Esta conversa está com outro usuário. O campo de resposta fica bloqueado para evitar duas pessoas respondendo ao mesmo tempo." : detail.conversation.status === "waiting_agent" ? "O robô está pausado. Assuma a conversa para responder; o retorno ao robô é manual." : "Assuma a conversa para responder como atendente. Enquanto o humano estiver ativo, o robô não responde."}</p>}
             </div>
           </Card> : <div className={styles.threadPlaceholder}>
             <div className={styles.placeholderIcon} aria-hidden="true">💬</div>
@@ -189,34 +247,30 @@ export default async function ConversationsPage({
             <section className={styles.contextSection}>
               <p className={styles.contextEyebrow}>CLIENTE</p>
               <div className={styles.contextPerson}>
-                <div className={styles.contextAvatar} aria-hidden="true">{(detail.contact?.name ?? detail.contact?.phone_normalized ?? "C").slice(0, 1).toUpperCase()}</div>
+                <div className={styles.contextAvatar} aria-hidden="true">{avatarInitial(detail.contact?.name ?? detail.contact?.phone_normalized)}</div>
                 <div>
                   <strong>{detail.contact?.name ?? "Contato WhatsApp"}</strong>
                   <span>{detail.contact?.phone_normalized ?? detail.contact?.external_id ?? "Telefone não disponível"}</span>
                 </div>
               </div>
-              {detail.subject.customerId ? <Link className={styles.contextAction} href={`/clientes/${detail.subject.customerId}`}>Abrir cadastro do cliente →</Link> : <p className={styles.contextMuted}>Este contato ainda não está vinculado a um cadastro de cliente.</p>}
+              {detail.subject.customerId ? <Link className={styles.contextAction} href={`/clientes/${detail.subject.customerId}`}>Abrir cadastro do cliente →</Link> : <p className={styles.contextMuted}>Contato ainda não vinculado ao cadastro de cliente.</p>}
             </section>
 
             <section className={styles.contextSection}>
               <p className={styles.contextEyebrow}>ATENDIMENTO</p>
               <dl className={styles.contextList}>
-                <div><dt>Estado</dt><dd>{conversationStatusLabel(detail.conversation.status as ConversationStatus)}</dd></div>
+                <div><dt>Estado</dt><dd>{statusLabel(detail.conversation.status as ConversationStatus)}</dd></div>
+                <div><dt>Responsável</dt><dd>{detail.conversation.status === "human" ? isAssignedToCurrentUser ? "Você" : detail.conversation.assigned_user_id ? "Outro usuário" : "Não identificado" : "—"}</dd></div>
                 <div><dt>Canal</dt><dd>{detail.conversation.channel === "whatsapp" ? "WhatsApp" : detail.conversation.channel}</dd></div>
-                <div><dt>Não lidas</dt><dd>{Number(detail.conversation.unread_count)}</dd></div>
+                <div><dt>Mensagens não lidas</dt><dd>{Number(detail.conversation.unread_count)}</dd></div>
                 <div><dt>Retorno ao robô</dt><dd>Manual</dd></div>
               </dl>
             </section>
 
-            <section className={styles.contextSection}>
-              <p className={styles.contextEyebrow}>PEDIDO</p>
-              {detail.intelligenceContext.activeReferences.orderId ? <p className={styles.contextMuted}>Existe um pedido ativo vinculado ao contexto desta conversa.</p> : <p className={styles.contextMuted}>Nenhum pedido ativo está projetado para esta conversa agora.</p>}
-            </section>
-
-            {recentHistory.length > 0 ? <section className={styles.contextSection}>
-              <p className={styles.contextEyebrow}>ÚLTIMAS MUDANÇAS</p>
+            {latestHistory.length > 0 ? <section className={styles.contextSection}>
+              <p className={styles.contextEyebrow}>ÚLTIMA MUDANÇA</p>
               <ol className={styles.historyList}>
-                {recentHistory.map((entry) => <li key={entry.id}><strong>{conversationStatusLabel(entry.to_state as ConversationStatus)}</strong><span>{when(entry.created_at, timeZone)}</span></li>)}
+                {latestHistory.map((entry) => <li key={entry.id}><strong>{statusLabel(entry.to_state as ConversationStatus)}</strong><span>{when(entry.created_at, timeZone)}</span></li>)}
               </ol>
             </section> : null}
           </aside> : null}
