@@ -23,6 +23,7 @@ export const securityHeaders = [
       `script-src 'self' 'unsafe-inline' https://connect.facebook.net${isDevelopment ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
+      "media-src 'self' https:",
       "font-src 'self' data:",
       "connect-src 'self' https: wss:",
       "frame-src 'self' https://www.facebook.com https://web.facebook.com",

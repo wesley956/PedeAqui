@@ -67,3 +67,21 @@ export async function sendConversationMessageAction(formData: FormData) {
   revalidatePath("/conversas");
   redirect(`/conversas?conversation=${encodeURIComponent(id)}`);
 }
+
+export async function sendConversationMediaAction(formData: FormData) {
+  const id = conversationId(formData);
+  const file = formData.get("file");
+  try {
+    if (!(file instanceof File)) throw new Error("Arquivo inválido.");
+    await ConversationService.sendAgentMedia({
+      conversationId: id,
+      file,
+      caption: String(formData.get("caption") ?? ""),
+      clientMessageId: String(formData.get("clientMessageId") ?? ""),
+    });
+  } catch {
+    redirect(`/conversas?conversation=${encodeURIComponent(id)}&erro=media_failed`);
+  }
+  revalidatePath("/conversas");
+  redirect(`/conversas?conversation=${encodeURIComponent(id)}`);
+}

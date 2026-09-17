@@ -19,6 +19,17 @@ type TimelineMessage = {
   metadata: unknown;
   created_at: string;
   authorLabel: string;
+  media?: {
+    id: string;
+    kind: "image" | "audio" | "video" | "document";
+    mimeType: string | null;
+    filename: string | null;
+    caption: string | null;
+    isVoice: boolean;
+    sizeBytes: number | null;
+    status: string;
+    failureKind: string | null;
+  } | null;
 };
 
 type MessagePageResponse = {
@@ -60,6 +71,56 @@ function mergeMessages(current: TimelineMessage[], incoming: TimelineMessage[]) 
     merged.set(message.id, { ...merged.get(message.id), ...message });
   }
   return [...merged.values()].sort(compareMessages);
+}
+
+function mediaUrl(conversationId: string, mediaId: string, download = false) {
+  return `/api/conversations/${encodeURIComponent(conversationId)}/media/${encodeURIComponent(mediaId)}${download ? "?download=1" : ""}`;
+}
+
+function metadataRecord(value: unknown) {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function formatBytes(value: number | null) {
+  if (!value) return null;
+  return value >= 1024 * 1024 ? `${(value / 1024 / 1024).toFixed(1)} MB` : `${Math.ceil(value / 1024)} KB`;
+}
+
+function MessageContent({ message, conversationId }: { message: TimelineMessage; conversationId: string }) {
+  const media = message.media;
+  if (message.content_type === "location") {
+    const metadata = metadataRecord(message.metadata);
+    const latitude = typeof metadata.location_latitude === "number" ? metadata.location_latitude : null;
+    const longitude = typeof metadata.location_longitude === "number" ? metadata.location_longitude : null;
+    const name = typeof metadata.location_name === "string" ? metadata.location_name : "Localização compartilhada";
+    const address = typeof metadata.location_address === "string" ? metadata.location_address : null;
+    const validCoordinates = latitude !== null && longitude !== null && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180;
+    return <div className={`${styles.bubble} ${styles.locationCard}`}>
+      <strong>{name}</strong>
+      {address ? <span>{address}</span> : null}
+      {validCoordinates ? <a href={`https://www.google.com/maps?q=${latitude},${longitude}`} target="_blank" rel="noreferrer">Abrir no mapa</a> : null}
+    </div>;
+  }
+  if (!media) return <div className={styles.bubble}>{message.body || `[${message.content_type}]`}</div>;
+  if (media.status === "pending" || media.status === "processing") {
+    return <div className={`${styles.bubble} ${styles.mediaState}`} role="status">Processando {media.kind === "audio" ? "áudio" : "mídia"} com segurança…</div>;
+  }
+  if (media.status !== "ready") {
+    return <div className={`${styles.bubble} ${styles.mediaState}`} role="status">Não foi possível carregar este anexo. A mensagem foi preservada para nova tentativa.</div>;
+  }
+  const source = mediaUrl(conversationId, media.id);
+  return <div className={`${styles.bubble} ${styles.mediaBubble}`}>
+    {/* The authenticated media endpoint cannot be optimized by Next Image without bypassing its request cookies. */}
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    {media.kind === "image" ? <img src={source} alt={media.caption || "Imagem compartilhada na conversa"} loading="lazy" /> : null}
+    {media.kind === "audio" ? <audio controls preload="metadata" aria-label={media.isVoice ? "Mensagem de voz" : "Áudio compartilhado"}><source src={source} type={media.mimeType ?? undefined} /></audio> : null}
+    {media.kind === "video" ? <video controls preload="metadata" aria-label="Vídeo compartilhado"><source src={source} type={media.mimeType ?? undefined} /></video> : null}
+    {media.kind === "document" ? <a className={styles.documentLink} href={mediaUrl(conversationId, media.id, true)}>
+      <strong>{media.filename || "Baixar documento"}</strong>
+      <span>{[media.mimeType, formatBytes(media.sizeBytes)].filter(Boolean).join(" · ")}</span>
+    </a> : null}
+    {media.caption || message.body && !/^\[(image|audio|video|document)\]$/.test(message.body) ? <p className={styles.mediaCaption}>{media.caption || message.body}</p> : null}
+  </div>;
 }
 
 async function fetchMessagePage(conversationId: string, query?: { before?: string; after?: string }) {
@@ -254,7 +315,7 @@ export function ConversationTimeline({
         const outbound = message.direction === "outbound";
         return <div key={message.id} className={styles.message} data-direction={outbound ? "outbound" : "inbound"}>
           <span className={styles.authorTag} data-author={authorKey(message.authorLabel)}>{message.authorLabel}</span>
-          <div className={styles.bubble}>{message.body || `[${message.content_type}]`}</div>
+          <MessageContent message={message} conversationId={conversationId} />
           <span className={styles.messageMeta}>{formatStoreDateTime(message.created_at, timeZone)} · {outbound ? deliveryLabel(message.delivery_status) : "recebida"}{message.error_message ? ` · ${message.error_message}` : ""}</span>
         </div>;
       })}

@@ -1,5 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
+import { after } from "next/server";
 import { ConversationService } from "@/server/conversations/conversation-service";
+import { ConversationMediaService } from "@/server/conversations/conversation-media-service";
 import { WhatsAppCoexistenceObservability } from "@/server/conversations/coexistence-observability";
 import { WhatsAppCoexistenceService } from "@/server/conversations/coexistence-service";
 import { ConversationGreetingService } from "@/server/conversations/greeting-service";
@@ -132,6 +134,17 @@ export async function POST(request: Request) {
           });
         }
       }
+    }
+
+    for (const phoneNumberId of webhookPhoneNumberIds(events)) {
+      if (!routing.configuredPhoneNumberIds.has(phoneNumberId)) continue;
+      after(async () => {
+        try {
+          await ConversationMediaService.processPendingForPhoneNumber(phoneNumberId);
+        } catch (error) {
+          recordFailure("whatsapp.media_processing.failed", error, { requestId: requestContext.requestId });
+        }
+      });
     }
 
     return Response.json(

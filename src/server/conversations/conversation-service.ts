@@ -6,6 +6,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { messagePreview, type ConversationStatus } from "@/server/conversations/model";
 import { inboxFilterSchema, conversationReplyInputSchema, conversationTransitionInputSchema, type ConversationReplyInput, type ConversationTransitionInput } from "@/server/conversations/schemas";
+import { CONVERSATION_MEDIA_BUCKET, MAX_AGENT_MEDIA_BYTES, conversationMediaPath, safeMediaFilename, validateConversationMedia, type ConversationMediaKind } from "@/server/conversations/media-policy";
 import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, resolveWhatsAppAppSecret, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import type { WhatsAppWebhookEvent } from "@/server/conversations/whatsapp-webhook";
 
@@ -62,6 +63,17 @@ export type ConversationMessageRow = {
   provider_timestamp: string | null;
   metadata: unknown;
   created_at: string;
+  media?: {
+    id: string;
+    kind: ConversationMediaKind;
+    mimeType: string | null;
+    filename: string | null;
+    caption: string | null;
+    isVoice: boolean;
+    sizeBytes: number | null;
+    status: string;
+    failureKind: string | null;
+  } | null;
 };
 
 export type ConversationMessagePage = {
@@ -156,8 +168,34 @@ async function loadMessagePageForScope(
   const first = pageRows[0];
   const last = pageRows[pageRows.length - 1];
 
+  const ids = pageRows.map((row) => row.id);
+  const mediaByMessage = new Map<string, NonNullable<ConversationMessageRow["media"]>>();
+  if (ids.length > 0) {
+    const { data: mediaRows, error: mediaError } = await admin.from("message_media")
+      .select("id,message_id,media_kind,mime_type,original_filename,caption,is_voice,size_bytes,status,failure_kind")
+      .eq("organization_id", organizationId)
+      .eq("store_id", storeId)
+      .eq("conversation_id", conversationId)
+      .in("message_id", ids);
+    if (mediaError) throw mediaError;
+    for (const media of mediaRows ?? []) {
+      mediaByMessage.set(media.message_id, {
+        id: media.id,
+        kind: media.media_kind as ConversationMediaKind,
+        mimeType: media.mime_type,
+        filename: media.original_filename,
+        caption: media.caption,
+        isVoice: Boolean(media.is_voice),
+        sizeBytes: media.size_bytes === null ? null : Number(media.size_bytes),
+        status: media.status,
+        failureKind: media.failure_kind,
+      });
+    }
+  }
+  const messages = pageRows.map((row) => ({ ...row, media: mediaByMessage.get(row.id) ?? null }));
+
   return {
-    messages: pageRows,
+    messages,
     previousCursor: first ? encodeCursor({ at: first.created_at, id: first.id }) : null,
     latestCursor: last ? encodeCursor({ at: last.created_at, id: last.id }) : null,
     hasOlder: !after && hasMore,
@@ -362,6 +400,131 @@ export class ConversationService {
         p_external_message_id: null,
         p_status: "failed",
         p_error_code: "provider_error",
+        p_error_message: message,
+      });
+      throw new Error(message);
+    }
+  }
+
+  static async sendAgentMedia(input: {
+    conversationId: string;
+    file: File;
+    caption?: string;
+    clientMessageId?: string;
+  }) {
+    const context = await authorize(PERMISSIONS.CONVERSATIONS_REPLY);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const conversation = await scopedConversation(input.conversationId, context.organizationId, storeId);
+    if (conversation.status !== "human" || conversation.assigned_user_id !== context.userId) {
+      throw new Error("Assuma esta conversa antes de responder.");
+    }
+    if (!(input.file instanceof File) || input.file.size <= 0 || input.file.size > MAX_AGENT_MEDIA_BYTES) {
+      throw new Error("O anexo deve ter no máximo 4 MB.");
+    }
+    const [{ data: contact, error: contactError }, { data: settings, error: settingsError }] = await Promise.all([
+      admin.from("contacts").select("external_id").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("id", conversation.contact_id).maybeSingle(),
+      admin.from("store_conversation_settings").select("whatsapp_enabled,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
+    ]);
+    if (contactError) throw contactError;
+    if (settingsError) throw settingsError;
+    if (conversation.channel !== "whatsapp" || !settings?.whatsapp_enabled || !settings.whatsapp_phone_number_id || !contact?.external_id) {
+      throw new Error("WhatsApp ainda não está configurado para esta unidade.");
+    }
+
+    const bytes = new Uint8Array(await input.file.arrayBuffer());
+    const guessedKind: ConversationMediaKind = input.file.type.startsWith("image/") ? "image"
+      : input.file.type.startsWith("audio/") ? "audio"
+        : input.file.type.startsWith("video/") ? "video" : "document";
+    const validated = validateConversationMedia(bytes, input.file.type, guessedKind, MAX_AGENT_MEDIA_BYTES);
+    const clientMessageId = input.clientMessageId || `agent-media:${randomUUID()}`;
+    const caption = (input.caption ?? "").trim().slice(0, 1024);
+    const filename = safeMediaFilename(input.file.name, validated.mimeType);
+    const { data: pending, error: pendingError } = await admin.rpc("conversation_create_outbound_media_internal", {
+      p_conversation_id: conversation.id,
+      p_body: caption || null,
+      p_client_message_id: clientMessageId,
+      p_content_type: guessedKind,
+      p_original_filename: filename,
+      p_declared_mime_type: validated.mimeType,
+      p_actor_user_id: context.userId,
+    });
+    if (pendingError) throw pendingError;
+    if (!pending?.id) throw new Error("Não foi possível preparar o anexo.");
+    if (["sent", "delivered", "read"].includes(pending.delivery_status)) return pending;
+    const { data: claimed, error: claimError } = await admin.rpc("conversation_claim_outbound_media_internal", {
+      p_message_id: pending.id,
+      p_actor_user_id: context.userId,
+    });
+    if (claimError) throw claimError;
+    if (claimed !== true) return pending;
+
+    const { data: existingMedia, error: existingMediaError } = await admin.from("message_media")
+      .select("provider_media_id")
+      .eq("message_id", pending.id)
+      .eq("organization_id", context.organizationId)
+      .eq("store_id", storeId)
+      .maybeSingle();
+    if (existingMediaError) throw existingMediaError;
+
+    const path = conversationMediaPath({
+      organizationId: context.organizationId,
+      storeId,
+      conversationId: conversation.id,
+      messageId: pending.id,
+      extension: validated.extension,
+    });
+    try {
+      const { error: uploadError } = await admin.storage.from(CONVERSATION_MEDIA_BUCKET).upload(path, bytes, {
+        contentType: validated.mimeType,
+        cacheControl: "0",
+        upsert: false,
+      });
+      if (uploadError && !/already exists|duplicate/i.test(uploadError.message)) throw uploadError;
+      const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(settings.access_token_secret_ref));
+      const providerMediaId = existingMedia?.provider_media_id || (await provider.uploadMedia({
+        phoneNumberId: settings.whatsapp_phone_number_id,
+        bytes,
+        mimeType: validated.mimeType,
+        filename,
+      })).mediaId;
+      const { error: mediaError } = await admin.from("message_media").update({
+        provider_media_id: providerMediaId,
+        storage_path: path,
+        mime_type: validated.mimeType,
+        size_bytes: validated.sizeBytes,
+        sha256: validated.sha256,
+        status: "ready",
+        failure_kind: null,
+        updated_at: new Date().toISOString(),
+      }).eq("message_id", pending.id).eq("organization_id", context.organizationId).eq("store_id", storeId);
+      if (mediaError) throw mediaError;
+      const sent = await provider.sendMedia({
+        phoneNumberId: settings.whatsapp_phone_number_id,
+        recipient: contact.external_id,
+        mediaId: providerMediaId,
+        mediaType: guessedKind,
+        caption: caption || null,
+        filename,
+      });
+      const { data, error } = await admin.rpc("conversation_mark_outbound_result_internal", {
+        p_message_id: pending.id,
+        p_external_message_id: sent.externalMessageId,
+        p_status: "sent",
+        p_error_code: null,
+        p_error_message: null,
+      });
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      const message = safeWhatsAppFailureMessage(error);
+      await admin.from("message_media").update({ send_claimed_at: null, updated_at: new Date().toISOString() })
+        .eq("message_id", pending.id).eq("organization_id", context.organizationId).eq("store_id", storeId);
+      await admin.rpc("conversation_mark_outbound_result_internal", {
+        p_message_id: pending.id,
+        p_external_message_id: null,
+        p_status: "failed",
+        p_error_code: "media_provider_error",
         p_error_message: message,
       });
       throw new Error(message);

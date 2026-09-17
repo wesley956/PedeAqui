@@ -19,6 +19,22 @@ export type ProviderSendReplyButtonInput = ProviderSendTextInput & {
   buttonTitle: string;
 };
 
+export type ProviderSendMediaInput = {
+  phoneNumberId: string;
+  recipient: string;
+  mediaId: string;
+  mediaType: "image" | "audio" | "video" | "document";
+  caption?: string | null;
+  filename?: string | null;
+};
+
+export type ProviderMediaUploadInput = {
+  phoneNumberId: string;
+  bytes: Uint8Array;
+  mimeType: string;
+  filename: string;
+};
+
 export type ProviderSendResult = {
   externalMessageId: string;
 };
@@ -34,6 +50,8 @@ export interface ConversationProvider {
   sendText(input: ProviderSendTextInput): Promise<ProviderSendResult>;
   sendReplyButton?(input: ProviderSendReplyButtonInput): Promise<ProviderSendResult>;
   sendTemplate?(input: ProviderSendTemplateInput): Promise<ProviderSendResult>;
+  uploadMedia?(input: ProviderMediaUploadInput): Promise<{ mediaId: string }>;
+  sendMedia?(input: ProviderSendMediaInput): Promise<ProviderSendResult>;
 }
 
 export class WhatsAppProviderError extends Error {
@@ -151,6 +169,37 @@ export class WhatsAppCloudProvider implements ConversationProvider {
       to: input.recipient,
       type: "text",
       text: { body: input.body },
+    });
+  }
+
+  async uploadMedia(input: ProviderMediaUploadInput): Promise<{ mediaId: string }> {
+    const version = resolveWhatsAppGraphVersion();
+    const form = new FormData();
+    form.set("messaging_product", "whatsapp");
+    form.set("type", input.mimeType);
+    form.set("file", new Blob([Buffer.from(input.bytes)], { type: input.mimeType }), input.filename);
+    const response = await fetch(`https://graph.facebook.com/${version}/${encodeURIComponent(input.phoneNumberId)}/media`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${this.accessToken}` },
+      body: form,
+      cache: "no-store",
+      signal: AbortSignal.timeout(20_000),
+    });
+    const payload = await response.json().catch(() => null) as { id?: string; error?: { message?: string; code?: number; type?: string } } | null;
+    if (!response.ok || !payload?.id) throw providerError(response, payload);
+    return { mediaId: payload.id };
+  }
+
+  async sendMedia(input: ProviderSendMediaInput): Promise<ProviderSendResult> {
+    const media: Record<string, unknown> = { id: input.mediaId };
+    if (input.caption && input.mediaType !== "audio") media.caption = input.caption.slice(0, 1024);
+    if (input.filename && input.mediaType === "document") media.filename = input.filename.slice(0, 240);
+    return this.sendMessage(input.phoneNumberId, {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: input.recipient,
+      type: input.mediaType,
+      [input.mediaType]: media,
     });
   }
 
