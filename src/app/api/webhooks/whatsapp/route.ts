@@ -18,6 +18,7 @@ import { recordFailure } from "@/server/observability/failure";
 import { getRequestContext } from "@/server/observability/request-context";
 
 export const runtime = "nodejs";
+const MAX_WHATSAPP_WEBHOOK_BYTES = 3 * 1024 * 1024;
 
 function constantEqual(left: string, right: string) {
   const leftHash = createHash("sha256").update(left).digest();
@@ -42,7 +43,9 @@ export async function POST(request: Request) {
   const requestContext = await getRequestContext();
   const responseHeaders = { "x-request-id": requestContext.requestId };
   const rawBody = await request.text();
-  if (rawBody.length > 1_000_000) return new Response("Payload too large", { status: 413, headers: responseHeaders });
+  if (Buffer.byteLength(rawBody, "utf8") > MAX_WHATSAPP_WEBHOOK_BYTES) {
+    return new Response("Payload too large", { status: 413, headers: responseHeaders });
+  }
 
   let payload: unknown;
   try {
@@ -71,7 +74,7 @@ export async function POST(request: Request) {
       }
 
       if (event.kind === "echo" || event.kind === "sync") {
-        const result = await WhatsAppCoexistenceService.ingest(event);
+        const result = await WhatsAppCoexistenceService.ingest(event, requestContext.requestId);
         if (result && typeof result === "object" && "ignored" in result && result.ignored) ignored += 1;
         else processed += 1;
         continue;
