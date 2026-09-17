@@ -89,14 +89,17 @@ begin
 
   insert into public.message_media (
     organization_id, store_id, conversation_id, message_id, media_kind,
-    provider_media_id, declared_mime_type, original_filename, caption, is_voice
+    provider_media_id, declared_mime_type, original_filename, caption, is_voice,
+    status, failure_kind
   ) values (
     new.organization_id, new.store_id, new.conversation_id, new.id, new.content_type,
     v_media_id,
     nullif(left(trim(coalesce(new.metadata ->> 'media_mime_type','')), 180), ''),
     nullif(left(trim(coalesce(new.metadata ->> 'media_filename','')), 240), ''),
     nullif(left(trim(coalesce(new.metadata ->> 'media_caption','')), 1024), ''),
-    coalesce((new.metadata ->> 'media_voice')::boolean, false)
+    coalesce((new.metadata ->> 'media_voice')::boolean, false),
+    case when v_media_id is null and not (new.direction = 'outbound' and new.sender_type = 'agent') then 'failed' else 'pending' end,
+    case when v_media_id is null and not (new.direction = 'outbound' and new.sender_type = 'agent') then 'legacy_media_unavailable' else null end
   )
   on conflict (message_id) do update
   set provider_media_id = coalesce(public.message_media.provider_media_id, excluded.provider_media_id),
@@ -122,7 +125,8 @@ for each row execute function private.capture_message_media();
 
 insert into public.message_media (
   organization_id, store_id, conversation_id, message_id, media_kind,
-  provider_media_id, declared_mime_type, original_filename, caption, is_voice
+  provider_media_id, declared_mime_type, original_filename, caption, is_voice,
+  status, failure_kind
 )
 select
   message.organization_id, message.store_id, message.conversation_id, message.id, message.content_type,
@@ -130,7 +134,9 @@ select
   nullif(left(trim(coalesce(message.metadata ->> 'media_mime_type','')), 180), ''),
   nullif(left(trim(coalesce(message.metadata ->> 'media_filename','')), 240), ''),
   nullif(left(trim(coalesce(message.metadata ->> 'media_caption','')), 1024), ''),
-  case when lower(coalesce(message.metadata ->> 'media_voice','false')) = 'true' then true else false end
+  case when lower(coalesce(message.metadata ->> 'media_voice','false')) = 'true' then true else false end,
+  case when nullif(trim(coalesce(message.metadata ->> 'media_id','')), '') is null then 'failed' else 'pending' end,
+  case when nullif(trim(coalesce(message.metadata ->> 'media_id','')), '') is null then 'legacy_media_unavailable' else null end
 from public.messages message
 where message.content_type in ('image','audio','video','document')
 on conflict (message_id) do nothing;
