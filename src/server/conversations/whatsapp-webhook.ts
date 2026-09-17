@@ -28,11 +28,37 @@ export type WhatsAppEchoEvent = {
   metadata: Record<string, string | number | boolean | null>;
 };
 
+export type WhatsAppHistoryMessage = {
+  externalContactId: string;
+  phoneNormalized: string | null;
+  externalMessageId: string;
+  direction: "inbound" | "outbound";
+  body: string;
+  contentType: WhatsAppContentType;
+  deliveryStatus: "received" | "sent" | "delivered" | "read" | "failed";
+  providerTimestamp: string | null;
+  metadata: Record<string, string | number | boolean | null>;
+};
+
+export type WhatsAppStateSyncContact = {
+  action: "add" | "remove";
+  phoneNormalized: string;
+  fullName: string | null;
+  syncedAt: string | null;
+};
+
 export type WhatsAppSyncEvent = {
   kind: "sync";
   phoneNumberId: string;
   syncType: "history" | "smb_app_state_sync";
   itemCount: number;
+  historyMessages: WhatsAppHistoryMessage[];
+  contacts: WhatsAppStateSyncContact[];
+  phase: string | null;
+  chunkOrder: number | null;
+  progress: string | null;
+  errorCode: string | null;
+  errorMessage: string | null;
 };
 
 export type WhatsAppStatusEvent = {
@@ -62,6 +88,12 @@ function text(value: unknown) {
   return typeof value === "string" ? value : null;
 }
 
+function numberValue(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && /^-?\d+$/.test(value.trim())) return Number(value);
+  return null;
+}
+
 function timestamp(value: unknown) {
   const raw = text(value);
   if (!raw || !/^\d{1,16}$/.test(raw)) return null;
@@ -89,6 +121,120 @@ function extractBody(message: UnknownRecord, type: string) {
 function normalizeContentType(value: string | null): WhatsAppContentType {
   if (value === "text" || value === "image" || value === "audio" || value === "video" || value === "document" || value === "location" || value === "template" || value === "interactive") return value;
   return "unsupported";
+}
+
+function historyDeliveryStatus(value: unknown): WhatsAppHistoryMessage["deliveryStatus"] {
+  const status = text(value);
+  if (status === "delivered" || status === "read" || status === "failed" || status === "sent") return status;
+  return "sent";
+}
+
+function parseHistoryMessage(threadId: string, messageValue: unknown): WhatsAppHistoryMessage | null {
+  const message = record(messageValue);
+  if (!message) return null;
+  const externalMessageId = text(message.id);
+  const from = text(message.from);
+  const to = text(message.to);
+  if (!externalMessageId || !from) return null;
+
+  const normalizedThread = normalizeWhatsAppIdentifier(threadId);
+  const normalizedFrom = normalizeWhatsAppIdentifier(from);
+  const normalizedTo = to ? normalizeWhatsAppIdentifier(to) : null;
+  const inbound = normalizedThread !== null && normalizedFrom === normalizedThread;
+  const outbound = normalizedThread !== null && normalizedTo === normalizedThread;
+  if (!inbound && !outbound) return null;
+
+  const rawType = text(message.type) ?? "unsupported";
+  const historyContext = record(message.history_context);
+  const rawHistoryStatus = text(historyContext?.status);
+  const metadata: Record<string, string | number | boolean | null> = {
+    whatsapp_type: rawType,
+    sync_source: "history",
+    historical: true,
+    history_status: rawHistoryStatus,
+  };
+  if (outbound) metadata.source = "whatsapp_business_app";
+
+  return {
+    externalContactId: threadId,
+    phoneNormalized: normalizedThread,
+    externalMessageId,
+    direction: inbound ? "inbound" : "outbound",
+    body: extractBody(message, rawType).slice(0, 16000),
+    contentType: normalizeContentType(rawType),
+    deliveryStatus: inbound ? "received" : historyDeliveryStatus(rawHistoryStatus),
+    providerTimestamp: timestamp(message.timestamp),
+    metadata,
+  };
+}
+
+function parseHistoryEvents(phoneNumberId: string, historyValue: unknown): WhatsAppSyncEvent[] {
+  const events: WhatsAppSyncEvent[] = [];
+  for (const historyItemValue of array(historyValue)) {
+    const historyItem = record(historyItemValue);
+    if (!historyItem) continue;
+    const syncMetadata = record(historyItem.metadata);
+    const firstError = record(array(historyItem.errors)[0]);
+    const messages: WhatsAppHistoryMessage[] = [];
+
+    for (const threadValue of array(historyItem.threads)) {
+      const thread = record(threadValue);
+      const threadId = text(thread?.id);
+      if (!threadId) continue;
+      for (const messageValue of array(thread?.messages)) {
+        const parsed = parseHistoryMessage(threadId, messageValue);
+        if (parsed) messages.push(parsed);
+      }
+    }
+
+    events.push({
+      kind: "sync",
+      phoneNumberId,
+      syncType: "history",
+      itemCount: messages.length,
+      historyMessages: messages,
+      contacts: [],
+      phase: text(syncMetadata?.phase) ?? (numberValue(syncMetadata?.phase) === null ? null : String(numberValue(syncMetadata?.phase))),
+      chunkOrder: numberValue(syncMetadata?.chunk_order),
+      progress: text(syncMetadata?.progress) ?? (numberValue(syncMetadata?.progress) === null ? null : String(numberValue(syncMetadata?.progress))),
+      errorCode: firstError?.code === undefined ? null : String(firstError.code),
+      errorMessage: text(firstError?.title) ?? text(firstError?.message),
+    });
+  }
+  return events;
+}
+
+function parseStateSyncEvent(phoneNumberId: string, stateSyncValue: unknown): WhatsAppSyncEvent {
+  const contacts: WhatsAppStateSyncContact[] = [];
+  for (const stateValue of array(stateSyncValue)) {
+    const state = record(stateValue);
+    if (!state || text(state.type) !== "contact") continue;
+    const contact = record(state.contact);
+    const action = text(state.action);
+    const rawPhone = text(contact?.phone_number);
+    const phoneNormalized = rawPhone ? normalizeWhatsAppIdentifier(rawPhone) : null;
+    if ((action !== "add" && action !== "remove") || !phoneNormalized) continue;
+    const metadata = record(state.metadata);
+    contacts.push({
+      action,
+      phoneNormalized,
+      fullName: text(contact?.full_name) ?? text(contact?.first_name),
+      syncedAt: timestamp(metadata?.timestamp),
+    });
+  }
+  return {
+    kind: "sync",
+    phoneNumberId,
+    syncType: "smb_app_state_sync",
+    itemCount: contacts.length,
+    historyMessages: [],
+    contacts,
+    phase: null,
+    chunkOrder: null,
+    progress: null,
+    errorCode: null,
+    errorMessage: null,
+  };
 }
 
 export function parseWhatsAppWebhook(payload: unknown): WhatsAppParsedEvent[] {
@@ -129,9 +275,10 @@ export function parseWhatsAppWebhook(payload: unknown): WhatsAppParsedEvent[] {
         }
       }
 
-      if (field === "history" || field === "smb_app_state_sync") {
-        const items = field === "history" ? array(value.history) : array(value.state_sync);
-        events.push({ kind: "sync", phoneNumberId, syncType: field, itemCount: items.length });
+      if (field === "history") {
+        events.push(...parseHistoryEvents(phoneNumberId, value.history));
+      } else if (field === "smb_app_state_sync") {
+        events.push(parseStateSyncEvent(phoneNumberId, value.state_sync));
       }
 
       const contactNames = new Map<string, string>();
