@@ -7,7 +7,7 @@ import { PERMISSIONS } from "@/server/access/permissions";
 import { messagePreview, type ConversationStatus } from "@/server/conversations/model";
 import { inboxFilterSchema, conversationReplyInputSchema, conversationTemplateReplyInputSchema, conversationTransitionInputSchema, type ConversationReplyInput, type ConversationTemplateReplyInput, type ConversationTransitionInput } from "@/server/conversations/schemas";
 import { CONVERSATION_MEDIA_BUCKET, MAX_AGENT_MEDIA_BYTES, conversationMediaPath, safeMediaFilename, validateConversationMedia, type ConversationMediaKind } from "@/server/conversations/media-policy";
-import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, resolveWhatsAppAppSecret, safeWhatsAppFailureMessage, type ProviderTemplateSummary } from "@/server/conversations/provider";
+import { WhatsAppCloudProvider, WhatsAppProviderError, resolveWhatsAppAccessToken, resolveWhatsAppAppSecret, safeWhatsAppFailureMessage, type ProviderTemplateSummary } from "@/server/conversations/provider";
 import { ConversationSendPolicyError, isWhatsAppConnectionReady, renderWhatsAppTemplateBody, resolveWhatsAppSendWindow } from "@/server/conversations/whatsapp-send-policy";
 import type { WhatsAppWebhookEvent } from "@/server/conversations/whatsapp-webhook";
 
@@ -210,7 +210,7 @@ async function resolveWhatsAppSendContext(input: {
   let templates: ProviderTemplateSummary[] = [];
   let templateCatalogAvailable = false;
 
-  if (input.includeTemplates && canSendTemplate && normalizedSettings.businessAccountId) {
+  if (input.includeTemplates && !window.canSendFreeform && canSendTemplate && normalizedSettings.businessAccountId) {
     try {
       const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(normalizedSettings.accessTokenSecretRef));
       templates = (await provider.listTemplates(normalizedSettings.businessAccountId))
@@ -544,6 +544,12 @@ export class ConversationService {
         p_error_code: "provider_error",
         p_error_message: message,
       });
+      if (error instanceof WhatsAppProviderError) {
+        throw new ConversationSendPolicyError(
+          error.retryable ? "provider_retryable" : "provider_non_retryable",
+          message,
+        );
+      }
       throw new Error(message);
     }
   }
@@ -666,6 +672,12 @@ export class ConversationService {
         p_error_code: "media_provider_error",
         p_error_message: message,
       });
+      if (error instanceof WhatsAppProviderError) {
+        throw new ConversationSendPolicyError(
+          error.retryable ? "provider_retryable" : "provider_non_retryable",
+          message,
+        );
+      }
       throw new Error(message);
     }
   }
@@ -747,6 +759,12 @@ export class ConversationService {
         p_error_code: "template_provider_error",
         p_error_message: message,
       });
+      if (error instanceof WhatsAppProviderError) {
+        throw new ConversationSendPolicyError(
+          error.retryable ? "provider_retryable" : "provider_non_retryable",
+          message,
+        );
+      }
       throw new Error(message);
     }
   }
