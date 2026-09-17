@@ -5,6 +5,7 @@ import { parseWhatsAppWebhook } from "@/server/conversations/whatsapp-webhook";
 
 const read = (path: string) => readFileSync(path, "utf8");
 const migration = read("supabase/migrations/20260917224308_wpp10_conversation_media.sql");
+const legacyMigration = read("supabase/migrations/20260917230251_wpp10_legacy_media_state.sql");
 const mediaService = read("src/server/conversations/conversation-media-service.ts");
 const conversationService = read("src/server/conversations/conversation-service.ts");
 const provider = read("src/server/conversations/provider.ts");
@@ -73,6 +74,8 @@ describe("WPP-10 private conversation media", () => {
     expect(mediaService).toContain('status: "failed", failure_kind: kind');
     expect(mediaService).toContain("conversation_media_failed");
     expect(mediaService).not.toContain("accessToken,");
+    expect(legacyMigration).toContain("legacy_media_unavailable");
+    expect(legacyMigration).toContain("and not (message.direction = 'outbound' and message.sender_type = 'agent')");
   });
 
   it("supports authorized agent upload and official Cloud API media send", () => {
