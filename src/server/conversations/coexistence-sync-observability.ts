@@ -26,7 +26,11 @@ async function safeUpsert(
     }, { onConflict: "store_id" });
     if (error) throw error;
   } catch (error) {
-    recordFailure(eventName, error, { requestId, organizationId, storeId });
+    recordFailure(eventName, error, {
+      requestId: requestId ?? `coexistence-sync:${eventName}`,
+      organizationId,
+      storeId,
+    });
   }
 }
 
