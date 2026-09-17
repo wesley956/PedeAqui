@@ -31,8 +31,8 @@ describe("WhatsApp webhook routing", () => {
   it("routes coexistence echoes and sync events separately from normal inbound messages", () => {
     const route = read("src/app/api/webhooks/whatsapp/route.ts");
     expect(route).toContain('event.kind === "echo" || event.kind === "sync"');
-    expect(route).toContain("WhatsAppCoexistenceService.ingest(event)");
-    expect(route.indexOf("WhatsAppCoexistenceService.ingest(event)")).toBeLessThan(route.indexOf("ConversationService.ingestWhatsAppEvent(event)"));
+    expect(route).toContain("WhatsAppCoexistenceService.ingest(event, requestContext.requestId)");
+    expect(route.indexOf("WhatsAppCoexistenceService.ingest(event, requestContext.requestId)")).toBeLessThan(route.indexOf("ConversationService.ingestWhatsAppEvent(event)"));
   });
 
   it("keeps real configured numbers scoped by the existing store channel settings", () => {
