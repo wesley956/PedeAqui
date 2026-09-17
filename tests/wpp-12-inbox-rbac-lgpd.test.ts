@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(path, "utf8");
@@ -82,8 +82,7 @@ describe("WPP-12 Inbox RBAC, tenant isolation and minimization", () => {
   });
 
   it("does not introduce a WPP-12 database migration for an authorization-only change", () => {
-    const fs = require("node:fs") as typeof import("node:fs");
-    const migrations = fs.readdirSync("supabase/migrations");
+    const migrations = readdirSync("supabase/migrations");
     expect(migrations.some((name) => name.toLowerCase().includes("wpp12"))).toBe(false);
   });
 });
