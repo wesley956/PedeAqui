@@ -10,6 +10,7 @@ import {
   returnConversationToBotAction,
   sendConversationMediaAction,
   sendConversationMessageAction,
+  sendConversationTemplateAction,
 } from "@/features/conversations/actions";
 import { DEFAULT_STORE_TIMEZONE, formatStoreDateTime } from "@/lib/store-date-time";
 import { getAccessContext } from "@/server/access/context";
@@ -161,6 +162,11 @@ export default async function ConversationsPage({
 
       {params.erro === "send_failed" ? <div className={styles.alert} role="alert"><strong>Não foi possível enviar a mensagem.</strong><p>Confira a conexão do WhatsApp e tente novamente. A tentativa ficou registrada no histórico.</p></div> : null}
       {params.erro === "media_failed" ? <div className={styles.alert} role="alert"><strong>Não foi possível enviar o anexo.</strong><p>Use JPEG, PNG, WebP, áudio, MP4, PDF ou documento Office com até 4 MB. A tentativa não aparece como enviada.</p></div> : null}
+      {params.erro === "window_closed" || params.erro === "window_unknown" ? <div className={styles.alert} role="alert"><strong>A janela de atendimento da Meta não permite mensagem livre.</strong><p>Use um template aprovado abaixo. Uma nova mensagem do cliente reabre a janela de atendimento.</p></div> : null}
+      {params.erro === "connection_unavailable" ? <div className={styles.alert} role="alert"><strong>WhatsApp indisponível para envio.</strong><p>A conexão da unidade precisa estar conectada antes de responder.</p></div> : null}
+      {params.erro === "template_unavailable" || params.erro === "template_invalid" || params.erro === "template_failed" ? <div className={styles.alert} role="alert"><strong>Não foi possível enviar o template.</strong><p>Atualize a conversa e confirme se o modelo continua aprovado e disponível na conta da Meta.</p></div> : null}
+      {params.erro === "provider_retryable" ? <div className={styles.alert} role="alert"><strong>A Meta está temporariamente indisponível.</strong><p>Nenhuma tentativa foi apresentada como sucesso. Tente novamente quando o canal estabilizar.</p></div> : null}
+      {params.erro === "provider_non_retryable" ? <div className={styles.alert} role="alert"><strong>A Meta rejeitou o envio.</strong><p>Revise a conexão ou o template aprovado antes de tentar novamente.</p></div> : null}
 
       {inbox.conversations.length === 0 && !params.cursor ? <div className={styles.empty}><EmptyState title="Nenhuma conversa nesta fila" description="Novas mensagens aparecerão aqui automaticamente quando um canal estiver conectado." /></div> : (
         <div className={styles.workspace} data-selected={detail ? "true" : undefined}>
@@ -253,13 +259,24 @@ export default async function ConversationsPage({
                 {detail.conversation.status !== "closed" ? <form action={closeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="danger" type="submit">Encerrar</Button></form> : null}
               </div>
 
-              {detail.conversation.status === "human" && isAssignedToCurrentUser && clientMessageId ? <form action={sendConversationMessageAction} className={styles.sendForm}>
+              {detail.conversation.status === "human" && isAssignedToCurrentUser ? <div className={styles.sendStatus} data-open={detail.sendCapability.canSendFreeform || undefined}>
+                <strong>{detail.sendCapability.canSendFreeform ? "Janela Meta aberta" : "Template necessário"}</strong>
+                <span>{detail.sendCapability.canSendFreeform
+                  ? detail.sendCapability.expiresAt ? `Mensagem livre disponível até ${when(detail.sendCapability.expiresAt, timeZone)}.` : "Mensagem livre disponível."
+                  : detail.sendCapability.connectionStatus !== "connected"
+                    ? "A conexão do WhatsApp não está pronta para envio."
+                    : detail.sendCapability.windowStatus === "unknown"
+                      ? "Ainda não há um inbound elegível para abrir a janela de atendimento."
+                      : "A janela de 24 horas terminou; mensagens livres e anexos ficam bloqueados."}</span>
+              </div> : null}
+
+              {detail.conversation.status === "human" && isAssignedToCurrentUser && clientMessageId && detail.sendCapability.canSendFreeform ? <form action={sendConversationMessageAction} className={styles.sendForm}>
                 <input type="hidden" name="conversationId" value={detail.conversation.id} />
                 <input type="hidden" name="clientMessageId" value={clientMessageId} />
                 <textarea name="body" required maxLength={16000} rows={1} placeholder="Digite uma mensagem" aria-label="Mensagem" className={styles.textarea} />
                 <Button type="submit">Enviar</Button>
-              </form> : <p className={styles.replyHint}>{detail.conversation.status === "closed" ? "Conversa encerrada." : detail.conversation.status === "human" && !isAssignedToCurrentUser ? "Esta conversa está com outro usuário. O campo de resposta fica bloqueado para evitar duas pessoas respondendo ao mesmo tempo." : detail.conversation.status === "waiting_agent" ? "O robô está pausado. Assuma a conversa para responder; o retorno ao robô é manual." : "Assuma a conversa para responder como atendente. Enquanto o humano estiver ativo, o robô não responde."}</p>}
-              {detail.conversation.status === "human" && isAssignedToCurrentUser && clientMessageId ? <form action={sendConversationMediaAction} className={styles.attachmentForm}>
+              </form> : <p className={styles.replyHint}>{detail.conversation.status === "closed" ? "Conversa encerrada." : detail.conversation.status === "human" && !isAssignedToCurrentUser ? "Esta conversa está com outro usuário. O campo de resposta fica bloqueado para evitar duas pessoas respondendo ao mesmo tempo." : detail.conversation.status === "human" && isAssignedToCurrentUser && !detail.sendCapability.canSendFreeform ? "Mensagem livre bloqueada pela política da Meta. Use um template aprovado quando disponível." : detail.conversation.status === "waiting_agent" ? "O robô está pausado. Assuma a conversa para responder; o retorno ao robô é manual." : "Assuma a conversa para responder como atendente. Enquanto o humano estiver ativo, o robô não responde."}</p>}
+              {detail.conversation.status === "human" && isAssignedToCurrentUser && clientMessageId && detail.sendCapability.canSendMedia ? <form action={sendConversationMediaAction} className={styles.attachmentForm}>
                 <input type="hidden" name="conversationId" value={detail.conversation.id} />
                 <input type="hidden" name="clientMessageId" value={`media:${clientMessageId}`} />
                 <input className={styles.fileInput} type="file" name="file" required accept="image/jpeg,image/png,image/webp,audio/mpeg,audio/ogg,audio/mp4,audio/aac,audio/amr,audio/wav,video/mp4,application/pdf,.docx,.xlsx,.pptx" aria-label="Escolher anexo" />
@@ -267,6 +284,26 @@ export default async function ConversationsPage({
                 <Button tone="secondary" type="submit">Enviar anexo</Button>
                 <p className={styles.attachmentHint}>Arquivos permitidos até 4 MB. Downloads ficam privados e exigem acesso à unidade.</p>
               </form> : null}
+              {detail.conversation.status === "human" && isAssignedToCurrentUser && clientMessageId && !detail.sendCapability.canSendFreeform && detail.sendCapability.canSendTemplate && detail.sendCapability.templates.length > 0 ? <form action={sendConversationTemplateAction} className={styles.templateForm}>
+                <input type="hidden" name="conversationId" value={detail.conversation.id} />
+                <input type="hidden" name="clientMessageId" value={`template:${clientMessageId}`} />
+                <label>
+                  <span>Template aprovado</span>
+                  <select name="templateKey" required className={styles.templateSelect}>
+                    {detail.sendCapability.templates.map((template) => <option key={`${template.name}:${template.language}`} value={`${template.name}::${template.language}`}>
+                      {template.name} · {template.language}{template.bodyParameterCount > 0 ? ` · ${template.bodyParameterCount} parâmetro(s)` : ""}
+                    </option>)}
+                  </select>
+                </label>
+                <label>
+                  <span>Parâmetros do corpo</span>
+                  <textarea className={styles.templateParams} name="parameters" rows={2} maxLength={6000} placeholder="Um parâmetro por linha, somente se o template exigir" />
+                </label>
+                <Button type="submit">Enviar template</Button>
+                <p className={styles.attachmentHint}>O servidor confirma novamente aprovação, WABA, idioma e quantidade de parâmetros antes do envio.</p>
+              </form> : null}
+              {detail.conversation.status === "human" && isAssignedToCurrentUser && !detail.sendCapability.canSendFreeform && detail.sendCapability.canSendTemplate && !detail.sendCapability.templateCatalogAvailable ? <p className={styles.replyHint}>Não foi possível consultar os templates aprovados agora. Nenhuma mensagem livre será enviada como fallback.</p> : null}
+              {detail.conversation.status === "human" && isAssignedToCurrentUser && !detail.sendCapability.canSendFreeform && detail.sendCapability.canSendTemplate && detail.sendCapability.templateCatalogAvailable && detail.sendCapability.templates.length === 0 ? <p className={styles.replyHint}>Não há template aprovado compatível disponível para resposta manual nesta conta.</p> : null}
             </div>
           </Card> : <div className={styles.threadPlaceholder}>
             <div className={styles.placeholderIcon} aria-hidden="true">💬</div>

@@ -14,6 +14,16 @@ export type ProviderSendTemplateInput = {
   bodyParameters: string[];
 };
 
+export type ProviderTemplateSummary = {
+  name: string;
+  language: string;
+  status: string;
+  category: string | null;
+  bodyText: string;
+  bodyParameterCount: number;
+  supported: boolean;
+};
+
 export type ProviderSendReplyButtonInput = ProviderSendTextInput & {
   buttonId: string;
   buttonTitle: string;
@@ -49,6 +59,7 @@ export type WhatsAppPhoneNumberInspection = {
 export interface ConversationProvider {
   sendText(input: ProviderSendTextInput): Promise<ProviderSendResult>;
   sendReplyButton?(input: ProviderSendReplyButtonInput): Promise<ProviderSendResult>;
+  listTemplates?(businessAccountId: string): Promise<ProviderTemplateSummary[]>;
   sendTemplate?(input: ProviderSendTemplateInput): Promise<ProviderSendResult>;
   uploadMedia?(input: ProviderMediaUploadInput): Promise<{ mediaId: string }>;
   sendMedia?(input: ProviderSendMediaInput): Promise<ProviderSendResult>;
@@ -218,6 +229,57 @@ export class WhatsAppCloudProvider implements ConversationProvider {
           buttons: [{ type: "reply", reply: { id: input.buttonId, title: input.buttonTitle.trim() } }],
         },
       },
+    });
+  }
+
+  async listTemplates(businessAccountId: string): Promise<ProviderTemplateSummary[]> {
+    if (!/^\d{5,40}$/.test(businessAccountId)) {
+      throw new Error("Identificador da conta WhatsApp inválido.");
+    }
+    const version = resolveWhatsAppGraphVersion();
+    const url = new URL(`https://graph.facebook.com/${version}/${encodeURIComponent(businessAccountId)}/message_templates`);
+    url.searchParams.set("fields", "name,language,status,category,components");
+    url.searchParams.set("limit", "100");
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${this.accessToken}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+    });
+    const payload = await response.json().catch(() => null) as {
+      data?: Array<{
+        name?: string;
+        language?: string;
+        status?: string;
+        category?: string;
+        components?: Array<Record<string, unknown>>;
+      }>;
+      error?: { message?: string; code?: number; type?: string };
+    } | null;
+    if (!response.ok) throw providerError(response, payload);
+    return (payload?.data ?? []).flatMap((template) => {
+      if (!template.name || !template.language || template.status !== "APPROVED") return [];
+      const components = Array.isArray(template.components) ? template.components : [];
+      const body = components.find((component) => component.type === "BODY");
+      const bodyText = typeof body?.text === "string" ? body.text : "";
+      if (!bodyText) return [];
+      let bodyParameterCount = 0;
+      for (const match of bodyText.matchAll(/\{\{(\d+)\}\}/g)) {
+        bodyParameterCount = Math.max(bodyParameterCount, Number(match[1] ?? 0));
+      }
+      const unsupportedDynamicComponent = components.some((component) => {
+        if (component.type === "BODY" || component.type === "FOOTER") return false;
+        return JSON.stringify(component).includes("{{");
+      });
+      return [{
+        name: template.name,
+        language: template.language,
+        status: template.status,
+        category: template.category ?? null,
+        bodyText,
+        bodyParameterCount,
+        supported: !unsupportedDynamicComponent,
+      }];
     });
   }
 
