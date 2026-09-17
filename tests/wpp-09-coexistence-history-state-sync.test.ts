@@ -55,8 +55,7 @@ describe("WPP-09 coexistence history/state sync", () => {
 
     expect(events).toHaveLength(1);
     const sync = events[0];
-    expect(sync.kind).toBe("sync");
-    if (sync.kind !== "sync") throw new Error("expected sync");
+    if (!sync || sync.kind !== "sync") throw new Error("expected sync");
     expect(sync.syncType).toBe("history");
     expect(sync.phase).toBe("1");
     expect(sync.chunkOrder).toBe(2);
@@ -73,7 +72,7 @@ describe("WPP-09 coexistence history/state sync", () => {
       deliveryStatus: "delivered",
       externalMessageId: "wamid.outbound-history",
     });
-    expect(sync.historyMessages[1].metadata.source).toBe("whatsapp_business_app");
+    expect(sync.historyMessages[1]?.metadata.source).toBe("whatsapp_business_app");
     expect(events.some((event) => event.kind === "message")).toBe(false);
   });
 
@@ -85,7 +84,7 @@ describe("WPP-09 coexistence history/state sync", () => {
     }));
     expect(events).toHaveLength(1);
     const sync = events[0];
-    if (sync.kind !== "sync") throw new Error("expected sync");
+    if (!sync || sync.kind !== "sync") throw new Error("expected sync");
     expect(sync.syncType).toBe("history");
     expect(sync.errorCode).toBe("2593109");
     expect(sync.historyMessages).toEqual([]);
@@ -110,7 +109,7 @@ describe("WPP-09 coexistence history/state sync", () => {
     }));
     expect(events).toHaveLength(1);
     const sync = events[0];
-    if (sync.kind !== "sync") throw new Error("expected sync");
+    if (!sync || sync.kind !== "sync") throw new Error("expected sync");
     expect(sync.syncType).toBe("smb_app_state_sync");
     expect(sync.contacts).toHaveLength(2);
     expect(sync.contacts[0]).toMatchObject({ action: "add", phoneNormalized: "5511777777777", fullName: "Cliente Teste" });
