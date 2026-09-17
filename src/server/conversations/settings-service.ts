@@ -128,12 +128,12 @@ const settingsSelect = "whatsapp_enabled, provider, whatsapp_phone_number_id, wh
 
 export class ConversationSettingsService {
   static async load() {
-    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE); const storeId = requireStoreId(context.storeId); const admin = createAdminClient();
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE); const storeId = requireStoreId(context.storeId); const admin = createAdminClient();
     const { data, error } = await admin.from("store_conversation_settings").select(settingsSelect).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (error) throw error; return data;
   }
   static async health(): Promise<WhatsAppChannelHealth> {
-    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE); const storeId = requireStoreId(context.storeId); const admin = createAdminClient();
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE); const storeId = requireStoreId(context.storeId); const admin = createAdminClient();
     const { data: settings, error } = await admin.from("store_conversation_settings")
       .select("whatsapp_enabled, provider, whatsapp_phone_number_id, whatsapp_business_account_id, access_token_secret_ref, app_secret_secret_ref, connection_mode")
       .eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
@@ -186,7 +186,7 @@ export class ConversationSettingsService {
     }
   }
   static async save(input: ConversationSettingsInput) {
-    const values = settingsSchema.parse(input); const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE); const storeId = requireStoreId(context.storeId);
+    const values = settingsSchema.parse(input); const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE); const storeId = requireStoreId(context.storeId);
     if (values.whatsappEnabled && (!values.phoneNumberId || !values.accessTokenSecretRef || !values.appSecretSecretRef)) throw new Error("Conclua a conexão do WhatsApp antes de ativar o canal nesta unidade.");
     if (values.aiEnabled && !values.botEnabled) throw new Error("Ative o atendimento automático antes de habilitar a IA.");
     if (values.whatsappOrdersEnabled && (!values.botEnabled || !values.whatsappEnabled)) throw new Error("Ative o WhatsApp e o atendimento automático antes de aceitar pedidos pela conversa.");
