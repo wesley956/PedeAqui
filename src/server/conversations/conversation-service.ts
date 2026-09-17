@@ -5,9 +5,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { messagePreview, type ConversationStatus } from "@/server/conversations/model";
-import { inboxFilterSchema, conversationReplyInputSchema, conversationTransitionInputSchema, type ConversationReplyInput, type ConversationTransitionInput } from "@/server/conversations/schemas";
+import { inboxFilterSchema, conversationReplyInputSchema, conversationTemplateReplyInputSchema, conversationTransitionInputSchema, type ConversationReplyInput, type ConversationTemplateReplyInput, type ConversationTransitionInput } from "@/server/conversations/schemas";
 import { CONVERSATION_MEDIA_BUCKET, MAX_AGENT_MEDIA_BYTES, conversationMediaPath, safeMediaFilename, validateConversationMedia, type ConversationMediaKind } from "@/server/conversations/media-policy";
-import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, resolveWhatsAppAppSecret, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
+import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, resolveWhatsAppAppSecret, safeWhatsAppFailureMessage, type ProviderTemplateSummary } from "@/server/conversations/provider";
+import { ConversationSendPolicyError, isWhatsAppConnectionReady, renderWhatsAppTemplateBody, resolveWhatsAppSendWindow } from "@/server/conversations/whatsapp-send-policy";
 import type { WhatsAppWebhookEvent } from "@/server/conversations/whatsapp-webhook";
 
 const INBOX_PAGE_SIZE = 40;
@@ -117,6 +118,133 @@ function asRows<T>(value: unknown) {
 
 function normalizeSearch(value: string | null | undefined) {
   return (value ?? "").trim().slice(0, 80);
+}
+
+type SendConversationScope = {
+  id: string;
+  contact_id: string;
+  channel: string;
+};
+
+type WhatsAppSendContext = {
+  contactExternalId: string | null;
+  settings: {
+    whatsappEnabled: boolean;
+    phoneNumberId: string | null;
+    businessAccountId: string | null;
+    accessTokenSecretRef: string | null;
+    connectionStatus: string | null;
+  };
+  window: ReturnType<typeof resolveWhatsAppSendWindow>;
+  connectionReady: boolean;
+  canSendFreeform: boolean;
+  canSendTemplate: boolean;
+  templates: ProviderTemplateSummary[];
+  templateCatalogAvailable: boolean;
+};
+
+async function latestInboundAtForScope(
+  organizationId: string,
+  storeId: string,
+  conversationId: string,
+) {
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("messages")
+    .select("provider_timestamp,created_at")
+    .eq("organization_id", organizationId)
+    .eq("store_id", storeId)
+    .eq("conversation_id", conversationId)
+    .eq("direction", "inbound")
+    .eq("sender_type", "contact")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw error;
+  let latest: number | null = null;
+  for (const row of data ?? []) {
+    const preferred = row.provider_timestamp ?? row.created_at;
+    const timestamp = new Date(preferred).getTime();
+    if (Number.isNaN(timestamp)) continue;
+    latest = latest === null ? timestamp : Math.max(latest, timestamp);
+  }
+  return latest === null ? null : new Date(latest).toISOString();
+}
+
+async function resolveWhatsAppSendContext(input: {
+  organizationId: string;
+  storeId: string;
+  conversation: SendConversationScope;
+  includeTemplates?: boolean;
+}): Promise<WhatsAppSendContext> {
+  const admin = createAdminClient();
+  const [{ data: contact, error: contactError }, { data: settings, error: settingsError }, lastInboundAt] = await Promise.all([
+    admin.from("contacts")
+      .select("external_id")
+      .eq("organization_id", input.organizationId)
+      .eq("store_id", input.storeId)
+      .eq("id", input.conversation.contact_id)
+      .maybeSingle(),
+    admin.from("store_conversation_settings")
+      .select("whatsapp_enabled,whatsapp_phone_number_id,whatsapp_business_account_id,access_token_secret_ref,connection_status")
+      .eq("organization_id", input.organizationId)
+      .eq("store_id", input.storeId)
+      .maybeSingle(),
+    latestInboundAtForScope(input.organizationId, input.storeId, input.conversation.id),
+  ]);
+  if (contactError) throw contactError;
+  if (settingsError) throw settingsError;
+
+  const normalizedSettings = {
+    whatsappEnabled: Boolean(settings?.whatsapp_enabled),
+    phoneNumberId: settings?.whatsapp_phone_number_id ?? null,
+    businessAccountId: settings?.whatsapp_business_account_id ?? null,
+    accessTokenSecretRef: settings?.access_token_secret_ref ?? null,
+    connectionStatus: settings?.connection_status ?? null,
+  };
+  const window = resolveWhatsAppSendWindow(lastInboundAt);
+  const connectionReady = input.conversation.channel === "whatsapp" && isWhatsAppConnectionReady({
+    enabled: normalizedSettings.whatsappEnabled,
+    phoneNumberId: normalizedSettings.phoneNumberId,
+    connectionStatus: normalizedSettings.connectionStatus,
+  });
+  const canSendTemplate = connectionReady && Boolean(normalizedSettings.businessAccountId);
+  let templates: ProviderTemplateSummary[] = [];
+  let templateCatalogAvailable = false;
+
+  if (input.includeTemplates && canSendTemplate && normalizedSettings.businessAccountId) {
+    try {
+      const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(normalizedSettings.accessTokenSecretRef));
+      templates = (await provider.listTemplates(normalizedSettings.businessAccountId))
+        .filter((template) => template.supported)
+        .sort((a, b) => a.name.localeCompare(b.name) || a.language.localeCompare(b.language));
+      templateCatalogAvailable = true;
+    } catch {
+      templateCatalogAvailable = false;
+    }
+  }
+
+  return {
+    contactExternalId: contact?.external_id ?? null,
+    settings: normalizedSettings,
+    window,
+    connectionReady,
+    canSendFreeform: connectionReady && window.canSendFreeform,
+    canSendTemplate,
+    templates,
+    templateCatalogAvailable,
+  };
+}
+
+function assertFreeformAllowed(context: WhatsAppSendContext) {
+  if (!context.connectionReady) {
+    throw new ConversationSendPolicyError("connection_unavailable", "A conexão do WhatsApp não está pronta para envio.");
+  }
+  if (!context.canSendFreeform) {
+    const code = context.window.status === "unknown" ? "window_unknown" : "window_closed";
+    throw new ConversationSendPolicyError(code, "A janela de atendimento da Meta está encerrada. Use um template aprovado.");
+  }
+  if (!context.contactExternalId) {
+    throw new ConversationSendPolicyError("connection_unavailable", "Contato sem identificador externo do WhatsApp.");
+  }
 }
 
 async function scopedConversation(conversationId: string, organizationId: string, storeId: string) {
@@ -286,10 +414,16 @@ export class ConversationService {
     const admin = createAdminClient();
     const conversation = await scopedConversation(conversationId, context.organizationId, storeId);
 
-    const [contactResult, messagePage, historyResult] = await Promise.all([
+    const [contactResult, messagePage, historyResult, sendContext] = await Promise.all([
       admin.from("contacts").select("id, name, phone_normalized, external_id, customer_id, channel").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("id", conversation.contact_id).maybeSingle(),
       loadMessagePageForScope(context.organizationId, storeId, conversation.id),
       admin.from("conversation_state_history").select("id, from_state, to_state, assigned_user_id, reason, source, actor_user_id, created_at").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("conversation_id", conversation.id).order("created_at", { ascending: true }).limit(100),
+      resolveWhatsAppSendContext({
+        organizationId: context.organizationId,
+        storeId,
+        conversation,
+        includeTemplates: true,
+      }),
     ]);
     if (contactResult.error) throw contactResult.error;
     if (historyResult.error) throw historyResult.error;
@@ -305,6 +439,17 @@ export class ConversationService {
       },
       history: historyResult.data ?? [],
       currentUserId: context.userId,
+      sendCapability: {
+        connectionStatus: sendContext.settings.connectionStatus,
+        windowStatus: sendContext.window.status,
+        lastInboundAt: sendContext.window.lastInboundAt,
+        expiresAt: sendContext.window.expiresAt,
+        canSendFreeform: sendContext.canSendFreeform,
+        canSendMedia: sendContext.canSendFreeform,
+        canSendTemplate: sendContext.canSendTemplate,
+        templateCatalogAvailable: sendContext.templateCatalogAvailable,
+        templates: sendContext.templates,
+      },
     };
   }
 
@@ -355,15 +500,12 @@ export class ConversationService {
       throw new Error("Assuma esta conversa antes de responder.");
     }
 
-    const [{ data: contact, error: contactError }, { data: settings, error: settingsError }] = await Promise.all([
-      admin.from("contacts").select("external_id").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("id", conversation.contact_id).maybeSingle(),
-      admin.from("store_conversation_settings").select("whatsapp_enabled, whatsapp_phone_number_id, access_token_secret_ref").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
-    ]);
-    if (contactError) throw contactError;
-    if (settingsError) throw settingsError;
-    if (conversation.channel !== "whatsapp") throw new Error("Canal ainda não possui provider de saída.");
-    if (!settings?.whatsapp_enabled || !settings.whatsapp_phone_number_id) throw new Error("WhatsApp ainda não está configurado para esta unidade.");
-    if (!contact?.external_id) throw new Error("Contato sem identificador externo do WhatsApp.");
+    const sendContext = await resolveWhatsAppSendContext({
+      organizationId: context.organizationId,
+      storeId,
+      conversation,
+    });
+    assertFreeformAllowed(sendContext);
 
     const clientMessageId = values.clientMessageId || `agent:${randomUUID()}`;
     const { data: pending, error: pendingError } = await admin.rpc("conversation_create_outbound_internal", {
@@ -378,10 +520,10 @@ export class ConversationService {
     if (pending.delivery_status === "sent" || pending.delivery_status === "delivered" || pending.delivery_status === "read") return pending;
 
     try {
-      const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(settings.access_token_secret_ref));
+      const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(sendContext.settings.accessTokenSecretRef));
       const sent = await provider.sendText({
-        phoneNumberId: settings.whatsapp_phone_number_id,
-        recipient: contact.external_id,
+        phoneNumberId: sendContext.settings.phoneNumberId!,
+        recipient: sendContext.contactExternalId!,
         body: values.body,
       });
       const { data, error } = await admin.rpc("conversation_mark_outbound_result_internal", {
@@ -422,15 +564,12 @@ export class ConversationService {
     if (!(input.file instanceof File) || input.file.size <= 0 || input.file.size > MAX_AGENT_MEDIA_BYTES) {
       throw new Error("O anexo deve ter no máximo 4 MB.");
     }
-    const [{ data: contact, error: contactError }, { data: settings, error: settingsError }] = await Promise.all([
-      admin.from("contacts").select("external_id").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("id", conversation.contact_id).maybeSingle(),
-      admin.from("store_conversation_settings").select("whatsapp_enabled,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
-    ]);
-    if (contactError) throw contactError;
-    if (settingsError) throw settingsError;
-    if (conversation.channel !== "whatsapp" || !settings?.whatsapp_enabled || !settings.whatsapp_phone_number_id || !contact?.external_id) {
-      throw new Error("WhatsApp ainda não está configurado para esta unidade.");
-    }
+    const sendContext = await resolveWhatsAppSendContext({
+      organizationId: context.organizationId,
+      storeId,
+      conversation,
+    });
+    assertFreeformAllowed(sendContext);
 
     const bytes = new Uint8Array(await input.file.arrayBuffer());
     const guessedKind: ConversationMediaKind = input.file.type.startsWith("image/") ? "image"
@@ -481,9 +620,9 @@ export class ConversationService {
         upsert: false,
       });
       if (uploadError && !/already exists|duplicate/i.test(uploadError.message)) throw uploadError;
-      const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(settings.access_token_secret_ref));
+      const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(sendContext.settings.accessTokenSecretRef));
       const providerMediaId = existingMedia?.provider_media_id || (await provider.uploadMedia({
-        phoneNumberId: settings.whatsapp_phone_number_id,
+        phoneNumberId: sendContext.settings.phoneNumberId!,
         bytes,
         mimeType: validated.mimeType,
         filename,
@@ -500,8 +639,8 @@ export class ConversationService {
       }).eq("message_id", pending.id).eq("organization_id", context.organizationId).eq("store_id", storeId);
       if (mediaError) throw mediaError;
       const sent = await provider.sendMedia({
-        phoneNumberId: settings.whatsapp_phone_number_id,
-        recipient: contact.external_id,
+        phoneNumberId: sendContext.settings.phoneNumberId!,
+        recipient: sendContext.contactExternalId!,
         mediaId: providerMediaId,
         mediaType: guessedKind,
         caption: caption || null,
@@ -525,6 +664,87 @@ export class ConversationService {
         p_external_message_id: null,
         p_status: "failed",
         p_error_code: "media_provider_error",
+        p_error_message: message,
+      });
+      throw new Error(message);
+    }
+  }
+
+  static async sendAgentTemplate(input: ConversationTemplateReplyInput) {
+    const values = conversationTemplateReplyInputSchema.parse(input);
+    const context = await authorize(PERMISSIONS.CONVERSATIONS_REPLY);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const conversation = await scopedConversation(values.conversationId, context.organizationId, storeId);
+    if (conversation.status !== "human" || conversation.assigned_user_id !== context.userId) {
+      throw new Error("Assuma esta conversa antes de responder.");
+    }
+
+    const sendContext = await resolveWhatsAppSendContext({
+      organizationId: context.organizationId,
+      storeId,
+      conversation,
+      includeTemplates: true,
+    });
+    if (!sendContext.connectionReady || !sendContext.contactExternalId) {
+      throw new ConversationSendPolicyError("connection_unavailable", "A conexão do WhatsApp não está pronta para envio.");
+    }
+    if (!sendContext.canSendTemplate || !sendContext.settings.businessAccountId) {
+      throw new ConversationSendPolicyError("template_unavailable", "Nenhum template pode ser usado nesta conexão.");
+    }
+    if (!sendContext.templateCatalogAvailable) {
+      throw new ConversationSendPolicyError("template_unavailable", "Não foi possível consultar os templates aprovados da Meta.");
+    }
+
+    const template = sendContext.templates.find((item) =>
+      item.name === values.templateName && item.language === values.languageCode && item.supported
+    );
+    if (!template) {
+      throw new ConversationSendPolicyError("template_invalid", "O template selecionado não está aprovado para esta conta.");
+    }
+    if (values.bodyParameters.length !== template.bodyParameterCount) {
+      throw new ConversationSendPolicyError("template_invalid", `Este template exige ${template.bodyParameterCount} parâmetro(s).`);
+    }
+    const renderedBody = renderWhatsAppTemplateBody(template.bodyText, values.bodyParameters).slice(0, 16000);
+    const clientMessageId = values.clientMessageId || `agent-template:${randomUUID()}`;
+
+    const { data: pending, error: pendingError } = await admin.rpc("conversation_create_outbound_template_internal", {
+      p_conversation_id: conversation.id,
+      p_body: renderedBody,
+      p_client_message_id: clientMessageId,
+      p_template_name: template.name,
+      p_template_language: template.language,
+      p_actor_user_id: context.userId,
+    });
+    if (pendingError) throw pendingError;
+    if (!pending?.id) throw new Error("Não foi possível preparar o template.");
+    if (["sent", "delivered", "read"].includes(pending.delivery_status)) return pending;
+
+    try {
+      const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(sendContext.settings.accessTokenSecretRef));
+      const sent = await provider.sendTemplate({
+        phoneNumberId: sendContext.settings.phoneNumberId!,
+        recipient: sendContext.contactExternalId,
+        templateName: template.name,
+        languageCode: template.language,
+        bodyParameters: values.bodyParameters,
+      });
+      const { data, error } = await admin.rpc("conversation_mark_outbound_result_internal", {
+        p_message_id: pending.id,
+        p_external_message_id: sent.externalMessageId,
+        p_status: "sent",
+        p_error_code: null,
+        p_error_message: null,
+      });
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      const message = safeWhatsAppFailureMessage(error);
+      await admin.rpc("conversation_mark_outbound_result_internal", {
+        p_message_id: pending.id,
+        p_external_message_id: null,
+        p_status: "failed",
+        p_error_code: "template_provider_error",
         p_error_message: message,
       });
       throw new Error(message);
