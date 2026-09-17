@@ -58,7 +58,8 @@ describe("WhatsApp Cloud API live readiness [325]", () => {
   });
 
   it("rejects oversized/invalid webhooks before ingestion and validates signature first", () => {
-    expect(route).toContain("rawBody.length > 1_000_000");
+    expect(route).toContain('Buffer.byteLength(rawBody, "utf8") > MAX_WHATSAPP_WEBHOOK_BYTES');
+    expect(route).toContain("MAX_WHATSAPP_WEBHOOK_BYTES = 3 * 1024 * 1024");
     expect(route).toContain("Invalid JSON");
     const signatureAt = route.indexOf("verifyMetaWebhookSignature");
     const ingestAt = route.indexOf("ingestWhatsAppEvent(event)");
