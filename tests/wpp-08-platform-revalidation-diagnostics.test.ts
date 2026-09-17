@@ -37,7 +37,7 @@ describe("WPP-08 platform revalidation diagnostics", () => {
     const coexistence = readFileSync("src/server/conversations/coexistence-service.ts", "utf8");
 
     expect(webhook).not.toContain("ensureAppWebhookSubscriptionRepair");
-    expect(webhook).toContain("WhatsAppCoexistenceService.ingest(event)");
+    expect(webhook).toContain("WhatsAppCoexistenceService.ingest(event, requestContext.requestId)");
     expect(coexistence).toContain("conversation_receive_echo_internal");
   });
 });
