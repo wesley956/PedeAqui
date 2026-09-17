@@ -165,6 +165,8 @@ export default async function ConversationsPage({
       {params.erro === "window_closed" || params.erro === "window_unknown" ? <div className={styles.alert} role="alert"><strong>A janela de atendimento da Meta não permite mensagem livre.</strong><p>Use um template aprovado abaixo. Uma nova mensagem do cliente reabre a janela de atendimento.</p></div> : null}
       {params.erro === "connection_unavailable" ? <div className={styles.alert} role="alert"><strong>WhatsApp indisponível para envio.</strong><p>A conexão da unidade precisa estar conectada antes de responder.</p></div> : null}
       {params.erro === "template_unavailable" || params.erro === "template_invalid" || params.erro === "template_failed" ? <div className={styles.alert} role="alert"><strong>Não foi possível enviar o template.</strong><p>Atualize a conversa e confirme se o modelo continua aprovado e disponível na conta da Meta.</p></div> : null}
+      {params.erro === "provider_retryable" ? <div className={styles.alert} role="alert"><strong>A Meta está temporariamente indisponível.</strong><p>Nenhuma tentativa foi apresentada como sucesso. Tente novamente quando o canal estabilizar.</p></div> : null}
+      {params.erro === "provider_non_retryable" ? <div className={styles.alert} role="alert"><strong>A Meta rejeitou o envio.</strong><p>Revise a conexão ou o template aprovado antes de tentar novamente.</p></div> : null}
 
       {inbox.conversations.length === 0 && !params.cursor ? <div className={styles.empty}><EmptyState title="Nenhuma conversa nesta fila" description="Novas mensagens aparecerão aqui automaticamente quando um canal estiver conectado." /></div> : (
         <div className={styles.workspace} data-selected={detail ? "true" : undefined}>
@@ -301,6 +303,7 @@ export default async function ConversationsPage({
                 <p className={styles.attachmentHint}>O servidor confirma novamente aprovação, WABA, idioma e quantidade de parâmetros antes do envio.</p>
               </form> : null}
               {detail.conversation.status === "human" && isAssignedToCurrentUser && !detail.sendCapability.canSendFreeform && detail.sendCapability.canSendTemplate && !detail.sendCapability.templateCatalogAvailable ? <p className={styles.replyHint}>Não foi possível consultar os templates aprovados agora. Nenhuma mensagem livre será enviada como fallback.</p> : null}
+              {detail.conversation.status === "human" && isAssignedToCurrentUser && !detail.sendCapability.canSendFreeform && detail.sendCapability.canSendTemplate && detail.sendCapability.templateCatalogAvailable && detail.sendCapability.templates.length === 0 ? <p className={styles.replyHint}>Não há template aprovado compatível disponível para resposta manual nesta conta.</p> : null}
             </div>
           </Card> : <div className={styles.threadPlaceholder}>
             <div className={styles.placeholderIcon} aria-hidden="true">💬</div>
