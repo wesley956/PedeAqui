@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { ConversationClaimConflictError, ConversationClaimService } from "@/server/conversations/conversation-claim-service";
 import { ConversationService } from "@/server/conversations/conversation-service";
 
 function conversationId(formData: FormData) {
@@ -10,7 +11,15 @@ function conversationId(formData: FormData) {
 
 export async function assumeConversationAction(formData: FormData) {
   const id = conversationId(formData);
-  await ConversationService.transition({ conversationId: id, targetState: "human", reason: "Atendimento assumido" });
+  try {
+    await ConversationClaimService.assume(id);
+  } catch (error) {
+    if (error instanceof ConversationClaimConflictError) {
+      revalidatePath("/conversas");
+      redirect(`/conversas?conversation=${encodeURIComponent(id)}&erro=already_assigned`);
+    }
+    throw error;
+  }
   await ConversationService.markRead(id);
   revalidatePath("/conversas");
   redirect(`/conversas?conversation=${encodeURIComponent(id)}`);
