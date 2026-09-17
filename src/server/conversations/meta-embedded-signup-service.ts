@@ -193,7 +193,7 @@ export class MetaEmbeddedSignupService {
   }
 
   static async currentStatus() {
-    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE);
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const selection = "connection_status, onboarding_status, whatsapp_enabled, connection_mode, whatsapp_phone_number_id, access_token_secret_ref, display_phone_number, verified_name, quality_rating, connected_at, last_health_check_at, last_connection_error_kind, meta_billing_mode";
@@ -246,7 +246,7 @@ export class MetaEmbeddedSignupService {
     const config = this.publicConfig();
     const configId = resolveConfigId(mode);
     if (!config.ready || !config.appId || !config.graphVersion || !configId) throw new Error(config.reason ?? "Embedded Signup indisponível.");
-    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE);
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const now = new Date();
@@ -288,7 +288,7 @@ export class MetaEmbeddedSignupService {
 
   static async complete(input: unknown) {
     const values = completeSchema.parse(input);
-    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE);
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data: session, error: sessionError } = await admin.from("whatsapp_embedded_signup_sessions")
@@ -390,7 +390,7 @@ export class MetaEmbeddedSignupService {
   }
 
   static async disconnect() {
-    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE);
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const now = new Date().toISOString();

@@ -41,7 +41,7 @@ describe("[331] Meta Embedded Signup multitenant", () => {
   });
 
   it("binds completion to authenticated organization, store, user, expiry, mode and anti-CSRF state", () => {
-    expect(service).toContain("authorize(PERMISSIONS.CONVERSATIONS_MANAGE)");
+    expect(service).toContain("authorize(PERMISSIONS.INTEGRATIONS_MANAGE)");
     expect(service).toContain('.eq("organization_id", context.organizationId)');
     expect(service).toContain('.eq("store_id", storeId)');
     expect(service).toContain('.eq("initiated_by", context.userId)');

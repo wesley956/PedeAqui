@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { authorize } from "@/server/access/authorize";
+import { PERMISSIONS } from "@/server/access/permissions";
 import { Card } from "@/components/ui/primitives";
 import { MetaEmbeddedSignupCard } from "@/features/conversations/meta-embedded-signup-card";
 import { saveConversationSettingsAction } from "@/features/conversations/settings-actions";
@@ -28,6 +30,7 @@ function greetingForEditor(value: string) {
 }
 
 export default async function ConversationSettingsPage() {
+  await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
   const platformConfig = MetaEmbeddedSignupService.publicConfig();
   const [settings, embeddedStatus, structural] = await Promise.all([
     ConversationSettingsService.load(),

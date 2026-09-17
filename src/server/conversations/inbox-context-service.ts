@@ -96,7 +96,7 @@ export class InboxContextService {
         name: contact.name ?? null,
         phone: contact.phone_normalized ?? contact.external_id ?? null,
       },
-      linkedCustomerId: customerId,
+      linkedCustomerId: customerAllowed ? customerId : null,
       permissions: {
         customer: customerAllowed ? "available" as const : "restricted" as const,
         orders: ordersAllowed ? "available" as const : "restricted" as const,
