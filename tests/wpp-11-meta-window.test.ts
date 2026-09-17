@@ -79,6 +79,7 @@ describe("WPP-11 Meta service window and manual templates", () => {
     expect(provider).toContain("supported: !unsupportedDynamicComponent");
     expect(service).toContain("whatsapp_business_account_id");
     expect(service).toContain("provider.listTemplates(normalizedSettings.businessAccountId)");
+    expect(service).toContain("input.includeTemplates && !window.canSendFreeform");
   });
 
   it("persists templates canonically with least-privilege RPC access", () => {
@@ -89,6 +90,7 @@ describe("WPP-11 Meta service window and manual templates", () => {
     expect(migration).toContain("from public, anon, authenticated");
     expect(migration).toContain("to service_role");
     expect(migration).toContain("on conflict (organization_id, client_message_id)");
+    expect(migration).toContain("template send requires whatsapp channel");
   });
 
   it("projects Meta window state and never falls back to freeform outside the window", () => {
@@ -98,6 +100,9 @@ describe("WPP-11 Meta service window and manual templates", () => {
     expect(page).toContain("detail.sendCapability.templates");
     expect(page).toContain("sendConversationTemplateAction");
     expect(actions).toContain("ConversationSendPolicyError");
+    expect(service).toContain('error.retryable ? "provider_retryable" : "provider_non_retryable"');
+    expect(page).toContain("A Meta está temporariamente indisponível.");
+    expect(page).toContain("A Meta rejeitou o envio.");
     expect(actions).toContain("sendAgentTemplate");
     expect(actions).not.toContain('sendConversationTemplateAction(formData: FormData) {\n  const id = conversationId(formData);\n  try {\n    await ConversationService.sendAgentText');
   });
