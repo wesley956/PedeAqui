@@ -6,7 +6,9 @@ export type WhatsAppSendBlockReason =
   | "window_closed"
   | "window_unknown"
   | "connection_unavailable"
-  | "template_unavailable";
+  | "template_unavailable"
+  | "provider_retryable"
+  | "provider_non_retryable";
 
 export type WhatsAppSendWindow = {
   status: WhatsAppWindowStatus;
