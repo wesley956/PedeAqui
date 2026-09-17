@@ -8,6 +8,7 @@ import {
   markConversationReadAction,
   queueConversationAction,
   returnConversationToBotAction,
+  sendConversationMediaAction,
   sendConversationMessageAction,
 } from "@/features/conversations/actions";
 import { DEFAULT_STORE_TIMEZONE, formatStoreDateTime } from "@/lib/store-date-time";
@@ -159,6 +160,7 @@ export default async function ConversationsPage({
       </header>
 
       {params.erro === "send_failed" ? <div className={styles.alert} role="alert"><strong>Não foi possível enviar a mensagem.</strong><p>Confira a conexão do WhatsApp e tente novamente. A tentativa ficou registrada no histórico.</p></div> : null}
+      {params.erro === "media_failed" ? <div className={styles.alert} role="alert"><strong>Não foi possível enviar o anexo.</strong><p>Use JPEG, PNG, WebP, áudio, MP4, PDF ou documento Office com até 4 MB. A tentativa não aparece como enviada.</p></div> : null}
 
       {inbox.conversations.length === 0 && !params.cursor ? <div className={styles.empty}><EmptyState title="Nenhuma conversa nesta fila" description="Novas mensagens aparecerão aqui automaticamente quando um canal estiver conectado." /></div> : (
         <div className={styles.workspace} data-selected={detail ? "true" : undefined}>
@@ -257,6 +259,14 @@ export default async function ConversationsPage({
                 <textarea name="body" required maxLength={16000} rows={1} placeholder="Digite uma mensagem" aria-label="Mensagem" className={styles.textarea} />
                 <Button type="submit">Enviar</Button>
               </form> : <p className={styles.replyHint}>{detail.conversation.status === "closed" ? "Conversa encerrada." : detail.conversation.status === "human" && !isAssignedToCurrentUser ? "Esta conversa está com outro usuário. O campo de resposta fica bloqueado para evitar duas pessoas respondendo ao mesmo tempo." : detail.conversation.status === "waiting_agent" ? "O robô está pausado. Assuma a conversa para responder; o retorno ao robô é manual." : "Assuma a conversa para responder como atendente. Enquanto o humano estiver ativo, o robô não responde."}</p>}
+              {detail.conversation.status === "human" && isAssignedToCurrentUser && clientMessageId ? <form action={sendConversationMediaAction} className={styles.attachmentForm}>
+                <input type="hidden" name="conversationId" value={detail.conversation.id} />
+                <input type="hidden" name="clientMessageId" value={`media:${clientMessageId}`} />
+                <input className={styles.fileInput} type="file" name="file" required accept="image/jpeg,image/png,image/webp,audio/mpeg,audio/ogg,audio/mp4,audio/aac,audio/amr,audio/wav,video/mp4,application/pdf,.docx,.xlsx,.pptx" aria-label="Escolher anexo" />
+                <input className={styles.searchInput} type="text" name="caption" maxLength={1024} placeholder="Legenda opcional" aria-label="Legenda do anexo" />
+                <Button tone="secondary" type="submit">Enviar anexo</Button>
+                <p className={styles.attachmentHint}>Arquivos permitidos até 4 MB. Downloads ficam privados e exigem acesso à unidade.</p>
+              </form> : null}
             </div>
           </Card> : <div className={styles.threadPlaceholder}>
             <div className={styles.placeholderIcon} aria-hidden="true">💬</div>

@@ -113,9 +113,32 @@ function extractBody(message: UnknownRecord, type: string) {
   if (type === "location") {
     const location = record(message.location);
     const name = text(location?.name);
-    return name ? `[localização] ${name}` : "[localização]";
+    const address = text(location?.address);
+    return ["[localização]", name, address].filter(Boolean).join(" ").slice(0, 16000);
+  }
+  if (type === "image" || type === "video" || type === "document") {
+    return text(record(message[type])?.caption) ?? `[${type}]`;
   }
   return `[${type || "mensagem"}]`;
+}
+
+function messageMetadata(message: UnknownRecord, rawType: string) {
+  const metadata: Record<string, string | number | boolean | null> = { whatsapp_type: rawType };
+  if (rawType === "image" || rawType === "audio" || rawType === "video" || rawType === "document") {
+    const media = record(message[rawType]);
+    metadata.media_id = text(media?.id);
+    metadata.media_mime_type = text(media?.mime_type);
+    metadata.media_filename = rawType === "document" ? text(media?.filename) : null;
+    metadata.media_caption = rawType === "audio" ? null : text(media?.caption);
+    metadata.media_voice = rawType === "audio" && media?.voice === true;
+  } else if (rawType === "location") {
+    const location = record(message.location);
+    metadata.location_latitude = numberValue(location?.latitude);
+    metadata.location_longitude = numberValue(location?.longitude);
+    metadata.location_name = text(location?.name)?.slice(0, 240) ?? null;
+    metadata.location_address = text(location?.address)?.slice(0, 500) ?? null;
+  }
+  return metadata;
 }
 
 function normalizeContentType(value: string | null): WhatsAppContentType {
@@ -148,7 +171,7 @@ function parseHistoryMessage(threadId: string, messageValue: unknown): WhatsAppH
   const historyContext = record(message.history_context);
   const rawHistoryStatus = text(historyContext?.status);
   const metadata: Record<string, string | number | boolean | null> = {
-    whatsapp_type: rawType,
+    ...messageMetadata(message, rawType),
     sync_source: "history",
     historical: true,
     history_status: rawHistoryStatus,
@@ -270,7 +293,7 @@ export function parseWhatsAppWebhook(payload: unknown): WhatsAppParsedEvent[] {
             body: extractBody(echo, rawType).slice(0, 16000),
             contentType: normalizeContentType(rawType),
             providerTimestamp: timestamp(echo.timestamp),
-            metadata: { whatsapp_type: rawType, source: "whatsapp_business_app" },
+            metadata: { ...messageMetadata(echo, rawType), source: "whatsapp_business_app" },
           });
         }
       }
@@ -307,7 +330,7 @@ export function parseWhatsAppWebhook(payload: unknown): WhatsAppParsedEvent[] {
           body: extractBody(message, rawType).slice(0, 16000),
           contentType,
           providerTimestamp: timestamp(message.timestamp),
-          metadata: { whatsapp_type: rawType },
+          metadata: messageMetadata(message, rawType),
         });
       }
 
