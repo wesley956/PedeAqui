@@ -37,6 +37,7 @@ begin
   for update;
 
   if v_conversation.id is null then raise exception 'conversation not found'; end if;
+  if v_conversation.channel <> 'whatsapp' then raise exception 'template send requires whatsapp channel'; end if;
   if v_conversation.status <> 'human'
      or v_conversation.assigned_user_id is distinct from p_actor_user_id then
     raise exception 'agent must own human conversation';
