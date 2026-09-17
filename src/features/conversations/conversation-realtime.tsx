@@ -14,6 +14,7 @@ export function ConversationRealtime({ storeId }: { storeId: string }) {
 
     const supabase = createClient();
     let refreshTimer: number | null = null;
+    let reconnecting = false;
     const scheduleRefresh = () => {
       if (refreshTimer !== null) window.clearTimeout(refreshTimer);
       refreshTimer = window.setTimeout(() => {
@@ -29,14 +30,25 @@ export function ConversationRealtime({ storeId }: { storeId: string }) {
         { event: "*", schema: "public", table: "conversations", filter: scope.filter },
         scheduleRefresh,
       )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "messages", filter: scope.filter },
-        scheduleRefresh,
-      )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          reconnecting = true;
+        } else if (status === "SUBSCRIBED" && reconnecting) {
+          reconnecting = false;
+          scheduleRefresh();
+        }
+      });
+
+    const resume = () => {
+      if (document.visibilityState === "visible") scheduleRefresh();
+    };
+    const online = () => scheduleRefresh();
+    document.addEventListener("visibilitychange", resume);
+    window.addEventListener("online", online);
 
     return () => {
+      document.removeEventListener("visibilitychange", resume);
+      window.removeEventListener("online", online);
       if (refreshTimer !== null) window.clearTimeout(refreshTimer);
       void supabase.removeChannel(channel);
     };
