@@ -77,6 +77,18 @@ export async function buildWhatsAppCatalogAvailability(input: WhatsAppCatalogRea
   return `Sim 😊 Encontrei estas opções disponíveis para “${query}” no cardápio atual:\n${lines.join("\n")}\n\nPara abrir os detalhes: ${menuUrl}`;
 }
 
+export async function buildWhatsAppCatalogPrice(input: WhatsAppCatalogReadInput, query: string, menuUrl: string) {
+  const adapter = await catalog(input);
+  if (!adapter) return `Não consegui consultar o preço de “${query}” com segurança agora. Confira o cardápio oficial: ${menuUrl}`;
+  const items = await adapter.search(query, { limit: 5 });
+  if (!items.length) return `Não encontrei “${query}” entre os itens disponíveis agora. Confira o cardápio oficial: ${menuUrl}`;
+  const lines = items.map((item) => {
+    const before = item.effectivePriceCents < item.regularPriceCents ? ` (antes ${money(item.regularPriceCents)})` : "";
+    return `• ${item.name}: ${money(item.effectivePriceCents)}${before}`;
+  });
+  return `Preço consultado no cardápio atual:\n${lines.join("\n")}\n\nPara ver os detalhes: ${menuUrl}`;
+}
+
 export async function buildWhatsAppModifierPlacement(input: WhatsAppCatalogReadInput, query: string) {
   const admin = createAdminClient();
   const { data: modifiers, error: modifierError } = await admin.from("modifiers")
