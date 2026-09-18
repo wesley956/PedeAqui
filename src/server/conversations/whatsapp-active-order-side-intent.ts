@@ -3,10 +3,12 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   buildOrderLookupMessage,
-  normalizeBotInput,
   phonesBelongToSameCustomer,
-  trackingCodeFromInput,
 } from "@/server/conversations/bot-menu";
+import {
+  activeOrderTrackingCodeFromInput,
+  isActiveOrderTrackingQuestion,
+} from "@/server/conversations/whatsapp-active-order-side-intent-core";
 import { visibleWorkflowStage } from "@/server/conversations/order-workflow-visibility";
 import { loadRecentOwnedOrderNumbers } from "@/server/conversations/whatsapp-customer-context";
 import { asksAboutPixPayment, pixPaymentGuidanceMessage } from "@/server/conversations/whatsapp-payment-guidance";
@@ -29,24 +31,6 @@ function preservedContext(input: SideIntentInput): WhatsAppOrderContext {
   return input.context && typeof input.context === "object"
     ? input.context as WhatsAppOrderContext
     : { channel: "whatsapp_order", version: 1 };
-}
-
-export function isActiveOrderTrackingQuestion(text: string) {
-  const normalized = normalizeBotInput(text);
-  if (!normalized) return false;
-  return normalized === "meu pedido"
-    || normalized === "acompanhar pedido"
-    || normalized === "status do pedido"
-    || normalized.includes("onde esta meu pedido")
-    || normalized.includes("como esta meu pedido")
-    || normalized.includes("meu pedido ja saiu")
-    || normalized.includes("acompanhar meu pedido");
-}
-
-export function activeOrderTrackingCodeFromInput(text: string) {
-  const normalized = normalizeBotInput(text);
-  if (!/\b(?:pedido|codigo)\b/.test(normalized)) return null;
-  return trackingCodeFromInput(text);
 }
 
 function resumeSuffix() {
