@@ -31,13 +31,15 @@ describe("INT-EVOL-02 safe return and non-actionable acknowledgements", () => {
     expect(source).toContain('observe?.({ intent: "acknowledgement", tool: "conversation_info" })');
   });
 
-  it("classifies an intentionally unanswered acknowledgement as ignored instead of escalating it", () => {
+  it("prefers a real outbound before classifying a standalone acknowledgement as intentionally unanswered", () => {
     const source = read("src/server/conversations/inbound-outcome-service.ts");
-    const acknowledgementAt = source.indexOf("isWhatsAppNonActionableAcknowledgement(inbound.body)");
-    const outboundLookupAt = source.indexOf('admin.from("messages")', acknowledgementAt);
-    expect(acknowledgementAt).toBeGreaterThan(-1);
-    expect(outboundLookupAt).toBeGreaterThan(acknowledgementAt);
-    expect(source.slice(acknowledgementAt, outboundLookupAt)).toContain('return "ignored_non_actionable"');
+    const outboundLookupAt = source.indexOf("const { data: outbound");
+    const acknowledgementAt = source.indexOf("&& isWhatsAppNonActionableAcknowledgement(inbound.body)");
+    const escalationAt = source.indexOf('p_target_state: "waiting_agent"', acknowledgementAt);
+    expect(outboundLookupAt).toBeGreaterThan(-1);
+    expect(acknowledgementAt).toBeGreaterThan(outboundLookupAt);
+    expect(escalationAt).toBeGreaterThan(acknowledgementAt);
+    expect(source.slice(acknowledgementAt, escalationAt)).toContain('return "ignored_non_actionable"');
   });
 
   it("preserves the active order step and draft context during human handoff", () => {
@@ -54,5 +56,15 @@ describe("INT-EVOL-02 safe return and non-actionable acknowledgements", () => {
     expect(handoffBlock).toContain("HUMAN_HANDOFF_ORDER_SESSION_TTL_MINUTES");
     expect(handoffBlock).not.toContain('saveSession(conversation.id, "menu"');
     expect(source).toContain("const HUMAN_HANDOFF_ORDER_SESSION_TTL_MINUTES = 12 * 60");
+  });
+
+  it("wires remembered quantity and fragmented address into the existing smart order pipeline", () => {
+    const source = read("src/server/conversations/whatsapp-smart-order-service.ts");
+    expect(source).toContain("rememberOrderQuantity(input.context, quantity)");
+    expect(source).toContain("pendingOrderQuantity(input.context)");
+    expect(source).toContain("`${rememberedQuantity} ${input.text}`");
+    expect(source).toContain("pendingAddressParts(input.context)");
+    expect(source).toContain("addressPartsFromMessage(input.text)");
+    expect(source).toContain("EnhancedWhatsAppOrderService.handle");
   });
 });
