@@ -9,6 +9,7 @@ import {
   phonesBelongToSameCustomer,
   isGrowthBenefitIntent,
   resolveWhatsAppBotIntent,
+  priceProductQueryFromInput,
   TRACKING_CODE_PROMPT,
   TRACKING_NOT_FOUND_MESSAGE,
   trackingCodeFromInput,
@@ -24,6 +25,8 @@ import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, safeWhatsAppFailureM
 import { recordFailure } from "@/server/observability/failure";
 import type { LegacyIntelligenceObserver } from "@/server/conversations/legacy-intelligence-observation";
 import type { UnifiedRouterTool } from "@/server/intelligence/unified-router";
+import { createIntelligenceContext } from "@/server/intelligence/context";
+import { IntelligenceCatalogAdapter, type CatalogSearchResult } from "@/server/intelligence/catalog-adapter";
 
 type IngestResult = {
   conversation_id?: string;
@@ -108,10 +111,26 @@ function buildDeliveryMessage(input: {
   return `${parts.join(" ")}\n\nPara voltar às opções, digite menu.`;
 }
 
+function buildCatalogPriceMessage(query: string, items: CatalogSearchResult[], menuUrl: string) {
+  if (!items.length) {
+    return `Não encontrei um item disponível correspondente a “${query}” no cardápio agora. Você pode conferir as opções atualizadas aqui: ${menuUrl}`;
+  }
+  const lines = items.slice(0, 5).map((item) => {
+    const price = money(item.effectivePriceCents);
+    const promotion = item.effectivePriceCents < item.regularPriceCents
+      ? ` (antes ${money(item.regularPriceCents)})`
+      : "";
+    return `• ${item.name}: ${price}${promotion}`;
+  });
+  return items.length === 1
+    ? `O valor atual é:\n${lines[0]}\n\nPreço consultado no cardápio da loja. Para ver detalhes: ${menuUrl}`
+    : `Encontrei estas opções para “${query}”:\n${lines.join("\n")}\n\nPreços atuais do cardápio. Para ver todos os detalhes: ${menuUrl}`;
+}
+
 function legacyToolForIntent(intent: ReturnType<typeof resolveWhatsAppBotIntent>): UnifiedRouterTool {
   if (intent === "handoff" || intent === "benefit_handoff") return "human_handoff";
   if (isGrowthBenefitIntent(intent)) return "growth_benefits";
-  if (intent === "menu_link") return "catalog";
+  if (intent === "menu_link" || intent === "price") return "catalog";
   if (intent === "track_start" || intent === "track_code") return "order_tracking";
   if (intent === "order_start") return "whatsapp_order";
   if (intent === "unknown") return "fallback";
@@ -240,7 +259,7 @@ export class ConversationGreetingService {
         .eq("id", conversation.contact_id)
         .maybeSingle(),
       admin.from("stores")
-        .select("name, slug, status, timezone")
+        .select("name, slug, status, timezone, business_type")
         .eq("organization_id", conversation.organization_id)
         .eq("id", conversation.store_id)
         .maybeSingle(),
@@ -306,6 +325,19 @@ export class ConversationGreetingService {
       recipient: contact.external_id,
     };
 
+    if (!inbound || (inbound.content_type !== "text" && inbound.content_type !== "interactive")) {
+      observe?.({ intent: "unknown", tool: "fallback" });
+      return;
+    }
+
+    const activeStep: WhatsAppBotStep = session?.state === "active"
+      && (!session.expires_at || Date.parse(session.expires_at) > Date.now())
+      && session.step === "awaiting_tracking_code"
+      ? "awaiting_tracking_code"
+      : "menu";
+    const intent = resolveWhatsAppBotIntent(inbound.body, activeStep);
+    observe?.({ intent, tool: legacyToolForIntent(intent) });
+
     if (!canUseMenu || !store?.name || !store.slug) {
       await sendBotText(botContext, settings.greeting_fallback_message, `auto:fallback:${ingest.message_id}`);
       await admin.rpc("conversation_transition_internal", {
@@ -338,7 +370,7 @@ export class ConversationGreetingService {
 
     const menuUrl = buildPublicMenuUrl(appUrl, store.slug);
     const menuMode = (settings.bot_menu_mode ?? "menu_first") as WhatsAppBotMenuMode;
-    if (settings.greeting_enabled) {
+    if (settings.greeting_enabled && (intent === "menu" || intent === "unknown")) {
       let greetingBody: string;
       try {
         const rendered = renderGreetingTemplate(settings.greeting_template, store.name, menuUrl);
@@ -376,13 +408,6 @@ export class ConversationGreetingService {
       }
     }
 
-    const activeStep: WhatsAppBotStep = session?.state === "active"
-      && (!session.expires_at || Date.parse(session.expires_at) > Date.now())
-      && session.step === "awaiting_tracking_code"
-      ? "awaiting_tracking_code"
-      : "menu";
-    const intent = resolveWhatsAppBotIntent(inbound?.content_type === "text" || inbound?.content_type === "interactive" ? inbound.body : "", activeStep);
-    observe?.({ intent, tool: legacyToolForIntent(intent) });
     const responseKey = `auto:menu:${ingest.message_id}`;
 
     if (intent === "handoff" || intent === "benefit_handoff") {
@@ -425,6 +450,41 @@ export class ConversationGreetingService {
 
     if (intent === "menu_link") {
       await sendBotText(botContext, `Aqui está o cardápio de ${store.name}: ${menuUrl}\n\nPara voltar às opções, digite menu.`, responseKey);
+      await updateBotSession(conversation.id, "menu", ingest.message_id);
+      return;
+    }
+
+    if (intent === "price") {
+      const query = priceProductQueryFromInput(inbound.body);
+      if (!query) {
+        await sendBotText(botContext, `Me diga qual produto você quer consultar, por exemplo: “quanto custa o pastel?”\n\nCardápio: ${menuUrl}`, responseKey);
+        await updateBotSession(conversation.id, "menu", ingest.message_id);
+        return;
+      }
+      const intelligenceContext = createIntelligenceContext({
+        requestId,
+        correlationId: requestId,
+        organizationId: conversation.organization_id,
+        storeId: conversation.store_id,
+        channel: "whatsapp",
+        businessType: store.business_type ?? "restaurant",
+        actor: { type: "customer", userId: null },
+        audience: "customer",
+        conversation: { id: conversation.id, mode: "bot" },
+        identity: {
+          source: "whatsapp_contact",
+          trust: contact.customer_id ? "verified" : "weak",
+          contactId: conversation.contact_id,
+          customerId: contact.customer_id ?? null,
+        },
+        activeReferences: { cartId: null, orderId: null },
+        external: { provider: "meta_cloud", accountId: null },
+        authority: { resolved: false, key: null },
+        capabilities: { resolved: false, revision: null },
+      });
+      const catalog = new IntelligenceCatalogAdapter(intelligenceContext, store.slug);
+      const items = await catalog.search(query, { limit: 5 });
+      await sendBotText(botContext, buildCatalogPriceMessage(query, items, menuUrl), responseKey);
       await updateBotSession(conversation.id, "menu", ingest.message_id);
       return;
     }
