@@ -4,7 +4,7 @@ import type { CustomerBenefits, CustomerCouponBenefit } from "@/server/growth/cu
 import { normalizeGenericInformalPortuguese } from "@/server/conversations/generic-language-normalization";
 
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
-export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "benefit_handoff" | "hours" | "payment" | "delivery" | "order_start" | "benefits" | "cashback" | "points" | "coupons" | "promotions" | "unknown";
+export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "benefit_handoff" | "hours" | "payment" | "delivery" | "price" | "order_start" | "benefits" | "cashback" | "points" | "coupons" | "promotions" | "unknown";
 
 const menuWords = new Set([
   "menu",
@@ -124,6 +124,19 @@ const orderStartWords = new Set([
   "poderia pedir aqui",
   "quero comprar",
 ]);
+
+const priceQuestionPattern = /\b(?:quanto|preco|valor)\b|\b(?:custa|custam|ta|esta|ficam?|sai)\b/;
+
+export function priceProductQueryFromInput(value: string | null | undefined) {
+  const normalized = semanticBotInput(normalizeBotInput(value));
+  if (!normalized || !priceQuestionPattern.test(normalized)) return null;
+  const query = normalized
+    .replace(/\b(?:quanto|qual|quais|preco|precos|valor|valores|custa|custam|ta|esta|ficam?|sai|por quanto|quanto e|quanto fica)\b/g, " ")
+    .replace(/\b(?:o|a|os|as|um|uma|do|da|dos|das|de|por|cada)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return query.length >= 2 ? query : null;
+}
 const benefitHandoffWords = new Set(["saldo errado", "saldo esta errado", "cashback errado", "cashback esta errado", "pontos errados", "pontos estao errados", "cupom nao funciona", "cupom nao funcionou", "nao aceitou meu cupom", "contestar saldo"]);
 const cashbackWords = new Set(["cashback", "meu cashback", "tenho cashback", "saldo de cashback", "quanto tenho de cashback"]);
 const pointsWords = new Set(["pontos", "meus pontos", "quantos pontos tenho", "tenho pontos", "saldo de pontos"]);
@@ -167,6 +180,8 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
   const trackingCode = trackingCodeFromInput(normalized);
   if (step === "awaiting_tracking_code" && trackingCode !== null) return "track_code";
   if (step === "menu" && trackingCode !== null && hasExplicitTrackingContext(normalized)) return "track_code";
+  if (step === "awaiting_tracking_code" && ["menu", "inicio", "iniciar", "ver opcoes", "bot_menu_open"].includes(normalized)) return "menu";
+  if (step === "awaiting_tracking_code" && menuWords.has(normalized)) return "track_start";
   if (menuWords.has(normalized)) return "menu";
   if (/\b(?:quero|queria|me ve)\s+(?:uma?\s+)?(?:caixa\s+(?:de|com)\s+)?\d+\s+(?:salgado|salgados)\b/.test(normalized)) return "order_start";
   if (containsAny(normalized, orderStartWords)) return "order_start";
@@ -182,6 +197,7 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
   if (containsAny(normalized, hoursWords)) return "hours";
   if (containsAny(normalized, paymentWords)) return "payment";
   if (containsAny(normalized, deliveryWords)) return "delivery";
+  if (priceProductQueryFromInput(normalized)) return "price";
   return "unknown";
 }
 
