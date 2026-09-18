@@ -63,7 +63,7 @@ describe("checkout V1+V3 batch 2", () => {
     expect(orderService).toContain("CheckoutService.review");
     expect(orderService).toContain("create_order_from_checkout_internal");
     expect(orderActions).toContain("OrderNotificationContextService.capture");
-    expect(orderActions).toContain("scheduleOrderWhatsAppNotifications(\"checkout.order_created\")");
+    expect(orderActions).toContain('scheduleOrderWhatsAppNotifications("checkout.order_created", result.order_id)');
     expect(orderActions).toContain("scheduleOrderPixCharge(result.order_id)");
     expect(orderActions).toContain("CustomerRecognitionService.issueFromOrder");
     expect(orderActions).toContain("orderCookieName");
