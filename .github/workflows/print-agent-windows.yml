@@ -40,6 +40,19 @@ jobs:
           }
           if ($failed) { exit 1 }
 
+      - name: Validate legacy run.cmd credential parsing
+        shell: powershell
+        run: |
+          $sample = @'
+          @echo off
+          set "PEDEAQUI_URL=https://www.pedeaqui.pp.ua"
+          set "PEDEAQUI_PRINT_AGENT_TOKEN=ci-token-not-production"
+          '@
+          $urlMatch = [regex]::Match($sample, '(?im)^set\s+"PEDEAQUI_URL=([^"]+)"\s*$')
+          $tokenMatch = [regex]::Match($sample, '(?im)^set\s+"PEDEAQUI_PRINT_AGENT_TOKEN=([^"]+)"\s*$')
+          if (-not $urlMatch.Success -or $urlMatch.Groups[1].Value -ne "https://www.pedeaqui.pp.ua") { throw "legacy URL parsing failed" }
+          if (-not $tokenMatch.Success -or $tokenMatch.Groups[1].Value -ne "ci-token-not-production") { throw "legacy token parsing failed" }
+
       - name: Validate agent modules
         shell: powershell
         run: |
