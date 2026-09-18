@@ -412,12 +412,22 @@ async function processOne(job: QueueRow, workerId: string) {
   }
 }
 
-export async function runOrderWhatsAppNotificationWorker(options?: { workerId?: string; limit?: number }) {
+export async function runOrderWhatsAppNotificationWorker(options?: { workerId?: string; limit?: number; orderId?: string }) {
   const startedAt = Date.now();
   const admin = createAdminClient();
   const workerId = options?.workerId ?? `order-whatsapp:${randomUUID()}`;
   const limit = Math.min(Math.max(options?.limit ?? 20, 1), 100);
-  const { data, error } = await admin.rpc("order_notification_claim_internal", { p_worker_id: workerId, p_limit: limit });
+  const claim = options?.orderId
+    ? await admin.rpc("order_notification_claim_for_order_internal", {
+        p_order_id: options.orderId,
+        p_worker_id: workerId,
+        p_limit: limit,
+      })
+    : await admin.rpc("order_notification_claim_internal", {
+        p_worker_id: workerId,
+        p_limit: limit,
+      });
+  const { data, error } = claim;
   if (error) throw error;
 
   const jobs = (data ?? []) as QueueRow[];
@@ -456,7 +466,7 @@ export async function runOrderWhatsAppNotificationWorker(options?: { workerId?: 
     eventType: "order.notification",
     outcome: store.failed > 0 ? (store.sent > 0 ? "partial" : "failed") : store.skipped > 0 && store.sent === 0 ? "blocked" : "success",
     reasonCode: store.failed > 0 ? "notification_failures" : store.skipped > 0 ? "workflow_or_capability_suppressed" : null,
-    source: "order_notification_worker",
+    source: options?.orderId ? "order_notification_targeted_worker" : "order_notification_worker",
     counts: { claimed: store.claimed, sent: store.sent, failed: store.failed, skipped: store.skipped },
     durationMs: Date.now() - startedAt,
     requestId: workerId,
