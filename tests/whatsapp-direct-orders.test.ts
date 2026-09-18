@@ -75,7 +75,7 @@ describe("WhatsApp direct orders", () => {
   });
 
   it("lets customers exit to the menu or request a human during checkout", () => {
-    expect(orchestrator).toContain('normalizeBotInput(inbound.body) === "menu"');
+    expect(orchestrator).toContain("isExplicitMenuNavigation(inbound.body)");
     expect(orchestrator).toContain("wantsHuman(inbound.body)");
     expect(orchestrator).toContain('p_target_state: "waiting_agent"');
   });

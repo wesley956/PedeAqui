@@ -1,7 +1,18 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buildCustomerBenefitsMessage, buildWhatsAppBotMenu, isGrowthBenefitIntent, normalizeBotInput, resolveWhatsAppBotIntent } from "@/server/conversations/bot-menu";
+import {
+  buildCustomerBenefitsMessage,
+  buildWhatsAppBotMenu,
+  isGrowthBenefitIntent,
+  normalizeBotInput,
+  priceProductQueryFromInput,
+  resolveWhatsAppBotIntent,
+} from "@/server/conversations/bot-menu";
+import {
+  asksForMenuDescription,
+  catalogAvailabilityQueryFromInput,
+} from "@/server/conversations/whatsapp-catalog-intent-core";
 import { buildPublicMenuUrl } from "@/server/conversations/greeting";
 import { loadCustomerBenefits } from "@/server/growth/customer-benefits";
 import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
@@ -20,8 +31,9 @@ import {
   type WhatsAppOrderContext,
   type WhatsAppOrderStep,
 } from "@/server/conversations/whatsapp-smart-order-service";
+import { isExplicitMenuNavigation } from "@/server/conversations/whatsapp-navigation";
 import { recordFailure } from "@/server/observability/failure";
-import type { LegacyIntelligenceObserver } from "@/server/conversations/legacy-intelligence-observation";
+import type { LegacyIntelligenceDecision, LegacyIntelligenceObserver } from "@/server/conversations/legacy-intelligence-observation";
 
 type IngestResult = {
   conversation_id?: string;
@@ -117,6 +129,16 @@ async function saveSession(
 function wantsHuman(text: string) {
   const normalized = normalizeBotInput(text);
   return normalized === "3" || normalized.includes("atendente") || normalized.includes("humano") || normalized.includes("falar com restaurante");
+}
+
+function activeOrderObservation(text: string): LegacyIntelligenceDecision {
+  if (asksForMenuDescription(text)) return { intent: "menu_summary", tool: "catalog" };
+  if (catalogAvailabilityQueryFromInput(text)) return { intent: "catalog_availability", tool: "catalog" };
+  if (priceProductQueryFromInput(text)) return { intent: "price", tool: "catalog" };
+  const intent = resolveWhatsAppBotIntent(text, "menu");
+  if (intent === "menu_link") return { intent, tool: "catalog" };
+  if (intent === "payment") return { intent, tool: "conversation_info" };
+  return { intent: "order_continue", tool: "whatsapp_order" };
 }
 
 function savedAddressReply(addresses: Awaited<ReturnType<typeof loadWhatsAppSavedAddresses>>) {
@@ -274,7 +296,7 @@ export class WhatsAppDirectOrderOrchestrator {
       return true;
     }
 
-    if (activeOrderStep && normalizeBotInput(inbound.body) === "menu") {
+    if (activeOrderStep && isExplicitMenuNavigation(inbound.body)) {
       const body = buildWhatsAppBotMenu(store.name, true, settings.bot_display_name);
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:menu:${ingest.message_id}` });
       await saveSession(conversation.id, "menu", ingest.message_id, null);
@@ -345,7 +367,7 @@ export class WhatsAppDirectOrderOrchestrator {
     });
     await sendBotText({ ...sendBase, body: handled.body, clientMessageId: `auto:wa-order:${ingest.message_id}` });
     await saveSession(conversation.id, handled.nextStep, ingest.message_id, handled.context);
-    observe?.({ intent: activeOrderStep ? "order_continue" : "order_start", tool: "whatsapp_order" });
+    observe?.(activeOrderStep ? activeOrderObservation(inbound.body) : { intent: "order_start", tool: "whatsapp_order" });
     return true;
   }
 }

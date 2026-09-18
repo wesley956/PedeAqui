@@ -4,6 +4,10 @@ import type { CapabilityDecision, CapabilityFacts, IntelligenceCapabilityKey } f
 import { CapabilitySnapshotResolver } from "@/server/intelligence/capability";
 import type { IntelligenceContext } from "@/server/intelligence/context";
 import { normalizeBotInput, resolveWhatsAppBotIntent, type WhatsAppBotIntent } from "@/server/conversations/bot-menu";
+import {
+  asksForMenuDescription,
+  catalogAvailabilityQueryFromInput,
+} from "@/server/conversations/whatsapp-catalog-intent-core";
 
 export type UnifiedRouterTool =
   | "human_handoff"
@@ -13,6 +17,11 @@ export type UnifiedRouterTool =
   | "growth_benefits"
   | "conversation_info"
   | "fallback";
+
+export type UnifiedRouterIntent = WhatsAppBotIntent
+  | "order_continue"
+  | "menu_summary"
+  | "catalog_availability";
 
 export type UnifiedRouterSession = {
   active: boolean;
@@ -30,7 +39,7 @@ export type UnifiedRouterInput = {
 
 export type UnifiedRouterDecision = {
   mode: "shadow";
-  intent: WhatsAppBotIntent | "order_continue";
+  intent: UnifiedRouterIntent;
   confidence: "high" | "contextual" | "low";
   tool: UnifiedRouterTool | null;
   requiredCapability: IntelligenceCapabilityKey | null;
@@ -66,9 +75,11 @@ type IntentPolicy = {
   authority: AuthorityOperation | null;
 };
 
-const POLICIES: Record<WhatsAppBotIntent | "order_continue", IntentPolicy> = {
+const POLICIES: Record<UnifiedRouterIntent, IntentPolicy> = {
   menu: { tool: "conversation_info", capability: "canAutoReply", authority: null },
   menu_link: { tool: "catalog", capability: "canSearchCatalog", authority: null },
+  menu_summary: { tool: "catalog", capability: "canSearchCatalog", authority: null },
+  catalog_availability: { tool: "catalog", capability: "canSearchCatalog", authority: null },
   track_start: { tool: "order_tracking", capability: "canAutoReply", authority: "view_order" },
   track_code: { tool: "order_tracking", capability: "canAutoReply", authority: "view_order" },
   handoff: { tool: "human_handoff", capability: null, authority: null },
@@ -89,6 +100,9 @@ const POLICIES: Record<WhatsAppBotIntent | "order_continue", IntentPolicy> = {
 
 const ACTIVE_ORDER_ESCAPE_INTENTS = new Set<WhatsAppBotIntent>([
   "menu",
+  "menu_link",
+  "payment",
+  "price",
   "handoff",
   "benefit_handoff",
   "track_start",
@@ -101,15 +115,23 @@ const ACTIVE_ORDER_ESCAPE_INTENTS = new Set<WhatsAppBotIntent>([
 ]);
 
 function resolveIntent(input: UnifiedRouterInput): {
-  intent: WhatsAppBotIntent | "order_continue";
+  intent: UnifiedRouterIntent;
   confidence: UnifiedRouterDecision["confidence"];
 } {
+  const activeOrder = input.session.active && input.session.kind === "whatsapp_order";
+  if (asksForMenuDescription(input.message)) {
+    return { intent: "menu_summary", confidence: activeOrder ? "contextual" : "high" };
+  }
+  if (catalogAvailabilityQueryFromInput(input.message)) {
+    return { intent: "catalog_availability", confidence: activeOrder ? "contextual" : "high" };
+  }
+
   const menuStep = input.session.active && input.session.kind === "menu" && input.session.step === "awaiting_tracking_code"
     ? "awaiting_tracking_code"
     : "menu";
   const explicit = resolveWhatsAppBotIntent(input.message, menuStep);
 
-  if (input.session.active && input.session.kind === "whatsapp_order") {
+  if (activeOrder) {
     const normalized = normalizeBotInput(input.message);
     const explicitTrackingInterruption = explicit === "track_code"
       || (explicit === "track_start" && /\b(?:acompanhar|rastrear|status|cade|onde esta|como esta|ja saiu)\b/.test(normalized));
@@ -119,6 +141,7 @@ function resolveIntent(input: UnifiedRouterInput): {
     if (!ACTIVE_ORDER_ESCAPE_INTENTS.has(explicit)) {
       return { intent: "order_continue", confidence: "contextual" };
     }
+    return { intent: explicit, confidence: "contextual" };
   }
   if (explicit === "unknown") return { intent: explicit, confidence: "low" };
   return { intent: explicit, confidence: "high" };

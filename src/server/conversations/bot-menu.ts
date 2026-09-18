@@ -2,6 +2,7 @@ import { normalizeWhatsAppIdentifier } from "@/server/conversations/model";
 import { workflowStageLabels, type WorkflowStage } from "@/features/orders/workflow-config";
 import type { CustomerBenefits, CustomerCouponBenefit } from "@/server/growth/customer-benefits";
 import { normalizeGenericInformalPortuguese } from "@/server/conversations/generic-language-normalization";
+import { isExplicitMenuNavigation } from "@/server/conversations/whatsapp-navigation";
 
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
 export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "benefit_handoff" | "hours" | "payment" | "delivery" | "price" | "order_start" | "benefits" | "cashback" | "points" | "coupons" | "promotions" | "unknown";
@@ -178,6 +179,7 @@ export function trackingCodeFromInput(value: string | null | undefined) {
 export function resolveWhatsAppBotIntent(value: string | null | undefined, step: WhatsAppBotStep): WhatsAppBotIntent {
   const normalized = semanticBotInput(normalizeBotInput(value));
   const trackingCode = trackingCodeFromInput(normalized);
+  if (isExplicitMenuNavigation(normalized)) return "menu";
   if (step === "awaiting_tracking_code" && trackingCode !== null) return "track_code";
   if (step === "menu" && trackingCode !== null && hasExplicitTrackingContext(normalized)) return "track_code";
   if (step === "awaiting_tracking_code" && ["menu", "inicio", "iniciar", "ver opcoes", "bot_menu_open"].includes(normalized)) return "menu";

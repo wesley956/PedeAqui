@@ -65,7 +65,8 @@ describe("INT-EVOL-02 safe return and non-actionable acknowledgements", () => {
   it("wires remembered quantity and fragmented address into the existing smart order pipeline", () => {
     const source = read("src/server/conversations/whatsapp-smart-order-service.ts");
     expect(source).toContain("rememberOrderQuantity(input.context, quantity)");
-    expect(source).toContain("pendingOrderQuantity(input.context)");
+    expect(source).toContain("clearStaleChoicesForExplicitProduct(input.context, input.text)");
+    expect(source).toContain("pendingOrderQuantity(choiceSafeContext)");
     expect(source).toContain("`${rememberedQuantity} ${input.text}`");
     expect(source).toContain("pendingAddressParts(input.context)");
     expect(source).toContain("addressPartsFromMessage(input.text)");

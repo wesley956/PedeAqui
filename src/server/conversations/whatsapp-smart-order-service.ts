@@ -16,6 +16,8 @@ import {
 } from "@/server/conversations/whatsapp-order-corrections";
 import { answerContextualOrderQuestion } from "@/server/conversations/whatsapp-contextual-question-service";
 import { answerActiveOrderSideIntent } from "@/server/conversations/whatsapp-active-order-side-intent";
+import { explicitCatalogItemRequest } from "@/server/conversations/whatsapp-catalog-intent-core";
+import { resolvePendingChoiceReference } from "@/server/conversations/whatsapp-order-context";
 import {
   asksAboutSavedAddress,
   formatSavedAddress,
@@ -38,11 +40,33 @@ export { isWhatsAppOrderStep, looksLikeWhatsAppOrderItems, whatsappOrderStartMes
 export type { WhatsAppOrderContext, WhatsAppOrderHandleResult, WhatsAppOrderStep };
 
 type OrderInput = Parameters<typeof EnhancedWhatsAppOrderService.handle>[0];
+type PendingChoice = { productId: string; name: string; quantity: number };
 
 function preservedContext(input: OrderInput): WhatsAppOrderContext {
   return input.context && typeof input.context === "object"
     ? input.context as WhatsAppOrderContext
     : { channel: "whatsapp_order", version: 1 };
+}
+
+function pendingChoices(context: unknown): PendingChoice[] {
+  if (!context || typeof context !== "object") return [];
+  const raw = (context as Record<string, unknown>).pendingChoices;
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+    const item = entry as Record<string, unknown>;
+    return typeof item.productId === "string" && typeof item.name === "string" && typeof item.quantity === "number"
+      ? [{ productId: item.productId, name: item.name, quantity: item.quantity }]
+      : [];
+  });
+}
+
+function clearStaleChoicesForExplicitProduct(context: unknown, text: string) {
+  const choices = pendingChoices(context);
+  if (!choices.length || !explicitCatalogItemRequest(text) || !context || typeof context !== "object") return context;
+  const selected = resolvePendingChoiceReference(text, choices.map((choice) => ({ label: choice.name, value: choice.productId })));
+  if (selected) return context;
+  return { ...(context as Record<string, unknown>), pendingChoices: undefined };
 }
 
 function shouldStartFragmentedAddress(parts: string[]) {
@@ -128,7 +152,7 @@ export class WhatsAppOrderService {
 
     if (input.step === "order_items") {
       const quantity = quantityOnlyRequest(input.text);
-      if (quantity !== null) {
+      if (quantity !== null && pendingChoices(input.context).length === 0) {
         return {
           handled: true,
           body: `Entendi ${quantity} unidades 😊 Agora me diga de qual produto do cardápio desta loja.`,
@@ -138,14 +162,17 @@ export class WhatsAppOrderService {
       }
     }
 
-    const rememberedQuantity = input.step === "order_items" ? pendingOrderQuantity(input.context) : null;
+    const choiceSafeContext = input.step === "order_items"
+      ? clearStaleChoicesForExplicitProduct(input.context, input.text)
+      : input.context;
+    const rememberedQuantity = input.step === "order_items" ? pendingOrderQuantity(choiceSafeContext) : null;
     const hasExplicitQuantity = rememberedQuantity !== null && looksLikeWhatsAppOrderItems(input.text);
     const effectiveText = rememberedQuantity !== null && !hasExplicitQuantity
       ? `${rememberedQuantity} ${input.text}`
       : input.text;
     const contextWithoutRememberedQuantity = rememberedQuantity !== null
-      ? clearPendingOrderQuantity(input.context)
-      : input.context;
+      ? clearPendingOrderQuantity(choiceSafeContext)
+      : choiceSafeContext;
     const repairedContext = repairSuspiciousPackageQuantity(contextWithoutRememberedQuantity, effectiveText);
     const result = await EnhancedWhatsAppOrderService.handle({ ...input, text: effectiveText, context: repairedContext });
 
