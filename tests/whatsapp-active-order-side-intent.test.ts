@@ -9,7 +9,7 @@ import {
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
-describe("INT-EVOL-02 active order side intents", () => {
+describe("WhatsApp active order side intents", () => {
   it("recognizes tracking questions without treating generic order text as tracking", () => {
     for (const text of [
       "meu pedido",
@@ -39,13 +39,22 @@ describe("INT-EVOL-02 active order side intents", () => {
     expect(activeOrderTrackingCodeFromInput("código 42")).toBe(42);
   });
 
-  it("answers Pix and tracking without changing the active order step or context", () => {
+  it("answers read-only side questions without changing the active order step", () => {
     const source = read("src/server/conversations/whatsapp-active-order-side-intent.ts");
-    expect(source).toContain("asksAboutPixPayment(input.text)");
+    expect(source).toContain("StorePaymentMethodService.listForStore");
+    expect(source).toContain("canonicalPaymentGuidanceMessage");
+    expect(source).toContain("buildWhatsAppMenuSummary");
+    expect(source).toContain("buildWhatsAppCatalogAvailability");
+    expect(source).toContain("buildWhatsAppCatalogPrice");
     expect(source).toContain("activeOrderTrackingCodeFromInput(input.text)");
     expect(source).toContain("nextStep: input.step");
-    expect(source).toContain("context: preservedContext(input)");
     expect(source).toContain("Seu pedido em montagem continua salvo exatamente de onde estava");
+  });
+
+  it("lets an enabled payment selection continue through the canonical order payment parser", () => {
+    const source = read("src/server/conversations/whatsapp-active-order-side-intent.ts");
+    expect(source).toContain('input.step === "order_payment" && selection');
+    expect(source).toContain("return null");
   });
 
   it("checks tracking ownership and canonical workflow status instead of inventing a status", () => {
