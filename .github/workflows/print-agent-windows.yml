@@ -53,6 +53,34 @@ jobs:
           if (-not $urlMatch.Success -or $urlMatch.Groups[1].Value -ne "https://www.pedeaqui.pp.ua") { throw "legacy URL parsing failed" }
           if (-not $tokenMatch.Success -or $tokenMatch.Groups[1].Value -ne "ci-token-not-production") { throw "legacy token parsing failed" }
 
+      - name: Detect running legacy agent outside default root
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $legacyRoot = Join-Path $env:RUNNER_TEMP "Legacy Agent Custom Path"
+          $legacySrc = Join-Path $legacyRoot "src"
+          New-Item -ItemType Directory -Force -Path $legacySrc | Out-Null
+
+          @'
+          setInterval(() => {}, 1000);
+          '@ | Set-Content -LiteralPath (Join-Path $legacySrc "index.mjs") -Encoding UTF8
+
+          @'
+          @echo off
+          set "PEDEAQUI_URL=https://www.pedeaqui.pp.ua"
+          set "PEDEAQUI_PRINT_AGENT_TOKEN=ci-token-not-production"
+          '@ | Set-Content -LiteralPath (Join-Path $legacyRoot "run.cmd") -Encoding UTF8
+
+          $node = (Get-Command node.exe).Source
+          $legacyProcess = Start-Process -FilePath $node -ArgumentList @((Join-Path $legacySrc "index.mjs")) -PassThru -WindowStyle Hidden
+          try {
+            Start-Sleep -Seconds 2
+            & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "print-agent/windows/install-service.ps1" -ProbeLegacyEnvironment
+            if ($LASTEXITCODE -ne 0) { throw "installer did not discover running legacy root" }
+          } finally {
+            Stop-Process -Id $legacyProcess.Id -Force -ErrorAction SilentlyContinue
+          }
+
       - name: Validate agent modules
         shell: powershell
         run: |
