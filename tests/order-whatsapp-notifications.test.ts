@@ -152,7 +152,7 @@ describe("[329] persistence and safety contracts", () => {
   it("dispatches first attempts after the authoritative response without blocking it", () => {
     expect(dispatch).toContain('import { after } from "next/server"');
     expect(dispatch).toContain("after(async () =>");
-    expect(orderAction).toContain('scheduleOrderWhatsAppNotifications("checkout.order_created")');
+    expect(orderAction).toContain('scheduleOrderWhatsAppNotifications("checkout.order_created", result.order_id)');
     expect(orderAction).toContain("order_manager.${parsed.data}");
     expect(deliveryAction).toContain("scheduleOrderWhatsAppNotifications(`delivery.${intent}`)");
     expect(paymentWebhook).toContain('scheduleOrderWhatsAppNotifications("mercado_pago.webhook")');
@@ -197,11 +197,19 @@ describe("[329] persistence and safety contracts", () => {
     expect(worker).not.toContain("order_transition_internal");
   });
 
-  it("keeps tracking context service-role only and out of notification payloads", () => {
+  it("keeps tracking context service-role only and recipient PII out of notification payloads", () => {
     expect(migration).toContain("revoke all on table public.order_notification_contexts from public, anon, authenticated");
     expect(migration).toContain("grant select, insert, update, delete on table public.order_notification_contexts to service_role");
     expect(worker).not.toContain("address_street_snapshot");
-    expect(worker).not.toContain("customer_phone_snapshot");
+    expect(worker).toContain("resolveOrderRecipient");
+    expect(worker).toContain("customerPhoneSnapshot: order.customer_phone_snapshot");
+    const messageInputStart = worker.indexOf("const messageInput = {");
+    const messageInputEnd = worker.indexOf("const body = buildOrderNotificationBody(messageInput);");
+    expect(messageInputStart).toBeGreaterThan(-1);
+    expect(messageInputEnd).toBeGreaterThan(messageInputStart);
+    const messageInput = worker.slice(messageInputStart, messageInputEnd);
+    expect(messageInput).not.toContain("customer_phone_snapshot");
+    expect(messageInput).not.toContain("phoneNormalized");
     expect(orderAction.indexOf("OrderNotificationContextService.capture")).toBeGreaterThan(orderAction.indexOf("OrderService.createFromCheckout"));
   });
 
