@@ -12,7 +12,7 @@ import {
 import type { OrderNotificationType } from "@/server/conversations/order-notification-template";
 
 export type OrderFulfillmentType = "delivery" | "pickup" | "dine_in" | "table" | string;
-export type WorkflowNotificationCheckpoint = WorkflowStage | "payment" | "canceled";
+export type WorkflowNotificationCheckpoint = WorkflowStage | "received" | "confirmed" | "payment" | "canceled";
 
 export type PersistedOrderWorkflowSettings = {
   orders_workflow_mode?: string | null;
@@ -37,6 +37,18 @@ const notificationStage: Partial<Record<OrderNotificationType, WorkflowStage>> =
   pickup_completed: "finished",
   out_for_delivery: "delivering",
   delivered: "finished",
+};
+
+const notificationCheckpoint: Record<OrderNotificationType, WorkflowNotificationCheckpoint> = {
+  order_received: "received",
+  order_confirmed: "confirmed",
+  production_preparing: "preparing",
+  payment_paid: "payment",
+  pickup_ready: "awaiting_pickup",
+  pickup_completed: "finished",
+  out_for_delivery: "delivering",
+  delivered: "finished",
+  order_canceled: "canceled",
 };
 
 function normalizeMode(value: string | null | undefined): OrderWorkflowMode {
@@ -109,11 +121,8 @@ export function resolveNotificationWorkflowVisibility(input: {
   fulfillmentType: OrderFulfillmentType;
   settings: PersistedOrderWorkflowSettings;
 }) {
-  if (input.type === "payment_paid") {
-    return { eligible: true, checkpoint: "payment" as const, stage: null };
-  }
-  if (input.type === "order_canceled") {
-    return { eligible: true, checkpoint: "canceled" as const, stage: null };
+  if (input.type === "payment_paid" || input.type === "order_canceled") {
+    return { eligible: true, checkpoint: notificationCheckpoint[input.type], stage: null };
   }
 
   if (isDelivery(input.fulfillmentType) && (input.type === "pickup_ready" || input.type === "pickup_completed")) {
@@ -134,9 +143,13 @@ export function resolveNotificationWorkflowVisibility(input: {
 
   const workflow = resolveWorkflowSettings(input.settings);
   const selected = visibleWorkflowStages({ ...workflow, fulfillmentType: input.fulfillmentType });
+  const eligible = input.type === "pickup_ready"
+    ? selected.includes("ready") || selected.includes("awaiting_pickup")
+    : selected.includes(stage);
+
   return {
-    eligible: selected.includes(stage),
-    checkpoint: stage as WorkflowNotificationCheckpoint,
+    eligible,
+    checkpoint: eligible ? notificationCheckpoint[input.type] : null,
     stage,
   };
 }
