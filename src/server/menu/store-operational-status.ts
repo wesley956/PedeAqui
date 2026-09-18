@@ -73,6 +73,18 @@ export function storeClosedOrderMessage(status: StoreOperationalStatus) {
   return "A loja está aberta para pedidos.";
 }
 
+export function storeOperationalHoursMessage(status: StoreOperationalStatus) {
+  if (status.reason === "open") return "A loja está aberta agora e aceitando pedidos.";
+  if (status.reason === "orders_paused") {
+    const detail = status.pauseReason ? ` Motivo informado pela loja: ${status.pauseReason}.` : "";
+    return `A loja está dentro do horário, mas os pedidos estão pausados no momento.${detail}`;
+  }
+  if (status.reason === "store_unavailable") return "A loja está temporariamente indisponível para novos pedidos.";
+  return status.nextOpening
+    ? `A loja está fechada agora. A próxima abertura está prevista para ${status.nextOpening.label}.`
+    : "A loja está fechada agora e não encontrei um próximo horário de abertura configurado.";
+}
+
 export class StoreOperationalStatusService {
   static async load(input: { organizationId: string; storeId: string; now?: Date }) {
     const admin = createAdminClient();
