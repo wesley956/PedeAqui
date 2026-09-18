@@ -40,6 +40,16 @@ describe("professional Print Agent Windows gate", () => {
     expect(installer).toContain("Checksum do host de servico WinSW nao confere");
   });
 
+  it("can migrate an existing legacy agent without rotating or exposing its credential", () => {
+    expect(installer).toContain("function Import-LegacyEnvironment");
+    expect(installer).toContain('Join-Path $Root "run.cmd"');
+    expect(installer).toContain("PEDEAQUI_PRINT_AGENT_TOKEN");
+    expect(installer).toContain("Import-LegacyEnvironment");
+    expect(installer.indexOf("Import-LegacyEnvironment")).toBeLessThan(installer.indexOf('if (-not $AppUrl -or -not $Token)'));
+    expect(installer).not.toContain("Write-Host $Token");
+    expect(installer).not.toContain("Write-Output $Token");
+  });
+
   it("keeps the legacy bootstrap recoverable until the professional service validates", () => {
     const validationAt = installer.indexOf("Validate-Service $release.Path");
     const deleteLegacyAt = installer.indexOf("schtasks.exe /Delete /TN $LegacyTaskName", validationAt);
