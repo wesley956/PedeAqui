@@ -31,7 +31,7 @@ function preservedContext(input: SideIntentInput): WhatsAppOrderContext {
     : { channel: "whatsapp_order", version: 1 };
 }
 
-function asksToTrackOrder(text: string) {
+export function isActiveOrderTrackingQuestion(text: string) {
   const normalized = normalizeBotInput(text);
   if (!normalized) return false;
   return normalized === "meu pedido"
@@ -111,7 +111,7 @@ export async function answerActiveOrderSideIntent(input: SideIntentInput): Promi
     };
   }
 
-  if (!asksToTrackOrder(input.text)) return null;
+  if (!isActiveOrderTrackingQuestion(input.text)) return null;
 
   const orderNumbers = await loadRecentOwnedOrderNumbers({
     organizationId: input.organizationId,
