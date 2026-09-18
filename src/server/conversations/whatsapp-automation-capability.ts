@@ -71,9 +71,8 @@ export const WHATSAPP_ORDER_AUTOMATIONS: readonly AutomationDefinition[] = [
     key: "production_preparing",
     label: "Em preparo",
     labels: { gas: "Em separação", generic_commerce: "Em separação" },
-    description: "Acompanha a etapa operacional de preparo ou separação.",
+    description: "Acompanha a etapa operacional de preparo ou separação quando o evento real acontece.",
     triggerLabel: "Quando a produção entra em preparo/separação",
-    module: "production",
   },
   {
     key: "payment_paid",
@@ -85,9 +84,8 @@ export const WHATSAPP_ORDER_AUTOMATIONS: readonly AutomationDefinition[] = [
   {
     key: "pickup_ready",
     label: "Pronto para retirada",
-    description: "Avisa pedidos de retirada quando a produção fica pronta.",
+    description: "Avisa pedidos de retirada quando a produção fica realmente pronta.",
     triggerLabel: "Quando um pedido de retirada fica pronto",
-    module: "production",
   },
   {
     key: "pickup_completed",
@@ -100,7 +98,6 @@ export const WHATSAPP_ORDER_AUTOMATIONS: readonly AutomationDefinition[] = [
     label: "Saiu para entrega",
     description: "Avisa somente quando o pedido entra no estado real de saída para entrega.",
     triggerLabel: "Quando o pedido sai para entrega",
-    module: "deliveries",
     requiresDeliveryOperation: true,
   },
   {
@@ -108,7 +105,6 @@ export const WHATSAPP_ORDER_AUTOMATIONS: readonly AutomationDefinition[] = [
     label: "Pedido entregue",
     description: "Confirma a entrega somente depois do evento real de entrega.",
     triggerLabel: "Quando a entrega é concluída",
-    module: "deliveries",
     requiresDeliveryOperation: true,
   },
   {
@@ -165,7 +161,9 @@ export function resolveWhatsAppAutomationCapability(
       ? "Entregas"
       : definition.requiresOnlinePayment
         ? "Pagamento online com confirmação automática"
-        : null;
+        : definition.requiresDeliveryOperation
+          ? "Operação de entrega"
+          : null;
 
   const base = {
     key: definition.key,
