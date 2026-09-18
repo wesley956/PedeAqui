@@ -11,7 +11,7 @@ import type { ModuleAvailability } from "@/modules/module-access";
 
 const root = process.cwd();
 const migration = () => fs.readFileSync(
-  path.join(root, "supabase/sql/210_whatsapp_order_status_notifications.sql"),
+  path.join(root, "supabase/sql/218_whatsapp_order_status_notifications.sql"),
   "utf8",
 );
 

@@ -53,7 +53,7 @@ describe("#434 WhatsApp automation capability matrix", () => {
     expect(automationCanDispatch(capabilities.out_for_delivery)).toBe(true);
   });
 
-  it("suspends delivery automations without deleting the saved preference", () => {
+  it("does not let a disabled visual delivery module suppress authoritative events", () => {
     const capabilities = resolveWhatsAppAutomationCapabilities(input({
       modules: {
         conversations: availability("conversations"),
@@ -62,11 +62,11 @@ describe("#434 WhatsApp automation capability matrix", () => {
       },
     }));
     expect(capabilities.out_for_delivery).toMatchObject({
-      state: "suspended_module",
+      state: "enabled",
       preferenceEnabled: true,
-      configurable: false,
+      configurable: true,
     });
-    expect(capabilities.delivered.state).toBe("suspended_module");
+    expect(capabilities.delivered.state).toBe("enabled");
   });
 
   it("distinguishes entitlement suspension from a module toggle", () => {
