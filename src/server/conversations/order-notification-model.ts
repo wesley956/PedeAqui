@@ -3,6 +3,7 @@ import {
   renderOrderNotificationTextTemplate,
   type OrderNotificationType,
 } from "@/server/conversations/order-notification-template";
+import { resolvePublicAppOrigin } from "@/server/public-app-url";
 
 export type { OrderNotificationType } from "@/server/conversations/order-notification-template";
 
@@ -124,13 +125,16 @@ export function notificationClientMessageId(input: {
 }
 
 export function buildOrderTrackingUrl(appUrl: string, slug: string, orderId: string, accessToken: string) {
-  const url = new URL(`/m/${encodeURIComponent(slug)}/pedido/${encodeURIComponent(orderId)}/acesso`, appUrl);
+  const url = resolvePublicAppOrigin(appUrl);
+  url.pathname = `/m/${encodeURIComponent(slug)}/pedido/${encodeURIComponent(orderId)}/acesso`;
   url.searchParams.set("t", accessToken);
   return url.toString();
 }
 
 export function buildPublicMenuUrl(appUrl: string, slug: string) {
-  return new URL(`/m/${encodeURIComponent(slug)}`, appUrl).toString();
+  const url = resolvePublicAppOrigin(appUrl);
+  url.pathname = `/m/${encodeURIComponent(slug)}`;
+  return url.toString();
 }
 
 export function notificationStatusText(type: OrderNotificationType) {

@@ -15,6 +15,7 @@ import {
   trackingCodeFromInput,
   type WhatsAppBotStep,
 } from "@/server/conversations/bot-menu";
+import { isWhatsAppNonActionableAcknowledgement } from "@/server/conversations/whatsapp-non-actionable";
 import { loadCustomerBenefits } from "@/server/growth/customer-benefits";
 import { recordGrowthOperationalEvent } from "@/server/growth/growth-observability";
 import { visibleWorkflowStage } from "@/server/conversations/order-workflow-visibility";
@@ -327,6 +328,10 @@ export class ConversationGreetingService {
 
     if (!inbound || (inbound.content_type !== "text" && inbound.content_type !== "interactive")) {
       observe?.({ intent: "unknown", tool: "fallback" });
+      return;
+    }
+    if (isWhatsAppNonActionableAcknowledgement(inbound.body)) {
+      observe?.({ intent: "acknowledgement", tool: "conversation_info" });
       return;
     }
 

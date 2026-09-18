@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isWhatsAppNonActionableAcknowledgement } from "@/server/conversations/whatsapp-non-actionable";
 
 export type InboundIngestResult = {
   conversation_id?: string | null;
@@ -62,6 +63,13 @@ export class InboundOutcomeService {
       .maybeSingle();
     if (outboundError) throw outboundError;
     if (outbound) return "outbound_recorded";
+
+    if (
+      (inbound.content_type === "text" || inbound.content_type === "interactive")
+      && isWhatsAppNonActionableAcknowledgement(inbound.body)
+    ) {
+      return "ignored_non_actionable";
+    }
 
     const { error: transitionError } = await admin.rpc("conversation_transition_internal", {
       p_conversation_id: result.conversation_id,
