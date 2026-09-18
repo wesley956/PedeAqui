@@ -22,8 +22,9 @@ export function rememberOrderQuantity(value: unknown, quantity: number) {
 }
 
 export function clearPendingOrderQuantity(value: unknown) {
-  const { pendingQuantity: _pendingQuantity, ...rest } = asContext(value);
-  return rest as WhatsAppOrderMemoryContext;
+  const context = { ...asContext(value) };
+  delete context.pendingQuantity;
+  return context as WhatsAppOrderMemoryContext;
 }
 
 export function pendingAddressParts(value: unknown) {
@@ -43,8 +44,9 @@ export function rememberAddressParts(value: unknown, parts: string[]) {
 }
 
 export function clearPendingAddressParts(value: unknown) {
-  const { pendingAddressParts: _pendingAddressParts, ...rest } = asContext(value);
-  return rest as WhatsAppOrderMemoryContext;
+  const context = { ...asContext(value) };
+  delete context.pendingAddressParts;
+  return context as WhatsAppOrderMemoryContext;
 }
 
 export function addressPartsFromMessage(value: string | null | undefined) {
