@@ -69,9 +69,9 @@ export function addressPartsFromMessage(value: string | null | undefined) {
 }
 
 export function addressProgressPrompt(collectedParts: number) {
-  const labels = ["rua", "número", "bairro", "cidade", "UF"];
-  const next = labels[Math.max(0, Math.min(collectedParts, labels.length - 1))];
+  const prompts = ["a rua", "o número", "o bairro", "a cidade", "a UF"];
+  const next = prompts[Math.max(0, Math.min(collectedParts, prompts.length - 1))];
   return collectedParts === 0
     ? "Envie primeiro o nome da rua. Vou guardar cada parte até completar o endereço."
-    : `Certo, guardei essa parte do endereço. Agora envie ${next === "UF" ? "a UF" : `o ${next}`}.`;
+    : `Certo, guardei essa parte do endereço. Agora envie ${next}.`;
 }
