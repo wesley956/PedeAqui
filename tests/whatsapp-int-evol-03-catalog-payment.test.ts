@@ -56,7 +56,9 @@ describe("INT-EVOL-03 catalog and payment regressions", () => {
     const smart = read("src/server/conversations/whatsapp-smart-order-service.ts");
     expect(side).toContain("!hasPendingComposition(input.context)");
     expect(side).toContain("buildWhatsAppModifierPlacement(catalogInput, explicitItem.query)");
-    expect(smart.indexOf("answerActiveOrderSideIntent(input)")).toBeLessThan(smart.indexOf("EnhancedWhatsAppOrderService.handle"));
+    expect(smart.indexOf("const sideIntentAnswer = await answerActiveOrderSideIntent(input)")).toBeLessThan(
+      smart.indexOf("const result = await EnhancedWhatsAppOrderService.handle"),
+    );
   });
 
   it("does not reuse stale product choices after an explicit topic change", () => {
