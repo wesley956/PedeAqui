@@ -130,6 +130,11 @@ export function buildIntelligenceShadowObservation(
     && expectedLegacyHandler(decision) !== completion.legacyHandler;
   if (decision && handlerMismatch) divergenceCodes.push("handler_mismatch");
 
+  const semanticCriticalMismatch = comparisons.intent === "mismatch"
+    || comparisons.tool === "mismatch"
+    || comparisons.handoff === "mismatch"
+    || Boolean(preparation.nextErrorType);
+
   return {
     organization_id: preparation.organizationId,
     store_id: preparation.storeId,
@@ -159,7 +164,7 @@ export function buildIntelligenceShadowObservation(
     handoff_observed: completion.legacyOutcome === "waiting_agent" || completion.legacyOutcome === "human",
     comparisons,
     divergence_codes: divergenceCodes,
-    critical_mismatch: handlerMismatch || comparisons.handoff === "mismatch",
+    critical_mismatch: semanticCriticalMismatch,
     next_error_type: preparation.nextErrorType,
     next_error_code: preparation.nextErrorCode,
     legacy_duration_ms: Math.max(0, Math.round(completion.legacyDurationMs)),
