@@ -370,7 +370,8 @@ export class ConversationGreetingService {
 
     const menuUrl = buildPublicMenuUrl(appUrl, store.slug);
     const menuMode = (settings.bot_menu_mode ?? "menu_first") as WhatsAppBotMenuMode;
-    if (settings.greeting_enabled && (intent === "menu" || intent === "unknown")) {
+    if (settings.greeting_enabled) {
+      if (intent === "menu" || intent === "unknown") {
       let greetingBody: string;
       try {
         const rendered = renderGreetingTemplate(settings.greeting_template, store.name, menuUrl);
@@ -405,6 +406,7 @@ export class ConversationGreetingService {
         if (greetingResult === "sent") await updateBotSession(conversation.id, "menu", ingest.message_id);
         observe?.({ intent: "menu", tool: "conversation_info" });
         return;
+      }
       }
     }
 
