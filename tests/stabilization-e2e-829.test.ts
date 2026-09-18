@@ -99,7 +99,7 @@ describe("stabilization #829 commercial journey", () => {
     const actions = read("src/features/orders/actions.ts");
     const create = actions.indexOf("OrderService.createFromCheckout(storeSlug, token)");
     const notificationContext = actions.indexOf("OrderNotificationContextService.capture", create);
-    const whatsapp = actions.indexOf('scheduleOrderWhatsAppNotifications("checkout.order_created")', create);
+    const whatsapp = actions.indexOf('scheduleOrderWhatsAppNotifications("checkout.order_created", result.order_id)', create);
     const pix = actions.indexOf("scheduleOrderPixCharge", create);
     const recognition = actions.indexOf("CustomerRecognitionService.issueFromOrder", create);
     expect(create).toBeGreaterThan(-1);
