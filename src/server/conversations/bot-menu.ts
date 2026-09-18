@@ -1,7 +1,7 @@
-import { normalizeWhatsAppIdentifier } from "@/server/conversations/model";
 import { workflowStageLabels, type WorkflowStage } from "@/features/orders/workflow-config";
 import type { CustomerBenefits, CustomerCouponBenefit } from "@/server/growth/customer-benefits";
 import { normalizeGenericInformalPortuguese } from "@/server/conversations/generic-language-normalization";
+import { normalizeComparablePhone } from "@/server/conversations/order-recipient-policy";
 import { isExplicitMenuNavigation } from "@/server/conversations/whatsapp-navigation";
 
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
@@ -264,12 +264,9 @@ export function buildWhatsAppBotMenu(storeName: string, includeWhatsAppOrders = 
 }
 
 export function phonesBelongToSameCustomer(left: string | null | undefined, right: string | null | undefined) {
-  const first = normalizeWhatsAppIdentifier(left);
-  const second = normalizeWhatsAppIdentifier(right);
-  if (!first || !second) return false;
-  if (first === second) return true;
-  if (first.startsWith("55") && first.slice(2) === second) return true;
-  return second.startsWith("55") && second.slice(2) === first;
+  const first = normalizeComparablePhone(left);
+  const second = normalizeComparablePhone(right);
+  return Boolean(first && second && first === second);
 }
 
 const orderStatusLabels: Record<string, string> = {
