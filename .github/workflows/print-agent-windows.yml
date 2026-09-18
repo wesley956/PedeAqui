@@ -72,7 +72,8 @@ jobs:
           '@ | Set-Content -LiteralPath (Join-Path $legacyRoot "run.cmd") -Encoding UTF8
 
           $node = (Get-Command node.exe).Source
-          $legacyProcess = Start-Process -FilePath $node -ArgumentList @((Join-Path $legacySrc "index.mjs")) -PassThru -WindowStyle Hidden
+          $legacyEntry = Join-Path $legacySrc "index.mjs"
+          $legacyProcess = Start-Process -FilePath $node -ArgumentList ('"{0}"' -f $legacyEntry) -PassThru -WindowStyle Hidden
           try {
             Start-Sleep -Seconds 2
             & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "print-agent/windows/install-service.ps1" -ProbeLegacyEnvironment
