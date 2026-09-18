@@ -9,9 +9,14 @@ permissions:
   contents: read
 
 jobs:
-  vitest-bisect:
+  vitest-shard:
+    name: Diagnose shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
@@ -30,66 +35,13 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps --no-audit --no-fund
 
-      - name: Diagnose — existing shard 0
-        id: shard0
-        continue-on-error: true
+      - name: Run shard ${{ matrix.shard }}
         shell: bash
         run: |
           mapfile -t files < <(find tests -maxdepth 1 -type f -name '*.test.ts' | sort | grep -v -E 'whatsapp-(natural-navigation|int-evol-03-catalog-payment|active-order-side-intent)\.test\.ts$')
           selected=()
           for i in "${!files[@]}"; do
-            if (( i % 4 == 0 )); then selected+=("${files[$i]}"); fi
+            if (( i % 4 == ${{ matrix.shard }} )); then selected+=("${files[$i]}"); fi
           done
-          printf 'SHARD0 %s\n' "${selected[@]}"
+          printf 'SHARD%s %s\n' '${{ matrix.shard }}' "${selected[@]}"
           npx vitest run "${selected[@]}"
-
-      - name: Diagnose — existing shard 1
-        id: shard1
-        continue-on-error: true
-        shell: bash
-        run: |
-          mapfile -t files < <(find tests -maxdepth 1 -type f -name '*.test.ts' | sort | grep -v -E 'whatsapp-(natural-navigation|int-evol-03-catalog-payment|active-order-side-intent)\.test\.ts$')
-          selected=()
-          for i in "${!files[@]}"; do
-            if (( i % 4 == 1 )); then selected+=("${files[$i]}"); fi
-          done
-          printf 'SHARD1 %s\n' "${selected[@]}"
-          npx vitest run "${selected[@]}"
-
-      - name: Diagnose — existing shard 2
-        id: shard2
-        continue-on-error: true
-        shell: bash
-        run: |
-          mapfile -t files < <(find tests -maxdepth 1 -type f -name '*.test.ts' | sort | grep -v -E 'whatsapp-(natural-navigation|int-evol-03-catalog-payment|active-order-side-intent)\.test\.ts$')
-          selected=()
-          for i in "${!files[@]}"; do
-            if (( i % 4 == 2 )); then selected+=("${files[$i]}"); fi
-          done
-          printf 'SHARD2 %s\n' "${selected[@]}"
-          npx vitest run "${selected[@]}"
-
-      - name: Diagnose — existing shard 3
-        id: shard3
-        continue-on-error: true
-        shell: bash
-        run: |
-          mapfile -t files < <(find tests -maxdepth 1 -type f -name '*.test.ts' | sort | grep -v -E 'whatsapp-(natural-navigation|int-evol-03-catalog-payment|active-order-side-intent)\.test\.ts$')
-          selected=()
-          for i in "${!files[@]}"; do
-            if (( i % 4 == 3 )); then selected+=("${files[$i]}"); fi
-          done
-          printf 'SHARD3 %s\n' "${selected[@]}"
-          npx vitest run "${selected[@]}"
-
-      - name: Fail if any shard failed
-        if: always()
-        run: |
-          echo "shard0=${{ steps.shard0.outcome }}"
-          echo "shard1=${{ steps.shard1.outcome }}"
-          echo "shard2=${{ steps.shard2.outcome }}"
-          echo "shard3=${{ steps.shard3.outcome }}"
-          test "${{ steps.shard0.outcome }}" = success
-          test "${{ steps.shard1.outcome }}" = success
-          test "${{ steps.shard2.outcome }}" = success
-          test "${{ steps.shard3.outcome }}" = success
