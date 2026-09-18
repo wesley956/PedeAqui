@@ -26,6 +26,17 @@ describe("WhatsApp order tracking input", () => {
     expect(resolveWhatsAppBotIntent("154", "awaiting_tracking_code")).toBe("track_code");
   });
 
+  it.each(["oi", "boa tarde", "boa tarde tudo bem"])(
+    "keeps tracking context when the customer greets before sending the code: %s",
+    (text) => {
+      expect(resolveWhatsAppBotIntent(text, "awaiting_tracking_code")).toBe("track_start");
+    },
+  );
+
+  it("lets an explicit menu request leave tracking context", () => {
+    expect(resolveWhatsAppBotIntent("menu", "awaiting_tracking_code")).toBe("menu");
+  });
+
   it.each([
     "pedido 154",
     "meu pedido é 154",
