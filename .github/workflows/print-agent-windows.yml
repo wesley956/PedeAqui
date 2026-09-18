@@ -82,6 +82,23 @@ jobs:
             Stop-Process -Id $legacyProcess.Id -Force -ErrorAction SilentlyContinue
           }
 
+      - name: Validate missing legacy scheduled task is nonfatal
+        shell: powershell
+        run: |
+          $content = Get-Content "print-agent/windows/install-service.ps1" -Raw
+          if ($content -notmatch 'Get-ScheduledTask -TaskName \$LegacyTaskName -ErrorAction SilentlyContinue') {
+            throw "legacy task lookup is not nonfatal"
+          }
+          if ($content -notmatch 'Export-ScheduledTask -TaskName \$LegacyTaskName -ErrorAction Stop') {
+            throw "legacy task export guard missing"
+          }
+          if ($content -match 'schtasks\.exe /Query /TN \$LegacyTaskName /XML') {
+            throw "fragile schtasks XML export is still present"
+          }
+          if ($content -notmatch 'iniciando o launcher preservado diretamente') {
+            throw "direct launcher rollback fallback missing"
+          }
+
       - name: Validate agent modules
         shell: powershell
         run: |
