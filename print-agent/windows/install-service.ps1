@@ -33,11 +33,11 @@ function Import-LegacyEnvironment {
 
   $content = Get-Content -LiteralPath $runCmd -Raw -Encoding UTF8
   if (-not $AppUrl) {
-    $urlMatch = [regex]::Match($content, '(?im)^set\s+"PEDEAQUI_URL=([^"]+)"\s*)
+    $urlMatch = [regex]::Match($content, '(?im)^set\s+"PEDEAQUI_URL=([^"]+)"\s*$')
     if ($urlMatch.Success) { $script:AppUrl = $urlMatch.Groups[1].Value.Trim() }
   }
   if (-not $Token) {
-    $tokenMatch = [regex]::Match($content, '(?im)^set\s+"PEDEAQUI_PRINT_AGENT_TOKEN=([^"]+)"\s*)
+    $tokenMatch = [regex]::Match($content, '(?im)^set\s+"PEDEAQUI_PRINT_AGENT_TOKEN=([^"]+)"\s*$')
     if ($tokenMatch.Success) { $script:Token = $tokenMatch.Groups[1].Value.Trim() }
   }
 }
