@@ -1,3 +1,5 @@
+import { resolvePublicAppOrigin } from "@/server/public-app-url";
+
 const PLACEHOLDER_PATTERN = /\{([a-z_]+)\}/gi;
 const RAW_URL_PATTERN = /(https?:\/\/|www\.)/i;
 
@@ -35,16 +37,8 @@ export function validateBotReplyMessage(value: string) {
 }
 
 export function buildPublicMenuUrl(appUrl: string, storeSlug: string) {
-  const origin = new URL(appUrl);
-  if (!/^https?:$/.test(origin.protocol) || origin.username || origin.password) {
-    throw new Error("APP_URL inválida para link público do cardápio.");
-  }
-  if (process.env.NODE_ENV === "production" && origin.protocol !== "https:") {
-    throw new Error("APP_URL deve usar HTTPS em produção.");
-  }
+  const origin = resolvePublicAppOrigin(appUrl);
   origin.pathname = `/m/${encodeURIComponent(storeSlug)}`;
-  origin.search = "";
-  origin.hash = "";
   return origin.toString();
 }
 
