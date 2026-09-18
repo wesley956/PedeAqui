@@ -25,6 +25,19 @@ Remove-Item Env:PEDEAQUI_INSTALL_TOKEN -ErrorAction SilentlyContinue
 Remove-Item Env:PEDEAQUI_INSTALL_URL -ErrorAction SilentlyContinue
 ```
 
+## Existing production agent migration without credential rotation
+
+For an explicitly approved pilot on a workstation that already runs the legacy PedeAqui Print Agent, do **not** use the reconnect action just to obtain a new credential. The professional installer can import the existing URL and agent credential locally from `%ProgramData%\\PedeAqui\\PrintAgent\\run.cmd` without printing or serializing the credential.
+
+Download the exact PR installer and run it elevated with only the branch RawRoot:
+
+```powershell
+& .\\install-service.ps1 \`
+  -RawRoot "https://raw.githubusercontent.com/wesley956/PedeAqui/printing/professional-agent-int15-gate/print-agent"
+```
+
+This path preserves the currently valid agent identity. If professional validation fails, the installer restores the legacy bootstrap using the same already-valid credential. This migration path is preferred for the Dona Maria controlled pilot because it avoids credential rotation as a rollback dependency.
+
 ## Assisted evidence harness
 
 Use `homologation-service.ps1` from the same PR branch. It writes sanitized JSON files under `%ProgramData%\PedeAqui\PrintAgent\homologation-evidence` and never serializes the agent token.
