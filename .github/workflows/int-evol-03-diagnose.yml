@@ -1,0 +1,67 @@
+name: INT-EVOL-03 Diagnose
+
+on:
+  push:
+    branches:
+      - int-evol-03-natural-conversation-shadow-semantic
+
+permissions:
+  contents: read
+
+jobs:
+  vitest-bisect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+      SUPABASE_SERVICE_ROLE_KEY: ci_server_only_placeholder
+      APP_URL: http://localhost:3000
+      LOG_LEVEL: info
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+
+      - name: Diagnose — natural navigation
+        id: navigation
+        continue-on-error: true
+        run: npx vitest run tests/whatsapp-natural-navigation.test.ts
+
+      - name: Diagnose — catalog and payment
+        id: catalog_payment
+        continue-on-error: true
+        run: npx vitest run tests/whatsapp-int-evol-03-catalog-payment.test.ts
+
+      - name: Diagnose — active order side intent
+        id: side_intent
+        continue-on-error: true
+        run: npx vitest run tests/whatsapp-active-order-side-intent.test.ts
+
+      - name: Diagnose — pre-existing suite
+        id: existing_suite
+        continue-on-error: true
+        run: >-
+          npx vitest run
+          --exclude tests/whatsapp-natural-navigation.test.ts
+          --exclude tests/whatsapp-int-evol-03-catalog-payment.test.ts
+          --exclude tests/whatsapp-active-order-side-intent.test.ts
+
+      - name: Fail if any diagnostic block failed
+        if: always()
+        run: |
+          echo "navigation=${{ steps.navigation.outcome }}"
+          echo "catalog_payment=${{ steps.catalog_payment.outcome }}"
+          echo "side_intent=${{ steps.side_intent.outcome }}"
+          echo "existing_suite=${{ steps.existing_suite.outcome }}"
+          test "${{ steps.navigation.outcome }}" = success
+          test "${{ steps.catalog_payment.outcome }}" = success
+          test "${{ steps.side_intent.outcome }}" = success
+          test "${{ steps.existing_suite.outcome }}" = success
