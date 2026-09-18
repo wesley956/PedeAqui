@@ -32,9 +32,10 @@ describe("INT-EVOL-01 real WhatsApp regressions", () => {
   it("resolves the inbound intent before deciding whether to send the greeting", () => {
     const source = read("src/server/conversations/greeting-service.ts");
     const intentAt = source.indexOf("const intent = resolveWhatsAppBotIntent");
-    const greetingAt = source.indexOf('if (settings.greeting_enabled && (intent === "menu" || intent === "unknown"))');
+    const greetingAt = source.indexOf("if (settings.greeting_enabled)");
     expect(intentAt).toBeGreaterThan(-1);
     expect(greetingAt).toBeGreaterThan(intentAt);
+    expect(source).toContain('if (intent === "menu" || intent === "unknown")');
   });
 
   it("does not send fallback/menu for media and does not escalate a simple reaction", () => {
