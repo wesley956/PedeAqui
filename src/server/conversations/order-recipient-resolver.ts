@@ -1,24 +1,10 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-
-export type OrderRecipientResolution =
-  | {
-      ok: true;
-      phoneNormalized: string;
-      source: "customer" | "order_snapshot";
-    }
-  | {
-      ok: false;
-      reason: "customer_phone_conflict" | "customer_phone_missing";
-    };
-
-function normalizeComparablePhone(value: string | null | undefined) {
-  const digits = (value ?? "").replace(/\D/g, "");
-  if (!digits) return null;
-  if ((digits.length === 10 || digits.length === 11) && !digits.startsWith("55")) return `55${digits}`;
-  return digits;
-}
+import {
+  resolveOrderRecipientPolicy,
+  type OrderRecipientResolution,
+} from "@/server/conversations/order-recipient-policy";
 
 export async function resolveOrderRecipient(input: {
   organizationId: string;
@@ -26,7 +12,6 @@ export async function resolveOrderRecipient(input: {
   customerPhoneSnapshot: string | null | undefined;
 }): Promise<OrderRecipientResolution> {
   const admin = createAdminClient();
-  const snapshot = normalizeComparablePhone(input.customerPhoneSnapshot);
 
   const customerResult = input.customerId
     ? await admin.from("customers")
@@ -38,13 +23,8 @@ export async function resolveOrderRecipient(input: {
 
   if (customerResult.error) throw customerResult.error;
 
-  const canonical = normalizeComparablePhone(customerResult.data?.phone_normalized);
-
-  if (canonical && snapshot && canonical !== snapshot) {
-    return { ok: false, reason: "customer_phone_conflict" };
-  }
-  if (canonical) return { ok: true, phoneNormalized: canonical, source: "customer" };
-  if (snapshot) return { ok: true, phoneNormalized: snapshot, source: "order_snapshot" };
-
-  return { ok: false, reason: "customer_phone_missing" };
+  return resolveOrderRecipientPolicy({
+    customerPhoneNormalized: customerResult.data?.phone_normalized,
+    customerPhoneSnapshot: input.customerPhoneSnapshot,
+  });
 }
