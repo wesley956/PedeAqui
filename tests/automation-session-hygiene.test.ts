@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const migrationPath = path.join(
   process.cwd(),
-  "supabase/migrations/20260918024000_expire_stale_automation_sessions.sql",
+  "supabase/migrations/20260918060138_expire_stale_automation_sessions.sql",
 );
 
 const migration = fs.readFileSync(migrationPath, "utf8");
