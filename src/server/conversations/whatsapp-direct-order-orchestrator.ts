@@ -34,6 +34,9 @@ type ClaimedOutbound = {
   message_id?: string;
 };
 
+const DEFAULT_ORDER_SESSION_TTL_MINUTES = 45;
+const HUMAN_HANDOFF_ORDER_SESSION_TTL_MINUTES = 12 * 60;
+
 async function sendBotText(input: {
   requestId: string;
   conversationId: string;
@@ -97,9 +100,10 @@ async function saveSession(
   step: WhatsAppOrderStep | "menu" | "awaiting_tracking_code",
   messageId: string,
   context: WhatsAppOrderContext | null,
+  ttlMinutes = DEFAULT_ORDER_SESSION_TTL_MINUTES,
 ) {
   const admin = createAdminClient();
-  const expiresAt = new Date(Date.now() + 45 * 60 * 1000).toISOString();
+  const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000).toISOString();
   const { error } = await admin.rpc("automation_session_upsert_internal", {
     p_conversation_id: conversationId,
     p_step: step,
@@ -281,7 +285,7 @@ export class WhatsAppDirectOrderOrchestrator {
     if (activeOrderStep && (wantsHuman(inbound.body) || intent === "benefit_handoff")) {
       await sendBotText({
         ...sendBase,
-        body: `Parei a montagem do pedido. ${settings.handoff_message}`,
+        body: `Vou pausar a automação para o atendimento humano, mas mantive a montagem do seu pedido salva. ${settings.handoff_message}`,
         clientMessageId: `auto:wa-order:handoff:${ingest.message_id}`,
       });
       await admin.rpc("conversation_transition_internal", {
@@ -292,7 +296,13 @@ export class WhatsAppDirectOrderOrchestrator {
         p_actor_user_id: null,
         p_source: "bot",
       });
-      await saveSession(conversation.id, "menu", ingest.message_id, null);
+      await saveSession(
+        conversation.id,
+        activeOrderStep,
+        ingest.message_id,
+        session?.context as WhatsAppOrderContext,
+        HUMAN_HANDOFF_ORDER_SESSION_TTL_MINUTES,
+      );
       observe?.({ intent, tool: "human_handoff" });
       return true;
     }
