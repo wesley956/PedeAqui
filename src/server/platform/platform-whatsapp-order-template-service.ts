@@ -58,7 +58,7 @@ function platformToken() {
   return resolveWhatsAppAccessToken("META_SYSTEM_USER_ACCESS_TOKEN");
 }
 
-type MetaErrorPayload = { error?: { code?: number; message?: string; type?: string } };
+type MetaErrorPayload = { error?: { code?: number; error_subcode?: number; message?: string; type?: string } };
 
 async function graphRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const version = resolveWhatsAppGraphVersion();
@@ -77,6 +77,14 @@ async function graphRequest<T>(path: string, init?: RequestInit): Promise<T> {
   if (response.status === 408 || response.status === 429 || response.status >= 500) {
     throw new PlatformWhatsAppOrderTemplateError("meta_unavailable", "A Meta está temporariamente indisponível.");
   }
+  console.error(JSON.stringify({
+    level: "error",
+    msg: "meta_order_template_request_rejected",
+    status: response.status,
+    providerCode: payload?.error?.code ?? null,
+    providerSubcode: payload?.error?.error_subcode ?? null,
+    providerType: payload?.error?.type ?? null,
+  }));
   throw new PlatformWhatsAppOrderTemplateError("meta_rejected", "A Meta recusou a operação do template de notificações.");
 }
 
@@ -137,7 +145,7 @@ async function createTemplate(wabaId: string) {
     components: [
       {
         type: "BODY",
-        text: "{{1}}: atualização do pedido {{2}} — {{3}}. Acompanhe seu pedido: {{4}}",
+        text: "Olá! A {{1}} informa que o pedido {{2}} teve uma atualização: {{3}}. Acompanhe pelo link {{4}}. Obrigado por pedir conosco.",
         example: {
           body_text: [[
             "Restaurante PedeAqui",
