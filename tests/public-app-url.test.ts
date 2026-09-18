@@ -23,6 +23,12 @@ describe("INT-EVOL-02 canonical public links", () => {
       .toBe("https://pedeaqui.pp.ua/m/dona-maria/pedido/order-1/acesso?t=token-1");
   });
 
+  it("blocks any technical Vercel deployment hostname, not only the historical one", () => {
+    delete process.env.PUBLIC_APP_URL;
+    expect(buildGreetingMenuUrl("https://pedeaqui-preview-abc123.vercel.app", "dona-maria"))
+      .toBe("https://pedeaqui.pp.ua/m/dona-maria");
+  });
+
   it("allows an explicit customer-facing origin override", () => {
     process.env.PUBLIC_APP_URL = "https://pedidos.exemplo.com";
     expect(buildGreetingMenuUrl("https://internal.example", "loja"))
