@@ -125,7 +125,7 @@ const orderStartWords = new Set([
   "quero comprar",
 ]);
 
-const priceQuestionPattern = /\b(?:quanto|preco|valor)\b|\b(?:custa|custam|ta|esta|ficam?|sai)\b/;
+const priceQuestionPattern = /\b(?:quanto|preco|precos|valor|valores|custa|custam)\b/;
 
 export function priceProductQueryFromInput(value: string | null | undefined) {
   const normalized = semanticBotInput(normalizeBotInput(value));
