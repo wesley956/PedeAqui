@@ -19,10 +19,21 @@ describe("platform WhatsApp order template", () => {
   });
 
   it("keeps the four body parameters in the same order used by the order notification worker", () => {
-    expect(service).toContain("{{1}}: atualização do pedido {{2}} — {{3}}. Acompanhe seu pedido: {{4}}");
+    const body = "Olá! A {{1}} informa que o pedido {{2}} teve uma atualização: {{3}}. Acompanhe pelo link {{4}}. Obrigado por pedir conosco.";
+    expect(service).toContain(body);
+    expect(body.trim()).not.toMatch(/^\{\{\d+\}\}/);
+    expect(body.trim()).not.toMatch(/\{\{\d+\}\}$/);
     expect(service).toContain('"Restaurante PedeAqui"');
     expect(service).toContain('"#123"');
     expect(service).toContain('"Saiu para entrega"');
+  });
+
+  it("logs only sanitized Meta rejection metadata", () => {
+    expect(service).toContain('msg: "meta_order_template_request_rejected"');
+    expect(service).toContain("providerCode: payload?.error?.code ?? null");
+    expect(service).toContain("providerSubcode: payload?.error?.error_subcode ?? null");
+    expect(service).toContain("providerType: payload?.error?.type ?? null");
+    expect(service).not.toContain("message: payload?.error?.message");
   });
 
   it("uses a safe 24h-only mode for Meta Test WhatsApp Business Accounts without changing the restaurant flow", () => {
