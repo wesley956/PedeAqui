@@ -1,5 +1,5 @@
 const OFFICIAL_PUBLIC_APP_ORIGIN = "https://pedeaqui.pp.ua";
-const LEGACY_TECHNICAL_HOSTS = new Set(["cruz-iota.vercel.app"]);
+const TECHNICAL_HOST_SUFFIX = ".vercel.app";
 
 function validatedOrigin(value: string) {
   const url = new URL(value);
@@ -12,15 +12,20 @@ function validatedOrigin(value: string) {
   return url;
 }
 
+function isTechnicalDeploymentHost(hostname: string) {
+  const normalized = hostname.toLowerCase();
+  return normalized === "vercel.app" || normalized.endsWith(TECHNICAL_HOST_SUFFIX);
+}
+
 /**
  * Returns the customer-facing origin used in links sent outside the app.
- * PUBLIC_APP_URL may explicitly override APP_URL. The historical Vercel host
- * is never exposed to customers and falls back to the official domain.
+ * PUBLIC_APP_URL may explicitly override APP_URL. Technical deployment hosts
+ * are never exposed to customers and fall back to the official domain.
  */
 export function resolvePublicAppOrigin(appUrl: string) {
   const override = process.env.PUBLIC_APP_URL?.trim();
   const origin = validatedOrigin(override || appUrl);
-  if (LEGACY_TECHNICAL_HOSTS.has(origin.hostname.toLowerCase())) {
+  if (isTechnicalDeploymentHost(origin.hostname)) {
     return new URL(OFFICIAL_PUBLIC_APP_ORIGIN);
   }
   origin.pathname = "/";
