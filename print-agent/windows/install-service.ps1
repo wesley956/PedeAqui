@@ -170,13 +170,22 @@ function Install-Release([string]$NodeExe) {
 function Backup-And-Stop-Legacy {
   New-Item -ItemType Directory -Force -Path $BackupDir | Out-Null
   $taskExists = $false
-  & schtasks.exe /Query /TN $LegacyTaskName *> $null
-  if ($LASTEXITCODE -eq 0) {
-    $taskExists = $true
-    $xml = & schtasks.exe /Query /TN $LegacyTaskName /XML
-    if ($LASTEXITCODE -eq 0 -and $xml) { $xml | Set-Content -LiteralPath $LegacyTaskBackup -Encoding Unicode }
-    & schtasks.exe /End /TN $LegacyTaskName *> $null
-    & schtasks.exe /Change /TN $LegacyTaskName /DISABLE *> $null
+
+  try {
+    $legacyTask = Get-ScheduledTask -TaskName $LegacyTaskName -ErrorAction SilentlyContinue
+    if ($legacyTask) {
+      $taskExists = $true
+      try {
+        Export-ScheduledTask -TaskName $LegacyTaskName -ErrorAction Stop |
+          Set-Content -LiteralPath $LegacyTaskBackup -Encoding Unicode
+      } catch {
+        Write-Warning "Nao foi possivel exportar a tarefa legada; o rollback local seguira pelo launcher preservado."
+      }
+      Stop-ScheduledTask -TaskName $LegacyTaskName -ErrorAction SilentlyContinue
+      Disable-ScheduledTask -TaskName $LegacyTaskName -ErrorAction SilentlyContinue | Out-Null
+    }
+  } catch {
+    Write-Warning "A tarefa legada nao pode ser consultada; a migracao seguira pelo processo e arquivos preservados."
   }
 
   foreach ($name in @("run.cmd", "launch.vbs")) {
@@ -198,13 +207,34 @@ function Backup-And-Stop-Legacy {
 
 function Restore-Legacy([bool]$HadLegacyTask) {
   try {
+    $legacyRun = Join-Path $BackupDir "run.cmd"
+    $legacyLaunch = Join-Path $BackupDir "launch.vbs"
+
+    if (Test-Path -LiteralPath $legacyRun) {
+      Copy-Item -LiteralPath $legacyRun -Destination (Join-Path $LegacyRoot "run.cmd") -Force
+    }
+    if (Test-Path -LiteralPath $legacyLaunch) {
+      Copy-Item -LiteralPath $legacyLaunch -Destination (Join-Path $LegacyRoot "launch.vbs") -Force
+    }
+
+    $liveLaunch = Join-Path $LegacyRoot "launch.vbs"
     if ($HadLegacyTask -and (Test-Path -LiteralPath $LegacyTaskBackup)) {
-      & schtasks.exe /Delete /TN $LegacyTaskName /F *> $null
-      & schtasks.exe /Create /TN $LegacyTaskName /XML $LegacyTaskBackup /F *> $null
-      & schtasks.exe /Change /TN $LegacyTaskName /ENABLE *> $null
-      & schtasks.exe /Run /TN $LegacyTaskName *> $null
+      try {
+        $xml = Get-Content -LiteralPath $LegacyTaskBackup -Raw -Encoding Unicode
+        Register-ScheduledTask -TaskName $LegacyTaskName -Xml $xml -Force -ErrorAction Stop | Out-Null
+        Enable-ScheduledTask -TaskName $LegacyTaskName -ErrorAction SilentlyContinue | Out-Null
+        Start-ScheduledTask -TaskName $LegacyTaskName -ErrorAction SilentlyContinue
+        return
+      } catch {
+        Write-Warning "Nao foi possivel restaurar a tarefa legada exportada; iniciando o launcher preservado diretamente."
+      }
+    }
+
+    if (Test-Path -LiteralPath $liveLaunch) {
+      Start-Process -FilePath "wscript.exe" -ArgumentList ('"{0}"' -f $liveLaunch) -WindowStyle Hidden
       return
     }
+
     $startupBackup = Join-Path $BackupDir "PedeAqui-Impressao-startup.vbs"
     if (Test-Path -LiteralPath $startupBackup) {
       Copy-Item -LiteralPath $startupBackup -Destination $LegacyStartup -Force
@@ -325,7 +355,9 @@ try {
   icacls.exe $Root /inheritance:r /grant:r "*S-1-5-18:(OI)(CI)F" "*S-1-5-32-544:(OI)(CI)F" /T /C *> $null
   Validate-Service $release.Path
 
-  if ($hadLegacyTask) { & schtasks.exe /Delete /TN $LegacyTaskName /F *> $null }
+  if ($hadLegacyTask) {
+    Unregister-ScheduledTask -TaskName $LegacyTaskName -Confirm:$false -ErrorAction SilentlyContinue
+  }
   Remove-Item -LiteralPath $LegacyStartup -Force -ErrorAction SilentlyContinue
   Write-Host "PedeAqui Impressao instalado como servico Windows e validado com sucesso."
   Write-Host "Servico: $ServiceName | Release: $($release.Version)"
