@@ -14,16 +14,21 @@ export function asksForMenuDescription(value: string | null | undefined) {
     || /\b(?:cardapio|menu)\b.*\b(?:descreve|descricao|resumo|resume|explica)\b/.test(text);
 }
 
-export function catalogAvailabilityQueryFromInput(value: string | null | undefined) {
-  const text = normalize(value);
-  if (!text) return null;
-  const match = text.match(/(?:^|\b)(?:tem|temos|voces tem|voces possuem|possui|vende|vendem)\s+(.+)$/);
-  if (!match?.[1]) return null;
-  const query = match[1]
+function cleanAvailabilityQuery(value: string) {
+  return value
+    .replace(/^(?:e\s+|entao\s+|mas\s+)+/, "")
     .replace(/\b(?:ai|agora|hoje|disponivel|disponiveis|no cardapio|no menu)\b/g, " ")
     .replace(/^(?:o|a|os|as|um|uma|uns|umas)\s+/, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+export function catalogAvailabilityQueryFromInput(value: string | null | undefined) {
+  const text = normalize(value);
+  if (!text) return null;
+  const forward = text.match(/(?:^|\b)(?:tem|temos|voces tem|voces possuem|possui|vende|vendem)\s+(.+)$/);
+  const inverted = text.match(/^(?:e\s+|entao\s+|mas\s+)?(.+?)\s+(?:tem|temos|tem ai)$/);
+  const query = cleanAvailabilityQuery(forward?.[1] ?? inverted?.[1] ?? "");
   if (!query || ["cardapio", "menu", "pedido", "entrega"].includes(query)) return null;
   return query;
 }
