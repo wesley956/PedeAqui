@@ -52,9 +52,10 @@ describe("professional Print Agent Windows gate", () => {
 
   it("keeps the legacy bootstrap recoverable until the professional service validates", () => {
     const validationAt = installer.indexOf("Validate-Service $release.Path");
-    const deleteLegacyAt = installer.indexOf("schtasks.exe /Delete /TN $LegacyTaskName", validationAt);
+    const unregisterLegacyAt = installer.indexOf("Unregister-ScheduledTask -TaskName $LegacyTaskName", validationAt);
     expect(validationAt).toBeGreaterThan(-1);
-    expect(deleteLegacyAt).toBeGreaterThan(validationAt);
+    expect(unregisterLegacyAt).toBeGreaterThan(validationAt);
+    expect(installer).not.toContain("schtasks.exe /Query /TN $LegacyTaskName /XML");
     expect(installer).toContain("Backup-And-Stop-Legacy");
     expect(installer).toContain("Restore-Legacy $hadLegacyTask");
     expect(uninstall).toContain("[switch]$RestoreLegacy");
