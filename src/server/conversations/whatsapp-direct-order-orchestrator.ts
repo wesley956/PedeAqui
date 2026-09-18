@@ -20,6 +20,7 @@ import {
   type WhatsAppOrderContext,
   type WhatsAppOrderStep,
 } from "@/server/conversations/whatsapp-smart-order-service";
+import { isExplicitMenuNavigation } from "@/server/conversations/whatsapp-navigation";
 import { recordFailure } from "@/server/observability/failure";
 import type { LegacyIntelligenceObserver } from "@/server/conversations/legacy-intelligence-observation";
 
@@ -274,7 +275,7 @@ export class WhatsAppDirectOrderOrchestrator {
       return true;
     }
 
-    if (activeOrderStep && normalizeBotInput(inbound.body) === "menu") {
+    if (activeOrderStep && isExplicitMenuNavigation(inbound.body)) {
       const body = buildWhatsAppBotMenu(store.name, true, settings.bot_display_name);
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:menu:${ingest.message_id}` });
       await saveSession(conversation.id, "menu", ingest.message_id, null);
