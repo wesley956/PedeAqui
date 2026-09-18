@@ -1,5 +1,6 @@
 import "server-only";
 
+import { normalizeBotInput } from "@/server/conversations/bot-menu";
 import {
   isWhatsAppOrderStep,
   looksLikeWhatsAppOrderItems,
@@ -35,6 +36,7 @@ import {
   rememberAddressParts,
   rememberOrderQuantity,
 } from "@/server/conversations/whatsapp-order-memory";
+import { StoreOperationalStatusService, storeClosedOrderMessage } from "@/server/menu/store-operational-status";
 
 export { isWhatsAppOrderStep, looksLikeWhatsAppOrderItems, whatsappOrderStartMessage };
 export type { WhatsAppOrderContext, WhatsAppOrderHandleResult, WhatsAppOrderStep };
@@ -46,6 +48,11 @@ function preservedContext(input: OrderInput): WhatsAppOrderContext {
   return input.context && typeof input.context === "object"
     ? input.context as WhatsAppOrderContext
     : { channel: "whatsapp_order", version: 1 };
+}
+
+function confirmsOrder(text: string) {
+  return ["sim", "s", "confirmar", "confirmo", "pode confirmar", "fechar pedido", "finalizar", "fechou", "beleza", "ok"]
+    .includes(normalizeBotInput(text));
 }
 
 function pendingChoices(context: unknown): PendingChoice[] {
@@ -88,6 +95,21 @@ export class WhatsAppOrderService {
         nextStep: "order_items",
         context: { channel: "whatsapp_order", version: 1 },
       };
+    }
+
+    if (input.step === "order_confirmation" && confirmsOrder(input.text)) {
+      const operational = await StoreOperationalStatusService.load({
+        organizationId: input.organizationId,
+        storeId: input.storeId,
+      });
+      if (!operational.canOrder) {
+        return {
+          handled: true,
+          body: `${storeClosedOrderMessage(operational)}\n\nSeu pedido continua salvo e não foi enviado para a loja.`,
+          nextStep: "order_confirmation",
+          context: preservedContext(input),
+        };
+      }
     }
 
     if (asksAboutSavedAddress(input.text)) {
