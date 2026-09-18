@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isWhatsAppNonActionableAcknowledgement } from "@/server/conversations/whatsapp-non-actionable";
 
 export type InboundIngestResult = {
   conversation_id?: string | null;
@@ -47,6 +48,12 @@ export class InboundOutcomeService {
       : null;
     const whatsappType = typeof metadata?.whatsapp_type === "string" ? metadata.whatsapp_type : null;
     if (inbound.content_type === "unsupported" && (whatsappType === "reaction" || inbound.body === "[reaction]")) {
+      return "ignored_non_actionable";
+    }
+    if (
+      (inbound.content_type === "text" || inbound.content_type === "interactive")
+      && isWhatsAppNonActionableAcknowledgement(inbound.body)
+    ) {
       return "ignored_non_actionable";
     }
 
