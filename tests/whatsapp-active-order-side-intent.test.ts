@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   activeOrderTrackingCodeFromInput,
   isActiveOrderTrackingQuestion,
-} from "@/server/conversations/whatsapp-active-order-side-intent";
+} from "@/server/conversations/whatsapp-active-order-side-intent-core";
 
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
