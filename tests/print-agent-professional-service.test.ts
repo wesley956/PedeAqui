@@ -45,6 +45,163 @@ describe("professional Print Agent Windows gate", () => {
     expect(installer).toContain('Join-Path $Root "run.cmd"');
     expect(installer).toContain("PEDEAQUI_PRINT_AGENT_TOKEN");
     expect(installer).toContain("Import-LegacyEnvironment");
+    expect(installer).toContain("'(?im)^set\\s+\"PEDEAQUI_URL=([^\"]+)\"\\s*    expect(installer.indexOf("Import-LegacyEnvironment")).toBeLessThan(installer.indexOf('if (-not $AppUrl -or -not $Token)'));
+    expect(installer).not.toContain("Write-Host $Token");
+    expect(installer).not.toContain("Write-Output $Token");
+  });
+
+  it("keeps the legacy bootstrap recoverable until the professional service validates", () => {
+    const validationAt = installer.indexOf("Validate-Service $release.Path");
+    const deleteLegacyAt = installer.indexOf("schtasks.exe /Delete /TN $LegacyTaskName", validationAt);
+    expect(validationAt).toBeGreaterThan(-1);
+    expect(deleteLegacyAt).toBeGreaterThan(validationAt);
+    expect(installer).toContain("Backup-And-Stop-Legacy");
+    expect(installer).toContain("Restore-Legacy $hadLegacyTask");
+    expect(uninstall).toContain("[switch]$RestoreLegacy");
+    expect(uninstall).toContain("Dados, token, releases, spool e historico foram preservados");
+  });
+
+  it("packages a guarded bootstrap and keeps persistent data outside immutable releases", () => {
+    expect(manifest.files).toContain("src/service-state.mjs");
+    expect(manifest.files).toContain("src/service-bootstrap.mjs");
+    expect(launcher).toContain('PEDEAQUI_PRINT_SPOOL = Join-Path $DataDir "spool"');
+    expect(serviceState).toContain('path.join(agentDataDir(), "agent.lock")');
+    expect(bootstrap).toContain("acquireSingleInstance");
+    expect(bootstrap).toContain("PEDEAQUI_INSTANCE_RUNNING");
+    expect(bootstrap).toContain("/api/print-agent/heartbeat");
+    expect(bootstrap).toContain("markCurrentReleaseHealthy");
+  });
+
+  it("stages updates as releases and activates them without overwriting the running copy", () => {
+    expect(updater).toContain("stageRelease");
+    expect(updater).toContain("activateRelease");
+    expect(updater).toContain("staging-");
+    expect(updater).toContain("health confirmation pending");
+    expect(updater).not.toContain("copyFile(source, destination)");
+    expect(serviceState).toContain("previous.json");
+    expect(serviceState).toContain("pending: true");
+    expect(launcher).toContain("automatic_rollback");
+    expect(rollback).toContain("Nao existe release anterior valida para rollback");
+  });
+
+  it("quarantines a release rejected by rollback so restart cannot retry it forever", () => {
+    expect(serviceState).toContain("rejected-release.json");
+    expect(serviceState).toContain("markReleaseRejected");
+    expect(serviceState).toContain("clearRejectedRelease");
+    expect(updater).toContain("readRejectedRelease");
+    expect(updater).toContain("PEDEAQUI_RETRY_REJECTED_RELEASE");
+    expect(updater).toContain("automatic retry skipped");
+    expect(launcher).toContain("Write-RejectedRelease");
+    expect(launcher).toContain("automatic_rollback_before_heartbeat");
+    expect(launcher.indexOf("Write-RejectedRelease")).toBeLessThan(launcher.indexOf('Write-LauncherLog "automatic_rollback'));
+    expect(rollback).toContain('Write-RejectedRelease ([string]$current.version) "manual_rollback"');
+  });
+
+  it("keeps diagnostics free of the persisted token and exposes quarantine safely", () => {
+    expect(health).not.toContain("service.env.json");
+    expect(health).not.toContain("token");
+    expect(health).toContain("matchingProcessCount");
+    expect(health).toContain("spoolFiles");
+    expect(health).toContain("rejectedVersion");
+    expect(health).toContain("rejectedReason");
+    expect(rollback).not.toMatch(/Remove-Item[^\n]+spool/i);
+    expect(uninstall).not.toMatch(/Remove-Item[^\n]+spool/i);
+  });
+
+  it("ships an assisted physical homologation harness that records sanitized evidence", () => {
+    expect(homologation).toContain('ValidateSet("Audit", "ExerciseRecovery", "PrepareReboot", "BootCapture")');
+    expect(homologation).toContain("Get-MachineFingerprint");
+    expect(homologation).toContain("Get-SpoolSummary");
+    expect(homologation).toContain("singleInstanceExitCode");
+    expect(homologation).toContain("Stop-Process -Id $oldPid -Force");
+    expect(homologation).toContain("serviceHealthyBeforeInteractiveSession");
+    expect(homologation).toContain('/SC ONSTART /RU SYSTEM /RL HIGHEST');
+    expect(homologation).toContain("homologation-evidence");
+    expect(homologation).not.toContain("ConvertTo-Json $serviceEnv");
+    expect(homologation).not.toContain("Write-Host $serviceEnv.token");
+    expect(homologation).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+  });
+});
+");
+    expect(installer).toContain("'(?im)^set\\s+\"PEDEAQUI_PRINT_AGENT_TOKEN=([^\"]+)\"\\s*    expect(installer.indexOf("Import-LegacyEnvironment")).toBeLessThan(installer.indexOf('if (-not $AppUrl -or -not $Token)'));
+    expect(installer).not.toContain("Write-Host $Token");
+    expect(installer).not.toContain("Write-Output $Token");
+  });
+
+  it("keeps the legacy bootstrap recoverable until the professional service validates", () => {
+    const validationAt = installer.indexOf("Validate-Service $release.Path");
+    const deleteLegacyAt = installer.indexOf("schtasks.exe /Delete /TN $LegacyTaskName", validationAt);
+    expect(validationAt).toBeGreaterThan(-1);
+    expect(deleteLegacyAt).toBeGreaterThan(validationAt);
+    expect(installer).toContain("Backup-And-Stop-Legacy");
+    expect(installer).toContain("Restore-Legacy $hadLegacyTask");
+    expect(uninstall).toContain("[switch]$RestoreLegacy");
+    expect(uninstall).toContain("Dados, token, releases, spool e historico foram preservados");
+  });
+
+  it("packages a guarded bootstrap and keeps persistent data outside immutable releases", () => {
+    expect(manifest.files).toContain("src/service-state.mjs");
+    expect(manifest.files).toContain("src/service-bootstrap.mjs");
+    expect(launcher).toContain('PEDEAQUI_PRINT_SPOOL = Join-Path $DataDir "spool"');
+    expect(serviceState).toContain('path.join(agentDataDir(), "agent.lock")');
+    expect(bootstrap).toContain("acquireSingleInstance");
+    expect(bootstrap).toContain("PEDEAQUI_INSTANCE_RUNNING");
+    expect(bootstrap).toContain("/api/print-agent/heartbeat");
+    expect(bootstrap).toContain("markCurrentReleaseHealthy");
+  });
+
+  it("stages updates as releases and activates them without overwriting the running copy", () => {
+    expect(updater).toContain("stageRelease");
+    expect(updater).toContain("activateRelease");
+    expect(updater).toContain("staging-");
+    expect(updater).toContain("health confirmation pending");
+    expect(updater).not.toContain("copyFile(source, destination)");
+    expect(serviceState).toContain("previous.json");
+    expect(serviceState).toContain("pending: true");
+    expect(launcher).toContain("automatic_rollback");
+    expect(rollback).toContain("Nao existe release anterior valida para rollback");
+  });
+
+  it("quarantines a release rejected by rollback so restart cannot retry it forever", () => {
+    expect(serviceState).toContain("rejected-release.json");
+    expect(serviceState).toContain("markReleaseRejected");
+    expect(serviceState).toContain("clearRejectedRelease");
+    expect(updater).toContain("readRejectedRelease");
+    expect(updater).toContain("PEDEAQUI_RETRY_REJECTED_RELEASE");
+    expect(updater).toContain("automatic retry skipped");
+    expect(launcher).toContain("Write-RejectedRelease");
+    expect(launcher).toContain("automatic_rollback_before_heartbeat");
+    expect(launcher.indexOf("Write-RejectedRelease")).toBeLessThan(launcher.indexOf('Write-LauncherLog "automatic_rollback'));
+    expect(rollback).toContain('Write-RejectedRelease ([string]$current.version) "manual_rollback"');
+  });
+
+  it("keeps diagnostics free of the persisted token and exposes quarantine safely", () => {
+    expect(health).not.toContain("service.env.json");
+    expect(health).not.toContain("token");
+    expect(health).toContain("matchingProcessCount");
+    expect(health).toContain("spoolFiles");
+    expect(health).toContain("rejectedVersion");
+    expect(health).toContain("rejectedReason");
+    expect(rollback).not.toMatch(/Remove-Item[^\n]+spool/i);
+    expect(uninstall).not.toMatch(/Remove-Item[^\n]+spool/i);
+  });
+
+  it("ships an assisted physical homologation harness that records sanitized evidence", () => {
+    expect(homologation).toContain('ValidateSet("Audit", "ExerciseRecovery", "PrepareReboot", "BootCapture")');
+    expect(homologation).toContain("Get-MachineFingerprint");
+    expect(homologation).toContain("Get-SpoolSummary");
+    expect(homologation).toContain("singleInstanceExitCode");
+    expect(homologation).toContain("Stop-Process -Id $oldPid -Force");
+    expect(homologation).toContain("serviceHealthyBeforeInteractiveSession");
+    expect(homologation).toContain('/SC ONSTART /RU SYSTEM /RL HIGHEST');
+    expect(homologation).toContain("homologation-evidence");
+    expect(homologation).not.toContain("ConvertTo-Json $serviceEnv");
+    expect(homologation).not.toContain("Write-Host $serviceEnv.token");
+    expect(homologation).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+  });
+});
+");
+    expect(installer).not.toContain("'(?im)^set\\\\s+");
     expect(installer.indexOf("Import-LegacyEnvironment")).toBeLessThan(installer.indexOf('if (-not $AppUrl -or -not $Token)'));
     expect(installer).not.toContain("Write-Host $Token");
     expect(installer).not.toContain("Write-Output $Token");
