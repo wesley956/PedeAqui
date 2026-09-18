@@ -43,6 +43,12 @@ export function isActiveOrderTrackingQuestion(text: string) {
     || normalized.includes("acompanhar meu pedido");
 }
 
+export function activeOrderTrackingCodeFromInput(text: string) {
+  const normalized = normalizeBotInput(text);
+  if (!/\b(?:pedido|codigo)\b/.test(normalized)) return null;
+  return trackingCodeFromInput(text);
+}
+
 function resumeSuffix() {
   return "\n\nSeu pedido em montagem continua salvo exatamente de onde estava.";
 }
@@ -101,7 +107,7 @@ export async function answerActiveOrderSideIntent(input: SideIntentInput): Promi
     };
   }
 
-  const trackingCode = trackingCodeFromInput(input.text);
+  const trackingCode = activeOrderTrackingCodeFromInput(input.text);
   if (trackingCode !== null) {
     return {
       handled: true,
