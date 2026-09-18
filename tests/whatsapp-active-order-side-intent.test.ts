@@ -1,7 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { isActiveOrderTrackingQuestion } from "@/server/conversations/whatsapp-active-order-side-intent";
+import {
+  activeOrderTrackingCodeFromInput,
+  isActiveOrderTrackingQuestion,
+} from "@/server/conversations/whatsapp-active-order-side-intent";
 
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
@@ -29,10 +32,17 @@ describe("INT-EVOL-02 active order side intents", () => {
     }
   });
 
+  it("requires explicit tracking context before interpreting a number as an old order code", () => {
+    expect(activeOrderTrackingCodeFromInput("20")).toBeNull();
+    expect(activeOrderTrackingCodeFromInput("quero 20")).toBeNull();
+    expect(activeOrderTrackingCodeFromInput("pedido 70")).toBe(70);
+    expect(activeOrderTrackingCodeFromInput("código 42")).toBe(42);
+  });
+
   it("answers Pix and tracking without changing the active order step or context", () => {
     const source = read("src/server/conversations/whatsapp-active-order-side-intent.ts");
     expect(source).toContain("asksAboutPixPayment(input.text)");
-    expect(source).toContain("trackingCodeFromInput(input.text)");
+    expect(source).toContain("activeOrderTrackingCodeFromInput(input.text)");
     expect(source).toContain("nextStep: input.step");
     expect(source).toContain("context: preservedContext(input)");
     expect(source).toContain("Seu pedido em montagem continua salvo exatamente de onde estava");
