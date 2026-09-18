@@ -1,6 +1,7 @@
 name: Isolated Chaos
 
 on:
+  # workflow_dispatch is the release-gate path for changes outside supabase/**.
   workflow_dispatch:
   pull_request:
     paths:
