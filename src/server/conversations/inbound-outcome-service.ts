@@ -13,6 +13,7 @@ export type InboundOutcome =
   | "waiting_agent"
   | "human"
   | "closed"
+  | "ignored_non_actionable"
   | "escalated_no_reply";
 
 export class InboundOutcomeService {
@@ -24,7 +25,7 @@ export class InboundOutcomeService {
     const admin = createAdminClient();
     const [{ data: inbound, error: inboundError }, { data: conversation, error: conversationError }] = await Promise.all([
       admin.from("messages")
-        .select("id, organization_id, store_id, conversation_id, created_at")
+        .select("id, organization_id, store_id, conversation_id, created_at, content_type, body, metadata")
         .eq("id", result.message_id)
         .eq("conversation_id", result.conversation_id)
         .maybeSingle(),
@@ -40,6 +41,14 @@ export class InboundOutcomeService {
     if (conversation.status === "waiting_agent") return "waiting_agent";
     if (conversation.status === "human") return "human";
     if (conversation.status === "closed") return "closed";
+
+    const metadata = inbound.metadata && typeof inbound.metadata === "object"
+      ? inbound.metadata as Record<string, unknown>
+      : null;
+    const whatsappType = typeof metadata?.whatsapp_type === "string" ? metadata.whatsapp_type : null;
+    if (inbound.content_type === "unsupported" && (whatsappType === "reaction" || inbound.body === "[reaction]")) {
+      return "ignored_non_actionable";
+    }
 
     const { data: outbound, error: outboundError } = await admin.from("messages")
       .select("id")

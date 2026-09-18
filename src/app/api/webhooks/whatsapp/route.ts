@@ -115,7 +115,7 @@ export async function POST(request: Request) {
           if (shadowPreparation) {
             let legacyHandler: LegacyIntelligenceHandler = orderHandled ? "whatsapp_order" : "greeting";
             if (shadowPreparation.duplicateSideEffectPrevented) legacyHandler = "none";
-            if (legacyOutcome === "human" || legacyOutcome === "closed") legacyHandler = "none";
+            if (legacyOutcome === "human" || legacyOutcome === "closed" || legacyOutcome === "ignored_non_actionable") legacyHandler = "none";
             if (legacyOutcome === "waiting_agent" && shadowPreparation.decision?.handoffReason === "human_lock") {
               legacyHandler = "none";
             }

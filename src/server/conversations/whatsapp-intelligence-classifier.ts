@@ -96,7 +96,8 @@ export function classifyWhatsAppIntelligenceIntent(
   }
 
   if (hasAny(normalized, flavorQuestionPatterns)) return result("flavor_question", 0.97, "flavor-question");
-  if (/\b(?:preco|precos|valor|valores|quanto custa|quanto fica)\b/.test(normalized) && !/\bentrega\b/.test(normalized)) {
+  if (/\b(?:preco|precos|valor|valores|quanto custa|quanto fica)\b/.test(normalized) || (/\bquanto\b/.test(normalized) && /\b(?:ta|esta|custa|custam|fica|ficam|sai)\b/.test(normalized))) {
+    if (/\bentrega\b/.test(normalized)) return result("delivery", 0.96, "delivery");
     return result("price_question", 0.91, "price-question");
   }
 
