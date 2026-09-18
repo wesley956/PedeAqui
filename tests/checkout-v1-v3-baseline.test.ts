@@ -50,7 +50,7 @@ describe("checkout V1+V3 baseline", () => {
   it("keeps final review, idempotency and post-order effects", () => {
     expect(orderService).toContain("CheckoutService.review(storeSlug, token)");
     expect(orderService).toContain("findExistingByCartToken");
-    expect(orderActions).toContain("scheduleOrderWhatsAppNotifications(\"checkout.order_created\")");
+    expect(orderActions).toContain('scheduleOrderWhatsAppNotifications("checkout.order_created", result.order_id)');
     expect(orderActions).toContain("scheduleOrderPixCharge(result.order_id)");
     expect(orderActions).toContain("CustomerRecognitionService.issueFromOrder");
   });
