@@ -133,8 +133,9 @@ describe("simple printing setup", () => {
     expect(installer).toContain("WinSW-x64.exe");
     expect(installer).toContain("05b82d46ad331cc16bdc00de5c6332c1ef818df8ceefcd49c726553209b3a0da");
     expect(installer.indexOf("Validate-Service $release.Path")).toBeLessThan(
-      installer.indexOf("schtasks.exe /Delete /TN $LegacyTaskName", installer.indexOf("Validate-Service $release.Path")),
+      installer.indexOf("Unregister-ScheduledTask -TaskName $LegacyTaskName", installer.indexOf("Validate-Service $release.Path")),
     );
+    expect(installer).not.toContain("schtasks.exe /Query /TN $LegacyTaskName /XML");
     expect(launcher).toContain("PEDEAQUI_AGENT_DATA");
     expect(launcher).toContain("service-bootstrap.mjs");
   });
