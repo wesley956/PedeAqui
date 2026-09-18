@@ -49,7 +49,7 @@ type SideIntentInput = {
 };
 
 function preservedContext(input: SideIntentInput, clearPendingChoices = false): WhatsAppOrderContext {
-  const current = input.context && typeof input.context === "object"
+  const current: WhatsAppOrderContext = input.context && typeof input.context === "object"
     ? input.context as WhatsAppOrderContext
     : { channel: "whatsapp_order", version: 1 };
   if (!clearPendingChoices) return current;
