@@ -30,38 +30,66 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps --no-audit --no-fund
 
-      - name: Diagnose — natural navigation
-        id: navigation
+      - name: Diagnose — existing shard 0
+        id: shard0
         continue-on-error: true
-        run: npx vitest run tests/whatsapp-natural-navigation.test.ts
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests -maxdepth 1 -type f -name '*.test.ts' | sort | grep -v -E 'whatsapp-(natural-navigation|int-evol-03-catalog-payment|active-order-side-intent)\.test\.ts$')
+          selected=()
+          for i in "${!files[@]}"; do
+            if (( i % 4 == 0 )); then selected+=("${files[$i]}"); fi
+          done
+          printf 'SHARD0 %s\n' "${selected[@]}"
+          npx vitest run "${selected[@]}"
 
-      - name: Diagnose — catalog and payment
-        id: catalog_payment
+      - name: Diagnose — existing shard 1
+        id: shard1
         continue-on-error: true
-        run: npx vitest run tests/whatsapp-int-evol-03-catalog-payment.test.ts
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests -maxdepth 1 -type f -name '*.test.ts' | sort | grep -v -E 'whatsapp-(natural-navigation|int-evol-03-catalog-payment|active-order-side-intent)\.test\.ts$')
+          selected=()
+          for i in "${!files[@]}"; do
+            if (( i % 4 == 1 )); then selected+=("${files[$i]}"); fi
+          done
+          printf 'SHARD1 %s\n' "${selected[@]}"
+          npx vitest run "${selected[@]}"
 
-      - name: Diagnose — active order side intent
-        id: side_intent
+      - name: Diagnose — existing shard 2
+        id: shard2
         continue-on-error: true
-        run: npx vitest run tests/whatsapp-active-order-side-intent.test.ts
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests -maxdepth 1 -type f -name '*.test.ts' | sort | grep -v -E 'whatsapp-(natural-navigation|int-evol-03-catalog-payment|active-order-side-intent)\.test\.ts$')
+          selected=()
+          for i in "${!files[@]}"; do
+            if (( i % 4 == 2 )); then selected+=("${files[$i]}"); fi
+          done
+          printf 'SHARD2 %s\n' "${selected[@]}"
+          npx vitest run "${selected[@]}"
 
-      - name: Diagnose — pre-existing suite
-        id: existing_suite
+      - name: Diagnose — existing shard 3
+        id: shard3
         continue-on-error: true
-        run: >-
-          npx vitest run
-          --exclude tests/whatsapp-natural-navigation.test.ts
-          --exclude tests/whatsapp-int-evol-03-catalog-payment.test.ts
-          --exclude tests/whatsapp-active-order-side-intent.test.ts
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests -maxdepth 1 -type f -name '*.test.ts' | sort | grep -v -E 'whatsapp-(natural-navigation|int-evol-03-catalog-payment|active-order-side-intent)\.test\.ts$')
+          selected=()
+          for i in "${!files[@]}"; do
+            if (( i % 4 == 3 )); then selected+=("${files[$i]}"); fi
+          done
+          printf 'SHARD3 %s\n' "${selected[@]}"
+          npx vitest run "${selected[@]}"
 
-      - name: Fail if any diagnostic block failed
+      - name: Fail if any shard failed
         if: always()
         run: |
-          echo "navigation=${{ steps.navigation.outcome }}"
-          echo "catalog_payment=${{ steps.catalog_payment.outcome }}"
-          echo "side_intent=${{ steps.side_intent.outcome }}"
-          echo "existing_suite=${{ steps.existing_suite.outcome }}"
-          test "${{ steps.navigation.outcome }}" = success
-          test "${{ steps.catalog_payment.outcome }}" = success
-          test "${{ steps.side_intent.outcome }}" = success
-          test "${{ steps.existing_suite.outcome }}" = success
+          echo "shard0=${{ steps.shard0.outcome }}"
+          echo "shard1=${{ steps.shard1.outcome }}"
+          echo "shard2=${{ steps.shard2.outcome }}"
+          echo "shard3=${{ steps.shard3.outcome }}"
+          test "${{ steps.shard0.outcome }}" = success
+          test "${{ steps.shard1.outcome }}" = success
+          test "${{ steps.shard2.outcome }}" = success
+          test "${{ steps.shard3.outcome }}" = success
