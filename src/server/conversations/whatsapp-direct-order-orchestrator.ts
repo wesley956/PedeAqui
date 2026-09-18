@@ -288,6 +288,13 @@ export class WhatsAppDirectOrderOrchestrator {
         body: `Vou pausar a automação para o atendimento humano, mas mantive a montagem do seu pedido salva. ${settings.handoff_message}`,
         clientMessageId: `auto:wa-order:handoff:${ingest.message_id}`,
       });
+      await saveSession(
+        conversation.id,
+        activeOrderStep,
+        ingest.message_id,
+        session?.context as WhatsAppOrderContext,
+        HUMAN_HANDOFF_ORDER_SESSION_TTL_MINUTES,
+      );
       await admin.rpc("conversation_transition_internal", {
         p_conversation_id: conversation.id,
         p_target_state: "waiting_agent",
@@ -296,13 +303,6 @@ export class WhatsAppDirectOrderOrchestrator {
         p_actor_user_id: null,
         p_source: "bot",
       });
-      await saveSession(
-        conversation.id,
-        activeOrderStep,
-        ingest.message_id,
-        session?.context as WhatsAppOrderContext,
-        HUMAN_HANDOFF_ORDER_SESSION_TTL_MINUTES,
-      );
       observe?.({ intent, tool: "human_handoff" });
       return true;
     }
