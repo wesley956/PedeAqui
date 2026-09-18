@@ -1,7 +1,8 @@
 param(
   [string]$AppUrl = $env:PEDEAQUI_INSTALL_URL,
   [string]$Token = $env:PEDEAQUI_INSTALL_TOKEN,
-  [string]$RawRoot = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent"
+  [string]$RawRoot = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent",
+  [switch]$ProbeLegacyEnvironment
 )
 
 $ErrorActionPreference = "Stop"
@@ -9,6 +10,7 @@ $ProgressPreference = "SilentlyContinue"
 $ServiceName = "PedeAquiPrintAgent"
 $LegacyTaskName = "PedeAqui Impressao"
 $Root = Join-Path $env:ProgramData "PedeAqui\PrintAgent"
+$LegacyRoot = $Root
 $ServiceDir = Join-Path $Root "service"
 $ReleasesDir = Join-Path $Root "releases"
 $DataDir = Join-Path $Root "data"
@@ -26,9 +28,39 @@ $ServiceExe = Join-Path $ServiceDir "PedeAquiPrintAgent.exe"
 $ServiceXml = Join-Path $ServiceDir "PedeAquiPrintAgent.xml"
 $LauncherPath = Join-Path $ServiceDir "service-launcher.ps1"
 
+function Resolve-LegacyRoot {
+  $defaultRun = Join-Path $Root "run.cmd"
+  if (Test-Path -LiteralPath $defaultRun) { return $Root }
+
+  $processes = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -eq "node.exe" -and $_.CommandLine -and $_.CommandLine -match '(?i)src[\\/]index\.mjs' }
+
+  foreach ($process in $processes) {
+    $matches = [regex]::Matches([string]$process.CommandLine, '(?i)"?([A-Za-z]:\\[^"\r\n]*?\\src\\index\.mjs)"?')
+    foreach ($match in $matches) {
+      $entry = [string]$match.Groups[1].Value
+      if (-not $entry -or -not (Test-Path -LiteralPath $entry)) { continue }
+      $candidate = Split-Path -Parent (Split-Path -Parent $entry)
+      if (Test-Path -LiteralPath (Join-Path $candidate "run.cmd")) { return $candidate }
+    }
+  }
+
+  foreach ($candidate in @(
+    (Join-Path $env:LOCALAPPDATA "PedeAqui\PrintAgent"),
+    (Join-Path $env:APPDATA "PedeAqui\PrintAgent"),
+    (Join-Path $env:USERPROFILE "PedeAqui\PrintAgent")
+  )) {
+    if ($candidate -and (Test-Path -LiteralPath (Join-Path $candidate "run.cmd"))) { return $candidate }
+  }
+
+  return $Root
+}
+
 function Import-LegacyEnvironment {
+  $script:LegacyRoot = Resolve-LegacyRoot
   if ($AppUrl -and $Token) { return }
-  $runCmd = Join-Path $Root "run.cmd"
+
+  $runCmd = Join-Path $LegacyRoot "run.cmd"
   if (-not (Test-Path -LiteralPath $runCmd)) { return }
 
   $content = Get-Content -LiteralPath $runCmd -Raw -Encoding UTF8
@@ -148,7 +180,7 @@ function Backup-And-Stop-Legacy {
   }
 
   foreach ($name in @("run.cmd", "launch.vbs")) {
-    $source = Join-Path $Root $name
+    $source = Join-Path $LegacyRoot $name
     if (Test-Path -LiteralPath $source) { Copy-Item -LiteralPath $source -Destination (Join-Path $BackupDir $name) -Force }
   }
   if (Test-Path -LiteralPath $LegacyStartup) {
@@ -156,7 +188,7 @@ function Backup-And-Stop-Legacy {
     Remove-Item -LiteralPath $LegacyStartup -Force
   }
 
-  $legacyNeedle = [IO.Path]::Combine($Root, "src", "index.mjs")
+  $legacyNeedle = [IO.Path]::Combine($LegacyRoot, "src", "index.mjs")
   Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
     Where-Object { $_.Name -eq "node.exe" -and $_.CommandLine -and $_.CommandLine.Contains($legacyNeedle) } |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
@@ -242,7 +274,7 @@ function Install-ServiceWrapper([string]$NodeExe) {
 function Migrate-Spool {
   $target = Join-Path $DataDir "spool"
   New-Item -ItemType Directory -Force -Path $target | Out-Null
-  foreach ($source in @((Join-Path $Root ".spool"), (Join-Path (Get-Location) ".spool"))) {
+  foreach ($source in @((Join-Path $LegacyRoot ".spool"), (Join-Path $Root ".spool"), (Join-Path (Get-Location) ".spool"))) {
     if (-not (Test-Path -LiteralPath $source)) { continue }
     Get-ChildItem -LiteralPath $source -Filter "*.json" -File -ErrorAction SilentlyContinue | ForEach-Object {
       $destination = Join-Path $target $_.Name
@@ -265,6 +297,14 @@ function Validate-Service([string]$ReleasePath) {
   if (-not $service -or $service.Status -ne "Running" -or -not $process) { throw "O servico profissional nao permaneceu em execucao." }
   $headers = @{ Authorization = "Bearer $Token" }
   Invoke-RestMethod -Method Post -Uri "$($AppUrl.TrimEnd('/'))/api/print-agent/config" -Headers $headers -ContentType "application/json" -Body "{}" -TimeoutSec 15 | Out-Null
+}
+
+if ($ProbeLegacyEnvironment) {
+  Import-LegacyEnvironment
+  if (-not $AppUrl -or -not $Token) { throw "URL ou chave do Print Agent ausente." }
+  if (-not (Test-Path -LiteralPath (Join-Path $LegacyRoot "run.cmd"))) { throw "Bootstrap legado nao localizado." }
+  Write-Host "Ambiente legado localizado e credencial validada sem exposicao."
+  exit 0
 }
 
 Assert-Administrator
