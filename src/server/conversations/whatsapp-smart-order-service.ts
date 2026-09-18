@@ -15,7 +15,7 @@ import {
   restartOrderMessage,
 } from "@/server/conversations/whatsapp-order-corrections";
 import { answerContextualOrderQuestion } from "@/server/conversations/whatsapp-contextual-question-service";
-import { asksAboutPixPayment, pixPaymentGuidanceMessage } from "@/server/conversations/whatsapp-payment-guidance";
+import { answerActiveOrderSideIntent } from "@/server/conversations/whatsapp-active-order-side-intent";
 import {
   asksAboutSavedAddress,
   formatSavedAddress,
@@ -87,17 +87,11 @@ export class WhatsAppOrderService {
       }
     }
 
+    const sideIntentAnswer = await answerActiveOrderSideIntent(input);
+    if (sideIntentAnswer) return sideIntentAnswer;
+
     const contextualAnswer = await answerContextualOrderQuestion(input);
     if (contextualAnswer) return contextualAnswer;
-
-    if (input.step === "order_payment" && asksAboutPixPayment(input.text)) {
-      return {
-        handled: true,
-        body: pixPaymentGuidanceMessage(),
-        nextStep: "order_payment",
-        context: preservedContext(input),
-      };
-    }
 
     if (input.step === "order_address") {
       const currentParts = pendingAddressParts(input.context);
