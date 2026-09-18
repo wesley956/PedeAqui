@@ -76,6 +76,7 @@ const POLICIES: Record<WhatsAppBotIntent | "order_continue", IntentPolicy> = {
   hours: { tool: "conversation_info", capability: "canAutoReply", authority: null },
   payment: { tool: "conversation_info", capability: "canAutoReply", authority: null },
   delivery: { tool: "conversation_info", capability: "canAutoReply", authority: null },
+  price: { tool: "catalog", capability: "canSearchCatalog", authority: null },
   order_start: { tool: "whatsapp_order", capability: "canCreateOrder", authority: null },
   benefits: { tool: "growth_benefits", capability: "canShowGrowthBenefits", authority: null },
   cashback: { tool: "growth_benefits", capability: "canShowGrowthBenefits", authority: null },
