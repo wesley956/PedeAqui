@@ -71,7 +71,7 @@ export const WHATSAPP_ORDER_AUTOMATIONS: readonly AutomationDefinition[] = [
     key: "production_preparing",
     label: "Em preparo",
     labels: { gas: "Em separação", generic_commerce: "Em separação" },
-    description: "Acompanha a etapa operacional de preparo ou separação.",
+    description: "Acompanha a etapa operacional de preparo ou separação quando o evento real acontece.",
     triggerLabel: "Quando a produção entra em preparo/separação",
     module: "production",
   },
@@ -85,7 +85,7 @@ export const WHATSAPP_ORDER_AUTOMATIONS: readonly AutomationDefinition[] = [
   {
     key: "pickup_ready",
     label: "Pronto para retirada",
-    description: "Avisa pedidos de retirada quando a produção fica pronta.",
+    description: "Avisa pedidos de retirada quando a produção fica realmente pronta.",
     triggerLabel: "Quando um pedido de retirada fica pronto",
     module: "production",
   },
@@ -165,7 +165,9 @@ export function resolveWhatsAppAutomationCapability(
       ? "Entregas"
       : definition.requiresOnlinePayment
         ? "Pagamento online com confirmação automática"
-        : null;
+        : definition.requiresDeliveryOperation
+          ? "Operação de entrega"
+          : null;
 
   const base = {
     key: definition.key,
@@ -181,7 +183,10 @@ export function resolveWhatsAppAutomationCapability(
   }
 
   if (definition.module) {
-    const dependencyBlocked = moduleBlockedState(input.modules[definition.module]);
+    const dependency = input.modules[definition.module];
+    const dependencyBlocked = dependency.reason === "disabled_by_store"
+      ? null
+      : moduleBlockedState(dependency);
     if (dependencyBlocked) return { ...base, ...dependencyBlocked, configurable: false };
   }
 

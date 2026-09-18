@@ -49,7 +49,7 @@ describe("#1017 effective customer-visible workflow", () => {
     );
     expect(resolveNotificationWorkflowVisibility({ type: "production_preparing", fulfillmentType: "delivery", settings }).eligible).toBe(false);
     expect(resolveNotificationWorkflowVisibility({ type: "production_preparing", fulfillmentType: "pickup", settings }).eligible).toBe(true);
-    expect(resolveNotificationWorkflowVisibility({ type: "pickup_ready", fulfillmentType: "pickup", settings }).eligible).toBe(false);
+    expect(resolveNotificationWorkflowVisibility({ type: "pickup_ready", fulfillmentType: "pickup", settings }).eligible).toBe(true);
     expect(resolveNotificationWorkflowVisibility({ type: "out_for_delivery", fulfillmentType: "delivery", settings }).eligible).toBe(true);
   });
 
