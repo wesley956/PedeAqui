@@ -37,8 +37,8 @@ describe("INT-EVOL-03 catalog and payment regressions", () => {
       { method: "credit_card", enabled: true, sortOrder: 30 },
     ], "quero pagar no piks");
     expect(body).toContain("Pix não está disponível");
-    expect(body).toContain("dinheiro");
-    expect(body).toContain("cartão de crédito");
+    expect(body).toContain("Dinheiro");
+    expect(body).toContain("Cartão de crédito");
   });
 
   it("uses canonical catalog projection and scoped composition tables instead of inventing products", () => {
