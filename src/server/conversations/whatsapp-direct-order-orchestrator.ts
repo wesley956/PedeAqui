@@ -15,6 +15,11 @@ import {
 } from "@/server/conversations/whatsapp-catalog-intent-core";
 import { buildPublicMenuUrl } from "@/server/conversations/greeting";
 import { loadCustomerBenefits } from "@/server/growth/customer-benefits";
+import {
+  StoreOperationalStatusService,
+  storeClosedOrderMessage,
+  storeOperationalHoursMessage,
+} from "@/server/menu/store-operational-status";
 import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import {
   asksAboutSavedAddress,
@@ -217,7 +222,7 @@ export class WhatsAppDirectOrderOrchestrator {
     const inbound = inboundResult.data;
     const session = sessionResult.data;
     if (!settings?.whatsapp_orders_enabled || !settings.default_bot_enabled || !settings.whatsapp_enabled) return false;
-    if (!settings.whatsapp_phone_number_id || !settings.access_token_secret_ref || !contact?.external_id || !store?.slug || !store.name || store.status !== "active") return false;
+    if (!settings.whatsapp_phone_number_id || !settings.access_token_secret_ref || !contact?.external_id || !store?.slug || !store.name) return false;
     if (!inbound || (inbound.content_type !== "text" && inbound.content_type !== "interactive")) return false;
 
     const active = session?.state === "active" && (!session.expires_at || Date.parse(session.expires_at) > Date.now());
@@ -236,6 +241,14 @@ export class WhatsAppDirectOrderOrchestrator {
       phoneNumberId: settings.whatsapp_phone_number_id,
       accessTokenSecretRef: settings.access_token_secret_ref,
       recipient: contact.external_id,
+    };
+    let operationalStatusPromise: ReturnType<typeof StoreOperationalStatusService.load> | null = null;
+    const loadOperationalStatus = () => {
+      operationalStatusPromise ??= StoreOperationalStatusService.load({
+        organizationId: conversation.organization_id,
+        storeId: conversation.store_id,
+      });
+      return operationalStatusPromise;
     };
 
     if (savedAddressQuestion) {
@@ -296,6 +309,15 @@ export class WhatsAppDirectOrderOrchestrator {
       return true;
     }
 
+    if (activeOrderStep && intent === "hours") {
+      const operational = await loadOperationalStatus();
+      const body = `${storeOperationalHoursMessage(operational)}\n\nSua montagem atual continua salva.`;
+      await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:hours:${ingest.message_id}` });
+      await saveSession(conversation.id, activeOrderStep, ingest.message_id, session?.context as WhatsAppOrderContext);
+      observe?.({ intent: "hours", tool: "conversation_info" });
+      return true;
+    }
+
     if (activeOrderStep && isExplicitMenuNavigation(inbound.body)) {
       const body = buildWhatsAppBotMenu(store.name, true, settings.bot_display_name);
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:menu:${ingest.message_id}` });
@@ -343,6 +365,21 @@ export class WhatsAppDirectOrderOrchestrator {
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:benefits:${ingest.message_id}` });
       await saveSession(conversation.id, activeOrderStep, ingest.message_id, session?.context as WhatsAppOrderContext);
       observe?.({ intent, tool: "growth_benefits" });
+      return true;
+    }
+
+    const operational = await loadOperationalStatus();
+    if (!operational.canOrder) {
+      const preserved = activeOrderStep ? "\n\nSua montagem atual continua salva para você retomar quando a loja voltar a aceitar pedidos." : "";
+      const body = `${storeClosedOrderMessage(operational)}${preserved}`;
+      await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:closed:${ingest.message_id}` });
+      await saveSession(
+        conversation.id,
+        activeOrderStep ?? "menu",
+        ingest.message_id,
+        activeOrderStep ? session?.context as WhatsAppOrderContext : null,
+      );
+      observe?.(activeOrderStep ? { intent: "order_continue", tool: "whatsapp_order" } : { intent: "order_start", tool: "whatsapp_order" });
       return true;
     }
 
