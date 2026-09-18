@@ -42,14 +42,18 @@ describe("INT-EVOL-02 safe return and non-actionable acknowledgements", () => {
     expect(source.slice(acknowledgementAt, escalationAt)).toContain('return "ignored_non_actionable"');
   });
 
-  it("preserves the active order step and draft context during human handoff", () => {
+  it("persists the active order draft before moving the conversation to human handoff", () => {
     const source = read("src/server/conversations/whatsapp-direct-order-orchestrator.ts");
     const handoffAt = source.indexOf("if (activeOrderStep && (wantsHuman");
     const nextBlockAt = source.indexOf("if (activeOrderStep && isGrowthBenefitIntent", handoffAt);
     expect(handoffAt).toBeGreaterThan(-1);
     expect(nextBlockAt).toBeGreaterThan(handoffAt);
     const handoffBlock = source.slice(handoffAt, nextBlockAt);
+    const saveAt = handoffBlock.indexOf("await saveSession(");
+    const transitionAt = handoffBlock.indexOf('await admin.rpc("conversation_transition_internal"');
 
+    expect(saveAt).toBeGreaterThan(-1);
+    expect(transitionAt).toBeGreaterThan(saveAt);
     expect(handoffBlock).toContain("p_target_state: \"waiting_agent\"");
     expect(handoffBlock).toContain("activeOrderStep,");
     expect(handoffBlock).toContain("session?.context as WhatsAppOrderContext");
