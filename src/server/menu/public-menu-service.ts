@@ -3,7 +3,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { BusinessType } from "@/modules/module-catalog";
-import { isOpenAt } from "@/server/menu/schedule";
+import { resolveStoreOperationalStatus } from "@/server/menu/store-operational-status";
 import { publicMenuSchema, publicProductSchema, type PublicMenu, type PublicProduct } from "@/server/menu/schemas";
 import { isPromotionActive, PromotionService } from "@/server/promotions/promotion-service";
 
@@ -38,20 +38,38 @@ const PROMOTIONS_CATEGORY_ID = "00000000-0000-4000-8000-000000000999";
 function operationalState({
   status,
   acceptingOrders,
+  pauseReason,
+  allowDelivery,
+  allowPickup,
   hours,
   timeZone,
   now,
 }: {
   status: "active" | "temporarily_closed";
   acceptingOrders: boolean;
+  pauseReason?: string | null;
+  allowDelivery?: boolean;
+  allowPickup?: boolean;
   hours: PublicMenu["hours"];
   timeZone: string;
   now: Date;
 }) {
-  const scheduleOpen = status === "active" && isOpenAt(hours, timeZone, now);
-  const canOrder = scheduleOpen && acceptingOrders;
-  const label = (!acceptingOrders ? "paused" : scheduleOpen ? "open" : "closed") as "open" | "closed" | "paused";
-  return { scheduleOpen, acceptingOrders, canOrder, label };
+  const resolved = resolveStoreOperationalStatus({
+    storeStatus: status,
+    acceptingOrders,
+    pauseReason,
+    allowDelivery,
+    allowPickup,
+    hours,
+    timeZone,
+    now,
+  });
+  return {
+    scheduleOpen: resolved.scheduleOpen,
+    acceptingOrders: resolved.acceptingOrders,
+    canOrder: resolved.canOrder,
+    label: resolved.label,
+  };
 }
 
 async function applyScheduledPromotions(menu: PublicMenu, now: Date): Promise<PublicMenu> {
@@ -166,6 +184,9 @@ export class PublicMenuService {
     const operational = operationalState({
       status: menu.store.status,
       acceptingOrders: menu.settings.accepting_orders,
+      pauseReason: menu.settings.pause_reason,
+      allowDelivery: menu.settings.allow_delivery,
+      allowPickup: menu.settings.allow_pickup,
       hours: menu.hours,
       timeZone: menu.store.timezone,
       now,
@@ -188,6 +209,7 @@ export class PublicMenuService {
     const operational = operationalState({
       status: parsed.store.status,
       acceptingOrders: parsed.settings.accepting_orders,
+      pauseReason: parsed.settings.pause_reason,
       hours: parsed.hours,
       timeZone: parsed.store.timezone,
       now,

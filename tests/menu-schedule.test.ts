@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertNoScheduleOverlap, isOpenAt } from "@/server/menu/schedule";
+import { assertNoScheduleOverlap, isOpenAt, nextOpening } from "@/server/menu/schedule";
 import { storeHourInputSchema } from "@/server/menu/schemas";
 
 describe("store schedule", () => {
@@ -22,5 +22,34 @@ describe("store schedule", () => {
     const hours = [{ weekday: 5, opens_at: "18:00", closes_at: "02:00", closes_next_day: true }];
     const saturdayOneAmInSaoPaulo = new Date("2026-08-08T04:00:00.000Z");
     expect(isOpenAt(hours, "America/Sao_Paulo", saturdayOneAmInSaoPaulo)).toBe(true);
+  });
+
+  it("returns today's next opening before the first shift", () => {
+    const hours = [{ weekday: 6, opens_at: "18:00", closes_at: "23:00", closes_next_day: false }];
+    const saturdayFivePmInSaoPaulo = new Date("2026-09-19T20:00:00.000Z");
+    expect(nextOpening(hours, "America/Sao_Paulo", saturdayFivePmInSaoPaulo)).toEqual({
+      weekday: 6,
+      opensAt: "18:00",
+      daysAhead: 0,
+      label: "hoje às 18:00",
+    });
+  });
+
+  it("returns tomorrow when today's shift already ended", () => {
+    const hours = [
+      { weekday: 6, opens_at: "18:00", closes_at: "23:00", closes_next_day: false },
+      { weekday: 0, opens_at: "17:30", closes_at: "22:00", closes_next_day: false },
+    ];
+    const saturdayElevenThirtyPmInSaoPaulo = new Date("2026-09-20T02:30:00.000Z");
+    expect(nextOpening(hours, "America/Sao_Paulo", saturdayElevenThirtyPmInSaoPaulo)).toEqual({
+      weekday: 0,
+      opensAt: "17:30",
+      daysAhead: 1,
+      label: "amanhã às 17:30",
+    });
+  });
+
+  it("returns null when the store has no active schedule", () => {
+    expect(nextOpening([], "America/Sao_Paulo", new Date("2026-09-19T20:00:00.000Z"))).toBeNull();
   });
 });
