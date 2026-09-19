@@ -48,6 +48,24 @@ describe("FLOW-08 bot resume handoff policy", () => {
       .toEqual({ mode: "safe_menu", reason: "cart_inactive" });
   });
 
+  it("never resumes checkout confirmation when the same cart already became an order", () => {
+    expect(resolveBotResumeSession({
+      session: orderSession({ step: "order_confirmation" }),
+      nowMs: now,
+      cartActive: false,
+      cartConvertedToOrder: true,
+    })).toEqual({ mode: "safe_menu", reason: "cart_already_converted" });
+  });
+
+  it("gives an existing order precedence over a stale active-cart observation", () => {
+    expect(resolveBotResumeSession({
+      session: orderSession({ step: "order_confirmation" }),
+      nowMs: now,
+      cartActive: true,
+      cartConvertedToOrder: true,
+    })).toEqual({ mode: "safe_menu", reason: "cart_already_converted" });
+  });
+
   it("preserves active non-order state without inventing a checkout", () => {
     expect(resolveBotResumeSession({
       session: orderSession({ step: "awaiting_tracking_code", context: { channel: "whatsapp_menu", version: 3 } }),
@@ -73,7 +91,7 @@ describe("FLOW-08 bot resume handoff policy", () => {
   });
 
   it("is deterministic for simultaneous duplicate resume evaluations", () => {
-    const input = { session: orderSession(), nowMs: now, cartActive: true };
+    const input = { session: orderSession(), nowMs: now, cartActive: true, cartConvertedToOrder: false };
     expect(resolveBotResumeSession(input)).toEqual(resolveBotResumeSession(input));
   });
 });
