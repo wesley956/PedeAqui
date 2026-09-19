@@ -221,7 +221,7 @@ export class WhatsAppDirectOrderOrchestrator {
     const store = storeResult.data;
     const inbound = inboundResult.data;
     const session = sessionResult.data;
-    if (!settings?.whatsapp_orders_enabled || !settings.default_bot_enabled || !settings.whatsapp_enabled) return false;
+    if (!settings?.default_bot_enabled || !settings.whatsapp_enabled) return false;
     if (!settings.whatsapp_phone_number_id || !settings.access_token_secret_ref || !contact?.external_id || !store?.slug || !store.name) return false;
     if (!inbound || (inbound.content_type !== "text" && inbound.content_type !== "interactive")) return false;
 
@@ -231,7 +231,9 @@ export class WhatsAppDirectOrderOrchestrator {
     const naturalOrder = looksLikeWhatsAppOrderItems(inbound.body);
     const savedAddressQuestion = asksAboutSavedAddress(inbound.body);
     const trackingNumberHelp = asksForTrackingNumberHelp(inbound.body);
-    if (!activeOrderStep && intent !== "order_start" && !naturalOrder && !savedAddressQuestion && !trackingNumberHelp) return false;
+    const closedGreetingCandidate = !activeOrderStep && intent === "menu";
+    if (!settings.whatsapp_orders_enabled && !closedGreetingCandidate) return false;
+    if (!activeOrderStep && intent !== "menu" && intent !== "order_start" && !naturalOrder && !savedAddressQuestion && !trackingNumberHelp) return false;
 
     const sendBase = {
       requestId,
@@ -365,6 +367,19 @@ export class WhatsAppDirectOrderOrchestrator {
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:benefits:${ingest.message_id}` });
       await saveSession(conversation.id, activeOrderStep, ingest.message_id, session?.context as WhatsAppOrderContext);
       observe?.({ intent, tool: "growth_benefits" });
+      return true;
+    }
+
+    if (closedGreetingCandidate) {
+      const operational = await loadOperationalStatus();
+      if (operational.canOrder) return false;
+      await sendBotText({
+        ...sendBase,
+        body: storeClosedOrderMessage(operational),
+        clientMessageId: `auto:wa-order:closed-greeting:${ingest.message_id}`,
+      });
+      await saveSession(conversation.id, "menu", ingest.message_id, null);
+      observe?.({ intent: "menu", tool: "conversation_info" });
       return true;
     }
 
