@@ -49,9 +49,11 @@ describe("[PA-DIAG-046..049] menu e acompanhamento do WhatsApp", () => {
       fulfillmentStatus: "pending",
       trackingUrl: "https://app.test/m/centro/pedido/id/acesso?t=segredo",
     });
-    expect(message).toContain("Pedido #42: confirmado");
-    expect(message).toContain("Preparo: em preparo");
+    expect(message).toContain("Etapa atual: Pedido em preparo");
+    expect(message).toContain("A loja está preparando seu pedido");
     expect(message).toContain("Acompanhe os detalhes com segurança");
+    expect(message).not.toContain("Preparo:");
+    expect(message).not.toContain("Entrega/retirada:");
   });
 });
 

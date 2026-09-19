@@ -1,7 +1,8 @@
-import { workflowStageLabels, type WorkflowStage } from "@/features/orders/workflow-config";
+import type { WorkflowStage } from "@/features/orders/workflow-config";
 import type { CustomerBenefits, CustomerCouponBenefit } from "@/server/growth/customer-benefits";
 import { normalizeGenericInformalPortuguese } from "@/server/conversations/generic-language-normalization";
 import { normalizeComparablePhone } from "@/server/conversations/order-recipient-policy";
+import { projectOrderNotification, projectOrderTrackingState } from "@/server/conversations/order-tracking-projection";
 import { isExplicitMenuNavigation } from "@/server/conversations/whatsapp-navigation";
 
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
@@ -269,36 +270,12 @@ export function phonesBelongToSameCustomer(left: string | null | undefined, righ
   return Boolean(first && second && first === second);
 }
 
-const orderStatusLabels: Record<string, string> = {
-  pending_confirmation: "aguardando confirmação do restaurante",
-  confirmed: "confirmado",
-  rejected: "recusado",
-  canceled: "cancelado",
-  completed: "concluído",
-};
-
-const productionStatusLabels: Record<string, string> = {
-  pending_confirmation: "aguardando confirmação",
-  queued: "na fila de preparo",
-  preparing: "em preparo",
-  ready: "pronto",
-  canceled: "preparo cancelado",
-  not_required: "sem preparo necessário",
-};
-
-const fulfillmentStatusLabels: Record<string, string> = {
-  pending: "aguardando expedição",
-  awaiting_assignment: "aguardando entregador",
-  assigned: "entregador definido",
-  picked_up: "retirado pelo entregador",
-  out_for_delivery: "saiu para entrega",
-  delivered: "entregue",
-  awaiting_pickup: "pronto para retirada",
-  picked_up_by_customer: "retirado pelo cliente",
-  served: "servido",
-  canceled: "entrega/retirada cancelada",
-  not_required: "sem entrega necessária",
-};
+function inferredTrackingFulfillmentType(fulfillmentStatus: string, visibleStage?: WorkflowStage | null) {
+  if (["awaiting_pickup", "picked_up_by_customer", "served"].includes(fulfillmentStatus) || visibleStage === "awaiting_pickup") {
+    return "pickup";
+  }
+  return "delivery";
+}
 
 export function buildOrderLookupMessage(input: {
   displayNumber: number;
@@ -308,17 +285,19 @@ export function buildOrderLookupMessage(input: {
   trackingUrl?: string | null;
   visibleStage?: WorkflowStage | null;
 }) {
-  const order = orderStatusLabels[input.orderStatus] ?? "em atualização";
-  const production = productionStatusLabels[input.productionStatus] ?? "em atualização";
-  const fulfillment = fulfillmentStatusLabels[input.fulfillmentStatus] ?? "em atualização";
+  const fulfillmentType = inferredTrackingFulfillmentType(input.fulfillmentStatus, input.visibleStage);
+  const baseProjection = projectOrderTrackingState({
+    fulfillmentType,
+    orderStatus: input.orderStatus,
+    productionStatus: input.productionStatus,
+    fulfillmentStatus: input.fulfillmentStatus,
+  });
+  const projection = input.visibleStage === "new" && baseProjection.workflowStage !== "new" && !baseProjection.terminal
+    ? projectOrderNotification(input.orderStatus === "confirmed" ? "order_confirmed" : "order_received")
+    : baseProjection;
+  const nextAction = projection.nextAction ? `\n${projection.nextAction}` : "";
   const link = input.trackingUrl ? `\nAcompanhe os detalhes com segurança: ${input.trackingUrl}` : "";
-  if (input.orderStatus === "canceled" || input.orderStatus === "rejected") {
-    return `Achei seu pedido #${input.displayNumber} 😊\nPedido #${input.displayNumber}: ${order}.${link}`;
-  }
-  if (input.visibleStage) {
-    return `Achei seu pedido #${input.displayNumber} 😊\nEtapa atual: ${workflowStageLabels[input.visibleStage]}.${link}`;
-  }
-  return `Achei seu pedido #${input.displayNumber} 😊\nPedido #${input.displayNumber}: ${order}. Preparo: ${production}. Entrega/retirada: ${fulfillment}.${link}`;
+  return `Achei seu pedido #${input.displayNumber} 😊\nEtapa atual: ${projection.statusText}.${nextAction}${link}`;
 }
 
 export const TRACKING_CODE_PROMPT = "Claro! Me manda o número do seu pedido que aparece na confirmação 😊 Pode enviar só o número, por exemplo: 42. Se quiser voltar, é só escrever menu.";

@@ -104,9 +104,9 @@ describe("#1017 effective customer-visible workflow", () => {
       visibleStage: "new",
       trackingUrl: "https://pedeaqui.example/acesso",
     });
-    expect(message).toContain("Etapa atual: Novo");
+    expect(message).toContain("Etapa atual: Pedido confirmado");
     expect(message).not.toContain("Preparo:");
-    expect(message).not.toContain("em preparo");
+    expect(message).not.toContain("Pedido em preparo");
   });
 });
 
