@@ -2,11 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImageUploadField } from "@/components/media/image-upload-field";
 import { pauseOrdersAction, resumeOrdersAction, saveMenuSettingsAction } from "@/features/menu/actions";
+import { PublicMenuLinkCard } from "@/features/menu/public-menu-link-card";
+import { PublicMenuLinkService } from "@/server/menu/public-menu-link-service";
 import { StoreMenuService } from "@/server/menu/store-menu-service";
 import { formatCents } from "@/server/catalog/money";
 
 export default async function MenuSettingsPage() {
-  const settings = await StoreMenuService.getSettings();
+  const [settings, store] = await Promise.all([
+    StoreMenuService.getSettings(),
+    PublicMenuLinkService.getCurrentStore(),
+  ]);
+  const publicMenuPath = PublicMenuLinkService.buildPath(store.slug);
 
   return (
     <section style={{ display: "grid", gap: 20, maxWidth: 900 }}>
@@ -15,6 +21,8 @@ export default async function MenuSettingsPage() {
         <h1 style={{ margin: "4px 0" }}>Cardápio digital</h1>
         <p className="muted" style={{ margin: 0 }}>Identidade, canais e disponibilidade pública da unidade atual.</p>
       </header>
+
+      <PublicMenuLinkCard path={publicMenuPath} storeName={store.name} />
 
       <article className="card" style={{ padding: 20, display: "grid", gap: 14 }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
