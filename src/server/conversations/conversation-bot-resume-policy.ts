@@ -4,6 +4,7 @@ export type BotResumeSessionReason =
   | "session_expired"
   | "order_context_missing"
   | "cart_inactive"
+  | "cart_already_converted"
   | "preserve_order_step"
   | "preserve_non_order_step";
 
@@ -47,6 +48,7 @@ export function resolveBotResumeSession(input: {
   } | null;
   nowMs: number;
   cartActive: boolean | null;
+  cartConvertedToOrder?: boolean;
 }): BotResumeSessionDecision {
   const session = input.session;
   if (!session) return { mode: "safe_menu", reason: "no_session" };
@@ -65,6 +67,9 @@ export function resolveBotResumeSession(input: {
 
   if (!resumeCartToken(session.context)) {
     return { mode: "safe_menu", reason: "order_context_missing" };
+  }
+  if (input.cartConvertedToOrder === true) {
+    return { mode: "safe_menu", reason: "cart_already_converted" };
   }
   if (input.cartActive !== true) {
     return { mode: "safe_menu", reason: "cart_inactive" };
