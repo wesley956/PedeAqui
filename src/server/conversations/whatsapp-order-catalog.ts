@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { IntelligenceCatalogAdapter, type CatalogProductDetails } from "@/server/intelligence/catalog-adapter";
 import { createIntelligenceContext } from "@/server/intelligence/context";
+import { PublicMenuService } from "@/server/menu/public-menu-service";
 
 export type WhatsAppCatalogCandidate = {
   id: string;
@@ -132,9 +133,19 @@ export async function findWhatsAppCompositionProfiles(input: {
 }): Promise<WhatsAppCompositionProfile[]> {
   const catalog = await createCatalog(input);
   if (!catalog) return [];
-  const products = await catalog.list({ limit: 50 });
-  const profiles = await Promise.all(products.map(async (product) => {
-    const details = await catalog.productDetails(product.id);
+
+  const menu = await PublicMenuService.getMenu(input.storeSlug);
+  if (!menu || menu.store.id !== input.storeId) return [];
+
+  const productIds = new Set<string>();
+  for (const category of menu.categories) {
+    for (const product of category.products) {
+      if (product.availability === "available") productIds.add(product.id);
+    }
+  }
+
+  const profiles = await Promise.all([...productIds].map(async (productId) => {
+    const details = await catalog.productDetails(productId);
     if (!details || details.availability !== "available") return null;
     const profile = compositionProfile(details);
     return profile?.distributionTotal === input.distributionTotal ? profile : null;
