@@ -13,10 +13,11 @@ function categoryTitle(category: PublicComplementCategory, businessType: string)
   return `${category.name} para acompanhar`;
 }
 
-export function ComplementCategorySection({ categories, storeSlug, sourceProductId, businessType, disabled = false }: { categories: PublicComplementCategory[]; storeSlug: string; sourceProductId: string; businessType: string; disabled?: boolean }) {
+export function ComplementCategorySection({ categories, storeSlug, businessType, disabled = false }: { categories: PublicComplementCategory[]; storeSlug: string; businessType: string; disabled?: boolean }) {
   const [pending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
   const inFlight = useRef(new Set<string>());
+  const sourceProductId = categories[0]?.sourceProductId ?? "";
   if (categories.length === 0) return null;
   function add(productId: string) {
     if (inFlight.current.has(productId)) return;
