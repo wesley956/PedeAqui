@@ -3,6 +3,7 @@ import { Checkbox, Input, QuantityInput } from "@/components/ui/form-controls";
 import { ImageUploadField } from "@/components/media/image-upload-field";
 import { CategoryService } from "@/server/catalog/category-service";
 import { createCategoryFormAction } from "@/features/catalog/actions";
+import { duplicateCategoryFormAction } from "@/features/catalog/category-duplication-actions";
 import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 import { removeCategoryAction, setCategoryActiveFormAction, updateCategoryFormAction } from "@/features/catalog/actions";
@@ -47,6 +48,16 @@ export default async function CategoriesPage() {
               <input type="hidden" name="active" value={category.active ? "false" : "true"} />
               <Button type="submit" tone="secondary">{category.active ? "Pausar categoria" : "Reativar categoria"}</Button>
             </ResilientMutationForm>
+            <details className={styles.editDetails}>
+              <summary>Duplicar categoria</summary>
+              <ResilientMutationForm action={duplicateCategoryFormAction} className={styles.editBody}>
+                <input type="hidden" name="categoryId" value={category.id} />
+                <p className="muted" style={{ margin: 0, fontSize: 13 }}>A cópia será criada pausada para você revisar nome, preços e itens antes de publicar.</p>
+                <Checkbox name="includeProducts" label="Incluir os produtos desta categoria e seus vínculos de adicionais" />
+                <p className="muted" style={{ margin: 0, fontSize: 12 }}>Sugestões de venda, promoções e histórico não são copiados automaticamente.</p>
+                <div className={styles.managementActions}><Button type="submit" tone="secondary">Criar cópia</Button></div>
+              </ResilientMutationForm>
+            </details>
             <details className={styles.editDetails}>
               <summary>Editar categoria</summary>
               <ResilientMutationForm action={updateCategoryFormAction} successReset={false} className={styles.editBody}>
