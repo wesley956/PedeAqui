@@ -7,6 +7,8 @@
     "src/spool.mjs",
     "src/order-alert.mjs",
     "src/updater.mjs",
+    "src/service-state.mjs",
+    "src/service-bootstrap.mjs",
     "manifest.json",
     "package.json"
   ]
