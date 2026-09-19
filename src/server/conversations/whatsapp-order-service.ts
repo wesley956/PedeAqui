@@ -10,9 +10,17 @@ import {
   findWhatsAppCompositionProfiles,
   loadWhatsAppCatalogCandidates,
   loadWhatsAppCompositionProfile,
+  loadWhatsAppProductDetails,
   type WhatsAppCatalogCandidate,
   type WhatsAppCompositionProfile,
 } from "@/server/conversations/whatsapp-order-catalog";
+import {
+  buildModifierGroupPrompt,
+  createPendingModifierFlow,
+  firstPendingModifierGroup,
+  resolveModifierGroupInput,
+  type PendingModifierFlow,
+} from "@/server/conversations/whatsapp-modifier-flow";
 import {
   buildWhatsAppPaymentPrompt,
   resolveWhatsAppPaymentSelection,
@@ -40,6 +48,7 @@ export type WhatsAppOrderContext = {
   awaitingPixEmail?: boolean;
   pendingChoices?: PendingProductChoice[];
   pendingComposition?: PendingComposition;
+  pendingModifiers?: PendingModifierFlow;
 };
 
 export type WhatsAppOrderHandleResult = { handled: true; body: string; nextStep: WhatsAppOrderStep | "menu"; context: WhatsAppOrderContext | null };
@@ -52,6 +61,19 @@ type CompositionProfile = WhatsAppCompositionProfile;
 const productStopWords = new Set(["a", "as", "o", "os", "de", "da", "das", "do", "dos", "com", "em", "no", "na", "nos", "nas", "un", "und", "unid", "unidade", "unidades", "uma", "um", "pra", "para"]);
 
 function money(cents: number | string | null | undefined) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents ?? 0) / 100); }
+
+function normalizePendingModifiers(value: unknown): PendingModifierFlow | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const raw = value as Record<string, unknown>;
+  if (typeof raw.productId !== "string" || typeof raw.name !== "string" || typeof raw.quantity !== "number" || typeof raw.currentGroupId !== "string") return undefined;
+  const completedGroupIds = Array.isArray(raw.completedGroupIds) ? raw.completedGroupIds.filter((entry): entry is string => typeof entry === "string") : [];
+  const selections = Array.isArray(raw.selections) ? raw.selections.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+    const item = entry as Record<string, unknown>;
+    return typeof item.modifierId === "string" && typeof item.quantity === "number" ? [{ modifierId: item.modifierId, quantity: item.quantity }] : [];
+  }) : [];
+  return { productId: raw.productId, name: raw.name, quantity: raw.quantity, currentGroupId: raw.currentGroupId, completedGroupIds, selections };
+}
 
 function normalizeContext(value: unknown): WhatsAppOrderContext {
   if (!value || typeof value !== "object") return { channel: "whatsapp_order", version: 1 };
@@ -81,6 +103,7 @@ function normalizeContext(value: unknown): WhatsAppOrderContext {
     awaitingPixEmail: raw.awaitingPixEmail === true ? true : undefined,
     pendingChoices: choices?.length ? choices : undefined,
     pendingComposition,
+    pendingModifiers: normalizePendingModifiers(raw.pendingModifiers),
   };
 }
 
@@ -117,12 +140,7 @@ function productMatchScore(query: string, candidate: ProductCandidate) {
 }
 
 async function findProduct(input: Pick<Input, "organizationId" | "storeId" | "storeSlug">, query: string) {
-  const rows = await loadWhatsAppCatalogCandidates({
-    organizationId: input.organizationId,
-    storeId: input.storeId,
-    storeSlug: input.storeSlug,
-    query,
-  });
+  const rows = await loadWhatsAppCatalogCandidates({ organizationId: input.organizationId, storeId: input.storeId, storeSlug: input.storeSlug, query });
   if (!rows.length) return { kind: "missing" as const, options: [] as ProductCandidate[] };
   const nq = normalizeProductLanguage(query); const exact = rows.find((row) => normalizeProductLanguage(row.name) === nq); if (exact) return { kind: "found" as const, product: exact };
   const ranked = rows.map((product) => ({ product, score: productMatchScore(query, product) })).filter((item) => item.score >= 0.48).sort((a, b) => b.score - a.score || a.product.name.localeCompare(b.product.name, "pt-BR"));
@@ -133,12 +151,7 @@ async function findProduct(input: Pick<Input, "organizationId" | "storeId" | "st
 }
 
 async function loadCompositionProfile(input: Pick<Input, "organizationId" | "storeId" | "storeSlug">, productId: string): Promise<CompositionProfile | null> {
-  return loadWhatsAppCompositionProfile({
-    organizationId: input.organizationId,
-    storeId: input.storeId,
-    storeSlug: input.storeSlug,
-    productId,
-  });
+  return loadWhatsAppCompositionProfile({ organizationId: input.organizationId, storeId: input.storeId, storeSlug: input.storeSlug, productId });
 }
 
 function modifierScore(label: string, name: string) {
@@ -164,12 +177,7 @@ function resolveCompositionSelections(composition: OrderComposition, profile: Co
 }
 
 async function findProfileForComposition(input: Input, composition: OrderComposition): Promise<CompositionProfile | null> {
-  const profiles = await findWhatsAppCompositionProfiles({
-    organizationId: input.organizationId,
-    storeId: input.storeId,
-    storeSlug: input.storeSlug,
-    distributionTotal: composition.total,
-  });
+  const profiles = await findWhatsAppCompositionProfiles({ organizationId: input.organizationId, storeId: input.storeId, storeSlug: input.storeSlug, distributionTotal: composition.total });
   const candidates = profiles.filter((profile) => resolveCompositionSelections(composition, profile).ok);
   return candidates.length === 1 ? candidates[0]! : null;
 }
@@ -184,33 +192,42 @@ async function addComposition(input: Input, context: WhatsAppOrderContext, profi
     const suggestions = resolved.suggestions?.length ? ` Opções parecidas: ${resolved.suggestions.join(", ")}.` : "";
     return { ok: false as const, message: `Não consegui identificar o sabor “${resolved.label}” com segurança.${suggestions} Escreva o sabor como aparece no cardápio.` };
   }
-  const result = await CartService.addItem({ storeSlug: input.storeSlug, productId: profile.productId, quantity: profile.quantity, note: `Composição pelo WhatsApp: ${resolved.selections.map((item) => `${item.quantity} ${item.name}`).join(", ")}`, modifierIds: [], modifierSelections: resolved.selections.map((item) => ({ modifierId: item.modifierId, quantity: item.quantity })), gasSaleMode: null }, context.cartToken ?? null);
-  return { ok: true as const, token: result.token, added: [{ name: profile.name, quantity: profile.quantity }] };
+  try {
+    const result = await CartService.addItem({ storeSlug: input.storeSlug, productId: profile.productId, quantity: profile.quantity, note: `Composição pelo WhatsApp: ${resolved.selections.map((item) => `${item.quantity} ${item.name}`).join(", ")}`, modifierIds: [], modifierSelections: resolved.selections.map((item) => ({ modifierId: item.modifierId, quantity: item.quantity })), gasSaleMode: null }, context.cartToken ?? null);
+    return { ok: true as const, token: result.token, added: [{ name: profile.name, quantity: profile.quantity }] };
+  } catch (error) {
+    if (error instanceof PricingError && error.code === "invalid_modifiers") return { ok: false as const, message: "As opções desse produto mudaram no cardápio. Envie o produto novamente para eu atualizar todas as escolhas." };
+    throw error;
+  }
 }
 
 async function addPlainProduct(input: Input, context: WhatsAppOrderContext, product: ProductCandidate, quantity: number) {
-  const profile = await loadCompositionProfile(input, product.id);
-  if (profile) return { kind: "composition_needed" as const, profile: { ...profile, quantity } };
+  const details = await loadWhatsAppProductDetails({ organizationId: input.organizationId, storeId: input.storeId, storeSlug: input.storeSlug, productId: product.id });
+  if (details?.availability === "available" && details.modifierGroups.length > 0) {
+    const pending = createPendingModifierFlow(details, quantity);
+    if (pending) {
+      const group = details.modifierGroups.find((candidate) => candidate.id === pending.currentGroupId)!;
+      return { kind: "modifier_configuration_needed" as const, pending, message: buildModifierGroupPrompt(details.name, group) };
+    }
+  }
   try {
     const result = await CartService.addItem({ storeSlug: input.storeSlug, productId: product.id, quantity, note: "Pedido iniciado pelo WhatsApp", modifierIds: [], modifierSelections: [], gasSaleMode: null }, context.cartToken ?? null);
     return { kind: "added" as const, token: result.token, added: [{ name: product.name, quantity }] };
   } catch (error) {
-    if (error instanceof PricingError && error.code === "invalid_modifiers") return { kind: "needs_options" as const, message: `Encontrei “${product.name}”, mas ele exige uma escolha de sabor, tamanho ou adicional que ainda não consigo preencher com segurança. Diga a opção desejada ou digite 1 para abrir o cardápio.` };
+    if (error instanceof PricingError && error.code === "invalid_modifiers") return { kind: "needs_options" as const, message: `Encontrei “${product.name}”, mas as opções obrigatórias mudaram no cardápio. Envie o produto novamente para eu recarregar as escolhas.` };
     throw error;
   }
 }
 
 async function continueAfterAdded(input: Input, context: WhatsAppOrderContext, token: string, added: Array<{ name: string; quantity: number }>): Promise<WhatsAppOrderHandleResult> {
-  const cleanContext: WhatsAppOrderContext = { ...context, cartToken: token, pendingChoices: undefined, pendingComposition: undefined };
+  const cleanContext: WhatsAppOrderContext = { ...context, cartToken: token, pendingChoices: undefined, pendingComposition: undefined, pendingModifiers: undefined };
   const itemsText = added.map((item) => `${item.quantity}x ${item.name}`).join("\n"); const customerName = (input.contactName ?? "").trim();
   if (customerName.length < 2) return { handled: true, body: `Adicionei:\n${itemsText}\n\nQual é o seu nome?`, nextStep: "order_name", context: cleanContext };
   await CheckoutService.saveIdentity(input.storeSlug, token, { name: customerName, phone: input.contactPhone, email: null });
   return { handled: true, body: `Adicionei:\n${itemsText}\n\nComo você quer receber?\n1 — Entrega\n2 — Retirada`, nextStep: "order_fulfillment", context: { ...cleanContext, customerName } };
 }
 
-async function paymentOptions(organizationId: string, storeId: string) {
-  return StorePaymentMethodService.listForStore(organizationId, storeId);
-}
+async function paymentOptions(organizationId: string, storeId: string) { return StorePaymentMethodService.listForStore(organizationId, storeId); }
 async function reviewSummary(storeSlug: string, cartToken: string, context: WhatsAppOrderContext) {
   const loaded = await CheckoutService.load(storeSlug, cartToken);
   const total = Number(loaded.cart.total_cents);
@@ -226,6 +243,30 @@ export class WhatsAppOrderService {
   static async handle(input: Input): Promise<WhatsAppOrderHandleResult> {
     const context = normalizeContext(input.context);
     if (input.step === "order_items") {
+      if (context.pendingModifiers) {
+        const details = await loadWhatsAppProductDetails({ organizationId: input.organizationId, storeId: input.storeId, storeSlug: input.storeSlug, productId: context.pendingModifiers.productId });
+        if (!details || details.availability !== "available") return { handled: true, body: "Esse produto ou suas opções deixaram de estar disponíveis. Envie o produto novamente para eu atualizar o pedido.", nextStep: "order_items", context: { ...context, pendingModifiers: undefined } };
+        const group = details.modifierGroups.find((candidate) => candidate.id === context.pendingModifiers!.currentGroupId);
+        if (!group) return { handled: true, body: "As opções desse produto mudaram no cardápio. Envie o produto novamente para eu recarregar as escolhas.", nextStep: "order_items", context: { ...context, pendingModifiers: undefined } };
+        const resolved = resolveModifierGroupInput(input.text, group);
+        if (!resolved.ok) return { handled: true, body: `${resolved.message}\n\n${buildModifierGroupPrompt(details.name, group)}`, nextStep: "order_items", context };
+        const groupModifierIds = new Set(group.modifiers.map((modifier) => modifier.id));
+        const selections = [...context.pendingModifiers.selections.filter((selection) => !groupModifierIds.has(selection.modifierId)), ...resolved.selections];
+        const completedGroupIds = [...new Set([...context.pendingModifiers.completedGroupIds, group.id])];
+        const nextGroup = firstPendingModifierGroup(details, completedGroupIds);
+        if (nextGroup) {
+          const pendingModifiers: PendingModifierFlow = { ...context.pendingModifiers, name: details.name, currentGroupId: nextGroup.id, completedGroupIds, selections };
+          return { handled: true, body: buildModifierGroupPrompt(details.name, nextGroup), nextStep: "order_items", context: { ...context, pendingModifiers } };
+        }
+        try {
+          const result = await CartService.addItem({ storeSlug: input.storeSlug, productId: details.id, quantity: context.pendingModifiers.quantity, note: "Opções escolhidas pelo WhatsApp", modifierIds: [], modifierSelections: selections, gasSaleMode: null }, context.cartToken ?? null);
+          return continueAfterAdded(input, context, result.token, [{ name: details.name, quantity: context.pendingModifiers.quantity }]);
+        } catch (error) {
+          if (error instanceof PricingError && error.code === "invalid_modifiers") return { handled: true, body: `Não consegui validar as opções de ${details.name}: ${error.message}. O cardápio pode ter mudado; envie o produto novamente.`, nextStep: "order_items", context: { ...context, pendingModifiers: undefined } };
+          throw error;
+        }
+      }
+
       if (context.pendingComposition) {
         const composition = parseOrderComposition(input.text, context.pendingComposition.distributionTotal);
         if (!composition) return { handled: true, body: `Estou montando ${context.pendingComposition.name}. Informe a composição com quantidades, por exemplo: 15 coxinhas, 10 bolinhas de queijo e 5 salsichas. O total precisa dar ${context.pendingComposition.distributionTotal}.`, nextStep: "order_items", context };
@@ -243,7 +284,7 @@ export class WhatsAppOrderService {
           const found = await findProduct(input, choice.name);
           if (found.kind === "found") {
             const result = await addPlainProduct(input, { ...context, pendingChoices: undefined }, found.product, choice.quantity);
-            if (result.kind === "composition_needed") return { handled: true, body: `Perfeito: ${result.profile.name}. Agora me diga a composição. O total precisa dar ${result.profile.distributionTotal} unidades. Exemplo: 15 coxinhas, 10 bolinhas de queijo e 5 salsichas.`, nextStep: "order_items", context: { ...context, pendingChoices: undefined, pendingComposition: result.profile } };
+            if (result.kind === "modifier_configuration_needed") return { handled: true, body: result.message, nextStep: "order_items", context: { ...context, pendingChoices: undefined, pendingModifiers: result.pending } };
             if (result.kind === "needs_options") return { handled: true, body: result.message, nextStep: "order_items", context: { ...context, pendingChoices: undefined } };
             return continueAfterAdded(input, context, result.token, result.added);
           }
@@ -274,7 +315,7 @@ export class WhatsAppOrderService {
           return { handled: true, body: `Encontrei algumas opções parecidas com “${request.query}”:\n${choices.map((item, index) => `${index + 1} — ${item.name}`).join("\n")}\n\nPode responder só o número, “a primeira”, “a segunda” ou o nome.`, nextStep: "order_items", context: { ...workingContext, pendingChoices: choices } };
         }
         const result = await addPlainProduct(input, { ...workingContext, cartToken: token }, found.product, request.quantity);
-        if (result.kind === "composition_needed") return { handled: true, body: `Encontrei ${result.profile.name}. Agora me diga a composição. O total precisa dar ${result.profile.distributionTotal} unidades. Exemplo: 15 coxinhas, 10 bolinhas de queijo e 5 salsichas.`, nextStep: "order_items", context: { ...workingContext, cartToken: token, pendingComposition: result.profile } };
+        if (result.kind === "modifier_configuration_needed") return { handled: true, body: result.message, nextStep: "order_items", context: { ...workingContext, cartToken: token, pendingModifiers: result.pending } };
         if (result.kind === "needs_options") return { handled: true, body: result.message, nextStep: "order_items", context: workingContext };
         token = result.token; added.push(...result.added); workingContext = { ...workingContext, cartToken: token };
       }
@@ -307,9 +348,7 @@ export class WhatsAppOrderService {
           const nextContext: WhatsAppOrderContext = { ...context, paymentMethod: "pix", paymentLabel: paymentMethodLabels.pix, awaitingPixEmail: undefined };
           return { handled: true, body: await reviewSummary(input.storeSlug, context.cartToken, nextContext), nextStep: "order_confirmation", context: nextContext };
         } catch (error) {
-          if (error instanceof CheckoutError && error.code === "invalid_identity") {
-            return { handled: true, body: "Para usar Pix, envie um e-mail válido, por exemplo nome@exemplo.com.", nextStep: "order_payment", context };
-          }
+          if (error instanceof CheckoutError && error.code === "invalid_identity") return { handled: true, body: "Para usar Pix, envie um e-mail válido, por exemplo nome@exemplo.com.", nextStep: "order_payment", context };
           if (error instanceof CheckoutError && error.code === "payment_unavailable") {
             const options = await paymentOptions(input.organizationId, input.storeId);
             return { handled: true, body: `O Pix deixou de estar disponível. Escolha outra forma de pagamento.\n\n${buildWhatsAppPaymentPrompt(options)}`, nextStep: "order_payment", context: { ...context, paymentMethod: undefined, paymentLabel: undefined, awaitingPixEmail: undefined } };
@@ -322,19 +361,10 @@ export class WhatsAppOrderService {
       const selected = resolveWhatsAppPaymentSelection(input.text, options);
       if (!selected) return { handled: true, body: `Escolha a forma de pagamento informada abaixo pelo número ou pelo nome.\n\n${buildWhatsAppPaymentPrompt(options)}`, nextStep: "order_payment", context };
       try {
-        await CheckoutService.savePayment(input.storeSlug, context.cartToken, {
-          method: selected.method,
-          customPaymentMethodId: selected.customPaymentMethodId,
-          cashChangeForCents: null,
-        });
+        await CheckoutService.savePayment(input.storeSlug, context.cartToken, { method: selected.method, customPaymentMethodId: selected.customPaymentMethodId, cashChangeForCents: null });
       } catch (error) {
         if (error instanceof CheckoutError && error.code === "pix_email_required" && selected.method === "pix") {
-          return {
-            handled: true,
-            body: "Para gerar o Pix online com segurança, preciso do seu e-mail. Envie um e-mail válido, por exemplo nome@exemplo.com.",
-            nextStep: "order_payment",
-            context: { ...context, paymentMethod: "pix", customPaymentMethodId: undefined, paymentLabel: selected.label, awaitingPixEmail: true },
-          };
+          return { handled: true, body: "Para gerar o Pix online com segurança, preciso do seu e-mail. Envie um e-mail válido, por exemplo nome@exemplo.com.", nextStep: "order_payment", context: { ...context, paymentMethod: "pix", customPaymentMethodId: undefined, paymentLabel: selected.label, awaitingPixEmail: true } };
         }
         if (error instanceof CheckoutError && error.code === "payment_unavailable") {
           const currentOptions = await paymentOptions(input.organizationId, input.storeId);
@@ -342,13 +372,7 @@ export class WhatsAppOrderService {
         }
         throw error;
       }
-      const nextContext: WhatsAppOrderContext = {
-        ...context,
-        paymentMethod: selected.method,
-        customPaymentMethodId: selected.customPaymentMethodId ?? undefined,
-        paymentLabel: selected.label,
-        awaitingPixEmail: undefined,
-      };
+      const nextContext: WhatsAppOrderContext = { ...context, paymentMethod: selected.method, customPaymentMethodId: selected.customPaymentMethodId ?? undefined, paymentLabel: selected.label, awaitingPixEmail: undefined };
       return { handled: true, body: await reviewSummary(input.storeSlug, context.cartToken, nextContext), nextStep: "order_confirmation", context: nextContext };
     }
     if (input.step === "order_confirmation") {
