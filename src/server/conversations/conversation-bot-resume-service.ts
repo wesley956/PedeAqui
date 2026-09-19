@@ -22,6 +22,7 @@ export type ConversationBotResumeResult = {
   mode: "preserved" | "recovered";
   reason: BotResumeSessionReason;
   restoredStep: string | null;
+  orderId: string | null;
 };
 
 export class ConversationBotResumeService {
@@ -40,7 +41,7 @@ export class ConversationBotResumeService {
     if (!conversation) throw new Error("Conversa não encontrada nesta unidade.");
     if (conversation.status === "closed") throw new Error("Conversa encerrada não pode voltar diretamente ao robô.");
     if (conversation.status === "bot") {
-      return { mode: "preserved", reason: "preserve_non_order_step", restoredStep: null };
+      return { mode: "preserved", reason: "preserve_non_order_step", restoredStep: null, orderId: null };
     }
 
     const { data: session, error: sessionError } = await admin.from("automation_sessions")
@@ -52,18 +53,36 @@ export class ConversationBotResumeService {
     if (sessionError) throw sessionError;
 
     let cartActive: boolean | null = null;
+    let correlatedOrder: { id: string; display_number: number; order_status: string } | null = null;
     const token = session && isResumeOrderStep(session.step) ? resumeCartToken(session.context) : null;
     if (token) {
       const { data: cart, error: cartError } = await admin.from("carts")
-        .select("id")
+        .select("id, status, expires_at")
         .eq("organization_id", access.organizationId)
         .eq("store_id", storeId)
         .eq("token_hash", hashCartToken(token))
-        .eq("status", "active")
-        .gt("expires_at", new Date().toISOString())
         .maybeSingle();
       if (cartError) throw cartError;
-      cartActive = Boolean(cart);
+
+      if (cart) {
+        cartActive = cart.status === "active" && Date.parse(cart.expires_at) > Date.now();
+        const { data: order, error: orderError } = await admin.from("orders")
+          .select("id, display_number, order_status")
+          .eq("organization_id", access.organizationId)
+          .eq("store_id", storeId)
+          .eq("source_cart_id", cart.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (orderError) throw orderError;
+        correlatedOrder = order ? {
+          id: order.id,
+          display_number: Number(order.display_number),
+          order_status: order.order_status,
+        } : null;
+      } else {
+        cartActive = false;
+      }
     }
 
     const decision = resolveBotResumeSession({
@@ -75,6 +94,7 @@ export class ConversationBotResumeService {
       } : null,
       nowMs: Date.now(),
       cartActive,
+      cartConvertedToOrder: Boolean(correlatedOrder),
     });
 
     const { error: transitionError } = await admin.rpc("conversation_transition_internal", {
@@ -101,14 +121,30 @@ export class ConversationBotResumeService {
             reason: decision.reason,
             recovered_at: new Date().toISOString(),
           },
+          active_order: correlatedOrder ? {
+            order_id: correlatedOrder.id,
+            display_number: correlatedOrder.display_number,
+            order_status: correlatedOrder.order_status,
+            source: "source_cart_id",
+          } : null,
         },
         p_last_input_message_id: null,
         p_expires_at: expiresAt,
       });
       if (recoveryError) throw recoveryError;
-      return { mode: "recovered", reason: decision.reason, restoredStep: "menu" };
+      return {
+        mode: "recovered",
+        reason: decision.reason,
+        restoredStep: "menu",
+        orderId: correlatedOrder?.id ?? null,
+      };
     }
 
-    return { mode: "preserved", reason: decision.reason, restoredStep: session?.step ?? null };
+    return {
+      mode: "preserved",
+      reason: decision.reason,
+      restoredStep: session?.step ?? null,
+      orderId: null,
+    };
   }
 }
