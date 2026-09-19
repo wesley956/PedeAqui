@@ -6,13 +6,14 @@ import { addSimpleComplementAction } from "@/features/menu/complement-actions";
 import type { PublicComplementCategory } from "@/server/menu/complement-category-service";
 
 function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
-function categoryTitle(name: string, businessType: string) {
-  if (businessType !== "restaurant") return name;
-  if (name.trim().toLocaleLowerCase("pt-BR") === "bebidas") return "Bebidas para acompanhar";
-  return `${name} para acompanhar`;
+function categoryTitle(category: PublicComplementCategory, businessType: string) {
+  if (category.title?.trim()) return category.title.trim();
+  if (businessType !== "restaurant") return category.name;
+  if (category.name.trim().toLocaleLowerCase("pt-BR") === "bebidas") return "Bebidas para acompanhar";
+  return `${category.name} para acompanhar`;
 }
 
-export function ComplementCategorySection({ categories, storeSlug, businessType, disabled = false }: { categories: PublicComplementCategory[]; storeSlug: string; businessType: string; disabled?: boolean }) {
+export function ComplementCategorySection({ categories, storeSlug, sourceProductId, businessType, disabled = false }: { categories: PublicComplementCategory[]; storeSlug: string; sourceProductId: string; businessType: string; disabled?: boolean }) {
   const [pending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<string | null>(null);
   const inFlight = useRef(new Set<string>());
@@ -23,7 +24,7 @@ export function ComplementCategorySection({ categories, storeSlug, businessType,
     setFeedback(null);
     startTransition(async () => {
       try {
-        const result = await addSimpleComplementAction(storeSlug, productId);
+        const result = await addSimpleComplementAction(storeSlug, sourceProductId, productId);
         setFeedback(result.message);
       } finally {
         inFlight.current.delete(productId);
@@ -34,7 +35,7 @@ export function ComplementCategorySection({ categories, storeSlug, businessType,
     <header style={{ display: "grid", gap: 3 }}><h2 id="complementos-titulo" style={{ margin: 0, fontSize: "1.125rem", lineHeight: 1.2 }}>Complete seu pedido</h2><p style={{ margin: 0, color: "var(--text-secondary)", fontSize: ".8125rem", lineHeight: 1.4 }}>Opcional. Você pode adicionar agora ou seguir sem complemento.</p></header>
     {feedback ? <div role="status" aria-live="polite" style={{ padding: 10, borderRadius: 12, background: "var(--state-success-surface)", color: "var(--state-success-text)", fontWeight: 700, fontSize: ".8125rem" }}>{feedback}</div> : null}
     {categories.map((category) => <article key={category.id} style={{ background: "var(--surface-1)", color: "var(--text-primary)", border: "var(--border-width) solid var(--border-default)", borderRadius: 16, padding: 14, display: "grid", gap: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "baseline" }}><h3 style={{ margin: 0, fontSize: ".9375rem" }}>{categoryTitle(category.name, businessType)}</h3><Link href={`/m/${storeSlug}#categoria-${category.id}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--brand-highlight)", fontWeight: 800, fontSize: ".75rem" }}>Ver todos ↗</Link></div>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "baseline" }}><h3 style={{ margin: 0, fontSize: ".9375rem" }}>{categoryTitle(category, businessType)}</h3><Link href={`/m/${storeSlug}#categoria-${category.id}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--brand-highlight)", fontWeight: 800, fontSize: ".75rem" }}>Ver todos ↗</Link></div>
       <div style={{ display: "grid", gap: 6 }}>{category.products.map((product) => {
         const price = product.promotionalPriceCents ?? product.priceCents;
         return <div key={product.id} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto", gap: 10, alignItems: "center", padding: "9px 0", borderTop: "var(--border-width) solid var(--border-default)" }}>
