@@ -3,6 +3,7 @@ import {
   renderOrderNotificationTextTemplate,
   type OrderNotificationType,
 } from "@/server/conversations/order-notification-template";
+import { projectOrderNotification } from "@/server/conversations/order-tracking-projection";
 import { resolvePublicAppOrigin } from "@/server/public-app-url";
 
 export type { OrderNotificationType } from "@/server/conversations/order-notification-template";
@@ -46,18 +47,6 @@ const flagByType: Record<OrderNotificationType, keyof OrderNotificationFlags> = 
   out_for_delivery: "notify_out_for_delivery",
   delivered: "notify_delivered",
   order_canceled: "notify_order_canceled",
-};
-
-const statusByType: Record<OrderNotificationType, string> = {
-  order_received: "Pedido recebido",
-  order_confirmed: "Pedido confirmado",
-  production_preparing: "Pedido em preparo",
-  payment_paid: "Pagamento confirmado",
-  pickup_ready: "Pronto para retirada",
-  pickup_completed: "Pedido retirado",
-  out_for_delivery: "Saiu para entrega",
-  delivered: "Pedido entregue",
-  order_canceled: "Pedido cancelado",
 };
 
 const SIMPLE_PRESET: OrderNotificationSelection = {
@@ -138,7 +127,7 @@ export function buildPublicMenuUrl(appUrl: string, slug: string) {
 }
 
 export function notificationStatusText(type: OrderNotificationType) {
-  return statusByType[type];
+  return projectOrderNotification(type).statusText;
 }
 
 export function buildOrderNotificationTemplateParameters(input: {
