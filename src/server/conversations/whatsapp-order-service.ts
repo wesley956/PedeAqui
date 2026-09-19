@@ -7,6 +7,7 @@ import { paymentMethodLabels, paymentMethodSchema, type PaymentMethod } from "@/
 import { normalizeBotInput } from "@/server/conversations/bot-menu";
 import { looseTokenSimilarity, normalizeProductLanguage } from "@/server/conversations/language-normalization";
 import { parseOrderComposition, resolvePendingChoiceReference, type OrderComposition } from "@/server/conversations/whatsapp-order-context";
+import { loadWhatsAppCatalogCandidates, type WhatsAppCatalogCandidate } from "@/server/conversations/whatsapp-order-catalog";
 import {
   buildWhatsAppPaymentPrompt,
   resolveWhatsAppPaymentSelection,
@@ -40,7 +41,7 @@ export type WhatsAppOrderHandleResult = { handled: true; body: string; nextStep:
 
 type Input = { organizationId: string; storeId: string; storeSlug: string; storeName: string; contactName: string | null; contactPhone: string; text: string; step: WhatsAppOrderStep; context: unknown };
 type ParsedItem = { quantity: number; query: string };
-type ProductCandidate = { id: string; name: string; description: string | null; price_cents: number; promotional_price_cents: number | null };
+type ProductCandidate = WhatsAppCatalogCandidate;
 type ModifierRow = { id: string; name: string };
 type CompositionProfile = PendingComposition & { modifiers: ModifierRow[] };
 
@@ -111,11 +112,14 @@ function productMatchScore(query: string, candidate: ProductCandidate) {
   return Math.min(1, coverage * 0.82 + direct);
 }
 
-async function findProduct(organizationId: string, storeId: string, query: string) {
-  const admin = createAdminClient();
-  const { data, error } = await admin.from("products").select("id, name, description, price_cents, promotional_price_cents").eq("organization_id", organizationId).eq("store_id", storeId).eq("active", true).eq("availability", "available").is("deleted_at", null).order("name").limit(100);
-  if (error) throw error;
-  const rows = (data ?? []) as ProductCandidate[]; if (!rows.length) return { kind: "missing" as const, options: [] as ProductCandidate[] };
+async function findProduct(input: Pick<Input, "organizationId" | "storeId" | "storeSlug">, query: string) {
+  const rows = await loadWhatsAppCatalogCandidates({
+    organizationId: input.organizationId,
+    storeId: input.storeId,
+    storeSlug: input.storeSlug,
+    query,
+  });
+  if (!rows.length) return { kind: "missing" as const, options: [] as ProductCandidate[] };
   const nq = normalizeProductLanguage(query); const exact = rows.find((row) => normalizeProductLanguage(row.name) === nq); if (exact) return { kind: "found" as const, product: exact };
   const ranked = rows.map((product) => ({ product, score: productMatchScore(query, product) })).filter((item) => item.score >= 0.48).sort((a, b) => b.score - a.score || a.product.name.localeCompare(b.product.name, "pt-BR"));
   const best = ranked[0], second = ranked[1];
@@ -243,7 +247,7 @@ export class WhatsAppOrderService {
         const picked = resolvePendingChoiceReference(input.text, context.pendingChoices.map((item) => ({ label: item.name, value: item.productId })));
         if (picked) {
           const choice = context.pendingChoices.find((item) => item.productId === picked.value)!;
-          const found = await findProduct(input.organizationId, input.storeId, choice.name);
+          const found = await findProduct(input, choice.name);
           if (found.kind === "found") {
             const result = await addPlainProduct(input, { ...context, pendingChoices: undefined }, found.product, choice.quantity);
             if (result.kind === "composition_needed") return { handled: true, body: `Perfeito: ${result.profile.name}. Agora me diga a composição. O total precisa dar ${result.profile.distributionTotal} unidades. Exemplo: 15 coxinhas, 10 bolinhas de queijo e 5 salsichas.`, nextStep: "order_items", context: { ...context, pendingChoices: undefined, pendingComposition: result.profile } };
@@ -270,7 +274,7 @@ export class WhatsAppOrderService {
       const added: Array<{ name: string; quantity: number }> = [];
       let token = context.cartToken;
       for (const request of items) {
-        const found = await findProduct(input.organizationId, input.storeId, request.query);
+        const found = await findProduct(input, request.query);
         if (found.kind === "missing") return { handled: true, body: `Ainda não consegui identificar “${request.query}” com segurança. Envie o nome mais parecido com o cardápio.`, nextStep: "order_items", context: workingContext };
         if (found.kind === "ambiguous") {
           const choices = found.options.map((product) => ({ productId: product.id, name: product.name, quantity: request.quantity }));
