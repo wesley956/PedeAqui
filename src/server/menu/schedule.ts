@@ -55,6 +55,16 @@ const weekdayMap: Record<string, number> = {
   Sat: 6,
 };
 
+const weekdayLabels = [
+  "domingo",
+  "segunda-feira",
+  "terça-feira",
+  "quarta-feira",
+  "quinta-feira",
+  "sexta-feira",
+  "sábado",
+] as const;
+
 export function localClock(timeZone: string, now = new Date()) {
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone,
@@ -90,4 +100,40 @@ export function isOpenAt(hours: PublicHour[], timeZone: string, now = new Date()
     if (period.weekday === previousDay && period.closes_next_day && local.minuteOfDay < close) return true;
   }
   return false;
+}
+
+export type NextOpening = {
+  weekday: number;
+  opensAt: string;
+  daysAhead: number;
+  label: string;
+};
+
+export function nextOpening(hours: PublicHour[], timeZone: string, now = new Date()): NextOpening | null {
+  if (hours.length === 0) return null;
+  const local = localClock(timeZone, now);
+  let best: { period: PublicHour; daysAhead: number; distanceMinutes: number } | null = null;
+
+  for (const period of hours) {
+    let daysAhead = (period.weekday - local.weekday + 7) % 7;
+    const open = minutes(period.opens_at);
+    if (daysAhead === 0 && open <= local.minuteOfDay) daysAhead = 7;
+    const distanceMinutes = daysAhead * 1440 + open - local.minuteOfDay;
+    if (distanceMinutes <= 0) continue;
+    if (!best || distanceMinutes < best.distanceMinutes) best = { period, daysAhead, distanceMinutes };
+  }
+
+  if (!best) return null;
+  const clock = best.period.opens_at.slice(0, 5);
+  const dayLabel = best.daysAhead === 0
+    ? "hoje"
+    : best.daysAhead === 1
+      ? "amanhã"
+      : weekdayLabels[best.period.weekday] ?? "em breve";
+  return {
+    weekday: best.period.weekday,
+    opensAt: clock,
+    daysAhead: best.daysAhead,
+    label: `${dayLabel} às ${clock}`,
+  };
 }
