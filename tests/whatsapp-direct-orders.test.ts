@@ -12,6 +12,7 @@ const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 const migration = read("supabase/migrations/20260912003740_whatsapp_direct_orders.sql");
 const orchestrator = read("src/server/conversations/whatsapp-direct-order-orchestrator.ts");
 const orderService = read("src/server/conversations/whatsapp-order-service.ts");
+const orderCatalog = read("src/server/conversations/whatsapp-order-catalog.ts");
 const webhook = read("src/app/api/webhooks/whatsapp/route.ts");
 const settingsService = read("src/server/conversations/settings-service.ts");
 const settingsAction = read("src/features/conversations/settings-actions.ts");
@@ -68,8 +69,10 @@ describe("WhatsApp direct orders", () => {
   });
 
   it("keeps product lookup tenant-scoped and refuses required modifiers instead of guessing", () => {
-    expect(orderService).toContain('.eq("organization_id", organizationId)');
-    expect(orderService).toContain('.eq("store_id", storeId)');
+    expect(orderService).toContain("loadWhatsAppCatalogCandidates");
+    expect(orderCatalog).toContain('.eq("organization_id", input.organizationId)');
+    expect(orderCatalog).toContain('.eq("id", input.storeId)');
+    expect(orderCatalog).toContain("IntelligenceCatalogAdapter");
     expect(orderService).toContain('error.code === "invalid_modifiers"');
     expect(orderService).toContain("exige uma escolha de sabor, tamanho ou adicional");
   });
