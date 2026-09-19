@@ -117,6 +117,42 @@ export class CategoryService {
     return after;
   }
 
+  static async duplicate(categoryId: string, includeProducts = false) {
+    const id = uuidSchema.parse(categoryId);
+    const context = await authorize(PERMISSIONS.PRODUCTS_CREATE);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("duplicate_catalog_category_internal", {
+      p_organization_id: context.organizationId,
+      p_store_id: storeId,
+      p_category_id: id,
+      p_include_products: Boolean(includeProducts),
+      p_actor_user_id: context.userId,
+    });
+    if (error) throw error;
+
+    const result = data && typeof data === "object" && !Array.isArray(data)
+      ? data as { category_id?: unknown; product_count?: unknown }
+      : null;
+    const copyId = typeof result?.category_id === "string" ? uuidSchema.parse(result.category_id) : null;
+    if (!copyId) throw new Error("Category duplication returned an invalid result");
+    const productCount = Number(result?.product_count ?? 0);
+
+    await AuditService.record(context, {
+      action: "category.duplicated",
+      entityType: "category",
+      entityId: copyId,
+      after: { sourceCategoryId: id, includeProducts: Boolean(includeProducts), productCount },
+    });
+    await EventService.enqueue(context, {
+      type: "category.duplicated",
+      entityType: "category",
+      entityId: copyId,
+      payload: { source_category_id: id, include_products: Boolean(includeProducts), product_count: productCount },
+    });
+    return { id: copyId, productCount };
+  }
+
   static async remove(categoryId: string) {
     const id = uuidSchema.parse(categoryId);
     const context = await authorize(PERMISSIONS.PRODUCTS_DELETE);
