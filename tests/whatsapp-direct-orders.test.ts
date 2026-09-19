@@ -68,13 +68,15 @@ describe("WhatsApp direct orders", () => {
     expect(orderService).toContain("OrderService.createFromCheckout");
   });
 
-  it("keeps product lookup tenant-scoped and refuses required modifiers instead of guessing", () => {
+  it("keeps product lookup tenant-scoped and resolves required modifiers from the canonical catalog", () => {
     expect(orderService).toContain("loadWhatsAppCatalogCandidates");
     expect(orderCatalog).toContain('.eq("organization_id", input.organizationId)');
     expect(orderCatalog).toContain('.eq("id", input.storeId)');
     expect(orderCatalog).toContain("IntelligenceCatalogAdapter");
+    expect(orderService).toContain("loadWhatsAppProductDetails");
+    expect(orderService).toContain("createPendingModifierFlow");
+    expect(orderService).toContain("buildModifierGroupPrompt");
     expect(orderService).toContain('error.code === "invalid_modifiers"');
-    expect(orderService).toContain("exige uma escolha de sabor, tamanho ou adicional");
   });
 
   it("lets customers exit to the menu or request a human during checkout", () => {
