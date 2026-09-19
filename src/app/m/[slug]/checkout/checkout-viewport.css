@@ -1,0 +1,38 @@
+.checkout-visual-viewport {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@supports (height: 100dvh) {
+  .checkout-visual-viewport {
+    height: 100dvh;
+  }
+}
+
+.checkout-visual-viewport > main {
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.checkout-visual-viewport > main > div {
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.checkout-visual-viewport > main > div > footer {
+  position: relative;
+  z-index: 2;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+
+@media (max-height: 620px) {
+  .checkout-visual-viewport > main > div > footer {
+    padding-top: 8px;
+    gap: 8px;
+  }
+}
