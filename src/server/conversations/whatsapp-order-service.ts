@@ -1,13 +1,18 @@
 import "server-only";
 
-import { createAdminClient } from "@/lib/supabase/admin";
 import { CartService } from "@/server/cart/cart-service";
 import { CheckoutError, CheckoutService } from "@/server/checkout/checkout-service";
 import { paymentMethodLabels, paymentMethodSchema, type PaymentMethod } from "@/server/checkout/schemas";
 import { normalizeBotInput } from "@/server/conversations/bot-menu";
 import { looseTokenSimilarity, normalizeProductLanguage } from "@/server/conversations/language-normalization";
 import { parseOrderComposition, resolvePendingChoiceReference, type OrderComposition } from "@/server/conversations/whatsapp-order-context";
-import { loadWhatsAppCatalogCandidates, type WhatsAppCatalogCandidate } from "@/server/conversations/whatsapp-order-catalog";
+import {
+  findWhatsAppCompositionProfiles,
+  loadWhatsAppCatalogCandidates,
+  loadWhatsAppCompositionProfile,
+  type WhatsAppCatalogCandidate,
+  type WhatsAppCompositionProfile,
+} from "@/server/conversations/whatsapp-order-catalog";
 import {
   buildWhatsAppPaymentPrompt,
   resolveWhatsAppPaymentSelection,
@@ -42,8 +47,7 @@ export type WhatsAppOrderHandleResult = { handled: true; body: string; nextStep:
 type Input = { organizationId: string; storeId: string; storeSlug: string; storeName: string; contactName: string | null; contactPhone: string; text: string; step: WhatsAppOrderStep; context: unknown };
 type ParsedItem = { quantity: number; query: string };
 type ProductCandidate = WhatsAppCatalogCandidate;
-type ModifierRow = { id: string; name: string };
-type CompositionProfile = PendingComposition & { modifiers: ModifierRow[] };
+type CompositionProfile = WhatsAppCompositionProfile;
 
 const productStopWords = new Set(["a", "as", "o", "os", "de", "da", "das", "do", "dos", "com", "em", "no", "na", "nos", "nas", "un", "und", "unid", "unidade", "unidades", "uma", "um", "pra", "para"]);
 
@@ -128,19 +132,13 @@ async function findProduct(input: Pick<Input, "organizationId" | "storeId" | "st
   return { kind: "missing" as const, options: rows.slice(0, 5) };
 }
 
-async function loadCompositionProfile(input: Pick<Input, "organizationId" | "storeId">, productId: string): Promise<CompositionProfile | null> {
-  const admin = createAdminClient();
-  const { data: links, error: linkError } = await admin.from("product_modifier_groups").select("modifier_group_id").eq("organization_id", input.organizationId).eq("store_id", input.storeId).eq("product_id", productId).order("sort_order");
-  if (linkError) throw linkError; const groupIds = (links ?? []).map((row) => row.modifier_group_id); if (!groupIds.length) return null;
-  const { data: groups, error: groupError } = await admin.from("modifier_groups").select("id, name, selection_mode, distribution_total, active, deleted_at").eq("organization_id", input.organizationId).eq("store_id", input.storeId).in("id", groupIds).eq("active", true).is("deleted_at", null);
-  if (groupError) throw groupError;
-  const group = (groups ?? []).find((row) => row.selection_mode === "equal_split_options" && Number.isInteger(row.distribution_total) && Number(row.distribution_total) > 0); if (!group) return null;
-  const [{ data: product, error: productError }, { data: modifiers, error: modifierError }] = await Promise.all([
-    admin.from("products").select("id, name").eq("organization_id", input.organizationId).eq("store_id", input.storeId).eq("id", productId).maybeSingle(),
-    admin.from("modifiers").select("id, name").eq("organization_id", input.organizationId).eq("store_id", input.storeId).eq("modifier_group_id", group.id).eq("active", true).is("deleted_at", null).order("sort_order"),
-  ]);
-  if (productError) throw productError; if (modifierError) throw modifierError; if (!product) return null;
-  return { productId, name: product.name, quantity: 1, groupId: group.id, groupName: group.name, distributionTotal: Number(group.distribution_total), modifiers: (modifiers ?? []) as ModifierRow[] };
+async function loadCompositionProfile(input: Pick<Input, "organizationId" | "storeId" | "storeSlug">, productId: string): Promise<CompositionProfile | null> {
+  return loadWhatsAppCompositionProfile({
+    organizationId: input.organizationId,
+    storeId: input.storeId,
+    storeSlug: input.storeSlug,
+    productId,
+  });
 }
 
 function modifierScore(label: string, name: string) {
@@ -166,18 +164,13 @@ function resolveCompositionSelections(composition: OrderComposition, profile: Co
 }
 
 async function findProfileForComposition(input: Input, composition: OrderComposition): Promise<CompositionProfile | null> {
-  const admin = createAdminClient();
-  const { data: groups, error } = await admin.from("modifier_groups").select("id, name, distribution_total").eq("organization_id", input.organizationId).eq("store_id", input.storeId).eq("selection_mode", "equal_split_options").eq("distribution_total", composition.total).eq("active", true).is("deleted_at", null);
-  if (error) throw error; if (!groups?.length) return null;
-  const candidates: CompositionProfile[] = [];
-  for (const group of groups) {
-    const { data: links, error: linksError } = await admin.from("product_modifier_groups").select("product_id").eq("organization_id", input.organizationId).eq("store_id", input.storeId).eq("modifier_group_id", group.id);
-    if (linksError) throw linksError;
-    for (const link of links ?? []) {
-      const profile = await loadCompositionProfile(input, link.product_id); if (!profile || profile.groupId !== group.id) continue;
-      const resolved = resolveCompositionSelections(composition, profile); if (resolved.ok) candidates.push(profile);
-    }
-  }
+  const profiles = await findWhatsAppCompositionProfiles({
+    organizationId: input.organizationId,
+    storeId: input.storeId,
+    storeSlug: input.storeSlug,
+    distributionTotal: composition.total,
+  });
+  const candidates = profiles.filter((profile) => resolveCompositionSelections(composition, profile).ok);
   return candidates.length === 1 ? candidates[0]! : null;
 }
 
