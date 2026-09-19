@@ -7,7 +7,7 @@ import { PERMISSIONS } from "@/server/access/permissions";
 export type ComplementCategorySetting = { id: string; name: string; active: boolean; selected: boolean; sortOrder: number; suggestedDefault: boolean };
 export type ComplementCategoryRuleSetting = { sourceCategoryId: string; targetCategoryId: string; title: string | null; sortOrder: number };
 export type PublicComplementProduct = { id: string; name: string; description: string | null; imageUrl: string | null; priceCents: number; promotionalPriceCents: number | null; requiresConfiguration: boolean };
-export type PublicComplementCategory = { id: string; name: string; title: string | null; products: PublicComplementProduct[] };
+export type PublicComplementCategory = { id: string; name: string; title: string | null; sourceProductId: string | null; products: PublicComplementProduct[] };
 
 function normalized(value: string) { return value.trim().toLocaleLowerCase("pt-BR"); }
 
@@ -121,7 +121,7 @@ export class ComplementCategoryService {
       const category = categoryMap.get(config.categoryId);
       if (!category) return [];
       const categoryProducts = eligibleProducts.filter((product) => product.category_id === config.categoryId).slice(0, previewLimit).map((product) => ({ id: product.id, name: product.name, description: product.description, imageUrl: product.image_url, priceCents: Number(product.price_cents), promotionalPriceCents: product.promotional_price_cents === null ? null : Number(product.promotional_price_cents), requiresConfiguration: store.business_type === "gas" || configuredIds.has(product.id) }));
-      return categoryProducts.length > 0 ? [{ id: category.id, name: category.name, title: config.title, products: categoryProducts }] : [];
+      return categoryProducts.length > 0 ? [{ id: category.id, name: category.name, title: config.title, sourceProductId: sourceProductId ?? null, products: categoryProducts }] : [];
     });
   }
 }
