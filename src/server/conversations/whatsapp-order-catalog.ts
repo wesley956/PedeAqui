@@ -1,5 +1,3 @@
-import "server-only";
-
 import { createAdminClient } from "@/lib/supabase/admin";
 import { IntelligenceCatalogAdapter } from "@/server/intelligence/catalog-adapter";
 import { createIntelligenceContext } from "@/server/intelligence/context";
