@@ -159,7 +159,7 @@ begin
 
   -- Finaliza o alvo após o retry e drena os 25 claims iniciais.
   perform public.order_notification_finish_internal(
-    v_target_notification_id,'flow02-target-worker-b','sent',gen_random_uuid(),null,null,null
+    v_target_notification_id,'flow02-target-worker-b','sent',null,null,null,null
   );
   for v_job in
     select id
@@ -168,7 +168,7 @@ begin
        and locked_by='flow02-generic-worker'
   loop
     perform public.order_notification_finish_internal(
-      v_job.id,'flow02-generic-worker','sent',gen_random_uuid(),null,null,null
+      v_job.id,'flow02-generic-worker','sent',null,null,null,null
     );
   end loop;
 
@@ -178,7 +178,7 @@ begin
     select id from public.order_notification_claim_internal('flow02-drain-worker',25)
   loop
     perform public.order_notification_finish_internal(
-      v_job.id,'flow02-drain-worker','sent',gen_random_uuid(),null,null,null
+      v_job.id,'flow02-drain-worker','sent',null,null,null,null
     );
   end loop;
 
