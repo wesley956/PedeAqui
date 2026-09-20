@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   resolveBotResumeSession,
@@ -5,6 +6,7 @@ import {
 } from "@/server/conversations/conversation-bot-resume-policy";
 
 const now = Date.parse("2026-09-19T12:00:00.000Z");
+const isolatedChaos = readFileSync("scripts/run-isolated-chaos.sh", "utf8");
 
 function orderSession(overrides: Partial<{
   state: string;
@@ -22,6 +24,10 @@ function orderSession(overrides: Partial<{
 }
 
 describe("FLOW-08 bot resume handoff policy", () => {
+  it("runs the transactional resume scenario in the disposable Supabase gate", () => {
+    expect(isolatedChaos).toContain('"supabase/tests/e2e_conversation_bot_resume.sql"');
+  });
+
   it("preserves the exact order step when the session and cart are still valid", () => {
     expect(resolveBotResumeSession({ session: orderSession(), nowMs: now, cartActive: true }))
       .toEqual({ mode: "preserve", reason: "preserve_order_step" });
