@@ -24,6 +24,19 @@ describe("store schedule", () => {
     expect(isOpenAt(hours, "America/Sao_Paulo", saturdayOneAmInSaoPaulo)).toBe(true);
   });
 
+  it("accepts PostgreSQL time values returned with seconds", () => {
+    const hours = [{ weekday: 0, opens_at: "14:00:00", closes_at: "23:59:00", closes_next_day: false }];
+    const sundayThreeThirtyAmInSaoPaulo = new Date("2026-09-20T06:30:00.000Z");
+
+    expect(isOpenAt(hours, "America/Sao_Paulo", sundayThreeThirtyAmInSaoPaulo)).toBe(false);
+    expect(nextOpening(hours, "America/Sao_Paulo", sundayThreeThirtyAmInSaoPaulo)).toMatchObject({
+      weekday: 0,
+      opensAt: "14:00",
+      daysAhead: 0,
+      label: "hoje às 14:00",
+    });
+  });
+
   it("returns today's next opening before the first shift", () => {
     const hours = [{ weekday: 6, opens_at: "18:00", closes_at: "23:00", closes_next_day: false }];
     const saturdayFivePmInSaoPaulo = new Date("2026-09-19T20:00:00.000Z");
