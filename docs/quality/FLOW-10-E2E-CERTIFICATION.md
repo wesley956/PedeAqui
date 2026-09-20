@@ -6,7 +6,7 @@
 - Baseline auditado: `2d7d8ae173e3e636c8bae93d896bc7050d57fc75`
 - Decisão atual: **NO-GO**
 - Progresso do projeto: **9/10**
-- Cenários P0: **10 PASS / 34 NOT PROVEN / 0 FAIL**
+- Cenários P0: **13 PASS / 31 NOT PROVEN / 0 FAIL**
 
 ## Objetivo
 
@@ -55,8 +55,8 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 | A02 | sim | Item simples + complemento/modificador canônico | E2E controlado | NOT PROVEN |
 | A03 | sim | Checkout preserva identidade, endereço e pagamento | E2E controlado | NOT PROVEN |
 | A04 | sim | CTA de confirmação permanece acessível no mobile | Browser Homologation | PASS |
-| A05 | sim | Checkout web cria exatamente um pedido | DB descartável/rollback | NOT PROVEN |
-| A06 | sim | `order.created` gera a notificação específica | DB descartável/rollback | NOT PROVEN |
+| A05 | sim | Checkout web cria exatamente um pedido | DB descartável/rollback | PASS |
+| A06 | sim | `order.created` gera a notificação específica | DB descartável/rollback | PASS |
 | A07 | sim | Cliente recebe estágio público `recebido` | E2E controlado | NOT PROVEN |
 | A08 | sim | Confirmação da loja converge para `confirmado` | E2E controlado | NOT PROVEN |
 | A09 | sim | Preparação/produção converge entre push e tracking | E2E controlado | NOT PROVEN |
@@ -90,7 +90,7 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 
 | ID | P0 | Requisito | Execução | Estado |
 |---|---|---|---|---|
-| D01 | sim | Duplo clique/submit não duplica pedido | DB descartável/rollback | NOT PROVEN |
+| D01 | sim | Duplo clique/submit não duplica pedido | DB descartável/rollback | PASS |
 | D02 | sim | Duas mensagens WhatsApp próximas não duplicam pedido/transição | DB descartável/rollback | NOT PROVEN |
 | D03 | sim | Retry do provider não duplica mensagem ao cliente | DB descartável/rollback | NOT PROVEN |
 | D04 | sim | Backlog >25 notification jobs drena sem perda/duplicidade | DB descartável/rollback | NOT PROVEN |
@@ -124,9 +124,9 @@ Browser target: Chromium e WebKit onde previsto pelo workflow oficial.
 
 ### Evidência executada — Browser Homologation
 
-- Workflow: <https://github.com/wesley956/PedeAqui/actions/runs/35497138737>
-- Artifact: `browser-homologation-evidence` (`10601056212`)
-- Digest: `sha256:3f454489cb7373c0ddb2674be48880a82a26cdb95fce930dba4d8fb3e52049ac`
+- Workflow: <https://github.com/wesley956/PedeAqui/actions/runs/35499183077>
+- Artifact: `browser-homologation-evidence` (`10601314868`)
+- Digest: `sha256:893a114e7ff860e7b8efba59a2ae9fe21de744e6d69b18128c5f8aad5d14460c`
 - Resultado: 43 checks, 0 failures.
 - A04/M320/M360/M390/M412/M430: CTA visível com mensagens longas e viewport reduzido por teclado em Chromium e WebKit.
 - MTAB/MDESK: páginas carregadas sem overflow nos viewports 768–1920 px.
@@ -149,22 +149,37 @@ Browser target: Chromium e WebKit onde previsto pelo workflow oficial.
 - Evidência canônica: <https://github.com/wesley956/PedeAqui/issues/1141#issuecomment-5748521010>
 - Veredito: **PASS** — a saudação fora do horário produziu `auto:wa-order:closed-greeting`, informou loja fechada e não gerou erro de automação.
 
+## Evidência executada — Checkout e fila em banco descartável
+
+### A05, A06 e D01 — PASS
+
+- Workflow: <https://github.com/wesley956/PedeAqui/actions/runs/35499183113>
+- Artifact: `isolated-chaos-evidence` (`10601830518`)
+- Digest: `sha256:419fe610d669bf38248e91ddfeb9596477e9ce2e916a6d31f3421e2165f68877`
+- Environment: Supabase local efêmero, sem link com projeto hospedado.
+- Execução: três passes consecutivos; cada fixture terminou com `ROLLBACK`.
+- A05/D01: duas chamadas de checkout com a mesma identidade retornaram o mesmo `order_id`, com flags `created=true/false`, e deixaram exatamente um pedido.
+- A06: 27 checkouts técnicos emitiram 27 jobs `order_received` a partir dos eventos autoritativos, um por pedido.
+- Dados: UUIDs reservados e destinatário `.invalid`; nenhum cliente real ou provider foi usado.
+- Veredito: **PASS** para A05, A06 e D01.
+- Limite da prova: D03, D04 e D05 permanecem `NOT PROVEN`, pois esta execução não enviou ao provider, não drenou integralmente o backlog e não abriu duas transações simultâneas.
+
 ## Gates técnicos
 
 | Gate | Critério FLOW-10 | Estado atual |
 |---|---|---|
-| Teste focado FLOW-10 | `vitest run tests/flow-10-e2e-certification.test.ts` | PENDING |
-| Typecheck | `tsc --noEmit` | PENDING |
-| Lint | `eslint .` | PENDING |
-| Full suite | suíte Vitest completa | PENDING |
-| Public UX | script oficial do repositório | PENDING |
-| Route integrity | `check:routes` | PENDING |
-| Production preflight | `preflight:production` | PENDING |
-| Build | Next.js production build | PENDING |
-| Browser Homologation | workflow oficial Chromium/WebKit | PENDING |
-| Isolated Chaos | obrigatório para a evidência transacional/SQL | PENDING |
+| Teste focado FLOW-10 | `vitest run tests/flow-10-e2e-certification.test.ts` | PASS — CI #1948 |
+| Typecheck | `tsc --noEmit` | PASS — CI #1948 |
+| Lint | `eslint .` | PASS — CI #1948 |
+| Full suite | suíte Vitest completa | PASS — CI #1948 |
+| Public UX | script oficial do repositório | PASS — CI #1948 |
+| Route integrity | `check:routes` | PASS — CI #1948 |
+| Production preflight | `preflight:production` | PASS — CI #1948 |
+| Build | Next.js production build | PASS — CI #1948 |
+| Browser Homologation | workflow oficial Chromium/WebKit | PASS — #443 |
+| Isolated Chaos | obrigatório para a evidência transacional/SQL | PASS — #190 |
 
-O runner descartável inclui agora `e2e_order_notification_targeted_claim.sql`, que cria 27 pedidos técnicos dentro de transação, produz backlog acima de 25 jobs, exercita claim concorrente e retry e encerra com `ROLLBACK`. A presença do teste não altera sozinha os vereditos: A05, A06, D01, D03, D04 e D05 continuam `NOT PROVEN` até o workflow Isolated Chaos terminar com artifact verificável.
+Gates oficiais no SHA `f2c360f441d99376a6be373addb2dd5e4f741fa4`: CI <https://github.com/wesley956/PedeAqui/actions/runs/35499183071>, Browser Homologation <https://github.com/wesley956/PedeAqui/actions/runs/35499183077> e Isolated Chaos <https://github.com/wesley956/PedeAqui/actions/runs/35499183113>.
 
 ## Contratos existentes que ajudam, mas não fecham a certificação
 

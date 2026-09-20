@@ -39,9 +39,15 @@ const fullEvidence: EvidenceKey[] = [
 const artifactEvidence: EvidenceKey[] = ["artifact", "verdict"];
 
 const browserRunEvidence = [
-  "workflow:https://github.com/wesley956/PedeAqui/actions/runs/35497138737",
-  "artifact:10601056212",
-  "digest:sha256:3f454489cb7373c0ddb2674be48880a82a26cdb95fce930dba4d8fb3e52049ac",
+  "workflow:https://github.com/wesley956/PedeAqui/actions/runs/35499183077",
+  "artifact:10601314868",
+  "digest:sha256:893a114e7ff860e7b8efba59a2ae9fe21de744e6d69b18128c5f8aad5d14460c",
+];
+
+const isolatedChaosEvidence = [
+  "workflow:https://github.com/wesley956/PedeAqui/actions/runs/35499183113",
+  "artifact:10601830518",
+  "digest:sha256:419fe610d669bf38248e91ddfeb9596477e9ce2e916a6d31f3421e2165f68877",
 ];
 
 const closedStoreEvidence = [
@@ -54,8 +60,8 @@ const scenarios: CertificationScenario[] = [
   { id: "A02", journey: "A", severity: "P0", requirement: "Cart accepts a simple item plus canonical modifier", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "A03", journey: "A", severity: "P0", requirement: "Checkout preserves identity, address and payment through confirmation", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "A04", journey: "A", severity: "P0", requirement: "Checkout confirmation CTA remains reachable on supported mobile viewports", executionMode: "browser-homologation", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: browserRunEvidence },
-  { id: "A05", journey: "A", severity: "P0", requirement: "Web checkout creates exactly one order", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
-  { id: "A06", journey: "A", severity: "P0", requirement: "order.created produces the specific notification job", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
+  { id: "A05", journey: "A", severity: "P0", requirement: "Web checkout creates exactly one order", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
+  { id: "A06", journey: "A", severity: "P0", requirement: "order.created produces the specific notification job", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
   { id: "A07", journey: "A", severity: "P0", requirement: "Customer notification reaches public stage recebido", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "A08", journey: "A", severity: "P0", requirement: "Store confirmation converges to customer stage confirmado", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "A09", journey: "A", severity: "P0", requirement: "Preparing/production update converges across notification and tracking", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
@@ -77,7 +83,7 @@ const scenarios: CertificationScenario[] = [
   { id: "C02", journey: "C", severity: "P0", requirement: "Quero pedir outside hours does not create an immediate order", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "C03", journey: "C", severity: "P0", requirement: "Tracking remains available for a legitimate order while store is closed", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
 
-  { id: "D01", journey: "D", severity: "P0", requirement: "Double click or double submit does not duplicate the order", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
+  { id: "D01", journey: "D", severity: "P0", requirement: "Double click or double submit does not duplicate the order", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
   { id: "D02", journey: "D", severity: "P0", requirement: "Two close WhatsApp messages do not duplicate order or state transition", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "D03", journey: "D", severity: "P0", requirement: "Provider retry does not duplicate customer notification", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "D04", journey: "D", severity: "P0", requirement: "Notification backlog above 25 jobs drains without loss or duplication", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
@@ -151,9 +157,9 @@ describe("FLOW-10 executable E2E certification matrix", () => {
   });
 
   it("records only the evidence-backed PASS scenarios", () => {
-    const evidenceBackedPasses = ["A04", "C01", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
+    const evidenceBackedPasses = ["A04", "A05", "A06", "C01", "D01", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
     expect(scenarios.filter((scenario) => scenario.status === "PASS").map((scenario) => scenario.id)).toEqual(evidenceBackedPasses);
-    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(34);
+    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(31);
     expect(scenarios.filter((scenario) => scenario.status === "FAIL")).toEqual([]);
   });
 });
