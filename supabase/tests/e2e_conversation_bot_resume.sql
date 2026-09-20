@@ -107,8 +107,7 @@ begin
   v_created := public.create_order_from_checkout_internal(
     'f8000000-0000-4000-8000-000000000011',
     v_token_hash,
-    repeat('a',64),
-    'whatsapp'
+    repeat('a',64)
   );
   v_order_id := (v_created->>'order_id')::uuid;
 
