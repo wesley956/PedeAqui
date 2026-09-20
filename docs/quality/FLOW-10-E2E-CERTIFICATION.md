@@ -6,7 +6,7 @@
 - Baseline auditado: `2d7d8ae173e3e636c8bae93d896bc7050d57fc75`
 - Decisão atual: **NO-GO**
 - Progresso do projeto: **9/10**
-- Cenários P0: **13 PASS / 31 NOT PROVEN / 0 FAIL**
+- Cenários P0: **14 PASS / 30 NOT PROVEN / 0 FAIL**
 
 ## Objetivo
 
@@ -93,7 +93,7 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 | D01 | sim | Duplo clique/submit não duplica pedido | DB descartável/rollback | PASS |
 | D02 | sim | Duas mensagens WhatsApp próximas não duplicam pedido/transição | DB descartável/rollback | NOT PROVEN |
 | D03 | sim | Retry do provider não duplica mensagem ao cliente | DB descartável/rollback | NOT PROVEN |
-| D04 | sim | Backlog >25 notification jobs drena sem perda/duplicidade | DB descartável/rollback | NOT PROVEN |
+| D04 | sim | Backlog >25 notification jobs drena sem perda/duplicidade | DB descartável/rollback | PASS |
 | D05 | sim | Workers concorrentes fazem claim exatamente uma vez | DB descartável/rollback | NOT PROVEN |
 | D06 | sim | Refresh do checkout mantém resultado idempotente | E2E controlado | NOT PROVEN |
 | D07 | sim | Internet instável não duplica pedido nem corrompe estado público | E2E controlado | NOT PROVEN |
@@ -151,18 +151,19 @@ Browser target: Chromium e WebKit onde previsto pelo workflow oficial.
 
 ## Evidência executada — Checkout e fila em banco descartável
 
-### A05, A06 e D01 — PASS
+### A05, A06, D01 e D04 — PASS
 
-- Workflow: <https://github.com/wesley956/PedeAqui/actions/runs/35499183113>
-- Artifact: `isolated-chaos-evidence` (`10601830518`)
-- Digest: `sha256:419fe610d669bf38248e91ddfeb9596477e9ce2e916a6d31f3421e2165f68877`
+- Workflow: <https://github.com/wesley956/PedeAqui/actions/runs/35499840882>
+- Artifact: `isolated-chaos-evidence` (`10601836407`)
+- Digest: `sha256:0208c3826f85d728382a5ee5bfe36cf7fd1bc5d0a330eae055482d6dfeba5d47`
 - Environment: Supabase local efêmero, sem link com projeto hospedado.
 - Execução: três passes consecutivos; cada fixture terminou com `ROLLBACK`.
 - A05/D01: duas chamadas de checkout com a mesma identidade retornaram o mesmo `order_id`, com flags `created=true/false`, e deixaram exatamente um pedido.
 - A06: 27 checkouts técnicos emitiram 27 jobs `order_received` a partir dos eventos autoritativos, um por pedido.
+- D04: lote inicial de 25, job alvo com retry e job residual foram drenados; os 27 terminaram em `sent` e a cardinalidade permaneceu 27.
 - Dados: UUIDs reservados e destinatário `.invalid`; nenhum cliente real ou provider foi usado.
-- Veredito: **PASS** para A05, A06 e D01.
-- Limite da prova: D03, D04 e D05 permanecem `NOT PROVEN`, pois esta execução não enviou ao provider, não drenou integralmente o backlog e não abriu duas transações simultâneas.
+- Veredito: **PASS** para A05, A06, D01 e D04.
+- Limite da prova: D03 e D05 permanecem `NOT PROVEN`, pois esta execução não enviou ao provider e não abriu duas transações simultâneas.
 
 ## Gates técnicos
 
