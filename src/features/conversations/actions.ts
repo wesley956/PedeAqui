@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { ConversationBotResumeService } from "@/server/conversations/conversation-bot-resume-service";
 import { ConversationClaimConflictError, ConversationClaimService } from "@/server/conversations/conversation-claim-service";
 import { ConversationService } from "@/server/conversations/conversation-service";
 import { ConversationSendPolicyError } from "@/server/conversations/whatsapp-send-policy";
@@ -40,7 +41,7 @@ export async function queueConversationAction(formData: FormData) {
 
 export async function returnConversationToBotAction(formData: FormData) {
   const id = conversationId(formData);
-  await ConversationService.transition({ conversationId: id, targetState: "bot", reason: "Atendimento devolvido ao bot" });
+  await ConversationBotResumeService.resume(id);
   revalidatePath("/conversas");
   redirect(`/conversas?conversation=${encodeURIComponent(id)}`);
 }
@@ -91,7 +92,6 @@ export async function sendConversationMediaAction(formData: FormData) {
   revalidatePath("/conversas");
   redirect(`/conversas?conversation=${encodeURIComponent(id)}`);
 }
-
 
 export async function sendConversationTemplateAction(formData: FormData) {
   const id = conversationId(formData);

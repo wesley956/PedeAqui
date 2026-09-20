@@ -5,6 +5,8 @@ const inboxService = readFileSync("src/server/conversations/inbox-intelligence-s
 const inboxPage = readFileSync("src/app/(app)/conversas/page.tsx", "utf8");
 const timeline = readFileSync("src/app/(app)/conversas/conversation-timeline.tsx", "utf8");
 const actions = readFileSync("src/features/conversations/actions.ts", "utf8");
+const botResumeService = readFileSync("src/server/conversations/conversation-bot-resume-service.ts", "utf8");
+const botResumeSql = readFileSync("supabase/sql/222_conversation_bot_resume_context.sql", "utf8");
 const outcome = readFileSync("src/server/conversations/inbound-outcome-service.ts", "utf8");
 const route = readFileSync("src/app/api/webhooks/whatsapp/route.ts", "utf8");
 const migration = readFileSync("supabase/migrations/20260915220000_int12_coexistence_manual_override.sql", "utf8");
@@ -23,10 +25,14 @@ describe("INT-12 Inbox/Handoff/Coexistence", () => {
   it("keeps return-to-bot manual-only with no automatic scheduling", () => {
     expect(inboxService).toContain('returnToBotPolicy: "manual_only"');
     expect(actions).toContain("returnConversationToBotAction");
-    expect(actions).toContain('targetState: "bot"');
+    expect(actions).toContain("ConversationBotResumeService.resume(id)");
+    expect(botResumeService).toContain('admin.rpc("conversation_resume_bot_internal"');
+    expect(botResumeSql).toContain("conversation_transition_internal");
+    expect(botResumeSql).toContain("'bot'");
     expect(migration).toContain("Return to bot remains manual-only");
     expect(migration).not.toMatch(/\bnow\(\)\s*\+\s*interval\b/i);
     expect(migration).not.toMatch(/\bcron\.schedule\b|\bpg_cron\b/i);
+    expect(botResumeSql).not.toMatch(/\bcron\.schedule\b|\bpg_cron\b/i);
   });
 
   it("pauses bot atomically when WhatsApp Business emits a new echo", () => {
