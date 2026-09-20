@@ -65,6 +65,7 @@ psql "${local_db_url}" -X -v ON_ERROR_STOP=1 -c "select 1" >/dev/null
 
 readonly scenarios=(
   "supabase/tests/e2e_menu_to_kitchen.sql"
+  "supabase/tests/e2e_order_notification_targeted_claim.sql"
   "supabase/tests/e2e_cash_register.sql"
   "supabase/tests/e2e_pdv_to_kitchen.sql"
   "supabase/tests/quality_rls_isolation.sql"

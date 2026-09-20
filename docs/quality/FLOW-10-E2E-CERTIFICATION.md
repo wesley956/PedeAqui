@@ -162,9 +162,9 @@ Browser target: Chromium e WebKit onde previsto pelo workflow oficial.
 | Production preflight | `preflight:production` | PENDING |
 | Build | Next.js production build | PENDING |
 | Browser Homologation | workflow oficial Chromium/WebKit | PENDING |
-| Isolated Chaos | obrigatório se evidência transacional/SQL for adicionada ou tocada | N/A para este change set inicial |
+| Isolated Chaos | obrigatório para a evidência transacional/SQL | PENDING |
 
-`N/A` acima não representa PASS do comportamento transacional; significa somente que este PR inicial adiciona testes/documentação e não modifica SQL/runtime. Os P0 transacionais continuam `NOT PROVEN` até a execução segura correspondente.
+O runner descartável inclui agora `e2e_order_notification_targeted_claim.sql`, que cria 27 pedidos técnicos dentro de transação, produz backlog acima de 25 jobs, exercita claim concorrente e retry e encerra com `ROLLBACK`. A presença do teste não altera sozinha os vereditos: A05, A06, D01, D03, D04 e D05 continuam `NOT PROVEN` até o workflow Isolated Chaos terminar com artifact verificável.
 
 ## Contratos existentes que ajudam, mas não fecham a certificação
 
