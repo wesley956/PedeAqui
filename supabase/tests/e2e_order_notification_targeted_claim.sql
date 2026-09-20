@@ -83,7 +83,7 @@ begin
    where organization_id='f3000000-0000-4000-8000-000000000001'
      and order_id<>v_target_order_id;
   update public.order_whatsapp_notifications
-     set available_at=clock_timestamp(),
+     set available_at=now()-interval '1 second',
          created_at=clock_timestamp()
    where organization_id='f3000000-0000-4000-8000-000000000001'
      and order_id=v_target_order_id;
