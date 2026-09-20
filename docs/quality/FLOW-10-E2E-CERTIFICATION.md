@@ -3,9 +3,10 @@
 - Issue: #1141
 - Data de abertura do ledger: 2026-09-20
 - Branch: `flow/1141-e2e-certification`
-- Baseline auditado: `518c2831bbb34d3b6ac6740dc190e087738cf58b`
+- Baseline auditado: `2d7d8ae173e3e636c8bae93d896bc7050d57fc75`
 - Decisão atual: **NO-GO**
 - Progresso do projeto: **9/10**
+- Cenários P0: **10 PASS / 34 NOT PROVEN / 0 FAIL**
 
 ## Objetivo
 
@@ -53,7 +54,7 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 | A01 | sim | Cliente abre o cardápio público | E2E controlado | NOT PROVEN |
 | A02 | sim | Item simples + complemento/modificador canônico | E2E controlado | NOT PROVEN |
 | A03 | sim | Checkout preserva identidade, endereço e pagamento | E2E controlado | NOT PROVEN |
-| A04 | sim | CTA de confirmação permanece acessível no mobile | Browser Homologation | NOT PROVEN |
+| A04 | sim | CTA de confirmação permanece acessível no mobile | Browser Homologation | PASS |
 | A05 | sim | Checkout web cria exatamente um pedido | DB descartável/rollback | NOT PROVEN |
 | A06 | sim | `order.created` gera a notificação específica | DB descartável/rollback | NOT PROVEN |
 | A07 | sim | Cliente recebe estágio público `recebido` | E2E controlado | NOT PROVEN |
@@ -81,7 +82,7 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 
 | ID | P0 | Requisito | Execução | Estado |
 |---|---|---|---|---|
-| C01 | sim | `Oi` fora do horário informa loja fechada e próxima abertura quando disponível | E2E controlado | NOT PROVEN |
+| C01 | sim | `Oi` fora do horário informa loja fechada e próxima abertura quando disponível | E2E controlado | PASS |
 | C02 | sim | `Quero pedir` fora do horário não cria pedido imediato | DB descartável/rollback | NOT PROVEN |
 | C03 | sim | Tracking de pedido legítimo continua funcionando com loja fechada | E2E controlado | NOT PROVEN |
 
@@ -110,16 +111,43 @@ A cobertura abaixo deve ser reexecutada pelo workflow oficial de Browser Homolog
 
 | ID | Dispositivo/viewport | Estado |
 |---|---|---|
-| M320 | 320×568 | NOT PROVEN |
-| M360 | 360×640 | NOT PROVEN |
-| M390 | 390×844 | NOT PROVEN |
-| M412 | 412×915 | NOT PROVEN |
-| M430 | 430×932 | NOT PROVEN |
-| MTAB | tablet | NOT PROVEN |
-| MDESK | desktop | NOT PROVEN |
-| MKEY | mobile com teclado virtual aberto | NOT PROVEN |
+| M320 | 320×568 | PASS |
+| M360 | 360×640 | PASS |
+| M390 | 390×844 | PASS |
+| M412 | 412×915 | PASS |
+| M430 | 430×932 | PASS |
+| MTAB | tablet | PASS |
+| MDESK | desktop | PASS |
+| MKEY | mobile com teclado virtual aberto | PASS |
 
 Browser target: Chromium e WebKit onde previsto pelo workflow oficial.
+
+### Evidência executada — Browser Homologation
+
+- Workflow: <https://github.com/wesley956/PedeAqui/actions/runs/35497138737>
+- Artifact: `browser-homologation-evidence` (`10601056212`)
+- Digest: `sha256:3f454489cb7373c0ddb2674be48880a82a26cdb95fce930dba4d8fb3e52049ac`
+- Resultado: 43 checks, 0 failures.
+- A04/M320/M360/M390/M412/M430: CTA visível com mensagens longas e viewport reduzido por teclado em Chromium e WebKit.
+- MTAB/MDESK: páginas carregadas sem overflow nos viewports 768–1920 px.
+- MKEY: CTA permaneceu visível nos cinco viewports mobile com altura reduzida para simular teclado virtual.
+
+## Evidência executada — Loja fechada
+
+### C01 — PASS
+
+- Execução: mensagem real controlada enviada à Dona Maria após o deploy do hotfix de horário.
+- Timestamp: `2026-09-20T07:51:50.019364Z` (entrada registrada).
+- Environment: produção, verificação pós-deploy autorizada.
+- order_id: N/A; nenhum pedido foi criado por esta saudação.
+- events: `closed_notice`.
+- notification_job_id: N/A.
+- recipient: mascarado na evidência pública.
+- provider_status: `delivered`.
+- public_tracking_status: N/A.
+- Deployment: `dpl_9aB1e1crfmDinM3RqenztVP5Lpnh` (`READY`).
+- Evidência canônica: <https://github.com/wesley956/PedeAqui/issues/1141#issuecomment-5748521010>
+- Veredito: **PASS** — a saudação fora do horário produziu `auto:wa-order:closed-greeting`, informou loja fechada e não gerou erro de automação.
 
 ## Gates técnicos
 
