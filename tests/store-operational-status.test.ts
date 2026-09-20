@@ -43,6 +43,17 @@ describe("store operational status", () => {
     expect(storeClosedOrderMessage(status)).toContain("hoje às 18:00");
   });
 
+  it("blocks outside hours when Supabase returns PostgreSQL time values with seconds", () => {
+    const status = resolve({
+      hours: [{ weekday: 0, opens_at: "14:00:00", closes_at: "23:59:00", closes_next_day: false }],
+      now: new Date("2026-09-20T06:31:58.000Z"),
+    });
+
+    expect(status.canOrder).toBe(false);
+    expect(status.reason).toBe("closed_hours");
+    expect(storeClosedOrderMessage(status)).toContain("hoje às 14:00");
+  });
+
   it("blocks a paused store even during opening hours and preserves the configured reason", () => {
     const status = resolve({ acceptingOrders: false, pauseReason: "Pausa para reorganização" });
     expect(status.canOrder).toBe(false);
