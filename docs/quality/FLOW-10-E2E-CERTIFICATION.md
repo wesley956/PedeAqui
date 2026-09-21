@@ -6,7 +6,7 @@
 - Baseline auditado: `2d7d8ae173e3e636c8bae93d896bc7050d57fc75`
 - Decisão atual: **NO-GO**
 - Progresso do projeto: **9/10**
-- Cenários P0: **20 PASS / 24 NOT PROVEN / 0 FAIL**
+- Cenários P0: **22 PASS / 22 NOT PROVEN / 0 FAIL**
 
 ## Objetivo
 
@@ -67,8 +67,8 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 
 | ID | P0 | Requisito | Execução | Estado |
 |---|---|---|---|---|
-| B01 | sim | `Oi` inicia conversa de pedido com segurança | E2E controlado | NOT PROVEN |
-| B02 | sim | Estado operacional da loja é consultado antes de vender | E2E controlado | NOT PROVEN |
+| B01 | sim | `Oi` inicia conversa de pedido com segurança | E2E controlado | PASS |
+| B02 | sim | Estado operacional da loja é consultado antes de vender | E2E controlado | PASS |
 | B03 | sim | Robô usa catálogo canônico | E2E controlado | NOT PROVEN |
 | B04 | sim | Robô usa complementos/opções canônicos | E2E controlado | NOT PROVEN |
 | B05 | sim | Carrinho/checkout passam pelos serviços oficiais | E2E controlado | NOT PROVEN |
@@ -204,22 +204,36 @@ Browser target: Chromium e WebKit onde previsto pelo workflow oficial.
 - Digest: `sha256:ed8cb67e6733bdb1390121ebf62a85413499bf4ab04d27a0a7c0a4456f3e14df`.
 - Veredito: **PASS** para B07 e B08.
 
+### B01 e B02 — PASS
+
+- Commit da prova: `5732b560c1b8fdd64cc6f33c8b26086320999181`.
+- B01: `Oi` recebeu uma saudação da loja técnica com identidade correta, URL canônica do cardápio, opção `Fazer pedido pelo WhatsApp` e sessão persistida em `menu`.
+- B02: `Quero pedir` consultou `StoreOperationalStatusService` antes de abrir `order_items`; com loja fechada, a mesma fronteira já comprovada em C02 bloqueia a entrada no pedido.
+- Provider: simulado; nenhum envio Meta real foi realizado.
+- Dados: organização, loja, conversa, telefone e mensagens exclusivamente técnicos.
+- CI: <https://github.com/wesley956/PedeAqui/actions/runs/35572348505> (`success`).
+- Browser Homologation: <https://github.com/wesley956/PedeAqui/actions/runs/35572348490> (`success`).
+- Isolated Chaos: <https://github.com/wesley956/PedeAqui/actions/runs/35572348512> (`success`).
+- Artifact: `isolated-chaos-evidence` (`10626074737`).
+- Digest: `sha256:8926666ca8c7feb61e6d53701ce70dc008fb36bd2361bdf9157883ff27626292`.
+- Veredito: **PASS** para B01 e B02.
+
 ## Gates técnicos
 
 | Gate | Critério FLOW-10 | Estado atual |
 |---|---|---|
-| Teste focado FLOW-10 | `vitest run tests/flow-10-e2e-certification.test.ts` | PASS — CI #1963 |
-| Typecheck | `tsc --noEmit` | PASS — CI #1963 |
-| Lint | `eslint .` | PASS — CI #1963 |
-| Full suite | suíte Vitest completa | PASS — CI #1963 |
-| Public UX | script oficial do repositório | PASS — CI #1963 |
-| Route integrity | `check:routes` | PASS — CI #1963 |
-| Production preflight | `preflight:production` | PASS — CI #1963 |
-| Build | Next.js production build | PASS — CI #1963 |
-| Browser Homologation | workflow oficial Chromium/WebKit | PASS — #457 |
-| Isolated Chaos | obrigatório para a evidência transacional/SQL | PASS — #203 |
+| Teste focado FLOW-10 | `vitest run tests/flow-10-e2e-certification.test.ts` | PASS — CI #1965 |
+| Typecheck | `tsc --noEmit` | PASS — CI #1965 |
+| Lint | `eslint .` | PASS — CI #1965 |
+| Full suite | suíte Vitest completa | PASS — CI #1965 |
+| Public UX | script oficial do repositório | PASS — CI #1965 |
+| Route integrity | `check:routes` | PASS — CI #1965 |
+| Production preflight | `preflight:production` | PASS — CI #1965 |
+| Build | Next.js production build | PASS — CI #1965 |
+| Browser Homologation | workflow oficial Chromium/WebKit | PASS — #459 |
+| Isolated Chaos | obrigatório para a evidência transacional/SQL | PASS — #205 |
 
-Gates oficiais no SHA `6beeb35379484cf5c5682cb2791324c1af89dec3`: CI <https://github.com/wesley956/PedeAqui/actions/runs/35571118936>, Browser Homologation <https://github.com/wesley956/PedeAqui/actions/runs/35571119106> e Isolated Chaos <https://github.com/wesley956/PedeAqui/actions/runs/35571118933>.
+Gates oficiais no SHA `5732b560c1b8fdd64cc6f33c8b26086320999181`: CI <https://github.com/wesley956/PedeAqui/actions/runs/35572348505>, Browser Homologation <https://github.com/wesley956/PedeAqui/actions/runs/35572348490> e Isolated Chaos <https://github.com/wesley956/PedeAqui/actions/runs/35572348512>.
 
 ## Contratos existentes que ajudam, mas não fecham a certificação
 

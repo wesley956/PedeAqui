@@ -82,6 +82,15 @@ const whatsappConfirmationEvidence = [
   "digest:sha256:ed8cb67e6733bdb1390121ebf62a85413499bf4ab04d27a0a7c0a4456f3e14df",
 ];
 
+const whatsappSafeEntryEvidence = [
+  "commit:5732b560c1b8fdd64cc6f33c8b26086320999181",
+  "ci:https://github.com/wesley956/PedeAqui/actions/runs/35572348505",
+  "browser:https://github.com/wesley956/PedeAqui/actions/runs/35572348490",
+  "workflow:https://github.com/wesley956/PedeAqui/actions/runs/35572348512",
+  "artifact:10626074737",
+  "digest:sha256:8926666ca8c7feb61e6d53701ce70dc008fb36bd2361bdf9157883ff27626292",
+];
+
 const scenarios: CertificationScenario[] = [
   { id: "A01", journey: "A", severity: "P0", requirement: "Customer can open the public menu", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "A02", journey: "A", severity: "P0", requirement: "Cart accepts a simple item plus canonical modifier", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
@@ -95,8 +104,8 @@ const scenarios: CertificationScenario[] = [
   { id: "A10", journey: "A", severity: "P0", requirement: "Delivery or pickup can reach completion with the same public projection", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "A11", journey: "A", severity: "P0", requirement: "Onde esta meu pedido returns the last public notification stage", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
 
-  { id: "B01", journey: "B", severity: "P0", requirement: "WhatsApp greeting starts a safe order conversation", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
-  { id: "B02", journey: "B", severity: "P0", requirement: "Store operational status is checked before selling", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
+  { id: "B01", journey: "B", severity: "P0", requirement: "WhatsApp greeting starts a safe order conversation", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappSafeEntryEvidence },
+  { id: "B02", journey: "B", severity: "P0", requirement: "Store operational status is checked before selling", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappSafeEntryEvidence },
   { id: "B03", journey: "B", severity: "P0", requirement: "WhatsApp uses canonical catalog data", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "B04", journey: "B", severity: "P0", requirement: "WhatsApp uses canonical modifiers and options", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "B05", journey: "B", severity: "P0", requirement: "WhatsApp cart and checkout use official services", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
@@ -184,9 +193,9 @@ describe("FLOW-10 executable E2E certification matrix", () => {
   });
 
   it("records only the evidence-backed PASS scenarios", () => {
-    const evidenceBackedPasses = ["A04", "A05", "A06", "B07", "B08", "C01", "C02", "D01", "D02", "D03", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
+    const evidenceBackedPasses = ["A04", "A05", "A06", "B01", "B02", "B07", "B08", "C01", "C02", "D01", "D02", "D03", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
     expect(scenarios.filter((scenario) => scenario.status === "PASS").map((scenario) => scenario.id)).toEqual(evidenceBackedPasses);
-    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(24);
+    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(22);
     expect(scenarios.filter((scenario) => scenario.status === "FAIL")).toEqual([]);
   });
 });
