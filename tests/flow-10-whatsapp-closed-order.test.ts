@@ -127,4 +127,26 @@ describe("FLOW-10 C02 closed-store WhatsApp safety", () => {
     expect(mocks.orderHandle).not.toHaveBeenCalled();
     expect(observe).toHaveBeenCalledWith({ intent: "order_start", tool: "whatsapp_order" });
   });
+
+  it("checks operational status before opening the order-items session", async () => {
+    mocks.loadOperationalStatus.mockResolvedValue({ canOrder: true });
+    const observe = vi.fn();
+
+    const handled = await WhatsAppDirectOrderOrchestrator.afterInbound({
+      conversation_id: "conversation-1",
+      message_id: "inbound-1",
+      message_created: true,
+    }, "request-1", observe);
+
+    expect(handled).toBe(true);
+    expect(mocks.loadOperationalStatus).toHaveBeenCalledTimes(1);
+    expect(mocks.orderHandle).not.toHaveBeenCalled();
+    const admin = mocks.createAdminClient.mock.results[0]?.value;
+    expect(admin.rpc).toHaveBeenCalledWith("automation_session_upsert_internal", expect.objectContaining({
+      p_conversation_id: "conversation-1",
+      p_step: "order_items",
+      p_last_input_message_id: "inbound-1",
+    }));
+    expect(observe).toHaveBeenCalledWith({ intent: "order_start", tool: "whatsapp_order" });
+  });
 });
