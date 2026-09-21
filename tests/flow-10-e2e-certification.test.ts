@@ -91,6 +91,15 @@ const whatsappSafeEntryEvidence = [
   "digest:sha256:8926666ca8c7feb61e6d53701ce70dc008fb36bd2361bdf9157883ff27626292",
 ];
 
+const whatsappCanonicalCatalogEvidence = [
+  "commit:a200fb6ca2a3509bc01ed440ffa817c65c0f5fdd",
+  "ci:https://github.com/wesley956/PedeAqui/actions/runs/35583718248",
+  "browser:https://github.com/wesley956/PedeAqui/actions/runs/35583718153",
+  "workflow:https://github.com/wesley956/PedeAqui/actions/runs/35583717979",
+  "artifact:10631926190",
+  "digest:sha256:fafe5e0b92fb5fc457a1e2a6d1688d7a6a7be4e679f2d59516d5b2fc5b11a139",
+];
+
 const scenarios: CertificationScenario[] = [
   { id: "A01", journey: "A", severity: "P0", requirement: "Customer can open the public menu", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "A02", journey: "A", severity: "P0", requirement: "Cart accepts a simple item plus canonical modifier", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
@@ -106,8 +115,8 @@ const scenarios: CertificationScenario[] = [
 
   { id: "B01", journey: "B", severity: "P0", requirement: "WhatsApp greeting starts a safe order conversation", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappSafeEntryEvidence },
   { id: "B02", journey: "B", severity: "P0", requirement: "Store operational status is checked before selling", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappSafeEntryEvidence },
-  { id: "B03", journey: "B", severity: "P0", requirement: "WhatsApp uses canonical catalog data", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
-  { id: "B04", journey: "B", severity: "P0", requirement: "WhatsApp uses canonical modifiers and options", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
+  { id: "B03", journey: "B", severity: "P0", requirement: "WhatsApp uses canonical catalog data", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappCanonicalCatalogEvidence },
+  { id: "B04", journey: "B", severity: "P0", requirement: "WhatsApp uses canonical modifiers and options", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappCanonicalCatalogEvidence },
   { id: "B05", journey: "B", severity: "P0", requirement: "WhatsApp cart and checkout use official services", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "B06", journey: "B", severity: "P0", requirement: "Payment and fulfillment are validated before final confirmation", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "B07", journey: "B", severity: "P0", requirement: "Order creation requires explicit SIM confirmation", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappConfirmationEvidence },
@@ -193,9 +202,9 @@ describe("FLOW-10 executable E2E certification matrix", () => {
   });
 
   it("records only the evidence-backed PASS scenarios", () => {
-    const evidenceBackedPasses = ["A04", "A05", "A06", "B01", "B02", "B07", "B08", "C01", "C02", "D01", "D02", "D03", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
+    const evidenceBackedPasses = ["A04", "A05", "A06", "B01", "B02", "B03", "B04", "B07", "B08", "C01", "C02", "D01", "D02", "D03", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
     expect(scenarios.filter((scenario) => scenario.status === "PASS").map((scenario) => scenario.id)).toEqual(evidenceBackedPasses);
-    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(22);
+    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(20);
     expect(scenarios.filter((scenario) => scenario.status === "FAIL")).toEqual([]);
   });
 });
