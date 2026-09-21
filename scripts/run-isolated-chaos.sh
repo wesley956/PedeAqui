@@ -59,7 +59,7 @@ done < <(find supabase/sql -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC
 # into the append-only baseline. Replay that exact migration in this disposable DB
 # so the WhatsApp concurrency proof exercises the production RPC signature.
 psql "${local_db_url}" -X -v ON_ERROR_STOP=1 \
-  -f supabase/migrations/20260915155500_int11_order_creation_channel.sql >/dev/null
+  -f "${parked_migrations}/20260915155500_int11_order_creation_channel.sql" >/dev/null
 
 # Prove that the disposable database survives a controlled infrastructure restart.
 supabase stop
