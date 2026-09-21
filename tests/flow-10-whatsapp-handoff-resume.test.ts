@@ -110,7 +110,7 @@ describe("FLOW-10 B10/D12 human handoff and safe resume", () => {
     const admin = mocks.createAdminClient.mock.results[0]?.value;
     const calls = admin.rpc.mock.calls as Array<[string, Record<string, unknown>]>;
     const saveIndex = calls.findIndex(([name]) => name === "automation_session_upsert_internal");
-    const transitionIndex = calls.findIndex(([name]) => name === "conversation_transition_internal");
+    const transitionIndex = calls.findIndex(([name]) => name === "conversation_request_human_attention_internal");
     expect(saveIndex).toBeGreaterThan(-1);
     expect(transitionIndex).toBeGreaterThan(saveIndex);
     expect(calls[saveIndex]?.[1]).toMatchObject({
@@ -123,7 +123,7 @@ describe("FLOW-10 B10/D12 human handoff and safe resume", () => {
     expect(expiresAt).toBeGreaterThan(Date.now() + 11 * 60 * 60 * 1000);
     expect(calls[transitionIndex]?.[1]).toMatchObject({
       p_conversation_id: "conversation-technical",
-      p_target_state: "waiting_agent",
+      p_reason_code: "explicit_handoff",
       p_source: "bot",
     });
     expect(mocks.sendText).toHaveBeenCalledWith(expect.objectContaining({

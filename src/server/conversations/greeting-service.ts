@@ -419,12 +419,10 @@ export class ConversationGreetingService {
 
     if (intent === "handoff" || intent === "benefit_handoff") {
       await sendBotText(botContext, settings.handoff_message, responseKey);
-      await admin.rpc("conversation_transition_internal", {
+      await admin.rpc("conversation_request_human_attention_internal", {
         p_conversation_id: conversation.id,
-        p_target_state: "waiting_agent",
-        p_assigned_user_id: null,
+        p_reason_code: intent === "benefit_handoff" ? "benefit_handoff" : "explicit_handoff",
         p_reason: intent === "benefit_handoff" ? "Cliente contestou saldo ou benefício no WhatsApp" : "Cliente solicitou atendimento humano pelo menu do WhatsApp",
-        p_actor_user_id: null,
         p_source: "bot",
       });
       await recordGrowthOperationalEvent({
