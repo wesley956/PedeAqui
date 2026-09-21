@@ -10,6 +10,7 @@ declare
   v_store_id uuid;
   v_cart_id uuid;
   v_order_id uuid;
+  v_notification_id uuid;
   v_count integer;
 begin
   select organization_id,id into v_organization_id,v_store_id
@@ -58,6 +59,20 @@ begin
   if (select status from public.carts where id=v_cart_id) <> 'converted' then
     raise exception 'source cart was not converted';
   end if;
+
+  -- Do not leave this proof's authoritative order notification pending between
+  -- chaos passes, otherwise the global D05 worker can legitimately claim it.
+  select id into v_notification_id
+    from public.order_notification_claim_for_order_internal(
+      v_order_id,'flow10-close-message-cleanup',1
+    )
+   limit 1;
+  if v_notification_id is null then
+    raise exception 'expected one claimable order notification for the canonical order';
+  end if;
+  perform public.order_notification_finish_internal(
+    v_notification_id,'flow10-close-message-cleanup','sent',null,null,null,null
+  );
 end $$;
 
 select 'FLOW10_CLOSE_MESSAGE_ORDER_RESULT=passed';
