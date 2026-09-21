@@ -109,6 +109,15 @@ const whatsappOfficialCheckoutEvidence = [
   "digest:sha256:f460953bbf490b63a43f9bebac03ca7dd5f645182bdb6adc32f8f4b8f3630cc7",
 ];
 
+const whatsappResilienceBatchEvidence = [
+  "commit:37cdb0bcaeabc4a1f70c2568d4d0241c55f05b37",
+  "ci:https://github.com/wesley956/PedeAqui/actions/runs/35608283133",
+  "browser:https://github.com/wesley956/PedeAqui/actions/runs/35608283135",
+  "workflow:https://github.com/wesley956/PedeAqui/actions/runs/35608283164",
+  "artifact:10642038099",
+  "digest:sha256:8b8bfe7f932866a8ea8b77ac780048be14a03a6bd96e81c5165bc10efc96e50a",
+];
+
 const scenarios: CertificationScenario[] = [
   { id: "A01", journey: "A", severity: "P0", requirement: "Customer can open the public menu", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "A02", journey: "A", severity: "P0", requirement: "Cart accepts a simple item plus canonical modifier", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
@@ -130,8 +139,8 @@ const scenarios: CertificationScenario[] = [
   { id: "B06", journey: "B", severity: "P0", requirement: "Payment and fulfillment are validated before final confirmation", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappOfficialCheckoutEvidence },
   { id: "B07", journey: "B", severity: "P0", requirement: "Order creation requires explicit SIM confirmation", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappConfirmationEvidence },
   { id: "B08", journey: "B", severity: "P0", requirement: "WhatsApp checkout creates exactly one order", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: whatsappConfirmationEvidence },
-  { id: "B09", journey: "B", severity: "P0", requirement: "WhatsApp notifications and tracking share order identity and public projection", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
-  { id: "B10", journey: "B", severity: "P0", requirement: "Human handoff preserves conversation and checkout context", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
+  { id: "B09", journey: "B", severity: "P0", requirement: "WhatsApp notifications and tracking share order identity and public projection", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: whatsappResilienceBatchEvidence },
+  { id: "B10", journey: "B", severity: "P0", requirement: "Human handoff preserves conversation and checkout context", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappResilienceBatchEvidence },
 
   { id: "C01", journey: "C", severity: "P0", requirement: "Outside hours greeting reports closed store and next opening when available", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: closedStoreEvidence },
   { id: "C02", journey: "C", severity: "P0", requirement: "Quero pedir outside hours does not create an immediate order", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: closedOrderSafetyEvidence },
@@ -145,10 +154,10 @@ const scenarios: CertificationScenario[] = [
   { id: "D06", journey: "D", severity: "P0", requirement: "Checkout refresh preserves safe idempotent outcome", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "D07", journey: "D", severity: "P0", requirement: "Unstable internet does not create duplicate order or corrupt public state", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "D08", journey: "D", severity: "P0", requirement: "Unavailable Meta template outside session window has diagnosable safe failure", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
-  { id: "D09", journey: "D", severity: "P0", requirement: "Item paused during flow fails safely without stale sale", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
+  { id: "D09", journey: "D", severity: "P0", requirement: "Item paused during flow fails safely without stale sale", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappResilienceBatchEvidence },
   { id: "D10", journey: "D", severity: "P0", requirement: "Imperfect customer link can use a safe immutable order snapshot", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
-  { id: "D11", journey: "D", severity: "P0", requirement: "Another phone or tenant cannot access the order", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
-  { id: "D12", journey: "D", severity: "P0", requirement: "Human handoff during WhatsApp checkout preserves safe resumable context", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
+  { id: "D11", journey: "D", severity: "P0", requirement: "Another phone or tenant cannot access the order", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappResilienceBatchEvidence },
+  { id: "D12", journey: "D", severity: "P0", requirement: "Human handoff during WhatsApp checkout preserves safe resumable context", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappResilienceBatchEvidence },
 
   { id: "M320", journey: "DEVICE", severity: "P0", requirement: "Mobile viewport 320x568", executionMode: "browser-homologation", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: browserRunEvidence },
   { id: "M360", journey: "DEVICE", severity: "P0", requirement: "Mobile viewport 360x640", executionMode: "browser-homologation", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: browserRunEvidence },
@@ -211,9 +220,9 @@ describe("FLOW-10 executable E2E certification matrix", () => {
   });
 
   it("records only the evidence-backed PASS scenarios", () => {
-    const evidenceBackedPasses = ["A04", "A05", "A06", "B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "C01", "C02", "D01", "D02", "D03", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
+    const evidenceBackedPasses = ["A04", "A05", "A06", "B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "C01", "C02", "D01", "D02", "D03", "D04", "D05", "D09", "D11", "D12", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
     expect(scenarios.filter((scenario) => scenario.status === "PASS").map((scenario) => scenario.id)).toEqual(evidenceBackedPasses);
-    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(18);
+    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(13);
     expect(scenarios.filter((scenario) => scenario.status === "FAIL")).toEqual([]);
   });
 });
