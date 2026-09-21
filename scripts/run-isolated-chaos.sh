@@ -85,6 +85,7 @@ readonly scenarios=(
   "supabase/tests/e2e_ifood_order_intake_runtime.sql"
   "supabase/tests/e2e_growth_observability.sql"
   "supabase/tests/e2e_conversation_bot_resume.sql"
+  "supabase/tests/e2e_flow10_checkout_snapshot.sql"
 )
 
 for pass in 1 2 3; do
