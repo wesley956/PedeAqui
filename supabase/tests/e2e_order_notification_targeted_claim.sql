@@ -26,6 +26,7 @@ declare
   v_count integer;
   v_target_notification_id uuid;
   v_attempts integer;
+  v_job record;
 begin
   -- 26 pedidos anteriores + 1 pedido alvo. Cada checkout emite order.created e o
   -- trigger autoritativo cria order_received na fila.
@@ -83,7 +84,7 @@ begin
    where organization_id='f3000000-0000-4000-8000-000000000001'
      and order_id<>v_target_order_id;
   update public.order_whatsapp_notifications
-     set available_at=clock_timestamp(),
+     set available_at=now()-interval '1 second',
          created_at=clock_timestamp()
    where organization_id='f3000000-0000-4000-8000-000000000001'
      and order_id=v_target_order_id;
@@ -154,6 +155,45 @@ begin
    where order_id=v_target_order_id and notification_type='order_received';
   if v_count <> 1 then
     raise exception 'idempotency violated: expected one target notification, got %',v_count;
+  end if;
+
+  -- Finaliza o alvo após o retry e drena os 25 claims iniciais.
+  perform public.order_notification_finish_internal(
+    v_target_notification_id,'flow02-target-worker-b','sent',null,null,null,null
+  );
+  for v_job in
+    select id
+      from public.order_whatsapp_notifications
+     where organization_id='f3000000-0000-4000-8000-000000000001'
+       and locked_by='flow02-generic-worker'
+  loop
+    perform public.order_notification_finish_internal(
+      v_job.id,'flow02-generic-worker','sent',null,null,null,null
+    );
+  end loop;
+
+  -- O 27º job, que ficou fora do primeiro lote de 25, também deve ser reclamado
+  -- e finalizado sem perda nem criação de uma segunda linha.
+  for v_job in
+    select id from public.order_notification_claim_internal('flow02-drain-worker',25)
+  loop
+    perform public.order_notification_finish_internal(
+      v_job.id,'flow02-drain-worker','sent',null,null,null,null
+    );
+  end loop;
+
+  select count(*) into v_count
+    from public.order_whatsapp_notifications
+   where organization_id='f3000000-0000-4000-8000-000000000001'
+     and status='sent';
+  if v_count <> 27 then
+    raise exception 'backlog drain expected 27 sent jobs, got %',v_count;
+  end if;
+  select count(*) into v_count
+    from public.order_whatsapp_notifications
+   where organization_id='f3000000-0000-4000-8000-000000000001';
+  if v_count <> 27 then
+    raise exception 'backlog drain changed job cardinality, got % rows',v_count;
   end if;
 end $$;
 

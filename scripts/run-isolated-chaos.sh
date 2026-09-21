@@ -55,8 +55,11 @@ while IFS= read -r schema_name; do
   psql "${local_db_url}" -X -v ON_ERROR_STOP=1 -f "${schema_file}" >/dev/null
 done < <(find supabase/sql -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC_ALL=C sort -t_ -k1,1n -k2,2)
 
-# OMNI/iFood migrations promoted to production are now part of the canonical
-# append-only supabase/sql baseline. No dated migration is replayed here.
+# The checkout-channel delta is already in production but has not yet been folded
+# into the append-only baseline. Replay that exact migration in this disposable DB
+# so the WhatsApp concurrency proof exercises the production RPC signature.
+psql "${local_db_url}" -X -v ON_ERROR_STOP=1 \
+  -f "${parked_migrations}/20260915155500_int11_order_creation_channel.sql" >/dev/null
 
 # Prove that the disposable database survives a controlled infrastructure restart.
 supabase stop
@@ -65,6 +68,7 @@ psql "${local_db_url}" -X -v ON_ERROR_STOP=1 -c "select 1" >/dev/null
 
 readonly scenarios=(
   "supabase/tests/e2e_menu_to_kitchen.sql"
+  "supabase/tests/e2e_order_notification_targeted_claim.sql"
   "supabase/tests/e2e_cash_register.sql"
   "supabase/tests/e2e_pdv_to_kitchen.sql"
   "supabase/tests/quality_rls_isolation.sql"
@@ -81,6 +85,7 @@ readonly scenarios=(
   "supabase/tests/e2e_ifood_order_intake_runtime.sql"
   "supabase/tests/e2e_growth_observability.sql"
   "supabase/tests/e2e_conversation_bot_resume.sql"
+  "supabase/tests/e2e_flow10_checkout_snapshot.sql"
 )
 
 for pass in 1 2 3; do
@@ -89,6 +94,10 @@ for pass in 1 2 3; do
     echo "ISOLATED_SCENARIO=${scenario}"
     psql "${local_db_url}" -X -v ON_ERROR_STOP=1 -f "${scenario}"
   done
+  echo "ISOLATED_SCENARIO=flow10-concurrent-order-notification-claim"
+  bash scripts/run-flow10-concurrent-claim.sh "${local_db_url}" "${pass}"
+  echo "ISOLATED_SCENARIO=flow10-concurrent-whatsapp-order-confirmation"
+  bash scripts/run-flow10-concurrent-order-confirmation.sh "${local_db_url}" "${pass}"
 done
 
 echo "ISOLATED_CHAOS_RESULT=passed"
