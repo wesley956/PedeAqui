@@ -55,6 +55,15 @@ const closedStoreEvidence = [
   "deployment:dpl_9aB1e1crfmDinM3RqenztVP5Lpnh",
 ];
 
+const providerRetryEvidence = [
+  "issue:https://github.com/wesley956/PedeAqui/issues/1141#issuecomment-5754620683",
+  "pr:https://github.com/wesley956/PedeAqui/pull/1154",
+  "commit:07abe35a3b79220f049f5962d4c5f9e03d557b25",
+  "ci:https://github.com/wesley956/PedeAqui/actions/runs/35553854093",
+  "browser:https://github.com/wesley956/PedeAqui/actions/runs/35553854095",
+  "deployment:dpl_2RT1Uxh4zQb5ZR9ieajwhtztEViK",
+];
+
 const scenarios: CertificationScenario[] = [
   { id: "A01", journey: "A", severity: "P0", requirement: "Customer can open the public menu", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "A02", journey: "A", severity: "P0", requirement: "Cart accepts a simple item plus canonical modifier", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
@@ -85,7 +94,7 @@ const scenarios: CertificationScenario[] = [
 
   { id: "D01", journey: "D", severity: "P0", requirement: "Double click or double submit does not duplicate the order", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
   { id: "D02", journey: "D", severity: "P0", requirement: "Two close WhatsApp messages do not duplicate order or state transition", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
-  { id: "D03", journey: "D", severity: "P0", requirement: "Provider retry does not duplicate customer notification", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
+  { id: "D03", journey: "D", severity: "P0", requirement: "Provider retry does not duplicate customer notification", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: providerRetryEvidence },
   { id: "D04", journey: "D", severity: "P0", requirement: "Notification backlog above 25 jobs drains without loss or duplication", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
   { id: "D05", journey: "D", severity: "P0", requirement: "Concurrent workers claim jobs safely and exactly once", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
   { id: "D06", journey: "D", severity: "P0", requirement: "Checkout refresh preserves safe idempotent outcome", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
@@ -157,9 +166,9 @@ describe("FLOW-10 executable E2E certification matrix", () => {
   });
 
   it("records only the evidence-backed PASS scenarios", () => {
-    const evidenceBackedPasses = ["A04", "A05", "A06", "C01", "D01", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
+    const evidenceBackedPasses = ["A04", "A05", "A06", "C01", "D01", "D03", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
     expect(scenarios.filter((scenario) => scenario.status === "PASS").map((scenario) => scenario.id)).toEqual(evidenceBackedPasses);
-    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(29);
+    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(28);
     expect(scenarios.filter((scenario) => scenario.status === "FAIL")).toEqual([]);
   });
 });

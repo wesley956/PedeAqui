@@ -6,7 +6,7 @@
 - Baseline auditado: `2d7d8ae173e3e636c8bae93d896bc7050d57fc75`
 - Decisão atual: **NO-GO**
 - Progresso do projeto: **9/10**
-- Cenários P0: **15 PASS / 29 NOT PROVEN / 0 FAIL**
+- Cenários P0: **16 PASS / 28 NOT PROVEN / 0 FAIL**
 
 ## Objetivo
 
@@ -92,7 +92,7 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 |---|---|---|---|---|
 | D01 | sim | Duplo clique/submit não duplica pedido | DB descartável/rollback | PASS |
 | D02 | sim | Duas mensagens WhatsApp próximas não duplicam pedido/transição | DB descartável/rollback | NOT PROVEN |
-| D03 | sim | Retry do provider não duplica mensagem ao cliente | DB descartável/rollback | NOT PROVEN |
+| D03 | sim | Retry do provider não duplica mensagem ao cliente | DB descartável/rollback | PASS |
 | D04 | sim | Backlog >25 notification jobs drena sem perda/duplicidade | DB descartável/rollback | PASS |
 | D05 | sim | Workers concorrentes fazem claim exatamente uma vez | DB descartável/rollback | PASS |
 | D06 | sim | Refresh do checkout mantém resultado idempotente | E2E controlado | NOT PROVEN |
@@ -164,7 +164,18 @@ Browser target: Chromium e WebKit onde previsto pelo workflow oficial.
 - D05: duas sessões PostgreSQL simultâneas mantiveram locks concorrentes; cada worker reclamou 10 jobs, totalizando 20 IDs únicos com `attempts=1`, nos três passes.
 - Dados: UUIDs reservados e destinatário `.invalid`; nenhum cliente real ou provider foi usado.
 - Veredito: **PASS** para A05, A06, D01, D04 e D05.
-- Limite da prova: D03 permanece `NOT PROVEN`, pois esta execução não enviou ao provider.
+- Limite da prova: esta execução SQL não enviou ao provider; a prova controlada e o deploy de D03 estão registrados separadamente abaixo.
+
+### D03 — PASS
+
+- Auditoria produtiva somente leitura da Dona Maria: WhatsApp ativo via Meta Cloud, 524 notificações de pedido e 906 mensagens outbound.
+- Duplicidades observadas: 0 grupos por `order_id + notification_type`, 0 por `client_message_id` e 0 por `external_message_id`.
+- Teste controlado, sem envio Meta real: timeout de rede → erro 408 recuperável → retry com a mesma identidade lógica → uma única aceitação do provider simulado.
+- Correção isolada: PR <https://github.com/wesley956/PedeAqui/pull/1154>, head `12dc6e0a1a63dbc35b71cc928a4ef05e337e8735`, merge `07abe35a3b79220f049f5962d4c5f9e03d557b25`.
+- Gates: CI <https://github.com/wesley956/PedeAqui/actions/runs/35553854093> e Browser Homologation <https://github.com/wesley956/PedeAqui/actions/runs/35553854095>, ambos `success`.
+- Produção: deployment Vercel `dpl_2RT1Uxh4zQb5ZR9ieajwhtztEViK` em `READY`; `/api/health` HTTP 200 com `status=ok`; 0 runtime errors e 0 respostas 5xx após o deploy.
+- Evidência canônica: <https://github.com/wesley956/PedeAqui/issues/1141#issuecomment-5754620683>
+- Veredito: **PASS** — timeout de transporte agora entra no retry durável e a prova controlada registrou uma única aceitação.
 
 ## Gates técnicos
 
