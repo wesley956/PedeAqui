@@ -19,9 +19,16 @@ function query(table: string) {
     ilike: (column: string, value: unknown) => { filters.push([column, value]); return builder; },
     eq: (column: string, value: unknown) => { filters.push([column, value]); return builder; },
     maybeSingle: async () => {
-      if (table === "stores") return { data: { id: ids.store, organization_id: ids.organization }, error: null };
+      if (table === "stores") return { data: { id: ids.store, organization_id: ids.organization, name: "Loja Técnica FLOW-10", slug: "flow10-public-store", business_type: "restaurant", timezone: "UTC" }, error: null };
       if (table === "carts") return { data: { id: ids.cart }, error: null };
-      if (table === "orders") return { data: state.committed ? { id: ids.order, display_number: 906 } : null, error: null };
+      if (table === "orders") return { data: state.committed ? {
+        id: ids.order, display_number: 906, channel: "digital_menu", fulfillment_type: "delivery",
+        order_status: "confirmed", payment_status: "pending", production_status: "preparing",
+        fulfillment_status: "pending", total_cents: 2800, scheduled_for: null,
+        delivery_estimated_min_minutes: 30, delivery_estimated_max_minutes: 45,
+        confirmed_at: "2026-09-21T12:00:00.000Z", completed_at: null, canceled_at: null,
+        created_at: "2026-09-21T11:59:00.000Z", updated_at: "2026-09-21T12:01:00.000Z",
+      } : null, error: null };
       return { data: null, error: null };
     },
   };
@@ -38,6 +45,7 @@ vi.mock("@/server/checkout/checkout-service", async (importOriginal) => {
 });
 
 import { OrderService } from "@/server/orders/order-service";
+import { PublicOrderService } from "@/server/orders/public-order-service";
 
 describe("FLOW-10 D06/D07 checkout refresh and unstable network", () => {
   beforeEach(() => {
@@ -69,8 +77,10 @@ describe("FLOW-10 D06/D07 checkout refresh and unstable network", () => {
       .rejects.toThrow("simulated response loss after commit");
 
     const retried = await OrderService.createFromCheckout("flow10-public-store", "unstable-cart-token");
+    const publicTracking = await PublicOrderService.getTracking("flow10-public-store", ids.order, retried.accessToken);
 
     expect(retried).toMatchObject({ order_id: ids.order, display_number: 906, created: false });
+    expect(publicTracking?.order).toMatchObject({ id: ids.order, display_number: 906, order_status: "confirmed", production_status: "preparing" });
     expect(mocks.rpc).toHaveBeenCalledTimes(1);
     expect(mocks.review).toHaveBeenCalledTimes(1);
   });

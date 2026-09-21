@@ -122,5 +122,6 @@ describe("FLOW-10 D08/D10 notification safety", () => {
       p_customer_id: "77000000-0000-4000-8000-000000000006",
     }));
     expect(mocks.sendText).toHaveBeenCalledWith(expect.objectContaining({ recipient: "5511988880000" }));
+    expect(mocks.sendText.mock.calls[0]?.[0]?.body).toContain(`/m/flow10-public-store/pedido/${ids.order}/acesso`);
   });
 });
