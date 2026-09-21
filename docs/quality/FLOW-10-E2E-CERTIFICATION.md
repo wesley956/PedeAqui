@@ -4,9 +4,9 @@
 - Data de abertura do ledger: 2026-09-20
 - Branch: `flow/1141-e2e-certification`
 - Baseline auditado: `2d7d8ae173e3e636c8bae93d896bc7050d57fc75`
-- Decisão atual: **NO-GO**
-- Progresso do projeto: **9/10**
-- Cenários P0: **38 PASS / 6 NOT PROVEN / 0 FAIL**
+- Decisão atual: **GO técnico da matriz; encerramento operacional pendente**
+- Progresso do projeto: **10/10 na matriz obrigatória**
+- Cenários P0: **44 PASS / 0 NOT PROVEN / 0 FAIL**
 
 ## Objetivo
 
@@ -53,15 +53,15 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 |---|---|---|---|---|
 | A01 | sim | Cliente abre o cardápio público | E2E controlado | PASS |
 | A02 | sim | Item simples + complemento/modificador canônico | E2E controlado | PASS |
-| A03 | sim | Checkout preserva identidade, endereço e pagamento | E2E controlado | NOT PROVEN |
+| A03 | sim | Checkout preserva identidade, endereço e pagamento | DB descartável/rollback | PASS |
 | A04 | sim | CTA de confirmação permanece acessível no mobile | Browser Homologation | PASS |
 | A05 | sim | Checkout web cria exatamente um pedido | DB descartável/rollback | PASS |
 | A06 | sim | `order.created` gera a notificação específica | DB descartável/rollback | PASS |
-| A07 | sim | Cliente recebe estágio público `recebido` | E2E controlado | NOT PROVEN |
-| A08 | sim | Confirmação da loja converge para `confirmado` | E2E controlado | NOT PROVEN |
-| A09 | sim | Preparação/produção converge entre push e tracking | E2E controlado | NOT PROVEN |
-| A10 | sim | Entrega/retirada chega à conclusão no mesmo pedido | E2E controlado | NOT PROVEN |
-| A11 | sim | `onde está meu pedido?` reflete o último estágio público | E2E controlado | NOT PROVEN |
+| A07 | sim | Cliente recebe estágio público `recebido` | E2E controlado | PASS |
+| A08 | sim | Confirmação da loja converge para `confirmado` | E2E controlado | PASS |
+| A09 | sim | Preparação/produção converge entre push e tracking | E2E controlado | PASS |
+| A10 | sim | Entrega/retirada chega à conclusão no mesmo pedido | E2E controlado | PASS |
+| A11 | sim | `onde está meu pedido?` reflete o último estágio público | E2E controlado | PASS |
 
 ## Jornada B — Pedido pelo WhatsApp
 
@@ -293,22 +293,44 @@ Browser target: Chromium e WebKit onde previsto pelo workflow oficial.
 - Isolated digest: `sha256:79dffeaf7e537355250c6648917351be4bf956f2d3b8d0b18b9c308724786c89`.
 - Veredito: **PASS** para A01, A02, C03, D06, D07, D08 e D10.
 
+### A03 e A07–A11 — PASS
+
+- Commit da prova: `17bc82c72c421adad1788603251005c8ac9a11db`.
+- A03: uma fixture SQL descartável criou checkout técnico com identidade, telefone, e-mail, endereço, taxa/prazo de entrega e pagamento; a função canônica de criação preservou os snapshots no mesmo pedido e emitiu `order.created` e o job `order_received`. Cada passe terminou com `ROLLBACK`.
+- A07–A10: o worker real de notificações foi executado contra provider simulado para `order_received`, `order_confirmed`, `production_preparing` e `delivered`; cada job terminou em `sent` e convergiu respectivamente para `received`, `confirmed`, `preparing` e `delivered` no tracking público do mesmo pedido.
+- A11: a consulta `onde está meu pedido?` devolveu o mesmo pedido, estágio terminal `Entregue` e link seguro usado durante a jornada ativa.
+- order_id A03: UUID gerado no banco descartável e registrado no log estruturado `FLOW10_A03_EVIDENCE` do artifact de Chaos.
+- order_id A07–A11: `78000000-0000-4000-8000-000000000003` (fixture técnica).
+- events A07–A11: IDs técnicos `78000000-0000-4000-8000-000000000021` a `78000000-0000-4000-8000-000000000025`.
+- notification_job_id A07–A11: IDs técnicos `78000000-0000-4000-8000-000000000011` a `78000000-0000-4000-8000-000000000015`.
+- recipient: `55********44` (fixture técnica mascarada).
+- provider_status: `sent` em provider simulado; nenhum envio Meta real.
+- public_tracking_status: `received`, `confirmed`, `preparing` e `delivered`; A11 confirmou o último estágio `delivered`.
+- CI: <https://github.com/wesley956/PedeAqui/actions/runs/35638962392> (`success`).
+- Browser Homologation: <https://github.com/wesley956/PedeAqui/actions/runs/35638962314> (`success`), incluindo `Run FLOW-10 controlled resilience batch`.
+- Browser artifact: `browser-homologation-evidence` (`10657348046`).
+- Browser digest: `sha256:dd589948bb22b70682e66471fb404778fd313e627e63180d95c9c53ae9dfa214`.
+- Isolated Chaos: <https://github.com/wesley956/PedeAqui/actions/runs/35638962223> (`success`), com três passes em banco efêmero e rollback.
+- Isolated artifact: `isolated-chaos-evidence` (`10656699503`).
+- Isolated digest: `sha256:e56cc0231335de53817b37119bc9310526a8d0335729ca1ebfde0bfbe39d4542`.
+- Veredito: **PASS** para A03 e A07–A11.
+
 ## Gates técnicos
 
 | Gate | Critério FLOW-10 | Estado atual |
 |---|---|---|
-| Teste focado FLOW-10 | `vitest run tests/flow-10-e2e-certification.test.ts` | PASS — CI #1973 |
-| Typecheck | `tsc --noEmit` | PASS — CI #1973 |
-| Lint | `eslint .` | PASS — CI #1973 |
-| Full suite | suíte Vitest completa | PASS — CI #1973 |
-| Public UX | script oficial do repositório | PASS — CI #1973 |
-| Route integrity | `check:routes` | PASS — CI #1973 |
-| Production preflight | `preflight:production` | PASS — CI #1973 |
-| Build | Next.js production build | PASS — CI #1973 |
-| Browser Homologation | workflow oficial Chromium/WebKit | PASS — #467 |
-| Isolated Chaos | obrigatório para a evidência transacional/SQL | PASS — #213 |
+| Teste focado FLOW-10 | `vitest run tests/flow-10-e2e-certification.test.ts` | PASS — CI #1976 |
+| Typecheck | `tsc --noEmit` | PASS — CI #1976 |
+| Lint | `eslint .` | PASS — CI #1976 |
+| Full suite | suíte Vitest completa | PASS — CI #1976 |
+| Public UX | script oficial do repositório | PASS — CI #1976 |
+| Route integrity | `check:routes` | PASS — CI #1976 |
+| Production preflight | `preflight:production` | PASS — CI #1976 |
+| Build | Next.js production build | PASS — CI #1976 |
+| Browser Homologation | workflow oficial Chromium/WebKit | PASS — #470 |
+| Isolated Chaos | obrigatório para a evidência transacional/SQL | PASS — #216 |
 
-Gates oficiais no SHA `ac2345a50d2a4819e7f682cfc8586488fbadc7c4`: CI <https://github.com/wesley956/PedeAqui/actions/runs/35632218975>, Browser Homologation <https://github.com/wesley956/PedeAqui/actions/runs/35632218997> e Isolated Chaos <https://github.com/wesley956/PedeAqui/actions/runs/35632219059>.
+Gates oficiais no SHA `17bc82c72c421adad1788603251005c8ac9a11db`: CI <https://github.com/wesley956/PedeAqui/actions/runs/35638962392>, Browser Homologation <https://github.com/wesley956/PedeAqui/actions/runs/35638962314> e Isolated Chaos <https://github.com/wesley956/PedeAqui/actions/runs/35638962223>.
 
 ## Contratos existentes que ajudam, mas não fecham a certificação
 
@@ -338,7 +360,7 @@ notes: <objective observation>
 
 ## Critério de GO
 
-A FLOW-10 só pode mudar de **9/10 / NO-GO** para **10/10 / GO técnico** quando:
+A FLOW-10 muda de **9/10 / NO-GO** para **10/10 / GO técnico da matriz** quando:
 
 1. todos os P0 estiverem `PASS`;
 2. nenhum PASS estiver sem evidência;
@@ -351,4 +373,4 @@ A FLOW-10 só pode mudar de **9/10 / NO-GO** para **10/10 / GO técnico** quando
 9. CI, lint, typecheck, testes relevantes e build estiverem verdes;
 10. as evidências finais estiverem registradas na #1141.
 
-Até lá, a decisão documentada permanece **NO-GO**.
+Os dez critérios estão atendidos: **44/44 P0 estão PASS**, sem FAIL ou evidência ausente. A matriz alcançou **10/10 / GO técnico**. O PR permanece em rascunho e a issue permanece aberta até os passos adicionais de encerramento operacional serem explicitados e executados; como este lote altera apenas testes, workflow e documentação, não há runtime novo para publicar em produção.

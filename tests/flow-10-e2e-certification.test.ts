@@ -127,18 +127,29 @@ const publicResilienceBatchEvidence = [
   "digest:sha256:15b5a0793da4884ab7d06ff4efd68f5fac614ac9816b4d0ba4eb7d900b64c2e2",
 ];
 
+const finalCheckoutLifecycleEvidence = [
+  "commit:17bc82c72c421adad1788603251005c8ac9a11db",
+  "ci:https://github.com/wesley956/PedeAqui/actions/runs/35638962392",
+  "browser:https://github.com/wesley956/PedeAqui/actions/runs/35638962314",
+  "browser-artifact:10657348046",
+  "browser-digest:sha256:dd589948bb22b70682e66471fb404778fd313e627e63180d95c9c53ae9dfa214",
+  "workflow:https://github.com/wesley956/PedeAqui/actions/runs/35638962223",
+  "artifact:10656699503",
+  "digest:sha256:e56cc0231335de53817b37119bc9310526a8d0335729ca1ebfde0bfbe39d4542",
+];
+
 const scenarios: CertificationScenario[] = [
   { id: "A01", journey: "A", severity: "P0", requirement: "Customer can open the public menu", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: publicResilienceBatchEvidence },
   { id: "A02", journey: "A", severity: "P0", requirement: "Cart accepts a simple item plus canonical modifier", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: publicResilienceBatchEvidence },
-  { id: "A03", journey: "A", severity: "P0", requirement: "Checkout preserves identity, address and payment through confirmation", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
+  { id: "A03", journey: "A", severity: "P0", requirement: "Checkout preserves identity, address and payment through confirmation", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: finalCheckoutLifecycleEvidence },
   { id: "A04", journey: "A", severity: "P0", requirement: "Checkout confirmation CTA remains reachable on supported mobile viewports", executionMode: "browser-homologation", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: browserRunEvidence },
   { id: "A05", journey: "A", severity: "P0", requirement: "Web checkout creates exactly one order", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
   { id: "A06", journey: "A", severity: "P0", requirement: "order.created produces the specific notification job", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
-  { id: "A07", journey: "A", severity: "P0", requirement: "Customer notification reaches public stage recebido", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
-  { id: "A08", journey: "A", severity: "P0", requirement: "Store confirmation converges to customer stage confirmado", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
-  { id: "A09", journey: "A", severity: "P0", requirement: "Preparing/production update converges across notification and tracking", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
-  { id: "A10", journey: "A", severity: "P0", requirement: "Delivery or pickup can reach completion with the same public projection", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
-  { id: "A11", journey: "A", severity: "P0", requirement: "Onde esta meu pedido returns the last public notification stage", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
+  { id: "A07", journey: "A", severity: "P0", requirement: "Customer notification reaches public stage recebido", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: finalCheckoutLifecycleEvidence },
+  { id: "A08", journey: "A", severity: "P0", requirement: "Store confirmation converges to customer stage confirmado", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: finalCheckoutLifecycleEvidence },
+  { id: "A09", journey: "A", severity: "P0", requirement: "Preparing/production update converges across notification and tracking", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: finalCheckoutLifecycleEvidence },
+  { id: "A10", journey: "A", severity: "P0", requirement: "Delivery or pickup can reach completion with the same public projection", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: finalCheckoutLifecycleEvidence },
+  { id: "A11", journey: "A", severity: "P0", requirement: "Onde esta meu pedido returns the last public notification stage", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: finalCheckoutLifecycleEvidence },
 
   { id: "B01", journey: "B", severity: "P0", requirement: "WhatsApp greeting starts a safe order conversation", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappSafeEntryEvidence },
   { id: "B02", journey: "B", severity: "P0", requirement: "Store operational status is checked before selling", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappSafeEntryEvidence },
@@ -229,9 +240,9 @@ describe("FLOW-10 executable E2E certification matrix", () => {
   });
 
   it("records only the evidence-backed PASS scenarios", () => {
-    const evidenceBackedPasses = ["A01", "A02", "A04", "A05", "A06", "B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "C01", "C02", "C03", "D01", "D02", "D03", "D04", "D05", "D06", "D07", "D08", "D09", "D10", "D11", "D12", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
+    const evidenceBackedPasses = ["A01", "A02", "A03", "A04", "A05", "A06", "A07", "A08", "A09", "A10", "A11", "B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "C01", "C02", "C03", "D01", "D02", "D03", "D04", "D05", "D06", "D07", "D08", "D09", "D10", "D11", "D12", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
     expect(scenarios.filter((scenario) => scenario.status === "PASS").map((scenario) => scenario.id)).toEqual(evidenceBackedPasses);
-    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(6);
+    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toEqual([]);
     expect(scenarios.filter((scenario) => scenario.status === "FAIL")).toEqual([]);
   });
 });
