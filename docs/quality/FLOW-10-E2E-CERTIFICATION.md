@@ -6,7 +6,7 @@
 - Baseline auditado: `2d7d8ae173e3e636c8bae93d896bc7050d57fc75`
 - Decisão atual: **NO-GO**
 - Progresso do projeto: **9/10**
-- Cenários P0: **24 PASS / 20 NOT PROVEN / 0 FAIL**
+- Cenários P0: **26 PASS / 18 NOT PROVEN / 0 FAIL**
 
 ## Objetivo
 
@@ -71,8 +71,8 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 | B02 | sim | Estado operacional da loja é consultado antes de vender | E2E controlado | PASS |
 | B03 | sim | Robô usa catálogo canônico | E2E controlado | PASS |
 | B04 | sim | Robô usa complementos/opções canônicos | E2E controlado | PASS |
-| B05 | sim | Carrinho/checkout passam pelos serviços oficiais | E2E controlado | NOT PROVEN |
-| B06 | sim | Pagamento e fulfillment são validados | E2E controlado | NOT PROVEN |
+| B05 | sim | Carrinho/checkout passam pelos serviços oficiais | E2E controlado | PASS |
+| B06 | sim | Pagamento e fulfillment são validados | E2E controlado | PASS |
 | B07 | sim | Criação exige confirmação explícita `SIM` | E2E controlado | PASS |
 | B08 | sim | Confirmação pelo WhatsApp cria exatamente um pedido | DB descartável/rollback | PASS |
 | B09 | sim | WhatsApp e tracking usam mesma identidade/projeção pública | E2E controlado | NOT PROVEN |
@@ -232,22 +232,36 @@ Browser target: Chromium e WebKit onde previsto pelo workflow oficial.
 - Digest: `sha256:fafe5e0b92fb5fc457a1e2a6d1688d7a6a7be4e679f2d59516d5b2fc5b11a139`.
 - Veredito: **PASS** para B03 e B04.
 
+### B05 e B06 — PASS
+
+- Commit da prova: `bc1ce815556f955d886724278cd91c3078d09f72`.
+- B05: identidade, fulfillment e pagamento percorreram os métodos oficiais do `CheckoutService` com o mesmo `storeSlug` e `cartToken`; o resumo foi carregado do checkout oficial antes da confirmação.
+- B06: fulfillment inválido não alterou o checkout; retirada válida carregou as formas de pagamento com `organizationId` e `storeId`; pagamento inexistente não avançou nem gravou; somente uma forma habilitada salvou e abriu a confirmação.
+- Provider: não utilizado; nenhuma mensagem Meta real foi enviada.
+- Dados: organização, loja, telefone, carrinho e item exclusivamente técnicos.
+- CI: <https://github.com/wesley956/PedeAqui/actions/runs/35584705532> (`success`).
+- Browser Homologation: <https://github.com/wesley956/PedeAqui/actions/runs/35584705474> (`success`).
+- Isolated Chaos: <https://github.com/wesley956/PedeAqui/actions/runs/35584705495> (`success`).
+- Artifact: `isolated-chaos-evidence` (`10631639289`).
+- Digest: `sha256:f460953bbf490b63a43f9bebac03ca7dd5f645182bdb6adc32f8f4b8f3630cc7`.
+- Veredito: **PASS** para B05 e B06.
+
 ## Gates técnicos
 
 | Gate | Critério FLOW-10 | Estado atual |
 |---|---|---|
-| Teste focado FLOW-10 | `vitest run tests/flow-10-e2e-certification.test.ts` | PASS — CI #1967 |
-| Typecheck | `tsc --noEmit` | PASS — CI #1967 |
-| Lint | `eslint .` | PASS — CI #1967 |
-| Full suite | suíte Vitest completa | PASS — CI #1967 |
-| Public UX | script oficial do repositório | PASS — CI #1967 |
-| Route integrity | `check:routes` | PASS — CI #1967 |
-| Production preflight | `preflight:production` | PASS — CI #1967 |
-| Build | Next.js production build | PASS — CI #1967 |
-| Browser Homologation | workflow oficial Chromium/WebKit | PASS — #461 |
-| Isolated Chaos | obrigatório para a evidência transacional/SQL | PASS — #207 |
+| Teste focado FLOW-10 | `vitest run tests/flow-10-e2e-certification.test.ts` | PASS — CI #1969 |
+| Typecheck | `tsc --noEmit` | PASS — CI #1969 |
+| Lint | `eslint .` | PASS — CI #1969 |
+| Full suite | suíte Vitest completa | PASS — CI #1969 |
+| Public UX | script oficial do repositório | PASS — CI #1969 |
+| Route integrity | `check:routes` | PASS — CI #1969 |
+| Production preflight | `preflight:production` | PASS — CI #1969 |
+| Build | Next.js production build | PASS — CI #1969 |
+| Browser Homologation | workflow oficial Chromium/WebKit | PASS — #463 |
+| Isolated Chaos | obrigatório para a evidência transacional/SQL | PASS — #209 |
 
-Gates oficiais no SHA `a200fb6ca2a3509bc01ed440ffa817c65c0f5fdd`: CI <https://github.com/wesley956/PedeAqui/actions/runs/35583718248>, Browser Homologation <https://github.com/wesley956/PedeAqui/actions/runs/35583718153> e Isolated Chaos <https://github.com/wesley956/PedeAqui/actions/runs/35583717979>.
+Gates oficiais no SHA `bc1ce815556f955d886724278cd91c3078d09f72`: CI <https://github.com/wesley956/PedeAqui/actions/runs/35584705532>, Browser Homologation <https://github.com/wesley956/PedeAqui/actions/runs/35584705474> e Isolated Chaos <https://github.com/wesley956/PedeAqui/actions/runs/35584705495>.
 
 ## Contratos existentes que ajudam, mas não fecham a certificação
 
