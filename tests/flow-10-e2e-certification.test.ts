@@ -73,6 +73,15 @@ const closedOrderSafetyEvidence = [
   "digest:sha256:7a5eece550d366bc05a3c1eee96b76cd25c0006fa5f2259ad08e873893db908e",
 ];
 
+const whatsappConfirmationEvidence = [
+  "commit:6beeb35379484cf5c5682cb2791324c1af89dec3",
+  "ci:https://github.com/wesley956/PedeAqui/actions/runs/35571118936",
+  "browser:https://github.com/wesley956/PedeAqui/actions/runs/35571119106",
+  "workflow:https://github.com/wesley956/PedeAqui/actions/runs/35571118933",
+  "artifact:10626445285",
+  "digest:sha256:ed8cb67e6733bdb1390121ebf62a85413499bf4ab04d27a0a7c0a4456f3e14df",
+];
+
 const scenarios: CertificationScenario[] = [
   { id: "A01", journey: "A", severity: "P0", requirement: "Customer can open the public menu", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "A02", journey: "A", severity: "P0", requirement: "Cart accepts a simple item plus canonical modifier", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
@@ -92,8 +101,8 @@ const scenarios: CertificationScenario[] = [
   { id: "B04", journey: "B", severity: "P0", requirement: "WhatsApp uses canonical modifiers and options", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "B05", journey: "B", severity: "P0", requirement: "WhatsApp cart and checkout use official services", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "B06", journey: "B", severity: "P0", requirement: "Payment and fulfillment are validated before final confirmation", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
-  { id: "B07", journey: "B", severity: "P0", requirement: "Order creation requires explicit SIM confirmation", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
-  { id: "B08", journey: "B", severity: "P0", requirement: "WhatsApp checkout creates exactly one order", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
+  { id: "B07", journey: "B", severity: "P0", requirement: "Order creation requires explicit SIM confirmation", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: whatsappConfirmationEvidence },
+  { id: "B08", journey: "B", severity: "P0", requirement: "WhatsApp checkout creates exactly one order", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: whatsappConfirmationEvidence },
   { id: "B09", journey: "B", severity: "P0", requirement: "WhatsApp notifications and tracking share order identity and public projection", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "B10", journey: "B", severity: "P0", requirement: "Human handoff preserves conversation and checkout context", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
 
@@ -175,9 +184,9 @@ describe("FLOW-10 executable E2E certification matrix", () => {
   });
 
   it("records only the evidence-backed PASS scenarios", () => {
-    const evidenceBackedPasses = ["A04", "A05", "A06", "C01", "C02", "D01", "D02", "D03", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
+    const evidenceBackedPasses = ["A04", "A05", "A06", "B07", "B08", "C01", "C02", "D01", "D02", "D03", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
     expect(scenarios.filter((scenario) => scenario.status === "PASS").map((scenario) => scenario.id)).toEqual(evidenceBackedPasses);
-    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(26);
+    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(24);
     expect(scenarios.filter((scenario) => scenario.status === "FAIL")).toEqual([]);
   });
 });
