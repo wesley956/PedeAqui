@@ -51,6 +51,17 @@ jobs:
           nohup npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/pedeaqui-browser-app.log 2>&1 &
           echo "APP_PID=$!" >> "$GITHUB_ENV"
 
+      - name: Run FLOW-10 controlled resilience batch
+        shell: bash
+        run: |
+          mkdir -p artifacts/browser-homologation
+          set -o pipefail
+          npx vitest run \
+            tests/flow-10-public-entry-cart.test.ts \
+            tests/flow-10-checkout-network-resilience.test.ts \
+            tests/flow-10-notification-safety-batch.test.ts \
+            --reporter=verbose | tee artifacts/browser-homologation/flow10-batch7.log
+
       - name: Wait for local PedeAqui
         shell: bash
         run: |
