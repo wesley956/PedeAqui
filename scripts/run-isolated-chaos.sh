@@ -90,6 +90,8 @@ for pass in 1 2 3; do
     echo "ISOLATED_SCENARIO=${scenario}"
     psql "${local_db_url}" -X -v ON_ERROR_STOP=1 -f "${scenario}"
   done
+  echo "ISOLATED_SCENARIO=flow10-concurrent-order-notification-claim"
+  bash scripts/run-flow10-concurrent-claim.sh "${local_db_url}" "${pass}"
 done
 
 echo "ISOLATED_CHAOS_RESULT=passed"
