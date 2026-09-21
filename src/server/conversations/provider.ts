@@ -126,6 +126,19 @@ type MessageResponse = {
   error?: { message?: string; code?: number; type?: string };
 } | null;
 
+function providerNetworkError(error: unknown) {
+  const name = error instanceof Error ? error.name : "";
+  const timedOut = name === "AbortError" || name === "TimeoutError";
+  return new WhatsAppProviderError(
+    timedOut
+      ? "A Meta demorou para responder. Tente novamente em alguns instantes."
+      : "Não foi possível conectar à Meta. Tente novamente em alguns instantes.",
+    timedOut ? 408 : 503,
+    timedOut ? "network_timeout" : "network_error",
+    true,
+  );
+}
+
 export class WhatsAppCloudProvider implements ConversationProvider {
   constructor(private readonly accessToken: string) {}
 
@@ -158,16 +171,21 @@ export class WhatsAppCloudProvider implements ConversationProvider {
 
   private async sendMessage(phoneNumberId: string, body: Record<string, unknown>): Promise<ProviderSendResult> {
     const version = resolveWhatsAppGraphVersion();
-    const response = await fetch(`https://graph.facebook.com/${version}/${encodeURIComponent(phoneNumberId)}/messages`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-      cache: "no-store",
-      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`https://graph.facebook.com/${version}/${encodeURIComponent(phoneNumberId)}/messages`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+        cache: "no-store",
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+      });
+    } catch (error) {
+      throw providerNetworkError(error);
+    }
     const payload = await response.json().catch(() => null) as MessageResponse;
     const externalMessageId = payload?.messages?.[0]?.id;
     if (!response.ok || !externalMessageId) throw providerError(response, payload);
