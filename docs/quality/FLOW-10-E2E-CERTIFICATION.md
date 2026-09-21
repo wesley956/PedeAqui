@@ -6,7 +6,7 @@
 - Baseline auditado: `2d7d8ae173e3e636c8bae93d896bc7050d57fc75`
 - Decisão atual: **NO-GO**
 - Progresso do projeto: **9/10**
-- Cenários P0: **14 PASS / 30 NOT PROVEN / 0 FAIL**
+- Cenários P0: **15 PASS / 29 NOT PROVEN / 0 FAIL**
 
 ## Objetivo
 
@@ -94,7 +94,7 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 | D02 | sim | Duas mensagens WhatsApp próximas não duplicam pedido/transição | DB descartável/rollback | NOT PROVEN |
 | D03 | sim | Retry do provider não duplica mensagem ao cliente | DB descartável/rollback | NOT PROVEN |
 | D04 | sim | Backlog >25 notification jobs drena sem perda/duplicidade | DB descartável/rollback | PASS |
-| D05 | sim | Workers concorrentes fazem claim exatamente uma vez | DB descartável/rollback | NOT PROVEN |
+| D05 | sim | Workers concorrentes fazem claim exatamente uma vez | DB descartável/rollback | PASS |
 | D06 | sim | Refresh do checkout mantém resultado idempotente | E2E controlado | NOT PROVEN |
 | D07 | sim | Internet instável não duplica pedido nem corrompe estado público | E2E controlado | NOT PROVEN |
 | D08 | sim | Template Meta indisponível fora da janela falha de modo seguro e diagnosticável | E2E controlado | NOT PROVEN |
@@ -151,19 +151,20 @@ Browser target: Chromium e WebKit onde previsto pelo workflow oficial.
 
 ## Evidência executada — Checkout e fila em banco descartável
 
-### A05, A06, D01 e D04 — PASS
+### A05, A06, D01, D04 e D05 — PASS
 
-- Workflow: <https://github.com/wesley956/PedeAqui/actions/runs/35499840882>
-- Artifact: `isolated-chaos-evidence` (`10601836407`)
-- Digest: `sha256:0208c3826f85d728382a5ee5bfe36cf7fd1bc5d0a330eae055482d6dfeba5d47`
+- Workflow: <https://github.com/wesley956/PedeAqui/actions/runs/35552631268>
+- Artifact: `isolated-chaos-evidence` (`10618534610`)
+- Digest: `sha256:ebdced1586524da6a8229d0f8bbca8ad0257a5be7e6072422b16721ad1d87e2f`
 - Environment: Supabase local efêmero, sem link com projeto hospedado.
 - Execução: três passes consecutivos; cada fixture terminou com `ROLLBACK`.
 - A05/D01: duas chamadas de checkout com a mesma identidade retornaram o mesmo `order_id`, com flags `created=true/false`, e deixaram exatamente um pedido.
 - A06: 27 checkouts técnicos emitiram 27 jobs `order_received` a partir dos eventos autoritativos, um por pedido.
 - D04: lote inicial de 25, job alvo com retry e job residual foram drenados; os 27 terminaram em `sent` e a cardinalidade permaneceu 27.
+- D05: duas sessões PostgreSQL simultâneas mantiveram locks concorrentes; cada worker reclamou 10 jobs, totalizando 20 IDs únicos com `attempts=1`, nos três passes.
 - Dados: UUIDs reservados e destinatário `.invalid`; nenhum cliente real ou provider foi usado.
-- Veredito: **PASS** para A05, A06, D01 e D04.
-- Limite da prova: D03 e D05 permanecem `NOT PROVEN`, pois esta execução não enviou ao provider e não abriu duas transações simultâneas.
+- Veredito: **PASS** para A05, A06, D01, D04 e D05.
+- Limite da prova: D03 permanece `NOT PROVEN`, pois esta execução não enviou ao provider.
 
 ## Gates técnicos
 

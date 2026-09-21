@@ -45,9 +45,9 @@ const browserRunEvidence = [
 ];
 
 const isolatedChaosEvidence = [
-  "workflow:https://github.com/wesley956/PedeAqui/actions/runs/35499840882",
-  "artifact:10601836407",
-  "digest:sha256:0208c3826f85d728382a5ee5bfe36cf7fd1bc5d0a330eae055482d6dfeba5d47",
+  "workflow:https://github.com/wesley956/PedeAqui/actions/runs/35552631268",
+  "artifact:10618534610",
+  "digest:sha256:ebdced1586524da6a8229d0f8bbca8ad0257a5be7e6072422b16721ad1d87e2f",
 ];
 
 const closedStoreEvidence = [
@@ -87,7 +87,7 @@ const scenarios: CertificationScenario[] = [
   { id: "D02", journey: "D", severity: "P0", requirement: "Two close WhatsApp messages do not duplicate order or state transition", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "D03", journey: "D", severity: "P0", requirement: "Provider retry does not duplicate customer notification", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "D04", journey: "D", severity: "P0", requirement: "Notification backlog above 25 jobs drains without loss or duplication", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
-  { id: "D05", journey: "D", severity: "P0", requirement: "Concurrent workers claim jobs safely and exactly once", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
+  { id: "D05", journey: "D", severity: "P0", requirement: "Concurrent workers claim jobs safely and exactly once", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
   { id: "D06", journey: "D", severity: "P0", requirement: "Checkout refresh preserves safe idempotent outcome", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "D07", journey: "D", severity: "P0", requirement: "Unstable internet does not create duplicate order or corrupt public state", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
   { id: "D08", journey: "D", severity: "P0", requirement: "Unavailable Meta template outside session window has diagnosable safe failure", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
@@ -157,9 +157,9 @@ describe("FLOW-10 executable E2E certification matrix", () => {
   });
 
   it("records only the evidence-backed PASS scenarios", () => {
-    const evidenceBackedPasses = ["A04", "A05", "A06", "C01", "D01", "D04", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
+    const evidenceBackedPasses = ["A04", "A05", "A06", "C01", "D01", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
     expect(scenarios.filter((scenario) => scenario.status === "PASS").map((scenario) => scenario.id)).toEqual(evidenceBackedPasses);
-    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(30);
+    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(29);
     expect(scenarios.filter((scenario) => scenario.status === "FAIL")).toEqual([]);
   });
 });
