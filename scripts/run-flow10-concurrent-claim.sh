@@ -22,8 +22,7 @@ claim_jobs() {
   local worker_id="$1"
   local output_file="$2"
   psql "${database_url}" -X -v ON_ERROR_STOP=1 -At \
-    -v worker_id="${worker_id}" \
-    -c "begin; select id from public.order_notification_claim_internal(:'worker_id',10); select pg_sleep(2); commit;" \
+    -c "begin; select id from public.order_notification_claim_internal('${worker_id}',10); select pg_sleep(2); commit;" \
     >"${output_file}"
 }
 
