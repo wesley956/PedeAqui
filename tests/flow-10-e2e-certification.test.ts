@@ -64,6 +64,15 @@ const providerRetryEvidence = [
   "deployment:dpl_2RT1Uxh4zQb5ZR9ieajwhtztEViK",
 ];
 
+const closedOrderSafetyEvidence = [
+  "commit:fc3c285afb13b745a43dbbb99bf05a98dfc06b87",
+  "ci:https://github.com/wesley956/PedeAqui/actions/runs/35555635543",
+  "browser:https://github.com/wesley956/PedeAqui/actions/runs/35555635554",
+  "workflow:https://github.com/wesley956/PedeAqui/actions/runs/35555635551",
+  "artifact:10619264761",
+  "digest:sha256:7a5eece550d366bc05a3c1eee96b76cd25c0006fa5f2259ad08e873893db908e",
+];
+
 const scenarios: CertificationScenario[] = [
   { id: "A01", journey: "A", severity: "P0", requirement: "Customer can open the public menu", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
   { id: "A02", journey: "A", severity: "P0", requirement: "Cart accepts a simple item plus canonical modifier", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
@@ -89,11 +98,11 @@ const scenarios: CertificationScenario[] = [
   { id: "B10", journey: "B", severity: "P0", requirement: "Human handoff preserves conversation and checkout context", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: artifactEvidence, evidenceRefs: [] },
 
   { id: "C01", journey: "C", severity: "P0", requirement: "Outside hours greeting reports closed store and next opening when available", executionMode: "controlled-e2e", status: "PASS", evidenceRequired: artifactEvidence, evidenceRefs: closedStoreEvidence },
-  { id: "C02", journey: "C", severity: "P0", requirement: "Quero pedir outside hours does not create an immediate order", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
+  { id: "C02", journey: "C", severity: "P0", requirement: "Quero pedir outside hours does not create an immediate order", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: closedOrderSafetyEvidence },
   { id: "C03", journey: "C", severity: "P0", requirement: "Tracking remains available for a legitimate order while store is closed", executionMode: "controlled-e2e", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
 
   { id: "D01", journey: "D", severity: "P0", requirement: "Double click or double submit does not duplicate the order", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
-  { id: "D02", journey: "D", severity: "P0", requirement: "Two close WhatsApp messages do not duplicate order or state transition", executionMode: "disposable-db", status: "NOT_PROVEN", evidenceRequired: fullEvidence, evidenceRefs: [] },
+  { id: "D02", journey: "D", severity: "P0", requirement: "Two close WhatsApp messages do not duplicate order or state transition", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: closedOrderSafetyEvidence },
   { id: "D03", journey: "D", severity: "P0", requirement: "Provider retry does not duplicate customer notification", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: providerRetryEvidence },
   { id: "D04", journey: "D", severity: "P0", requirement: "Notification backlog above 25 jobs drains without loss or duplication", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
   { id: "D05", journey: "D", severity: "P0", requirement: "Concurrent workers claim jobs safely and exactly once", executionMode: "disposable-db", status: "PASS", evidenceRequired: fullEvidence, evidenceRefs: isolatedChaosEvidence },
@@ -166,9 +175,9 @@ describe("FLOW-10 executable E2E certification matrix", () => {
   });
 
   it("records only the evidence-backed PASS scenarios", () => {
-    const evidenceBackedPasses = ["A04", "A05", "A06", "C01", "D01", "D03", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
+    const evidenceBackedPasses = ["A04", "A05", "A06", "C01", "C02", "D01", "D02", "D03", "D04", "D05", "M320", "M360", "M390", "M412", "M430", "MTAB", "MDESK", "MKEY"];
     expect(scenarios.filter((scenario) => scenario.status === "PASS").map((scenario) => scenario.id)).toEqual(evidenceBackedPasses);
-    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(28);
+    expect(scenarios.filter((scenario) => scenario.status === "NOT_PROVEN")).toHaveLength(26);
     expect(scenarios.filter((scenario) => scenario.status === "FAIL")).toEqual([]);
   });
 });

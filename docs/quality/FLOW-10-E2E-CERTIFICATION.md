@@ -6,7 +6,7 @@
 - Baseline auditado: `2d7d8ae173e3e636c8bae93d896bc7050d57fc75`
 - Decisão atual: **NO-GO**
 - Progresso do projeto: **9/10**
-- Cenários P0: **16 PASS / 28 NOT PROVEN / 0 FAIL**
+- Cenários P0: **18 PASS / 26 NOT PROVEN / 0 FAIL**
 
 ## Objetivo
 
@@ -83,7 +83,7 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 | ID | P0 | Requisito | Execução | Estado |
 |---|---|---|---|---|
 | C01 | sim | `Oi` fora do horário informa loja fechada e próxima abertura quando disponível | E2E controlado | PASS |
-| C02 | sim | `Quero pedir` fora do horário não cria pedido imediato | DB descartável/rollback | NOT PROVEN |
+| C02 | sim | `Quero pedir` fora do horário não cria pedido imediato | DB descartável/rollback | PASS |
 | C03 | sim | Tracking de pedido legítimo continua funcionando com loja fechada | E2E controlado | NOT PROVEN |
 
 ## Jornada D — Robustez, concorrência e segurança
@@ -91,7 +91,7 @@ Dados pessoais, telefone integral e conteúdo produtivo não devem ser anexados.
 | ID | P0 | Requisito | Execução | Estado |
 |---|---|---|---|---|
 | D01 | sim | Duplo clique/submit não duplica pedido | DB descartável/rollback | PASS |
-| D02 | sim | Duas mensagens WhatsApp próximas não duplicam pedido/transição | DB descartável/rollback | NOT PROVEN |
+| D02 | sim | Duas mensagens WhatsApp próximas não duplicam pedido/transição | DB descartável/rollback | PASS |
 | D03 | sim | Retry do provider não duplica mensagem ao cliente | DB descartável/rollback | PASS |
 | D04 | sim | Backlog >25 notification jobs drena sem perda/duplicidade | DB descartável/rollback | PASS |
 | D05 | sim | Workers concorrentes fazem claim exatamente uma vez | DB descartável/rollback | PASS |
@@ -177,22 +177,36 @@ Browser target: Chromium e WebKit onde previsto pelo workflow oficial.
 - Evidência canônica: <https://github.com/wesley956/PedeAqui/issues/1141#issuecomment-5754620683>
 - Veredito: **PASS** — timeout de transporte agora entra no retry durável e a prova controlada registrou uma única aceitação.
 
+### C02 e D02 — PASS
+
+- Commit da prova: `fc3c285afb13b745a43dbbb99bf05a98dfc06b87`.
+- C02: o teste comportamental executou `Quero pedir` com `canOrder=false`; o orquestrador respondeu como loja fechada antes de chamar o serviço de pedido, sem criar nem alterar checkout.
+- D02: duas mensagens técnicas `SIM`, com IDs externos distintos, foram registradas para a mesma conversa e duas sessões PostgreSQL confirmaram simultaneamente o mesmo carrinho pelo canal `whatsapp`.
+- Resultado concorrente, repetido em três passes: uma resposta `created=true`, uma `created=false`, o mesmo `order_id`, exatamente 1 pedido, 1 evento `order.created` e 4 transições iniciais.
+- Environment: Supabase local efêmero; UUIDs, telefone e mensagens exclusivamente técnicos; nenhum cliente, projeto hospedado ou provider real foi usado.
+- CI: <https://github.com/wesley956/PedeAqui/actions/runs/35555635543> (`success`).
+- Browser Homologation: <https://github.com/wesley956/PedeAqui/actions/runs/35555635554> (`success`).
+- Isolated Chaos: <https://github.com/wesley956/PedeAqui/actions/runs/35555635551> (`success`).
+- Artifact: `isolated-chaos-evidence` (`10619264761`).
+- Digest: `sha256:7a5eece550d366bc05a3c1eee96b76cd25c0006fa5f2259ad08e873893db908e`.
+- Veredito: **PASS** para C02 e D02.
+
 ## Gates técnicos
 
 | Gate | Critério FLOW-10 | Estado atual |
 |---|---|---|
-| Teste focado FLOW-10 | `vitest run tests/flow-10-e2e-certification.test.ts` | PASS — CI #1948 |
-| Typecheck | `tsc --noEmit` | PASS — CI #1948 |
-| Lint | `eslint .` | PASS — CI #1948 |
-| Full suite | suíte Vitest completa | PASS — CI #1948 |
-| Public UX | script oficial do repositório | PASS — CI #1948 |
-| Route integrity | `check:routes` | PASS — CI #1948 |
-| Production preflight | `preflight:production` | PASS — CI #1948 |
-| Build | Next.js production build | PASS — CI #1948 |
-| Browser Homologation | workflow oficial Chromium/WebKit | PASS — #443 |
-| Isolated Chaos | obrigatório para a evidência transacional/SQL | PASS — #190 |
+| Teste focado FLOW-10 | `vitest run tests/flow-10-e2e-certification.test.ts` | PASS — CI #1961 |
+| Typecheck | `tsc --noEmit` | PASS — CI #1961 |
+| Lint | `eslint .` | PASS — CI #1961 |
+| Full suite | suíte Vitest completa | PASS — CI #1961 |
+| Public UX | script oficial do repositório | PASS — CI #1961 |
+| Route integrity | `check:routes` | PASS — CI #1961 |
+| Production preflight | `preflight:production` | PASS — CI #1961 |
+| Build | Next.js production build | PASS — CI #1961 |
+| Browser Homologation | workflow oficial Chromium/WebKit | PASS — #455 |
+| Isolated Chaos | obrigatório para a evidência transacional/SQL | PASS — #201 |
 
-Gates oficiais no SHA `f2c360f441d99376a6be373addb2dd5e4f741fa4`: CI <https://github.com/wesley956/PedeAqui/actions/runs/35499183071>, Browser Homologation <https://github.com/wesley956/PedeAqui/actions/runs/35499183077> e Isolated Chaos <https://github.com/wesley956/PedeAqui/actions/runs/35499183113>.
+Gates oficiais no SHA `fc3c285afb13b745a43dbbb99bf05a98dfc06b87`: CI <https://github.com/wesley956/PedeAqui/actions/runs/35555635543>, Browser Homologation <https://github.com/wesley956/PedeAqui/actions/runs/35555635554> e Isolated Chaos <https://github.com/wesley956/PedeAqui/actions/runs/35555635551>.
 
 ## Contratos existentes que ajudam, mas não fecham a certificação
 
