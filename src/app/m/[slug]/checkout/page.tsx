@@ -45,7 +45,7 @@ const errorMessages: Record<string, string> = {
   delivery_not_selected: "Escolha entrega antes de informar o endereço.", delivery_minimum: "O pedido ainda não atingiu o mínimo exigido para este bairro.",
   neighborhood_not_served: "Selecione um bairro atendido pela loja.", payment_unavailable: "A forma de pagamento selecionada não está disponível.",
   invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.", pix_email_required: "Informe seu e-mail em Seus dados para gerar o Pix online.",
-  checkout_not_ready: "Algo mudou no pedido. Confira os dados destacados e tente confirmar novamente.", benefit_invalid: "Não foi possível aplicar esses benefícios. Confira o cupom e tente novamente.",
+  checkout_not_ready: "Não foi possível confirmar o pedido. Confira o motivo abaixo e faça o ajuste necessário.", benefit_invalid: "Não foi possível aplicar esses benefícios. Confira o cupom e tente novamente.",
   benefit_unavailable: "Benefícios não estão disponíveis nesta loja.", saved_address_invalid: "Este endereço salvo não está mais disponível.",
   recognition_required: "Por segurança, informe o endereço novamente neste dispositivo.", identity_required: "Confirme seu nome e WhatsApp antes de reutilizar um endereço.",
 };
@@ -71,6 +71,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
   const data = await CheckoutService.load(slug, token, recognitionToken);
   const benefits = data.growthEnabled ? await GrowthService.loadCheckoutBenefits(slug, token) : null;
   const { cart, session, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled } = data;
+  const reviewAfterFailure = query.erro === "checkout_not_ready" ? await CheckoutService.review(slug, token) : null;
   const enabledMethods = data.paymentMethods.filter((item) => item.enabled);
   const selectedPayment = session?.payment_method ?? null;
   const selectedPaymentValue = selectedPayment === "custom" && session?.custom_payment_method_id ? `custom:${session.custom_payment_method_id}` : selectedPayment;
@@ -111,6 +112,16 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
   const selectedNeighborhoodId = deliveryNeighborhoods.find((item) => item.neighborhoodName === session?.address_district
     && item.city.toLocaleLowerCase("pt-BR") === (session?.address_city ?? "").toLocaleLowerCase("pt-BR")
     && item.state.toUpperCase() === (session?.address_state ?? "").toUpperCase())?.id ?? "";
+  const subtotalCents = Number(cart.subtotal_cents);
+  const minimumOrderCents = Number(menu.settings.minimum_order_cents ?? 0);
+  const missingMinimumCents = Math.max(0, minimumOrderCents - subtotalCents);
+  const minimumOrderBlocked = reviewAfterFailure?.review.blockers.some((blocker) => blocker.code === "minimum_order") ?? false;
+  const reviewBlockerMessage = reviewAfterFailure?.review.blockers.map((blocker) => blocker.message).join(" ") ?? "";
+  const displayErrorMessage = query.erro === "checkout_not_ready" && minimumOrderBlocked && missingMinimumCents > 0
+    ? `Pedido mínimo não atingido. O mínimo da loja é ${money(minimumOrderCents)} em produtos. Seu carrinho possui ${money(subtotalCents)} em produtos. Adicione mais ${money(missingMinimumCents)} para continuar.`
+    : query.erro === "checkout_not_ready" && reviewBlockerMessage
+      ? reviewBlockerMessage
+      : query.erro ? errorMessages[query.erro] ?? "Não foi possível continuar. Confira os dados e tente novamente." : null;
 
   return (
     <main className={styles.root}>
@@ -123,7 +134,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
         <div className={styles.progressTrack} aria-label={`${progress}% do checkout concluído`}><div className={styles.progressFill} style={{ width: `${progress}%` }} /></div>
 
         <div className={styles.stageViewport}>
-          {query.erro ? <div role="alert" aria-live="assertive" data-error-stage={activeStage} className={styles.alert}>{errorMessages[query.erro] ?? "Não foi possível continuar. Confira os dados e tente novamente."}</div> : null}
+          {displayErrorMessage ? <div role="alert" aria-live="assertive" data-error-stage={activeStage} className={styles.alert}>{displayErrorMessage}</div> : null}
 
           {activeStage === "fulfillment" ? (
             <CheckoutStage number="1" title="Como vai receber?" eyebrow="Recebimento" description="Escolha a opção que faz sentido para este pedido.">
@@ -216,6 +227,11 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
               <nav className={styles.reviewEditNav} aria-label="Alterar dados do checkout">
                 <Link href={stageHref(slug, "fulfillment")}>Alterar recebimento</Link><Link href={stageHref(slug, "identity")}>Alterar dados</Link>{deliverySelected ? <Link href={stageHref(slug, "address")}>Alterar endereço</Link> : null}<Link href={stageHref(slug, "payment")}>Alterar pagamento</Link>
               </nav>
+
+              <Link href={`/m/${slug}`} className={styles.addMoreItems}>
+                <span>🛒 Adicionar mais itens</span>
+                <small>Voltar ao cardápio sem perder o que já está no carrinho.</small>
+              </Link>
 
               {paymentComplete && growthEnabled && benefits ? (
                 <details className={styles.optional} open={totalDiscount > 0 || query.erro === "benefit_invalid" || query.erro === "benefit_unavailable"}>
