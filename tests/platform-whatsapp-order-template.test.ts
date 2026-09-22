@@ -6,6 +6,8 @@ const root = process.cwd();
 const read = (relativePath: string) => fs.readFileSync(path.join(root, relativePath), "utf8");
 
 const service = read("src/server/platform/platform-whatsapp-order-template-service.ts");
+const worker = read("src/server/conversations/order-notification-worker.ts");
+const manualActions = read("src/app/platform/unidades/[storeId]/whatsapp/actions.ts");
 const page = read("src/app/platform/unidades/[storeId]/whatsapp/notificacoes/page.tsx");
 const actions = read("src/app/platform/unidades/[storeId]/whatsapp/notificacoes/actions.ts");
 
@@ -57,6 +59,26 @@ describe("platform WhatsApp order template", () => {
     expect(service).not.toContain("notify_pickup_ready: true");
     expect(service).not.toContain("notify_out_for_delivery: true");
     expect(service).not.toContain("notify_delivered: true");
+  });
+
+  it("reconciles an already-approved template without creating or deleting a template", () => {
+    expect(service).toContain("reconcileApprovedForNotification");
+    expect(service).toContain("const template = await getTemplate(settings.whatsapp_business_account_id)");
+    expect(service).toContain("if (status !== APPROVED)");
+    expect(service).toContain("persistApprovedTemplateFromWorker");
+    expect(service).toContain(".is(\"order_notification_template_name\", null)");
+  });
+
+  it("revalidates the official WhatsApp connection and template together", () => {
+    expect(manualActions).toContain("PlatformWhatsAppManualService.revalidate(storeId)");
+    expect(manualActions).toContain("PlatformWhatsAppOrderTemplateService.ensure(storeId)");
+  });
+
+  it("tries a GET-only reconciliation before skipping an out-of-window notification", () => {
+    expect(worker).toContain("PlatformWhatsAppOrderTemplateService.reconcileApprovedForNotification");
+    expect(worker).toContain('recordFailure("whatsapp.order_template.reconciliation_failed"');
+    expect(worker).toContain('errorCode: "template_required"');
+    expect(worker).toContain("templateName: templateName!");
   });
 
   it("exposes only a server action and never asks the browser for Meta credentials", () => {
