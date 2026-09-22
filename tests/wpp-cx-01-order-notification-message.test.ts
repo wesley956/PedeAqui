@@ -60,15 +60,15 @@ describe("WPP-CX-01 transactional order messages", () => {
 
     expect(body).toContain("✅ Pedido #123 recebido!");
     expect(body).toContain("🧾 Resumo do pedido");
-    expect(body).toContain("• 2x Coxinha de frango — R$ 24,00");
-    expect(body).toContain("↳ Catupiry (+R$ 2,00)");
+    expect(body).toMatch(/• 2x Coxinha de frango — R\$\s24,00/);
+    expect(body).toMatch(/↳ Catupiry \(\+R\$\s2,00\)/);
     expect(body).toContain("📝 Sem pimenta");
     expect(body).toContain("↳ 15x Coxinhas");
     expect(body).toContain("🚚 Entrega");
     expect(body).toContain("💳 Pagamento: Ticket");
-    expect(body).toContain("🏷️ Desconto: -R$ 5,00");
-    expect(body).toContain("🚚 Taxa de entrega: R$ 2,00");
-    expect(body).toContain("💰 Total: R$ 47,00");
+    expect(body).toMatch(/🏷️ Desconto: -R\$\s5,00/);
+    expect(body).toMatch(/🚚 Taxa de entrega: R\$\s2,00/);
+    expect(body).toMatch(/💰 Total: R\$\s47,00/);
     expect(body).toContain(base.trackingUrl);
   });
 
