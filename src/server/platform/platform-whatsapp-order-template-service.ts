@@ -6,6 +6,7 @@ import { resolveWhatsAppAccessToken, resolveWhatsAppGraphVersion } from "@/serve
 import { PlatformAdminService, PlatformAuthorizationError } from "@/server/platform/platform-admin-service";
 
 const storeIdSchema = z.string().uuid();
+const reconciliationSchema = z.object({ organizationId: z.string().uuid(), storeId: storeIdSchema });
 const TEMPLATE_NAME = "pedeaqui_atualizacao_pedido";
 const TEMPLATE_LANGUAGE = "pt_BR";
 const TEMPLATE_CATEGORY = "UTILITY";
@@ -22,6 +23,13 @@ export type OrderTemplateState = {
   accountName: string | null;
   testAccount: boolean;
   windowOnly: boolean;
+};
+
+export type OrderTemplateReconciliation = {
+  status: string;
+  templateName: string | null;
+  language: string;
+  persisted: boolean;
 };
 
 export class PlatformWhatsAppOrderTemplateError extends Error {
@@ -177,6 +185,21 @@ async function persistTemplateReference(storeId: string, actorUserId: string, st
   if (error) throw error;
 }
 
+async function persistApprovedTemplateFromWorker(organizationId: string, storeId: string) {
+  const admin = createAdminClient();
+  const now = new Date().toISOString();
+  const { error } = await admin.from("store_conversation_settings")
+    .update({
+      order_notification_template_name: TEMPLATE_NAME,
+      order_notification_template_language: TEMPLATE_LANGUAGE,
+      updated_at: now,
+    })
+    .eq("organization_id", organizationId)
+    .eq("store_id", storeId)
+    .is("order_notification_template_name", null);
+  if (error) throw error;
+}
+
 async function persistTestWindowMode(storeId: string, actorUserId: string) {
   const admin = createAdminClient();
   const now = new Date().toISOString();
@@ -219,6 +242,38 @@ export class PlatformWhatsAppOrderTemplateService {
     const testAccount = isMetaTestAccount(waba.name);
     const template = await getTemplate(settings.whatsapp_business_account_id!);
     return normalizeState(template, Boolean(settings.order_notifications_enabled), waba.name ?? null, testAccount);
+  }
+
+  static async reconcileApprovedForNotification(rawInput: unknown): Promise<OrderTemplateReconciliation> {
+    const input = reconciliationSchema.parse(rawInput);
+    const admin = createAdminClient();
+    const { data: settings, error } = await admin.from("store_conversation_settings")
+      .select("whatsapp_enabled,connection_status,whatsapp_business_account_id,order_notification_template_name,order_notification_template_language")
+      .eq("organization_id", input.organizationId)
+      .eq("store_id", input.storeId)
+      .maybeSingle();
+    if (error) throw error;
+
+    if (!settings?.whatsapp_enabled || settings.connection_status !== "connected" || !settings.whatsapp_business_account_id) {
+      return { status: "UNAVAILABLE", templateName: null, language: TEMPLATE_LANGUAGE, persisted: false };
+    }
+    if (settings.order_notification_template_name) {
+      return {
+        status: APPROVED,
+        templateName: settings.order_notification_template_name,
+        language: settings.order_notification_template_language || TEMPLATE_LANGUAGE,
+        persisted: false,
+      };
+    }
+
+    const template = await getTemplate(settings.whatsapp_business_account_id);
+    const status = template?.status ?? "MISSING";
+    if (status !== APPROVED) {
+      return { status, templateName: null, language: TEMPLATE_LANGUAGE, persisted: false };
+    }
+
+    await persistApprovedTemplateFromWorker(input.organizationId, input.storeId);
+    return { status, templateName: TEMPLATE_NAME, language: TEMPLATE_LANGUAGE, persisted: true };
   }
 
   static async ensure(rawStoreId: string): Promise<OrderTemplateState> {
