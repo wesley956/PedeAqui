@@ -9,6 +9,7 @@ import {
   buildPublicMenuUrl,
   notificationClientMessageId,
   retryDelaySeconds,
+  shouldIncludeOrderTrackingLink,
   type OrderNotificationType,
 } from "@/server/conversations/order-notification-model";
 import { normalizeOrderNotificationCustomTemplates } from "@/server/conversations/order-notification-template";
@@ -21,6 +22,7 @@ import {
 import { WhatsAppAutomationCapabilityService } from "@/server/conversations/whatsapp-automation-capability-service";
 import { resolveNotificationWorkflowVisibility } from "@/server/conversations/order-workflow-visibility";
 import { WhatsAppCloudProvider, WhatsAppProviderError, resolveWhatsAppAccessToken } from "@/server/conversations/provider";
+import { OrderNotificationSummaryService } from "@/server/orders/order-notification-summary-service";
 import { recordFailure } from "@/server/observability/failure";
 import { recordGrowthOperationalEvent } from "@/server/growth/growth-observability";
 
@@ -277,6 +279,11 @@ async function processOne(job: QueueRow, workerId: string) {
     return "failed" as const;
   }
 
+  const summary = await OrderNotificationSummaryService.load({
+    organizationId: job.organization_id,
+    storeId: job.store_id,
+    orderId: job.order_id,
+  });
   const trackingUrl = buildOrderTrackingUrl(appUrl, store.slug, order.id, context.tracking_access_token);
   const menuUrl = buildPublicMenuUrl(appUrl, store.slug);
   const customTemplates = normalizeOrderNotificationCustomTemplates(settings.order_notification_custom_templates);
@@ -288,6 +295,9 @@ async function processOne(job: QueueRow, workerId: string) {
     menuUrl,
     customerName: order.customer_name_snapshot,
     customTemplate: customTemplates[job.notification_type] ?? null,
+    summary: job.notification_type === "order_received" ? summary : null,
+    includeTrackingLink: shouldIncludeOrderTrackingLink(job.notification_type, summary?.channel),
+    cancelReason: summary?.cancelReason ?? null,
   };
   const body = buildOrderNotificationBody(messageInput);
 

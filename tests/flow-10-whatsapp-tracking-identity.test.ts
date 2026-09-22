@@ -173,8 +173,8 @@ describe("FLOW-10 B09 WhatsApp and tracking identity", () => {
       phoneNumberId: "technical-phone-number-id",
       recipient: "5500000000000",
     });
-    expect(outbound.body).toContain("pedido #742");
-    expect(outbound.body).toContain(`/m/flow10-technical-store/pedido/${orderId}/acesso`);
+    expect(outbound.body).toContain("#742");
+    expect(outbound.body).not.toContain(`/m/flow10-technical-store/pedido/${orderId}/acesso`);
 
     expect(mocks.rpc).toHaveBeenCalledWith(
       "order_notification_finish_internal",
@@ -185,8 +185,7 @@ describe("FLOW-10 B09 WhatsApp and tracking identity", () => {
       }),
     );
 
-    const trackingUrl = outbound.body.match(/https:\/\/[^\s]+/)?.[0];
-    expect(trackingUrl).toBeTruthy();
+    const trackingUrl = `https://pedeaqui.example/m/flow10-technical-store/pedido/${orderId}/acesso?t=${trackingToken}`;
     const tracking = projectOrderTrackingState({
       fulfillmentType: "delivery",
       orderStatus: "confirmed",
