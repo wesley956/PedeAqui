@@ -170,11 +170,15 @@ describe("[329] persistence and safety contracts", () => {
     expect(templateMigration).toContain("order_notification_template_language");
   });
 
-  it("does not create a stale backlog when a Meta template is not configured", () => {
-    const templateGate = worker.indexOf("if (!canSendFreeForm && !settings.order_notification_template_name)");
+  it("reconciles Meta approval before safely skipping and never creates a stale backlog without an approved template", () => {
+    const reconciliation = worker.indexOf("PlatformWhatsAppOrderTemplateService.reconcileApprovedForNotification({");
+    const templateGate = worker.indexOf("if (!canSendFreeForm && !templateName)", reconciliation);
+    const templateRequired = worker.indexOf('errorCode: "template_required"', templateGate);
     const outboundCreate = worker.indexOf('admin.rpc("conversation_create_outbound_internal"');
-    expect(templateGate).toBeGreaterThan(0);
-    expect(templateGate).toBeLessThan(outboundCreate);
+    expect(reconciliation).toBeGreaterThan(0);
+    expect(templateGate).toBeGreaterThan(reconciliation);
+    expect(templateRequired).toBeGreaterThan(templateGate);
+    expect(templateRequired).toBeLessThan(outboundCreate);
     expect(worker.slice(templateGate, outboundCreate)).toContain('status: "skipped"');
     expect(worker.slice(templateGate, outboundCreate)).not.toContain("retryAfterSeconds");
   });

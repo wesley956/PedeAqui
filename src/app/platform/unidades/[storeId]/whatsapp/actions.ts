@@ -8,6 +8,7 @@ import {
   PlatformWhatsAppManualError,
   PlatformWhatsAppManualService,
 } from "@/server/platform/platform-whatsapp-manual-service";
+import { PlatformWhatsAppOrderTemplateService } from "@/server/platform/platform-whatsapp-order-template-service";
 
 const storeIdSchema = z.string().uuid();
 
@@ -54,6 +55,7 @@ export async function revalidateManualWhatsAppAction(formData: FormData) {
       current.store.organization_id,
       storeId,
     );
+    await PlatformWhatsAppOrderTemplateService.ensure(storeId);
   } catch (error) {
     errorRedirect(storeId, error);
   }

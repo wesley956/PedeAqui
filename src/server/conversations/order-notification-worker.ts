@@ -23,6 +23,7 @@ import { WhatsAppAutomationCapabilityService } from "@/server/conversations/what
 import { resolveNotificationWorkflowVisibility } from "@/server/conversations/order-workflow-visibility";
 import { WhatsAppCloudProvider, WhatsAppProviderError, resolveWhatsAppAccessToken } from "@/server/conversations/provider";
 import { OrderNotificationSummaryService } from "@/server/orders/order-notification-summary-service";
+import { PlatformWhatsAppOrderTemplateService } from "@/server/platform/platform-whatsapp-order-template-service";
 import { recordFailure } from "@/server/observability/failure";
 import { recordGrowthOperationalEvent } from "@/server/growth/growth-observability";
 
@@ -323,7 +324,28 @@ async function processOne(job: QueueRow, workerId: string) {
   if (lastInboundError) throw lastInboundError;
   const canSendFreeForm = hasCustomerSupportWindow(lastInbound?.created_at);
 
-  if (!canSendFreeForm && !settings.order_notification_template_name) {
+  let templateName = settings.order_notification_template_name;
+  let templateLanguage = settings.order_notification_template_language || "pt_BR";
+  if (!canSendFreeForm && !templateName) {
+    try {
+      const reconciliation = await PlatformWhatsAppOrderTemplateService.reconcileApprovedForNotification({
+        organizationId: job.organization_id,
+        storeId: job.store_id,
+      });
+      templateName = reconciliation.templateName;
+      templateLanguage = reconciliation.language;
+    } catch (error) {
+      recordFailure("whatsapp.order_template.reconciliation_failed", error, {
+        requestId: workerId,
+        organizationId: job.organization_id,
+        storeId: job.store_id,
+        orderId: job.order_id,
+        notificationType: job.notification_type,
+      });
+    }
+  }
+
+  if (!canSendFreeForm && !templateName) {
     await finish({
       notificationId: job.id,
       workerId,
@@ -378,8 +400,8 @@ async function processOne(job: QueueRow, workerId: string) {
       : await provider.sendTemplate({
           phoneNumberId: settings.whatsapp_phone_number_id,
           recipient: conversation.external_id,
-          templateName: settings.order_notification_template_name!,
-          languageCode: settings.order_notification_template_language || "pt_BR",
+          templateName: templateName!,
+          languageCode: templateLanguage,
           bodyParameters: buildOrderNotificationTemplateParameters(messageInput),
         });
     const { error: markError } = await admin.rpc("conversation_mark_outbound_result_internal", {
