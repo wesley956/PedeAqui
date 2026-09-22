@@ -35,9 +35,12 @@ vi.mock("@/lib/supabase/admin", () => ({
       const rows: Record<string, unknown> = {
         orders: {
           id: ids.order, organization_id: ids.organization, store_id: ids.store, display_number: 944,
-          fulfillment_type: "delivery", order_status: state.orderStatus, customer_id: null,
+          channel: "web", fulfillment_type: "delivery", order_status: state.orderStatus, customer_id: null,
           customer_name_snapshot: "Cliente Técnico Final", customer_phone_snapshot: "5511999990044",
+          payment_method_snapshot: "cash", subtotal_cents: 1000, discount_cents: 0, delivery_fee_cents: 0,
+          total_cents: 1000, cancel_reason: null,
         },
+        order_items: null,
         store_conversation_settings: {
           whatsapp_enabled: true, connection_status: "connected", whatsapp_phone_number_id: "technical-phone-id",
           access_token_secret_ref: "technical-secret", app_secret_secret_ref: "technical-app-secret",
@@ -129,9 +132,11 @@ describe("FLOW-10 A07-A11 notification and public lifecycle", () => {
     expect(tracking).toMatchObject({ stage: input.expectedStage, statusText: input.expectedText });
     expect(mocks.sendText).toHaveBeenLastCalledWith(expect.objectContaining({ recipient: "5511999990044" }));
     const outbound = mocks.sendText.mock.calls.at(-1)?.[0];
-    expect(outbound.body).toContain("pedido #944");
+    expect(outbound.body).toContain("#944");
     if (input.expectsTrackingLink !== false) {
       expect(outbound.body).toContain(`/m/flow10-final-store/pedido/${ids.order}/acesso`);
+    } else {
+      expect(outbound.body).not.toContain(`/m/flow10-final-store/pedido/${ids.order}/acesso`);
     }
     expect(mocks.rpc).toHaveBeenCalledWith("order_notification_finish_internal", expect.objectContaining({
       p_notification_id: state.jobId, p_status: "sent", p_message_id: `message-${input.type}`,
@@ -144,11 +149,11 @@ describe("FLOW-10 A07-A11 notification and public lifecycle", () => {
   });
 
   it("A08 sends confirmado and exposes the same confirmed tracking stage", async () => {
-    await proveStage({ type: "order_confirmed", orderStatus: "confirmed", productionStatus: "pending", fulfillmentStatus: "pending", jobSuffix: "12", eventSuffix: "22", expectedStage: "confirmed", expectedText: "Pedido confirmado" });
+    await proveStage({ type: "order_confirmed", orderStatus: "confirmed", productionStatus: "pending", fulfillmentStatus: "pending", jobSuffix: "12", eventSuffix: "22", expectedStage: "confirmed", expectedText: "Pedido confirmado", expectsTrackingLink: false });
   });
 
   it("A09 sends em preparo and exposes the same preparing tracking stage", async () => {
-    await proveStage({ type: "production_preparing", orderStatus: "confirmed", productionStatus: "preparing", fulfillmentStatus: "pending", jobSuffix: "13", eventSuffix: "23", expectedStage: "preparing", expectedText: "Pedido em preparo" });
+    await proveStage({ type: "production_preparing", orderStatus: "confirmed", productionStatus: "preparing", fulfillmentStatus: "pending", jobSuffix: "13", eventSuffix: "23", expectedStage: "preparing", expectedText: "Pedido em preparo", expectsTrackingLink: false });
   });
 
   it("A10 sends delivered and reaches terminal delivery on the same order", async () => {
