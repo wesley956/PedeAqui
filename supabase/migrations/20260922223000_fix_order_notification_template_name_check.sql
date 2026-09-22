@@ -1,4 +1,4 @@
--- #1125 — PostgreSQL rejects the previous {1,512} regex quantifier with SQLSTATE 2201B.
+-- #1125 — PostgreSQL rejects the previous large counted regex quantifier with SQLSTATE 2201B.
 -- Keep the same functional contract while separating length validation from character validation.
 
 alter table public.store_conversation_settings
