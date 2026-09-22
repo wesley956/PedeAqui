@@ -341,12 +341,10 @@ export class WhatsAppDirectOrderOrchestrator {
         session?.context as WhatsAppOrderContext,
         HUMAN_HANDOFF_ORDER_SESSION_TTL_MINUTES,
       );
-      await admin.rpc("conversation_transition_internal", {
+      await admin.rpc("conversation_request_human_attention_internal", {
         p_conversation_id: conversation.id,
-        p_target_state: "waiting_agent",
-        p_assigned_user_id: null,
+        p_reason_code: intent === "benefit_handoff" ? "benefit_handoff" : "explicit_handoff",
         p_reason: intent === "benefit_handoff" ? "Cliente contestou saldo ou benefício durante pedido pelo WhatsApp" : "Cliente pediu atendimento humano durante pedido pelo WhatsApp",
-        p_actor_user_id: null,
         p_source: "bot",
       });
       observe?.({ intent, tool: "human_handoff" });

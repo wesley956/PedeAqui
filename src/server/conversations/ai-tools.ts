@@ -138,12 +138,10 @@ async function customerBenefits(context: ToolContext, rawInput: unknown) {
 async function requestHandoff(context: ToolContext, rawInput: unknown) {
   const input = handoffSchema.parse(rawInput);
   const admin = createAdminClient();
-  const { data, error } = await admin.rpc("conversation_transition_internal", {
+  const { data, error } = await admin.rpc("conversation_request_human_attention_internal", {
     p_conversation_id: context.conversationId,
-    p_target_state: "waiting_agent",
-    p_assigned_user_id: null,
+    p_reason_code: "explicit_handoff",
     p_reason: input.reason,
-    p_actor_user_id: null,
     p_source: "ai",
   });
   if (error) throw error;

@@ -54,14 +54,16 @@ describe("WPP-03 Conversations Inbox UI", () => {
     expect(page).toContain("Esta conversa está com outro usuário");
   });
 
-  it("keeps search and unread filtering in the canonical server-side inbox query", () => {
+  it("keeps search canonical and removes unread as an operational notification", () => {
     expect(page).toContain('placeholder="Buscar nome ou telefone"');
-    expect(page).toContain('params.view === "unread"');
     expect(page).toContain("ConversationService.loadInbox({");
     expect(page).toContain("search,");
-    expect(page).toContain("unreadOnly,");
     expect(page).not.toContain("visibleConversations");
-    expect(page).toContain("mensagens não lidas");
+    expect(page).not.toContain('params.view === "unread"');
+    expect(page).not.toContain("mensagens não lidas");
+    expect(page).not.toContain("unreadBadge");
+    expect(page).not.toContain("markConversationReadAction");
+    expect(page).toContain("Cliente pediu atendimento");
     expect(styles).toContain(".filters{display:flex;gap:5px;flex-wrap:wrap;overflow:visible}");
   });
 

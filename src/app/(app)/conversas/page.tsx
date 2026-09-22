@@ -5,7 +5,6 @@ import { ConversationRealtime } from "@/features/conversations/conversation-real
 import {
   assumeConversationAction,
   closeConversationAction,
-  markConversationReadAction,
   queueConversationAction,
   returnConversationToBotAction,
   sendConversationMediaAction,
@@ -79,20 +78,17 @@ function inboxHref({
   status = "all",
   conversation,
   q,
-  view,
   cursor,
 }: {
   status?: string;
   conversation?: string;
   q?: string;
-  view?: string;
   cursor?: string;
 }) {
   const params = new URLSearchParams();
   if (status !== "all") params.set("status", status);
   if (conversation) params.set("conversation", conversation);
   if (q) params.set("q", q);
-  if (view === "unread") params.set("view", "unread");
   if (cursor) params.set("cursor", cursor);
   const query = params.toString();
   return query ? `/conversas?${query}` : "/conversas";
@@ -101,15 +97,13 @@ function inboxHref({
 export default async function ConversationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; conversation?: string; erro?: string; q?: string; view?: string; cursor?: string }>;
+  searchParams: Promise<{ status?: string; conversation?: string; erro?: string; q?: string; cursor?: string }>;
 }) {
   const params = await searchParams;
   const search = (params.q ?? "").trim().slice(0, 80);
-  const unreadOnly = params.view === "unread";
   const inbox = await ConversationService.loadInbox({
     filter: params.status,
     search,
-    unreadOnly,
     cursor: params.cursor,
   });
   const context = await getAccessContext();
@@ -123,7 +117,6 @@ export default async function ConversationsPage({
   const detailContext = detail ? await InboxContextService.load(detail.conversation.id) : null;
   const clientMessageId = detail ? ConversationService.newClientMessageId() : null;
   const latestHistory = detail ? detail.history.slice(-1).reverse() : [];
-  const unreadConversations = inbox.counts.unreadConversations;
   void selectedRow;
 
   const filters = [
@@ -175,29 +168,26 @@ export default async function ConversationsPage({
               <div className={styles.inboxTitleRow}>
                 <div>
                   <strong>Caixa de entrada</strong>
-                  <span>{inbox.counts.total} conversas · {unreadConversations} com não lidas</span>
+                  <span>{inbox.counts.total} conversas</span>
                 </div>
-                {inbox.counts.unread > 0 ? <span className={styles.unreadSummary}>{inbox.counts.unread} mensagens não lidas</span> : <Badge>Em dia</Badge>}
               </div>
 
               <form className={styles.searchForm} action="/conversas" method="get">
                 {inbox.filter !== "all" ? <input type="hidden" name="status" value={inbox.filter} /> : null}
-                {unreadOnly ? <input type="hidden" name="view" value="unread" /> : null}
                 <input className={styles.searchInput} name="q" defaultValue={search} placeholder="Buscar nome ou telefone" aria-label="Buscar conversas" />
                 <Button type="submit" tone="secondary">Buscar</Button>
-                {search ? <Link className={styles.clearSearch} href={inboxHref({ status: inbox.filter, view: unreadOnly ? "unread" : undefined })}>Limpar</Link> : null}
+                {search ? <Link className={styles.clearSearch} href={inboxHref({ status: inbox.filter })}>Limpar</Link> : null}
               </form>
 
               <nav aria-label="Filtros das conversas" className={styles.filters}>
-                {filters.map(([value, label]) => <Link key={value} href={inboxHref({ status: value, q: search })} className={styles.filter} data-active={!unreadOnly && inbox.filter === value || undefined}>{label}</Link>)}
-                <Link href={inboxHref({ q: search, view: "unread" })} className={styles.filter} data-active={unreadOnly || undefined}>Não lidas</Link>
+                {filters.map(([value, label]) => <Link key={value} href={inboxHref({ status: value, q: search })} className={styles.filter} data-active={inbox.filter === value || undefined}>{label}</Link>)}
               </nav>
             </div>
 
             <div className={styles.inboxList}>
               {inbox.conversations.length === 0 ? <div className={styles.listEmpty}>Nenhuma conversa corresponde a esta página. Volte ao início da lista.</div> : inbox.conversations.map((conversation) => {
                 const active = detail?.conversation.id === conversation.id;
-                return <Link key={conversation.id} href={inboxHref({ status: inbox.filter, conversation: conversation.id, q: search, view: unreadOnly ? "unread" : undefined, cursor: params.cursor })} className={styles.conversationLink} aria-current={active ? "page" : undefined}>
+                return <Link key={conversation.id} href={inboxHref({ status: inbox.filter, conversation: conversation.id, q: search, cursor: params.cursor })} className={styles.conversationLink} aria-current={active ? "page" : undefined}>
                   <article className={styles.conversationCard} data-active={active || undefined}>
                     <div className={styles.conversationAvatar} aria-hidden="true">{avatarInitial(conversation.contactName)}</div>
                     <div className={styles.conversationBody}>
@@ -207,10 +197,10 @@ export default async function ConversationsPage({
                       </div>
                       <div className={styles.previewRow}>
                         <span className={styles.preview}>{conversation.preview}</span>
-                        {Number(conversation.unread_count) > 0 ? <span className={styles.unreadBadge}>{conversation.unread_count}</span> : null}
                       </div>
                       <div className={styles.badges}>
                         <Badge tone={statusTone(conversation.status)}>{statusLabel(conversation.status as ConversationStatus)}</Badge>
+                        {conversation.humanAttentionRequestedAt ? <Badge tone="danger">Cliente pediu atendimento</Badge> : null}
                         {conversation.latestDirection === "inbound" ? <span className={styles.lastDirection}>Cliente respondeu</span> : null}
                       </div>
                     </div>
@@ -219,8 +209,8 @@ export default async function ConversationsPage({
               })}
 
               <div className={styles.filters} aria-label="Paginação das conversas">
-                {params.cursor ? <Link className={styles.filter} href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined })}>Voltar ao início</Link> : null}
-                {inbox.pageInfo.hasMore && inbox.pageInfo.nextCursor ? <Link className={styles.filter} href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined, cursor: inbox.pageInfo.nextCursor })}>Mais conversas</Link> : null}
+                {params.cursor ? <Link className={styles.filter} href={inboxHref({ status: inbox.filter, q: search })}>Voltar ao início</Link> : null}
+                {inbox.pageInfo.hasMore && inbox.pageInfo.nextCursor ? <Link className={styles.filter} href={inboxHref({ status: inbox.filter, q: search, cursor: inbox.pageInfo.nextCursor })}>Mais conversas</Link> : null}
               </div>
             </div>
           </aside>
@@ -228,7 +218,7 @@ export default async function ConversationsPage({
           {detail ? <Card className={styles.thread}>
             <div className={styles.threadHeader}>
               <div className={styles.threadIdentity}>
-                <Link href={inboxHref({ status: inbox.filter, q: search, view: unreadOnly ? "unread" : undefined, cursor: params.cursor })} className={styles.mobileBack} aria-label="Voltar para conversas">←</Link>
+                <Link href={inboxHref({ status: inbox.filter, q: search, cursor: params.cursor })} className={styles.mobileBack} aria-label="Voltar para conversas">←</Link>
                 <div className={styles.threadAvatar} aria-hidden="true">{avatarInitial(detail.contact?.name ?? detail.contact?.phone_normalized)}</div>
                 <div>
                   <strong>{detail.contact?.name ?? detail.contact?.phone_normalized ?? "Contato"}</strong>
@@ -255,7 +245,6 @@ export default async function ConversationsPage({
                 {detail.conversation.status !== "human" ? <form action={assumeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button type="submit">Assumir atendimento</Button></form> : null}
                 {detail.conversation.status !== "waiting_agent" && detail.conversation.status !== "closed" ? <form action={queueConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Colocar na fila</Button></form> : null}
                 {detail.conversation.status !== "bot" && detail.conversation.status !== "closed" ? <form action={returnConversationToBotAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Voltar ao robô</Button></form> : null}
-                {Number(detail.conversation.unread_count) > 0 ? <form action={markConversationReadAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Marcar como lida</Button></form> : null}
                 {detail.conversation.status !== "closed" ? <form action={closeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="danger" type="submit">Encerrar</Button></form> : null}
               </div>
 
@@ -387,7 +376,7 @@ export default async function ConversationsPage({
                 <div><dt>Estado</dt><dd>{statusLabel(detail.conversation.status as ConversationStatus)}</dd></div>
                 <div><dt>Responsável</dt><dd>{detail.conversation.status === "human" ? isAssignedToCurrentUser ? "Você" : detail.conversation.assigned_user_id ? "Outro usuário" : "Não identificado" : "—"}</dd></div>
                 <div><dt>Canal</dt><dd>{detail.conversation.channel === "whatsapp" ? "WhatsApp" : detail.conversation.channel}</dd></div>
-                <div><dt>Mensagens não lidas</dt><dd>{Number(detail.conversation.unread_count)}</dd></div>
+                <div><dt>Atenção humana</dt><dd>{detail.conversation.human_attention_requested_at ? "Solicitada pelo cliente" : "Não solicitada"}</dd></div>
                 <div><dt>Retorno ao robô</dt><dd>Manual</dd></div>
               </dl>
             </section>

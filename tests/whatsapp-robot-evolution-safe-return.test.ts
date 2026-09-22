@@ -50,11 +50,11 @@ describe("INT-EVOL-02 safe return and non-actionable acknowledgements", () => {
     expect(nextBlockAt).toBeGreaterThan(handoffAt);
     const handoffBlock = source.slice(handoffAt, nextBlockAt);
     const saveAt = handoffBlock.indexOf("await saveSession(");
-    const transitionAt = handoffBlock.indexOf('await admin.rpc("conversation_transition_internal"');
+    const transitionAt = handoffBlock.indexOf('await admin.rpc("conversation_request_human_attention_internal"');
 
     expect(saveAt).toBeGreaterThan(-1);
     expect(transitionAt).toBeGreaterThan(saveAt);
-    expect(handoffBlock).toContain("p_target_state: \"waiting_agent\"");
+    expect(handoffBlock).toContain('p_reason_code: intent === "benefit_handoff" ? "benefit_handoff" : "explicit_handoff"');
     expect(handoffBlock).toContain("activeOrderStep,");
     expect(handoffBlock).toContain("session?.context as WhatsAppOrderContext");
     expect(handoffBlock).toContain("HUMAN_HANDOFF_ORDER_SESSION_TTL_MINUTES");

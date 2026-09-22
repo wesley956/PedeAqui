@@ -38,6 +38,8 @@ type InboxRpcRow = {
   status: string;
   assigned_user_id: string | null;
   unread_count: number | string | null;
+  human_attention_requested_at: string | null;
+  human_attention_reason_code: string | null;
   last_message_at: string | null;
   opened_at: string;
   closed_at: string | null;
@@ -250,7 +252,7 @@ function assertFreeformAllowed(context: WhatsAppSendContext) {
 async function scopedConversation(conversationId: string, organizationId: string, storeId: string) {
   const admin = createAdminClient();
   const { data, error } = await admin.from("conversations")
-    .select("id, organization_id, store_id, contact_id, channel, status, assigned_user_id, unread_count, last_message_at, opened_at, closed_at")
+    .select("id, organization_id, store_id, contact_id, channel, status, assigned_user_id, unread_count, human_attention_requested_at, human_attention_reason_code, last_message_at, opened_at, closed_at")
     .eq("id", conversationId)
     .eq("organization_id", organizationId)
     .eq("store_id", storeId)
@@ -374,6 +376,8 @@ export class ConversationService {
       status: row.status,
       assigned_user_id: row.assigned_user_id,
       unread_count: Number(row.unread_count ?? 0),
+      humanAttentionRequestedAt: row.human_attention_requested_at,
+      humanAttentionReasonCode: row.human_attention_reason_code,
       last_message_at: row.last_message_at,
       opened_at: row.opened_at,
       closed_at: row.closed_at,
