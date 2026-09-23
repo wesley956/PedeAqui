@@ -66,7 +66,7 @@ function capabilities(deliveryOperationEnabled = true) {
 }
 
 describe("canonical WhatsApp order status notifications", () => {
-  it("keeps received and confirmed visible at the same order stage but on distinct checkpoints", () => {
+  it("deduplicates received and confirmed onto the same initial customer-visible checkpoint", () => {
     const received = resolveNotificationWorkflowVisibility({
       type: "order_received",
       fulfillmentType: "delivery",
@@ -78,8 +78,8 @@ describe("canonical WhatsApp order status notifications", () => {
       settings: customWorkflow,
     });
 
-    expect(received).toMatchObject({ eligible: true, stage: "new", checkpoint: "received" });
-    expect(confirmed).toMatchObject({ eligible: true, stage: "new", checkpoint: "confirmed" });
+    expect(received).toMatchObject({ eligible: true, stage: "new", checkpoint: "new" });
+    expect(confirmed).toMatchObject({ eligible: true, stage: "new", checkpoint: "new" });
   });
 
   it("accepts the custom pickup awaiting_pickup stage as the customer-visible ready checkpoint", () => {

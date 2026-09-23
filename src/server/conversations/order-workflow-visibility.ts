@@ -40,8 +40,11 @@ const notificationStage: Partial<Record<OrderNotificationType, WorkflowStage>> =
 };
 
 const notificationCheckpoint: Record<OrderNotificationType, WorkflowNotificationCheckpoint> = {
-  order_received: "received",
-  order_confirmed: "confirmed",
+  // `received` and `confirmed` are two internal events for the same customer-visible
+  // initial stage. Claiming the same checkpoint lets the existing atomic guard fold
+  // them into one outbound without deleting either canonical event.
+  order_received: "new",
+  order_confirmed: "new",
   production_preparing: "preparing",
   payment_paid: "payment",
   pickup_ready: "awaiting_pickup",
