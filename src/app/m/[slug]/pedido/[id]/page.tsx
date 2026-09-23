@@ -9,6 +9,7 @@ import { PixCopyButton } from "@/features/payments/pix-copy-button";
 import { businessVocabulary, productionStatusLabelForBusiness } from "@/modules/business-vocabulary";
 import { isBusinessType } from "@/modules/module-catalog";
 import { paymentMethodLabels, type FulfillmentType } from "@/server/checkout/schemas";
+import { PublicOrderWhatsAppFollowService } from "@/server/orders/public-order-whatsapp-follow-service";
 import { orderCookieName } from "@/server/orders/order-token";
 import { PublicOrderService } from "@/server/orders/public-order-service";
 import { orderStatusLabels, type FulfillmentStatus, type OrderStatus, type ProductionStatus } from "@/server/orders/state-machines";
@@ -38,6 +39,12 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
   if (!data) notFound();
 
   const { order, items, store, pixPayment } = data;
+  const whatsappFollow = await PublicOrderWhatsAppFollowService.resolve({
+    organizationId: store.organization_id,
+    storeId: store.id,
+    orderId: order.id,
+    displayNumber: Number(order.display_number),
+  });
   const businessType = isBusinessType(store.business_type ?? "") ? store.business_type : "restaurant";
   const vocabulary = businessVocabulary(businessType);
   const orderStatus = order.order_status as OrderStatus;
@@ -96,6 +103,18 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
             {pixPayment.expiresAt ? <p className="muted" style={{ margin: 0, fontSize: 12 }}>Este QR Code é temporário. Se expirar, a página gera uma nova cobrança segura.</p> : null}
           </> : pixPayment.status === "unavailable" ? <><h2>Pix temporariamente indisponível</h2><p className="muted">Seu pedido foi registrado. Esta página tentará gerar o Pix novamente sem duplicar a cobrança.</p></>
             : <><h2>Preparando seu Pix…</h2><p className="muted">Aguarde a atualização automática desta página. Não é necessário refazer o pedido.</p></>}
+      </section> : null}
+
+      {!terminal && whatsappFollow.available ? <section className={`card ${styles.card} ${styles.whatsappCard}`}>
+        <div className={styles.whatsappCopy}>
+          <span className={styles.sectionEyebrow}>WHATSAPP</span>
+          <h2>Acompanhe também pelo WhatsApp</h2>
+          {whatsappFollow.windowStatus === "open"
+            ? <p>Você já iniciou uma conversa recente com a loja. As atualizações pelo WhatsApp podem continuar normalmente quando estiverem habilitadas.</p>
+            : <p>Abra o WhatsApp e envie a mensagem pronta para iniciar ou reabrir o acompanhamento deste pedido.</p>}
+        </div>
+        {whatsappFollow.href ? <a href={whatsappFollow.href} className={styles.whatsappCta} target="_blank" rel="noopener noreferrer">Acompanhar pelo WhatsApp</a> : <span className={styles.whatsappReady}>Conversa recente identificada ✓</span>}
+        {whatsappFollow.requiresCustomerSend ? <small>O acompanhamento só é ativado depois que você tocar em <strong>Enviar</strong> no WhatsApp.</small> : null}
       </section> : null}
 
       <section className={`card ${styles.card} ${styles.timelineCard}`}>
