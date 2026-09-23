@@ -22,6 +22,13 @@
 .updated{grid-column:1/-1;margin-top:2px;font-size:var(--font-size-xs);color:var(--text-secondary)}
 .card{padding:var(--space-4);display:grid;gap:var(--space-3);border-radius:var(--radius-xl)}
 .pixCard{text-align:center;justify-items:center;gap:14px}
+.whatsappCard{border:1px solid color-mix(in srgb,#25d366 35%,var(--border-default));background:color-mix(in srgb,#25d366 5%,var(--surface-1));gap:var(--space-3)}
+.whatsappCopy{display:grid;gap:6px}
+.whatsappCopy h2{font-size:var(--font-size-lg)}
+.whatsappCopy p{color:var(--text-secondary);font-size:var(--font-size-sm);line-height:1.5}
+.whatsappCta{min-height:50px;display:flex;align-items:center;justify-content:center;border-radius:15px;background:#128c4a;color:#fff;font-weight:900;text-decoration:none;text-align:center;padding:10px 16px}
+.whatsappReady{display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:14px;background:var(--state-success-surface);color:var(--state-success-text);font-size:var(--font-size-sm);font-weight:850;text-align:center;padding:8px 12px}
+.whatsappCard small{color:var(--text-secondary);font-size:var(--font-size-xs);line-height:1.45;text-align:center}
 .timelineCard{border:2px solid color-mix(in srgb,var(--brand-primary) 18%,var(--border-default));box-shadow:0 12px 30px rgb(0 0 0 / .05)}
 .cardHead{display:flex;justify-content:space-between;gap:var(--space-3);align-items:center}
 .cardHead h2{font-size:var(--font-size-lg);margin:2px 0 0}
@@ -53,7 +60,7 @@
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);padding-top:var(--space-2)}
 .cta{min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:15px;background:var(--brand-primary);color:var(--text-on-brand);font-weight:900;text-decoration:none}
 .ctaSecondary{background:var(--surface-2);color:var(--text-primary);border:var(--border-width) solid var(--border-default)}
-.back:focus-visible,.cta:focus-visible,.orderDetails>summary:focus-visible{outline:3px solid var(--focus-ring);outline-offset:3px}
+.back:focus-visible,.cta:focus-visible,.whatsappCta:focus-visible,.orderDetails>summary:focus-visible{outline:3px solid var(--focus-ring);outline-offset:3px}
 @media(max-width:640px){
   .root{padding:var(--space-3) var(--space-2) var(--space-12)}
   .hero{padding:var(--space-3);grid-template-columns:minmax(0,max-content) minmax(0,max-content);column-gap:6px;row-gap:5px;border-radius:18px}
@@ -74,6 +81,7 @@
   .itemTop,.summary{display:grid}
   .orderDetails>summary{padding:var(--space-3)}
   .orderDetailsBody{padding:0 var(--space-3)}
+  .whatsappCta{width:100%}
 }
 @media(max-width:360px){
   .hero{grid-template-columns:1fr}
