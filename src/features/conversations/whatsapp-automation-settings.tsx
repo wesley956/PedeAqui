@@ -88,10 +88,41 @@ const previewValues = {
   link_acompanhamento: "https://pedeaqui.app/m/sua-loja/pedido/123",
 } as const;
 
+const trackingPlaceholder = "{link_acompanhamento}";
+
+function initialMessageHasTrackingLink(templates: OrderNotificationTemplateMap) {
+  return (templates.order_received ?? defaultOrderNotificationText("order_received")).includes(trackingPlaceholder);
+}
+
+function withInitialTrackingLink(text: string) {
+  if (text.includes(trackingPlaceholder)) return text;
+  return `${text.trimEnd()}\nAcompanhe seu pedido: ${trackingPlaceholder}`;
+}
+
+function withoutInitialTrackingLink(text: string) {
+  const defaultWithLink = defaultOrderNotificationText("order_received");
+  if (text === defaultWithLink) return "{restaurante}: recebemos seu pedido {pedido}.";
+  return text
+    .replace(/\s*Acompanhe(?:\s+seu\s+pedido)?(?:\s+por\s+aqui)?\s*:\s*\{link_acompanhamento\}\.?/gi, "")
+    .replaceAll(trackingPlaceholder, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/ {2,}/g, " ")
+    .trim();
+}
+
 export function WhatsAppAutomationSettings({ connected, enabled, preset: initialPreset, capabilities, defaults, customTemplates }: Props) {
   const [preset, setPreset] = useState<WhatsAppAutomationPreset>(initialPreset);
   const [texts, setTexts] = useState<OrderNotificationTemplateMap>(customTemplates);
   const custom = preset === "custom";
+  const includeInitialTrackingLink = initialMessageHasTrackingLink(texts);
+
+  function setInitialTrackingLink(enabledValue: boolean) {
+    setTexts((current) => {
+      const currentText = current.order_received ?? defaultOrderNotificationText("order_received");
+      const nextText = enabledValue ? withInitialTrackingLink(currentText) : withoutInitialTrackingLink(currentText);
+      return { ...current, order_received: nextText };
+    });
+  }
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -122,6 +153,23 @@ export function WhatsAppAutomationSettings({ connected, enabled, preset: initial
             Personalizado
           </span>
           <span className="muted" style={{ fontSize: 12 }}>A unidade escolhe individualmente quais etapas elegíveis deseja comunicar.</span>
+        </label>
+      </div>
+
+      <div style={boxStyle}>
+        <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontWeight: 700 }}>
+          <input
+            type="checkbox"
+            checked={includeInitialTrackingLink}
+            onChange={(event) => setInitialTrackingLink(event.target.checked)}
+            style={{ marginTop: 3 }}
+          />
+          <span>
+            Incluir link de acompanhamento na confirmação inicial
+            <span className="muted" style={{ display: "block", fontSize: 12, fontWeight: 400, marginTop: 3 }}>
+              Quando desligado, o primeiro aviso enviado como mensagem livre não inclui o link. As atualizações seguintes continuam sem repetir o link. Fora da janela de atendimento, o modelo aprovado pela Meta não é alterado por esta opção.
+            </span>
+          </span>
         </label>
       </div>
 

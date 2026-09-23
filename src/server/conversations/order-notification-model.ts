@@ -240,7 +240,10 @@ export function buildOrderNotificationBody(input: {
   includeTrackingLink?: boolean;
   cancelReason?: string | null;
 }) {
-  const includeTrackingLink = input.includeTrackingLink ?? true;
+  const templateAllowsTrackingLink = input.type !== "order_received"
+    || input.customTemplate == null
+    || input.customTemplate.includes("{link_acompanhamento}");
+  const includeTrackingLink = (input.includeTrackingLink ?? true) && templateAllowsTrackingLink;
   if (input.type === "order_received" && input.summary) {
     return orderReceivedBody({ summary: input.summary, trackingUrl: input.trackingUrl, includeTrackingLink });
   }
