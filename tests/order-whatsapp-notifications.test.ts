@@ -74,7 +74,7 @@ describe("[329] order notification model", () => {
     expect(validateOrderNotificationTextTemplate("Olá {variavel_inventada}").ok).toBe(false);
   });
 
-  it("falls back to the safe default when a custom template needs unavailable data", () => {
+  it("preserves the explicit no-link preference when a custom initial template needs unavailable data", () => {
     const body = buildOrderNotificationBody({
       type: "order_received",
       storeName: "Cantina",
@@ -83,13 +83,20 @@ describe("[329] order notification model", () => {
       customTemplate: "Olá {cliente}, recebemos {pedido}.",
       customerName: null,
     });
-    expect(body).toBe(buildOrderNotificationBody({
+    expect(body).toContain("Pedido #42 recebido");
+    expect(body).not.toContain("https://app.pedeaqui.example/pedido/42");
+  });
+
+  it("keeps the tracking link when the initial custom template explicitly includes it", () => {
+    const body = buildOrderNotificationBody({
       type: "order_received",
       storeName: "Cantina",
       displayNumber: 42,
       trackingUrl: "https://app.pedeaqui.example/pedido/42",
-    }));
-    expect(body).toContain("recebemos seu pedido #42");
+      customTemplate: "{restaurante}: recebemos {pedido}. Acompanhe: {link_acompanhamento}",
+      customerName: null,
+    });
+    expect(body).toContain("https://app.pedeaqui.example/pedido/42");
   });
 
   it("normalizes overrides without persisting defaults or invalid templates", () => {
