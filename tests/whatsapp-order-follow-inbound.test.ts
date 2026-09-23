@@ -45,18 +45,18 @@ describe("WPP-FOLLOW-02 inbound order follow contract", () => {
 
   it("keeps the lookup tenant-scoped and phone-authorized", () => {
     const source = readFileSync("src/server/conversations/greeting-service.ts", "utf8");
-    expect(source).toContain('.eq("organization_id", result.organization_id)');
-    expect(source).toContain('.eq("store_id", result.store_id)');
+    expect(source).toContain('.eq("organization_id", conversation.organization_id)');
+    expect(source).toContain('.eq("store_id", conversation.store_id)');
     expect(source).toContain('.eq("display_number", displayNumber)');
-    expect(source).toContain("phonesBelongToSameCustomer(order.customer_phone_snapshot, contact.phone_normalized)");
+    expect(source).toContain("phonesBelongToSameCustomer(contact.phone_normalized ?? contact.external_id, order.customer_phone_snapshot)");
   });
 
   it("preserves inbound idempotency and suppresses bot replies during human handoff", () => {
     const greeting = readFileSync("src/server/conversations/greeting-service.ts", "utf8");
     const orchestrator = readFileSync("src/server/conversations/whatsapp-direct-order-orchestrator.ts", "utf8");
 
-    expect(greeting).toContain("if (!result.message_created) return false");
-    expect(orchestrator).toContain("if (!result.message_created) return false");
+    expect(greeting).toContain("if (ingest.message_created === false) return");
+    expect(orchestrator).toContain("ingest.message_created === false");
     expect(greeting).toContain('conversation.status !== "bot"');
     expect(orchestrator).toContain('conversation.status !== "bot"');
   });
