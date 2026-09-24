@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { WhatsAppCoexistenceObservability } from "@/server/conversations/coexistence-observability";
 import {
   PlatformWhatsAppManualError,
   PlatformWhatsAppManualService,
 } from "@/server/platform/platform-whatsapp-manual-service";
+import { PlatformWhatsAppOrderTemplateService } from "@/server/platform/platform-whatsapp-order-template-service";
 
 const storeIdSchema = z.string().uuid();
 
@@ -48,6 +50,12 @@ export async function revalidateManualWhatsAppAction(formData: FormData) {
   if (!storeId) errorRedirect(null, new Error("invalid store"));
   try {
     await PlatformWhatsAppManualService.revalidate(storeId);
+    const current = await PlatformWhatsAppManualService.load(storeId);
+    await WhatsAppCoexistenceObservability.ensureAppWebhookSubscriptionRepair(
+      current.store.organization_id,
+      storeId,
+    );
+    await PlatformWhatsAppOrderTemplateService.ensure(storeId);
   } catch (error) {
     errorRedirect(storeId, error);
   }

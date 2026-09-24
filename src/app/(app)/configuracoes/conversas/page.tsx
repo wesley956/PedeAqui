@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { authorize } from "@/server/access/authorize";
+import { PERMISSIONS } from "@/server/access/permissions";
 import { Card } from "@/components/ui/primitives";
 import { MetaEmbeddedSignupCard } from "@/features/conversations/meta-embedded-signup-card";
 import { saveConversationSettingsAction } from "@/features/conversations/settings-actions";
@@ -10,6 +12,8 @@ import { normalizeOrderNotificationCustomTemplates } from "@/server/conversation
 import { ConversationSettingsService } from "@/server/conversations/settings-service";
 import { resolveWhatsAppAutomationCapabilities } from "@/server/conversations/whatsapp-automation-capability";
 import { WhatsAppAutomationCapabilityService } from "@/server/conversations/whatsapp-automation-capability-service";
+import { WhatsAppOperationalHealthService } from "@/server/conversations/whatsapp-operational-health-service";
+import type { WhatsAppOperationalHealthState, WhatsAppOperationalIssueCode } from "@/server/conversations/whatsapp-operational-health-model";
 import { DEFAULT_CONVERSATION_AUTO_CLOSE_MESSAGE } from "@/server/conversations/conversation-lifecycle";
 
 const fieldStyle = {
@@ -27,13 +31,59 @@ function greetingForEditor(value: string) {
   return value.replaceAll("{restaurante}", "[nome do restaurante]").replaceAll("{link}", "[link do cardápio]");
 }
 
+
+const HEALTH_STATE_LABELS: Record<WhatsAppOperationalHealthState, string> = {
+  healthy: "Saudável",
+  attention: "Atenção",
+  action_required: "Ação necessária",
+  provider_unavailable: "Meta temporariamente indisponível",
+  disconnected: "Desconectado",
+};
+
+const HEALTH_ISSUE_LABELS: Record<WhatsAppOperationalIssueCode, string> = {
+  connection_action_required: "A conexão precisa ser reautorizada pelo fluxo oficial.",
+  connection_status_unknown: "O estado atual da conexão precisa ser conferido.",
+  waba_subscription_not_confirmed: "A assinatura da conta WhatsApp ainda não foi confirmada.",
+  app_webhook_not_confirmed: "O webhook do app Meta ainda não está confirmado.",
+  ingest_failure_recent: "Houve uma falha recente ao processar evento recebido.",
+  outbound_pending: "Existem mensagens de saída ainda pendentes.",
+  outbound_failed_recent: "Houve falha recente em mensagem de saída.",
+  media_processing_backlog: "Existem mídias ainda aguardando processamento.",
+  media_failed_recent: "Houve falha recente no processamento de mídia.",
+  history_sync_error: "O último processamento de histórico registrou erro.",
+  state_sync_error: "O último state sync registrou erro.",
+};
+
+function healthWhen(value: string | null, timeZone: string) {
+  if (!value) return "Sem registro";
+  try {
+    return new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
+      timeZone,
+    }).format(new Date(value));
+  } catch {
+    return "Data indisponível";
+  }
+}
+
+function healthGuidance(state: WhatsAppOperationalHealthState) {
+  if (state === "healthy") return "Canal sem pendências operacionais detectadas.";
+  if (state === "disconnected") return "O canal está desligado. Histórico e pedidos continuam preservados.";
+  if (state === "provider_unavailable") return "A conexão local está preservada; aguarde a Meta estabilizar antes de reconectar.";
+  if (state === "action_required") return "Use o fluxo oficial de reconexão. Não altere token, WABA ou número diretamente.";
+  return "Revise os itens abaixo. O núcleo de pedidos continua independente do WhatsApp.";
+}
+
 export default async function ConversationSettingsPage() {
+  await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
   const platformConfig = MetaEmbeddedSignupService.publicConfig();
   const [settings, embeddedStatus, structural] = await Promise.all([
     ConversationSettingsService.load(),
     MetaEmbeddedSignupService.currentStatus(),
     WhatsAppAutomationCapabilityService.loadCurrentStore(),
   ]);
+  const operationalHealth = await WhatsAppOperationalHealthService.load();
   const connectionConfigured = Boolean(settings?.whatsapp_phone_number_id && settings?.access_token_secret_ref && settings?.app_secret_secret_ref);
   const orderTemplateConfigured = Boolean(settings?.order_notification_template_name);
   const preset = normalizeWhatsAppAutomationPreset(settings?.order_notification_preset);
@@ -73,6 +123,64 @@ export default async function ConversationSettingsPage() {
       </header>
 
       <MetaEmbeddedSignupCard status={embeddedStatus} platformReady={platformConfig.ready} />
+
+      <Card style={{ display: "grid", gap: 12 }} aria-labelledby="whatsapp-health-title">
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div>
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>DIAGNÓSTICO OPERACIONAL</p>
+            <h2 id="whatsapp-health-title" style={{ margin: "3px 0 0", fontSize: 18 }}>Saúde do WhatsApp</h2>
+          </div>
+          <strong style={{ fontSize: 13 }}>{HEALTH_STATE_LABELS[operationalHealth.state]}</strong>
+        </div>
+        <p className="muted" style={{ margin: 0, fontSize: 13 }}>{healthGuidance(operationalHealth.state)}</p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8 }}>
+          <div style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 10 }}>
+            <strong style={{ display: "block", fontSize: 12 }}>Conexão</strong>
+            <span className="muted" style={{ fontSize: 12 }}>
+              {operationalHealth.connection.enabled ? (operationalHealth.connection.status === "connected" ? "Conectada" : "Requer atenção") : "Desligada"}
+              {operationalHealth.connection.mode === "coexistence" ? " · Coexistência" : operationalHealth.connection.mode === "cloud_api" ? " · Cloud API" : ""}
+            </span>
+          </div>
+          <div style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 10 }}>
+            <strong style={{ display: "block", fontSize: 12 }}>Webhook</strong>
+            <span className="muted" style={{ fontSize: 12 }}>
+              {operationalHealth.connection.mode === "coexistence"
+                ? operationalHealth.webhook.subscriptionStatus === "subscribed" && operationalHealth.webhook.appWebhookStatus === "subscribed" ? "Assinaturas confirmadas" : "Confirmação pendente/revisar"
+                : "Monitorado pelo canal oficial"}
+            </span>
+          </div>
+          <div style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 10 }}>
+            <strong style={{ display: "block", fontSize: 12 }}>Último inbound</strong>
+            <span className="muted" style={{ fontSize: 12 }}>{healthWhen(operationalHealth.activity.lastInboundAt, operationalHealth.timezone)}</span>
+          </div>
+          {operationalHealth.connection.mode === "coexistence" ? <div style={{ padding: 10, border: "1px solid var(--border)", borderRadius: 10 }}>
+            <strong style={{ display: "block", fontSize: 12 }}>Último echo do Business App</strong>
+            <span className="muted" style={{ fontSize: 12 }}>{healthWhen(operationalHealth.webhook.lastEchoPersistedAt ?? operationalHealth.webhook.lastEchoWebhookAt, operationalHealth.timezone)}</span>
+          </div> : null}
+        </div>
+
+        <div style={{ display: "grid", gap: 4, padding: 10, border: "1px solid var(--border)", borderRadius: 10 }}>
+          <strong style={{ fontSize: 12 }}>Filas e atendimento</strong>
+          <p className="muted" style={{ margin: 0, fontSize: 12 }}>
+            {operationalHealth.queues.outboundPending} mensagem(ns) pendente(s) · {operationalHealth.queues.mediaPending} mídia(s) em processamento · {operationalHealth.activity.waitingAgentCount} aguardando atendente
+          </p>
+          <p className="muted" style={{ margin: 0, fontSize: 12 }}>
+            Janela de falhas recentes: {operationalHealth.recentFailureWindowHours}h · {operationalHealth.queues.outboundFailedRecent} envio(s) falho(s) · {operationalHealth.queues.mediaFailedRecent} mídia(s) falha(s)
+          </p>
+        </div>
+
+        {operationalHealth.issues.length > 0 ? <div style={{ display: "grid", gap: 5 }}>
+          <strong style={{ fontSize: 12 }}>Itens para verificar</strong>
+          <ul style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 4 }}>
+            {operationalHealth.issues.map((issue) => <li key={issue} className="muted" style={{ fontSize: 12 }}>{HEALTH_ISSUE_LABELS[issue]}</li>)}
+          </ul>
+        </div> : <p style={{ margin: 0, fontSize: 12, fontWeight: 700 }}>Nenhuma pendência operacional detectada.</p>}
+
+        <p className="muted" style={{ margin: 0, fontSize: 11 }}>
+          Este diagnóstico não mostra mensagens, telefones, endereços, tokens ou identificadores técnicos da conta Meta.
+        </p>
+      </Card>
 
       <form action={saveConversationSettingsAction} style={{ display: "grid", gap: 14 }}>
         <Card style={{ display: "grid", gap: 12 }}>

@@ -8,7 +8,7 @@ const aliases: Readonly<Record<string, string>> = {
   msm: "mesmo", memo: "mesmo", tb: "tambem", tbm: "tambem", tmb: "tambem",
   pq: "porque", q: "que", qro: "quero", qeru: "quero", keru: "quero", vc: "voce", vcs: "voces",
   cm: "com", c: "com", pra: "para", pro: "para", p: "para", agr: "agora", hj: "hoje", dps: "depois",
-  qtd: "quantidade", qnt: "quantidade", qnts: "quantidade", qtas: "quantidade",
+  qtd: "quantidade", qnt: "quantidade", qnts: "quantidade", qtas: "quantidade", qto: "quanto", qnto: "quanto",
   un: "unidade", und: "unidade", unid: "unidade", unds: "unidades", unids: "unidades",
   cx: "caixa", cxa: "caixa", cxs: "caixas", pct: "pacote", pcte: "pacote",
   meni: "menu", meniu: "menu", mennu: "menu",

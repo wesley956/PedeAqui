@@ -10,10 +10,11 @@ const shell = read("src/components/layout/app-shell.tsx");
 const layout = read("src/app/(app)/layout.tsx");
 
 describe("global human attention alert", () => {
-  it("counts only waiting conversations inside the current tenant/store", () => {
+  it("counts only customer-requested human attention inside the current tenant/store", () => {
     expect(service).toContain('.eq("organization_id", context.organizationId)');
     expect(service).toContain('.eq("store_id", storeId)');
     expect(service).toContain('.eq("status", "waiting_agent")');
+    expect(service).toContain('.not("human_attention_requested_at", "is", null)');
     expect(service).toContain('{ count: "exact" }');
   });
 

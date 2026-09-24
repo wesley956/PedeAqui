@@ -1,10 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { authorize } from "@/server/access/authorize";
+import { PERMISSIONS } from "@/server/access/permissions";
 import type { WhatsAppConnectionMode } from "@/features/conversations/whatsapp-connection-model";
 import { MetaEmbeddedSignupService } from "@/server/conversations/meta-embedded-signup-service";
 
 export async function getWhatsAppEmbeddedSignupBrowserConfigAction() {
+  await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
   const config = MetaEmbeddedSignupService.publicConfig();
   return {
     ready: config.ready,

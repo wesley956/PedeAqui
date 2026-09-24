@@ -1,9 +1,25 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buildCustomerBenefitsMessage, buildWhatsAppBotMenu, isGrowthBenefitIntent, normalizeBotInput, resolveWhatsAppBotIntent } from "@/server/conversations/bot-menu";
+import {
+  buildCustomerBenefitsMessage,
+  buildWhatsAppBotMenu,
+  isGrowthBenefitIntent,
+  normalizeBotInput,
+  priceProductQueryFromInput,
+  resolveWhatsAppBotIntent,
+} from "@/server/conversations/bot-menu";
+import {
+  asksForMenuDescription,
+  catalogAvailabilityQueryFromInput,
+} from "@/server/conversations/whatsapp-catalog-intent-core";
 import { buildPublicMenuUrl } from "@/server/conversations/greeting";
 import { loadCustomerBenefits } from "@/server/growth/customer-benefits";
+import {
+  StoreOperationalStatusService,
+  storeClosedOrderMessage,
+  storeOperationalHoursMessage,
+} from "@/server/menu/store-operational-status";
 import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import {
   asksAboutSavedAddress,
@@ -20,8 +36,9 @@ import {
   type WhatsAppOrderContext,
   type WhatsAppOrderStep,
 } from "@/server/conversations/whatsapp-smart-order-service";
+import { isExplicitMenuNavigation } from "@/server/conversations/whatsapp-navigation";
 import { recordFailure } from "@/server/observability/failure";
-import type { LegacyIntelligenceObserver } from "@/server/conversations/legacy-intelligence-observation";
+import type { LegacyIntelligenceDecision, LegacyIntelligenceObserver } from "@/server/conversations/legacy-intelligence-observation";
 
 type IngestResult = {
   conversation_id?: string;
@@ -33,6 +50,9 @@ type ClaimedOutbound = {
   claimed?: boolean;
   message_id?: string;
 };
+
+const DEFAULT_ORDER_SESSION_TTL_MINUTES = 45;
+const HUMAN_HANDOFF_ORDER_SESSION_TTL_MINUTES = 12 * 60;
 
 async function sendBotText(input: {
   requestId: string;
@@ -97,9 +117,10 @@ async function saveSession(
   step: WhatsAppOrderStep | "menu" | "awaiting_tracking_code",
   messageId: string,
   context: WhatsAppOrderContext | null,
+  ttlMinutes = DEFAULT_ORDER_SESSION_TTL_MINUTES,
 ) {
   const admin = createAdminClient();
-  const expiresAt = new Date(Date.now() + 45 * 60 * 1000).toISOString();
+  const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000).toISOString();
   const { error } = await admin.rpc("automation_session_upsert_internal", {
     p_conversation_id: conversationId,
     p_step: step,
@@ -113,6 +134,16 @@ async function saveSession(
 function wantsHuman(text: string) {
   const normalized = normalizeBotInput(text);
   return normalized === "3" || normalized.includes("atendente") || normalized.includes("humano") || normalized.includes("falar com restaurante");
+}
+
+function activeOrderObservation(text: string): LegacyIntelligenceDecision {
+  if (asksForMenuDescription(text)) return { intent: "menu_summary", tool: "catalog" };
+  if (catalogAvailabilityQueryFromInput(text)) return { intent: "catalog_availability", tool: "catalog" };
+  if (priceProductQueryFromInput(text)) return { intent: "price", tool: "catalog" };
+  const intent = resolveWhatsAppBotIntent(text, "menu");
+  if (intent === "menu_link") return { intent, tool: "catalog" };
+  if (intent === "payment") return { intent, tool: "conversation_info" };
+  return { intent: "order_continue", tool: "whatsapp_order" };
 }
 
 function savedAddressReply(addresses: Awaited<ReturnType<typeof loadWhatsAppSavedAddresses>>) {
@@ -190,8 +221,8 @@ export class WhatsAppDirectOrderOrchestrator {
     const store = storeResult.data;
     const inbound = inboundResult.data;
     const session = sessionResult.data;
-    if (!settings?.whatsapp_orders_enabled || !settings.default_bot_enabled || !settings.whatsapp_enabled) return false;
-    if (!settings.whatsapp_phone_number_id || !settings.access_token_secret_ref || !contact?.external_id || !store?.slug || !store.name || store.status !== "active") return false;
+    if (!settings?.default_bot_enabled || !settings.whatsapp_enabled) return false;
+    if (!settings.whatsapp_phone_number_id || !settings.access_token_secret_ref || !contact?.external_id || !store?.slug || !store.name) return false;
     if (!inbound || (inbound.content_type !== "text" && inbound.content_type !== "interactive")) return false;
 
     const active = session?.state === "active" && (!session.expires_at || Date.parse(session.expires_at) > Date.now());
@@ -200,7 +231,9 @@ export class WhatsAppDirectOrderOrchestrator {
     const naturalOrder = looksLikeWhatsAppOrderItems(inbound.body);
     const savedAddressQuestion = asksAboutSavedAddress(inbound.body);
     const trackingNumberHelp = asksForTrackingNumberHelp(inbound.body);
-    if (!activeOrderStep && intent !== "order_start" && !naturalOrder && !savedAddressQuestion && !trackingNumberHelp) return false;
+    const closedGreetingCandidate = !activeOrderStep && intent === "menu";
+    if (!settings.whatsapp_orders_enabled && !closedGreetingCandidate) return false;
+    if (!activeOrderStep && intent !== "menu" && intent !== "order_start" && !naturalOrder && !savedAddressQuestion && !trackingNumberHelp) return false;
 
     const sendBase = {
       requestId,
@@ -210,6 +243,14 @@ export class WhatsAppDirectOrderOrchestrator {
       phoneNumberId: settings.whatsapp_phone_number_id,
       accessTokenSecretRef: settings.access_token_secret_ref,
       recipient: contact.external_id,
+    };
+    let operationalStatusPromise: ReturnType<typeof StoreOperationalStatusService.load> | null = null;
+    const loadOperationalStatus = () => {
+      operationalStatusPromise ??= StoreOperationalStatusService.load({
+        organizationId: conversation.organization_id,
+        storeId: conversation.store_id,
+      });
+      return operationalStatusPromise;
     };
 
     if (savedAddressQuestion) {
@@ -270,7 +311,16 @@ export class WhatsAppDirectOrderOrchestrator {
       return true;
     }
 
-    if (activeOrderStep && normalizeBotInput(inbound.body) === "menu") {
+    if (activeOrderStep && intent === "hours") {
+      const operational = await loadOperationalStatus();
+      const body = `${storeOperationalHoursMessage(operational)}\n\nSua montagem atual continua salva.`;
+      await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:hours:${ingest.message_id}` });
+      await saveSession(conversation.id, activeOrderStep, ingest.message_id, session?.context as WhatsAppOrderContext);
+      observe?.({ intent: "hours", tool: "conversation_info" });
+      return true;
+    }
+
+    if (activeOrderStep && isExplicitMenuNavigation(inbound.body)) {
       const body = buildWhatsAppBotMenu(store.name, true, settings.bot_display_name);
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:menu:${ingest.message_id}` });
       await saveSession(conversation.id, "menu", ingest.message_id, null);
@@ -281,18 +331,22 @@ export class WhatsAppDirectOrderOrchestrator {
     if (activeOrderStep && (wantsHuman(inbound.body) || intent === "benefit_handoff")) {
       await sendBotText({
         ...sendBase,
-        body: `Parei a montagem do pedido. ${settings.handoff_message}`,
+        body: `Vou pausar a automação para o atendimento humano, mas mantive a montagem do seu pedido salva. ${settings.handoff_message}`,
         clientMessageId: `auto:wa-order:handoff:${ingest.message_id}`,
       });
-      await admin.rpc("conversation_transition_internal", {
+      await saveSession(
+        conversation.id,
+        activeOrderStep,
+        ingest.message_id,
+        session?.context as WhatsAppOrderContext,
+        HUMAN_HANDOFF_ORDER_SESSION_TTL_MINUTES,
+      );
+      await admin.rpc("conversation_request_human_attention_internal", {
         p_conversation_id: conversation.id,
-        p_target_state: "waiting_agent",
-        p_assigned_user_id: null,
+        p_reason_code: intent === "benefit_handoff" ? "benefit_handoff" : "explicit_handoff",
         p_reason: intent === "benefit_handoff" ? "Cliente contestou saldo ou benefício durante pedido pelo WhatsApp" : "Cliente pediu atendimento humano durante pedido pelo WhatsApp",
-        p_actor_user_id: null,
         p_source: "bot",
       });
-      await saveSession(conversation.id, "menu", ingest.message_id, null);
       observe?.({ intent, tool: "human_handoff" });
       return true;
     }
@@ -311,6 +365,34 @@ export class WhatsAppDirectOrderOrchestrator {
       await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:benefits:${ingest.message_id}` });
       await saveSession(conversation.id, activeOrderStep, ingest.message_id, session?.context as WhatsAppOrderContext);
       observe?.({ intent, tool: "growth_benefits" });
+      return true;
+    }
+
+    if (closedGreetingCandidate) {
+      const operational = await loadOperationalStatus();
+      if (operational.canOrder) return false;
+      await sendBotText({
+        ...sendBase,
+        body: storeClosedOrderMessage(operational),
+        clientMessageId: `auto:wa-order:closed-greeting:${ingest.message_id}`,
+      });
+      await saveSession(conversation.id, "menu", ingest.message_id, null);
+      observe?.({ intent: "menu", tool: "conversation_info" });
+      return true;
+    }
+
+    const operational = await loadOperationalStatus();
+    if (!operational.canOrder) {
+      const preserved = activeOrderStep ? "\n\nSua montagem atual continua salva para você retomar quando a loja voltar a aceitar pedidos." : "";
+      const body = `${storeClosedOrderMessage(operational)}${preserved}`;
+      await sendBotText({ ...sendBase, body, clientMessageId: `auto:wa-order:closed:${ingest.message_id}` });
+      await saveSession(
+        conversation.id,
+        activeOrderStep ?? "menu",
+        ingest.message_id,
+        activeOrderStep ? session?.context as WhatsAppOrderContext : null,
+      );
+      observe?.(activeOrderStep ? { intent: "order_continue", tool: "whatsapp_order" } : { intent: "order_start", tool: "whatsapp_order" });
       return true;
     }
 
@@ -335,7 +417,7 @@ export class WhatsAppDirectOrderOrchestrator {
     });
     await sendBotText({ ...sendBase, body: handled.body, clientMessageId: `auto:wa-order:${ingest.message_id}` });
     await saveSession(conversation.id, handled.nextStep, ingest.message_id, handled.context);
-    observe?.({ intent: activeOrderStep ? "order_continue" : "order_start", tool: "whatsapp_order" });
+    observe?.(activeOrderStep ? activeOrderObservation(inbound.body) : { intent: "order_start", tool: "whatsapp_order" });
     return true;
   }
 }

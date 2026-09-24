@@ -55,7 +55,7 @@ describe("stabilization #830 controlled failure recovery", () => {
     expect(created).toBeGreaterThan(-1);
     for (const optional of [
       "OrderNotificationContextService.capture",
-      'scheduleOrderWhatsAppNotifications("checkout.order_created")',
+      'scheduleOrderWhatsAppNotifications("checkout.order_created", result.order_id)',
       "scheduleOrderPixCharge",
       "CustomerRecognitionService.issueFromOrder",
     ]) expect(actions.indexOf(optional, created)).toBeGreaterThan(created);

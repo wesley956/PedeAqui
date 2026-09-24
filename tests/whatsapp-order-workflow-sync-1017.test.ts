@@ -49,7 +49,7 @@ describe("#1017 effective customer-visible workflow", () => {
     );
     expect(resolveNotificationWorkflowVisibility({ type: "production_preparing", fulfillmentType: "delivery", settings }).eligible).toBe(false);
     expect(resolveNotificationWorkflowVisibility({ type: "production_preparing", fulfillmentType: "pickup", settings }).eligible).toBe(true);
-    expect(resolveNotificationWorkflowVisibility({ type: "pickup_ready", fulfillmentType: "pickup", settings }).eligible).toBe(false);
+    expect(resolveNotificationWorkflowVisibility({ type: "pickup_ready", fulfillmentType: "pickup", settings }).eligible).toBe(true);
     expect(resolveNotificationWorkflowVisibility({ type: "out_for_delivery", fulfillmentType: "delivery", settings }).eligible).toBe(true);
   });
 
@@ -104,9 +104,9 @@ describe("#1017 effective customer-visible workflow", () => {
       visibleStage: "new",
       trackingUrl: "https://pedeaqui.example/acesso",
     });
-    expect(message).toContain("Etapa atual: Novo");
+    expect(message).toContain("Etapa atual: Pedido confirmado");
     expect(message).not.toContain("Preparo:");
-    expect(message).not.toContain("em preparo");
+    expect(message).not.toContain("Pedido em preparo");
   });
 });
 

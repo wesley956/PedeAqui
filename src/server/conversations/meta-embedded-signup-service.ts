@@ -14,6 +14,11 @@ import {
   resolveWhatsAppAppSecret,
   resolveWhatsAppGraphVersion,
 } from "@/server/conversations/provider";
+import {
+  MetaSubscriptionCertificationError,
+  certifyMetaAppSubscription,
+  type MetaSubscribedAppsResponse,
+} from "@/server/conversations/meta-waba-subscription";
 
 const idSchema = z.string().trim().regex(/^[0-9]{3,40}$/);
 const modeSchema = z.enum(["coexistence", "cloud_api"]);
@@ -60,6 +65,7 @@ class MetaGraphError extends Error {
 }
 type GraphErrorPayload = { error?: { code?: number; message?: string; type?: string } };
 function safeMetaErrorKind(error: unknown) {
+  if (error instanceof MetaSubscriptionCertificationError) return error.kind;
   if (error instanceof MetaGraphError) return error.code ? `meta_${error.code}` : `meta_http_${error.status}`;
   if (error instanceof WhatsAppProviderError) return error.providerCode ? `meta_${error.providerCode}` : `meta_http_${error.status}`;
   if (error instanceof Error && error.message.startsWith("Meta platform configuration missing:")) return "platform_configuration_missing";
@@ -140,6 +146,12 @@ async function ensurePedeAquiSystemUserAccess(wabaId: string, phoneNumberId: str
 async function subscribePedeAquiApp(wabaId: string, token: string) {
   await graphRequest<Record<string, unknown>>(`${encodeURIComponent(wabaId)}/subscribed_apps`, token, { method: "POST", body: JSON.stringify({}) });
 }
+async function certifyPedeAquiAppSubscription(wabaId: string, token: string) {
+  const appId = requiredEnv("META_APP_ID");
+  return certifyMetaAppSubscription(appId, () =>
+    graphRequest<MetaSubscribedAppsResponse>(`${encodeURIComponent(wabaId)}/subscribed_apps`, token, { method: "GET" }),
+  );
+}
 async function registerPhone(phoneNumberId: string, pin: string, systemToken: string) {
   await graphRequest<Record<string, unknown>>(`${encodeURIComponent(phoneNumberId)}/register`, systemToken, {
     method: "POST",
@@ -181,7 +193,7 @@ export class MetaEmbeddedSignupService {
   }
 
   static async currentStatus() {
-    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE);
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const selection = "connection_status, onboarding_status, whatsapp_enabled, connection_mode, whatsapp_phone_number_id, access_token_secret_ref, display_phone_number, verified_name, quality_rating, connected_at, last_health_check_at, last_connection_error_kind, meta_billing_mode";
@@ -234,7 +246,7 @@ export class MetaEmbeddedSignupService {
     const config = this.publicConfig();
     const configId = resolveConfigId(mode);
     if (!config.ready || !config.appId || !config.graphVersion || !configId) throw new Error(config.reason ?? "Embedded Signup indisponível.");
-    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE);
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const now = new Date();
@@ -276,7 +288,7 @@ export class MetaEmbeddedSignupService {
 
   static async complete(input: unknown) {
     const values = completeSchema.parse(input);
-    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE);
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data: session, error: sessionError } = await admin.from("whatsapp_embedded_signup_sessions")
@@ -314,6 +326,7 @@ export class MetaEmbeddedSignupService {
       const systemToken = await ensurePedeAquiSystemUserAccess(values.wabaId, phoneNumberId, onboardingToken);
       await updateSession(values.sessionId, { status: "subscribing_webhooks" });
       await subscribePedeAquiApp(values.wabaId, onboardingToken);
+      await certifyPedeAquiAppSubscription(values.wabaId, onboardingToken);
 
       if (mode === "cloud_api") {
         await updateSession(values.sessionId, { status: "registering_phone" });
@@ -357,7 +370,7 @@ export class MetaEmbeddedSignupService {
         action: "conversations.whatsapp_connected",
         entityType: "store_conversation_settings",
         entityId: storeId,
-        after: { provider: "meta_cloud", connection_mode: mode, phone_number_id: phoneNumberId, waba_id: values.wabaId, connection_status: "connected" },
+        after: { provider: "meta_cloud", connection_mode: mode, phone_number_id: phoneNumberId, waba_id: values.wabaId, connection_status: "connected", subscription_certified: true },
       });
       return { ok: true, displayPhoneNumber: phone.displayPhoneNumber, verifiedName: phone.verifiedName, connectionMode: mode };
     } catch (error) {
@@ -377,7 +390,7 @@ export class MetaEmbeddedSignupService {
   }
 
   static async disconnect() {
-    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE);
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const now = new Date().toISOString();

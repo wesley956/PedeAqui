@@ -59,7 +59,7 @@ export async function createOrderFromCheckoutAction(formData: FormData) {
 
   const result = await OrderService.createFromCheckout(storeSlug, token);
   await OrderNotificationContextService.capture(result.order_id, result.accessToken);
-  scheduleOrderWhatsAppNotifications("checkout.order_created");
+  scheduleOrderWhatsAppNotifications("checkout.order_created", result.order_id);
   scheduleOrderPixCharge(result.order_id);
   cookieStore.set(orderCookieName(storeSlug, result.order_id), result.accessToken, {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
@@ -103,13 +103,13 @@ export async function cancelOrderAction(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "");
   const reason = String(formData.get("reason") ?? "");
   const routed = await routeOrderManagerLifecycle({ orderId, intent: "cancel", reason });
-  if (!routed.external) scheduleOrderWhatsAppNotifications("order.canceled");
+  if (!routed.external) scheduleOrderWhatsAppNotifications("order.canceled", orderId);
   refreshOrder(orderId);
 }
 export async function confirmOrderAction(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "");
   const routed = await routeOrderManagerLifecycle({ orderId, intent: "accept" });
-  if (!routed.external) scheduleOrderWhatsAppNotifications("order.confirmed");
+  if (!routed.external) scheduleOrderWhatsAppNotifications("order.confirmed", orderId);
   refreshOrder(orderId);
 }
 export async function transitionProductionAction(formData: FormData) {
@@ -117,13 +117,13 @@ export async function transitionProductionAction(formData: FormData) {
   const status = String(formData.get("status") ?? "") as ProductionStatus;
   if (status === "preparing") {
     const routed = await routeOrderManagerLifecycle({ orderId, intent: "start_production" });
-    if (!routed.external) scheduleOrderWhatsAppNotifications(`production.${status}`);
+    if (!routed.external) scheduleOrderWhatsAppNotifications(`production.${status}`, orderId);
   } else if (status === "ready") {
     const routed = await routeOrderManagerLifecycle({ orderId, intent: "mark_ready" });
-    if (!routed.external) scheduleOrderWhatsAppNotifications(`production.${status}`);
+    if (!routed.external) scheduleOrderWhatsAppNotifications(`production.${status}`, orderId);
   } else {
     await OrderService.setProduction(orderId, status);
-    scheduleOrderWhatsAppNotifications(`production.${status}`);
+    scheduleOrderWhatsAppNotifications(`production.${status}`, orderId);
   }
   refreshOrder(orderId);
 }
@@ -132,7 +132,7 @@ export async function transitionPaymentAction(formData: FormData) {
   const status = String(formData.get("status") ?? "");
   if (status !== "paid") throw new Error("Esta alteração de pagamento não está disponível por esta ação.");
   await PaymentService.confirmDefaultForOrder(orderId);
-  scheduleOrderWhatsAppNotifications("payment.paid");
+  scheduleOrderWhatsAppNotifications("payment.paid", orderId);
   refreshOrder(orderId);
 }
 export async function transitionFulfillmentAction(formData: FormData) {
@@ -142,7 +142,7 @@ export async function transitionFulfillmentAction(formData: FormData) {
     throw new Error("Atualize as etapas da entrega pela Central de Entregas.");
   }
   await OrderService.setFulfillment(orderId, status);
-  scheduleOrderWhatsAppNotifications(`fulfillment.${status}`);
+  scheduleOrderWhatsAppNotifications(`fulfillment.${status}`, orderId);
   refreshOrder(orderId);
 }
 
@@ -205,14 +205,14 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
       case "await_courier": await DeliveryOperationsService.markWaiting(orderId); break;
       case "manual_out_for_delivery": {
         await ManualDeliveryService.dispatch(orderId);
-        scheduleOrderWhatsAppNotifications("delivery.out_for_delivery");
+        scheduleOrderWhatsAppNotifications("delivery.out_for_delivery", orderId);
         message = "Pedido marcado como saiu para entrega.";
         break;
       }
       case "manual_finish_delivery": {
         const result = await ManualDeliveryService.finish(orderId, formData.get("paymentReceived") === "yes");
-        scheduleOrderWhatsAppNotifications("delivery.delivered");
-        if (result.paymentConfirmed) scheduleOrderWhatsAppNotifications("payment.paid");
+        scheduleOrderWhatsAppNotifications("delivery.delivered", orderId);
+        if (result.paymentConfirmed) scheduleOrderWhatsAppNotifications("payment.paid", orderId);
         if (result.completed) {
           message = "Entrega confirmada e pedido finalizado.";
         } else if (result.paymentIssue) {
@@ -248,7 +248,7 @@ export async function orderManagerAction(_previousState: OrderManagerActionState
       }
     }
     if (!externalLifecycleCommand && !["print", "reprint", "manual_out_for_delivery", "manual_finish_delivery"].includes(parsed.data)) {
-      scheduleOrderWhatsAppNotifications(`order_manager.${parsed.data}`);
+      scheduleOrderWhatsAppNotifications(`order_manager.${parsed.data}`, orderId);
     }
     refreshOrder(orderId);
     scheduleOrderActionTelemetry(orderId, parsed.data, startedAt, "success");

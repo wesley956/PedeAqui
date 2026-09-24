@@ -5,3 +5,8 @@ Este adendo preserva os baselines históricos e registra superfícies adicionada
 ## Configurações da unidade
 
 - `/configuracoes/impressoes/gerenciar` — gestão das conexões de impressora da unidade, com ativação/desativação reversível e desvínculo confirmado. A operação preserva configuração, quantidade de vias e histórico; as mutações exigem `PRINTING_MANAGE` e permanecem isoladas por organização e unidade.
+
+## Conversas / Inbox
+
+- `/api/conversations/[conversationId]/messages` — endpoint autenticado e tenant-scoped para paginação e catch-up incremental do histórico da conversa. Exige permissão de visualização de Conversas, reutiliza a fonte canônica `messages`, não expõe credenciais Meta e não cria armazenamento paralelo.
+- `/api/conversations/[conversationId]/media/[mediaId]` — endpoint autenticado e tenant-scoped para projetar mídia privada da conversa por URL assinada curta; valida organização, unidade e conversa antes de redirecionar e não expõe caminho de storage nem credencial Meta.

@@ -143,9 +143,111 @@ async function runBrowserCompatibility() {
   }
 }
 
+const checkoutBaseCss = `
+:root {
+  --brand-primary:#ff5a1f; --brand-highlight:#ff5a1f; --surface-0:#fff; --surface-1:#fff; --surface-2:#f3f4f6;
+  --text-primary:#111827; --text-secondary:#6b7280; --text-on-brand:#fff; --border-default:#e5e7eb; --border-width:1px;
+  --state-danger:#b91c1c; --state-danger-surface:#fee2e2; --state-danger-text:#991b1b;
+  --space-1:4px; --space-2:8px; --space-3:16px; --space-4:24px;
+  --font-size-xs:12px; --font-size-sm:14px; --font-size-md:16px; --font-size-lg:20px; --font-size-xl:24px;
+}
+* { box-sizing:border-box; }
+html, body { margin:0; width:100%; height:100%; }
+body { font-family:Arial,sans-serif; }
+`;
+
+async function checkoutFixtureHtml({ longError = false } = {}) {
+  const [checkoutCss, viewportCss] = await Promise.all([
+    fs.readFile(path.join(process.cwd(), "src/app/m/[slug]/checkout/checkout.module.css"), "utf8"),
+    fs.readFile(path.join(process.cwd(), "src/app/m/[slug]/checkout/checkout-viewport.css"), "utf8"),
+  ]);
+  const errorText = longError
+    ? "Algo mudou no pedido. Confira os dados destacados e tente confirmar novamente. ".repeat(10)
+    : "Confira os dados do pedido antes de confirmar.";
+  const repeated = Array.from({ length: 10 }, (_, index) => `<p>Item ${index + 1} · conteúdo necessário do resumo do pedido para validar rolagem interna.</p>`).join("");
+  return `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"><style>${checkoutBaseCss}\n${checkoutCss}\n${viewportCss}</style></head><body><div class="checkout-visual-viewport"><main class="root"><div class="appShell"><header class="topbar"><a class="back" href="#">← Voltar</a><div class="topTitle"><span>Loja teste</span></div><span class="stepCounter">5/5</span></header><div class="progressTrack"><div class="progressFill" style="width:100%"></div></div><div class="stageViewport"><div role="alert" class="alert">${errorText}</div><section class="stage"><header class="stageHeader"><p class="eyebrow">Revisão</p><h1>Confira seu pedido</h1><p>Revise tudo antes de confirmar.</p></header><div class="stageBody"><section class="review">${repeated}</section></div></section></div><footer class="footer"><div class="footerTotal"><span>Total do pedido</span><strong>R$ 45,00</strong></div><form class="stickyForm"><button id="checkout-confirm" class="finalAction" type="button">Confirmar pedido · R$ 45,00</button></form></footer></div></main></div></body></html>`;
+}
+
+async function checkoutMetrics(page) {
+  return page.evaluate(() => {
+    const button = document.querySelector("#checkout-confirm");
+    const footer = document.querySelector("footer");
+    const stage = document.querySelector(".stageViewport");
+    if (!(button instanceof HTMLElement) || !(footer instanceof HTMLElement) || !(stage instanceof HTMLElement)) return null;
+    const buttonRect = button.getBoundingClientRect();
+    const footerRect = footer.getBoundingClientRect();
+    const viewportRoot = document.querySelector(".checkout-visual-viewport");
+    const rootRect = viewportRoot instanceof HTMLElement ? viewportRoot.getBoundingClientRect() : null;
+    return {
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      buttonTop: buttonRect.top,
+      buttonBottom: buttonRect.bottom,
+      buttonHeight: buttonRect.height,
+      footerTop: footerRect.top,
+      footerBottom: footerRect.bottom,
+      rootHeight: rootRect?.height ?? null,
+      stageClientHeight: stage.clientHeight,
+      stageScrollHeight: stage.scrollHeight,
+      documentScrollHeight: document.documentElement.scrollHeight,
+      documentClientHeight: document.documentElement.clientHeight,
+    };
+  });
+}
+
+function assertCheckoutCta(label, metrics) {
+  if (!metrics) {
+    failures.push(`${label}: checkout fixture incompleta`);
+    return;
+  }
+  const visible = metrics.buttonHeight >= 44 && metrics.buttonTop >= -1 && metrics.buttonBottom <= metrics.innerHeight + 1;
+  results.push({ label: `${label}-checkout-cta-visible`, ...metrics, visible });
+  if (!visible) failures.push(`${label}: CTA final fora da viewport ${JSON.stringify(metrics)}`);
+  if (metrics.footerBottom > metrics.innerHeight + 1) failures.push(`${label}: footer ultrapassou a viewport visual`);
+  if (metrics.rootHeight !== null && metrics.rootHeight > metrics.innerHeight + 1) failures.push(`${label}: root ${metrics.rootHeight}px > viewport ${metrics.innerHeight}px`);
+  if (metrics.documentScrollHeight > metrics.documentClientHeight + 2) failures.push(`${label}: documento externo rolável; o scroll deve ficar no stageViewport`);
+}
+
+async function runCheckoutViewportHomologation() {
+  const requiredPortraits = [[320, 568], [360, 640], [390, 844], [412, 915], [430, 932]];
+  const engines = [
+    { name: "chromium", type: chromium },
+    { name: "webkit", type: webkit },
+  ];
+
+  for (const engine of engines) {
+    const browser = await engine.type.launch();
+    try {
+      for (const [width, height] of requiredPortraits) {
+        const context = await browser.newContext({ viewport: { width, height } });
+        const page = await context.newPage();
+        await page.setContent(await checkoutFixtureHtml({ longError: true }), { waitUntil: "domcontentloaded" });
+        assertCheckoutCta(`${engine.name}-checkout-long-error-${width}x${height}`, await checkoutMetrics(page));
+        await page.screenshot({ path: path.join(outDir, `${engine.name}-checkout-${width}x${height}.png`) });
+
+        const keyboardHeight = Math.max(320, Math.round(height * 0.52));
+        await page.setViewportSize({ width, height: keyboardHeight });
+        await page.focus("#checkout-confirm");
+        assertCheckoutCta(`${engine.name}-checkout-keyboard-${width}x${keyboardHeight}`, await checkoutMetrics(page));
+        await context.close();
+      }
+
+      const zoomContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+      const zoomPage = await zoomContext.newPage();
+      await zoomPage.setContent(await checkoutFixtureHtml({ longError: true }), { waitUntil: "domcontentloaded" });
+      await zoomPage.addStyleTag({ content: "html { font-size: 200% !important; }" });
+      assertCheckoutCta(`${engine.name}-checkout-text-zoom`, await checkoutMetrics(zoomPage));
+      await zoomContext.close();
+    } finally {
+      await browser.close();
+    }
+  }
+}
+
 try {
   await runResponsiveMatrix();
   await runBrowserCompatibility();
+  await runCheckoutViewportHomologation();
 } catch (error) {
   failures.push(error instanceof Error ? error.stack || error.message : String(error));
 }

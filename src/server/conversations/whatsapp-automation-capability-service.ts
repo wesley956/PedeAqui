@@ -107,7 +107,7 @@ async function structuralModules(organizationId: string, storeId: string) {
 
 export class WhatsAppAutomationCapabilityService {
   static async loadCurrentStore(): Promise<WhatsAppAutomationStructuralSnapshot> {
-    const context = await authorize(PERMISSIONS.CONVERSATIONS_MANAGE);
+    const context = await authorize(PERMISSIONS.INTEGRATIONS_MANAGE);
     if (!context.storeId) throw new Error("Selecione uma unidade para configurar as automações do WhatsApp.");
     return this.loadForStore(context.organizationId, context.storeId);
   }

@@ -6,6 +6,8 @@ const root = process.cwd();
 const read = (relativePath: string) => fs.readFileSync(path.join(root, relativePath), "utf8");
 
 const service = read("src/server/platform/platform-whatsapp-order-template-service.ts");
+const worker = read("src/server/conversations/order-notification-worker.ts");
+const manualActions = read("src/app/platform/unidades/[storeId]/whatsapp/actions.ts");
 const page = read("src/app/platform/unidades/[storeId]/whatsapp/notificacoes/page.tsx");
 const actions = read("src/app/platform/unidades/[storeId]/whatsapp/notificacoes/actions.ts");
 
@@ -19,10 +21,21 @@ describe("platform WhatsApp order template", () => {
   });
 
   it("keeps the four body parameters in the same order used by the order notification worker", () => {
-    expect(service).toContain("{{1}}: atualização do pedido {{2}} — {{3}}. Acompanhe seu pedido: {{4}}");
+    const body = "Olá! A {{1}} informa que o pedido {{2}} teve uma atualização: {{3}}. Acompanhe pelo link {{4}}. Obrigado por pedir conosco.";
+    expect(service).toContain(body);
+    expect(body.trim()).not.toMatch(/^\{\{\d+\}\}/);
+    expect(body.trim()).not.toMatch(/\{\{\d+\}\}$/);
     expect(service).toContain('"Restaurante PedeAqui"');
     expect(service).toContain('"#123"');
     expect(service).toContain('"Saiu para entrega"');
+  });
+
+  it("logs only sanitized Meta rejection metadata", () => {
+    expect(service).toContain('msg: "meta_order_template_request_rejected"');
+    expect(service).toContain("providerCode: payload?.error?.code ?? null");
+    expect(service).toContain("providerSubcode: payload?.error?.error_subcode ?? null");
+    expect(service).toContain("providerType: payload?.error?.type ?? null");
+    expect(service).not.toContain("message: payload?.error?.message");
   });
 
   it("uses a safe 24h-only mode for Meta Test WhatsApp Business Accounts without changing the restaurant flow", () => {
@@ -46,6 +59,26 @@ describe("platform WhatsApp order template", () => {
     expect(service).not.toContain("notify_pickup_ready: true");
     expect(service).not.toContain("notify_out_for_delivery: true");
     expect(service).not.toContain("notify_delivered: true");
+  });
+
+  it("reconciles an already-approved template without creating or deleting a template", () => {
+    expect(service).toContain("reconcileApprovedForNotification");
+    expect(service).toContain("const template = await getTemplate(settings.whatsapp_business_account_id)");
+    expect(service).toContain("if (status !== APPROVED)");
+    expect(service).toContain("persistApprovedTemplateFromWorker");
+    expect(service).toContain(".is(\"order_notification_template_name\", null)");
+  });
+
+  it("revalidates the official WhatsApp connection and template together", () => {
+    expect(manualActions).toContain("PlatformWhatsAppManualService.revalidate(storeId)");
+    expect(manualActions).toContain("PlatformWhatsAppOrderTemplateService.ensure(storeId)");
+  });
+
+  it("tries a GET-only reconciliation before skipping an out-of-window notification", () => {
+    expect(worker).toContain("PlatformWhatsAppOrderTemplateService.reconcileApprovedForNotification");
+    expect(worker).toContain('recordFailure("whatsapp.order_template.reconciliation_failed"');
+    expect(worker).toContain('errorCode: "template_required"');
+    expect(worker).toContain("templateName: templateName!");
   });
 
   it("exposes only a server action and never asks the browser for Meta credentials", () => {

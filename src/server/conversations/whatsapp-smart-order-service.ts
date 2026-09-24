@@ -1,5 +1,6 @@
 import "server-only";
 
+import { normalizeBotInput } from "@/server/conversations/bot-menu";
 import {
   isWhatsAppOrderStep,
   looksLikeWhatsAppOrderItems,
@@ -15,23 +16,74 @@ import {
   restartOrderMessage,
 } from "@/server/conversations/whatsapp-order-corrections";
 import { answerContextualOrderQuestion } from "@/server/conversations/whatsapp-contextual-question-service";
-import { asksAboutPixPayment, pixPaymentGuidanceMessage } from "@/server/conversations/whatsapp-payment-guidance";
+import { answerActiveOrderSideIntent } from "@/server/conversations/whatsapp-active-order-side-intent";
+import { explicitCatalogItemRequest } from "@/server/conversations/whatsapp-catalog-intent-core";
+import { resolvePendingChoiceReference } from "@/server/conversations/whatsapp-order-context";
 import {
   asksAboutSavedAddress,
   formatSavedAddress,
   loadWhatsAppSavedAddresses,
   quantityOnlyRequest,
 } from "@/server/conversations/whatsapp-customer-context";
+import {
+  addressPartsFromMessage,
+  addressProgressPrompt,
+  clearPendingAddressParts,
+  clearPendingOrderQuantity,
+  hasSavedAddressChoices,
+  pendingAddressParts,
+  pendingOrderQuantity,
+  rememberAddressParts,
+  rememberOrderQuantity,
+} from "@/server/conversations/whatsapp-order-memory";
+import { StoreOperationalStatusService, storeClosedOrderMessage } from "@/server/menu/store-operational-status";
 
 export { isWhatsAppOrderStep, looksLikeWhatsAppOrderItems, whatsappOrderStartMessage };
 export type { WhatsAppOrderContext, WhatsAppOrderHandleResult, WhatsAppOrderStep };
 
 type OrderInput = Parameters<typeof EnhancedWhatsAppOrderService.handle>[0];
+type PendingChoice = { productId: string; name: string; quantity: number };
 
 function preservedContext(input: OrderInput): WhatsAppOrderContext {
   return input.context && typeof input.context === "object"
     ? input.context as WhatsAppOrderContext
     : { channel: "whatsapp_order", version: 1 };
+}
+
+function confirmsOrder(text: string) {
+  return ["sim", "s", "confirmar", "confirmo", "pode confirmar", "fechar pedido", "finalizar", "fechou", "beleza", "ok"]
+    .includes(normalizeBotInput(text));
+}
+
+function pendingChoices(context: unknown): PendingChoice[] {
+  if (!context || typeof context !== "object") return [];
+  const raw = (context as Record<string, unknown>).pendingChoices;
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+    const item = entry as Record<string, unknown>;
+    return typeof item.productId === "string" && typeof item.name === "string" && typeof item.quantity === "number"
+      ? [{ productId: item.productId, name: item.name, quantity: item.quantity }]
+      : [];
+  });
+}
+
+function clearStaleChoicesForExplicitProduct(context: unknown, text: string) {
+  const choices = pendingChoices(context);
+  if (!choices.length || !explicitCatalogItemRequest(text) || !context || typeof context !== "object") return context;
+  const selected = resolvePendingChoiceReference(text, choices.map((choice) => ({ label: choice.name, value: choice.productId })));
+  if (selected) return context;
+  return { ...(context as Record<string, unknown>), pendingChoices: undefined };
+}
+
+function shouldStartFragmentedAddress(parts: string[]) {
+  return parts.length > 0 && /[a-zA-ZÀ-ÿ]/.test(parts[0]!);
+}
+
+function unresolvedQuantityResult(result: WhatsAppOrderHandleResult) {
+  if (result.nextStep !== "order_items" || !result.context) return false;
+  const context = result.context as Record<string, unknown>;
+  return !context.cartToken && !context.pendingChoices && !context.pendingComposition;
 }
 
 export class WhatsAppOrderService {
@@ -43,6 +95,21 @@ export class WhatsAppOrderService {
         nextStep: "order_items",
         context: { channel: "whatsapp_order", version: 1 },
       };
+    }
+
+    if (input.step === "order_confirmation" && confirmsOrder(input.text)) {
+      const operational = await StoreOperationalStatusService.load({
+        organizationId: input.organizationId,
+        storeId: input.storeId,
+      });
+      if (!operational.canOrder) {
+        return {
+          handled: true,
+          body: `${storeClosedOrderMessage(operational)}\n\nSeu pedido continua salvo e não foi enviado para a loja.`,
+          nextStep: "order_confirmation",
+          context: preservedContext(input),
+        };
+      }
     }
 
     if (asksAboutSavedAddress(input.text)) {
@@ -66,31 +133,78 @@ export class WhatsAppOrderService {
       }
     }
 
+    const sideIntentAnswer = await answerActiveOrderSideIntent(input);
+    if (sideIntentAnswer) return sideIntentAnswer;
+
     const contextualAnswer = await answerContextualOrderQuestion(input);
     if (contextualAnswer) return contextualAnswer;
 
-    if (input.step === "order_payment" && asksAboutPixPayment(input.text)) {
-      return {
-        handled: true,
-        body: pixPaymentGuidanceMessage(),
-        nextStep: "order_payment",
-        context: preservedContext(input),
-      };
+    if (input.step === "order_address") {
+      const currentParts = pendingAddressParts(input.context);
+      const incomingParts = addressPartsFromMessage(input.text);
+
+      if (incomingParts.length >= 5) {
+        return EnhancedWhatsAppOrderService.handle({
+          ...input,
+          text: incomingParts.join(", "),
+          context: clearPendingAddressParts(input.context),
+        });
+      }
+
+      const canAccumulate = !hasSavedAddressChoices(input.context)
+        && (currentParts.length > 0 || shouldStartFragmentedAddress(incomingParts));
+      if (canAccumulate) {
+        const combined = [...currentParts, ...incomingParts].slice(0, 6);
+        if (combined.length < 5) {
+          return {
+            handled: true,
+            body: addressProgressPrompt(combined.length),
+            nextStep: "order_address",
+            context: rememberAddressParts(input.context, combined) as WhatsAppOrderContext,
+          };
+        }
+
+        return EnhancedWhatsAppOrderService.handle({
+          ...input,
+          text: combined.join(", "),
+          context: clearPendingAddressParts(input.context),
+        });
+      }
     }
 
     if (input.step === "order_items") {
       const quantity = quantityOnlyRequest(input.text);
-      if (quantity !== null) {
+      if (quantity !== null && pendingChoices(input.context).length === 0) {
         return {
           handled: true,
           body: `Entendi ${quantity} unidades 😊 Agora me diga de qual produto do cardápio desta loja.`,
           nextStep: "order_items",
-          context: preservedContext(input),
+          context: rememberOrderQuantity(input.context, quantity) as WhatsAppOrderContext,
         };
       }
     }
 
-    const repairedContext = repairSuspiciousPackageQuantity(input.context, input.text);
-    return EnhancedWhatsAppOrderService.handle({ ...input, context: repairedContext });
+    const choiceSafeContext = input.step === "order_items"
+      ? clearStaleChoicesForExplicitProduct(input.context, input.text)
+      : input.context;
+    const rememberedQuantity = input.step === "order_items" ? pendingOrderQuantity(choiceSafeContext) : null;
+    const hasExplicitQuantity = rememberedQuantity !== null && looksLikeWhatsAppOrderItems(input.text);
+    const effectiveText = rememberedQuantity !== null && !hasExplicitQuantity
+      ? `${rememberedQuantity} ${input.text}`
+      : input.text;
+    const contextWithoutRememberedQuantity = rememberedQuantity !== null
+      ? clearPendingOrderQuantity(choiceSafeContext)
+      : choiceSafeContext;
+    const repairedContext = repairSuspiciousPackageQuantity(contextWithoutRememberedQuantity, effectiveText);
+    const result = await EnhancedWhatsAppOrderService.handle({ ...input, text: effectiveText, context: repairedContext });
+
+    if (rememberedQuantity !== null && !hasExplicitQuantity && unresolvedQuantityResult(result)) {
+      return {
+        ...result,
+        context: rememberOrderQuantity(result.context, rememberedQuantity) as WhatsAppOrderContext,
+      };
+    }
+
+    return result;
   }
 }

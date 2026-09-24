@@ -1,5 +1,8 @@
 import { createHash, timingSafeEqual } from "node:crypto";
+import { after } from "next/server";
 import { ConversationService } from "@/server/conversations/conversation-service";
+import { ConversationMediaService } from "@/server/conversations/conversation-media-service";
+import { WhatsAppCoexistenceObservability } from "@/server/conversations/coexistence-observability";
 import { WhatsAppCoexistenceService } from "@/server/conversations/coexistence-service";
 import { ConversationGreetingService } from "@/server/conversations/greeting-service";
 import { InboundOutcomeService } from "@/server/conversations/inbound-outcome-service";
@@ -17,6 +20,7 @@ import { recordFailure } from "@/server/observability/failure";
 import { getRequestContext } from "@/server/observability/request-context";
 
 export const runtime = "nodejs";
+const MAX_WHATSAPP_WEBHOOK_BYTES = 3 * 1024 * 1024;
 
 function constantEqual(left: string, right: string) {
   const leftHash = createHash("sha256").update(left).digest();
@@ -41,7 +45,9 @@ export async function POST(request: Request) {
   const requestContext = await getRequestContext();
   const responseHeaders = { "x-request-id": requestContext.requestId };
   const rawBody = await request.text();
-  if (rawBody.length > 1_000_000) return new Response("Payload too large", { status: 413, headers: responseHeaders });
+  if (Buffer.byteLength(rawBody, "utf8") > MAX_WHATSAPP_WEBHOOK_BYTES) {
+    return new Response("Payload too large", { status: 413, headers: responseHeaders });
+  }
 
   let payload: unknown;
   try {
@@ -59,6 +65,8 @@ export async function POST(request: Request) {
       return new Response("Invalid signature", { status: 401, headers: responseHeaders });
     }
 
+    await WhatsAppCoexistenceObservability.recordWebhookReceipt(events, requestContext.requestId);
+
     let processed = 0;
     let ignored = 0;
     for (const event of events) {
@@ -68,7 +76,7 @@ export async function POST(request: Request) {
       }
 
       if (event.kind === "echo" || event.kind === "sync") {
-        const result = await WhatsAppCoexistenceService.ingest(event);
+        const result = await WhatsAppCoexistenceService.ingest(event, requestContext.requestId);
         if (result && typeof result === "object" && "ignored" in result && result.ignored) ignored += 1;
         else processed += 1;
         continue;
@@ -107,7 +115,7 @@ export async function POST(request: Request) {
           if (shadowPreparation) {
             let legacyHandler: LegacyIntelligenceHandler = orderHandled ? "whatsapp_order" : "greeting";
             if (shadowPreparation.duplicateSideEffectPrevented) legacyHandler = "none";
-            if (legacyOutcome === "human" || legacyOutcome === "closed") legacyHandler = "none";
+            if (legacyOutcome === "human" || legacyOutcome === "closed" || legacyOutcome === "ignored_non_actionable") legacyHandler = "none";
             if (legacyOutcome === "waiting_agent" && shadowPreparation.decision?.handoffReason === "human_lock") {
               legacyHandler = "none";
             }
@@ -126,6 +134,17 @@ export async function POST(request: Request) {
           });
         }
       }
+    }
+
+    for (const phoneNumberId of webhookPhoneNumberIds(events)) {
+      if (!routing.configuredPhoneNumberIds.has(phoneNumberId)) continue;
+      after(async () => {
+        try {
+          await ConversationMediaService.processPendingForPhoneNumber(phoneNumberId);
+        } catch (error) {
+          recordFailure("whatsapp.media_processing.failed", error, { requestId: requestContext.requestId });
+        }
+      });
     }
 
     return Response.json(

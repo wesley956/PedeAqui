@@ -15,6 +15,7 @@ describe("WhatsApp intelligence classifier", () => {
     ["68", "awaiting_tracking_code", "track_code"],
     ["quais os sabores do pastel?", "order_items", "flavor_question"],
     ["preços", "menu", "price_question"],
+    ["Qto tá os pastéis??", "menu", "price_question"],
     ["você já tem meu endereço?", "order_address", "address"],
     ["valeu obrigado", "menu", "social_ack"],
   ] as const)("classifies %s in %s as %s", (text, phase, expected) => {

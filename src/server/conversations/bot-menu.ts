@@ -1,10 +1,12 @@
-import { normalizeWhatsAppIdentifier } from "@/server/conversations/model";
-import { workflowStageLabels, type WorkflowStage } from "@/features/orders/workflow-config";
+import type { WorkflowStage } from "@/features/orders/workflow-config";
 import type { CustomerBenefits, CustomerCouponBenefit } from "@/server/growth/customer-benefits";
 import { normalizeGenericInformalPortuguese } from "@/server/conversations/generic-language-normalization";
+import { normalizeComparablePhone } from "@/server/conversations/order-recipient-policy";
+import { projectOrderNotification, projectOrderTrackingState } from "@/server/conversations/order-tracking-projection";
+import { isExplicitMenuNavigation } from "@/server/conversations/whatsapp-navigation";
 
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
-export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "benefit_handoff" | "hours" | "payment" | "delivery" | "order_start" | "benefits" | "cashback" | "points" | "coupons" | "promotions" | "unknown";
+export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "benefit_handoff" | "hours" | "payment" | "delivery" | "price" | "order_start" | "benefits" | "cashback" | "points" | "coupons" | "promotions" | "unknown";
 
 const menuWords = new Set([
   "menu",
@@ -124,6 +126,19 @@ const orderStartWords = new Set([
   "poderia pedir aqui",
   "quero comprar",
 ]);
+
+const priceQuestionPattern = /\b(?:quanto|preco|precos|valor|valores|custa|custam)\b/;
+
+export function priceProductQueryFromInput(value: string | null | undefined) {
+  const normalized = semanticBotInput(normalizeBotInput(value));
+  if (!normalized || !priceQuestionPattern.test(normalized)) return null;
+  const query = normalized
+    .replace(/\b(?:quanto|qual|quais|preco|precos|valor|valores|custa|custam|ta|esta|ficam?|sai|por quanto|quanto e|quanto fica)\b/g, " ")
+    .replace(/\b(?:o|a|os|as|um|uma|do|da|dos|das|de|por|cada)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return query.length >= 2 ? query : null;
+}
 const benefitHandoffWords = new Set(["saldo errado", "saldo esta errado", "cashback errado", "cashback esta errado", "pontos errados", "pontos estao errados", "cupom nao funciona", "cupom nao funcionou", "nao aceitou meu cupom", "contestar saldo"]);
 const cashbackWords = new Set(["cashback", "meu cashback", "tenho cashback", "saldo de cashback", "quanto tenho de cashback"]);
 const pointsWords = new Set(["pontos", "meus pontos", "quantos pontos tenho", "tenho pontos", "saldo de pontos"]);
@@ -165,8 +180,11 @@ export function trackingCodeFromInput(value: string | null | undefined) {
 export function resolveWhatsAppBotIntent(value: string | null | undefined, step: WhatsAppBotStep): WhatsAppBotIntent {
   const normalized = semanticBotInput(normalizeBotInput(value));
   const trackingCode = trackingCodeFromInput(normalized);
+  if (isExplicitMenuNavigation(normalized)) return "menu";
   if (step === "awaiting_tracking_code" && trackingCode !== null) return "track_code";
   if (step === "menu" && trackingCode !== null && hasExplicitTrackingContext(normalized)) return "track_code";
+  if (step === "awaiting_tracking_code" && ["menu", "inicio", "iniciar", "ver opcoes", "bot_menu_open"].includes(normalized)) return "menu";
+  if (step === "awaiting_tracking_code" && menuWords.has(normalized)) return "track_start";
   if (menuWords.has(normalized)) return "menu";
   if (/\b(?:quero|queria|me ve)\s+(?:uma?\s+)?(?:caixa\s+(?:de|com)\s+)?\d+\s+(?:salgado|salgados)\b/.test(normalized)) return "order_start";
   if (containsAny(normalized, orderStartWords)) return "order_start";
@@ -182,6 +200,7 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
   if (containsAny(normalized, hoursWords)) return "hours";
   if (containsAny(normalized, paymentWords)) return "payment";
   if (containsAny(normalized, deliveryWords)) return "delivery";
+  if (priceProductQueryFromInput(normalized)) return "price";
   return "unknown";
 }
 
@@ -246,44 +265,17 @@ export function buildWhatsAppBotMenu(storeName: string, includeWhatsAppOrders = 
 }
 
 export function phonesBelongToSameCustomer(left: string | null | undefined, right: string | null | undefined) {
-  const first = normalizeWhatsAppIdentifier(left);
-  const second = normalizeWhatsAppIdentifier(right);
-  if (!first || !second) return false;
-  if (first === second) return true;
-  if (first.startsWith("55") && first.slice(2) === second) return true;
-  return second.startsWith("55") && second.slice(2) === first;
+  const first = normalizeComparablePhone(left);
+  const second = normalizeComparablePhone(right);
+  return Boolean(first && second && first === second);
 }
 
-const orderStatusLabels: Record<string, string> = {
-  pending_confirmation: "aguardando confirmação do restaurante",
-  confirmed: "confirmado",
-  rejected: "recusado",
-  canceled: "cancelado",
-  completed: "concluído",
-};
-
-const productionStatusLabels: Record<string, string> = {
-  pending_confirmation: "aguardando confirmação",
-  queued: "na fila de preparo",
-  preparing: "em preparo",
-  ready: "pronto",
-  canceled: "preparo cancelado",
-  not_required: "sem preparo necessário",
-};
-
-const fulfillmentStatusLabels: Record<string, string> = {
-  pending: "aguardando expedição",
-  awaiting_assignment: "aguardando entregador",
-  assigned: "entregador definido",
-  picked_up: "retirado pelo entregador",
-  out_for_delivery: "saiu para entrega",
-  delivered: "entregue",
-  awaiting_pickup: "pronto para retirada",
-  picked_up_by_customer: "retirado pelo cliente",
-  served: "servido",
-  canceled: "entrega/retirada cancelada",
-  not_required: "sem entrega necessária",
-};
+function inferredTrackingFulfillmentType(fulfillmentStatus: string, visibleStage?: WorkflowStage | null) {
+  if (["awaiting_pickup", "picked_up_by_customer", "served"].includes(fulfillmentStatus) || visibleStage === "awaiting_pickup") {
+    return "pickup";
+  }
+  return "delivery";
+}
 
 export function buildOrderLookupMessage(input: {
   displayNumber: number;
@@ -293,17 +285,19 @@ export function buildOrderLookupMessage(input: {
   trackingUrl?: string | null;
   visibleStage?: WorkflowStage | null;
 }) {
-  const order = orderStatusLabels[input.orderStatus] ?? "em atualização";
-  const production = productionStatusLabels[input.productionStatus] ?? "em atualização";
-  const fulfillment = fulfillmentStatusLabels[input.fulfillmentStatus] ?? "em atualização";
+  const fulfillmentType = inferredTrackingFulfillmentType(input.fulfillmentStatus, input.visibleStage);
+  const baseProjection = projectOrderTrackingState({
+    fulfillmentType,
+    orderStatus: input.orderStatus,
+    productionStatus: input.productionStatus,
+    fulfillmentStatus: input.fulfillmentStatus,
+  });
+  const projection = input.visibleStage === "new" && baseProjection.workflowStage !== "new" && !baseProjection.terminal
+    ? projectOrderNotification(input.orderStatus === "confirmed" ? "order_confirmed" : "order_received")
+    : baseProjection;
+  const nextAction = projection.nextAction ? `\n${projection.nextAction}` : "";
   const link = input.trackingUrl ? `\nAcompanhe os detalhes com segurança: ${input.trackingUrl}` : "";
-  if (input.orderStatus === "canceled" || input.orderStatus === "rejected") {
-    return `Achei seu pedido #${input.displayNumber} 😊\nPedido #${input.displayNumber}: ${order}.${link}`;
-  }
-  if (input.visibleStage) {
-    return `Achei seu pedido #${input.displayNumber} 😊\nEtapa atual: ${workflowStageLabels[input.visibleStage]}.${link}`;
-  }
-  return `Achei seu pedido #${input.displayNumber} 😊\nPedido #${input.displayNumber}: ${order}. Preparo: ${production}. Entrega/retirada: ${fulfillment}.${link}`;
+  return `Achei seu pedido #${input.displayNumber} 😊\nEtapa atual: ${projection.statusText}.${nextAction}${link}`;
 }
 
 export const TRACKING_CODE_PROMPT = "Claro! Me manda o número do seu pedido que aparece na confirmação 😊 Pode enviar só o número, por exemplo: 42. Se quiser voltar, é só escrever menu.";

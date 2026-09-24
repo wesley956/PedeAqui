@@ -74,7 +74,7 @@ describe("[329] order notification model", () => {
     expect(validateOrderNotificationTextTemplate("Olá {variavel_inventada}").ok).toBe(false);
   });
 
-  it("falls back to the safe default when a custom template needs unavailable data", () => {
+  it("preserves the explicit no-link preference when a custom initial template needs unavailable data", () => {
     const body = buildOrderNotificationBody({
       type: "order_received",
       storeName: "Cantina",
@@ -83,13 +83,20 @@ describe("[329] order notification model", () => {
       customTemplate: "Olá {cliente}, recebemos {pedido}.",
       customerName: null,
     });
-    expect(body).toBe(buildOrderNotificationBody({
+    expect(body).toContain("Pedido #42 recebido");
+    expect(body).not.toContain("https://app.pedeaqui.example/pedido/42");
+  });
+
+  it("keeps the tracking link when the initial custom template explicitly includes it", () => {
+    const body = buildOrderNotificationBody({
       type: "order_received",
       storeName: "Cantina",
       displayNumber: 42,
       trackingUrl: "https://app.pedeaqui.example/pedido/42",
-    }));
-    expect(body).toContain("recebemos seu pedido #42");
+      customTemplate: "{restaurante}: recebemos {pedido}. Acompanhe: {link_acompanhamento}",
+      customerName: null,
+    });
+    expect(body).toContain("https://app.pedeaqui.example/pedido/42");
   });
 
   it("normalizes overrides without persisting defaults or invalid templates", () => {
@@ -152,7 +159,7 @@ describe("[329] persistence and safety contracts", () => {
   it("dispatches first attempts after the authoritative response without blocking it", () => {
     expect(dispatch).toContain('import { after } from "next/server"');
     expect(dispatch).toContain("after(async () =>");
-    expect(orderAction).toContain('scheduleOrderWhatsAppNotifications("checkout.order_created")');
+    expect(orderAction).toContain('scheduleOrderWhatsAppNotifications("checkout.order_created", result.order_id)');
     expect(orderAction).toContain("order_manager.${parsed.data}");
     expect(deliveryAction).toContain("scheduleOrderWhatsAppNotifications(`delivery.${intent}`)");
     expect(paymentWebhook).toContain('scheduleOrderWhatsAppNotifications("mercado_pago.webhook")');
@@ -170,11 +177,15 @@ describe("[329] persistence and safety contracts", () => {
     expect(templateMigration).toContain("order_notification_template_language");
   });
 
-  it("does not create a stale backlog when a Meta template is not configured", () => {
-    const templateGate = worker.indexOf("if (!canSendFreeForm && !settings.order_notification_template_name)");
+  it("reconciles Meta approval before safely skipping and never creates a stale backlog without an approved template", () => {
+    const reconciliation = worker.indexOf("PlatformWhatsAppOrderTemplateService.reconcileApprovedForNotification({");
+    const templateGate = worker.indexOf("if (!canSendFreeForm && !templateName)", reconciliation);
+    const templateRequired = worker.indexOf('errorCode: "template_required"', templateGate);
     const outboundCreate = worker.indexOf('admin.rpc("conversation_create_outbound_internal"');
-    expect(templateGate).toBeGreaterThan(0);
-    expect(templateGate).toBeLessThan(outboundCreate);
+    expect(reconciliation).toBeGreaterThan(0);
+    expect(templateGate).toBeGreaterThan(reconciliation);
+    expect(templateRequired).toBeGreaterThan(templateGate);
+    expect(templateRequired).toBeLessThan(outboundCreate);
     expect(worker.slice(templateGate, outboundCreate)).toContain('status: "skipped"');
     expect(worker.slice(templateGate, outboundCreate)).not.toContain("retryAfterSeconds");
   });
@@ -197,11 +208,19 @@ describe("[329] persistence and safety contracts", () => {
     expect(worker).not.toContain("order_transition_internal");
   });
 
-  it("keeps tracking context service-role only and out of notification payloads", () => {
+  it("keeps tracking context service-role only and recipient PII out of notification payloads", () => {
     expect(migration).toContain("revoke all on table public.order_notification_contexts from public, anon, authenticated");
     expect(migration).toContain("grant select, insert, update, delete on table public.order_notification_contexts to service_role");
     expect(worker).not.toContain("address_street_snapshot");
-    expect(worker).not.toContain("customer_phone_snapshot");
+    expect(worker).toContain("resolveOrderRecipient");
+    expect(worker).toContain("customerPhoneSnapshot: order.customer_phone_snapshot");
+    const messageInputStart = worker.indexOf("const messageInput = {");
+    const messageInputEnd = worker.indexOf("const body = buildOrderNotificationBody(messageInput);");
+    expect(messageInputStart).toBeGreaterThan(-1);
+    expect(messageInputEnd).toBeGreaterThan(messageInputStart);
+    const messageInput = worker.slice(messageInputStart, messageInputEnd);
+    expect(messageInput).not.toContain("customer_phone_snapshot");
+    expect(messageInput).not.toContain("phoneNormalized");
     expect(orderAction.indexOf("OrderNotificationContextService.capture")).toBeGreaterThan(orderAction.indexOf("OrderService.createFromCheckout"));
   });
 

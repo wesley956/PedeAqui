@@ -9,9 +9,11 @@ import {
   buildPublicMenuUrl,
   notificationClientMessageId,
   retryDelaySeconds,
+  shouldIncludeOrderTrackingLink,
   type OrderNotificationType,
 } from "@/server/conversations/order-notification-model";
 import { normalizeOrderNotificationCustomTemplates } from "@/server/conversations/order-notification-template";
+import { resolveOrderRecipient } from "@/server/conversations/order-recipient-resolver";
 import {
   automationCanDispatch,
   resolveWhatsAppAutomationCapabilities,
@@ -20,6 +22,8 @@ import {
 import { WhatsAppAutomationCapabilityService } from "@/server/conversations/whatsapp-automation-capability-service";
 import { resolveNotificationWorkflowVisibility } from "@/server/conversations/order-workflow-visibility";
 import { WhatsAppCloudProvider, WhatsAppProviderError, resolveWhatsAppAccessToken } from "@/server/conversations/provider";
+import { OrderNotificationSummaryService } from "@/server/orders/order-notification-summary-service";
+import { PlatformWhatsAppOrderTemplateService } from "@/server/platform/platform-whatsapp-order-template-service";
 import { recordFailure } from "@/server/observability/failure";
 import { recordGrowthOperationalEvent } from "@/server/growth/growth-observability";
 
@@ -123,7 +127,7 @@ async function processOne(job: QueueRow, workerId: string) {
   }
 
   const { data: order, error: orderError } = await admin.from("orders")
-    .select("id, organization_id, store_id, display_number, fulfillment_type, order_status, customer_id, customer_name_snapshot")
+    .select("id, organization_id, store_id, display_number, fulfillment_type, order_status, customer_id, customer_name_snapshot, customer_phone_snapshot")
     .eq("id", job.order_id)
     .eq("organization_id", job.organization_id)
     .eq("store_id", job.store_id)
@@ -134,7 +138,7 @@ async function processOne(job: QueueRow, workerId: string) {
     return "skipped" as const;
   }
 
-  const [settingsResult, storeResult, contextResult, customerResult, structural] = await Promise.all([
+  const [settingsResult, storeResult, contextResult, structural] = await Promise.all([
     admin.from("store_conversation_settings")
       .select("whatsapp_enabled, connection_status, whatsapp_phone_number_id, access_token_secret_ref, app_secret_secret_ref, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, notify_order_canceled, order_notification_custom_templates, order_notification_template_name, order_notification_template_language")
       .eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
@@ -142,20 +146,15 @@ async function processOne(job: QueueRow, workerId: string) {
       .eq("organization_id", job.organization_id).eq("id", job.store_id).maybeSingle(),
     admin.from("order_notification_contexts").select("tracking_access_token")
       .eq("organization_id", job.organization_id).eq("store_id", job.store_id).eq("order_id", job.order_id).maybeSingle(),
-    order.customer_id
-      ? admin.from("customers").select("phone_normalized").eq("organization_id", job.organization_id).eq("id", order.customer_id).maybeSingle()
-      : Promise.resolve({ data: null, error: null }),
     WhatsAppAutomationCapabilityService.loadForStore(job.organization_id, job.store_id),
   ]);
   if (settingsResult.error) throw settingsResult.error;
   if (storeResult.error) throw storeResult.error;
   if (contextResult.error) throw contextResult.error;
-  if (customerResult.error) throw customerResult.error;
 
   const settings = settingsResult.data;
   const store = storeResult.data;
   const context = contextResult.data;
-  const customer = customerResult.data;
 
   if (!settings) {
     await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "notification_disabled", errorMessage: "Automações do WhatsApp não estão configuradas para esta unidade." });
@@ -243,10 +242,25 @@ async function processOne(job: QueueRow, workerId: string) {
     });
     return "skipped" as const;
   }
-  if (!customer?.phone_normalized) {
-    await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "customer_phone_missing", errorMessage: "Cliente sem telefone utilizável para WhatsApp." });
+
+  const recipient = await resolveOrderRecipient({
+    organizationId: job.organization_id,
+    customerId: order.customer_id,
+    customerPhoneSnapshot: order.customer_phone_snapshot,
+  });
+  if (!recipient.ok) {
+    await finish({
+      notificationId: job.id,
+      workerId,
+      status: "skipped",
+      errorCode: recipient.reason,
+      errorMessage: recipient.reason === "customer_phone_conflict"
+        ? "Telefone do cliente diverge do snapshot seguro do pedido; envio bloqueado para evitar destinatário incorreto."
+        : "Cliente sem telefone utilizável para WhatsApp.",
+    });
     return "skipped" as const;
   }
+
   if (!store?.name || !store.slug || store.status !== "active") {
     await finish({ notificationId: job.id, workerId, status: "failed", errorCode: "store_unavailable", errorMessage: "Unidade indisponível para montar a mensagem.", retryAfterSeconds: retryDelaySeconds(job.attempts) });
     return "failed" as const;
@@ -266,6 +280,11 @@ async function processOne(job: QueueRow, workerId: string) {
     return "failed" as const;
   }
 
+  const summary = await OrderNotificationSummaryService.load({
+    organizationId: job.organization_id,
+    storeId: job.store_id,
+    orderId: job.order_id,
+  });
   const trackingUrl = buildOrderTrackingUrl(appUrl, store.slug, order.id, context.tracking_access_token);
   const menuUrl = buildPublicMenuUrl(appUrl, store.slug);
   const customTemplates = normalizeOrderNotificationCustomTemplates(settings.order_notification_custom_templates);
@@ -277,12 +296,15 @@ async function processOne(job: QueueRow, workerId: string) {
     menuUrl,
     customerName: order.customer_name_snapshot,
     customTemplate: customTemplates[job.notification_type] ?? null,
+    summary: job.notification_type === "order_received" ? summary : null,
+    includeTrackingLink: shouldIncludeOrderTrackingLink(job.notification_type, summary?.channel),
+    cancelReason: summary?.cancelReason ?? null,
   };
   const body = buildOrderNotificationBody(messageInput);
 
   const { data: resolved, error: resolveError } = await admin.rpc("conversation_resolve_outbound_internal", {
     p_store_id: job.store_id,
-    p_phone_normalized: customer.phone_normalized,
+    p_phone_normalized: recipient.phoneNormalized,
     p_contact_name: order.customer_name_snapshot,
     p_customer_id: order.customer_id,
   });
@@ -302,7 +324,28 @@ async function processOne(job: QueueRow, workerId: string) {
   if (lastInboundError) throw lastInboundError;
   const canSendFreeForm = hasCustomerSupportWindow(lastInbound?.created_at);
 
-  if (!canSendFreeForm && !settings.order_notification_template_name) {
+  let templateName = settings.order_notification_template_name;
+  let templateLanguage = settings.order_notification_template_language || "pt_BR";
+  if (!canSendFreeForm && !templateName) {
+    try {
+      const reconciliation = await PlatformWhatsAppOrderTemplateService.reconcileApprovedForNotification({
+        organizationId: job.organization_id,
+        storeId: job.store_id,
+      });
+      templateName = reconciliation.templateName;
+      templateLanguage = reconciliation.language;
+    } catch (error) {
+      recordFailure("whatsapp.order_template.reconciliation_failed", error, {
+        requestId: workerId,
+        organizationId: job.organization_id,
+        storeId: job.store_id,
+        orderId: job.order_id,
+        notificationType: job.notification_type,
+      });
+    }
+  }
+
+  if (!canSendFreeForm && !templateName) {
     await finish({
       notificationId: job.id,
       workerId,
@@ -357,8 +400,8 @@ async function processOne(job: QueueRow, workerId: string) {
       : await provider.sendTemplate({
           phoneNumberId: settings.whatsapp_phone_number_id,
           recipient: conversation.external_id,
-          templateName: settings.order_notification_template_name!,
-          languageCode: settings.order_notification_template_language || "pt_BR",
+          templateName: templateName!,
+          languageCode: templateLanguage,
           bodyParameters: buildOrderNotificationTemplateParameters(messageInput),
         });
     const { error: markError } = await admin.rpc("conversation_mark_outbound_result_internal", {
@@ -401,12 +444,22 @@ async function processOne(job: QueueRow, workerId: string) {
   }
 }
 
-export async function runOrderWhatsAppNotificationWorker(options?: { workerId?: string; limit?: number }) {
+export async function runOrderWhatsAppNotificationWorker(options?: { workerId?: string; limit?: number; orderId?: string }) {
   const startedAt = Date.now();
   const admin = createAdminClient();
   const workerId = options?.workerId ?? `order-whatsapp:${randomUUID()}`;
   const limit = Math.min(Math.max(options?.limit ?? 20, 1), 100);
-  const { data, error } = await admin.rpc("order_notification_claim_internal", { p_worker_id: workerId, p_limit: limit });
+  const claim = options?.orderId
+    ? await admin.rpc("order_notification_claim_for_order_internal", {
+        p_order_id: options.orderId,
+        p_worker_id: workerId,
+        p_limit: limit,
+      })
+    : await admin.rpc("order_notification_claim_internal", {
+        p_worker_id: workerId,
+        p_limit: limit,
+      });
+  const { data, error } = claim;
   if (error) throw error;
 
   const jobs = (data ?? []) as QueueRow[];
@@ -445,7 +498,7 @@ export async function runOrderWhatsAppNotificationWorker(options?: { workerId?: 
     eventType: "order.notification",
     outcome: store.failed > 0 ? (store.sent > 0 ? "partial" : "failed") : store.skipped > 0 && store.sent === 0 ? "blocked" : "success",
     reasonCode: store.failed > 0 ? "notification_failures" : store.skipped > 0 ? "workflow_or_capability_suppressed" : null,
-    source: "order_notification_worker",
+    source: options?.orderId ? "order_notification_targeted_worker" : "order_notification_worker",
     counts: { claimed: store.claimed, sent: store.sent, failed: store.failed, skipped: store.skipped },
     durationMs: Date.now() - startedAt,
     requestId: workerId,
