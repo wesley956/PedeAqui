@@ -112,10 +112,10 @@ describe("customer subscription and PIX billing v1", () => {
     expect(migration).toContain("next_due_at=v_next_due_at");
   });
 
-  it("schedules only one daily renewal cycle in Supabase and keeps Vercel free of cron jobs", () => {
+  it("schedules only one daily renewal cycle in Supabase without a Vercel renewal cron", () => {
     const vercel = read("vercel.json");
     const schedulerMigration = read("supabase/sql/169_subscription_renewal_scheduler.sql");
-    expect(vercel).not.toContain('"crons"');
+    expect(vercel).not.toContain("/api/internal/subscription-renewals");
     expect(schedulerMigration).toContain("pedeaqui-subscription-renewals");
     expect(schedulerMigration).toContain("'0 8 * * *'");
     expect(schedulerMigration).toContain("/api/internal/subscription-renewals");
