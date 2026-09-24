@@ -25,7 +25,7 @@ describe("SAAS-04 disaster recovery runbook contract", () => {
 
   it("forbids certification and destructive production drills without provider evidence", () => {
     expect(runbook).toContain("Produção nunca é usada como ambiente de treinamento de restore");
-    expect(runbook).toContain("restore destrutivo em produção");
+    expect(runbook).toContain("Restore destrutivo exige incidente formal");
     expect(runbook).toContain("evidência administrativa de backup/PITR: **PENDENTE**");
     expect(runbook).toContain("restore drill isolado: **PENDENTE**");
   });
