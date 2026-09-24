@@ -146,13 +146,15 @@ describe("client 01 product surfaces", () => {
   });
 
   it("runs recovery and retention independently of hosting cron secrets", () => {
+    const vercel = read("vercel.json");
     expect(schedulerSql).toContain("create extension if not exists pg_net");
     expect(schedulerSql).toContain("vault.create_secret");
     expect(schedulerSql).toContain("authorize_internal_job_internal");
     expect(schedulerSql).toContain("pedeaqui-campaign-message-recovery");
     expect(schedulerSql).toContain("*/5 * * * *");
     expect(schedulerSql).toContain("pedeaqui-route-retention");
-    expect(read("vercel.json")).not.toContain('"crons"');
+    expect(vercel).not.toContain("/api/internal/campaign-messages");
+    expect(vercel).not.toContain("/api/internal/route-retention");
   });
 
   it("exposes auditable per-store controls only in the platform panel", () => {
