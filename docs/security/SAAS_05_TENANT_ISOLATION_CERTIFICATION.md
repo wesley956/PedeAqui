@@ -11,6 +11,7 @@ Esta certificação complementa a estabilização #821 e a issue #1174. Ela não
 | Contexto autenticado | `src/server/access/context.ts` autentica o usuário, resolve membership ativo por `user_id`, revalida `organization_id` solicitado e só resolve loja dentro da organização do membership | PASS por contrato/código |
 | Autorização | `authorize.ts` delega a `has_permission` com organização/loja e nega quando a permissão não é verdadeira | PASS por contrato/código |
 | Inbox / mídia privada | `conversation-media` é bucket privado; signed URL só é criada após `CONVERSATIONS_VIEW` e lookup por mídia + conversa + organização + loja | PASS por contrato/código + inspeção read-only |
+| Storage direto | `storage.objects` está com RLS ativo e, no snapshot auditado, não possui policies para acesso direto de `anon/authenticated`; apesar dos grants padrão da extensão, a ausência de policy sob RLS mantém o acesso direto bloqueado. A aplicação usa signed URL server-side para mídia privada | PASS por inspeção read-only; ainda requer ataque A/B na Fase 2 |
 | Mídia inbound Meta | tenant é resolvido pelo `whatsapp_phone_number_id`; o worker só busca mídia pendente da organização/loja resolvida | PASS por contrato/código |
 | Atualização de mídia | sucesso e falha atualizam `message_media` com `id + organization_id + store_id` | PASS por contrato/código |
 | Server-only | múltiplas RPCs internas e tabelas sensíveis são acessadas via service role/RPCs internas; os testes existentes congelam partes desses grants | PASS parcial; continuar inventário na #1174 |
