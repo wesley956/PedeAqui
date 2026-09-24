@@ -25,8 +25,8 @@ describe("SAAS-06 public promotion projection", () => {
     const sourceMigration = read("supabase/migrations/20260911180613_promotion_campaigns_v2.sql");
     const service = read("src/server/promotions/promotion-service.ts");
     expect(sourceMigration).toMatch(/security definer/i);
-    expect(sourceMigration).toContain("prod.store_id = pp.store_id");
-    expect(sourceMigration).toContain("prod.organization_id = pp.organization_id");
+    expect(sourceMigration).toContain("p.store_id = pp.store_id");
+    expect(sourceMigration).toContain("p.organization_id = pp.organization_id");
     expect(service).toContain("export function isPromotionActive");
     expect(service).toContain("const overnight = start !== null && end !== null && end <= start");
     expect(service).toContain("afterMidnight ? previousWeekday(local.weekday) : local.weekday");
@@ -34,7 +34,7 @@ describe("SAAS-06 public promotion projection", () => {
 
   it("keeps the actual browser projection minimized to the active promotion decoration", () => {
     const menu = read("src/server/menu/public-menu-service.ts");
-    expect(menu).toContain("isPromotionActive(schedule, store.timezone, now)");
+    expect(menu).toContain("isPromotionActive(schedule, menu.store.timezone, now)");
     expect(menu).toContain("promotional_price_cents:");
     expect(menu).toContain("promotion_label:");
     expect(menu).not.toContain("promotion_group_id");
