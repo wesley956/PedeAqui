@@ -2,7 +2,6 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createPublicClient } from "@/lib/supabase/public";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
@@ -138,7 +137,7 @@ function isMissingPromotionRpc(error: { code?: string; message?: string } | null
 }
 
 async function publicSchedules(storeId: string): Promise<ProductPromotion[]> {
-  const supabase = createPublicClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase.rpc("get_public_product_promotions", { p_store_id: storeId });
   if (error && isMissingPromotionRpc(error)) return [];
   if (error) throw error;
