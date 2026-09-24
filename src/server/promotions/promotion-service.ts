@@ -134,12 +134,12 @@ function normalizeInput(input: PromotionCampaignInput) {
 
 function isMissingPromotionRpc(error: { code?: string; message?: string } | null) {
   if (!error) return false;
-  return error.code === "42883" || error.code === "42P01" || /get_public_product_promotions|product_promotions/i.test(error.message ?? "") && /does not exist|schema cache/i.test(error.message ?? "");
+  return error.code === "42883" || error.code === "42P01" || /get_public_active_product_promotions|product_promotions/i.test(error.message ?? "") && /does not exist|schema cache/i.test(error.message ?? "");
 }
 
 async function publicSchedules(storeId: string): Promise<ProductPromotion[]> {
   const supabase = createPublicClient();
-  const { data, error } = await supabase.rpc("get_public_product_promotions", { p_store_id: storeId });
+  const { data, error } = await supabase.rpc("get_public_active_product_promotions", { p_store_id: storeId });
   if (error && isMissingPromotionRpc(error)) return [];
   if (error) throw error;
   if (!Array.isArray(data)) return [];
