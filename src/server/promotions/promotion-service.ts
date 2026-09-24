@@ -139,11 +139,17 @@ function isMissingPromotionRpc(error: { code?: string; message?: string } | null
 
 async function publicSchedules(storeId: string): Promise<ProductPromotion[]> {
   const supabase = createPublicClient();
-  const { data, error } = await supabase.rpc("get_public_active_product_promotions", { p_store_id: storeId });
-  if (error && isMissingPromotionRpc(error)) return [];
-  if (error) throw error;
-  if (!Array.isArray(data)) return [];
-  return data as ProductPromotion[];
+  const active = await supabase.rpc("get_public_active_product_promotions", { p_store_id: storeId });
+  if (!active.error) return Array.isArray(active.data) ? active.data as ProductPromotion[] : [];
+  if (!isMissingPromotionRpc(active.error)) throw active.error;
+
+  // Backward-compatible rollout: application deploys can precede the database
+  // migration. During that short window the legacy public schedule remains the
+  // source, and callers still revalidate active/timezone windows in TypeScript.
+  const legacy = await supabase.rpc("get_public_product_promotions", { p_store_id: storeId });
+  if (legacy.error && isMissingPromotionRpc(legacy.error)) return [];
+  if (legacy.error) throw legacy.error;
+  return Array.isArray(legacy.data) ? legacy.data as ProductPromotion[] : [];
 }
 
 function cheapestActive(schedules: ProductPromotion[], timeZone: string, now: Date) {
