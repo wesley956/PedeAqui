@@ -11,6 +11,7 @@ export type OrderHistoryPeriod = z.infer<typeof orderHistoryPeriodSchema>;
 
 const historySearchSchema = z.string().trim().max(80).transform((value) => value.replace(/[%_,()]/g, " ").replace(/\s+/g, " ").trim());
 const calendarDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const SALES_BATCH_SIZE = 1000;
 
 function requireStoreId(storeId: string | null) {
   if (!storeId) throw new Error("An active store is required");
@@ -138,6 +139,23 @@ export class OrderHistoryService {
       : period === "date" ? today : "";
     const dateRange = resolveDateRange(period, selectedDate || undefined, timeZone);
 
+    const applySearchAndDateFilters = <T extends {
+      ilike: (column: string, pattern: string) => T;
+      eq: (column: string, value: string | number) => T;
+      gte: (column: string, value: string) => T;
+      lt: (column: string, value: string) => T;
+    }>(builder: T) => {
+      let filtered = builder;
+      if (search) {
+        const number = /^#?\d+$/.test(search) ? Number(search.replace("#", "")) : null;
+        filtered = number === null
+          ? filtered.ilike("customer_name_snapshot", `%${search}%`)
+          : filtered.eq("display_number", number);
+      }
+      if (dateRange) filtered = filtered.gte("created_at", dateRange.startIso).lt("created_at", dateRange.endIso);
+      return filtered;
+    };
+
     let query = admin.from("orders")
       .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
       .eq("organization_id", context.organizationId)
@@ -150,28 +168,47 @@ export class OrderHistoryService {
       .eq("store_id", storeId)
       .in("order_status", ["completed", "rejected", "canceled"]);
 
-    if (search) {
-      const number = /^#?\d+$/.test(search) ? Number(search.replace("#", "")) : null;
-      if (number === null) {
-        query = query.ilike("customer_name_snapshot", `%${search}%`);
-        countQuery = countQuery.ilike("customer_name_snapshot", `%${search}%`);
-      } else {
-        query = query.eq("display_number", number);
-        countQuery = countQuery.eq("display_number", number);
-      }
-    }
+    query = applySearchAndDateFilters(query);
+    countQuery = applySearchAndDateFilters(countQuery);
 
-    if (dateRange) {
-      query = query.gte("created_at", dateRange.startIso).lt("created_at", dateRange.endIso);
-      countQuery = countQuery.gte("created_at", dateRange.startIso).lt("created_at", dateRange.endIso);
-    }
+    const loadCompletedSalesSummary = async () => {
+      let completedOrders = 0;
+      let soldTotalCents = 0;
+      let offset = 0;
+
+      while (true) {
+        let salesQuery = admin.from("orders")
+          .select("total_cents")
+          .eq("organization_id", context.organizationId)
+          .eq("store_id", storeId)
+          .eq("order_status", "completed");
+        salesQuery = applySearchAndDateFilters(salesQuery);
+        const { data: salesRows, error: salesError } = await salesQuery
+          .order("id", { ascending: true })
+          .range(offset, offset + SALES_BATCH_SIZE - 1);
+        if (salesError) throw salesError;
+
+        const rows = salesRows ?? [];
+        completedOrders += rows.length;
+        soldTotalCents += rows.reduce((sum, row) => sum + Number(row.total_cents ?? 0), 0);
+        if (rows.length < SALES_BATCH_SIZE) break;
+        offset += SALES_BATCH_SIZE;
+      }
+
+      return {
+        completedOrders,
+        soldTotalCents,
+        averageTicketCents: completedOrders > 0 ? Math.round(soldTotalCents / completedOrders) : 0,
+      };
+    };
 
     const from = (page - 1) * pageSize;
-    const [{ data, error }, { count, error: countError }] = await Promise.all([
+    const [{ data, error }, { count, error: countError }, salesSummary] = await Promise.all([
       query
         .order("updated_at", { ascending: false })
         .range(from, from + pageSize - 1),
       countQuery,
+      loadCompletedSalesSummary(),
     ]);
 
     if (error) throw error;
@@ -188,6 +225,10 @@ export class OrderHistoryService {
       selectedDate,
       dateRange,
       total,
+      summary: {
+        totalOrders: total,
+        ...salesSummary,
+      },
       hasPrevious: page > 1,
       hasNext: from + pageSize < total,
     };
