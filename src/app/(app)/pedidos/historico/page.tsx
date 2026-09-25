@@ -91,7 +91,7 @@ export default async function OrderHistoryPage({
 
       <form method="get" className={styles.historyToolbar}>
         <label className={styles.historySearchLabel}>
-          <span>Buscar no histórico</span>
+          <span>Buscar no histórico completo</span>
           <input name="q" type="search" defaultValue={search} placeholder="Nome do cliente ou número do pedido" maxLength={80} />
         </label>
         <button type="submit" className={styles.detailsLink}>Buscar</button>
