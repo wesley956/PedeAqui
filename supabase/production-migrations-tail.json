@@ -113,6 +113,7 @@
     ["20260916040025","flow_08_webhook_hardening"],
     ["20260916142120","conversation_customer_attention"],
     ["20260916194216","fix_order_notification_template_removal"],
-    ["20260922044537","drop_legacy_order_template_name_check"]
+    ["20260922044537","drop_legacy_order_template_name_check"],
+    ["20260925063921","saas_06_private_promotion_schedule_rpc"]
   ]
 }
