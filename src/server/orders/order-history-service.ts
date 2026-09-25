@@ -31,7 +31,9 @@ function calendarDateInTimeZone(date: Date, timeZone: string) {
 function parseCalendarDate(value: string) {
   const parsed = calendarDateSchema.safeParse(value);
   if (!parsed.success) return null;
-  const [year, month, day] = value.split("-").map(Number);
+  const year = Number(value.slice(0, 4));
+  const month = Number(value.slice(5, 7));
+  const day = Number(value.slice(8, 10));
   const check = new Date(Date.UTC(year, month - 1, day));
   if (check.getUTCFullYear() !== year || check.getUTCMonth() !== month - 1 || check.getUTCDate() !== day) return null;
   return { year, month, day };
