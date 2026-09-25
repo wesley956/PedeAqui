@@ -1,8 +1,8 @@
 import Link from "next/link";
 import styles from "@/features/orders/order-manager.module.css";
-import { formatStoreDateTime, DEFAULT_STORE_TIMEZONE } from "@/lib/store-date-time";
+import { formatStoreDate, formatStoreDateTime, DEFAULT_STORE_TIMEZONE } from "@/lib/store-date-time";
 import { OrderDeliveryAttributionService } from "@/server/delivery/order-delivery-attribution-service";
-import { OrderService } from "@/server/orders/order-service";
+import { OrderHistoryService, type OrderHistoryPeriod } from "@/server/orders/order-history-service";
 import { OrderListPosition } from "@/features/orders/order-navigation-memory";
 
 const statusLabels: Record<string, string> = {
@@ -18,23 +18,64 @@ const fulfillmentLabels: Record<string, string> = {
   table: "Mesa",
 };
 
+const periodLabels: Record<OrderHistoryPeriod, string> = {
+  all: "Todo histórico",
+  today: "Hoje",
+  week: "Esta semana",
+  fortnight: "Últimos 15 dias",
+  month: "Este mês",
+  date: "Data específica",
+};
+
 function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
 }
 
-export default async function OrderHistoryPage({ searchParams }: { searchParams: Promise<{ page?: string; q?: string }> }) {
+function queryFor(input: { search?: string; period?: OrderHistoryPeriod; date?: string; page?: number }) {
+  return {
+    ...(input.search ? { q: input.search } : {}),
+    ...(input.period && input.period !== "all" ? { period: input.period } : {}),
+    ...(input.period === "date" && input.date ? { date: input.date } : {}),
+    ...(input.page && input.page > 1 ? { page: String(input.page) } : {}),
+  };
+}
+
+export default async function OrderHistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; q?: string; period?: string; date?: string }>;
+}) {
   const params = await searchParams;
   const requestedPage = Number(params.page);
-  const { context, orders, page, pageSize, search, total, hasPrevious, hasNext } = await OrderService.listHistory({
+  const {
+    context,
+    orders,
+    page,
+    pageSize,
+    search,
+    period,
+    selectedDate,
+    dateRange,
+    total,
+    hasPrevious,
+    hasNext,
+  } = await OrderHistoryService.list({
     page: Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1,
     search: params.q ?? "",
+    period: params.period,
+    date: params.date,
   });
   const timeZone = context.timezone ?? DEFAULT_STORE_TIMEZONE;
-  const returnQuery = new URLSearchParams({ ...(search ? { q: search } : {}), ...(page > 1 ? { page: String(page) } : {}) }).toString();
+  const returnQuery = new URLSearchParams(queryFor({ search, period, date: selectedDate, page })).toString();
   const returnTo = `/pedidos/historico${returnQuery ? `?${returnQuery}` : ""}`;
   const deliveryAttribution = await OrderDeliveryAttributionService.forOrders(
     orders.filter((order) => order.fulfillment_type === "delivery").map((order) => order.id),
   );
+  const filterDescription = dateRange
+    ? dateRange.startDate === dateRange.endDate
+      ? formatStoreDate(dateRange.startIso, timeZone)
+      : `${formatStoreDate(dateRange.startIso, timeZone)} a ${formatStoreDate(new Date(new Date(dateRange.endIso).getTime() - 1), timeZone)}`
+    : "todos os períodos";
 
   return (
     <section className={styles.page}>
@@ -50,14 +91,39 @@ export default async function OrderHistoryPage({ searchParams }: { searchParams:
 
       <form method="get" className={styles.historyToolbar}>
         <label className={styles.historySearchLabel}>
-          <span>Buscar no histórico completo</span>
+          <span>Buscar no histórico</span>
           <input name="q" type="search" defaultValue={search} placeholder="Nome do cliente ou número do pedido" maxLength={80} />
         </label>
         <button type="submit" className={styles.detailsLink}>Buscar</button>
-        {search ? <Link href="/pedidos/historico" className={styles.detailsLink}>Limpar</Link> : null}
+
+        <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap", flexBasis: "100%", alignItems: "center" }}>
+          {(Object.keys(periodLabels) as OrderHistoryPeriod[]).filter((value) => value !== "date").map((value) => (
+            <button
+              key={value}
+              type="submit"
+              name="period"
+              value={value}
+              className={period === value ? styles.activeBadge : styles.detailsLink}
+              aria-pressed={period === value}
+            >
+              {periodLabels[value]}
+            </button>
+          ))}
+        </div>
+
+        <label className={styles.historySearchLabel} style={{ flex: "0 1 230px" }}>
+          <span>Escolher um dia</span>
+          <input name="date" type="date" defaultValue={selectedDate} />
+        </label>
+        <button type="submit" name="period" value="date" className={period === "date" ? styles.activeBadge : styles.detailsLink}>
+          Ver esta data
+        </button>
+
+        {(search || period !== "all") ? <Link href="/pedidos/historico" className={styles.detailsLink}>Limpar filtros</Link> : null}
       </form>
 
       <div className={styles.historyStatus} role="status">
+        <strong>{periodLabels[period]}</strong> · {filterDescription}.{" "}
         {total === 0 ? "Nenhum resultado." : `Exibindo ${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} de ${total} pedido(s).`}
         {total > pageSize ? " O histórico está paginado; nenhum pedido foi descartado." : ""}
       </div>
@@ -90,12 +156,12 @@ export default async function OrderHistoryPage({ searchParams }: { searchParams:
             </article>
           );
         })}
-        {orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido finalizado, cancelado ou recusado.</div> : null}
+        {orders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido encontrado para os filtros selecionados.</div> : null}
       </div>
       {(hasPrevious || hasNext) ? <nav className={styles.historyPagination} aria-label="Paginação do histórico">
-        {hasPrevious ? <Link className={styles.detailsLink} href={{ pathname: "/pedidos/historico", query: { ...(search ? { q: search } : {}), page: page - 1 } }}>← Página anterior</Link> : <span />}
+        {hasPrevious ? <Link className={styles.detailsLink} href={{ pathname: "/pedidos/historico", query: queryFor({ search, period, date: selectedDate, page: page - 1 }) }}>← Página anterior</Link> : <span />}
         <span>Página {page} de {Math.max(1, Math.ceil(total / pageSize))}</span>
-        {hasNext ? <Link className={styles.detailsLink} href={{ pathname: "/pedidos/historico", query: { ...(search ? { q: search } : {}), page: page + 1 } }}>Próxima página →</Link> : <span />}
+        {hasNext ? <Link className={styles.detailsLink} href={{ pathname: "/pedidos/historico", query: queryFor({ search, period, date: selectedDate, page: page + 1 }) }}>Próxima página →</Link> : <span />}
       </nav> : null}
     </section>
   );
