@@ -7,7 +7,7 @@ readonly database_url="${1:?local database URL required}"
 readonly pass_number="${2:?pass number required}"
 readonly temporary_root="$(mktemp -d)"
 readonly preventive="select public.conversation_preventive_handoff_internal('f8000000-0000-4000-8000-000000000001','f8000000-0000-4000-8000-000000000011','f8000000-0000-4000-8000-000000000041','f8000000-0000-4000-8000-000000000061','supplier_contact');"
-readonly human="select public.conversation_transition_internal('f8000000-0000-4000-8000-000000000041','human','f8888888-8888-4888-8888-888888888888','technical concurrent assume',null,'panel');"
+readonly human="select public.conversation_claim_human_internal('f8000000-0000-4000-8000-000000000001','f8000000-0000-4000-8000-000000000011','f8000000-0000-4000-8000-000000000041','f8888888-8888-4888-8888-888888888888','technical concurrent assume',null,'panel');"
 
 clear_fixture() {
   psql "${database_url}" -X -q -v ON_ERROR_STOP=1 -c "delete from public.organizations where id='f8000000-0000-4000-8000-000000000001'; delete from auth.users where id='f8888888-8888-4888-8888-888888888888';" >/dev/null

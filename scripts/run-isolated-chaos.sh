@@ -61,6 +61,11 @@ done < <(find supabase/sql -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC
 psql "${local_db_url}" -X -v ON_ERROR_STOP=1 \
   -f "${parked_migrations}/20260915155500_int11_order_creation_channel.sql" >/dev/null
 
+# Replay the exact panel claim delta so preventive-vs-human concurrency exercises
+# the same Inbox RPC used in production, not only its underlying transition.
+psql "${local_db_url}" -X -v ON_ERROR_STOP=1 \
+  -f "${parked_migrations}/20260917214500_wpp07_atomic_human_claim.sql" >/dev/null
+
 # Prove that the disposable database survives a controlled infrastructure restart.
 supabase stop
 supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
