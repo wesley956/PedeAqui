@@ -1,3 +1,5 @@
+import { classifyNonCommercialContact } from "@/server/conversations/whatsapp-non-commercial";
+import { requestPreventiveHandoff } from "@/server/conversations/whatsapp-preventive-handoff";
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -330,6 +332,19 @@ export class ConversationGreetingService {
       observe?.({ intent: "unknown", tool: "fallback" });
       return;
     }
+    const nonCommercial = classifyNonCommercialContact(inbound.body, { activeSession: Boolean(session?.state === "active" && (!session.expires_at || Date.parse(session.expires_at) > Date.now())) });
+    if (nonCommercial) {
+      await requestPreventiveHandoff({
+        organizationId: conversation.organization_id,
+        storeId: conversation.store_id,
+        conversationId: conversation.id,
+        messageId: ingest.message_id,
+        reason: nonCommercial,
+      }, (name, args) => admin.rpc(name, args));
+      observe?.({ intent: nonCommercial, tool: "human_handoff" });
+      return;
+    }
+
     if (isWhatsAppNonActionableAcknowledgement(inbound.body)) {
       observe?.({ intent: "acknowledgement", tool: "conversation_info" });
       return;
