@@ -85,6 +85,7 @@ readonly scenarios=(
   "supabase/tests/e2e_ifood_order_intake_runtime.sql"
   "supabase/tests/e2e_growth_observability.sql"
   "supabase/tests/e2e_conversation_bot_resume.sql"
+  "supabase/tests/e2e_preventive_handoff.sql"
   "supabase/tests/e2e_flow10_checkout_snapshot.sql"
 )
 
@@ -98,6 +99,8 @@ for pass in 1 2 3; do
   bash scripts/run-flow10-concurrent-claim.sh "${local_db_url}" "${pass}"
   echo "ISOLATED_SCENARIO=flow10-concurrent-whatsapp-order-confirmation"
   bash scripts/run-flow10-concurrent-order-confirmation.sh "${local_db_url}" "${pass}"
+  echo "ISOLATED_SCENARIO=preventive-handoff-concurrency"
+  bash scripts/run-preventive-handoff-concurrency.sh "${local_db_url}" "${pass}"
 done
 
 echo "ISOLATED_CHAOS_RESULT=passed"

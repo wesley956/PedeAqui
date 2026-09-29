@@ -1,5 +1,4 @@
--- PedeAqui FLOW-08 — retomada Robô ↔ Humano ↔ Robô sobre contexto canônico.
--- Exercita sessão ativa, carrinho real e correlação exata via orders.source_cart_id.
+-- INT-EVOL-04: full-schema preventive handoff, draft, grants and scope.
 begin;
 
 insert into auth.users (id,email)
@@ -37,6 +36,25 @@ declare
  c public.conversations%rowtype;
  n integer;
 begin
+ if has_function_privilege('anon','public.conversation_preventive_handoff_internal(uuid,uuid,uuid,uuid,text)','EXECUTE')
+ or has_function_privilege('authenticated','public.conversation_preventive_handoff_internal(uuid,uuid,uuid,uuid,text)','EXECUTE') then raise exception 'browser RPC access'; end if;
+ if not has_function_privilege('service_role','public.conversation_preventive_handoff_internal(uuid,uuid,uuid,uuid,text)','EXECUTE') then raise exception 'missing service grant'; end if;
+ begin
+   perform public.conversation_preventive_handoff_internal('f8000000-0000-4000-8000-000000000099','f8000000-0000-4000-8000-000000000011','f8000000-0000-4000-8000-000000000041','f8000000-0000-4000-8000-000000000061','supplier_contact');
+   raise exception 'cross tenant accepted';
+ exception when others then if sqlerrm <> 'conversation scope mismatch' then raise; end if; end;
+ begin
+   perform public.conversation_preventive_handoff_internal('f8000000-0000-4000-8000-000000000001','f8000000-0000-4000-8000-000000000099','f8000000-0000-4000-8000-000000000041','f8000000-0000-4000-8000-000000000061','supplier_contact');
+   raise exception 'cross store accepted';
+ exception when others then if sqlerrm <> 'conversation scope mismatch' then raise; end if; end;
+ begin
+   perform public.conversation_preventive_handoff_internal('f8000000-0000-4000-8000-000000000001','f8000000-0000-4000-8000-000000000011','f8000000-0000-4000-8000-000000000041','f8000000-0000-4000-8000-000000000099','supplier_contact');
+   raise exception 'foreign message accepted';
+ exception when others then if sqlerrm <> 'inbound message scope mismatch' then raise; end if; end;
+ begin
+   perform public.conversation_preventive_handoff_internal('f8000000-0000-4000-8000-000000000001','f8000000-0000-4000-8000-000000000011','f8000000-0000-4000-8000-000000000041','f8000000-0000-4000-8000-000000000061','explicit_handoff');
+   raise exception 'invalid reason accepted';
+ exception when others then if sqlerrm <> 'invalid preventive handoff reason' then raise; end if; end;
  c := public.conversation_preventive_handoff_internal('f8000000-0000-4000-8000-000000000001','f8000000-0000-4000-8000-000000000011','f8000000-0000-4000-8000-000000000041','f8000000-0000-4000-8000-000000000061','supplier_contact');
  if c.status <> 'waiting_agent' or c.human_attention_requested_at is not null then raise exception 'unsafe preventive state/attention'; end if;
  perform public.conversation_preventive_handoff_internal('f8000000-0000-4000-8000-000000000001','f8000000-0000-4000-8000-000000000011','f8000000-0000-4000-8000-000000000041','f8000000-0000-4000-8000-000000000061','supplier_contact');
