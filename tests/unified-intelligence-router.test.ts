@@ -218,3 +218,47 @@ describe("UnifiedIntelligenceRouter", () => {
     expect(decision.wouldHandle).toBe(false);
   });
 });
+
+describe("INT-EVOL-04 shadow commercial-tool safety", () => {
+  for (const mode of ["bot", "human", "waiting_agent"] as const) {
+    for (const active of [false, true]) {
+      it(`protects non-commercial contacts in mode ${mode}, active=${active}`, () => {
+        for (const message of ["vaga de freelance", "vendo caixas 15x15x7: 30 unidades", "compro óleo usado"]) {
+          const decision = UnifiedIntelligenceRouter.route({
+            context: context(mode),
+            message,
+            session: active ? activeOrderSession() : inactiveSession(),
+          });
+          expect(decision.authorityOperation).toBeNull();
+          if (mode === "bot") {
+            expect(decision.tool).toBe("human_handoff");
+            expect(decision.requiredCapability).toBeNull();
+            expect(decision.handoffReason).toBe("non_commercial");
+          } else {
+            expect(decision.tool).toBeNull();
+            expect(decision.wouldHandle).toBe(false);
+          }
+        }
+      });
+    }
+  }
+  it("keeps a generic follow-up in an active order and the original session intact", () => {
+    const session = Object.freeze(activeOrderSession());
+    const decision = UnifiedIntelligenceRouter.route({
+      context: context(),
+      message: "Olá! Posso ter mais informações sobre isso?",
+      session,
+    });
+    expect(decision.intent).toBe("order_continue");
+    expect(session.step).toBe("order_items");
+  });
+  it("routes an unscoped generic contact away from catalog", () => {
+    const decision = UnifiedIntelligenceRouter.route({
+      context: context(),
+      message: "Olá! Posso ter mais informações sobre isso?",
+      session: inactiveSession(),
+    });
+    expect(decision.intent).toBe("generic_business_contact");
+    expect(decision.tool).toBe("human_handoff");
+  });
+});

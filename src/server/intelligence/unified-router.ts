@@ -1,3 +1,4 @@
+import { classifyNonCommercialContact, type NonCommercialIntent } from "@/server/conversations/whatsapp-non-commercial";
 import type { AuthorityFacts, AuthorityOperation, AuthorityOperationDecision } from "@/server/intelligence/authority";
 import { AuthorityResolver } from "@/server/intelligence/authority";
 import type { CapabilityDecision, CapabilityFacts, IntelligenceCapabilityKey } from "@/server/intelligence/capability";
@@ -21,7 +22,8 @@ export type UnifiedRouterTool =
 export type UnifiedRouterIntent = WhatsAppBotIntent
   | "order_continue"
   | "menu_summary"
-  | "catalog_availability";
+  | "catalog_availability"
+  | NonCommercialIntent;
 
 export type UnifiedRouterSession = {
   active: boolean;
@@ -47,7 +49,7 @@ export type UnifiedRouterDecision = {
   authorityOperation: AuthorityOperation | null;
   authorityDecision: AuthorityOperationDecision | null;
   wouldHandle: boolean;
-  handoffReason: "human_lock" | "explicit_handoff" | "capability_denied" | "authority_denied" | "low_confidence" | null;
+  handoffReason: "human_lock" | "explicit_handoff" | "capability_denied" | "authority_denied" | "low_confidence" | "non_commercial" | null;
   trace: readonly [
     "context",
     "human_lock",
@@ -76,6 +78,10 @@ type IntentPolicy = {
 };
 
 const POLICIES: Record<UnifiedRouterIntent, IntentPolicy> = {
+  job_candidate: { tool: "human_handoff", capability: null, authority: null },
+  supplier_contact: { tool: "human_handoff", capability: null, authority: null },
+  generic_business_contact: { tool: "human_handoff", capability: null, authority: null },
+  social_ad_context: { tool: "human_handoff", capability: null, authority: null },
   menu: { tool: "conversation_info", capability: "canAutoReply", authority: null },
   menu_link: { tool: "catalog", capability: "canSearchCatalog", authority: null },
   menu_summary: { tool: "catalog", capability: "canSearchCatalog", authority: null },
@@ -118,6 +124,8 @@ function resolveIntent(input: UnifiedRouterInput): {
   intent: UnifiedRouterIntent;
   confidence: UnifiedRouterDecision["confidence"];
 } {
+  const nonCommercial = classifyNonCommercialContact(input.message, { activeSession: input.session.active });
+  if (nonCommercial) return { intent: nonCommercial, confidence: "high" };
   const activeOrder = input.session.active && input.session.kind === "whatsapp_order";
   if (asksForMenuDescription(input.message)) {
     return { intent: "menu_summary", confidence: activeOrder ? "contextual" : "high" };
@@ -168,7 +176,8 @@ export class UnifiedIntelligenceRouter {
     const { intent, confidence } = resolveIntent(input);
     const policy = POLICIES[intent];
 
-    if (intent === "handoff" || intent === "benefit_handoff") {
+    const nonCommercial = ["job_candidate", "supplier_contact", "generic_business_contact", "social_ad_context"].includes(intent);
+    if (intent === "handoff" || intent === "benefit_handoff" || nonCommercial) {
       return {
         mode: "shadow",
         intent,
@@ -179,7 +188,7 @@ export class UnifiedIntelligenceRouter {
         authorityOperation: null,
         authorityDecision: null,
         wouldHandle: true,
-        handoffReason: "explicit_handoff",
+        handoffReason: nonCommercial ? "non_commercial" : "explicit_handoff",
         trace: TRACE,
       };
     }
