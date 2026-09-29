@@ -2,6 +2,7 @@
 set -Eeuo pipefail
 
 # Issue #830: disposable Supabase staging for controlled failure/retry tests.
+# INT-EVOL-04 gate: full schema and real preventive-handoff/Inbox claim contention.
 # This script is intentionally local-only: it never links to or queries a hosted project.
 
 readonly project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -61,6 +62,11 @@ done < <(find supabase/sql -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC
 psql "${local_db_url}" -X -v ON_ERROR_STOP=1 \
   -f "${parked_migrations}/20260915155500_int11_order_creation_channel.sql" >/dev/null
 
+# Replay the exact panel claim delta so preventive-vs-human concurrency exercises
+# the same Inbox RPC used in production, not only its underlying transition.
+psql "${local_db_url}" -X -v ON_ERROR_STOP=1 \
+  -f "${parked_migrations}/20260917214500_wpp07_atomic_human_claim.sql" >/dev/null
+
 # Prove that the disposable database survives a controlled infrastructure restart.
 supabase stop
 supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
@@ -85,6 +91,7 @@ readonly scenarios=(
   "supabase/tests/e2e_ifood_order_intake_runtime.sql"
   "supabase/tests/e2e_growth_observability.sql"
   "supabase/tests/e2e_conversation_bot_resume.sql"
+  "supabase/tests/e2e_preventive_handoff.sql"
   "supabase/tests/e2e_flow10_checkout_snapshot.sql"
 )
 
@@ -98,6 +105,8 @@ for pass in 1 2 3; do
   bash scripts/run-flow10-concurrent-claim.sh "${local_db_url}" "${pass}"
   echo "ISOLATED_SCENARIO=flow10-concurrent-whatsapp-order-confirmation"
   bash scripts/run-flow10-concurrent-order-confirmation.sh "${local_db_url}" "${pass}"
+  echo "ISOLATED_SCENARIO=preventive-handoff-concurrency"
+  bash scripts/run-preventive-handoff-concurrency.sh "${local_db_url}" "${pass}"
 done
 
 echo "ISOLATED_CHAOS_RESULT=passed"

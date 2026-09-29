@@ -111,6 +111,31 @@ describe("INT-14 shadow comparison", () => {
     expect(observation.critical_mismatch).toBe(false);
   });
 
+  for (const intent of ["job_candidate", "supplier_contact", "generic_business_contact", "social_ad_context"] as const) {
+    for (const outcome of ["waiting_agent", "human"] as const) {
+      it(`matches preventive ${intent} with ${outcome} without false critical mismatch`, () => {
+        const observation = buildIntelligenceShadowObservation(preparation({
+          decision: decision({ intent, tool: "human_handoff", requiredCapability: null, handoffReason: "non_commercial" }),
+        }), {
+          legacyHandler: "whatsapp_order", legacyDecision: { intent, tool: "human_handoff" },
+          legacyOutcome: outcome, legacyDurationMs: 1,
+        });
+        expect(observation.comparisons.handoff).toBe("match");
+        expect(observation.critical_mismatch).toBe(false);
+      });
+    }
+    it(`still flags a commercial outcome for ${intent}`, () => {
+      const observation = buildIntelligenceShadowObservation(preparation({
+        decision: decision({ intent, tool: "human_handoff", requiredCapability: null, handoffReason: "non_commercial" }),
+      }), {
+        legacyHandler: "greeting", legacyDecision: { intent, tool: "human_handoff" },
+        legacyOutcome: "outbound_recorded", legacyDurationMs: 1,
+      });
+      expect(observation.comparisons.handoff).toBe("mismatch");
+      expect(observation.critical_mismatch).toBe(true);
+    });
+  }
+
   it("sanitizes next-core errors to type/code and never captures the message", () => {
     const error = Object.assign(new Error("token=secret customer phone 19999999999"), { code: "NEXT_TIMEOUT" });
     expect(sanitizedShadowError(error)).toEqual({ type: "Error", code: "NEXT_TIMEOUT" });

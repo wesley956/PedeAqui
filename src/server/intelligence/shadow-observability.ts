@@ -110,7 +110,7 @@ function buildComparisons(
     notObserved.tool = decision.tool === completion.legacyDecision.tool ? "match" : "mismatch";
   }
 
-  const nextHandoff = decision.handoffReason === "human_lock" || decision.handoffReason === "explicit_handoff";
+  const nextHandoff = decision.handoffReason === "human_lock" || decision.handoffReason === "explicit_handoff" || decision.handoffReason === "non_commercial";
   const legacyHandoff = completion.legacyOutcome === "waiting_agent" || completion.legacyOutcome === "human";
   if (nextHandoff || legacyHandoff) notObserved.handoff = nextHandoff === legacyHandoff ? "match" : "mismatch";
   return notObserved;
