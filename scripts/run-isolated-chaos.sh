@@ -2,6 +2,7 @@
 set -Eeuo pipefail
 
 # Issue #830: disposable Supabase staging for controlled failure/retry tests.
+# INT-EVOL-04 gate: full schema and real preventive-handoff/Inbox claim contention.
 # This script is intentionally local-only: it never links to or queries a hosted project.
 
 readonly project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
