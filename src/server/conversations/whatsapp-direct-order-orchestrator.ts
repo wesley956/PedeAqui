@@ -1,5 +1,5 @@
 import { classifyNonCommercialContact } from "@/server/conversations/whatsapp-non-commercial";
-import { requestPreventiveHandoff } from "@/server/conversations/whatsapp-preventive-handoff";
+import { isPreventiveHandoffEnabled, requestPreventiveHandoff } from "@/server/conversations/whatsapp-preventive-handoff";
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -230,7 +230,7 @@ export class WhatsAppDirectOrderOrchestrator {
     const active = session?.state === "active" && (!session.expires_at || Date.parse(session.expires_at) > Date.now());
     const activeOrderStep = active && isWhatsAppOrderStep(session?.step) ? session.step : null;
     const nonCommercial = classifyNonCommercialContact(inbound.body, { activeSession: active });
-    if (nonCommercial) {
+    if (nonCommercial && isPreventiveHandoffEnabled(conversation.organization_id, conversation.store_id)) {
       await requestPreventiveHandoff({
         organizationId: conversation.organization_id,
         storeId: conversation.store_id,
