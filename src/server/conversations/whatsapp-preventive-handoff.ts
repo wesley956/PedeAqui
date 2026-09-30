@@ -4,6 +4,7 @@ import { WhatsAppCloudProvider, resolveWhatsAppAccessToken, safeWhatsAppFailureM
 import { recordFailure } from "@/server/observability/failure";
 
 type HandoffInput = {
+  requestId?: string;
   organizationId: string;
   storeId: string;
   conversationId: string;
@@ -124,6 +125,7 @@ export async function requestPreventiveHandoff(
     if (markError) throw markError;
   } catch (sendError) {
     recordFailure("whatsapp.preventive_handoff.notice_failed", sendError, {
+      requestId: input.requestId ?? input.messageId,
       organizationId: input.organizationId,
       storeId: input.storeId,
       conversationId: input.conversationId,
@@ -145,7 +147,7 @@ export function isPreventiveHandoffEnabled(
   storeId: string,
   configuredScopes = process.env.WHATSAPP_NON_COMMERCIAL_HANDOFF_STORES,
 ): boolean {
-  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuid.test(organizationId) || !uuid.test(storeId)) return false;
   const target = `${organizationId}:${storeId}`.toLowerCase();
   return (configuredScopes ?? "").split(",").some((scope) => scope.trim().toLowerCase() === target);
