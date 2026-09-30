@@ -105,7 +105,7 @@ export class SubscriptionBillingNotificationService {
           const inserted = await admin.from("platform_customer_messages").insert({
             organization_id: notice.organization_id,
             channel: "panel",
-            kind: `billing_${notice.kind}`,
+            kind: "billing",
             title: message.title,
             body: message.body,
             status: "sent",
@@ -115,6 +115,7 @@ export class SubscriptionBillingNotificationService {
             metadata: {
               source: "subscription_billing",
               billing_notification_id: notice.id,
+              billing_notice_kind: notice.kind,
               subscription_id: notice.subscription_id,
               invoice_id: notice.invoice_id,
             },
