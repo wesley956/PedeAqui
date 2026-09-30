@@ -147,7 +147,7 @@ export function isPreventiveHandoffEnabled(
   storeId: string,
   configuredScopes = process.env.WHATSAPP_NON_COMMERCIAL_HANDOFF_STORES,
 ): boolean {
-  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuid.test(organizationId) || !uuid.test(storeId)) return false;
   const target = `${organizationId}:${storeId}`.toLowerCase();
   return (configuredScopes ?? "").split(",").some((scope) => scope.trim().toLowerCase() === target);
