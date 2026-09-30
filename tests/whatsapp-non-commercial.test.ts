@@ -10,12 +10,16 @@ const positive = [
   ["vendo caixas: Cx 15x15x7: 30 unidades", "supplier_contact"],
   ["compro óleo usado", "supplier_contact"],
   ["fornecedor oferecendo compra de óleo usado", "supplier_contact"],
-  ["Olá! Posso ter mais informações sobre isso?", "generic_business_contact"],
   ["vim pelo anúncio no Instagram", "social_ad_context"],
 ] as const;
 const negative = [
+  "Olá! Posso ter mais informações sobre isso?",
+  "poderia receber mais informações sobre isto",
+  "gostaria de mais informações sobre isso",
   "quero uma caixa de 30 salgados",
   "150 salgados. 50 churros",
+  "Quantos sai o cento",
+  "De salgados misto",
   "tem caixa para retirada?",
   "a cozinha já preparou meu pedido?",
   "vou buscar depois do trabalho",
