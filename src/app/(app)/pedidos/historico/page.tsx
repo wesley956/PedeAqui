@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { OrderHistoryFilters, orderHistoryPeriodLabels as periodLabels, orderHistoryQuery as queryFor } from "@/features/orders/order-history-filters";
 import styles from "@/features/orders/order-manager.module.css";
 import { formatStoreDate, formatStoreDateTime, DEFAULT_STORE_TIMEZONE } from "@/lib/store-date-time";
 import { OrderDeliveryAttributionService } from "@/server/delivery/order-delivery-attribution-service";
-import { OrderHistoryService, type OrderHistoryPeriod } from "@/server/orders/order-history-service";
+import { OrderHistoryService } from "@/server/orders/order-history-service";
 import { OrderListPosition } from "@/features/orders/order-navigation-memory";
 
 const statusLabels: Record<string, string> = {
@@ -18,26 +19,8 @@ const fulfillmentLabels: Record<string, string> = {
   table: "Mesa",
 };
 
-const periodLabels: Record<OrderHistoryPeriod, string> = {
-  all: "Todo histórico",
-  today: "Hoje",
-  week: "Esta semana",
-  fortnight: "Últimos 15 dias",
-  month: "Este mês",
-  date: "Data específica",
-};
-
 function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
-}
-
-function queryFor(input: { search?: string; period?: OrderHistoryPeriod; date?: string; page?: number }) {
-  return {
-    ...(input.search ? { q: input.search } : {}),
-    ...(input.period && input.period !== "all" ? { period: input.period } : {}),
-    ...(input.period === "date" && input.date ? { date: input.date } : {}),
-    ...(input.page && input.page > 1 ? { page: String(input.page) } : {}),
-  };
 }
 
 export default async function OrderHistoryPage({
@@ -73,7 +56,7 @@ export default async function OrderHistoryPage({
     orders.filter((order) => order.fulfillment_type === "delivery").map((order) => order.id),
   );
   const filterDescription = dateRange
-    ? dateRange.startDate === dateRange.endDate
+    ? formatStoreDate(dateRange.startIso, timeZone) === formatStoreDate(new Date(new Date(dateRange.endIso).getTime() - 1), timeZone)
       ? formatStoreDate(dateRange.startIso, timeZone)
       : `${formatStoreDate(dateRange.startIso, timeZone)} a ${formatStoreDate(new Date(new Date(dateRange.endIso).getTime() - 1), timeZone)}`
     : "todos os períodos";
@@ -90,38 +73,8 @@ export default async function OrderHistoryPage({
         <Link href="/pedidos" className={styles.detailsLink}>← Voltar para pedidos ativos</Link>
       </header>
 
-      <form method="get" className={styles.historyToolbar}>
-        <label className={styles.historySearchLabel}>
-          <span>Buscar no histórico completo</span>
-          <input name="q" type="search" defaultValue={search} placeholder="Nome do cliente ou número do pedido" maxLength={80} />
-        </label>
-        <button type="submit" className={styles.detailsLink}>Buscar</button>
-
-        <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap", flexBasis: "100%", alignItems: "center" }}>
-          {(Object.keys(periodLabels) as OrderHistoryPeriod[]).filter((value) => value !== "date").map((value) => (
-            <button
-              key={value}
-              type="submit"
-              name="period"
-              value={value}
-              className={period === value ? styles.activeBadge : styles.detailsLink}
-              aria-pressed={period === value}
-            >
-              {periodLabels[value]}
-            </button>
-          ))}
-        </div>
-
-        <label className={styles.historySearchLabel} style={{ flex: "0 1 230px" }}>
-          <span>Escolher um dia</span>
-          <input name="date" type="date" defaultValue={selectedDate} />
-        </label>
-        <button type="submit" name="period" value="date" className={period === "date" ? styles.activeBadge : styles.detailsLink}>
-          Ver esta data
-        </button>
-
-        {(search || period !== "all") ? <Link href="/pedidos/historico" className={styles.detailsLink}>Limpar filtros</Link> : null}
-      </form>
+      <OrderHistoryFilters search={search} period={period} selectedDate={selectedDate} />
+      <p className={styles.pageHint}>O período considera a data de criação do pedido no horário da loja ({timeZone}). O valor vendido soma somente pedidos finalizados.</p>
 
       <div
         aria-label="Resumo do período"
@@ -166,7 +119,7 @@ export default async function OrderHistoryPage({
                 </div>
                 <div className={styles.moneyTime}>
                   <span className={styles.total}>{money(order.total_cents)}</span>
-                  <span className={styles.elapsed}>{formatStoreDateTime(order.updated_at, timeZone)}</span>
+                  <span className={styles.elapsed}>Pedido em {formatStoreDateTime(order.created_at, timeZone)}</span>
                 </div>
               </div>
 

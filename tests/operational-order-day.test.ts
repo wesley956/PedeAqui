@@ -27,6 +27,7 @@ describe("operational board and history separation [817]", () => {
     expect(service).toContain("static async listHistory");
     expect(service).toContain('.in("order_status", ["completed", "rejected", "canceled"])');
     expect(history).toContain("histórico está paginado; nenhum pedido foi descartado");
-    expect(history).toContain("Buscar no histórico completo");
+    expect(history).toContain("OrderHistoryFilters");
+    expect(read("src/features/orders/order-history-filters.tsx")).toContain("Buscar no histórico completo");
   });
 });
