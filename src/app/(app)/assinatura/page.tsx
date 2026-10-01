@@ -73,6 +73,16 @@ export default async function CustomerSubscriptionPage() {
         <Metric label="Pagamento" value={paymentStatus[subscription.paymentStatus] ?? subscription.paymentStatus} />
       </section>
 
+      <section className={styles.card}>
+        <div><p className={styles.eyebrow}>REGRAS DE COBRANÇA</p><h2>Como funcionam vencimento, carência e bloqueio</h2></div>
+        <div className={styles.rows}>
+          <Row label="Vencimento" value={subscription.billingDueDay ? `Todo dia ${subscription.billingDueDay}` : "Conforme o próximo vencimento"} helper="O PIX da mensalidade é disponibilizado no painel antes do vencimento." />
+          <Row label="Carência após o vencimento" value={`${subscription.gracePeriodDays} dia${subscription.gracePeriodDays === 1 ? "" : "s"}`} helper="Se o pagamento ainda não tiver sido confirmado, o acesso continua funcionando normalmente durante esse período de tolerância." />
+          <Row label="Após a carência" value="Acesso operacional suspenso" helper="Se a mensalidade continuar em aberto após o fim da tolerância, o uso operacional do PedeAqui é suspenso até a regularização. Seus dados permanecem preservados." />
+          <Row label="Confirmação e reativação" value="Automáticas" helper="Quando o Mercado Pago confirma o PIX, o PedeAqui registra o pagamento, atualiza a próxima mensalidade e libera automaticamente um acesso que tenha sido suspenso por inadimplência." />
+        </div>
+      </section>
+
       <section className={styles.grid}>
         <article className={styles.card}>
           <div><p className={styles.eyebrow}>CONTRATO</p><h2>Seu plano no PedeAqui</h2></div>
