@@ -86,10 +86,9 @@ jobs:
 
       - name: Validate Print Agent
         run: |
-          node --check print-agent/src/index.mjs
-          node --check print-agent/src/spool.mjs
-          node --check print-agent/src/escpos.mjs
-          node --check print-agent/src/system-print.mjs
+          for file in print-agent/src/*.mjs; do
+            node --check "$file"
+          done
 
       - name: Build
         run: npm run build
