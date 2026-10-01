@@ -177,6 +177,36 @@ export class SubscriptionPixBillingService {
     return result;
   }
 
+  static async reconcilePendingCharges(limit = 100) {
+    const admin = createAdminClient();
+    const actorUserId = await systemActor();
+    const result = { scanned: 0, reconciled: 0, paid: 0, stillPending: 0, errors: [] as string[] };
+
+    const { data: charges, error } = await admin
+      .from("subscription_pix_charges")
+      .select("id")
+      .eq("provider_key", PIX_PROVIDER_KEY)
+      .eq("status", "pending")
+      .not("provider_order_id", "is", null)
+      .order("created_at", { ascending: true })
+      .limit(Math.max(1, Math.min(limit, 200)));
+    if (error) throw error;
+    result.scanned = charges?.length ?? 0;
+
+    for (const charge of charges ?? []) {
+      try {
+        const reconciliation = await this.reconcileCharge(charge.id, actorUserId);
+        result.reconciled += 1;
+        if (reconciliation.status === "paid") result.paid += 1;
+        else if (reconciliation.status === "pending") result.stillPending += 1;
+      } catch (error) {
+        result.errors.push(error instanceof Error ? error.message.slice(0, 180) : "Unknown subscription PIX reconciliation error");
+      }
+    }
+
+    return result;
+  }
+
   static async createCharge(input: {
     organizationId: string;
     subscriptionId: string;
