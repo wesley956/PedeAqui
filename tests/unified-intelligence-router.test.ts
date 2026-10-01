@@ -252,13 +252,15 @@ describe("INT-EVOL-04 shadow commercial-tool safety", () => {
     expect(decision.intent).toBe("order_continue");
     expect(session.step).toBe("order_items");
   });
-  it("routes an unscoped generic contact away from catalog", () => {
+  it("keeps an unscoped generic customer inquiry out of preventive handoff", () => {
     const decision = UnifiedIntelligenceRouter.route({
       context: context(),
       message: "Olá! Posso ter mais informações sobre isso?",
       session: inactiveSession(),
     });
-    expect(decision.intent).toBe("generic_business_contact");
-    expect(decision.tool).toBe("human_handoff");
+    expect(decision.intent).toBe("unknown");
+    expect(decision.tool).toBe("fallback");
+    expect(decision.tool).not.toBe("human_handoff");
+    expect(decision.tool).not.toBe("catalog");
   });
 });

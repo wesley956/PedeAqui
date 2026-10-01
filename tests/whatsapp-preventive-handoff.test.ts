@@ -1,15 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-const mocks = vi.hoisted(() => ({ admin: vi.fn() }));
+const mocks = vi.hoisted(() => ({ admin: vi.fn(), sendText: vi.fn() }));
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: mocks.admin }));
-import { isPreventiveHandoffEnabled } from "@/server/conversations/whatsapp-preventive-handoff";
+vi.mock("@/server/conversations/provider", () => ({
+  WhatsAppCloudProvider: class {
+    sendText = mocks.sendText;
+  },
+  resolveWhatsAppAccessToken: () => "technical-token",
+  safeWhatsAppFailureMessage: () => "provider failure",
+}));
+import { isPreventiveHandoffEnabled, requestPreventiveHandoff } from "@/server/conversations/whatsapp-preventive-handoff";
 import { ConversationGreetingService } from "@/server/conversations/greeting-service";
 import { WhatsAppDirectOrderOrchestrator } from "@/server/conversations/whatsapp-direct-order-orchestrator";
 
 import { UnifiedIntelligenceRouterShadow } from "@/server/intelligence/unified-router-shadow";
 import { buildIntelligenceShadowObservation } from "@/server/intelligence/shadow-observability";
 
-beforeEach(() => { vi.stubEnv("WHATSAPP_NON_COMMERCIAL_HANDOFF_STORES", "11111111-1111-4111-8111-111111111111:22222222-2222-4222-8222-222222222222"); });
+beforeEach(() => {
+  vi.stubEnv("WHATSAPP_NON_COMMERCIAL_HANDOFF_STORES", "11111111-1111-4111-8111-111111111111:22222222-2222-4222-8222-222222222222");
+  mocks.sendText.mockReset();
+});
 afterEach(() => { vi.unstubAllEnvs(); });
 
 function query(data: unknown) {
@@ -68,13 +78,84 @@ for (const handler of [ConversationGreetingService, WhatsAppDirectOrderOrchestra
         messages: { body: "vaga de freelance", content_type: "text" }, automation_sessions: null,
       };
       const error = new Error("RPC unavailable");
-      const rpc = vi.fn(async () => ({ error }));
+      const rpc = vi.fn(async () => ({ data: null, error }));
       mocks.admin.mockReturnValue({ from: (t: string) => query(rows[t]), rpc });
       await expect(handler.afterInbound({ conversation_id: "33333333-3333-4333-8333-333333333333", message_id: "55555555-5555-4555-8555-555555555555" }, "technical")).rejects.toBe(error);
       expect(rpc).toHaveBeenCalledTimes(1);
     });
   });
 }
+
+describe("preventive handoff transition notice", () => {
+  const input = {
+    organizationId: "11111111-1111-4111-8111-111111111111",
+    storeId: "22222222-2222-4222-8222-222222222222",
+    conversationId: "33333333-3333-4333-8333-333333333333",
+    messageId: "55555555-5555-4555-8555-555555555555",
+    reason: "supplier_contact" as const,
+  };
+
+  it("sends the configured notice once after an applied handoff", async () => {
+    const rows: Record<string, unknown> = {
+      conversations: { contact_id: "44444444-4444-4444-8444-444444444444" },
+      store_conversation_settings: {
+        handoff_message: "Certo! Encaminhei sua conversa para a equipe do restaurante.",
+        whatsapp_phone_number_id: "pn",
+        access_token_secret_ref: "secret",
+      },
+      contacts: { external_id: "5511999999999" },
+    };
+    const rpc = vi.fn(async (name: string) => {
+      if (name === "conversation_claim_bot_outbound_internal") return { data: { claimed: true, message_id: "66666666-6666-4666-8666-666666666666" }, error: null };
+      if (name === "conversation_preventive_handoff_internal") return { data: { status: "waiting_agent" }, error: null };
+      if (name === "conversation_mark_outbound_result_internal") return { data: {}, error: null };
+      throw new Error(`Unexpected RPC ${name}`);
+    });
+    mocks.admin.mockReturnValue({ from: (table: string) => query(rows[table]), rpc });
+    mocks.sendText.mockResolvedValue({ externalMessageId: "wamid.notice" });
+
+    await requestPreventiveHandoff(input, rpc);
+
+    expect(mocks.sendText).toHaveBeenCalledTimes(1);
+    expect(mocks.sendText).toHaveBeenCalledWith({
+      phoneNumberId: "pn",
+      recipient: "5511999999999",
+      body: "Certo! Encaminhei sua conversa para a equipe do restaurante.",
+    });
+    expect(rpc.mock.calls.map(([name]) => name)).toEqual([
+      "conversation_claim_bot_outbound_internal",
+      "conversation_preventive_handoff_internal",
+      "conversation_mark_outbound_result_internal",
+    ]);
+  });
+
+  it("does not send a notice when a concurrent human owner wins", async () => {
+    const rows: Record<string, unknown> = {
+      conversations: { contact_id: "44444444-4444-4444-8444-444444444444" },
+      store_conversation_settings: {
+        handoff_message: "Encaminhei para a equipe.",
+        whatsapp_phone_number_id: "pn",
+        access_token_secret_ref: "secret",
+      },
+      contacts: { external_id: "5511999999999" },
+    };
+    const rpc = vi.fn(async (name: string) => {
+      if (name === "conversation_claim_bot_outbound_internal") return { data: { claimed: true, message_id: "66666666-6666-4666-8666-666666666666" }, error: null };
+      if (name === "conversation_preventive_handoff_internal") return { data: { status: "human" }, error: null };
+      if (name === "conversation_mark_outbound_result_internal") return { data: {}, error: null };
+      throw new Error(`Unexpected RPC ${name}`);
+    });
+    mocks.admin.mockReturnValue({ from: (table: string) => query(rows[table]), rpc });
+
+    await requestPreventiveHandoff(input, rpc);
+
+    expect(mocks.sendText).not.toHaveBeenCalled();
+    expect(rpc).toHaveBeenLastCalledWith("conversation_mark_outbound_result_internal", expect.objectContaining({
+      p_status: "failed",
+      p_error_code: "handoff_not_applied",
+    }));
+  });
+});
 
 describe("preventive handoff rollout scope", () => {
   const org = "11111111-1111-4111-8111-111111111111";

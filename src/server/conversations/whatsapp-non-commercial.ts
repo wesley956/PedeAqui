@@ -39,8 +39,10 @@ export function classifyNonCommercialContact(
     && !/\b(?:pedido|pedir|comprar|cardapio|preco|valor|produto|promocao|entrega|retirada)\b/.test(text)) {
     return "social_ad_context";
   }
-  if (/^(?:(?:oi+|ola|bom dia|boa tarde|boa noite) )?(?:posso|poderia|gostaria de) (?:ter |receber )?mais informacoes (?:sobre isso|sobre isto)$/.test(text)) {
-    return "generic_business_contact";
-  }
+
+  // Generic requests for information are intentionally NOT non-commercial.
+  // They are common entry points for sales conversations (for example an ad
+  // click followed by "posso ter mais informações?"). Keep them with the bot
+  // so the next message can establish product, quantity, price or order intent.
   return null;
 }
