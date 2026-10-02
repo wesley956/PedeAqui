@@ -176,10 +176,10 @@ with tempfile.TemporaryFile() as log:
             require(result.returncode == 0, "action_truth_query")
             return result.stdout.strip()
         def call_action(name, order_id, cookie):
-            call = subprocess.run(["node", "scripts/tenant-server-action.mjs"], input=json.dumps({"actionId": action_id(name), "cookie": cookie, "fields": {"orderId": order_id, "reason": "Synthetic isolated cancellation"}}), capture_output=True, text=True, timeout=45)
+            call = subprocess.run(["node", "scripts/tenant-server-action.mjs"], input=json.dumps({"actionId": action_id("orderManagerAction"), "cookie": cookie, "fields": {"orderId": order_id, "intent": name, "reason": "Synthetic isolated cancellation"}}), capture_output=True, text=True, timeout=45)
             require(call.returncode == 0, "real_action_http_completed")
             require(json.loads(call.stdout)["status"] != 404, "compiled_action_request_recognized")
-        for name, expected in (("confirmOrderAction", "confirmed"), ("cancelOrderAction", "canceled")):
+        for name, expected in (("accept", "confirmed"), ("cancel", "canceled")):
             # Attacks precede controls to avoid false positives from terminal state.
             for i in range(2):
                 other = 1-i
