@@ -1,4 +1,5 @@
 import { normalizeBotInput } from "@/server/conversations/bot-menu";
+import { isNaturalTrackingQuestion, resolveNaturalPixSpeech, resolveNaturalFulfillment } from "@/server/conversations/whatsapp-contextual-language";
 import type {
   WhatsAppIntelligenceIntent,
   WhatsAppIntelligencePhase,
@@ -108,7 +109,8 @@ export function classifyWhatsAppIntelligenceIntent(
   if (explicitTrackingCode) return result("track_code", 0.99, "explicit-order-code");
   if (phase === "awaiting_tracking_code" && trackingNumbers.length === 1) return result("track_code", 0.99, "tracking-step-single-number");
   if (/\b(?:pedido|codigo)\b/.test(normalized) && trackingNumbers.length === 1) return result("track_code", 0.97, "tracking-context-single-number");
-  if (hasAny(normalized, trackingPatterns)) return result("track_start", 0.95, "tracking-language");
+  if (phase === "order_fulfillment" && resolveNaturalFulfillment(text)) return result("delivery", 0.98, "fulfillment-choice");
+  if (hasAny(normalized, trackingPatterns) || isNaturalTrackingQuestion(text)) return result("track_start", 0.95, "tracking-language");
 
   if (/\b(?:atendente|humano|falar com (?:o )?restaurante|falar com uma pessoa|chama alguem)\b/.test(normalized)) {
     return result("handoff", 0.98, "human-handoff");
@@ -123,7 +125,7 @@ export function classifyWhatsAppIntelligenceIntent(
     }
   }
 
-  if (hasAny(normalized, paymentPatterns)) return result("payment", phase === "order_payment" ? 0.98 : 0.91, "payment-language");
+  if (hasAny(normalized, paymentPatterns) || resolveNaturalPixSpeech(text)) return result("payment", phase === "order_payment" ? 0.98 : 0.91, "payment-language");
   if (hasAny(normalized, deliveryPatterns)) return result("delivery", phase === "order_fulfillment" ? 0.98 : 0.91, "delivery-language");
 
   if (phase === "order_items") {

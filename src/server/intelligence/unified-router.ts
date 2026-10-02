@@ -1,4 +1,5 @@
 import { classifyNonCommercialContact, type NonCommercialIntent } from "@/server/conversations/whatsapp-non-commercial";
+import { isNaturalTrackingQuestion, resolveNaturalPixSpeech, resolveNaturalFulfillment } from "@/server/conversations/whatsapp-contextual-language";
 import type { AuthorityFacts, AuthorityOperation, AuthorityOperationDecision } from "@/server/intelligence/authority";
 import { AuthorityResolver } from "@/server/intelligence/authority";
 import type { CapabilityDecision, CapabilityFacts, IntelligenceCapabilityKey } from "@/server/intelligence/capability";
@@ -109,6 +110,7 @@ const ACTIVE_ORDER_ESCAPE_INTENTS = new Set<WhatsAppBotIntent>([
   "menu_link",
   "payment",
   "price",
+  "hours",
   "handoff",
   "benefit_handoff",
   "track_start",
@@ -140,9 +142,15 @@ function resolveIntent(input: UnifiedRouterInput): {
   const explicit = resolveWhatsAppBotIntent(input.message, menuStep);
 
   if (activeOrder) {
+    if (input.session.step === "order_fulfillment" && resolveNaturalFulfillment(input.message)) {
+      return { intent: "order_continue", confidence: "contextual" };
+    }
+    if (input.session.step === "order_payment" && resolveNaturalPixSpeech(input.message) === "selection") {
+      return { intent: "order_continue", confidence: "contextual" };
+    }
     const normalized = normalizeBotInput(input.message);
     const explicitTrackingInterruption = explicit === "track_code"
-      || (explicit === "track_start" && /\b(?:acompanhar|rastrear|status|cade|onde esta|como esta|ja saiu)\b/.test(normalized));
+      || (explicit === "track_start" && (isNaturalTrackingQuestion(input.message) || /\b(?:acompanhar|rastrear|status|cade|onde esta|como esta|ja saiu)\b/.test(normalized)));
     if (explicit === "track_start" && !explicitTrackingInterruption) {
       return { intent: "order_continue", confidence: "contextual" };
     }

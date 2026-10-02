@@ -64,6 +64,24 @@ function activeOrderSession() {
 }
 
 describe("UnifiedIntelligenceRouter", () => {
+  it("keeps hours read-only during an active order, matching the live orchestrator", () => {
+    const decision = UnifiedIntelligenceRouter.route({ context: context(), message: "qual horário vocês fecham?", session: activeOrderSession() });
+    expect(decision.intent).toBe("hours");
+    expect(decision.tool).toBe("conversation_info");
+  });
+  it("keeps natural Pix selection in checkout while instructions stay read-only", () => {
+    const session = { active: true, kind: "whatsapp_order", step: "order_payment" } as const;
+    expect(UnifiedIntelligenceRouter.route({ context: context(), message: "seria no Pix", session }).intent).toBe("order_continue");
+    expect(UnifiedIntelligenceRouter.route({ context: context(), message: "manda a chave", session }).tool).toBe("conversation_info");
+  });
+  it("distinguishes pickup choice from tracking without bypassing human locks", () => {
+    const session = { active: true, kind: "whatsapp_order", step: "order_fulfillment" } as const;
+    expect(UnifiedIntelligenceRouter.route({ context: context(), message: "posso ir buscar?", session }).intent).toBe("order_continue");
+    expect(UnifiedIntelligenceRouter.route({ context: context(), message: "posso ir buscar?", session: activeOrderSession() }).tool).toBe("order_tracking");
+    for (const mode of ["human", "waiting_agent"] as const) {
+      expect(UnifiedIntelligenceRouter.route({ context: context(mode), message: "o meu está pronto?", session }).wouldHandle).toBe(false);
+    }
+  });
   it("applies human lock before any automation", () => {
     const decision = UnifiedIntelligenceRouter.route({
       context: context("human"),
