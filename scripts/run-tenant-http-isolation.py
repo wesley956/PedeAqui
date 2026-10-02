@@ -71,6 +71,8 @@ roles = ["11740000-0000-4000-8000-000000000021", "11740000-0000-4000-8000-000000
 customers = ["11740000-0000-4000-8000-000000000031", "11740000-0000-4000-8000-000000000032"]
 contacts = ["11740000-0000-4000-8000-000000000041", "11740000-0000-4000-8000-000000000042"]
 conversations = ["11740000-0000-4000-8000-000000000051", "11740000-0000-4000-8000-000000000052"]
+accounts = ["11740000-0000-4000-8000-000000000121", "11740000-0000-4000-8000-000000000122"]
+events = ["11740000-0000-4000-8000-000000000131", "11740000-0000-4000-8000-000000000132"]
 orders = ["11740000-0000-4000-8000-000000000081", "11740000-0000-4000-8000-000000000082"]
 items = ["11740000-0000-4000-8000-000000000091", "11740000-0000-4000-8000-000000000092"]
 statements = ["begin;"]
@@ -90,6 +92,8 @@ for index, (user_id, _) in enumerate(identities):
     cart = f"11740000-0000-4000-8000-00000000010{index+1}"
     checkout = f"11740000-0000-4000-8000-00000000011{index+1}"
     statements.extend([
+        f"insert into public.integration_accounts(id,organization_id,provider,status) values ('{accounts[index]}','{org}','ifood','connected');",
+        f"insert into public.integration_events(id,organization_id,store_id,integration_account_id,provider,capability,external_event_id,event_type,payload) values ('{events[index]}','{org}','{store}','{accounts[index]}','ifood','ifood_orders','tenant-isolation-event-{index}','ORDER_PLACED','{{}}'::jsonb);",
         f"insert into public.carts(id,organization_id,store_id,token_hash,status,subtotal_cents,total_cents,expires_at) values ('{cart}','{org}','{store}',repeat('{index+1}',64),'active',1000,1000,now()+interval '1 day');",
         f"insert into public.checkout_sessions(id,organization_id,store_id,cart_id,customer_name,customer_phone,fulfillment_type,payment_method) values ('{checkout}','{org}','{store}','{cart}','Synthetic buyer','19999990000','pickup','cash');",
         f"insert into public.orders(id,organization_id,store_id,source_cart_id,checkout_session_id,public_access_token_hash,display_number,fulfillment_type,customer_name_snapshot,customer_phone_snapshot,subtotal_cents,total_cents,payment_method_snapshot) values ('{orders[index]}','{org}','{store}','{cart}','{checkout}',repeat('{index+3}',64),1,'pickup','Synthetic buyer','19999990000',1000,1000,'cash');",
@@ -130,6 +134,27 @@ for index, (_, token) in enumerate(identities):
     ):
         code, result = request("POST", "/rest/v1/rpc/" + rpc, token, body)
         require(code in (401, 403, 404), f"{index}_internal_rpc_{rpc}_denied")
+
+# Privileged workers use exact authoritative account/store pairs, not a cross-product.
+for index in range(2):
+    other = 1 - index
+    claim = {"p_limit": 10, "p_worker_id": f"tenant-worker-{index}", "p_integration_account_ids": [accounts[index]], "p_store_ids": [stores[other]]}
+    code, result = request("POST", "/rest/v1/rpc/integration_claim_events_scoped", service, claim)
+    require(code == 200 and result == [], f"{index}_worker_mismatched_account_store_denied")
+    claim["p_store_ids"] = [stores[index]]
+    code, result = request("POST", "/rest/v1/rpc/integration_claim_events_scoped", identities[index][1], claim)
+    require(code in (401, 403), f"{index}_merchant_cannot_claim_worker_events")
+    code, result = request("POST", "/rest/v1/rpc/integration_claim_events_scoped", service, claim)
+    require(code == 200 and len(result) == 1 and result[0]["id"] == events[index] and result[0]["organization_id"] == orgs[index] and result[0]["store_id"] == stores[index], f"{index}_worker_own_claim_positive")
+for index in range(2):
+    other = 1 - index
+    code, result = request("POST", "/rest/v1/rpc/integration_finish_event", service, {"p_event_id": events[other], "p_worker_id": f"tenant-worker-{index}", "p_status": "processed"})
+    require(code == 200 and result is False, f"{index}_worker_foreign_lease_finish_denied")
+    code, result = request("GET", f"/rest/v1/integration_events?id=eq.{events[other]}&select=status,locked_by", service)
+    require(code == 200 and result == [{"status": "processing", "locked_by": f"tenant-worker-{other}"}], f"{index}_foreign_event_unchanged")
+for index in range(2):
+    code, result = request("POST", "/rest/v1/rpc/integration_finish_event", service, {"p_event_id": events[index], "p_worker_id": f"tenant-worker-{index}", "p_status": "processed"})
+    require(code == 200 and result is True, f"{index}_worker_own_finish_positive")
 
 code, result = request("GET", "/rest/v1/customers?select=id", anon)
 require(code in (401, 403) or (code == 200 and result == []), "anonymous_customer_denied")
