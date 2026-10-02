@@ -1,6 +1,6 @@
 # Cobrança oficial por WhatsApp — #1195
 
-Status: configuração, dispatcher e reserva durável preparados; **sem migration aplicada e sem envio ativo**.
+Status: configuração, dispatcher e reserva durável preparados; **migration aplicada; envio desativado**.
 
 O responsável informou em 02/10/2026 que ainda escolherá o número oficial.
 Campanhas dos restaurantes (#1190/#1191) ficam fora deste lote.
@@ -37,7 +37,7 @@ Suspensão/reativação usam zero parâmetros. Antes de ativar, conferir aprova�
 ## Próximo lote obrigatório antes de envio
 
 1. Escolher e conectar o número/WABA oficiais. Conferir que o número não pertence à configuração operacional de restaurante.
-2. Revisar/aplicar a migration gerada pelo CLI somente após a matriz SQL no banco temporário. A cópia append-only 225 permite bootstrap limpo; não aplicar ambas ao mesmo projeto.
+2. A migration passou no PostgreSQL temporário em três passagens e foi aplicada em 02/10/2026 como 20261002055804_subscription_whatsapp_delivery_ledger. Fonte gerada pelo CLI, nome de arquivo alinhado à versão efetiva retornada pelo provedor. A cópia append-only 225 permite bootstrap limpo; não aplicar ambas ao mesmo projeto.
 3. Homologar destinatário controlado e modelos efetivamente aprovados, conferir consentimento, duplicidade/reexecução e só então ativar escopo autorizado.
 4. Validar o histórico e a ação de reprocessamento do Empresa 360 com destinatário controlado. Interface e operação server-only exigem Super Admin; rejeição confirmada é a única ação disponível.
 5. Obter evidência operacional de aceitação/rejeição controlada. Resultado sent significa aceito pela API Meta, não confirmação de leitura/entrega por webhook.
@@ -46,8 +46,8 @@ Suspensão/reativação usam zero parâmetros. Antes de ativar, conferir aprova�
 
 - Testes de contrato/contato, transporte e dispatcher: 38 casos, incluindo concorrência simulada na reserva, persistência indisponível após aceitação, timeout, isolamento de remetente e autorização.
 - Cenário PostgreSQL real e reversível adicionado à matriz Isolated Chaos, em três passagens. Só registrar PASS depois do workflow terminar.
-- Supabase: nenhum segredo, destinatário real ou configuração de produção foi alterado. Nenhum POST para Meta foi executado nesta homologação.
+- Supabase: schema aditivo aplicado; zero tentativas/envios, RLS ativo, acesso anon/authenticated negado e service_role autorizado. Nenhum segredo, destinatário real ou configuração de envio foi alterado. Nenhum POST para Meta foi executado nesta homologação.
 
-Nenhuma fila/notificação existente foi marcada enviada por esta base. Nenhum token, destinatário real ou configuração produtiva foi alterado. #1195 deve permanecer aberta.
+Nenhuma fila/notificação existente foi marcada enviada por esta base. Nenhum token, destinatário real ou configuração de envio foi alterado. #1195 deve permanecer aberta.
 
 Rollback: desativar PEDEAQUI_BILLING_WHATSAPP_ENABLED antes de reverter o aplicativo. Preservar tabelas/tentativas e reservas sending/unknown; nunca apagar histórico para liberar reenvio.
