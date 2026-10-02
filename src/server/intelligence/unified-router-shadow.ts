@@ -1,4 +1,5 @@
 import "server-only";
+import { hasVerifiedCampaignReply } from "@/server/growth/campaign-reply-context";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createIntelligenceContext, type ConversationMode } from "@/server/intelligence/context";
@@ -49,7 +50,7 @@ export class UnifiedIntelligenceRouterShadow {
         .eq("id", conversation.contact_id)
         .maybeSingle(),
       admin.from("messages")
-        .select("body")
+        .select("body,metadata")
         .eq("organization_id", conversation.organization_id)
         .eq("store_id", conversation.store_id)
         .eq("conversation_id", conversation.id)
@@ -112,7 +113,12 @@ export class UnifiedIntelligenceRouterShadow {
     let nextErrorType: string | null = null;
     let nextErrorCode: string | null = null;
     try {
+      const campaignReply = mode === "bot" && await hasVerifiedCampaignReply({
+        organizationId: conversation.organization_id, storeId: conversation.store_id,
+        conversationId: conversation.id, customerId, metadata: messageResult.data?.metadata,
+      });
       decision = UnifiedIntelligenceRouter.route({
+        campaignReply,
         context,
         message: messageResult.data?.body,
         session: {
