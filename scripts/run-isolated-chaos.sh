@@ -78,6 +78,7 @@ readonly scenarios=(
   "supabase/tests/e2e_cash_register.sql"
   "supabase/tests/e2e_pdv_to_kitchen.sql"
   "supabase/tests/quality_rls_isolation.sql"
+  "supabase/tests/e2e_subscription_whatsapp_delivery.sql"
   "supabase/tests/e2e_omnichannel_runtime.sql"
   "supabase/tests/e2e_omnichannel_external_order_import.sql"
   "supabase/tests/e2e_omnichannel_external_order_side_effects.sql"

@@ -3,6 +3,7 @@ import { SubscriptionBillingContactService } from "@/server/billing/subscription
 import { SubscriptionBillingNotificationService } from "@/server/billing/subscription-billing-notification-service";
 import { SubscriptionLifecycleService } from "@/server/billing/subscription-lifecycle-service";
 import { SubscriptionPixBillingService } from "@/server/billing/subscription-pix-billing-service";
+import { SubscriptionWhatsAppDispatcher } from "@/server/billing/subscription-whatsapp-dispatcher";
 
 export const runtime = "nodejs";
 
@@ -16,7 +17,9 @@ export async function GET(request: Request) {
     const lifecycle = await SubscriptionLifecycleService.reconcile();
     const result = await SubscriptionPixBillingService.runRenewals();
     const panelNotifications = await SubscriptionBillingNotificationService.dispatchPanel();
-    return Response.json({ ok: true, contacts, lifecycle, panelNotifications, ...result });
+    // WhatsApp is optional; its provider/configuration cannot undo PIX/panel work.
+    const whatsappNotifications = await SubscriptionWhatsAppDispatcher.dispatch().catch(() => ({ errors: 1 }));
+    return Response.json({ ok: true, contacts, lifecycle, panelNotifications, whatsappNotifications, ...result });
   } catch {
     return Response.json({ ok: false, error: "subscription_renewals_failed" }, { status: 500 });
   }
