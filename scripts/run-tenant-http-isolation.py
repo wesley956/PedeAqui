@@ -82,7 +82,7 @@ for index, (user_id, _) in enumerate(identities):
         f"insert into public.organizations(id,name,created_by) values ('{org}','HTTP Tenant {index}','{user_id}');",
         f"insert into public.stores(id,organization_id,name,slug,status) values ('{store}','{org}','HTTP Store {index}','tenant-http-{index}','active');",
         f"insert into public.roles(id,organization_id,key,name) values ('{role}','{org}','http_test','HTTP Test');",
-        f"insert into public.role_permissions(role_id,permission_id) select '{role}',id from public.permissions where key in ('customers.view','customers.manage','conversations.view','stores.view','stores.manage','orders.view');",
+        f"insert into public.role_permissions(role_id,permission_id) select '{role}',id from public.permissions where key in ('customers.view','customers.manage','conversations.view','stores.view','stores.manage','orders.view','orders.edit','orders.cancel');",
         f"insert into public.organization_members(organization_id,user_id,role_id,status) values ('{org}','{user_id}','{role}','active');",
         f"insert into public.customers(id,organization_id,name) values ('{customer}','{org}','Customer {index}');",
         f"insert into public.contacts(id,organization_id,store_id,channel,name) values ('{contact}','{org}','{store}','manual','Contact {index}');",
@@ -183,6 +183,6 @@ print("TENANT_HTTP_RESULT=passed", flush=True)
 # Private local IPC carries disposable keys/session to the real Next HTTP proof.
 next_matrix = subprocess.run(["python3", "scripts/run-tenant-next-isolation.py"], input=json.dumps({
     "apiUrl": api_url, "anonKey": anon, "serviceKey": service, "sessions": sessions,
-    "orgs": orgs, "stores": stores, "contacts": contacts, "conversations": conversations,
+    "orgs": orgs, "stores": stores, "contacts": contacts, "conversations": conversations, "orders": orders,
 }), text=True)
 require(next_matrix.returncode == 0, "next_http_matrix")
