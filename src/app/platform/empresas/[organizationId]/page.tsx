@@ -2,16 +2,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PlatformBackofficeService } from "@/server/platform/platform-backoffice-service";
 import styles from "../../platform.module.css";
+import { billingWhatsAppContactFromMetadata } from "@/server/billing/subscription-whatsapp-contract";
+import { saveBillingWhatsAppContactAction } from "./billing-contact-actions";
 
 const money = (cents: number | null | undefined) => cents == null ? "—" : (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const date = (value: string | null | undefined) => value ? new Date(value).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—";
 
-export default async function PlatformCompany360Page({ params }: { params: Promise<{ organizationId: string }> }) {
+export default async function PlatformCompany360Page({ params, searchParams }: { params: Promise<{ organizationId: string }>; searchParams: Promise<{ billingContact?: string }> }) {
   const { organizationId } = await params;
   const data = await PlatformBackofficeService.loadOrganization360(organizationId);
   const organization = data.organization;
   if (!organization) notFound();
   const current = data.subscriptions.find((item) => ["trialing", "active", "past_due"].includes(item.status)) ?? data.subscriptions[0] ?? null;
+  const billingContact = billingWhatsAppContactFromMetadata(current?.metadata);
+  const billingFeedback = (await searchParams).billingContact;
   const functional = current && typeof current.metadata.functional_plan_label === "string" ? current.metadata.functional_plan_label : null;
   return (
     <div className={styles.page}>
@@ -31,6 +35,21 @@ export default async function PlatformCompany360Page({ params }: { params: Promi
         <Metric label="Mensalidade" value={current?.agreed_price_cents == null ? "—" : money(current.agreed_price_cents)} helper={current?.price_locked ? "preço protegido" : "contrato atual"} />
         <Metric label="Incidentes" value={data.incidents.filter((item) => item.status !== "resolved").length} helper="abertos / acompanhando" />
       </section>
+
+      {data.role === "super_admin" && current ? <section className={styles.section} id="billing-contact">
+        <div className={styles.sectionHeader}><div><h2>Responsável pela mensalidade</h2><p>Cadastre o contato financeiro autorizado a receber avisos do PedeAqui. O envio por WhatsApp ainda aguarda a configuração do número oficial da plataforma e homologação.</p></div></div>
+        {billingFeedback ? <p role="status">{billingFeedback === "saved" ? "Contato financeiro salvo. Nenhuma mensagem foi enviada." : "Não foi possível salvar. Confira o número e a autorização; se o cadastro mudou, recarregue a página e tente novamente."}</p> : null}
+        <form action={saveBillingWhatsAppContactAction} className={styles.formGrid}>
+          <input type="hidden" name="organizationId" value={organizationId} />
+          <input type="hidden" name="subscriptionId" value={current.id} />
+          <input type="hidden" name="expectedUpdatedAt" value={current.updated_at} />
+          <label>Nome do responsável<input className={styles.field} name="name" required minLength={2} maxLength={120} defaultValue={billingContact?.name ?? ""} /></label>
+          <label>WhatsApp com DDI e DDD<input className={styles.field} name="phone" required inputMode="tel" pattern="[1-9][0-9]{9,14}" placeholder="5519999999999" defaultValue={billingContact?.phone ?? ""} /><small>Somente números, incluindo o código do país (55 para Brasil).</small></label>
+          <label><input type="checkbox" name="consentConfirmed" defaultChecked={billingContact?.consentConfirmed ?? false} /> O responsável autorizou receber os avisos da mensalidade.</label>
+          <label><input type="checkbox" name="enabled" defaultChecked={billingContact?.enabled ?? false} /> Habilitar este contato quando o canal oficial estiver disponível.</label>
+          <button className={styles.button}>Salvar contato financeiro</button>
+        </form>
+      </section> : null}
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}><div><h2>Contrato e relacionamento</h2><p>Plano cobrado, equivalência funcional, Clube Fundadores e CRM ficam visíveis no mesmo 360, mas continuam tecnicamente separados.</p></div><Link href="/platform/assinaturas" className={styles.button}>Abrir assinaturas</Link></div>
