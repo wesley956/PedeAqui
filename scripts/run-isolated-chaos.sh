@@ -68,6 +68,17 @@ psql "${local_db_url}" -X -v ON_ERROR_STOP=1 \
   -f "${parked_migrations}/20260917214500_wpp07_atomic_human_claim.sql" >/dev/null
 
 # Prove that the disposable database survives a controlled infrastructure restart.
+# Replay the public-schema portion of the exact WPP-10 production delta. Bucket
+# lifecycle is handled by the Storage API in the HTTP test, not managed-schema DML.
+python3 - "${parked_migrations}/20260917224308_wpp10_conversation_media.sql" <<'PY' | psql "${local_db_url}" -X -v ON_ERROR_STOP=1 >/dev/null
+import pathlib, sys
+source = pathlib.Path(sys.argv[1]).read_text()
+marker = "create unique index if not exists messages_scope_id_unique"
+if source.count(marker) != 1:
+    raise SystemExit("WPP10 public schema marker unavailable")
+print(marker + source.split(marker, 1)[1])
+PY
+
 supabase stop
 supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
 psql "${local_db_url}" -X -v ON_ERROR_STOP=1 -c "select 1" >/dev/null
