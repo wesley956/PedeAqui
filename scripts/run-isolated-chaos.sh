@@ -109,4 +109,8 @@ for pass in 1 2 3; do
   bash scripts/run-preventive-handoff-concurrency.sh "${local_db_url}" "${pass}"
 done
 
+# Real signed Auth identities exercise the HTTP boundary, not only session GUCs.
+# This disposable stack is destroyed by cleanup; never points to a hosted project.
+python3 scripts/run-tenant-http-isolation.py
+
 echo "ISOLATED_CHAOS_RESULT=passed"
