@@ -18,7 +18,8 @@ describe("filas operacionais completas", () => {
     const page = read("src/app/(app)/pedidos/historico/page.tsx");
     expect(service).toContain('{ count: "exact", head: true }');
     expect(service).toContain("hasNext: from + pageSize < total");
-    expect(page).toContain("Buscar no histórico completo");
+    expect(page).toContain("OrderHistoryFilters");
+    expect(readFileSync("src/features/orders/order-history-filters.tsx", "utf8")).toContain("Buscar no histórico completo");
     expect(page).toContain("nenhum pedido foi descartado");
   });
 
