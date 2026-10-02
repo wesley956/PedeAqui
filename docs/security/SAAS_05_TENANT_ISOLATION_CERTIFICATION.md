@@ -35,7 +35,9 @@ A Fase 1 não prova sozinha que uma identidade real do tenant A falha em todas a
 
 Na abertura desta certificação, o projeto Supabase não possuía Development Branch. Nenhum usuário, organização ou loja artificial será criado em produção para executar os ataques A/B.
 
-Se não existir outro ambiente reutilizável, a Fase 2 deve usar um Supabase Development Branch. Como a criação possui custo associado, ela exige consulta de custo e aprovação explícita antes da criação.
+Em 02/10/2026 foi identificado um ambiente reutilizável no workflow existente `Isolated Chaos`: Supabase local em runner temporário, sem link com o projeto hospedado e sem novo Development Branch pago. A matriz HTTP usa duas identidades criadas no Auth local, login com senha e JWT real; ataca PostgREST/RPC/Storage, verifica controles positivos e negativos e não imprime credenciais ou signed URLs.
+
+O teste cobre clientes, contatos, conversas, lojas, configuração server-only, RPC interna de conversa/claim e acesso direto/assinatura de mídia privada. Ele ainda não certifica cookies/Server Actions do Next.js, todas as operações de pedido, webhook real, escopo service-role de todos os workers ou todas as projeções públicas. Registrar somente os casos efetivamente executados; #1174 permanece aberta até completar essas superfícies. A ausência de branch hospedado deixou de bloquear estes testes locais.
 
 ## Regras de não regressão
 
