@@ -1,4 +1,5 @@
 import "server-only";
+import { requireApprovedCampaignTemplate } from "./campaign-template-model";
 
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -57,7 +58,7 @@ async function processOne(job: Job, workerId: string) {
     admin.from("customer_marketing_preferences").select("status").eq("organization_id", job.organization_id).eq("store_id", job.store_id).eq("customer_id", job.customer_id).eq("channel", "whatsapp").maybeSingle(),
     admin.from("customers").select("name,phone_normalized").eq("id", job.customer_id).eq("organization_id", job.organization_id).is("deleted_at", null).maybeSingle(),
     admin.from("store_operational_settings").select("growth_campaigns_enabled").eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
-    admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
+    admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,whatsapp_business_account_id,access_token_secret_ref").eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
   ]);
   for (const result of [campaign, occurrence, preference, customer, settings, channel]) if (result.error) throw result.error;
   if (!(await moduleEnabledPromise)) { await finish(job, workerId, { status: "failed_transient", errorCode: "growth_module_disabled", reason: "Crescimento está pausado para a unidade.", retryAfterSeconds: 3600 }); return "skipped" as const; }
@@ -65,7 +66,7 @@ async function processOne(job: Job, workerId: string) {
   if (!settings.data?.growth_campaigns_enabled) { await finish(job, workerId, { status: "failed_permanent", errorCode: "campaigns_disabled", reason: "Campanhas foram desativadas para a unidade." }); return "failed" as const; }
   if (preference.data?.status !== "consented") { await finish(job, workerId, { status: "skipped_opt_out", errorCode: "not_eligible", reason: "Consentimento ausente ou opt-out registrado antes do envio." }); return "skipped" as const; }
   if (!customer.data?.phone_normalized || customer.data.phone_normalized !== job.phone_snapshot) { await finish(job, workerId, { status: "skipped_invalid_contact", errorCode: "invalid_contact", reason: "Telefone ausente ou alterado após o snapshot." }); return "skipped" as const; }
-  if (!channel.data?.whatsapp_enabled || channel.data.connection_status !== "connected" || !channel.data.whatsapp_phone_number_id || !channel.data.access_token_secret_ref) {
+  if (!channel.data?.whatsapp_enabled || channel.data.connection_status !== "connected" || !channel.data.whatsapp_phone_number_id || !channel.data.access_token_secret_ref || !channel.data.whatsapp_business_account_id) {
     await finish(job, workerId, { status: "failed_transient", errorCode: "channel_unavailable", reason: "Canal oficial indisponível; a fila tentará novamente.", retryAfterSeconds: Math.max(900, retrySeconds(job.attempts)) }); return "failed" as const;
   }
   if (job.occurrence_id && (!occurrence.data || occurrence.data.status === "canceled")) { await finish(job, workerId, { status: "failed_permanent", errorCode: "occurrence_unavailable", reason: "Ocorrência encerrada ou indisponível." }); return "failed" as const; }
@@ -92,7 +93,7 @@ async function processOne(job: Job, workerId: string) {
   if (resolveError) throw resolveError;
   if (!conversation?.conversation_id || !conversation.external_id) throw new Error("Campaign conversation resolution failed");
   const clientMessageId = `campaign:${job.campaign_id}:recipient:${job.id}:v${delivery.contentVersion}`;
-  const body = delivery.content || `Campanha ${delivery.templateName}`;
+  const body = delivery.content?.replaceAll("{{1}}", customerName.slice(0, 100)) || `Campanha ${delivery.templateName}`;
   const { data: message, error: messageError } = await admin.rpc("conversation_create_outbound_internal", {
     p_conversation_id: conversation.conversation_id, p_body: body, p_client_message_id: clientMessageId, p_sender_type: "system", p_actor_user_id: null,
   });
@@ -105,7 +106,7 @@ async function processOne(job: Job, workerId: string) {
     admin.from("customer_marketing_preferences").select("status").eq("organization_id", job.organization_id).eq("store_id", job.store_id).eq("customer_id", job.customer_id).eq("channel", "whatsapp").maybeSingle(),
     admin.from("customers").select("phone_normalized").eq("id", job.customer_id).eq("organization_id", job.organization_id).is("deleted_at", null).maybeSingle(),
     admin.from("store_operational_settings").select("growth_campaigns_enabled").eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
-    admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
+    admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,whatsapp_business_account_id,access_token_secret_ref").eq("organization_id", job.organization_id).eq("store_id", job.store_id).maybeSingle(),
     StoreModuleStateService.isEnabled(job.organization_id, job.store_id, "growth"),
   ]);
   for (const result of [sendCampaign, sendPreference, sendCustomer, sendSettings, sendChannel]) if (result.error) throw result.error;
@@ -114,7 +115,7 @@ async function processOne(job: Job, workerId: string) {
   if (sendPreference.data?.status !== "consented") { await finish(job, workerId, { status: "skipped_opt_out", errorCode: "not_eligible", reason: "Consentimento removido antes do envio." }); return "skipped" as const; }
   if (!sendCustomer.data?.phone_normalized || sendCustomer.data.phone_normalized !== job.phone_snapshot) { await finish(job, workerId, { status: "skipped_invalid_contact", errorCode: "invalid_contact", reason: "Telefone alterado antes do envio." }); return "skipped" as const; }
   if (!sendSettings.data?.growth_campaigns_enabled) { await finish(job, workerId, { status: "failed_permanent", errorCode: "campaigns_disabled", reason: "Campanhas desativadas antes do envio." }); return "failed" as const; }
-  if (!sendChannel.data?.whatsapp_enabled || sendChannel.data.connection_status !== "connected" || !sendChannel.data.whatsapp_phone_number_id || !sendChannel.data.access_token_secret_ref) {
+  if (!sendChannel.data?.whatsapp_enabled || sendChannel.data.connection_status !== "connected" || !sendChannel.data.whatsapp_phone_number_id || !sendChannel.data.access_token_secret_ref || !sendChannel.data.whatsapp_business_account_id) {
     await finish(job, workerId, { status: "failed_transient", errorCode: "channel_unavailable", reason: "Canal oficial indisponível antes do envio.", retryAfterSeconds: Math.max(900, retrySeconds(job.attempts)) }); return "failed" as const;
   }
   if (await deferIfSuppressed(job, workerId, message.id)) return "skipped" as const;
@@ -124,16 +125,24 @@ async function processOne(job: Job, workerId: string) {
     const templateData = delivery.templateData as { body_parameters?: unknown } | null;
     const approvedParameters = Array.isArray(templateData?.body_parameters) ? templateData.body_parameters : [];
     const bodyParameters = approvedParameters.map((parameter) => {
-      if (parameter !== "customer_name") throw new Error("Parâmetro de template não aprovado.");
+      if (parameter !== "customer_name") throw new WhatsAppProviderError("Parâmetro de template não aprovado.", 400, "template_unavailable", false);
       return customerName.slice(0, 100);
     });
+    const templates = await provider.listCampaignTemplates(sendChannel.data.whatsapp_business_account_id, delivery.templateName);
+    try {
+      if (approvedParameters.length > 1) throw new Error("Parâmetros de campanha não suportados.");
+      const approved = requireApprovedCampaignTemplate(templates, delivery.templateName, delivery.templateLanguage || "pt_BR", bodyParameters.length === 1);
+      if (delivery.content !== approved.bodyText) throw new Error("O conteúdo aprovado mudou desde a versão da campanha.");
+    } catch {
+      throw new WhatsAppProviderError("Modelo indisponível ou alterado; revise a campanha.", 400, "template_unavailable", false);
+    }
     const sent = await provider.sendTemplate({ phoneNumberId: sendChannel.data.whatsapp_phone_number_id, recipient: conversation.external_id, templateName: delivery.templateName, languageCode: delivery.templateLanguage || "pt_BR", bodyParameters });
     await admin.rpc("conversation_mark_outbound_result_internal", { p_message_id: message.id, p_external_message_id: sent.externalMessageId, p_status: "sent", p_error_code: null, p_error_message: null });
     await finish(job, workerId, { status: "sent", providerMessageId: sent.externalMessageId }); return "sent" as const;
   } catch (error) {
     const retryable = error instanceof WhatsAppProviderError ? error.retryable : true;
     const code = error instanceof WhatsAppProviderError ? `provider_${error.providerCode ?? error.status}` : "campaign_send_error";
-    const reason = retryable ? "Falha temporária no canal oficial; a fila tentará novamente." : "A Meta rejeitou o template ou destinatário.";
+    const reason = code === "provider_template_unavailable" ? "Modelo indisponível ou alterado; revise e salve uma nova versão da campanha." : retryable ? "Falha temporária no canal oficial; a fila tentará novamente." : "A Meta rejeitou o template ou destinatário.";
     await admin.rpc("conversation_mark_outbound_result_internal", { p_message_id: message.id, p_external_message_id: null, p_status: "failed", p_error_code: code, p_error_message: reason });
     recordFailure("whatsapp.campaign.send_failed", error, { requestId: workerId, organizationId: job.organization_id, storeId: job.store_id, campaignId: job.campaign_id });
     await finish(job, workerId, { status: retryable ? "failed_transient" : "failed_permanent", errorCode: code, reason, retryAfterSeconds: retryable ? retrySeconds(job.attempts) : null }); return "failed" as const;
