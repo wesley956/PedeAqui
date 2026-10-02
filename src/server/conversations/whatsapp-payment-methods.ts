@@ -1,4 +1,5 @@
 import { normalizeBotInput } from "@/server/conversations/bot-menu";
+import { resolveNaturalPixSpeech } from "@/server/conversations/whatsapp-contextual-language";
 import { paymentMethodLabels, type PaymentMethod } from "@/server/checkout/schemas";
 
 export type WhatsAppPaymentOption = {
@@ -47,6 +48,13 @@ export function resolveWhatsAppPaymentSelection(
   const enabled = enabledWhatsAppPaymentOptions(options);
   const normalized = normalizeBotInput(text);
   if (!normalized) return null;
+
+  const pixSpeech = resolveNaturalPixSpeech(text);
+  if (pixSpeech && pixSpeech !== "selection") return null;
+  if (pixSpeech === "selection") {
+    const pix = enabled.find((option) => option.method === "pix");
+    return pix ? { method: "pix", customPaymentMethodId: null, label: optionLabel(pix) } : null;
+  }
 
   if (/^\d+$/.test(normalized)) {
     const selected = enabled[Number(normalized) - 1];

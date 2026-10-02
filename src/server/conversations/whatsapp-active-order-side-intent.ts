@@ -30,6 +30,7 @@ import {
   canonicalPaymentGuidanceMessage,
 } from "@/server/conversations/whatsapp-payment-guidance";
 import { resolveWhatsAppPaymentSelection } from "@/server/conversations/whatsapp-payment-methods";
+import { resolveNaturalFulfillment } from "@/server/conversations/whatsapp-contextual-language";
 import { StorePaymentMethodService } from "@/server/payments/store-payment-method-service";
 import { officialPublicAppOrigin } from "@/server/public-app-url";
 import type {
@@ -113,6 +114,7 @@ async function trackingCodeReply(input: SideIntentInput, displayNumber: number) 
 }
 
 export async function answerActiveOrderSideIntent(input: SideIntentInput): Promise<WhatsAppOrderHandleResult | null> {
+  if (input.step === "order_fulfillment" && resolveNaturalFulfillment(input.text)) return null;
   const paymentIntent = resolveWhatsAppBotIntent(input.text, "menu") === "payment";
   if (paymentIntent || asksAboutPixPayment(input.text)) {
     const options = await StorePaymentMethodService.listForStore(input.organizationId, input.storeId);
@@ -204,6 +206,9 @@ export async function answerActiveOrderSideIntent(input: SideIntentInput): Promi
     contactPhone: input.contactPhone,
     limit: 3,
   });
+  if (orderNumbers.length === 1) {
+    return { handled: true, body: await trackingCodeReply(input, orderNumbers[0]!), nextStep: input.step, context: preservedContext(input) };
+  }
   return {
     handled: true,
     body: trackingChoiceMessage(orderNumbers),

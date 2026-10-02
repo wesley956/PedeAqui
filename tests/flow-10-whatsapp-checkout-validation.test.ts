@@ -53,6 +53,20 @@ const baseContext = {
 };
 
 describe("FLOW-10 B05/B06 official WhatsApp checkout validation", () => {
+  it.each(["quanto fica a entrega", "se não eu posso ir retirar aí", "entrega ou retirada", "não quero entrega"])("does not mutate fulfillment for a question or ambiguous choice: %s", async text => {
+    vi.clearAllMocks();
+    const result = await WhatsAppOrderService.handle({ ...baseInput, step: "order_fulfillment", text, context: baseContext });
+    expect(mocks.saveFulfillment).not.toHaveBeenCalled();
+    expect(result.nextStep).toBe("order_fulfillment");
+    expect(result.context?.cartToken).toBe(cartToken);
+  });
+  it.each([["Pode entregar então por favor", "delivery"], ["posso ir buscar?", "pickup"]] as const)("uses canonical checkout for natural fulfillment %s", async (text, fulfillment) => {
+    vi.clearAllMocks();
+    mocks.listPaymentMethods.mockResolvedValue([{ method: "cash", enabled: true, sortOrder: 1 }]);
+    const result = await WhatsAppOrderService.handle({ ...baseInput, step: "order_fulfillment", text, context: baseContext });
+    expect(mocks.saveFulfillment).toHaveBeenCalledWith(baseInput.storeSlug, cartToken, fulfillment);
+    expect(result.context?.cartToken).toBe(cartToken);
+  });
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.listPaymentMethods.mockResolvedValue([

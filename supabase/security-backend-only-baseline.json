@@ -1,6 +1,6 @@
 {
   "capturedAt": "2026-09-03",
-  "description": "Tabelas públicas com RLS habilitado, zero policies e zero grants diretos para anon/authenticated. Devem permanecer backend-only até decisão explícita de arquitetura e segurança.",
+  "description": "Tabelas p\u00fablicas com RLS habilitado, zero policies e zero grants diretos para anon/authenticated. Devem permanecer backend-only at\u00e9 decis\u00e3o expl\u00edcita de arquitetura e seguran\u00e7a.",
   "tables": [
     "customer_recognition_tokens",
     "driver_access_invitations",
@@ -45,6 +45,8 @@
     "recipes",
     "subscription_contract_acceptances",
     "subscription_pix_charges",
+    "subscription_whatsapp_attempts",
+    "subscription_whatsapp_deliveries",
     "supplier_inventory_items",
     "supplier_stores",
     "suppliers",

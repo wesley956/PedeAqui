@@ -4,6 +4,7 @@ import { normalizeGenericInformalPortuguese } from "@/server/conversations/gener
 import { normalizeComparablePhone } from "@/server/conversations/order-recipient-policy";
 import { projectOrderNotification, projectOrderTrackingState } from "@/server/conversations/order-tracking-projection";
 import { isExplicitMenuNavigation } from "@/server/conversations/whatsapp-navigation";
+import { isNaturalTrackingQuestion, resolveNaturalPixSpeech } from "@/server/conversations/whatsapp-contextual-language";
 
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
 export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "benefit_handoff" | "hours" | "payment" | "delivery" | "price" | "order_start" | "benefits" | "cashback" | "points" | "coupons" | "promotions" | "unknown";
@@ -195,10 +196,10 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
   if (containsAny(normalized, promotionWords)) return "promotions";
   if (containsAny(normalized, benefitWords)) return "benefits";
   if (containsAny(normalized, menuLinkWords)) return "menu_link";
-  if (containsAny(normalized, trackingWords)) return "track_start";
+  if (containsAny(normalized, trackingWords) || isNaturalTrackingQuestion(normalized)) return "track_start";
   if (containsAny(normalized, handoffWords)) return "handoff";
   if (containsAny(normalized, hoursWords)) return "hours";
-  if (containsAny(normalized, paymentWords)) return "payment";
+  if (containsAny(normalized, paymentWords) || resolveNaturalPixSpeech(normalized)) return "payment";
   if (containsAny(normalized, deliveryWords)) return "delivery";
   if (priceProductQueryFromInput(normalized)) return "price";
   return "unknown";

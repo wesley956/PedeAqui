@@ -1,9 +1,10 @@
 import { normalizeBotInput, trackingCodeFromInput } from "@/server/conversations/bot-menu";
+import { isNaturalTrackingQuestion } from "@/server/conversations/whatsapp-contextual-language";
 
 export function isActiveOrderTrackingQuestion(text: string) {
   const normalized = normalizeBotInput(text);
   if (!normalized) return false;
-  return normalized === "meu pedido"
+  return isNaturalTrackingQuestion(text) || normalized === "meu pedido"
     || normalized === "acompanhar pedido"
     || normalized === "status do pedido"
     || normalized.includes("onde esta meu pedido")

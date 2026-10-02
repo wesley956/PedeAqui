@@ -4,6 +4,7 @@ import { CartService } from "@/server/cart/cart-service";
 import { CheckoutError, CheckoutService } from "@/server/checkout/checkout-service";
 import { paymentMethodLabels, paymentMethodSchema, type PaymentMethod } from "@/server/checkout/schemas";
 import { normalizeBotInput } from "@/server/conversations/bot-menu";
+import { resolveNaturalFulfillment } from "@/server/conversations/whatsapp-contextual-language";
 import { looseTokenSimilarity, normalizeProductLanguage } from "@/server/conversations/language-normalization";
 import { parseOrderComposition, resolvePendingChoiceReference, type OrderComposition } from "@/server/conversations/whatsapp-order-context";
 import {
@@ -123,7 +124,7 @@ export function parseWhatsAppOrderItems(text: string): ParsedItem[] {
 function hasUnsupportedQuantity(text: string) { return text.split(/[\n;,]+/).some((segment) => { const item = parseLeadingQuantity(cleanOrderSegment(segment)); return Boolean(item && item.quantity > 99); }); }
 function isYes(text: string) { return ["sim", "s", "confirmar", "confirmo", "pode confirmar", "fechar pedido", "finalizar", "fechou", "beleza", "ok"].includes(normalizeBotInput(text)); }
 function isNo(text: string) { return ["nao", "n", "cancelar", "cancela", "desistir"].includes(normalizeBotInput(text)); }
-function parseFulfillment(text: string): "delivery" | "pickup" | null { const n = normalizeBotInput(text); if (n.includes("entrega") || n === "1") return "delivery"; if (n.includes("retirada") || n.includes("buscar") || n === "2") return "pickup"; return null; }
+function parseFulfillment(text: string): "delivery" | "pickup" | null { return resolveNaturalFulfillment(text); }
 function parseAddress(text: string) {
   const parts = text.split(",").map((item) => item.trim()).filter(Boolean); if (parts.length < 5) return null;
   return { postalCode: "", street: parts[0]!, number: parts[1]!, district: parts[2]!, city: parts[3]!, state: parts[4]!.toUpperCase().slice(0, 2), complement: parts.length > 5 ? parts.slice(5).join(", ") : null, reference: null };

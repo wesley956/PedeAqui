@@ -78,6 +78,7 @@ readonly scenarios=(
   "supabase/tests/e2e_cash_register.sql"
   "supabase/tests/e2e_pdv_to_kitchen.sql"
   "supabase/tests/quality_rls_isolation.sql"
+  "supabase/tests/e2e_subscription_whatsapp_delivery.sql"
   "supabase/tests/e2e_omnichannel_runtime.sql"
   "supabase/tests/e2e_omnichannel_external_order_import.sql"
   "supabase/tests/e2e_omnichannel_external_order_side_effects.sql"
@@ -108,5 +109,9 @@ for pass in 1 2 3; do
   echo "ISOLATED_SCENARIO=preventive-handoff-concurrency"
   bash scripts/run-preventive-handoff-concurrency.sh "${local_db_url}" "${pass}"
 done
+
+# Real signed Auth identities exercise the HTTP boundary, not only session GUCs.
+# This disposable stack is destroyed by cleanup; never points to a hosted project.
+python3 scripts/run-tenant-http-isolation.py
 
 echo "ISOLATED_CHAOS_RESULT=passed"
