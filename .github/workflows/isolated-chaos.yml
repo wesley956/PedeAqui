@@ -10,6 +10,7 @@ on:
       - "scripts/run-tenant-http-isolation.py"
       - "scripts/run-tenant-next-isolation.py"
       - "scripts/tenant-ssr-session.mjs"
+      - "scripts/tenant-server-action.mjs"
       - ".github/workflows/isolated-chaos.yml"
 
 permissions:
