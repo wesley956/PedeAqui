@@ -133,8 +133,10 @@ describe("client 01 product surfaces", () => {
     const route = read("src/app/api/internal/campaign-messages/route.ts");
     const worker = read("src/server/growth/campaign-worker.ts");
     expect(page).toContain("Todos os elegíveis");
-    expect(page).toContain("Template aprovado da Meta");
-    expect(page).toContain("includeCustomerNameParameter");
+    expect(page).toContain("CampaignTemplateSelection");
+    const selection = read("src/features/growth/components/campaign-templates.tsx");
+    expect(selection).toContain("Mensagem aprovada");
+    expect(selection).toContain("includeCustomerNameParameter");
     expect(page).toContain("Cancelar campanha");
     expect(route).toContain('authorizeInternalJob(request, "campaign_messages")');
     expect(worker).toContain("WhatsAppCloudProvider");
