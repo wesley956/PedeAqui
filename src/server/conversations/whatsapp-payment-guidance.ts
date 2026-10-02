@@ -1,11 +1,12 @@
 import { normalizeBotInput } from "@/server/conversations/bot-menu";
 import { enabledWhatsAppPaymentOptions, type WhatsAppPaymentOption } from "@/server/conversations/whatsapp-payment-methods";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
+import { resolveNaturalPixSpeech } from "@/server/conversations/whatsapp-contextual-language";
 
 export function asksAboutPixPayment(text: string | null | undefined) {
   const normalized = normalizeBotInput(text);
   if (!normalized) return false;
-  return /\b(?:pix|pics|piks|piz|pixs)\b/i.test(normalized);
+  return resolveNaturalPixSpeech(text) !== null;
 }
 
 function optionLabel(option: WhatsAppPaymentOption) {
@@ -22,6 +23,9 @@ export function canonicalPaymentGuidanceMessage(options: WhatsAppPaymentOption[]
     const pixAvailable = enabled.some((option) => option.method === "pix");
     if (!pixAvailable) {
       return `Pix não está disponível nesta loja neste momento. As formas de pagamento disponíveis são: ${labels.join(", ")}.`;
+    }
+    if (resolveNaturalPixSpeech(text) === "instructions") {
+      return "Para obter o Pix oficial, selecione Pix entre as formas de pagamento e siga as etapas de confirmação do pedido. Não tenho uma chave avulsa para informar por aqui. Se precisar de ajuda com um pedido já confirmado, peça atendimento.";
     }
     return `Sim 😊 Pix está disponível nesta loja. As formas de pagamento disponíveis são: ${labels.join(", ")}.`;
   }
