@@ -3,6 +3,7 @@
 import json
 import secrets
 import subprocess
+import sys
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -52,6 +53,7 @@ def sql(source):
 
 
 identities = []
+sessions = []
 for tenant in ("a", "b"):
     email = "tenant-http-" + tenant + "-" + secrets.token_hex(6) + "@example.invalid"
     password = secrets.token_urlsafe(32)
@@ -61,6 +63,7 @@ for tenant in ("a", "b"):
     code, login = request("POST", "/auth/v1/token?grant_type=password", anon, {"email": email, "password": password})
     require(code == 200 and bool(login.get("access_token")), "auth_login_" + tenant)
     identities.append((user_id, login["access_token"]))
+    sessions.append(login)
 
 orgs = ["11740000-0000-4000-8000-000000000001", "11740000-0000-4000-8000-000000000002"]
 stores = ["11740000-0000-4000-8000-000000000011", "11740000-0000-4000-8000-000000000012"]
@@ -133,3 +136,10 @@ require(code in (400, 401, 403, 404), "private_object_not_public")
 code, result = request("GET", f"/rest/v1/conversations?id=eq.{conversations[1]}&select=unread_count", service)
 require(code == 200 and result == [{"unread_count": 3}], "foreign_rpc_and_mutation_no_side_effect")
 print("TENANT_HTTP_RESULT=passed", flush=True)
+
+# Private local IPC carries disposable keys/session to the real Next HTTP proof.
+next_matrix = subprocess.run(["python3", "scripts/run-tenant-next-isolation.py"], input=json.dumps({
+    "apiUrl": api_url, "anonKey": anon, "serviceKey": service, "sessions": sessions,
+    "orgs": orgs, "stores": stores, "contacts": contacts, "conversations": conversations,
+}), text=True)
+require(next_matrix.returncode == 0, "next_http_matrix")
