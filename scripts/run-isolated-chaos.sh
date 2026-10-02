@@ -62,6 +62,11 @@ done < <(find supabase/sql -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC
 psql "${local_db_url}" -X -v ON_ERROR_STOP=1 \
   -f "${parked_migrations}/20260915155500_int11_order_creation_channel.sql" >/dev/null
 
+# The Inbox HTTP positive control requires the exact production pagination RPCs.
+# These definitions are not yet folded into the append-only canonical schema.
+psql "${local_db_url}" -X -v ON_ERROR_STOP=1 \
+  -f "${parked_migrations}/20260916150000_wpp04_inbox_pagination.sql" >/dev/null
+
 # Replay the exact panel claim delta so preventive-vs-human concurrency exercises
 # the same Inbox RPC used in production, not only its underlying transition.
 psql "${local_db_url}" -X -v ON_ERROR_STOP=1 \
