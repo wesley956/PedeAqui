@@ -1,4 +1,5 @@
-import { classifyNonCommercialContact } from "@/server/conversations/whatsapp-non-commercial";
+import { hasVerifiedCampaignReply } from "@/server/growth/campaign-reply-context";
+import { classifyNonCommercialContact, isCampaignMenuFollowUp } from "@/server/conversations/whatsapp-non-commercial";
 import { isPreventiveHandoffEnabled, requestPreventiveHandoff } from "@/server/conversations/whatsapp-preventive-handoff";
 import "server-only";
 
@@ -272,7 +273,7 @@ export class ConversationGreetingService {
         .eq("store_id", conversation.store_id)
         .maybeSingle(),
       admin.from("messages")
-        .select("body, content_type")
+        .select("body, content_type, metadata")
         .eq("organization_id", conversation.organization_id)
         .eq("store_id", conversation.store_id)
         .eq("conversation_id", conversation.id)
@@ -332,7 +333,12 @@ export class ConversationGreetingService {
       observe?.({ intent: "unknown", tool: "fallback" });
       return;
     }
-    const nonCommercial = classifyNonCommercialContact(inbound.body, { activeSession: Boolean(session?.state === "active" && (!session.expires_at || Date.parse(session.expires_at) > Date.now())) });
+    const campaignReply = await hasVerifiedCampaignReply({
+      organizationId: conversation.organization_id, storeId: conversation.store_id,
+      conversationId: conversation.id, customerId: contact.customer_id, metadata: inbound.metadata,
+    });
+    const commercialContext = { activeSession: Boolean(session?.state === "active" && (!session.expires_at || Date.parse(session.expires_at) > Date.now())), campaignReply };
+    const nonCommercial = classifyNonCommercialContact(inbound.body, commercialContext);
     if (nonCommercial && isPreventiveHandoffEnabled(conversation.organization_id, conversation.store_id)) {
       await requestPreventiveHandoff({
         organizationId: conversation.organization_id,
@@ -355,7 +361,7 @@ export class ConversationGreetingService {
       && session.step === "awaiting_tracking_code"
       ? "awaiting_tracking_code"
       : "menu";
-    const intent = resolveWhatsAppBotIntent(inbound.body, activeStep);
+    const intent = resolveWhatsAppBotIntent(isCampaignMenuFollowUp(inbound.body, commercialContext) ? "cardapio" : inbound.body, activeStep);
     observe?.({ intent, tool: legacyToolForIntent(intent) });
 
     if (!canUseMenu || !store?.name || !store.slug) {
