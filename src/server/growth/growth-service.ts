@@ -1,4 +1,5 @@
 import "server-only";
+import { CampaignTemplateService } from "./campaign-template-service";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
@@ -195,9 +196,11 @@ export class GrowthService {
       if (settingsError) throw settingsError;
       if (!settings?.growth_campaigns_enabled) throw new Error("Campanhas oficiais estão desligadas para esta unidade.");
     }
+    const template = values.channel === "whatsapp"
+      ? await CampaignTemplateService.approved(values.templateName ?? "", values.templateLanguage, values.includeCustomerNameParameter) : null;
     const { data, error } = await admin.from("campaigns").insert({
       organization_id: context.organizationId, store_id: storeId, segment_id: values.segmentId,
-      name: values.name, objective: values.objective, channel: values.channel, content: values.content,
+      name: values.name, objective: values.objective, channel: values.channel, content: template?.bodyText ?? values.content,
       template_name: values.templateName ?? null, template_language: values.templateLanguage,
       template_data: { body_parameters: values.includeCustomerNameParameter ? ["customer_name"] : [] },
       schedule_type: values.scheduleType, local_send_time: values.localSendTime,
@@ -247,11 +250,13 @@ export class GrowthService {
     const storeId = requireStoreId(context.storeId);
     const values = campaignInputSchema.pick({ content: true, templateName: true, templateLanguage: true, includeCustomerNameParameter: true }).parse(input);
     const admin = createAdminClient();
-    const { data: campaign, error: readError } = await admin.from("campaigns").select("id").eq("id", campaignId).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
+    const { data: campaign, error: readError } = await admin.from("campaigns").select("id,channel").eq("id", campaignId).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle();
     if (readError) throw readError;
     if (!campaign) throw new Error("Campanha não encontrada nesta unidade.");
+    const template = campaign.channel === "whatsapp"
+      ? await CampaignTemplateService.approved(values.templateName ?? "", values.templateLanguage, values.includeCustomerNameParameter) : null;
     const { data, error } = await admin.rpc("campaign_update_content_internal", {
-      p_campaign_id: campaignId, p_content: values.content, p_template_name: values.templateName,
+      p_campaign_id: campaignId, p_content: template?.bodyText ?? values.content, p_template_name: values.templateName,
       p_template_language: values.templateLanguage, p_template_data: { body_parameters: values.includeCustomerNameParameter ? ["customer_name"] : [] }, p_actor_user_id: context.userId,
     });
     if (error) throw error;
@@ -304,7 +309,7 @@ export class GrowthService {
       admin.from("customer_segments").select("id,name,active").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("active", true).order("name"),
       admin.rpc("growth_store_customers_internal", { p_store_id: storeId }),
       admin.from("campaign_recipients").select("campaign_id,status").eq("organization_id", context.organizationId).eq("store_id", storeId),
-      admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
+      admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,whatsapp_business_account_id,access_token_secret_ref").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
       admin.rpc("growth_group_summaries_internal", { p_store_id: storeId }),
       admin.from("campaign_occurrences").select("id,campaign_id,scheduled_for,status,member_count,eligible_count,excluded_count,completed_at").eq("organization_id", context.organizationId).eq("store_id", storeId).order("scheduled_for", { ascending: false }).limit(100),
       admin.rpc("growth_campaign_metrics_internal", { p_organization_id: context.organizationId, p_store_id: storeId, p_window_days: 30, p_attribution_days: 7 }),
@@ -326,7 +331,7 @@ export class GrowthService {
         dailyLimit: Number(settings.data?.promotional_daily_limit ?? 1),
         weeklyLimit: Number(settings.data?.promotional_weekly_limit ?? 3),
       },
-      whatsappReady: Boolean(whatsapp.data?.whatsapp_enabled && whatsapp.data?.connection_status === "connected" && whatsapp.data?.whatsapp_phone_number_id && whatsapp.data?.access_token_secret_ref),
+      whatsappReady: Boolean(whatsapp.data?.whatsapp_enabled && whatsapp.data?.connection_status === "connected" && whatsapp.data?.whatsapp_phone_number_id && whatsapp.data?.whatsapp_business_account_id && whatsapp.data?.access_token_secret_ref),
       eligibleCustomers: customerRows.filter((customer) => customer.eligible_whatsapp).length,
       optedOutCustomers: customerRows.filter((customer) => customer.preference_status === "opted_out").length,
       notConsentedCustomers: customerRows.filter((customer) => customer.preference_status === "not_consented").length,
@@ -360,8 +365,8 @@ export class GrowthService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const [campaignResult, channelResult] = await Promise.all([
-      admin.from("campaigns").select("id").eq("id", campaignId).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
-      admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,access_token_secret_ref").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
+      admin.from("campaigns").select("id,channel,template_name,template_language,template_data").eq("id", campaignId).eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
+      admin.from("store_conversation_settings").select("whatsapp_enabled,connection_status,whatsapp_phone_number_id,whatsapp_business_account_id,access_token_secret_ref").eq("organization_id", context.organizationId).eq("store_id", storeId).maybeSingle(),
     ]);
     if (campaignResult.error) throw campaignResult.error;
     if (channelResult.error) throw channelResult.error;
@@ -370,6 +375,11 @@ export class GrowthService {
     const channel = channelResult.data;
     if (!channel?.whatsapp_enabled || channel.connection_status !== "connected" || !channel.whatsapp_phone_number_id || !channel.access_token_secret_ref) {
       throw new Error("Conecte e valide o canal oficial do WhatsApp antes de enfileirar a campanha.");
+    }
+    if (campaign.channel === "whatsapp") {
+      const parameters = (campaign.template_data as { body_parameters?: unknown[] } | null)?.body_parameters ?? [];
+      if (parameters.length > 1 || parameters.some(parameter => parameter !== "customer_name")) throw new Error("Parâmetros de campanha não suportados.");
+      await CampaignTemplateService.approved(campaign.template_name ?? "", campaign.template_language, parameters.length === 1);
     }
     const { data, error } = await admin.rpc("campaign_enqueue_internal", { p_campaign_id: campaignId, p_actor_user_id: context.userId });
     if (error) throw error;

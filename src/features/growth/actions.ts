@@ -1,5 +1,8 @@
 "use server";
 
+import { CampaignTemplateService } from "@/server/growth/campaign-template-service";
+import { CampaignTemplateValidationError, campaignTemplateInputSchema } from "@/server/growth/campaign-template-model";
+import { safeWhatsAppFailureMessage } from "@/server/conversations/provider";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -216,4 +219,16 @@ export async function clearCheckoutBenefitsAction(formData: FormData) {
   if (!token) redirect(`/m/${storeSlug}/carrinho`);
   await GrowthService.clearCartBenefits(storeSlug, token);
   redirect(`/m/${storeSlug}/checkout`);
+}
+
+export async function submitCampaignTemplateAction(_previous: { message: string; success: boolean }, formData: FormData) {
+  const input = campaignTemplateInputSchema.safeParse({ name: String(formData.get("templateModelName") ?? ""), body: String(formData.get("templateBody") ?? ""), language: "pt_BR" });
+  if (!input.success) return { message: input.error.issues[0]?.message ?? "Revise o modelo.", success: false };
+  try {
+    await CampaignTemplateService.create(input.data);
+    revalidatePath("/crescimento/campanhas");
+  } catch (error) {
+    return { message: error instanceof CampaignTemplateValidationError ? error.message : safeWhatsAppFailureMessage(error), success: false };
+  }
+  redirect("/crescimento/campanhas");
 }

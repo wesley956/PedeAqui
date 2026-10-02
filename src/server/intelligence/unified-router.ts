@@ -1,4 +1,4 @@
-import { classifyNonCommercialContact, type NonCommercialIntent } from "@/server/conversations/whatsapp-non-commercial";
+import { classifyNonCommercialContact, isCampaignMenuFollowUp, type NonCommercialIntent } from "@/server/conversations/whatsapp-non-commercial";
 import type { AuthorityFacts, AuthorityOperation, AuthorityOperationDecision } from "@/server/intelligence/authority";
 import { AuthorityResolver } from "@/server/intelligence/authority";
 import type { CapabilityDecision, CapabilityFacts, IntelligenceCapabilityKey } from "@/server/intelligence/capability";
@@ -35,6 +35,7 @@ export type UnifiedRouterInput = {
   context: IntelligenceContext;
   message: string | null | undefined;
   session: UnifiedRouterSession;
+  campaignReply?: boolean;
   capabilityFacts?: CapabilityFacts | null;
   authorityFacts?: AuthorityFacts | null;
 };
@@ -124,8 +125,9 @@ function resolveIntent(input: UnifiedRouterInput): {
   intent: UnifiedRouterIntent;
   confidence: UnifiedRouterDecision["confidence"];
 } {
-  const nonCommercial = classifyNonCommercialContact(input.message, { activeSession: input.session.active });
+  const nonCommercial = classifyNonCommercialContact(input.message, { activeSession: input.session.active, campaignReply: input.campaignReply });
   if (nonCommercial) return { intent: nonCommercial, confidence: "high" };
+  if (isCampaignMenuFollowUp(input.message, { activeSession: input.session.active, campaignReply: input.campaignReply })) return { intent: "menu_link", confidence: "contextual" };
   const activeOrder = input.session.active && input.session.kind === "whatsapp_order";
   if (asksForMenuDescription(input.message)) {
     return { intent: "menu_summary", confidence: activeOrder ? "contextual" : "high" };

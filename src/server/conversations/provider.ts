@@ -1,4 +1,5 @@
 import "server-only";
+import { campaignTemplateInputSchema, normalizeCampaignTemplate, type CampaignTemplate, type CampaignTemplateInput } from "@/server/growth/campaign-template-model";
 
 export type ProviderSendTextInput = {
   phoneNumberId: string;
@@ -299,6 +300,51 @@ export class WhatsAppCloudProvider implements ConversationProvider {
         supported: !unsupportedDynamicComponent,
       }];
     });
+  }
+
+  async listCampaignTemplates(businessAccountId: string, name?: string): Promise<CampaignTemplate[]> {
+    if (!/^\d{5,40}$/.test(businessAccountId)) throw new Error("Conta WhatsApp inválida.");
+    if (name && !/^[a-z0-9_]{1,512}$/.test(name)) throw new Error("Nome de modelo inválido.");
+    const result: CampaignTemplate[] = [];
+    let cursor: string | undefined;
+    const seen = new Set<string>();
+    // Rebuild a trusted Graph URL; never follow a provider-supplied paging URL with a token.
+    for (let page = 0; page < 60; page++) {
+      const url = new URL(`https://graph.facebook.com/${resolveWhatsAppGraphVersion()}/${encodeURIComponent(businessAccountId)}/message_templates`);
+      url.searchParams.set("fields", "id,name,language,status,category,components");
+      url.searchParams.set("limit", "100");
+      if (name) url.searchParams.set("name", name);
+      if (cursor) url.searchParams.set("after", cursor);
+      let response: Response;
+      try { response = await fetch(url, { headers: { Authorization: `Bearer ${this.accessToken}` }, cache: "no-store", signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS) }); }
+      catch (error) { throw providerNetworkError(error); }
+      const payload = await response.json().catch(() => null) as {
+        data?: Record<string, unknown>[]; paging?: { next?: string; cursors?: { after?: string } };
+        error?: { message?: string; code?: number };
+      } | null;
+      if (!response.ok || !Array.isArray(payload?.data)) throw providerError(response, payload);
+      for (const raw of payload.data) { const template = normalizeCampaignTemplate(raw); if (template) result.push(template); }
+      if (!payload.paging?.next) return result;
+      cursor = payload.paging.cursors?.after;
+      if (!cursor || seen.has(cursor)) throw new Error("Não foi possível completar a consulta de modelos. Tente novamente.");
+      seen.add(cursor);
+    }
+    throw new Error("A consulta de modelos excedeu o limite. Pesquise pelo nome do modelo.");
+  }
+
+  async createCampaignTemplate(businessAccountId: string, input: CampaignTemplateInput): Promise<{ id: string; status: string }> {
+    if (!/^\d{5,40}$/.test(businessAccountId)) throw new Error("Conta WhatsApp inválida.");
+    const value = campaignTemplateInputSchema.parse(input);
+    const body = { type: "BODY", text: value.body, ...(value.body.includes("{{1}}") ? { example: { body_text: [["Cliente"]] } } : {}) };
+    let response: Response;
+    try { response = await fetch(`https://graph.facebook.com/${resolveWhatsAppGraphVersion()}/${encodeURIComponent(businessAccountId)}/message_templates`, {
+      method: "POST", headers: { Authorization: `Bearer ${this.accessToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ name: value.name, language: value.language, category: "MARKETING", components: [body] }),
+      cache: "no-store", signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+    }); } catch (error) { throw providerNetworkError(error); }
+    const payload = await response.json().catch(() => null) as { id?: string; status?: string; error?: { code?: number } } | null;
+    if (!response.ok || !payload?.id) throw providerError(response, payload);
+    return { id: payload.id, status: payload.status ?? "PENDING" };
   }
 
   async sendTemplate(input: ProviderSendTemplateInput): Promise<ProviderSendResult> {

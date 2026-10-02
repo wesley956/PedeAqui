@@ -1,4 +1,5 @@
-import { classifyNonCommercialContact } from "@/server/conversations/whatsapp-non-commercial";
+import { hasVerifiedCampaignReply } from "@/server/growth/campaign-reply-context";
+import { classifyNonCommercialContact, isCampaignMenuFollowUp } from "@/server/conversations/whatsapp-non-commercial";
 import { isPreventiveHandoffEnabled, requestPreventiveHandoff } from "@/server/conversations/whatsapp-preventive-handoff";
 import "server-only";
 
@@ -199,7 +200,7 @@ export class WhatsAppDirectOrderOrchestrator {
         .eq("id", conversation.store_id)
         .maybeSingle(),
       admin.from("messages")
-        .select("body, content_type")
+        .select("body, content_type, metadata")
         .eq("organization_id", conversation.organization_id)
         .eq("store_id", conversation.store_id)
         .eq("conversation_id", conversation.id)
@@ -229,7 +230,12 @@ export class WhatsAppDirectOrderOrchestrator {
 
     const active = session?.state === "active" && (!session.expires_at || Date.parse(session.expires_at) > Date.now());
     const activeOrderStep = active && isWhatsAppOrderStep(session?.step) ? session.step : null;
-    const nonCommercial = classifyNonCommercialContact(inbound.body, { activeSession: active });
+    const campaignReply = await hasVerifiedCampaignReply({
+      organizationId: conversation.organization_id, storeId: conversation.store_id,
+      conversationId: conversation.id, customerId: contact.customer_id, metadata: inbound.metadata,
+    });
+    const commercialContext = { activeSession: Boolean(active), campaignReply };
+    const nonCommercial = classifyNonCommercialContact(inbound.body, commercialContext);
     if (nonCommercial && isPreventiveHandoffEnabled(conversation.organization_id, conversation.store_id)) {
       await requestPreventiveHandoff({
         organizationId: conversation.organization_id,
@@ -242,7 +248,7 @@ export class WhatsAppDirectOrderOrchestrator {
       return true;
     }
 
-    const intent = resolveWhatsAppBotIntent(inbound.body, "menu");
+    const intent = resolveWhatsAppBotIntent(isCampaignMenuFollowUp(inbound.body, commercialContext) ? "cardapio" : inbound.body, "menu");
     const naturalOrder = looksLikeWhatsAppOrderItems(inbound.body);
     const savedAddressQuestion = asksAboutSavedAddress(inbound.body);
     const trackingNumberHelp = asksForTrackingNumberHelp(inbound.body);

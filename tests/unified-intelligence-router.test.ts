@@ -264,3 +264,15 @@ describe("INT-EVOL-04 shadow commercial-tool safety", () => {
     expect(decision.tool).not.toBe("catalog");
   });
 });
+
+describe("verified campaign routing [1190]", () => {
+  it("routes a vague quote to the commercial menu when verified", () => {
+    const decision = UnifiedIntelligenceRouter.route({ context: context(), message: "Olá! Posso ter mais informações sobre isso?", session: { active: false, kind: null, step: null }, campaignReply: true, capabilityFacts: capabilityFacts() });
+    expect(decision.intent).toBe("menu_link");
+    expect(decision.tool).toBe("catalog");
+  });
+  it.each(["human", "waiting_agent"] as const)("preserves %s even with campaign context", mode => {
+    const decision = UnifiedIntelligenceRouter.route({ context: context(mode), message: "Olá! Posso ter mais informações sobre isso?", session: { active: false, kind: null, step: null }, campaignReply: true, capabilityFacts: capabilityFacts() });
+    expect(decision.handoffReason).toBe("human_lock"); expect(decision.wouldHandle).toBe(false);
+  });
+});

@@ -1,3 +1,5 @@
+import { resolveWhatsAppBotIntent } from "@/server/conversations/bot-menu";
+
 /** Business-agnostic, side-effect-free classification. Never resolves catalog products. */
 export type NonCommercialIntent =
   | "job_candidate"
@@ -5,11 +7,16 @@ export type NonCommercialIntent =
   | "generic_business_contact"
   | "social_ad_context";
 
-export type NonCommercialContext = { activeSession: boolean };
+export type NonCommercialContext = { activeSession: boolean; campaignReply?: boolean };
 
 function normalize(value: string | null | undefined) {
   return (value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function isVagueMoreInfo(text: string) {
+  return /^(?:(?:oi+|ola|bom dia|boa tarde|boa noite) )?(?:posso|poderia|gostaria de) (?:ter |receber )?mais informacoes(?: sobre (?:isso|isto))?$/.test(text)
+    || /^(?:(?:oi+|ola|bom dia|boa tarde|boa noite) )?mais informacoes(?: sobre (?:isso|isto))?$/.test(text);
 }
 
 export function classifyNonCommercialContact(
@@ -34,15 +41,24 @@ export function classifyNonCommercialContact(
   }
 
   // A vague follow-up is meaningful during an existing session. Do not hijack it.
-  if (context.activeSession) return null;
+  if (context.activeSession || context.campaignReply) return null;
   if (/\b(?:vi|vim|venho)\b.*\b(?:anuncio|instagram|facebook|publicacao)\b/.test(text)
     && !/\b(?:pedido|pedir|comprar|cardapio|preco|valor|produto|promocao|entrega|retirada)\b/.test(text)) {
     return "social_ad_context";
   }
 
   // Generic requests for information are intentionally NOT non-commercial.
-  // They are common entry points for sales conversations (for example an ad
-  // click followed by "posso ter mais informações?"). Keep them with the bot
-  // so the next message can establish product, quantity, price or order intent.
+  // They are common entry points for sales conversations. Keep them with the bot
+  // unless a verified campaign reply provides explicit commercial context.
   return null;
+}
+
+/** Use the normal commercial menu for vague, verified campaign replies; preserve active drafts. */
+export function isCampaignMenuFollowUp(message: string | null | undefined, context: NonCommercialContext) {
+  if (!context.campaignReply || context.activeSession || resolveWhatsAppBotIntent(message, "menu") !== "unknown") return false;
+  const text = normalize(message);
+  if (!text) return false;
+  if (isVagueMoreInfo(text)) return true;
+  const intent = classifyNonCommercialContact(message, { activeSession: false });
+  return intent === "social_ad_context";
 }
