@@ -124,6 +124,8 @@ function extractBody(message: UnknownRecord, type: string) {
 
 function messageMetadata(message: UnknownRecord, rawType: string) {
   const metadata: Record<string, string | number | boolean | null> = { whatsapp_type: rawType };
+  const replyId = text(record(message.context)?.id);
+  if (replyId && replyId.length <= 512) metadata.whatsapp_reply_to_message_id = replyId;
   if (rawType === "image" || rawType === "audio" || rawType === "video" || rawType === "document") {
     const media = record(message[rawType]);
     metadata.media_id = text(media?.id);
