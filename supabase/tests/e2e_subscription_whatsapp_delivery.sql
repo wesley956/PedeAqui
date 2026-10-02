@@ -20,6 +20,7 @@ begin
   if public.claim_subscription_whatsapp(v_notice,gen_random_uuid(),v_revision,null) is not null then raise exception 'foreign organization claimed'; end if;
   v_token := public.claim_subscription_whatsapp(v_notice,v_org,v_revision,null);
   if v_token is null then raise exception 'valid notice not claimed'; end if;
+  if (select status from public.subscription_billing_notifications where id=v_notice)<>'processing' then raise exception 'claimed notice still blocks pending queue'; end if;
   if public.claim_subscription_whatsapp(v_notice,v_org,v_revision,null) is not null then raise exception 'duplicate claim'; end if;
   if public.finish_subscription_whatsapp(v_notice,v_org,gen_random_uuid(),'sent','wrong-message',null) then raise exception 'foreign token finished'; end if;
   if not public.finish_subscription_whatsapp(v_notice,v_org,v_token,'unknown',null,'network_outcome_unknown') then raise exception 'unknown not persisted'; end if;

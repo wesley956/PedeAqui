@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { SubscriptionWhatsAppContactService } from "@/server/billing/subscription-whatsapp-contact-service";
+import { SubscriptionWhatsAppDispatcher } from "@/server/billing/subscription-whatsapp-dispatcher";
 
 function text(data: FormData, key: string) {
   const value = data.get(key);
@@ -26,4 +27,17 @@ export async function saveBillingWhatsAppContactAction(data: FormData) {
     result = "error";
   }
   redirect(`${path}?billingContact=${result}#billing-contact`);
+}
+
+export async function reprocessBillingWhatsAppAction(data: FormData) {
+  const organizationId = z.string().uuid().parse(text(data, "organizationId"));
+  const path = `/platform/empresas/${organizationId}`;
+  let result = "queued";
+  try {
+    await SubscriptionWhatsAppDispatcher.reprocess({ organizationId, notificationId: text(data, "notificationId"), reason: text(data, "reason") });
+    revalidatePath(path);
+  } catch {
+    result = "blocked";
+  }
+  redirect(`${path}?billingReplay=${result}#billing-deliveries`);
 }

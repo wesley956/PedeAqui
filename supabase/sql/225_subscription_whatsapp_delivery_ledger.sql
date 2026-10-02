@@ -1,4 +1,7 @@
 -- Official platform billing only. Never reclaimed automatically after send starts.
+alter table public.subscription_billing_notifications drop constraint subscription_billing_notifications_status_check;
+alter table public.subscription_billing_notifications add constraint subscription_billing_notifications_status_check
+  check (status in ('pending','processing','sent','failed','cancelled'));
 create table public.subscription_whatsapp_deliveries (
   notification_id uuid primary key references public.subscription_billing_notifications(id) on delete restrict,
   organization_id uuid not null references public.organizations(id) on delete restrict,
@@ -64,6 +67,7 @@ begin
     returning attempt_token into v_token;
   if v_token is not null then
     insert into public.subscription_whatsapp_attempts(attempt_token,notification_id,state) values(v_token,v_notice.id,'sending');
+    update public.subscription_billing_notifications set status='processing',updated_at=now() where id=v_notice.id;
   end if;
   return v_token;
 end $$;

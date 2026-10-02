@@ -7,6 +7,17 @@ import { BILLING_WHATSAPP_KINDS, billingWhatsAppContactFromMetadata, prepareBill
 import { sendOfficialBillingTemplate, verifyOfficialBillingNumber } from "./subscription-whatsapp-transport";
 
 export class SubscriptionWhatsAppDispatcher {
+  static async history(organizationId: string) {
+    const access = await PlatformAdminService.access();
+    if (access.role !== "super_admin") throw new PlatformAuthorizationError();
+    const id = z.string().uuid().parse(organizationId);
+    const result = await createAdminClient().from("subscription_whatsapp_deliveries")
+      .select("notification_id,state,attempt_count,updated_at,subscription_whatsapp_attempts(attempt_token,state,external_message_id,result_code,created_at)")
+      .eq("organization_id", id).order("updated_at", { ascending: false }).limit(20);
+    if (result.error) throw new Error("billing_history_unavailable");
+    return result.data ?? [];
+  }
+
   static async dispatch() {
     const sender = resolveBillingWhatsAppSender(process.env);
     const result = { scanned: 0, sent: 0, skipped: 0, rejected: 0, unknown: 0, errors: 0, disabled: !sender.ready };

@@ -16,6 +16,7 @@ Campanhas dos restaurantes (#1190/#1191) ficam fora deste lote.
 - Valor/data reais obrigatórios nos três avisos de vencimento; nenhuma chave Pix inventada.
 - Reserva atômica por notification.id, com token exclusivo, revisões de subscription/invoice, escopo organization e revalidação do estado financeiro no banco.
 - Tentativas duráveis; aceitação registra externalMessageId. Timeout, erro de rede, sucesso malformado ou falha de persistência não liberam nova tentativa. Uma reserva interrompida permanece sending e exige revisão.
+- Histórico de tentativas no Empresa 360, com indicação de aceitação ou resultado incerto e formulário de reprocessamento somente para rejeições.
 - Reprocessamento server-only: Super Admin + motivo + auditoria, somente rejeição explícita; unknown/sending/sent nunca são liberados. Histórico anterior permanece preservado.
 - Verificação do vínculo Phone Number ID/WABA e bloqueio de número já usado por restaurante.
 - Dispatcher opcional separado dos resultados Pix/painel. Desativado não abre DB nem chama Meta.
@@ -38,12 +39,12 @@ Suspensão/reativação usam zero parâmetros. Antes de ativar, conferir aprova�
 1. Escolher e conectar o número/WABA oficiais. Conferir que o número não pertence à configuração operacional de restaurante.
 2. Revisar/aplicar a migration gerada pelo CLI somente após a matriz SQL no banco temporário. A cópia append-only 225 permite bootstrap limpo; não aplicar ambas ao mesmo projeto.
 3. Homologar destinatário controlado e modelos efetivamente aprovados, conferir consentimento, duplicidade/reexecução e só então ativar escopo autorizado.
-4. Expor o histórico e a ação administrativa de reprocessamento na interface de suporte; a operação server-only já exige autenticação Super Admin e auditoria no banco.
+4. Validar o histórico e a ação de reprocessamento do Empresa 360 com destinatário controlado. Interface e operação server-only exigem Super Admin; rejeição confirmada é a única ação disponível.
 5. Obter evidência operacional de aceitação/rejeição controlada. Resultado sent significa aceito pela API Meta, não confirmação de leitura/entrega por webhook.
 
 ## Provas de desenvolvimento
 
-- Testes de contrato/contato, transporte e dispatcher: 37 casos, incluindo concorrência simulada na reserva, persistência indisponível após aceitação, timeout, isolamento de remetente e autorização.
+- Testes de contrato/contato, transporte e dispatcher: 38 casos, incluindo concorrência simulada na reserva, persistência indisponível após aceitação, timeout, isolamento de remetente e autorização.
 - Cenário PostgreSQL real e reversível adicionado à matriz Isolated Chaos, em três passagens. Só registrar PASS depois do workflow terminar.
 - Supabase: nenhum segredo, destinatário real ou configuração de produção foi alterado. Nenhum POST para Meta foi executado nesta homologação.
 

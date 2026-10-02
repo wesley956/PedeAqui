@@ -3,12 +3,13 @@ import { notFound } from "next/navigation";
 import { PlatformBackofficeService } from "@/server/platform/platform-backoffice-service";
 import styles from "../../platform.module.css";
 import { billingWhatsAppContactFromMetadata } from "@/server/billing/subscription-whatsapp-contract";
-import { saveBillingWhatsAppContactAction } from "./billing-contact-actions";
+import { reprocessBillingWhatsAppAction, saveBillingWhatsAppContactAction } from "./billing-contact-actions";
+import { SubscriptionWhatsAppDispatcher } from "@/server/billing/subscription-whatsapp-dispatcher";
 
 const money = (cents: number | null | undefined) => cents == null ? "—" : (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const date = (value: string | null | undefined) => value ? new Date(value).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—";
 
-export default async function PlatformCompany360Page({ params, searchParams }: { params: Promise<{ organizationId: string }>; searchParams: Promise<{ billingContact?: string }> }) {
+export default async function PlatformCompany360Page({ params, searchParams }: { params: Promise<{ organizationId: string }>; searchParams: Promise<{ billingContact?: string; billingReplay?: string }> }) {
   const { organizationId } = await params;
   const data = await PlatformBackofficeService.loadOrganization360(organizationId);
   const organization = data.organization;
@@ -16,6 +17,8 @@ export default async function PlatformCompany360Page({ params, searchParams }: {
   const current = data.subscriptions.find((item) => ["trialing", "active", "past_due"].includes(item.status)) ?? data.subscriptions[0] ?? null;
   const billingContact = billingWhatsAppContactFromMetadata(current?.metadata);
   const billingFeedback = (await searchParams).billingContact;
+  const replayFeedback = (await searchParams).billingReplay;
+  const billingHistory = data.role === "super_admin" ? await SubscriptionWhatsAppDispatcher.history(organizationId).catch(() => null) : null;
   const functional = current && typeof current.metadata.functional_plan_label === "string" ? current.metadata.functional_plan_label : null;
   return (
     <div className={styles.page}>
@@ -49,6 +52,24 @@ export default async function PlatformCompany360Page({ params, searchParams }: {
           <label><input type="checkbox" name="enabled" defaultChecked={billingContact?.enabled ?? false} /> Habilitar este contato quando o canal oficial estiver disponível.</label>
           <button className={styles.button}>Salvar contato financeiro</button>
         </form>
+      </section> : null}
+
+      {data.role === "super_admin" ? <section className={styles.section} id="billing-deliveries">
+        <div className={styles.sectionHeader}><div><h2>Avisos de mensalidade por WhatsApp</h2><p>Aceito significa que a Meta recebeu a mensagem. Resultado incerto exige revisão e não permite reenvio.</p></div></div>
+        {replayFeedback ? <p role="status">{replayFeedback === "queued" ? "Nova tentativa autorizada e registrada. O envio depende de o canal oficial estar ativo." : "Reenvio bloqueado. Somente mensagens com rejeição confirmada podem receber nova tentativa."}</p> : null}
+        {billingHistory === null ? <p>Histórico temporariamente indisponível.</p> : billingHistory.length === 0 ? <p>Nenhum aviso registrado.</p> : billingHistory.map(delivery => (
+          <article key={delivery.notification_id} className={styles.orgCard}>
+            <strong>{delivery.state === "sent" ? "Aceito pela Meta" : delivery.state === "rejected" ? "Envio rejeitado" : delivery.state === "ready" ? "Nova tentativa autorizada" : "Aguardando revisão do resultado"}</strong>
+            <p>{delivery.attempt_count} tentativa(s) · atualizado em {date(delivery.updated_at)}</p>
+            <details><summary>Histórico de tentativas</summary>{delivery.subscription_whatsapp_attempts.map(attempt => <p key={attempt.attempt_token}>{date(attempt.created_at)} · {attempt.state === "sent" ? "Aceito" : attempt.state === "rejected" ? "Rejeitado" : "Resultado pendente de revisão"}{attempt.external_message_id ? ` · referência ${attempt.external_message_id}` : ""}</p>)}</details>
+            {delivery.state === "rejected" ? <form action={reprocessBillingWhatsAppAction} className={styles.formGrid}>
+              <input type="hidden" name="organizationId" value={organizationId} />
+              <input type="hidden" name="notificationId" value={delivery.notification_id} />
+              <label>Motivo da nova tentativa<input className={styles.field} name="reason" required minLength={5} maxLength={500} placeholder="Informe o que foi corrigido antes de tentar novamente" /></label>
+              <button className={styles.button}>Autorizar nova tentativa</button>
+            </form> : null}
+          </article>
+        ))}
       </section> : null}
 
       <section className={styles.section}>

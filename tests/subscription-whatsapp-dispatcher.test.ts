@@ -63,4 +63,9 @@ describe("durable official billing dispatcher", () => {
     await expect(SubscriptionWhatsAppDispatcher.reprocess({ notificationId: notice.id, organizationId: org, reason: "Review rejection" })).rejects.toThrow();
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
+  it("denies support history access before touching DB", async () => {
+    mocks.access.mockResolvedValue({ role: "support" });
+    await expect(SubscriptionWhatsAppDispatcher.history(org)).rejects.toThrow();
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
 });
