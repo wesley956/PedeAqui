@@ -61,6 +61,7 @@ for i in range(2):
         require(response.status in (200, 201), f"{i}_media_object_created")
     public_hash = hashlib.sha256(public_tokens[i].encode()).hexdigest()
     statements.extend([
+        f"update public.order_items set product_name_snapshot='Public item {i}' where order_id='{data['orders'][i]}';",
         f"update public.orders set public_access_token_hash='{public_hash}',customer_name_snapshot='Public buyer {i}',customer_email_snapshot='private-tenant-{i}@example.invalid' where id='{data['orders'][i]}';",
         f"update public.store_conversation_settings set provider='meta_cloud',whatsapp_enabled=true,whatsapp_phone_number_id='11740000{i+1}' where store_id='{store}';",
         f"insert into public.messages(organization_id,store_id,conversation_id,contact_id,provider,direction,sender_type,delivery_status,body,external_message_id) values ('{org}','{store}','{conversation}','{contact}','meta_cloud','outbound','system','sent','Synthetic receipt','tenant-status-{i}');",
@@ -151,7 +152,7 @@ with tempfile.TemporaryFile() as log:
             order_id = data["orders"][i]
             cookie_name = f"pa_order_{slug}_{order_id}"
             own = f"/m/{slug}/pedido/{order_id}"
-            code, _ = app_request(own, cookie_name + "=" + public_tokens[i], forbidden_fragment=f"private-tenant-{i}@example.invalid", required_fragment=f"Public buyer {i}")
+            code, _ = app_request(own, cookie_name + "=" + public_tokens[i], forbidden_fragment=f"private-tenant-{i}@example.invalid", required_fragment=f"Public item {i}")
             require(code == 200, f"{i}_public_order_own_token_positive")
             for label, target, public_cookie in (
                 ("missing_token", own, ""),
@@ -159,7 +160,7 @@ with tempfile.TemporaryFile() as log:
                 ("foreign_order_with_own_token", f"/m/tenant-http-{other}/pedido/{data['orders'][other]}", f"pa_order_tenant-http-{other}_{data['orders'][other]}=" + public_tokens[i]),
                 ("foreign_slug_correct_foreign_token", f"/m/{slug}/pedido/{data['orders'][other]}", f"pa_order_{slug}_{data['orders'][other]}=" + public_tokens[other]),
             ):
-                code, _ = app_request(target, public_cookie, forbidden_fragment=f"Public buyer {other}")
+                code, _ = app_request(target, public_cookie, forbidden_fragment=f"Public item {other}")
                 require(code == 404, f"{i}_public_order_{label}_denied")
 
         # Compiled action IDs + official React encoder: no mock server action.
