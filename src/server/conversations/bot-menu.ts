@@ -14,6 +14,7 @@ const menuWords = new Set([
   "inicio",
   "iniciar",
   "oi",
+  "oii",
   "ola",
   "oie",
   "oi tudo bem",
@@ -161,7 +162,7 @@ function containsAny(value: string, words: Set<string>) {
 
 function semanticBotInput(value: string) {
   let semantic = value;
-  const prefixes = /^(?:oi|ola|oie|bom dia|boa tarde|boa noite|entao|me ajuda)\s+/;
+  const prefixes = /^(?:oi|oii|ola|oie|bom dia|boa tarde|boa noite|entao|me ajuda)\s+/;
   while (prefixes.test(semantic)) semantic = semantic.replace(prefixes, "").trim();
   return semantic.replace(/\s+por favor$/, "").trim();
 }
