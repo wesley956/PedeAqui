@@ -35,6 +35,7 @@ export type UnifiedRouterSession = {
 export type UnifiedRouterInput = {
   context: IntelligenceContext;
   message: string | null | undefined;
+  contentType?: string | null;
   session: UnifiedRouterSession;
   capabilityFacts?: CapabilityFacts | null;
   authorityFacts?: AuthorityFacts | null;
@@ -126,6 +127,11 @@ function resolveIntent(input: UnifiedRouterInput): {
   intent: UnifiedRouterIntent;
   confidence: UnifiedRouterDecision["confidence"];
 } {
+  // Match the live handlers' text/interactive boundary before interpreting
+  // captions or media placeholders as a continuation of an active checkout.
+  if (input.contentType != null && input.contentType !== "text" && input.contentType !== "interactive") {
+    return { intent: "unknown", confidence: "low" };
+  }
   const nonCommercial = classifyNonCommercialContact(input.message, { activeSession: input.session.active });
   if (nonCommercial) return { intent: nonCommercial, confidence: "high" };
   const activeOrder = input.session.active && input.session.kind === "whatsapp_order";
