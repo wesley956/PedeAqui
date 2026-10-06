@@ -254,21 +254,6 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
     for (const order of orders) seen.current.add(order.id);
   }, [orders]);
 
-  useEffect(() => {
-    const eligible = new Set(
-      orders
-        .filter((order) => canBulkQuickFinish(order, config, manualDeliveryMode))
-        .map((order) => order.id),
-    );
-    setSelectedIds((current) => {
-      const next = new Set(Array.from(current).filter((id) => eligible.has(id)));
-      return next.size === current.size ? current : next;
-    });
-  }, [config, manualDeliveryMode, orders]);
-
-  useEffect(() => {
-    if (bulkState.completed > 0) setSelectedIds(new Set());
-  }, [bulkState]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("pt-BR");
