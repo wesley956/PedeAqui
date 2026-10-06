@@ -89,11 +89,12 @@ export function rawWorkflowStage(order: OrderStateSnapshot): WorkflowStage {
   if (["pending_confirmation", "queued", "preparing"].includes(order.productionStatus)) return "preparing";
   if (isDelivery(order.fulfillmentType)) {
     if (["assigned", "picked_up", "out_for_delivery"].includes(order.fulfillmentStatus)) return "delivering";
-    if (order.fulfillmentStatus === "delivered") return "finished";
+    if (order.fulfillmentStatus === "delivered") return "delivering";
     return "ready";
   }
   if (order.fulfillmentStatus === "awaiting_pickup") return "awaiting_pickup";
-  if (["picked_up_by_customer", "served"].includes(order.fulfillmentStatus)) return "finished";
+  if (order.fulfillmentStatus === "picked_up_by_customer") return "awaiting_pickup";
+  if (order.fulfillmentStatus === "served") return "ready";
   return "ready";
 }
 
