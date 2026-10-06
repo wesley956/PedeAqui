@@ -21,8 +21,8 @@ jobs:
       APP_URL: http://127.0.0.1:3000
       DEMO_SLUG: santa-rita
       # Publishable browser configuration only. The server-only value below is an inert build placeholder.
-      NEXT_PUBLIC_SUPABASE_URL: https://zsbsczjhiujnhdznrzck.supabase.co
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_TE-qMe5ZrtkBehXml7Whdw_ltBUjcs1
+      NEXT_PUBLIC_SUPABASE_URL: https://idyjinpeijyqcejnunwm.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_RPOdbBk09PVZioKrDPX_rw_7Y3dl7Ou
       SUPABASE_SERVICE_ROLE_KEY: browser_server_only_placeholder
     steps:
       - name: Checkout
