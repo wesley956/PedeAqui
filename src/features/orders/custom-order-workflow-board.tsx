@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { formatStoreDateTime } from "@/lib/store-date-time";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { OrderActionForm } from "@/features/orders/order-action-form";
+import { bulkQuickFinishAction, type BulkQuickFinishActionState } from "@/features/orders/actions";
 import {
   externalLogisticsLabel,
   externalPaymentLabel,
@@ -29,6 +30,8 @@ import styles from "./order-manager.module.css";
 
 const isOperationalOrder = (order: OrderManagerRow) => !["completed", "canceled", "rejected"].includes(order.order_status);
 const settledPaymentStatuses = new Set(["paid", "partially_refunded", "refunded"]);
+const offlineBulkPaymentMethods = new Set(["cash", "credit_card", "debit_card"]);
+const initialBulkQuickFinishState: BulkQuickFinishActionState = { ok: false, completed: 0, failed: 0, message: null, error: null };
 
 async function resolveOrderRow(raw: Record<string, unknown>) {
   return typeof raw.id === "string" ? resolveOrderManagerRealtimeAction(raw.id) : null;
@@ -64,6 +67,13 @@ function isQuickFinishFlow(order: OrderManagerRow, config: CustomWorkflowConfig,
   if (order.fulfillment_type === "delivery" && !manualDeliveryMode) return false;
   const stages = order.fulfillment_type === "delivery" ? config.delivery : config.pickup;
   return stages.length === 2 && stages[0] === "new" && stages[1] === "finished";
+}
+
+function canBulkQuickFinish(order: OrderManagerRow, config: CustomWorkflowConfig, manualDeliveryMode: boolean) {
+  if (!isQuickFinishFlow(order, config, manualDeliveryMode)) return false;
+  if (settledPaymentStatuses.has(order.payment_status)) return true;
+  return ["pending", "authorized"].includes(order.payment_status)
+    && offlineBulkPaymentMethods.has(order.payment_method_snapshot ?? "");
 }
 
 function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean, paymentPolicy: PaymentCompletionPolicy | null, config: CustomWorkflowConfig) {
@@ -105,7 +115,17 @@ function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean, payment
   return null;
 }
 
-function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone }: { order: OrderManagerRow; now: number; config: CustomWorkflowConfig; manualDeliveryMode: boolean; paymentPolicy: PaymentCompletionPolicy | null; timeZone: string }) {
+function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone, bulkSelectable, bulkSelected, onBulkToggle }: {
+  order: OrderManagerRow;
+  now: number;
+  config: CustomWorkflowConfig;
+  manualDeliveryMode: boolean;
+  paymentPolicy: PaymentCompletionPolicy | null;
+  timeZone: string;
+  bulkSelectable: boolean;
+  bulkSelected: boolean;
+  onBulkToggle: (orderId: string, selected: boolean) => void;
+}) {
   const action = nextAction(order, manualDeliveryMode, paymentPolicy, config);
   const modality = order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : "Atendimento";
   const external = order.external;
@@ -119,6 +139,15 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone 
     : null;
 
   return <article className={styles.orderCard} data-channel={external?.provider ?? "pedeaqui"}>
+    {bulkSelectable ? <label style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
+      <input
+        type="checkbox"
+        checked={bulkSelected}
+        onChange={(event) => onBulkToggle(order.id, event.target.checked)}
+        aria-label={`Selecionar pedido #${order.display_number} para finalização em lote`}
+      />
+      Selecionar
+    </label> : null}
     <div className={styles.cardTop}>
       <div className={styles.orderIdentity}><span className={styles.orderNumber}>#{order.display_number}</span><strong className={styles.customer}>{order.customer_name_snapshot}</strong></div>
       <div className={styles.moneyTime}><span className={styles.total}>{money(order.total_cents)}</span><span className={styles.elapsed}>{elapsedLabel(order.created_at, now)}</span></div>
@@ -147,7 +176,7 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone 
   </article>;
 }
 
-function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, paymentPolicy, timeZone }: {
+function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, paymentPolicy, timeZone, selectedIds, onBulkToggle }: {
   title: string;
   stages: readonly WorkflowStage[];
   orders: OrderManagerRow[];
@@ -156,6 +185,8 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, p
   manualDeliveryMode: boolean;
   paymentPolicy: PaymentCompletionPolicy | null;
   timeZone: string;
+  selectedIds: Set<string>;
+  onBulkToggle: (orderId: string, selected: boolean) => void;
 }) {
   return <section style={{ display: "grid", gap: 10 }}>
     <header style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}><h2 style={{ margin: 0, fontSize: 17 }}>{title}</h2><span className="muted" style={{ fontSize: 12 }}>{orders.length} pedido(s)</span></header>
@@ -164,7 +195,18 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, p
         const stageOrders = orders.filter((order) => visibleStage(order, config) === stage);
         return <section key={stage} className={styles.lane} data-bucket={stage} aria-label={`${title}: ${workflowStageLabels[stage]}`}>
           <header className={styles.laneHeader}><strong>{workflowStageLabels[stage]}</strong><span className={styles.laneCount}>{stageOrders.length}</span></header>
-          <div className={styles.laneBody}>{stageOrders.map((order) => <Card key={order.id} order={order} now={now} config={config} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />)}{stageOrders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
+          <div className={styles.laneBody}>{stageOrders.map((order) => <Card
+            key={order.id}
+            order={order}
+            now={now}
+            config={config}
+            manualDeliveryMode={manualDeliveryMode}
+            paymentPolicy={paymentPolicy}
+            timeZone={timeZone}
+            bulkSelectable={canBulkQuickFinish(order, config, manualDeliveryMode)}
+            bulkSelected={selectedIds.has(order.id)}
+            onBulkToggle={onBulkToggle}
+          />)}{stageOrders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
         </section>;
       })}
     </div>
@@ -182,6 +224,8 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [bulkState, bulkAction, bulkPending] = useActionState(bulkQuickFinishAction, initialBulkQuickFinishState);
   const seen = useRef(new Set(initialOrders.map((order) => order.id)));
   const { soundEnabled, primaryLabel, toggle, test, notifyNewOrder } = useOrderAlert(setNotice);
   useRememberedOrderSearch("orders:active:query", query, setQuery);
@@ -210,6 +254,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
     for (const order of orders) seen.current.add(order.id);
   }, [orders]);
 
+
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("pt-BR");
     if (!needle) return orders;
@@ -226,20 +271,71 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
 
   const deliveryOrders = filtered.filter((order) => order.fulfillment_type === "delivery");
   const pickupOrders = filtered.filter((order) => order.fulfillment_type !== "delivery");
+  const bulkEligibleOrders = filtered.filter((order) => canBulkQuickFinish(order, config, manualDeliveryMode));
+  const selectedOrders = bulkEligibleOrders.filter((order) => selectedIds.has(order.id));
+  const selectedPendingPayments = selectedOrders.filter((order) => !settledPaymentStatuses.has(order.payment_status));
+  const allEligibleSelected = bulkEligibleOrders.length > 0 && bulkEligibleOrders.every((order) => selectedIds.has(order.id));
+
+  const toggleBulkSelection = (orderId: string, selected: boolean) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (selected) next.add(orderId);
+      else next.delete(orderId);
+      return next;
+    });
+  };
+
+  const toggleAllEligible = () => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (allEligibleSelected) {
+        for (const order of bulkEligibleOrders) next.delete(order.id);
+      } else {
+        for (const order of bulkEligibleOrders) next.add(order.id);
+      }
+      return next;
+    });
+  };
 
   return <div className={styles.board}>
     <div className={styles.toolbar}>
       <div className={styles.search}><Input label="Buscar pedido" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Número, cliente, canal ou código externo" /></div>
       <Button type="button" tone="secondary" onClick={() => void toggle()} aria-pressed={soundEnabled}>{primaryLabel}</Button>
       <Button type="button" tone="secondary" onClick={() => void test()}>Testar som</Button>
+      {bulkEligibleOrders.length > 0 ? <Button type="button" tone="secondary" onClick={toggleAllEligible}>
+        {allEligibleSelected ? "Desmarcar elegíveis" : `Selecionar elegíveis (${bulkEligibleOrders.length})`}
+      </Button> : null}
       <div className={styles.toolbarMeta}>Fluxo personalizado · {filtered.length} pedido(s)</div>
       <OperationalRealtimeBadge status={realtimeStatus} />
     </div>
+    {selectedOrders.length > 0 ? <form
+      action={bulkAction}
+      onSubmit={(event) => {
+        if (selectedPendingPayments.length > 0 && !window.confirm(
+          `Você confirma que recebeu o pagamento de ${selectedPendingPayments.length} pedido(s) selecionado(s)?`,
+        )) {
+          event.preventDefault();
+        }
+      }}
+      style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", padding: 12, border: "1px solid var(--border)", borderRadius: 12, background: "var(--surface-2)" }}
+    >
+      {selectedOrders.map((order) => <input key={order.id} type="hidden" name="orderIds" value={order.id} />)}
+      {selectedPendingPayments.length > 0 ? <input type="hidden" name="paymentReceived" value="yes" /> : null}
+      <strong style={{ fontSize: 13 }}>{selectedOrders.length} pedido(s) selecionado(s)</strong>
+      <Button type="submit" disabled={bulkPending}>
+        {bulkPending ? "Finalizando em lote…" : `Finalizar selecionados (${selectedOrders.length})`}
+      </Button>
+      <Button type="button" tone="secondary" disabled={bulkPending} onClick={() => setSelectedIds(new Set())}>Limpar seleção</Button>
+      <span className="muted" style={{ fontSize: 12 }}>Processamento controlado, um pedido por vez.</span>
+    </form> : null}
+    {bulkState.message ? <Alert tone={bulkState.failed > 0 ? "warning" : "info"} title={bulkState.message}>
+      {bulkState.error ?? "A fila de pedidos foi atualizada."}
+    </Alert> : bulkState.error ? <Alert tone="warning" title="Não foi possível finalizar o lote">{bulkState.error}</Alert> : null}
     <div className={styles.noticeSlot} aria-live="polite">
       {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}
     </div>
-    <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />
-    <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />
+    <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} onBulkToggle={toggleBulkSelection} />
+    <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} onBulkToggle={toggleBulkSelection} />
   </div>;
 }
 

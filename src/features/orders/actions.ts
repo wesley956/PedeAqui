@@ -161,6 +161,77 @@ export async function getExternalCancellationReasonsAction(orderId: string): Pro
   }
 }
 
+const bulkQuickFinishIdsSchema = z.array(z.string().uuid()).min(1).max(50);
+
+export type BulkQuickFinishActionState = {
+  ok: boolean;
+  completed: number;
+  failed: number;
+  message: string | null;
+  error: string | null;
+};
+
+export async function bulkQuickFinishAction(
+  _previousState: BulkQuickFinishActionState,
+  formData: FormData,
+): Promise<BulkQuickFinishActionState> {
+  const uniqueIds = Array.from(new Set(formData.getAll("orderIds").map((value) => String(value))));
+  const parsed = bulkQuickFinishIdsSchema.safeParse(uniqueIds);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      completed: 0,
+      failed: 0,
+      message: null,
+      error: "Selecione entre 1 e 50 pedidos elegíveis para finalizar.",
+    };
+  }
+
+  const paymentReceived = formData.get("paymentReceived") === "yes";
+  let completed = 0;
+  let failed = 0;
+
+  for (const orderId of parsed.data) {
+    const startedAt = Date.now();
+    try {
+      await OrderQuickFinishService.finish(orderId, paymentReceived);
+      completed += 1;
+      scheduleOrderWhatsAppNotifications("order_manager.quick_finish", orderId);
+      scheduleOrderActionTelemetry(orderId, "bulk_quick_finish", startedAt, "success");
+    } catch (error) {
+      failed += 1;
+      scheduleOrderActionTelemetry(orderId, "bulk_quick_finish", startedAt, "failure");
+      logger.warn("order_bulk_quick_finish_failed", {
+        orderId,
+        errorType: error instanceof Error ? error.name : "unknown",
+      });
+    }
+  }
+
+  revalidatePath("/pedidos");
+  revalidatePath("/entregas");
+  revalidatePath("/entregador");
+  revalidatePath("/movimento");
+
+  const message = completed > 0
+    ? failed > 0
+      ? `${completed} pedido(s) finalizado(s). ${failed} pedido(s) precisam de revisão.`
+      : `${completed} pedido(s) finalizado(s) com sucesso.`
+    : null;
+
+  return {
+    ok: completed > 0,
+    completed,
+    failed,
+    message,
+    error: completed === 0
+      ? "Nenhum pedido foi finalizado. Revise os pedidos selecionados e tente novamente."
+      : failed > 0
+        ? `${failed} pedido(s) não puderam ser finalizados e permaneceram no quadro.`
+        : null,
+  };
+}
+
 const managerIntentSchema = z.enum([
   "accept", "reject", "cancel", "accept_and_start", "start_production", "mark_ready", "mark_paid", "mark_paid_and_complete",
   "await_pickup", "customer_picked_up", "await_courier", "manual_out_for_delivery", "manual_finish_delivery",
