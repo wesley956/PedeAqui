@@ -16,6 +16,8 @@ type Props = {
   defaultValue?: string | null;
   defaultChangeFor?: string;
   choicesClassName?: string;
+  groupsClassName?: string;
+  groupClassName?: string;
   choiceClassName?: string;
   selectedClassName?: string;
   paymentChoiceClassName?: string;
@@ -36,6 +38,8 @@ export function PaymentMethodFields({
   defaultValue = null,
   defaultChangeFor = "",
   choicesClassName,
+  groupsClassName,
+  groupClassName,
   choiceClassName,
   selectedClassName,
   paymentChoiceClassName,
@@ -51,8 +55,14 @@ export function PaymentMethodFields({
 
   return (
     <>
-      <div className={choicesClassName}>
-        {methods.map((item) => (
+      <div className={groupsClassName}>
+        {[
+          {label: methods.some((item) => item.method === "pix") ? methods.some((item) => item.method === "cash") ? "Pix e dinheiro" : "Pix" : "Dinheiro", methods: methods.filter((item) => item.method === "pix" || item.method === "cash")},
+          {label: "Cartões", methods: methods.filter((item) => item.method === "credit_card" || item.method === "debit_card")},
+          {label: "Vales e outras formas", methods: methods.filter((item) => item.method === "custom")},
+        ].filter((group) => group.methods.length > 0).map((group) => <fieldset key={group.label} className={groupClassName}>
+          <legend>{group.label}</legend><div className={choicesClassName}>
+        {group.methods.map((item) => (
           <label key={item.value} className={classes(choiceClassName, selection === item.value && selectedClassName)}>
             <span className={paymentChoiceClassName}>
               <input
@@ -68,7 +78,10 @@ export function PaymentMethodFields({
             <span className={detailClassName}>{item.help}</span>
           </label>
         ))}
+          </div></fieldset>)}
       </div>
+
+      {selected ? <p className={detailClassName} role="status">{selected.help}</p> : null}
 
       {selected?.method === "cash" ? (
         <CashChangeFields

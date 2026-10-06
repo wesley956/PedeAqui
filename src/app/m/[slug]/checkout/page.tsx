@@ -140,7 +140,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
           {displayErrorMessage ? <div role="alert" aria-live="assertive" data-error-stage={activeStage} className={styles.alert}>{displayErrorMessage}</div> : null}
 
           {activeStage === "fulfillment" ? (
-            <CheckoutStage number="1" title="Como vai receber?" eyebrow="Recebimento" description="Escolha a opção que faz sentido para este pedido.">
+            <CheckoutStage number="1" title="Como vai receber?" eyebrow="Recebimento" description="Escolha entrega ou retirada. A previsão de entrega será atualizada após informar o endereço.">
               <form action={saveCheckoutFulfillmentAction} className={styles.receiveGrid}>
                 <input type="hidden" name="storeSlug" value={slug} />
                 {menu.settings.allow_delivery && menu.delivery.enabled ? <button type="submit" name="fulfillmentType" value="delivery" className={`${styles.receiveChoice} ${deliverySelected ? styles.choiceSelected : ""}`}><span className={styles.choiceIcon}>🛵</span><strong>Entrega</strong><span className={styles.choiceDetail}>Receba em casa</span><span className={styles.choiceMeta}>{menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span></button> : null}
@@ -163,7 +163,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
           ) : null}
 
           {activeStage === "address" && fulfillmentComplete && identityComplete && deliverySelected ? (
-            <CheckoutStage number="3" title="Onde entregar?" eyebrow="Entrega" description="Informe um endereço atendido pela loja. A taxa e a previsão continuam sendo validadas no servidor.">
+            <CheckoutStage number="3" title="Onde entregar?" eyebrow="Entrega" description="Informe um endereço atendido pela loja. Você verá a taxa e a previsão de entrega antes de confirmar.">
               {recognizedForSession && recognizedCustomer && recognizedCustomer.addresses.length > 0 ? (
                 <div className={styles.savedAddressBlock}>
                   <p className={styles.sectionLabel}>Você pode reutilizar um endereço salvo</p>
@@ -195,7 +195,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
 
           {activeStage === "payment" && identityComplete && fulfillmentComplete && addressComplete ? (
             <CheckoutStage number={deliverySelected ? "4" : "3"} title="Pagamento" eyebrow="Pagamento" description="Escolha somente entre as formas habilitadas pelo estabelecimento.">
-              <div className={styles.paymentHeader}><strong>{paymentSummary}</strong><span>O valor final continua sendo validado no servidor.</span></div>
+              <div className={styles.paymentHeader}><strong>{paymentSummary}</strong><span>Confira o total antes de confirmar.</span></div>
               <form action={saveCheckoutPaymentAction} className={styles.form}>
                 <input type="hidden" name="storeSlug" value={slug} />
                 {enabledMethods.length === 0 ? <div className={styles.deliveryError}>Este estabelecimento não tem uma forma de pagamento disponível no momento.</div> : (
@@ -208,6 +208,8 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                     }))}
                     defaultValue={selectedPaymentValue}
                     defaultChangeFor={changeForValue}
+                    groupsClassName={styles.paymentGroups}
+                    groupClassName={styles.paymentGroup}
                     choicesClassName={styles.choices}
                     choiceClassName={styles.choice}
                     selectedClassName={styles.choiceSelected}
@@ -227,6 +229,17 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
 
           {activeStage === "review" && paymentComplete ? (
             <CheckoutStage number={deliverySelected ? "5" : "4"} title="Revisar e confirmar" eyebrow="Última etapa" description={`Confira os principais dados antes de enviar para ${menu.store.name}.`}>
+              <section className={styles.reviewItems} aria-label="Itens e identificação do pedido">
+                <h2>Seu pedido</h2>
+                <p><strong>{identityName}</strong> · {identityPhone}</p>
+                {cart.items.map((item) => <article key={item.id} className={styles.reviewItem}>
+                  <div><strong>{item.quantity}× {item.product_name_snapshot}</strong><strong>{money(Number(item.line_total_cents))}</strong></div>
+                  {item.modifiers.length > 0 ? <p>{item.modifiers.map((option) => `${Number(option.quantity ?? 1)}× ${option.modifier_name_snapshot}`).join(" · ")}</p> : null}
+                  {item.note ? <p>Observação: {item.note}</p> : null}
+                  {item.gas ? <p>{item.gas.sale_mode === "exchange" ? "Troca de vasilhame" : "Produto + vasilhame"}{item.gas.container_name_snapshot ? ` · ${item.gas.container_name_snapshot}` : ""}</p> : null}
+                </article>)}
+                <Link href={`/m/${slug}/carrinho`}>Editar itens no carrinho</Link>
+              </section>
               <nav className={styles.reviewEditNav} aria-label="Alterar dados do checkout">
                 <Link href={stageHref(slug, "fulfillment")}>Alterar recebimento</Link><Link href={stageHref(slug, "identity")}>Alterar dados</Link>{deliverySelected ? <Link href={stageHref(slug, "address")}>Alterar endereço</Link> : null}<Link href={stageHref(slug, "payment")}>Alterar pagamento</Link>
               </nav>
@@ -238,15 +251,16 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
 
               {paymentComplete && growthEnabled && benefits ? (
                 <details className={styles.optional} open={totalDiscount > 0 || query.erro === "benefit_invalid" || query.erro === "benefit_unavailable"}>
-                  <summary>Tenho cupom, cashback ou pontos{totalDiscount > 0 ? ` · economia ${money(totalDiscount)}` : ""}</summary>
+                  <summary>Tenho cupom{benefits.cashbackEnabled ? ", cashback" : ""}{benefits.loyaltyEnabled ? " ou pontos" : ""}{totalDiscount > 0 ? ` · economia ${money(totalDiscount)}` : ""}</summary>
                   <div className={styles.optionalBody}>
                     <form action={applyCheckoutBenefitsAction} className={styles.form}>
                       <input type="hidden" name="storeSlug" value={slug} />
                       <div className={styles.grid2}>
-                        <Field label="Cupom" name="couponCode" defaultValue={benefits.current.couponCode ?? ""} placeholder="Ex.: VOLTA20" />
-                        <Field label={`Cashback${benefits.customerIdentified ? ` · saldo ${money(benefits.cashbackBalanceCents)}` : ""}`} name="cashbackAmount" inputMode="decimal" defaultValue={benefits.current.cashbackRedeemCents ? (benefits.current.cashbackRedeemCents / 100).toFixed(2).replace(".", ",") : ""} disabled={!benefits.cashbackEnabled || !benefits.customerIdentified} />
-                        <Field label={`Pontos${benefits.customerIdentified ? ` · saldo ${benefits.loyaltyBalancePoints}` : ""}`} name="loyaltyPoints" type="number" min={0} defaultValue={benefits.current.loyaltyRedeemPoints || ""} disabled={!benefits.loyaltyEnabled || !benefits.customerIdentified} />
+                        <Field label="Cupom" name="couponCode" defaultValue={query.erro === "benefit_invalid" ? cookieStore.get(`pedeaqui_coupon_draft_${slug}`)?.value ?? benefits.current.couponCode ?? "" : benefits.current.couponCode ?? ""} placeholder="Ex.: VOLTA20" />
+                        {benefits.cashbackEnabled ? <Field label={`Cashback${benefits.customerIdentified ? ` · saldo ${money(benefits.cashbackBalanceCents)}` : ""}`} name="cashbackAmount" inputMode="decimal" defaultValue={benefits.current.cashbackRedeemCents ? (benefits.current.cashbackRedeemCents / 100).toFixed(2).replace(".", ",") : ""} disabled={!benefits.cashbackEnabled || !benefits.customerIdentified} /> : null}
+                        {benefits.loyaltyEnabled ? <Field label={`Pontos${benefits.customerIdentified ? ` · saldo ${benefits.loyaltyBalancePoints}` : ""}`} name="loyaltyPoints" type="number" min={0} defaultValue={benefits.current.loyaltyRedeemPoints || ""} disabled={!benefits.loyaltyEnabled || !benefits.customerIdentified} /> : null}
                       </div>
+                      {(benefits.cashbackEnabled || benefits.loyaltyEnabled) && !benefits.customerIdentified ? <p className={styles.optionalHint}>Identifique-se em Seus dados para consultar seu saldo de benefícios.</p> : null}
                       <div className={styles.benefitActions}><ActionButton>Aplicar benefício</ActionButton>{totalDiscount > 0 ? <button formAction={clearCheckoutBenefitsAction} type="submit" className={styles.secondary}>Remover</button> : null}</div>
                     </form>
                     {totalDiscount > 0 ? <div className={styles.benefitSummary}><strong>Você economizou {money(totalDiscount)}</strong><span>O total abaixo já inclui o desconto oficial.</span></div> : null}
@@ -257,7 +271,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
               <details className={styles.optional} open={Boolean(scheduledFor) || query.erro === "invalid_schedule"}>
                 <summary>{scheduledFor ? "Pedido agendado · alterar horário" : "Quero agendar este pedido"}</summary>
                 <div className={styles.optionalBody}>
-                  <p className={styles.optionalHint}>O horário é interpretado no fuso do estabelecimento ({storeTimeZone}).</p>
+                  <p className={styles.optionalHint}>Escolha a data e o horário desejados, considerando o horário local da loja.</p>
                   <form action={saveCheckoutScheduleAction} className={styles.form}>
                     <input type="hidden" name="storeSlug" value={slug} /><Field label="Data e hora" name="localDateTime" type="datetime-local" defaultValue={scheduledLocalValue} />
                     <div className={styles.scheduleActions}><button type="submit" name="mode" value="asap" className={styles.secondary}>O mais rápido possível</button><button type="submit" name="mode" value="scheduled" className={styles.action}>Agendar</button></div>
@@ -279,10 +293,10 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                 <div className={styles.summaryRows}>
                   <SummaryLine label="Subtotal" value={money(Number(cart.subtotal_cents))} />
                   {totalDiscount > 0 ? <SummaryLine label="Descontos" value={`− ${money(totalDiscount)}`} /> : null}
-                  <SummaryLine label="Entrega" value={Number(cart.delivery_fee_cents) > 0 ? money(Number(cart.delivery_fee_cents)) : deliverySelected ? "Grátis" : "Retirada"} />
+                  <SummaryLine label="Entrega" value={Number(cart.delivery_fee_cents) > 0 ? money(Number(cart.delivery_fee_cents)) : deliverySelected ? "Grátis" : "Sem taxa"} />
                   <div className={styles.divider} /><SummaryLine label="Total" value={money(Number(cart.total_cents))} strong />
                 </div>
-                <p className={styles.serverReviewNote}>Ao confirmar, o PedeAqui revisa novamente carrinho, loja, recebimento, endereço, pagamento e totais antes de criar o pedido.</p>
+                <p className={styles.serverReviewNote}>Seu pedido será enviado à loja ao confirmar. Confira os itens, o recebimento e o total.</p>
               </section>
             </CheckoutStage>
           ) : null}

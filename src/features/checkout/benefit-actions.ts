@@ -42,6 +42,11 @@ async function publicContext(storeSlug: string) {
 export async function applyCheckoutBenefitsAction(formData: FormData) {
   const storeSlug = String(formData.get("storeSlug") ?? "");
   const { token } = await publicContext(storeSlug);
+  const cookieStore = await cookies();
+  const draftCookie = `pedeaqui_coupon_draft_${storeSlug}`;
+  cookieStore.set(draftCookie, optional(formData, "couponCode")?.slice(0, 200) ?? "", {
+    httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: `/m/${storeSlug}`, maxAge: 1800,
+  });
   try {
     await GrowthService.applyCartBenefits(storeSlug, token, {
       couponCode: optional(formData, "couponCode"),
@@ -51,6 +56,7 @@ export async function applyCheckoutBenefitsAction(formData: FormData) {
   } catch {
     redirect(`/m/${storeSlug}/checkout?erro=benefit_invalid`);
   }
+  (await cookies()).set(`pedeaqui_coupon_draft_${storeSlug}`, "", { path: `/m/${storeSlug}`, maxAge: 0 });
   redirect(`/m/${storeSlug}/checkout`);
 }
 
@@ -58,5 +64,6 @@ export async function clearCheckoutBenefitsAction(formData: FormData) {
   const storeSlug = String(formData.get("storeSlug") ?? "");
   const { token } = await publicContext(storeSlug);
   await GrowthService.clearCartBenefits(storeSlug, token);
+  (await cookies()).set(`pedeaqui_coupon_draft_${storeSlug}`, "", { path: `/m/${storeSlug}`, maxAge: 0 });
   redirect(`/m/${storeSlug}/checkout`);
 }

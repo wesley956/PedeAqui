@@ -49,7 +49,9 @@ describe("progressive checkout UI", () => {
   });
 
   it("keeps benefits optional and module-gated", () => {
-    expect(page).toContain("Tenho cupom, cashback ou pontos");
+    expect(page).toContain("Tenho cupom");
+    expect(page).toContain("benefits.cashbackEnabled ?");
+    expect(page).toContain("benefits.loyaltyEnabled ?");
     expect(page).toContain("paymentComplete && growthEnabled && benefits");
     expect(page).toContain("applyCheckoutBenefitsAction");
     expect(service).toContain('StoreModuleStateService.isEnabled(cartResult.store.organization_id, cartResult.store.id, "growth")');
