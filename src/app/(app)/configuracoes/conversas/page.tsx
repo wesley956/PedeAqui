@@ -309,6 +309,7 @@ export default async function ConversationSettingsPage() {
             <input type="checkbox" name="conversationAutoCloseEnabled" defaultChecked={Boolean(settings?.conversation_auto_close_enabled)} />
             <span>Encerrar conversas automaticamente por inatividade</span>
           </label>
+          <p className="muted" style={{ margin: 0, fontSize: 13 }}>A fila aguardando atendente permanece aberta. Depois do encerramento, uma nova mensagem do cliente inicia outra conversa com o robô, conforme a configuração da loja.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             <label style={{ display: "grid", gap: 6 }}>
               <span style={{ fontWeight: 700 }}>Conversa com o robô</span>
