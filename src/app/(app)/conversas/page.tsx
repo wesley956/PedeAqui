@@ -230,6 +230,17 @@ export default async function ConversationsPage({
               </div>
             </div>
 
+            {detail.conversation.status === "waiting_agent" || detail.conversation.status === "human" ? <div className={styles.alert} role="status">
+              <strong>Robô pausado nesta conversa</strong>
+              <p>{latestHistory[0]?.reason === "Resposta enviada pelo WhatsApp Business"
+                ? "Uma resposta enviada pelo WhatsApp Business passou esta conversa para atendimento manual."
+                : "Esta conversa está em atendimento humano. O robô aguarda a retomada para responder."} As mensagens do cliente continuam chegando normalmente.</p>
+              <p>{detail.conversation.status === "waiting_agent"
+                ? "Conversas aguardando atendente não são encerradas automaticamente. Assuma o atendimento ou retome o robô."
+                : "Ao terminar o atendimento, retome o robô para que ele responda às próximas mensagens."}</p>
+              <form action={returnConversationToBotAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button type="submit">Retomar robô</Button></form>
+            </div> : null}
+
             <ConversationTimeline
               conversationId={detail.conversation.id}
               storeId={context.storeId}
@@ -244,7 +255,6 @@ export default async function ConversationsPage({
               <div className={styles.actions}>
                 {detail.conversation.status !== "human" ? <form action={assumeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button type="submit">Assumir atendimento</Button></form> : null}
                 {detail.conversation.status !== "waiting_agent" && detail.conversation.status !== "closed" ? <form action={queueConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Colocar na fila</Button></form> : null}
-                {detail.conversation.status !== "bot" && detail.conversation.status !== "closed" ? <form action={returnConversationToBotAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Voltar ao robô</Button></form> : null}
                 {detail.conversation.status !== "closed" ? <form action={closeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="danger" type="submit">Encerrar</Button></form> : null}
               </div>
 
