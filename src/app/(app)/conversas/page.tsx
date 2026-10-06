@@ -149,7 +149,7 @@ export default async function ConversationsPage({
         </div>
         <div className={styles.integrationStatus} aria-label="Estado do atendimento">
           <Badge tone={inbox.integration.enabled ? "success" : "neutral"}>WhatsApp {inbox.integration.enabled ? "ativo" : inbox.integration.configured ? "configurado" : "não configurado"}</Badge>
-          <Badge tone={inbox.integration.aiEnabled ? "success" : "neutral"}>Robô {inbox.integration.aiEnabled ? "ativo" : "desligado"}</Badge>
+          <Badge tone={inbox.integration.enabled && inbox.integration.botEnabled ? "success" : "neutral"}>Robô da loja {inbox.integration.enabled && inbox.integration.botEnabled ? "ativo" : "desligado"}</Badge>
         </div>
       </header>
 
