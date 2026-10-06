@@ -33,7 +33,7 @@ describe("public modifier selector", () => {
 
   it("keeps server-side add-to-cart as final authority", () => {
     expect(page).toContain("addToCartAction");
-    expect(page).toContain("O PedeAqui recalcula produto e adicionais no servidor");
+    expect(page).toContain("Confira o valor com as opções escolhidas no carrinho antes de continuar.");
   });
 
   it("disables modifier groups when the product or store is unavailable", () => {

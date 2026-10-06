@@ -53,7 +53,7 @@ vi.mock("@/server/promotions/promotion-service", () => ({
   isPromotionActive: () => false,
   PromotionService: {
     schedulesForStore: vi.fn(async () => []),
-    activeForProduct: vi.fn(async () => null),
+    effectiveForProduct: vi.fn(async () => ({ hasSchedule: false, promotion: null })),
   },
 }));
 
@@ -93,7 +93,7 @@ describe("FLOW-10 A01/A02 public entry and canonical cart", () => {
     expect(mocks.publicRpc).toHaveBeenCalledWith("get_public_menu", { p_store_slug: "flow10-public-store" });
     expect(menu?.store.id).toBe(ids.store);
     expect(menu?.categories[0]?.products[0]).toMatchObject({ id: ids.product, availability: "available" });
-    expect(menu?.operational).toEqual({ scheduleOpen: true, acceptingOrders: true, canOrder: true, label: "open" });
+    expect(menu?.operational).toEqual({ scheduleOpen: true, acceptingOrders: true, canOrder: true, label: "open", nextOpening: null, pauseReason: null });
   });
 
   it("A02 prices and persists one simple item with its canonical modifier snapshot", async () => {

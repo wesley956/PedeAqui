@@ -27,7 +27,7 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
       <header className={styles.hero}>
         <RestaurantBrand name={menu.store.name} logoUrl={menu.settings.logo_url} primaryColor={menu.settings.primary_color}>
           <span className={`${styles.status} ${statusClass}`}>{status}</span>
-          <p className={styles.brandDetail}>{detail}{menu.settings.pause_reason && menu.operational.label === "paused" ? ` — ${menu.settings.pause_reason}` : ""}</p>
+          <p className={styles.brandDetail}>{menu.operational.label === "closed" && menu.operational.nextOpening ? `Abre ${menu.operational.nextOpening.label}` : detail}{menu.settings.pause_reason && menu.operational.label === "paused" ? ` — ${menu.settings.pause_reason}` : ""}</p>
           {(menu.store.city || menu.store.state) ? <p className={styles.location}>{[menu.store.city, menu.store.state].filter(Boolean).join(" - ")}</p> : null}
           <StoreInformationSheet store={{
             name: menu.store.name,

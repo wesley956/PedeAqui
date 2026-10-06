@@ -2,6 +2,8 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { InputHTMLAttributes, ReactNode } from "react";
+import { CheckoutInput } from "@/features/checkout/checkout-input";
+import { StoreOrderStatus } from "@/features/menu/store-order-status";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import {
   saveCheckoutAddressAction,
@@ -134,6 +136,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
         <div className={styles.progressTrack} aria-label={`${progress}% do checkout concluído`}><div className={styles.progressFill} style={{ width: `${progress}%` }} /></div>
 
         <div className={styles.stageViewport}>
+          <StoreOrderStatus operational={menu.operational} />
           {displayErrorMessage ? <div role="alert" aria-live="assertive" data-error-stage={activeStage} className={styles.alert}>{displayErrorMessage}</div> : null}
 
           {activeStage === "fulfillment" ? (
@@ -287,7 +290,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
 
         <footer className={styles.footer}>
           <div className={styles.footerTotal}><span>Total do pedido</span><strong>{money(Number(cart.total_cents))}</strong></div>
-          {activeStage === "review" && paymentComplete ? <form action={confirmCheckoutOrderAction} className={styles.stickyForm}><input type="hidden" name="storeSlug" value={slug} /><SubmitOrderButton className={styles.finalAction} label={`Confirmar pedido · ${money(Number(cart.total_cents))}`} /></form> : null}
+          {activeStage === "review" && paymentComplete && menu.operational.canOrder ? <form action={confirmCheckoutOrderAction} className={styles.stickyForm}><input type="hidden" name="storeSlug" value={slug} /><SubmitOrderButton className={styles.finalAction} label={`Confirmar pedido · ${money(Number(cart.total_cents))}`} /></form> : null}
         </footer>
       </div>
     </main>
@@ -298,6 +301,6 @@ function CheckoutStage({ number, title, eyebrow, description, children }: { numb
   return <section className={styles.stage} aria-labelledby={`checkout-stage-${number}`}><header className={styles.stageHeader}><p className={styles.eyebrow}>{eyebrow}</p><h1 id={`checkout-stage-${number}`}>{title}</h1><p>{description}</p></header><div className={styles.stageBody}>{children}</div></section>;
 }
 
-function Field({ label, ...input }: InputHTMLAttributes<HTMLInputElement> & { label: string }) { return <label className={styles.field}><span>{label}</span><input {...input} className={styles.input} /></label>; }
+function Field({ label, ...input }: InputHTMLAttributes<HTMLInputElement> & { label: string }) { return <label className={styles.field}><span>{label}</span><CheckoutInput {...input} label={label} className={styles.input} /></label>; }
 function ActionButton({ children }: { children: ReactNode }) { return <button type="submit" className={styles.action}>{children}</button>; }
 function SummaryLine({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) { return <div className={`${styles.summaryLine} ${strong ? styles.total : ""}`}><span>{label}</span><strong>{value}</strong></div>; }
