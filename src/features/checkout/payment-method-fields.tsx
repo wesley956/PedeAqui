@@ -57,7 +57,7 @@ export function PaymentMethodFields({
     <>
       <div className={groupsClassName}>
         {[
-          {label: "Pix e dinheiro", methods: methods.filter((item) => item.method === "pix" || item.method === "cash")},
+          {label: methods.some((item) => item.method === "pix") ? methods.some((item) => item.method === "cash") ? "Pix e dinheiro" : "Pix" : "Dinheiro", methods: methods.filter((item) => item.method === "pix" || item.method === "cash")},
           {label: "Cartões", methods: methods.filter((item) => item.method === "credit_card" || item.method === "debit_card")},
           {label: "Vales e outras formas", methods: methods.filter((item) => item.method === "custom")},
         ].filter((group) => group.methods.length > 0).map((group) => <fieldset key={group.label} className={groupClassName}>
