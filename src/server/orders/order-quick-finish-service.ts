@@ -5,8 +5,6 @@ import { parseCustomWorkflowConfig } from "@/features/orders/workflow-config";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
-import { ManualDeliveryService } from "@/server/delivery/manual-delivery-service";
-import { OrderService } from "@/server/orders/order-service";
 import { paymentAllowsOrderCompletion, type PaymentStatus } from "@/server/orders/state-machines";
 import { PaymentService } from "@/server/payments/payment-service";
 
@@ -94,57 +92,16 @@ export class OrderQuickFinishService {
       paymentConfirmed = true;
     }
 
-    if (order.order_status === "pending_confirmation") {
-      await OrderService.confirm(id);
-    } else if (order.order_status !== "confirmed") {
-      throw new Error("O pedido não está em um estado válido para finalização rápida.");
-    }
+    const { data: finishResult, error: finishError } = await admin.rpc("order_quick_finish_internal", {
+      p_order_id: id,
+      p_actor_user_id: context.userId,
+      p_source: "panel",
+    });
+    if (finishError) throw finishError;
 
-    let productionStatus = order.production_status;
-    if (productionStatus === "pending_confirmation" || productionStatus === "queued") {
-      await OrderService.startProduction(id);
-      productionStatus = "preparing";
-    }
-    if (productionStatus === "preparing") {
-      await OrderService.setProduction(id, "ready");
-      productionStatus = "ready";
-    }
-    if (productionStatus !== "ready" && productionStatus !== "not_required") {
-      throw new Error("A produção deste pedido não pode ser concluída automaticamente.");
-    }
+    const completed = Boolean((finishResult as { completed?: boolean } | null)?.completed);
+    if (!completed) throw new Error("O pedido não pôde ser concluído.");
 
-    if (order.fulfillment_type === "delivery") {
-      if (order.fulfillment_status !== "delivered") {
-        await ManualDeliveryService.dispatch(id);
-      }
-      const result = await ManualDeliveryService.finish(id, false);
-      if (result.paymentIssue) throw new Error(result.paymentIssue);
-      if (!result.completed) throw new Error("A entrega foi concluída, mas o pedido ainda precisa de acerto financeiro.");
-      return {
-        completed: true,
-        paymentConfirmed,
-        message: paymentConfirmed ? "Pagamento recebido e pedido finalizado." : "Pedido finalizado.",
-      };
-    }
-
-    if (order.fulfillment_type === "pickup") {
-      if (order.fulfillment_status === "pending") {
-        await OrderService.setFulfillment(id, "awaiting_pickup");
-        await OrderService.setFulfillment(id, "picked_up_by_customer");
-      } else if (order.fulfillment_status === "awaiting_pickup") {
-        await OrderService.setFulfillment(id, "picked_up_by_customer");
-      } else if (!["picked_up_by_customer", "not_required"].includes(order.fulfillment_status)) {
-        throw new Error("A retirada deste pedido não pode ser concluída automaticamente.");
-      }
-    } else {
-      if (order.fulfillment_status === "pending") {
-        await OrderService.setFulfillment(id, "served");
-      } else if (!["served", "not_required"].includes(order.fulfillment_status)) {
-        throw new Error("O atendimento deste pedido não pode ser concluído automaticamente.");
-      }
-    }
-
-    await OrderService.complete(id);
     return {
       completed: true,
       paymentConfirmed,
