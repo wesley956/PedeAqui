@@ -5,6 +5,7 @@ import { createCartToken, hashCartToken } from "@/server/cart/cart-token";
 import { addCartItemSchema, type AddCartItemInput, type GasSaleMode } from "@/server/cart/schemas";
 import { PricingError, PricingService, type PricingProduct } from "@/server/pricing/pricing-service";
 import { isOpenAt } from "@/server/menu/schedule";
+import { effectivePromotionalPrice } from "@/server/promotions/effective-price";
 import { PromotionService } from "@/server/promotions/promotion-service";
 
 const CART_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -58,10 +59,12 @@ export class CartService {
     const { data: product, error } = await admin.from("products").select("id, name, image_url, price_cents, promotional_price_cents, active, availability, deleted_at").eq("id", productId).eq("organization_id", store.organization_id).eq("store_id", store.id).maybeSingle();
     if (error) throw error;
     if (!product || !product.active || product.deleted_at || product.availability !== "available") return null;
-    const scheduledPromotion = await PromotionService.activeForProduct(store.id, product.id, store.timezone);
-    const promotionalPriceCents = scheduledPromotion && scheduledPromotion.promotional_price_cents <= product.price_cents
-      ? scheduledPromotion.promotional_price_cents
-      : product.promotional_price_cents;
+    const effectivePromotion = await PromotionService.effectiveForProduct(store.id, product.id, store.timezone);
+    const promotionalPriceCents = effectivePromotionalPrice({
+      priceCents: product.price_cents,
+      legacyPromotionalPriceCents: product.promotional_price_cents,
+      ...effectivePromotion,
+    });
     const { data: links, error: linksError } = await admin.from("product_modifier_groups").select("modifier_group_id, sort_order").eq("organization_id", store.organization_id).eq("store_id", store.id).eq("product_id", product.id).order("sort_order");
     if (linksError) throw linksError;
     const groupIds = (links ?? []).map((row) => row.modifier_group_id);

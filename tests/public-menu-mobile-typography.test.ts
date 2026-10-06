@@ -44,7 +44,7 @@ describe("public menu mobile visual hierarchy", () => {
     expect(productPage).toContain("Etapa {index + 1}");
     expect(productPage).toContain("Finalizar item");
     expect(productPage).toContain("Tudo certo?");
-    expect(productPage).toContain("O PedeAqui recalcula produto e adicionais no servidor");
+    expect(productPage).toContain("Confira o valor com as opções escolhidas no carrinho antes de continuar.");
     expect(productCss).toContain(".stepBlock{display:grid;gap:7px;scroll-margin-top:64px}");
   });
 

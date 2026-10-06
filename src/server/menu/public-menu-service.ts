@@ -14,6 +14,8 @@ export type PublicMenuState = PublicMenu & {
     acceptingOrders: boolean;
     canOrder: boolean;
     label: "open" | "closed" | "paused";
+    nextOpening?: import("@/server/menu/schedule").NextOpening | null;
+    pauseReason?: string | null;
   };
 };
 
@@ -69,6 +71,8 @@ function operationalState({
     acceptingOrders: resolved.acceptingOrders,
     canOrder: resolved.canOrder,
     label: resolved.label,
+    nextOpening: resolved.nextOpening,
+    pauseReason: resolved.pauseReason,
   };
 }
 

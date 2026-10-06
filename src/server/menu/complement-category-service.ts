@@ -2,6 +2,8 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
+import { PromotionService, isPromotionActive } from "@/server/promotions/promotion-service";
+import { effectivePromotionalPrice } from "@/server/promotions/effective-price";
 import { PERMISSIONS } from "@/server/access/permissions";
 
 export type ComplementCategorySetting = { id: string; name: string; active: boolean; selected: boolean; sortOrder: number; suggestedDefault: boolean };
@@ -67,9 +69,9 @@ export class ComplementCategoryService {
     return Number(data ?? 0);
   }
 
-  static async loadPublic(storeSlug: string, sourceProductId?: string | null, previewLimit = 4): Promise<PublicComplementCategory[]> {
+  static async loadPublic(storeSlug: string, sourceProductId?: string | null, previewLimit = 4, now = new Date()): Promise<PublicComplementCategory[]> {
     const admin = createAdminClient();
-    const { data: store, error: storeError } = await admin.from("stores").select("id,organization_id,status,business_type").ilike("slug", storeSlug).in("status", ["active", "temporarily_closed"]).maybeSingle();
+    const { data: store, error: storeError } = await admin.from("stores").select("id,organization_id,status,business_type,timezone").ilike("slug", storeSlug).in("status", ["active", "temporarily_closed"]).maybeSingle();
     if (storeError) throw storeError;
     if (!store) return [];
 
@@ -108,7 +110,20 @@ export class ComplementCategoryService {
     const categoryMap = new Map((categories ?? []).filter((category) => category.active).map((category) => [category.id, category]));
     const { data: products, error: productsError } = await admin.from("products").select("id,category_id,name,description,image_url,price_cents,promotional_price_cents,active,availability,sort_order").eq("organization_id", store.organization_id).eq("store_id", store.id).in("category_id", categoryIds).eq("active", true).eq("availability", "available").is("deleted_at", null).order("sort_order").order("name");
     if (productsError) throw productsError;
+    const schedules = await PromotionService.schedulesForStore(store.id);
     const eligibleProducts = (products ?? []).filter((product) => product.id !== sourceProductId);
+    const promotionPrices = new Map(eligibleProducts.map((product) => {
+      const productSchedules = schedules.filter((row) => row.product_id === product.id);
+      const promotion = productSchedules
+        .filter((row) => isPromotionActive(row, store.timezone || "America/Sao_Paulo", now))
+        .sort((a, b) => a.promotional_price_cents - b.promotional_price_cents)[0] ?? null;
+      return [product.id, effectivePromotionalPrice({
+        priceCents: Number(product.price_cents),
+        legacyPromotionalPriceCents: product.promotional_price_cents === null ? null : Number(product.promotional_price_cents),
+        hasSchedule: productSchedules.length > 0,
+        promotion,
+      })];
+    }));
     const productIds = eligibleProducts.map((product) => product.id);
     const configuredIds = new Set<string>();
     if (productIds.length > 0) {
@@ -120,7 +135,7 @@ export class ComplementCategoryService {
     return runtimeConfig.flatMap((config) => {
       const category = categoryMap.get(config.categoryId);
       if (!category) return [];
-      const categoryProducts = eligibleProducts.filter((product) => product.category_id === config.categoryId).slice(0, previewLimit).map((product) => ({ id: product.id, name: product.name, description: product.description, imageUrl: product.image_url, priceCents: Number(product.price_cents), promotionalPriceCents: product.promotional_price_cents === null ? null : Number(product.promotional_price_cents), requiresConfiguration: store.business_type === "gas" || configuredIds.has(product.id) }));
+      const categoryProducts = eligibleProducts.filter((product) => product.category_id === config.categoryId).slice(0, previewLimit).map((product) => ({ id: product.id, name: product.name, description: product.description, imageUrl: product.image_url, priceCents: Number(product.price_cents), promotionalPriceCents: promotionPrices.get(product.id) ?? null, requiresConfiguration: store.business_type === "gas" || configuredIds.has(product.id) }));
       return categoryProducts.length > 0 ? [{ id: category.id, name: category.name, title: config.title, sourceProductId: sourceProductId ?? null, products: categoryProducts }] : [];
     });
   }

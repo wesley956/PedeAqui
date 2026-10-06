@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { addToCartAction } from "@/features/cart/actions";
 import { PublicCartBar } from "@/features/cart/public-cart-bar";
 import { ComplementCategorySection } from "@/features/menu/complement-category-section";
+import { StoreOrderStatus } from "@/features/menu/store-order-status";
 import { ModifierGroupSelector } from "@/features/menu/modifier-group-selector";
 import { businessVocabulary } from "@/modules/business-vocabulary";
 import { CartService } from "@/server/cart/cart-service";
@@ -84,7 +85,7 @@ export default async function PublicProductPage({ params, searchParams }: { para
 
       {editItemId ? <div role="status" style={{ padding: 14, borderRadius: 14, background: "var(--state-warning-surface)", color: "var(--state-warning-text)", fontWeight: 800 }}>Editando este item. Se você voltar sem salvar, a montagem atual do carrinho permanece intacta.</div> : null}
       {errorMessage ? <div role="alert" style={{ padding: 14, borderRadius: 14, background: "var(--state-danger-surface)", color: "var(--state-danger-text)", fontWeight: 700 }}>{errorMessage}</div> : null}
-      {!operational.canOrder ? <div role="status" style={{ padding: 14, borderRadius: 14, background: "var(--state-warning-surface)", color: "var(--state-warning-text)", fontWeight: 700 }}>{operational.label === "paused" ? "Pedidos temporariamente pausados. O cardápio continua disponível para consulta." : "Cardápio fechado agora. Você pode consultar os produtos e voltar no horário de atendimento."}</div> : null}
+      <StoreOrderStatus operational={operational} />
 
       <article className={styles.productCard}>
         {product.image_url ? (
@@ -110,13 +111,14 @@ export default async function PublicProductPage({ params, searchParams }: { para
 
       {gas ? <fieldset disabled={orderUnavailable} style={{ ...cardSurface, margin: 0, borderRadius: 18, padding: 18, display: "grid", gap: 12 }}>
         <legend style={{ fontWeight: 900, padding: "0 6px", color: "var(--text-primary)" }}>Como será o {gas.containerName.toLowerCase()}?</legend>
-        <p style={{ margin: 0, color: "var(--text-secondary)" }}>Escolha a modalidade para {gas.containerCode}. O valor final será recalculado no servidor.</p>
+        <p style={{ margin: 0, color: "var(--text-secondary)" }}>Escolha a modalidade para {gas.containerCode}. Confira o valor da modalidade escolhida no carrinho.</p>
         {gas.exchangeEnabled ? <label style={{ display: "flex", gap: 10, alignItems: "start", padding: 12, border: "var(--border-width) solid var(--border-default)", borderRadius: 14, cursor: "pointer", color: "var(--text-primary)" }}><input type="radio" name="gasSaleMode" value="exchange" required={gas.requireContainerChoice} defaultChecked={editGasSaleMode === "exchange"} /><span><strong>Troca de vasilhame</strong><br /><small style={{ color: "var(--text-secondary)" }}>Você entrega um casco vazio compatível na entrega ou retirada.</small></span></label> : null}
         {gas.containerSaleEnabled ? <label style={{ display: "flex", gap: 10, alignItems: "start", padding: 12, border: "var(--border-width) solid var(--border-default)", borderRadius: 14, cursor: "pointer", color: "var(--text-primary)" }}><input type="radio" name="gasSaleMode" value="with_container" required={gas.requireContainerChoice} defaultChecked={editGasSaleMode === "with_container"} /><span><strong>Produto + vasilhame</strong><br /><small style={{ color: "var(--text-secondary)" }}>Inclui o casco. Acréscimo: {money(gas.containerSurchargeCents)}.</small></span></label> : null}
       </fieldset> : null}
 
       {product.modifier_groups.length > 0 ? <section className={styles.assemblyIntro} aria-labelledby="montagem-titulo">
         <span className={styles.assemblyEyebrow}>Monte do seu jeito</span>
+        <a className={styles.backLink} href="#finalizar-item">Ir para quantidade e observação ↓</a>
         <h2 id="montagem-titulo" className={styles.assemblyTitle}>Escolha como você quer</h2>
         <p className={styles.assemblyText}>Selecione as opções e quantidades que desejar dentro dos limites de cada grupo.</p>
       </section> : null}
@@ -126,12 +128,7 @@ export default async function PublicProductPage({ params, searchParams }: { para
         <ModifierGroupSelector group={group} disabled={orderUnavailable} complementTargetId={index === product.modifier_groups.length - 1 ? complementTargetId : undefined} initialSelections={initialSelections} />
       </div>)}
 
-      {complements.length > 0 ? <div className={styles.stepBlock}>
-        <span className={styles.stepLabel}>Etapa {product.modifier_groups.length + 1} · Opcional</span>
-        <ComplementCategorySection categories={complements} storeSlug={store.slug} businessType={businessType} disabled={orderUnavailable} />
-      </div> : null}
-
-      <section className={styles.finalSection}>
+      <section id="finalizar-item" className={styles.finalSection}>
         <header className={styles.finalHeader}>
           <span className={styles.stepLabel}>Finalizar item</span>
           <h2 className={styles.finalTitle}>Tudo certo?</h2>
@@ -148,8 +145,13 @@ export default async function PublicProductPage({ params, searchParams }: { para
           </label>
           <button className={styles.submitButton} type="submit" disabled={orderUnavailable} style={{ background: orderUnavailable ? "var(--surface-3)" : "var(--brand-primary)", color: orderUnavailable ? "var(--text-secondary)" : "var(--text-on-brand)", cursor: orderUnavailable ? "not-allowed" : "pointer" }}>{soldOut ? `${productLabel} esgotado` : operational.label === "paused" ? "Pedidos pausados" : operational.label === "closed" ? "Cardápio fechado" : editItemId ? "Salvar alterações" : "Adicionar ao carrinho"}</button>
         </div>
-        <small className={styles.helper}>O total final é confirmado no carrinho. O PedeAqui recalcula produto e adicionais no servidor conforme as opções escolhidas.</small>
+        <small className={styles.helper}>Confira o valor com as opções escolhidas no carrinho antes de continuar.</small>
       </section>
+      {complements.length > 0 ? <div className={styles.stepBlock}>
+        <span className={styles.stepLabel}>Etapa {product.modifier_groups.length + 1} · Opcional</span>
+        <ComplementCategorySection categories={complements} storeSlug={store.slug} businessType={businessType} disabled={orderUnavailable} />
+      </div> : null}
+
     </form>
     <PublicCartBar storeSlug={store.slug} />
   </main>;

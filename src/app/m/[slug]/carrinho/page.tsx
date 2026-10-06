@@ -2,6 +2,8 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import { removeCartItemAction, updateCartQuantityAction } from "@/features/cart/actions";
+import { StoreOrderStatus } from "@/features/menu/store-order-status";
+import { StoreOperationalStatusService } from "@/server/menu/store-operational-status";
 import { CartService } from "@/server/cart/cart-service";
 import { cartCookieName } from "@/server/cart/cart-token";
 import styles from "./cart.module.css";
@@ -30,6 +32,7 @@ export default async function PublicCartPage({ params, searchParams }: { params:
 
   if (!cart || cart.items.length === 0) return <main className={styles.root}><div className={`${styles.container} ${styles.empty}`}><section className={`card ${styles.emptyCard}`}><div className={styles.emptyIcon} aria-hidden>0 itens</div><h1>Seu carrinho está vazio</h1><p className="muted">Escolha seus itens no cardápio para começar o pedido.</p><Link href={`/m/${slug}`} className={styles.emptyLink}>Ver cardápio</Link></section></div></main>;
 
+  const operational = result.store ? await StoreOperationalStatusService.load({ organizationId: result.store.organization_id, storeId: result.store.id }) : null;
   const invalidCount = cart.items.filter((item) => item.validation_status !== "valid").length;
   const discount = Number(cart.discount_cents ?? 0);
   const delivery = Number(cart.delivery_fee_cents ?? 0);
@@ -37,7 +40,9 @@ export default async function PublicCartPage({ params, searchParams }: { params:
 
   return <main className={styles.root}><div className={styles.container}>
     <div className={styles.topbar}><Link href={`/m/${slug}`} className={styles.back}>← Continuar comprando</Link><PedeAquiLogo size="xs" decorative /></div>
-    <header className={styles.header}><h1>Seu carrinho</h1><p className="muted">Revise seus itens. Preços, disponibilidade e benefícios continuam sendo validados no servidor.</p></header>
+    <header className={styles.header}><h1>Seu carrinho</h1><p className="muted">Revise seus itens, quantidades e opções antes de continuar.</p></header>
+
+    {operational ? <StoreOrderStatus operational={operational} /> : null}
 
     {query.erro ? <section role="alert" className={`card ${styles.changes}`}>{cartErrorMessages[query.erro] ?? "Não foi possível alterar o carrinho. Tente novamente."}</section> : null}
 
@@ -68,16 +73,16 @@ export default async function PublicCartPage({ params, searchParams }: { params:
     })}</div>
 
     <section className={`card ${styles.summary}`} aria-label="Resumo do pedido">
-      <div className={styles.summaryRows}><div className={styles.row}><span>Subtotal</span><strong>{money(Number(cart.subtotal_cents))}</strong></div>{discount > 0 ? <div className={`${styles.row} ${styles.discount}`}><span>Descontos e benefícios</span><strong>− {money(discount)}</strong></div> : null}{delivery > 0 ? <div className={styles.row}><span>Entrega</span><strong>{money(delivery)}</strong></div> : <div className={styles.row}><span>Entrega</span><strong>A calcular / sem taxa</strong></div>}</div>
+      <div className={styles.summaryRows}><div className={styles.row}><span>Subtotal</span><strong>{money(Number(cart.subtotal_cents))}</strong></div>{discount > 0 ? <div className={`${styles.row} ${styles.discount}`}><span>Descontos e benefícios</span><strong>− {money(discount)}</strong></div> : null}{delivery > 0 ? <div className={styles.row}><span>Entrega</span><strong>{money(delivery)}</strong></div> : <div className={styles.row}><span>Entrega</span><strong>Calculada no checkout</strong></div>}</div>
       {(cart.coupon_code_snapshot || Number(cart.cashback_discount_cents) > 0 || Number(cart.loyalty_discount_cents) > 0) ? <div className={styles.benefits}>{cart.coupon_code_snapshot ? <span>Cupom aplicado: <strong>{cart.coupon_code_snapshot}</strong></span> : null}{Number(cart.cashback_discount_cents) > 0 ? <span>Cashback: − {money(Number(cart.cashback_discount_cents))}</span> : null}{Number(cart.loyalty_discount_cents) > 0 ? <span>Pontos: − {money(Number(cart.loyalty_discount_cents))}</span> : null}</div> : null}
       <div className={styles.divider} /><div className={`${styles.row} ${styles.total}`}><span>Total atual</span><strong>{money(total)}</strong></div>
       {invalidCount > 0 ? <div className={styles.invalidAlert}>Edite ou remova {invalidCount} item(ns) inválido(s) antes de continuar.</div> : null}
-      <small className="muted">O total final é recalculado no checkout conforme endereço, entrega, pagamento e benefícios elegíveis.</small>
+      <small className="muted">Você verá o frete e os descontos no checkout antes de confirmar o pedido.</small>
     </section>
 
     <div className={styles.checkoutDock} aria-label="Continuar pedido">
       <span className={styles.dockTotal}><small>Total atual</small><strong>{money(total)}</strong></span>
-      {invalidCount > 0 ? <span className={styles.dockBlocked} role="status">Corrija o carrinho para continuar</span> : <Link href={`/m/${slug}/checkout`} className={styles.checkout}>Continuar →</Link>}
+      {operational && !operational.canOrder ? <span className={styles.dockBlocked} role="status">{operational.label === "paused" ? "Pedidos pausados" : "Loja fechada"}</span> : invalidCount > 0 ? <span className={styles.dockBlocked} role="status">Corrija o carrinho para continuar</span> : <Link href={`/m/${slug}/checkout`} className={styles.checkout}>Continuar →</Link>}
     </div>
   </div></main>;
 }
