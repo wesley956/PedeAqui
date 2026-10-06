@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const PROTECTED_PREFIXES = [
   "/dashboard", "/pedidos", "/pdv", "/producao", "/cardapio", "/clientes", "/equipe", "/configuracoes",
   "/caixa", "/conversas", "/crescimento", "/entregador", "/entregas", "/escala", "/estoque", "/financeiro",
-  "/fiscal", "/fornecedores", "/compras", "/salao", "/acesso-negado", "/recurso-indisponivel",
+  "/fiscal", "/fornecedores", "/compras", "/salao", "/onboarding", "/assinatura", "/acesso-negado", "/recurso-indisponivel",
 ];
 
 function getSafeReturnPath(value: string | null) {
