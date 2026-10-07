@@ -400,7 +400,9 @@ export class ConversationGreetingService {
           : rendered;
         greetingBody = menuMode === "menu_first"
           ? appendWhatsAppBotMenu(presentation, Boolean(settings.whatsapp_orders_enabled))
-          : `${presentation}\n\nSe quiser ver as opções, digite menu.`;
+          : menuMode === "interactive" && settings.greeting_template.includes("{link}")
+            ? presentation
+            : `${presentation}\n\nSe quiser ver as opções, digite menu.`;
       } catch (error) {
         recordFailure("whatsapp.greeting.render_failed", error, { requestId, organizationId: conversation.organization_id, storeId: conversation.store_id });
         await sendBotText(botContext, settings.greeting_fallback_message, `auto:fallback:${ingest.message_id}`);
