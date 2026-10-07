@@ -20,7 +20,7 @@ function editableMoney(cents: number) {
 }
 
 function SelectionModeField({ id, defaultValue = "distinct_choices" }: { id: string; defaultValue?: string }) {
-  return <SelectField id={id} name="selectionMode" label="Como o cliente escolhe" defaultValue={defaultValue} hint="Na divisão igual, o PedeAqui calcula automaticamente quantas unidades ficam em cada opção.">
+  return <SelectField id={id} name="selectionMode" label="Como o cliente escolhe" defaultValue={defaultValue} hint="Quantidade manual: o cliente distribui unidades entre opções. Para exigir exatamente 25, configure mínimo 25, máximo 25 e marque Obrigatório. Na divisão igual, o PedeAqui calcula a distribuição.">
       <option value="distinct_choices">Escolha simples ou múltipla</option>
       <option value="quantity_per_option">Quantidade manual por opção (− / +)</option>
       <option value="equal_split_options">Dividir igualmente entre opções escolhidas (− / +)</option>
@@ -92,7 +92,7 @@ export default async function ModifiersPage() {
                   <div className="muted" style={{ fontSize: 13 }}>
                     {group.required ? "Obrigatório" : "Opcional"} · {equalSplitMode ? `${group.min_selection}–${group.max_selection} opção(ões) · divide ${group.distribution_total ?? "?"} unidades` : quantityMode ? `${group.min_selection}–${group.max_selection} unidades no total` : `${group.min_selection}–${group.max_selection} seleção(ões)`} · ordem {group.sort_order}
                   </div>
-                  {quantityMode ? <div className="muted" style={{ fontSize: 12 }}>O máximo é um teto. O cliente pode continuar antes dele assim que o mínimo estiver atendido.</div> : null}
+                  {quantityMode ? <div className="muted" style={{ fontSize: 12 }}>O máximo é um teto. Quando mínimo e máximo são iguais, o cliente precisa completar exatamente essa quantidade. Caso contrário, pode continuar assim que o mínimo estiver atendido.</div> : null}
                   {equalSplitMode ? <div className="muted" style={{ fontSize: 12 }}>O cliente escolhe entre o mínimo e o máximo de opções; o total configurado é repartido igualmente entre elas.</div> : null}
                 </div>
                 <span className="muted">{group.active ? "Ativo" : "Pausado"}</span>
