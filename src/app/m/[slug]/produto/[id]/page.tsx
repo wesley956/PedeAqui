@@ -123,9 +123,9 @@ export default async function PublicProductPage({ params, searchParams }: { para
         <p className={styles.assemblyText}>Selecione as opções e quantidades que desejar dentro dos limites de cada grupo.</p>
       </section> : null}
 
-      {product.modifier_groups.map((group, index) => <div key={group.id} className={styles.stepBlock}>
+      {product.modifier_groups.map((group, index) => <div key={group.id} id={`grupo-${group.id}`} className={styles.stepBlock}>
         <span className={styles.stepLabel}>Etapa {index + 1}</span>
-        <ModifierGroupSelector group={group} disabled={orderUnavailable} complementTargetId={index === product.modifier_groups.length - 1 ? complementTargetId : undefined} initialSelections={initialSelections} />
+        <ModifierGroupSelector group={group} disabled={orderUnavailable} complementTargetId={index === product.modifier_groups.length - 1 ? complementTargetId : `grupo-${product.modifier_groups[index + 1]?.id}`} nextGroupName={product.modifier_groups[index + 1]?.name} initialSelections={initialSelections} />
       </div>)}
 
       <section id="finalizar-item" className={styles.finalSection}>
