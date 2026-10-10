@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Dialog } from "@/components/ui/feedback";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from "react";
 import { createPdvSaleAction, searchPdvCustomersAction } from "@/features/pdv/actions";
 import {
@@ -99,6 +100,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
   const [customerName, setCustomerName] = useState(""); const [customerPhone, setCustomerPhone] = useState(""); const [customerEmail, setCustomerEmail] = useState("");
   const [couponCode, setCouponCode] = useState(""); const [cashbackText, setCashbackText] = useState(""); const [loyaltyPointsText, setLoyaltyPointsText] = useState("");
   const [payments, setPayments] = useState<PaymentDraft[]>(() => [{ id: "payment-1", method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const submissionLock = useRef(false);
   const [fulfillmentType, setFulfillmentType] = useState<PosSaleInput["fulfillmentType"]>("counter");
   const [revision, setRevision] = useState(0); const [pending, setPending] = useState(false); const [error, setError] = useState<string | null>(null); const [lastSale, setLastSale] = useState<LastSale | null>(null);
@@ -134,6 +136,8 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
   const paymentValidation = paymentPayload(payments, saleTotal);
   const totalCashChange = projectedTotalCashChangeCents(payments, saleTotal);
   const showCashChange = payments.some((payment) => payment.method === "cash" && payment.cashReceivedText.trim());
+  const singlePayment = payments.length === 1 ? payments[0] : undefined;
+  const cashDifference = singlePayment ? projectedCashDifferenceCents(singlePayment, saleTotal, 1) : null;
   const cartItemCount = cart.reduce((sum, line) => sum + line.quantity, 0);
   const configProduct = configurator ? productIndex.get(configurator.productId) ?? null : null;
 
@@ -200,14 +204,15 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
         </button>
       </nav>
 
+      <form className={styles.saleForm} onSubmit={finalizeSale}>
       <fieldset className={styles.saleLock} aria-label="Itens e dados da venda" disabled={pending} aria-busy={pending}>
       <div className={styles.layout} data-mobile-view={mobileView}>
         <div className={styles.catalog} data-pdv-panel="catalog">
-          <div className={styles.toolbar}><input className={styles.search} type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar produto, SKU ou código de barras" autoComplete="off" aria-label="Buscar produtos no PDV" /><div className={styles.categories} aria-label="Categorias do PDV"><button type="button" className={categoryId === null ? styles.categoryActive : styles.categoryButton} onClick={() => setCategoryId(null)}>Todos</button>{categories.map((category) => <button type="button" key={category.id} className={categoryId === category.id ? styles.categoryActive : styles.categoryButton} onClick={() => setCategoryId(category.id)}>{category.name}</button>)}</div></div>
+          <div className={styles.toolbar}><input className={styles.search} type="search" value={search} onKeyDown={(event) => { if (event.key === "Enter") event.preventDefault(); }} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar produto, SKU ou código de barras" autoComplete="off" aria-label="Buscar produtos no PDV" /><div className={styles.categories} aria-label="Categorias do PDV"><button type="button" className={categoryId === null ? styles.categoryActive : styles.categoryButton} onClick={() => setCategoryId(null)}>Todos</button>{categories.map((category) => <button type="button" key={category.id} className={categoryId === category.id ? styles.categoryActive : styles.categoryButton} onClick={() => setCategoryId(category.id)}>{category.name}</button>)}</div></div>
           {visibleProducts.length === 0 ? <div className={styles.empty}>Nenhum produto disponível para este filtro.</div> : <div className={styles.productGrid}>{visibleProducts.map((product) => <button type="button" key={product.id} className={styles.productCard} onClick={() => chooseProduct(product)}><span><span className={styles.productName}>{product.name}</span>{product.description ? <span className={styles.productDescription}>{product.description}</span> : null}</span><span className={styles.rowBetween}><span className={styles.productPrice}>{money(product.priceCents)}</span><span className={styles.mutedSmall}>{product.modifierGroups.length > 0 ? "Configurar" : "+ Adicionar"}</span></span></button>)}</div>}
         </div>
 
-        <form className={`card ${styles.cartPanel}`} data-pdv-panel="sale" onSubmit={finalizeSale}>
+        <section className={`card ${styles.cartPanel}`} data-pdv-panel="sale">
           <div className={styles.cartHeader}><div><div className={styles.mutedSmall}>VENDA ATUAL</div><h2 style={{ margin: "3px 0 0", fontSize: 19 }}>Carrinho</h2></div><strong>{cartItemCount} {cartItemCount === 1 ? "item" : "itens"}</strong></div>
           <div className={styles.cartBody}>
             <label className={styles.fulfillmentField}><strong>Tipo de venda</strong><select className={styles.select} aria-label="Tipo de venda" value={fulfillmentType} onChange={(event) => { setFulfillmentType(event.target.value as PosSaleInput["fulfillmentType"]); touchSale(); }}><option value="counter">Consumir no local</option><option value="pickup">Levar embora</option></select></label>
@@ -233,23 +238,34 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
               </div>
             </details>
 
+          </div>
+        </section>
+      </div>
+      <footer className={styles.checkoutBar} aria-label="Pagamento e finalização da venda">
+        <div className={styles.checkoutPayment}>
+          <div className={styles.rowBetween}><strong>Pagamento</strong><button type="button" className={styles.paymentDetailsButton} disabled={paymentMethods.length === 0} onClick={() => setPaymentDialogOpen(true)}>{payments.length > 1 ? `Editar ${payments.length} parcelas` : "Detalhes / Dividir"}</button></div>
+          {singlePayment ? <div className={styles.paymentMethods} role="group" aria-label="Forma de pagamento">{paymentMethods.map((method) => <button type="button" key={method.method} className={singlePayment.method === method.method ? styles.paymentMethodActive : styles.paymentMethodButton} aria-pressed={singlePayment.method === method.method} onClick={() => { if (singlePayment.method !== method.method) updatePayment(singlePayment.id, { method: method.method, cashReceivedText: "", reference: "" }); }}>{method.label}</button>)}</div> : <button type="button" className={styles.secondaryButton} onClick={() => setPaymentDialogOpen(true)}>Pagamento dividido · {payments.length} parcelas</button>}
+        </div>
+        {singlePayment?.method === "cash" ? <label className={styles.checkoutReceived}><span>Valor recebido</span><input className={styles.field} aria-label="Valor recebido em dinheiro" aria-describedby="pdv-bar-change" inputMode="decimal" value={singlePayment.cashReceivedText} onChange={(event) => updatePayment(singlePayment.id, { cashReceivedText: event.target.value })} placeholder="Ex.: 50,00" /></label> : null}
+        <div className={styles.checkoutChange}><span className={styles.mutedSmall}>Troco</span><output id="pdv-bar-change" role="status" aria-live="polite">{cashDifference !== null ? cashDifference < 0 ? `Faltam ${money(-cashDifference)}` : money(cashDifference) : showCashChange && totalCashChange !== null ? money(totalCashChange) : "—"}</output></div>
+        <div className={styles.checkoutTotal}><span className={styles.mutedSmall}>Total</span><strong className={styles.total}>{money(saleTotal)}</strong>{growthProjection.valid && growthProjection.discountCents > 0 ? <span className={styles.mutedSmall}>Benefícios: − {money(growthProjection.discountCents)}</span> : null}</div>
+        <button type="submit" className={`${styles.primaryButton} ${styles.checkoutSubmit}`} aria-describedby={cart.length > 0 && !paymentValidation.ok ? "pdv-payment-validation" : undefined} disabled={pending || cart.length === 0 || paymentMethods.length === 0 || !growthProjection.valid || !paymentValidation.ok}>{pending ? "Finalizando venda…" : `Finalizar · ${money(saleTotal)}`}</button>
+        {cart.length > 0 && !paymentValidation.ok ? <div id="pdv-payment-validation" className={styles.checkoutError} role="status" aria-live="polite">{paymentValidation.error}</div> : null}
+      </footer>
+      </fieldset>
+      </form>
+
+      <Dialog open={paymentDialogOpen} title="Pagamento" description="Confirme o recebimento. As parcelas devem fechar o total da venda." onClose={() => setPaymentDialogOpen(false)} secondaryAction={<button type="button" className={styles.secondaryButton} onClick={() => setPaymentDialogOpen(false)}>Voltar</button>} primaryAction={<button type="button" className={styles.primaryButton} disabled={pending || !paymentValidation.ok} onClick={() => setPaymentDialogOpen(false)}>Aplicar pagamentos</button>}>
+        <fieldset className={styles.paymentFields} disabled={pending}>
             <div className={styles.section}>
               <div className={styles.rowBetween}><h3>Pagamento</h3><button type="button" className={styles.smallButton} disabled={paymentMethods.length === 0 || saleTotal === 0 || payments.length >= 10} onClick={addPayment}>+ Dividir</button></div>
               <div className={styles.mutedSmall}>Confirme o recebimento antes de finalizar a venda.</div>
               {payments.length > 1 ? <div className={styles.mutedSmall} role="status">Falta distribuir: {money(remainingPaymentCents(payments, saleTotal))}</div> : null}
               {payments.map((payment, index) => <div key={payment.id} className={styles.paymentLine}><div className={styles.rowBetween}><strong>{payments.length > 1 ? `Parcela ${index + 1}` : "Forma de pagamento"}</strong>{payments.length > 1 ? <button type="button" className={styles.removeButton} onClick={() => removePayment(payment.id)}>Remover</button> : null}</div><select aria-label={payments.length > 1 ? `Forma de pagamento da parcela ${index + 1}` : "Forma de pagamento"} className={styles.select} value={payment.method} onChange={(event) => updatePayment(payment.id, { method: event.target.value as PosPaymentMethod, cashReceivedText: "", reference: "" })}>{paymentMethods.map((method) => <option key={method.method} value={method.method}>{method.label}</option>)}</select><div className={styles.twoColumns}><label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor {payments.length === 1 ? "(vazio = total)" : "da parcela"}</span><input aria-label={payments.length > 1 ? `Valor da parcela ${index + 1}` : "Valor da venda"} className={styles.field} inputMode="decimal" value={payment.amountText} onChange={(event) => updatePayment(payment.id, { amountText: event.target.value })} placeholder={formatMoneyInput(payments.length === 1 ? saleTotal : remainingPaymentCents(payments.filter((item) => item.id !== payment.id), saleTotal))} /></label>{payment.method === "cash" ? <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor recebido</span><input aria-label={payments.length > 1 ? `Valor recebido em dinheiro na parcela ${index + 1}` : "Valor recebido em dinheiro"} aria-describedby={`pdv-change-${payment.id}`} className={styles.field} inputMode="decimal" value={payment.cashReceivedText} onChange={(event) => updatePayment(payment.id, { cashReceivedText: event.target.value })} placeholder="Ex.: 50,00" /><CashChangePreview payment={payment} totalCents={saleTotal} paymentCount={payments.length} /></label> : <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Referência/comprovante</span><input aria-label={payments.length > 1 ? `Referência da parcela ${index + 1}` : "Referência do pagamento"} className={styles.field} value={payment.reference} onChange={(event) => updatePayment(payment.id, { reference: event.target.value })} maxLength={200} placeholder="Opcional" /></label>}</div></div>)}
             </div>
-          </div>
-          <div className={`${styles.section} ${styles.cartFooter}`}>
-            {growthProjection.valid && growthProjection.discountCents > 0 ? <><div className={styles.rowBetween}><span className={styles.mutedSmall}>Subtotal</span><span>{money(cartSubtotal)}</span></div><div className={styles.rowBetween}><span className={styles.mutedSmall}>Benefícios</span><span>− {money(growthProjection.discountCents)}</span></div></> : null}
-            {cart.length > 0 && !paymentValidation.ok ? <div id="pdv-payment-validation" className={styles.statusError} role="status" aria-live="polite">{paymentValidation.error}</div> : null}
-            {showCashChange && totalCashChange !== null ? <div className={styles.rowBetween}><strong>Troco</strong><strong>{money(totalCashChange)}</strong></div> : null}
-            <div className={styles.rowBetween}><strong>Total</strong><span className={styles.total}>{money(saleTotal)}</span></div>
-            <button type="submit" className={styles.primaryButton} aria-describedby={cart.length > 0 && !paymentValidation.ok ? "pdv-payment-validation" : undefined} disabled={pending || cart.length === 0 || paymentMethods.length === 0 || !growthProjection.valid || !paymentValidation.ok}>{pending ? "Finalizando venda…" : `Finalizar · ${money(saleTotal)}`}</button>
-          </div>
-        </form>
-      </div>
-      </fieldset>
+          {!paymentValidation.ok ? <div className={styles.statusError} role="status">{paymentValidation.error}</div> : null}
+        </fieldset>
+      </Dialog>
 
       {configurator && configProduct ? <ProductConfigurator state={configurator} product={configProduct} onChange={setConfigurator} onCancel={() => setConfigurator(null)} onAdd={() => addCartLine(configProduct, configurator.modifierIds, configurator.quantity, configurator.note)} /> : null}
     </section>

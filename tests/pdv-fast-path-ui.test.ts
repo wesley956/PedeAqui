@@ -12,10 +12,18 @@ describe("PDV fast path", () => {
     expect(shell).toContain("Finalizar ·");
   });
 
-  it("gives the catalog more workspace while keeping the sale summary visible", () => {
-    expect(css).toContain("grid-template-columns:minmax(0,1.45fr)minmax(360px,.55fr)");
-    expect(css).toContain(".cartPanel{position:sticky");
-    expect(css).toContain(".cartFooter{position:sticky");
+  it("keeps payment and finalization outside the scrolling catalog and cart", () => {
+    const bar = shell.indexOf('<footer className={styles.checkoutBar}');
+    const dialog = shell.indexOf('<Dialog open={paymentDialogOpen}');
+    expect(bar).toBeGreaterThan(shell.indexOf('<section className={`card ${styles.cartPanel}`}'));
+    expect(shell.slice(0, bar).trimEnd()).toMatch(/<\/section>\s*<\/div>$/);
+    expect(shell.slice(bar, dialog)).toContain('aria-label="Valor recebido em dinheiro"');
+    expect(shell.slice(bar, dialog)).toContain('type="submit"');
+    expect(shell.slice(bar, dialog)).toContain('</fieldset>');
+    expect(shell.slice(bar, dialog)).toContain('</form>');
+    expect(css).toContain('.checkoutBar{flex:00auto;position:sticky');
+    expect(css).toContain('.checkoutBar{position:static}');
+    expect(css).toContain('.cartPanel{grid-template-rows:autominmax(0,1fr)}');
   });
 
   it("uses design-system control heights and responsive single-column layout", () => {
