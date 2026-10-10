@@ -32,3 +32,13 @@ export function paymentPayload(drafts: readonly PaymentDraft[], totalCents: numb
 export function remainingPaymentCents(drafts: readonly PaymentDraft[], totalCents: number) {
   return Math.max(0, totalCents - drafts.reduce((sum, draft) => sum + (parsePosMoneyToCents(draft.amountText) ?? 0), 0));
 }
+
+// The cash portion, rather than the complete sale, determines change in split payments.
+export function projectedCashDifferenceCents(payment: PaymentDraft, totalCents: number, paymentCount: number) {
+  if (payment.method !== "cash" || !payment.cashReceivedText.trim()) return null;
+  const received = parsePosMoneyToCents(payment.cashReceivedText);
+  const amount = paymentCount === 1 && !payment.amountText.trim() ? totalCents : parsePosMoneyToCents(payment.amountText);
+  if (received === null || amount === null || (amount <= 0 && totalCents > 0)) return null;
+  if (totalCents === 0) return 0;
+  return received - amount;
+}

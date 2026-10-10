@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { paymentPayload, remainingPaymentCents, type PaymentDraft } from "@/features/pdv/payment-draft";
+import { paymentPayload, remainingPaymentCents, projectedCashDifferenceCents, type PaymentDraft } from "@/features/pdv/payment-draft";
 import { friendlyPdvError } from "@/features/pdv/errors";
 import { posSaleSchema } from "@/server/pdv/schemas";
 
@@ -46,5 +46,29 @@ describe("PDV payment and fulfillment regressions", () => {
     expect(friendlyPdvError({ message: "open cash session required for cash payment", code: "P0001" })).toBe("Abra o caixa antes de finalizar uma venda em dinheiro.");
     expect(friendlyPdvError({ message: "cash received is below payment amount" })).toContain("menor");
     expect(friendlyPdvError({ message: "private unexpected internals" })).not.toContain("private");
+  });
+});
+
+describe("cash change while typing", () => {
+  it("uses the current sale total when a single cash amount is automatic", () => {
+    const cash = draft({ method: "cash", cashReceivedText: "20,00" });
+    expect(projectedCashDifferenceCents(cash, 1590, 1)).toBe(410);
+    expect(projectedCashDifferenceCents(cash, 1990, 1)).toBe(10);
+  });
+  it("uses only the cash portion in a split payment", () => {
+    expect(projectedCashDifferenceCents(draft({ method: "cash", amountText: "10,00", cashReceivedText: "20,00" }), 1590, 2)).toBe(1000);
+  });
+  it("shows zero for exact cash and the shortfall for insufficient cash", () => {
+    expect(projectedCashDifferenceCents(draft({ method: "cash", cashReceivedText: "15,90" }), 1590, 1)).toBe(0);
+    expect(projectedCashDifferenceCents(draft({ method: "cash", cashReceivedText: "10,00" }), 1590, 1)).toBe(-590);
+  });
+  it("does not guess change for incomplete values or an unspecified split amount", () => {
+    expect(projectedCashDifferenceCents(draft({ method: "cash" }), 1590, 1)).toBeNull();
+    expect(projectedCashDifferenceCents(draft({ method: "cash", cashReceivedText: "20,000" }), 1590, 1)).toBeNull();
+    expect(projectedCashDifferenceCents(draft({ method: "cash", cashReceivedText: "20,00" }), 1590, 2)).toBeNull();
+    expect(projectedCashDifferenceCents(draft({ cashReceivedText: "20,00" }), 1590, 1)).toBeNull();
+  });
+  it("does not invent change for a fully discounted sale", () => {
+    expect(projectedCashDifferenceCents(draft({ method: "cash", cashReceivedText: "20,00" }), 0, 1)).toBe(0);
   });
 });

@@ -48,3 +48,9 @@ A proteção de credenciais do navegador impediu observar o PDV nesta rodada. Um
 Impressão física, gateway Pix/cartão, mobile físico e cliques do ciclo completo servido/retirado não foram homologados nesta rodada. As formas personalizadas ainda não têm suporte na RPC do PDV e agora não aparecem como uma opção vazia. Adicionais por quantidade, edição de item e recuperação de rascunho permanecem no diagnóstico anterior.
 
 Os nove pedidos demonstrativos foram mantidos para inspeção (dois concluídos nos testes de finalização), sem excluir dados nem alterar pedidos de clientes.
+
+## Troco durante a digitação
+
+O campo Valor recebido passa a mostrar o troco antes da finalização, recalculando ao alterar o valor, o total do carrinho ou a parcela em dinheiro. Em pagamento dividido, usa somente o valor da parcela em dinheiro. Mostra zero para valor exato e a diferença que falta para valor insuficiente; valores incompletos não produzem um troco estimado. O resultado é anunciado como status acessível.
+
+Exemplos verificados: venda R$ 15,90 / recebido R$ 20,00 = troco R$ 4,10; parcela dinheiro R$ 10,00 + Pix R$ 5,90 / recebido R$ 20,00 = troco R$ 10,00. Cinco testes de cálculo adicionados; 32 testes passaram nos quatro arquivos de PDV. Typecheck e ESLint dos arquivos alterados passaram. A limitação de homologação visual da sessão permanece.

@@ -20,7 +20,7 @@ import {
   type PosPaymentMethodOption,
   type PosProduct,
 } from "@/features/pdv/model";
-import { paymentPayload, remainingPaymentCents, type PaymentDraft } from "@/features/pdv/payment-draft";
+import { paymentPayload, remainingPaymentCents, projectedCashDifferenceCents, type PaymentDraft } from "@/features/pdv/payment-draft";
 import type { PosSaleInput } from "@/server/pdv/schemas";
 import styles from "@/features/pdv/pdv.module.css";
 
@@ -37,6 +37,14 @@ function modifierLabels(product: PosProduct, ids: readonly string[]) {
   return labels;
 }
 
+
+function CashChangePreview({ payment, totalCents, paymentCount }: { payment: PaymentDraft; totalCents: number; paymentCount: number }) {
+  const difference = projectedCashDifferenceCents(payment, totalCents, paymentCount);
+  return <output role="status" aria-live="polite" aria-atomic="true" className={styles.mutedSmall}>
+    {difference === null ? (payment.cashReceivedText.trim() ? "Informe valores válidos para calcular o troco." : "Troco: —")
+      : difference < 0 ? `Faltam ${money(-difference)}` : <strong>Troco: {money(difference)}</strong>}
+  </output>;
+}
 
 function ProductConfigurator({ state, product, onChange, onCancel, onAdd }: { state: ConfiguratorState; product: PosProduct; onChange: (next: ConfiguratorState) => void; onCancel: () => void; onAdd: () => void }) {
   const unitPrice = projectedUnitPriceCents(product, state.modifierIds);
@@ -211,7 +219,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
               <div className={styles.rowBetween}><h3>Pagamento</h3><button type="button" className={styles.smallButton} disabled={paymentMethods.length === 0 || saleTotal === 0 || payments.length >= 10} onClick={addPayment}>+ Dividir</button></div>
               <div className={styles.mutedSmall}>Confirme o recebimento antes de finalizar a venda.</div>
               {payments.length > 1 ? <div className={styles.mutedSmall} role="status">Falta distribuir: {money(remainingPaymentCents(payments, saleTotal))}</div> : null}
-              {payments.map((payment, index) => <div key={payment.id} className={styles.paymentLine}><div className={styles.rowBetween}><strong>{payments.length > 1 ? `Parcela ${index + 1}` : "Forma de pagamento"}</strong>{payments.length > 1 ? <button type="button" className={styles.removeButton} onClick={() => removePayment(payment.id)}>Remover</button> : null}</div><select className={styles.select} value={payment.method} onChange={(event) => updatePayment(payment.id, { method: event.target.value as PosPaymentMethod, cashReceivedText: "", reference: "" })}>{paymentMethods.map((method) => <option key={method.method} value={method.method}>{method.label}</option>)}</select><div className={styles.twoColumns}><label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor {payments.length === 1 ? "(vazio = total)" : "da parcela"}</span><input className={styles.field} inputMode="decimal" value={payment.amountText} onChange={(event) => updatePayment(payment.id, { amountText: event.target.value })} placeholder={formatMoneyInput(payments.length === 1 ? saleTotal : remainingPaymentCents(payments.filter((item) => item.id !== payment.id), saleTotal))} /></label>{payment.method === "cash" ? <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor recebido</span><input className={styles.field} inputMode="decimal" value={payment.cashReceivedText} onChange={(event) => updatePayment(payment.id, { cashReceivedText: event.target.value })} placeholder="Ex.: 50,00" /></label> : <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Referência/comprovante</span><input className={styles.field} value={payment.reference} onChange={(event) => updatePayment(payment.id, { reference: event.target.value })} maxLength={200} placeholder="Opcional" /></label>}</div></div>)}
+              {payments.map((payment, index) => <div key={payment.id} className={styles.paymentLine}><div className={styles.rowBetween}><strong>{payments.length > 1 ? `Parcela ${index + 1}` : "Forma de pagamento"}</strong>{payments.length > 1 ? <button type="button" className={styles.removeButton} onClick={() => removePayment(payment.id)}>Remover</button> : null}</div><select className={styles.select} value={payment.method} onChange={(event) => updatePayment(payment.id, { method: event.target.value as PosPaymentMethod, cashReceivedText: "", reference: "" })}>{paymentMethods.map((method) => <option key={method.method} value={method.method}>{method.label}</option>)}</select><div className={styles.twoColumns}><label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor {payments.length === 1 ? "(vazio = total)" : "da parcela"}</span><input className={styles.field} inputMode="decimal" value={payment.amountText} onChange={(event) => updatePayment(payment.id, { amountText: event.target.value })} placeholder={formatMoneyInput(payments.length === 1 ? saleTotal : remainingPaymentCents(payments.filter((item) => item.id !== payment.id), saleTotal))} /></label>{payment.method === "cash" ? <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor recebido</span><input className={styles.field} inputMode="decimal" value={payment.cashReceivedText} onChange={(event) => updatePayment(payment.id, { cashReceivedText: event.target.value })} placeholder="Ex.: 50,00" /><CashChangePreview payment={payment} totalCents={saleTotal} paymentCount={payments.length} /></label> : <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Referência/comprovante</span><input className={styles.field} value={payment.reference} onChange={(event) => updatePayment(payment.id, { reference: event.target.value })} maxLength={200} placeholder="Opcional" /></label>}</div></div>)}
             </div>
           </div>
           <div className={`${styles.section} ${styles.cartFooter}`}>
