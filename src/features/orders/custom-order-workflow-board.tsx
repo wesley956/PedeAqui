@@ -129,7 +129,7 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
   onBulkToggle: (orderId: string, selected: boolean) => void;
 }) {
   const action = nextAction(order, manualDeliveryMode, paymentPolicy, config);
-  const modality = order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : "Atendimento";
+  const modality = order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : order.channel === "pdv" && order.fulfillment_type === "counter" ? "Consumir no local" : "Atendimento";
   const external = order.external;
   const channelBadge = orderChannelBadgeLabel(order.channel, external);
   const logisticsLabel = external ? externalLogisticsLabel(external) : null;

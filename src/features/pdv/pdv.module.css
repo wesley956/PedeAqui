@@ -29,3 +29,6 @@
 }
 
 @media(max-width:640px){.pageHelp>p{position:fixed;top:calc(var(--app-topbar-height,64px) + 64px);left:16px;right:16px;width:auto}}
+
+.saleLock{border:0;padding:0;margin:0;min-width:0;display:contents}.fulfillmentField{display:grid;gap:6px}
+@media(min-width:901px){.saleLock{display:flex;flex:1;min-height:0}.saleLock>.layout{width:100%}}
