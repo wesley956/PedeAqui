@@ -15,7 +15,7 @@ describe("PDV fast path", () => {
   it("gives the catalog more workspace while keeping the sale summary visible", () => {
     expect(css).toContain("grid-template-columns:minmax(0,1.45fr)minmax(360px,.55fr)");
     expect(css).toContain(".cartPanel{position:sticky");
-    expect(css).toContain(".section:last-of-type{position:sticky");
+    expect(css).toContain(".cartFooter{position:sticky");
   });
 
   it("uses design-system control heights and responsive single-column layout", () => {

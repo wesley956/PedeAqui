@@ -107,7 +107,7 @@ export class PdvService {
       modifierGroups: (groupIdsByProduct.get(row.id) ?? []).map((groupId) => groupsById.get(groupId)).filter((group): group is PosModifierGroup => Boolean(group)),
     }));
 
-    const methods: PosPaymentMethodOption[] = paymentMethods.filter((item) => item.enabled).map((item) => ({ method: item.method as PosPaymentMethod, label: paymentLabels[item.method as PosPaymentMethod] }));
+    const methods: PosPaymentMethodOption[] = paymentMethods.filter((item) => item.enabled && item.method in paymentLabels).map((item) => ({ method: item.method as PosPaymentMethod, label: paymentLabels[item.method as PosPaymentMethod] }));
     const now = Date.now();
     const coupons: PosCoupon[] = (couponsResult.data ?? []).filter((row) => {
       const from = Date.parse(row.valid_from);
@@ -173,7 +173,7 @@ export class PdvService {
       p_items: values.items.map((item) => ({ product_id: item.productId, quantity: item.quantity, note: item.note, modifier_ids: item.modifierIds })),
       p_payments: values.payments.map((payment) => ({ method: payment.method, amount_cents: payment.amountCents, cash_received_cents: payment.cashReceivedCents ?? null, reference: payment.reference ?? null })),
       p_customer: values.customer ? { id: values.customer.id ?? null, name: values.customer.name ?? null, phone: values.customer.phone ?? null, email: values.customer.email ?? null } : null,
-      p_growth: { coupon_code: values.growth.couponCode ?? null, cashback_redeem_cents: values.growth.cashbackRedeemCents, loyalty_redeem_points: values.growth.loyaltyRedeemPoints },
+      p_growth: { fulfillment_type: values.fulfillmentType, coupon_code: values.growth.couponCode ?? null, cashback_redeem_cents: values.growth.cashbackRedeemCents, loyalty_redeem_points: values.growth.loyaltyRedeemPoints },
       p_idempotency_key: safeKey,
       p_actor_user_id: context.userId,
     });

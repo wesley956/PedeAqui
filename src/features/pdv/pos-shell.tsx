@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useEffect, useMemo, useState, useTransition, type FormEvent } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from "react";
 import { createPdvSaleAction, searchPdvCustomersAction } from "@/features/pdv/actions";
 import {
   cartTotalCents,
@@ -20,10 +20,10 @@ import {
   type PosPaymentMethodOption,
   type PosProduct,
 } from "@/features/pdv/model";
+import { paymentPayload, remainingPaymentCents, projectedCashDifferenceCents, projectedTotalCashChangeCents, type PaymentDraft } from "@/features/pdv/payment-draft";
 import type { PosSaleInput } from "@/server/pdv/schemas";
 import styles from "@/features/pdv/pdv.module.css";
 
-type PaymentDraft = { id: string; method: PosPaymentMethod; amountText: string; cashReceivedText: string; reference: string };
 type ConfiguratorState = { productId: string; modifierIds: string[]; quantity: number; note: string; error: string | null };
 type LastSale = { orderId: string; displayNumber: number; totalCents: number; changeDueCents: number };
 type MobilePdvView = "catalog" | "sale";
@@ -37,33 +37,23 @@ function modifierLabels(product: PosProduct, ids: readonly string[]) {
   return labels;
 }
 
-function paymentPayload(drafts: readonly PaymentDraft[], totalCents: number) {
-  if (drafts.length === 0) return { ok: false as const, error: "Selecione uma forma de pagamento." };
-  if (totalCents === 0) {
-    const [hint] = drafts;
-    if (!hint || drafts.length !== 1) return { ok: false as const, error: "Venda zerada deve manter apenas uma forma de pagamento como referência." };
-    return { ok: true as const, value: [{ method: hint.method, amountCents: 0, cashReceivedCents: null, reference: null }] satisfies PosSaleInput["payments"] };
-  }
-  const lines: PosSaleInput["payments"] = [];
-  let paymentTotal = 0;
-  for (const draft of drafts) {
-    const automaticTotal = drafts.length === 1 && !draft.amountText.trim();
-    const amountCents = automaticTotal ? totalCents : parsePosMoneyToCents(draft.amountText);
-    if (amountCents === null || amountCents <= 0) return { ok: false as const, error: "Informe o valor de cada parcela de pagamento." };
-    let cashReceivedCents: number | null = null;
-    if (draft.cashReceivedText.trim()) {
-      cashReceivedCents = parsePosMoneyToCents(draft.cashReceivedText);
-      if (cashReceivedCents === null) return { ok: false as const, error: "Valor recebido em dinheiro inválido." };
-    }
-    if (draft.method === "cash" && cashReceivedCents !== null && cashReceivedCents < amountCents) return { ok: false as const, error: "O valor recebido em dinheiro é menor que a parcela." };
-    lines.push({ method: draft.method, amountCents, cashReceivedCents: draft.method === "cash" ? cashReceivedCents : null, reference: draft.reference.trim() || null });
-    paymentTotal += amountCents;
-  }
-  if (!Number.isSafeInteger(paymentTotal) || paymentTotal !== totalCents) return { ok: false as const, error: `Os pagamentos somam ${money(paymentTotal)} e precisam fechar em ${money(totalCents)}.` };
-  return { ok: true as const, value: lines };
+
+function CashChangePreview({ payment, totalCents, paymentCount }: { payment: PaymentDraft; totalCents: number; paymentCount: number }) {
+  const difference = projectedCashDifferenceCents(payment, totalCents, paymentCount);
+  return <output id={`pdv-change-${payment.id}`} role="status" aria-live="polite" aria-atomic="true" className={styles.mutedSmall}>
+    {difference === null ? (payment.cashReceivedText.trim() ? "Informe valores válidos para calcular o troco." : "Troco: —")
+      : difference < 0 ? `Faltam ${money(-difference)}` : <strong>Troco: {money(difference)}</strong>}
+  </output>;
 }
 
 function ProductConfigurator({ state, product, onChange, onCancel, onAdd }: { state: ConfiguratorState; product: PosProduct; onChange: (next: ConfiguratorState) => void; onCancel: () => void; onAdd: () => void }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+    return () => dialog.close();
+  }, []);
   const unitPrice = projectedUnitPriceCents(product, state.modifierIds);
   function toggleModifier(groupId: string, modifierId: string) {
     const selected = new Set(state.modifierIds);
@@ -74,8 +64,11 @@ function ProductConfigurator({ state, product, onChange, onCancel, onAdd }: { st
     selected.add(modifierId); onChange({ ...state, modifierIds: [...selected], error: null });
   }
   return (
-    <div className={styles.dialogBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
-      <section className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="pdv-config-title">
+      <dialog ref={dialogRef} className={styles.dialog} aria-labelledby="pdv-config-title" onCancel={(event) => { event.preventDefault(); onCancel(); }} onMouseDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) onCancel();
+      }}>
         <div className={styles.rowBetween}><div><div className={styles.mutedSmall}>CONFIGURAR ITEM</div><h2 id="pdv-config-title" style={{ margin: "3px 0 0" }}>{product.name}</h2></div><strong className={styles.productPrice}>{money(unitPrice)}</strong></div>
         {product.modifierGroups.map((group) => <div key={group.id} className={styles.group}>
           <div className={styles.rowBetween}><strong>{group.name}</strong><span className={styles.mutedSmall}>{group.minSelection === group.maxSelection ? `${group.minSelection} seleção(ões)` : `${group.minSelection}–${group.maxSelection} seleções`}{group.required ? " · obrigatório" : ""}</span></div>
@@ -83,10 +76,9 @@ function ProductConfigurator({ state, product, onChange, onCancel, onAdd }: { st
         </div>)}
         <label style={{ display: "grid", gap: 5 }}><strong style={{ fontSize: 13 }}>Observação</strong><textarea className={styles.field} value={state.note} maxLength={500} rows={3} placeholder="Ex.: sem cebola" onChange={(event) => onChange({ ...state, note: event.target.value, error: null })} /></label>
         <div className={styles.rowBetween}><strong>Quantidade</strong><div className={styles.qtyRow}><button type="button" className={styles.smallButton} onClick={() => onChange({ ...state, quantity: Math.max(1, state.quantity - 1) })}>−</button><strong>{state.quantity}</strong><button type="button" className={styles.smallButton} onClick={() => onChange({ ...state, quantity: Math.min(999, state.quantity + 1) })}>+</button></div></div>
-        {state.error ? <div className={styles.statusError}>{state.error}</div> : null}
+        {state.error ? <div className={styles.statusError} role="alert">{state.error}</div> : null}
         <div className={styles.dialogActions}><button type="button" className={styles.secondaryButton} onClick={onCancel}>Cancelar</button><button type="button" className={styles.primaryButton} onClick={onAdd}>Adicionar · {money(unitPrice * state.quantity)}</button></div>
-      </section>
-    </div>
+      </dialog>
   );
 }
 
@@ -99,7 +91,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
   const [mobileView, setMobileView] = useState<MobilePdvView>("catalog");
   const [search, setSearch] = useState(""); const deferredSearch = useDeferredValue(search);
   const [cart, setCart] = useState<PosCartLine[]>([]); const [configurator, setConfigurator] = useState<ConfiguratorState | null>(null);
-  const [customerQuery, setCustomerQuery] = useState(""); const deferredCustomerQuery = useDeferredValue(customerQuery);
+  const [customerQuery, setCustomerQuery] = useState("");
   const [customerMatches, setCustomerMatches] = useState<PosCustomer[]>([]);
   const [customerSearchError, setCustomerSearchError] = useState<string | null>(null);
   const [customerSearchPending, startCustomerSearch] = useTransition();
@@ -107,19 +99,29 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
   const [customerName, setCustomerName] = useState(""); const [customerPhone, setCustomerPhone] = useState(""); const [customerEmail, setCustomerEmail] = useState("");
   const [couponCode, setCouponCode] = useState(""); const [cashbackText, setCashbackText] = useState(""); const [loyaltyPointsText, setLoyaltyPointsText] = useState("");
   const [payments, setPayments] = useState<PaymentDraft[]>(() => [{ id: "payment-1", method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]);
+  const submissionLock = useRef(false);
+  const [fulfillmentType, setFulfillmentType] = useState<PosSaleInput["fulfillmentType"]>("counter");
   const [revision, setRevision] = useState(0); const [pending, setPending] = useState(false); const [error, setError] = useState<string | null>(null); const [lastSale, setLastSale] = useState<LastSale | null>(null);
 
   const productIndex = useMemo(() => new Map(products.map((product) => [product.id, product])), [products]);
   const visibleProducts = useMemo(() => filterPosProducts(products, categoryId, deferredSearch), [products, categoryId, deferredSearch]);
   useEffect(() => {
-    if (!customerSearchEnabled || selectedCustomer || deferredCustomerQuery.trim().length < 2) return;
+    if (!customerSearchEnabled || selectedCustomer || customerQuery.trim().length < 2) return;
+    let active = true;
     const timer = window.setTimeout(() => startCustomerSearch(async () => {
-      const result = await searchPdvCustomersAction(deferredCustomerQuery);
-      setCustomerMatches(result.customers);
-      setCustomerSearchError(result.error);
+      try {
+        const result = await searchPdvCustomersAction(customerQuery);
+        if (!active) return;
+        setCustomerMatches(result.customers);
+        setCustomerSearchError(result.error);
+      } catch {
+        if (!active) return;
+        setCustomerMatches([]);
+        setCustomerSearchError("Não foi possível buscar clientes agora. Tente novamente ou preencha os dados manualmente.");
+      }
     }), 250);
-    return () => window.clearTimeout(timer);
-  }, [customerSearchEnabled, deferredCustomerQuery, selectedCustomer]);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [customerSearchEnabled, customerQuery, selectedCustomer]);
   const cartSubtotal = cartTotalCents(cart);
   const cashbackParsed = cashbackText.trim() ? parsePosMoneyToCents(cashbackText) : 0;
   const loyaltyNumber = loyaltyPointsText.trim() ? Number(loyaltyPointsText) : 0;
@@ -129,6 +131,9 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
     loyaltyRedeemPoints: Number.isInteger(loyaltyNumber) && loyaltyNumber >= 0 ? loyaltyNumber : -1,
   }), [cartSubtotal, couponCode, coupons, selectedCustomer, growthSettings, cashbackParsed, loyaltyNumber]);
   const saleTotal = growthProjection.valid ? growthProjection.totalCents : cartSubtotal;
+  const paymentValidation = paymentPayload(payments, saleTotal);
+  const totalCashChange = projectedTotalCashChangeCents(payments, saleTotal);
+  const showCashChange = payments.some((payment) => payment.method === "cash" && payment.cashReceivedText.trim());
   const cartItemCount = cart.reduce((sum, line) => sum + line.quantity, 0);
   const configProduct = configurator ? productIndex.get(configurator.productId) ?? null : null;
 
@@ -145,33 +150,34 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
   function chooseProduct(product: PosProduct) { if (product.modifierGroups.length === 0) { addCartLine(product, [], 1, ""); return; } setConfigurator({ productId: product.id, modifierIds: [], quantity: 1, note: "", error: null }); }
   function changeQuantity(key: string, delta: number) { setCart((current) => current.flatMap((line) => { if (line.key !== key) return [line]; const quantity = line.quantity + delta; return quantity > 0 ? [{ ...line, quantity: Math.min(999, quantity) }] : []; })); touchSale(); }
   function removeLine(key: string) { setCart((current) => current.filter((line) => line.key !== key)); touchSale(); }
-  function selectCustomer(customer: PosCustomer | null) { setSelectedCustomer(customer); setCustomerMatches([]); setCustomerQuery(customer ? `${customer.name}${customer.phone ? ` · ${customer.phone}` : ""}` : ""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail(""); setCashbackText(""); setLoyaltyPointsText(""); touchSale(); }
-  function changeManualCustomer(field: "name" | "phone" | "email", value: string) { setSelectedCustomer(null); setCashbackText(""); setLoyaltyPointsText(""); if (field === "name") setCustomerName(value); if (field === "phone") setCustomerPhone(value); if (field === "email") setCustomerEmail(value); touchSale(); }
+  function selectCustomer(customer: PosCustomer | null) { setSelectedCustomer(customer); setCustomerMatches([]); setCustomerSearchError(null); setCustomerQuery(customer ? `${customer.name}${customer.phone ? ` · ${customer.phone}` : ""}` : ""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail(""); setCashbackText(""); setLoyaltyPointsText(""); touchSale(); }
+  function changeManualCustomer(field: "name" | "phone" | "email", value: string) { setSelectedCustomer(null); setCustomerQuery(""); setCustomerMatches([]); setCustomerSearchError(null); setCashbackText(""); setLoyaltyPointsText(""); if (field === "name") setCustomerName(value); if (field === "phone") setCustomerPhone(value); if (field === "email") setCustomerEmail(value); touchSale(); }
   function updatePayment(id: string, patch: Partial<PaymentDraft>) { setPayments((current) => current.map((payment) => payment.id === id ? { ...payment, ...patch } : payment)); touchSale(); }
-  function addPayment() { setPayments((current) => { const prepared = current.length === 1 && !current[0]?.amountText.trim() ? current.map((payment) => ({ ...payment, amountText: formatMoneyInput(saleTotal) })) : current; return [...prepared, { id: crypto.randomUUID(), method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]; }); touchSale(); }
+  function addPayment() { setPayments((current) => [...current, { id: crypto.randomUUID(), method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]); touchSale(); }
   function removePayment(id: string) { setPayments((current) => { const remaining = current.filter((payment) => payment.id !== id); const [onlyPayment] = remaining; if (remaining.length === 1 && onlyPayment) return [{ ...onlyPayment, amountText: "" }]; return remaining; }); touchSale(); }
 
   async function finalizeSale(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setError(null); setLastSale(null);
+    event.preventDefault(); if (submissionLock.current) return; setError(null); setLastSale(null);
     if (cart.length === 0) { setError("Adicione pelo menos um item ao carrinho."); return; }
     if (paymentMethods.length === 0) { setError("Nenhuma forma de pagamento está habilitada para esta unidade."); return; }
     if (!selectedCustomer && customerPhone.trim() && customerName.trim().length < 2) { setError("Informe o nome do cliente para cadastrar o telefone."); return; }
     if (!growthProjection.valid) { setError(growthProjection.message); return; }
-    const resolvedPayments = paymentPayload(payments, growthProjection.totalCents); if (!resolvedPayments.ok) { setError(resolvedPayments.error); return; }
+    const resolvedPayments = paymentValidation; if (!resolvedPayments.ok) { setError(resolvedPayments.error); return; }
     const customer: PosSaleInput["customer"] = selectedCustomer ? { id: selectedCustomer.id } : (customerName.trim() || customerPhone.trim() || customerEmail.trim()) ? { name: customerName.trim() || null, phone: customerPhone.trim() || null, email: customerEmail.trim() || null } : null;
-    const input: PosSaleInput = { items: cart.map((line) => ({ productId: line.productId, quantity: line.quantity, note: line.note, modifierIds: line.modifierIds })), payments: resolvedPayments.value, customer, growth: { couponCode: couponCode.trim() || null, cashbackRedeemCents: cashbackParsed ?? 0, loyaltyRedeemPoints: loyaltyNumber } };
-    setPending(true);
+    const input: PosSaleInput = { fulfillmentType, items: cart.map((line) => ({ productId: line.productId, quantity: line.quantity, note: line.note, modifierIds: line.modifierIds })), payments: resolvedPayments.value, customer, growth: { couponCode: couponCode.trim() || null, cashbackRedeemCents: cashbackParsed ?? 0, loyaltyRedeemPoints: loyaltyNumber } };
+    submissionLock.current = true; setPending(true);
     try {
       const result = await createPdvSaleAction(input, `${sessionNonce}:${revision}`);
       if (!result.ok || !result.sale) { setError(result.error ?? "Não foi possível finalizar a venda."); return; }
       setLastSale(result.sale); setCart([]); setSelectedCustomer(null); setCustomerQuery(""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail(""); setCouponCode(""); setCashbackText(""); setLoyaltyPointsText("");
       setPayments([{ id: crypto.randomUUID(), method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]); setRevision((value) => value + 1);
-    } finally { setPending(false); }
+    } catch { setError("Não foi possível confirmar a venda. Tente novamente sem alterar os dados para evitar duplicidade.");
+    } finally { submissionLock.current = false; setPending(false); }
   }
 
   return (
-    <section className={styles.shell}>
-      <header className={styles.header}><div><p className="muted">Venda presencial · preços e benefícios revalidados no servidor</p><h1>PDV</h1></div><div className={styles.mutedSmall}>Selecione itens, confira a venda e finalize.</div></header>
+    <section className={styles.shell} data-pdv-workspace>
+      <header className={styles.header}><h1>PDV</h1><details className={styles.pageHelp}><summary aria-label="Como usar o PDV">?</summary><p>Selecione itens, confira a venda e finalize. Preços, adicionais e benefícios são conferidos antes de concluir.</p></details></header>
       {lastSale ? <div className={styles.statusSuccess}>Venda <strong>#{lastSale.displayNumber}</strong> finalizada em {money(lastSale.totalCents)}.{lastSale.changeDueCents > 0 ? <> Troco: <strong>{money(lastSale.changeDueCents)}</strong>.</> : null}{" "}<Link href={`/pedidos/${lastSale.orderId}`}>Abrir pedido</Link></div> : null}
       {error ? <div className={styles.statusError}>{error}</div> : null}
 
@@ -194,6 +200,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
         </button>
       </nav>
 
+      <fieldset className={styles.saleLock} aria-label="Itens e dados da venda" disabled={pending} aria-busy={pending}>
       <div className={styles.layout} data-mobile-view={mobileView}>
         <div className={styles.catalog} data-pdv-panel="catalog">
           <div className={styles.toolbar}><input className={styles.search} type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar produto, SKU ou código de barras" autoComplete="off" aria-label="Buscar produtos no PDV" /><div className={styles.categories} aria-label="Categorias do PDV"><button type="button" className={categoryId === null ? styles.categoryActive : styles.categoryButton} onClick={() => setCategoryId(null)}>Todos</button>{categories.map((category) => <button type="button" key={category.id} className={categoryId === category.id ? styles.categoryActive : styles.categoryButton} onClick={() => setCategoryId(category.id)}>{category.name}</button>)}</div></div>
@@ -202,41 +209,47 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
 
         <form className={`card ${styles.cartPanel}`} data-pdv-panel="sale" onSubmit={finalizeSale}>
           <div className={styles.cartHeader}><div><div className={styles.mutedSmall}>VENDA ATUAL</div><h2 style={{ margin: "3px 0 0", fontSize: 19 }}>Carrinho</h2></div><strong>{cartItemCount} {cartItemCount === 1 ? "item" : "itens"}</strong></div>
-          {cart.length === 0 ? <div className={styles.empty}>Selecione produtos para iniciar a venda.</div> : <div className={styles.cartList}>{cart.map((line) => <div key={line.key} className={styles.cartLine}><div className={styles.rowBetween}><strong>{line.productName}</strong><strong>{money(line.unitPriceCents * line.quantity)}</strong></div>{line.modifierLabels.length > 0 ? <div className={styles.mutedSmall}>{line.modifierLabels.join(" · ")}</div> : null}{line.note ? <div className={styles.mutedSmall}>Obs.: {line.note}</div> : null}<div className={styles.rowBetween}><div className={styles.qtyRow}><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, -1)}>−</button><strong>{line.quantity}</strong><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, 1)}>+</button></div><button type="button" className={styles.removeButton} onClick={() => removeLine(line.key)}>Remover</button></div></div>)}</div>}
+          <div className={styles.cartBody}>
+            <label className={styles.fulfillmentField}><strong>Tipo de venda</strong><select className={styles.select} aria-label="Tipo de venda" value={fulfillmentType} onChange={(event) => { setFulfillmentType(event.target.value as PosSaleInput["fulfillmentType"]); touchSale(); }}><option value="counter">Consumir no local</option><option value="pickup">Levar embora</option></select></label>
+            {cart.length === 0 ? <div className={styles.empty}>Selecione produtos para iniciar a venda.</div> : <div className={styles.cartList}>{cart.map((line) => <div key={line.key} className={styles.cartLine}><div className={styles.rowBetween}><strong>{line.productName}</strong><strong>{money(line.unitPriceCents * line.quantity)}</strong></div>{line.modifierLabels.length > 0 ? <div className={styles.mutedSmall}>{line.modifierLabels.join(" · ")}</div> : null}{line.note ? <div className={styles.mutedSmall}>Obs.: {line.note}</div> : null}<div className={styles.rowBetween}><div className={styles.qtyRow}><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, -1)}>−</button><strong>{line.quantity}</strong><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, 1)}>+</button></div><button type="button" className={styles.removeButton} onClick={() => removeLine(line.key)}>Remover</button></div></div>)}</div>}
 
-          <details className={styles.advancedSection}>
-            <summary>Cliente e benefícios <span className={styles.mutedSmall}>opcional</span></summary>
-            <div className={styles.advancedBody}>
-              <div className={styles.section}>
-                <div className={styles.rowBetween}><h3>Cliente</h3><button type="button" className={styles.smallButton} onClick={() => selectCustomer(null)}>Consumidor</button></div>
-                {customerSearchEnabled ? <><input className={styles.field} value={customerQuery} onChange={(event) => { setCustomerQuery(event.target.value); setSelectedCustomer(null); setCustomerMatches([]); setCustomerSearchError(null); setCashbackText(""); setLoyaltyPointsText(""); }} placeholder="Buscar por nome, telefone ou e-mail" aria-label="Buscar cliente no cadastro completo" />{customerSearchPending ? <div className={styles.mutedSmall} role="status">Buscando no cadastro completo…</div> : null}{customerSearchError ? <div className={styles.statusError}>{customerSearchError}</div> : null}{customerMatches.length > 0 ? <div className={styles.customerMatches}>{customerMatches.map((customer) => <button type="button" key={customer.id} className={styles.customerButton} onClick={() => selectCustomer(customer)}><strong>{customer.name}</strong><div className={styles.mutedSmall}>{customer.phone ?? customer.email ?? "Cliente cadastrado"} · Cashback {money(customer.cashbackBalanceCents)} · {customer.loyaltyBalancePoints} pts</div></button>)}</div> : null}</> : null}
-                {selectedCustomer ? <div className={styles.customerSelected}><strong>{selectedCustomer.name}</strong><div className={styles.mutedSmall}>{selectedCustomer.phone ?? selectedCustomer.email ?? "Cliente cadastrado"}</div><div className={styles.mutedSmall}>Cashback {money(selectedCustomer.cashbackBalanceCents)} · Pontos {selectedCustomer.loyaltyBalancePoints}</div></div> : <div className={styles.twoColumns}><input className={styles.field} value={customerName} onChange={(event) => changeManualCustomer("name", event.target.value)} placeholder="Nome (opcional)" maxLength={120} /><input className={styles.field} value={customerPhone} onChange={(event) => changeManualCustomer("phone", event.target.value)} placeholder="Telefone" maxLength={32} inputMode="tel" /><input className={styles.field} value={customerEmail} onChange={(event) => changeManualCustomer("email", event.target.value)} placeholder="E-mail (opcional)" type="email" maxLength={200} /></div>}
-              </div>
-              <div className={styles.section}>
-                <div className={styles.rowBetween}><h3>Benefícios</h3>{growthProjection.valid && growthProjection.discountCents > 0 ? <strong className={styles.benefitValue}>− {money(growthProjection.discountCents)}</strong> : null}</div>
-                <div className={styles.twoColumns}>
-                  <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Cupom</span><input className={styles.field} list="pdv-coupons" value={couponCode} onChange={(event) => changeBenefit(setCouponCode, event.target.value.toUpperCase())} placeholder="Código" /><datalist id="pdv-coupons">{coupons.map((coupon) => <option key={coupon.id} value={coupon.code}>{coupon.name}</option>)}</datalist></label>
-                  <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Usar cashback</span><input className={styles.field} inputMode="decimal" value={cashbackText} onChange={(event) => changeBenefit(setCashbackText, event.target.value)} disabled={!selectedCustomer || !growthSettings.cashbackEnabled} placeholder={selectedCustomer ? money(selectedCustomer.cashbackBalanceCents) : "Identifique o cliente"} /></label>
-                  <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Usar pontos</span><input className={styles.field} type="number" min={0} value={loyaltyPointsText} onChange={(event) => changeBenefit(setLoyaltyPointsText, event.target.value)} disabled={!selectedCustomer || !growthSettings.loyaltyEnabled} placeholder={selectedCustomer ? `${selectedCustomer.loyaltyBalancePoints} disponíveis` : "Identifique o cliente"} /></label>
+            <details className={styles.advancedSection}>
+              <summary>Cliente e benefícios <span className={styles.mutedSmall}>opcional</span></summary>
+              <div className={styles.advancedBody}>
+                <div className={styles.section}>
+                  <div className={styles.rowBetween}><h3>Cliente</h3><button type="button" className={styles.smallButton} onClick={() => selectCustomer(null)}>Consumidor</button></div>
+                  {customerSearchEnabled ? <><input className={styles.field} value={customerQuery} onChange={(event) => { setCustomerQuery(event.target.value); touchSale(); setSelectedCustomer(null); setCustomerMatches([]); setCustomerSearchError(null); setCashbackText(""); setLoyaltyPointsText(""); }} placeholder="Buscar por nome, telefone ou e-mail" aria-label="Buscar cliente no cadastro completo" />{customerSearchPending ? <div className={styles.mutedSmall} role="status">Buscando no cadastro completo…</div> : null}{customerSearchError ? <div className={styles.statusError}>{customerSearchError}</div> : null}{customerMatches.length > 0 ? <div className={styles.customerMatches}>{customerMatches.map((customer) => <button type="button" key={customer.id} className={styles.customerButton} onClick={() => selectCustomer(customer)}><strong>{customer.name}</strong><div className={styles.mutedSmall}>{customer.phone ?? customer.email ?? "Cliente cadastrado"} · Cashback {money(customer.cashbackBalanceCents)} · {customer.loyaltyBalancePoints} pts</div></button>)}</div> : null}</> : null}
+                  {selectedCustomer ? <div className={styles.customerSelected}><strong>{selectedCustomer.name}</strong><div className={styles.mutedSmall}>{selectedCustomer.phone ?? selectedCustomer.email ?? "Cliente cadastrado"}</div><div className={styles.mutedSmall}>Cashback {money(selectedCustomer.cashbackBalanceCents)} · Pontos {selectedCustomer.loyaltyBalancePoints}</div></div> : <div className={styles.twoColumns}><input className={styles.field} value={customerName} onChange={(event) => changeManualCustomer("name", event.target.value)} placeholder="Nome (opcional)" maxLength={120} /><input className={styles.field} value={customerPhone} onChange={(event) => changeManualCustomer("phone", event.target.value)} placeholder="Telefone" maxLength={32} inputMode="tel" /><input className={styles.field} value={customerEmail} onChange={(event) => changeManualCustomer("email", event.target.value)} placeholder="E-mail (opcional)" type="email" maxLength={200} /></div>}
                 </div>
-                {!growthProjection.valid ? <div className={styles.statusError}>{growthProjection.message}</div> : growthProjection.discountCents > 0 ? <div className={styles.mutedSmall}>Cupom {money(growthProjection.couponDiscountCents)} · Cashback {money(growthProjection.cashbackDiscountCents)} · Pontos {money(growthProjection.loyaltyDiscountCents)}</div> : <div className={styles.mutedSmall}>Cupom pode ser usado sem cadastro quando a regra não limita uso por cliente. Cashback e pontos exigem cliente identificado.</div>}
+                <div className={styles.section}>
+                  <div className={styles.rowBetween}><h3>Benefícios</h3>{growthProjection.valid && growthProjection.discountCents > 0 ? <strong className={styles.benefitValue}>− {money(growthProjection.discountCents)}</strong> : null}</div>
+                  <div className={styles.twoColumns}>
+                    <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Cupom</span><input className={styles.field} list="pdv-coupons" value={couponCode} onChange={(event) => changeBenefit(setCouponCode, event.target.value.toUpperCase())} placeholder="Código" /><datalist id="pdv-coupons">{coupons.map((coupon) => <option key={coupon.id} value={coupon.code}>{coupon.name}</option>)}</datalist></label>
+                    <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Usar cashback</span><input className={styles.field} inputMode="decimal" value={cashbackText} onChange={(event) => changeBenefit(setCashbackText, event.target.value)} disabled={!selectedCustomer || !growthSettings.cashbackEnabled} placeholder={selectedCustomer ? money(selectedCustomer.cashbackBalanceCents) : "Identifique o cliente"} /></label>
+                    <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Usar pontos</span><input className={styles.field} type="number" min={0} value={loyaltyPointsText} onChange={(event) => changeBenefit(setLoyaltyPointsText, event.target.value)} disabled={!selectedCustomer || !growthSettings.loyaltyEnabled} placeholder={selectedCustomer ? `${selectedCustomer.loyaltyBalancePoints} disponíveis` : "Identifique o cliente"} /></label>
+                  </div>
+                  {!growthProjection.valid ? <div className={styles.statusError}>{growthProjection.message}</div> : growthProjection.discountCents > 0 ? <div className={styles.mutedSmall}>Cupom {money(growthProjection.couponDiscountCents)} · Cashback {money(growthProjection.cashbackDiscountCents)} · Pontos {money(growthProjection.loyaltyDiscountCents)}</div> : <div className={styles.mutedSmall}>Cupom pode ser usado sem cadastro quando a regra não limita uso por cliente. Cashback e pontos exigem cliente identificado.</div>}
+                </div>
               </div>
+            </details>
+
+            <div className={styles.section}>
+              <div className={styles.rowBetween}><h3>Pagamento</h3><button type="button" className={styles.smallButton} disabled={paymentMethods.length === 0 || saleTotal === 0 || payments.length >= 10} onClick={addPayment}>+ Dividir</button></div>
+              <div className={styles.mutedSmall}>Confirme o recebimento antes de finalizar a venda.</div>
+              {payments.length > 1 ? <div className={styles.mutedSmall} role="status">Falta distribuir: {money(remainingPaymentCents(payments, saleTotal))}</div> : null}
+              {payments.map((payment, index) => <div key={payment.id} className={styles.paymentLine}><div className={styles.rowBetween}><strong>{payments.length > 1 ? `Parcela ${index + 1}` : "Forma de pagamento"}</strong>{payments.length > 1 ? <button type="button" className={styles.removeButton} onClick={() => removePayment(payment.id)}>Remover</button> : null}</div><select aria-label={payments.length > 1 ? `Forma de pagamento da parcela ${index + 1}` : "Forma de pagamento"} className={styles.select} value={payment.method} onChange={(event) => updatePayment(payment.id, { method: event.target.value as PosPaymentMethod, cashReceivedText: "", reference: "" })}>{paymentMethods.map((method) => <option key={method.method} value={method.method}>{method.label}</option>)}</select><div className={styles.twoColumns}><label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor {payments.length === 1 ? "(vazio = total)" : "da parcela"}</span><input aria-label={payments.length > 1 ? `Valor da parcela ${index + 1}` : "Valor da venda"} className={styles.field} inputMode="decimal" value={payment.amountText} onChange={(event) => updatePayment(payment.id, { amountText: event.target.value })} placeholder={formatMoneyInput(payments.length === 1 ? saleTotal : remainingPaymentCents(payments.filter((item) => item.id !== payment.id), saleTotal))} /></label>{payment.method === "cash" ? <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor recebido</span><input aria-label={payments.length > 1 ? `Valor recebido em dinheiro na parcela ${index + 1}` : "Valor recebido em dinheiro"} aria-describedby={`pdv-change-${payment.id}`} className={styles.field} inputMode="decimal" value={payment.cashReceivedText} onChange={(event) => updatePayment(payment.id, { cashReceivedText: event.target.value })} placeholder="Ex.: 50,00" /><CashChangePreview payment={payment} totalCents={saleTotal} paymentCount={payments.length} /></label> : <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Referência/comprovante</span><input aria-label={payments.length > 1 ? `Referência da parcela ${index + 1}` : "Referência do pagamento"} className={styles.field} value={payment.reference} onChange={(event) => updatePayment(payment.id, { reference: event.target.value })} maxLength={200} placeholder="Opcional" /></label>}</div></div>)}
             </div>
-          </details>
-
-          <div className={styles.section}>
-            <div className={styles.rowBetween}><h3>Pagamento</h3><button type="button" className={styles.smallButton} disabled={paymentMethods.length === 0 || saleTotal === 0 || payments.length >= 10} onClick={addPayment}>+ Dividir</button></div>
-            {payments.map((payment, index) => <div key={payment.id} className={styles.paymentLine}><div className={styles.rowBetween}><strong>{payments.length > 1 ? `Parcela ${index + 1}` : "Forma de pagamento"}</strong>{payments.length > 1 ? <button type="button" className={styles.removeButton} onClick={() => removePayment(payment.id)}>Remover</button> : null}</div><select className={styles.select} value={payment.method} onChange={(event) => updatePayment(payment.id, { method: event.target.value as PosPaymentMethod, cashReceivedText: "", reference: "" })}>{paymentMethods.map((method) => <option key={method.method} value={method.method}>{method.label}</option>)}</select><div className={styles.twoColumns}><label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor {payments.length === 1 ? "(vazio = total)" : "da parcela"}</span><input className={styles.field} inputMode="decimal" value={payment.amountText} onChange={(event) => updatePayment(payment.id, { amountText: event.target.value })} placeholder={payments.length === 1 ? formatMoneyInput(saleTotal) : "0,00"} /></label>{payment.method === "cash" ? <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor recebido</span><input className={styles.field} inputMode="decimal" value={payment.cashReceivedText} onChange={(event) => updatePayment(payment.id, { cashReceivedText: event.target.value })} placeholder="Ex.: 50,00" /></label> : <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Referência/comprovante</span><input className={styles.field} value={payment.reference} onChange={(event) => updatePayment(payment.id, { reference: event.target.value })} maxLength={200} placeholder="Opcional" /></label>}</div></div>)}
           </div>
-
-          <div className={styles.section}>
+          <div className={`${styles.section} ${styles.cartFooter}`}>
             {growthProjection.valid && growthProjection.discountCents > 0 ? <><div className={styles.rowBetween}><span className={styles.mutedSmall}>Subtotal</span><span>{money(cartSubtotal)}</span></div><div className={styles.rowBetween}><span className={styles.mutedSmall}>Benefícios</span><span>− {money(growthProjection.discountCents)}</span></div></> : null}
+            {cart.length > 0 && !paymentValidation.ok ? <div id="pdv-payment-validation" className={styles.statusError} role="status" aria-live="polite">{paymentValidation.error}</div> : null}
+            {showCashChange && totalCashChange !== null ? <div className={styles.rowBetween}><strong>Troco</strong><strong>{money(totalCashChange)}</strong></div> : null}
             <div className={styles.rowBetween}><strong>Total</strong><span className={styles.total}>{money(saleTotal)}</span></div>
-            <button type="submit" className={styles.primaryButton} disabled={pending || cart.length === 0 || paymentMethods.length === 0 || !growthProjection.valid}>{pending ? "Finalizando venda…" : `Finalizar · ${money(saleTotal)}`}</button>
-            <div className={styles.mutedSmall}>O servidor recalcula produtos, adicionais, benefícios e pagamentos antes de gravar.</div>
+            <button type="submit" className={styles.primaryButton} aria-describedby={cart.length > 0 && !paymentValidation.ok ? "pdv-payment-validation" : undefined} disabled={pending || cart.length === 0 || paymentMethods.length === 0 || !growthProjection.valid || !paymentValidation.ok}>{pending ? "Finalizando venda…" : `Finalizar · ${money(saleTotal)}`}</button>
           </div>
         </form>
       </div>
+      </fieldset>
 
       {configurator && configProduct ? <ProductConfigurator state={configurator} product={configProduct} onChange={setConfigurator} onCancel={() => setConfigurator(null)} onAdd={() => addCartLine(configProduct, configurator.modifierIds, configurator.quantity, configurator.note)} /> : null}
     </section>

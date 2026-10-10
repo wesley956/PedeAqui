@@ -80,7 +80,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const canCancel = !["completed", "canceled", "rejected"].includes(order.order_status)
     && !["delivered", "picked_up_by_customer", "served"].includes(order.fulfillment_status);
   const fulfillmentTypeLabel = order.fulfillment_type === "delivery" ? "Entrega"
-    : order.fulfillment_type === "counter" ? "Balcão"
+    : order.fulfillment_type === "counter" ? (order.channel === "pdv" ? "Consumir no local" : "Balcão")
       : ["table", "dine_in"].includes(order.fulfillment_type) ? "Mesa" : "Retirada";
   const channelLabel = order.channel === "digital_menu" || order.channel === "menu" ? "Cardápio"
     : order.channel === "table_qr" || order.channel === "dining" ? "Salão"

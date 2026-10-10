@@ -1,0 +1,72 @@
+/* Shared geometry: topbar controls must not determine the workspace height. */
+.app-shell { --app-topbar-height: 56px; grid-template-columns: 216px minmax(0, 1fr); }
+.app-shell:has(.desktop-navigation[data-compact="true"]) { grid-template-columns: 64px minmax(0, 1fr); }
+.app-main { min-width: 0; }
+.app-sidebar { padding: 12px 10px; }
+.sidebar-heading { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-bottom: 10px; }
+.sidebar-heading .sidebar-toggle { width: 40px; height: 40px; flex: 0 0 40px; justify-content: center; padding: 0; }
+.sidebar-heading .brand-row { min-width: 0; overflow: hidden; padding: 0; }
+.desktop-navigation[data-compact="true"] .brand-row { display: none; }
+.desktop-navigation[data-compact="true"] .sidebar-heading { justify-content: center; }
+.app-topbar-compact { height: var(--app-topbar-height); min-height: var(--app-topbar-height); flex: 0 0 var(--app-topbar-height); flex-wrap: nowrap; gap: 12px; padding: 6px 16px; }
+.app-operation-menu { position: relative; flex: 1 1 0; min-width: 0; }
+.app-operation-menu > summary { display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; min-height: 40px; cursor: pointer; list-style: none; }
+.app-operation-menu > summary > strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.app-operation-menu > summary > span { flex-shrink: 0; }
+.app-receiving-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--state-warning); }
+.app-receiving-dot[data-accepting="true"] { background: var(--state-success); }
+.app-topbar-compact .app-topbar-actions { flex: 0 0 auto; width: auto; min-width: 0; flex-wrap: nowrap; gap: 8px; align-items: center; }
+.app-topbar-compact .app-movement-shortcut { gap: 6px; min-height: 36px; }
+.app-account-menu { position: relative; }
+.app-account-menu > summary { display: grid; place-items: center; width: 40px; min-height: 40px; border: 1px solid var(--border-default); border-radius: var(--radius-md); cursor: pointer; list-style: none; }
+.app-operation-menu > summary::-webkit-details-marker, .app-account-menu > summary::-webkit-details-marker { display: none; }
+.app-operation-menu > summary:focus-visible, .app-account-menu > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-md); }
+.app-topbar-panel { position: absolute; top: calc(100% + 8px); width: min(360px, calc(100vw - 24px)); max-height: calc(100dvh - var(--app-topbar-height) - 24px); overflow: auto; display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border-default); border-radius: var(--radius-lg); background: var(--surface-1); color: var(--text-primary); box-shadow: var(--shadow-lg); z-index: var(--z-overlay); }
+.app-operation-panel { left: 0; }
+.app-account-panel { right: 0; }
+.app-account-panel .app-user-email { display: block; white-space: normal; overflow-wrap: anywhere; }
+.app-account-panel form, .app-account-panel button { width: 100%; }
+.app-operation-panel-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.app-operation-panel .app-receiving-control > form { position: static; width: 100%; margin-top: 8px; padding: 12px; box-shadow: none; }
+.app-content { padding: 16px 20px 80px; }
+@media (min-width: 901px) and (max-width: 1180px) {
+  .app-shell { grid-template-columns: 216px minmax(0, 1fr); }
+  .app-shell:has(.desktop-navigation[data-compact="true"]) { grid-template-columns: 64px minmax(0, 1fr); }
+  .app-topbar-compact .app-movement-label { display: none; }
+  .app-topbar-compact .app-movement-shortcut { width: 40px; padding: 0; justify-content: center; }
+}
+@media (max-width: 900px) {
+  .app-shell, .app-shell:has(.desktop-navigation[data-compact="true"]) { grid-template-columns: 1fr; }
+  .app-topbar-compact { padding-inline: 12px; }
+  .app-content { padding: 14px 14px 92px; }
+}
+@media (max-width: 640px) {
+  .app-shell { --app-topbar-height: 64px; }
+  .app-topbar-compact { gap: 8px; }
+  .app-topbar-compact .app-movement-shortcut { display: none; }
+  .app-topbar-compact .operational-health > summary { width: 44px; min-height: 44px; padding: 0; justify-content: center; font-size: 0; }
+  .app-topbar-compact .operational-health > summary::after { content: "•"; font-size: 18px; }
+  .app-topbar-compact .operational-health[data-severity="P0"] > summary::after, .app-topbar-compact .operational-health[data-severity="P1"] > summary::after { content: "!"; }
+  .app-topbar-compact .app-account-menu > summary { width: 44px; min-height: 44px; }
+  .app-topbar-compact .app-topbar-actions { gap: 6px; }
+  .app-topbar-compact .operational-health-panel { position: fixed; top: calc(var(--app-topbar-height) + 8px); right: 12px; }
+  .app-account-panel .app-experience-toggle { display: block; }
+}
+@media (max-height: 760px) and (min-width: 901px) {
+  .app-content { padding: 12px 16px 32px; }
+  .app-sidebar { padding-block: 8px; }
+  .app-nav { gap: 12px; }
+}
+
+@media(min-width:901px){
+  .app-main:has([data-pdv-workspace]){height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+  .app-main:has([data-pdv-workspace])>.app-content{flex:1;min-height:0;width:100%;max-width:none;padding:12px 16px}
+  .app-main:has([data-pdv-workspace])>.platform-footer{flex:0 0 auto;padding-block:4px}
+}
+
+@media(min-width:901px) and (max-width:1180px){
+  .desktop-navigation[data-compact="false"] .brand-wordmark,
+  .desktop-navigation[data-compact="false"] .nav-link-label{display:inline}
+  .desktop-navigation[data-compact="false"] .nav-group-title{display:block}
+  .desktop-navigation[data-compact="false"] .app-nav-link{justify-content:flex-start;padding-inline:12px}
+}

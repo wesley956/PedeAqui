@@ -29,13 +29,14 @@ export function AppShell({ children, email, branding, navigationItems, operation
       <div className="app-shell" style={style} data-experience={experienceMode}>
         <a className="skip-link" href="#main-content">Pular para o conteúdo principal</a>
         <aside className="app-sidebar">
-          <div className="brand-row" aria-label={branding.productName}>
-            {usesPlatformDefault ? <PedeAquiLogo size="sm" decorative /> : <>
-              {branding.logoUrl ? <img src={branding.logoUrl} alt="" width={32} height={32} className="brand-logo-image" /> : <div className="brand-mark" aria-hidden>{branding.productName.slice(0, 1).toUpperCase()}</div>}
-              <strong className="brand-wordmark"><span>{branding.productName}</span></strong>
-            </>}
-          </div>
-          <DesktopNavigation items={navigationItems} experienceMode={experienceMode} />
+          <DesktopNavigation items={navigationItems} experienceMode={experienceMode}>
+            <div className="brand-row" aria-label={branding.productName}>
+              {usesPlatformDefault ? <PedeAquiLogo size="sm" surface="dark" decorative /> : <>
+                {branding.logoUrl ? <img src={branding.logoUrl} alt="" width={32} height={32} className="brand-logo-image" /> : <div className="brand-mark" aria-hidden>{branding.productName.slice(0, 1).toUpperCase()}</div>}
+                <strong className="brand-wordmark"><span>{branding.productName}</span></strong>
+              </>}
+            </div>
+          </DesktopNavigation>
         </aside>
         <div className="app-main">
           <OperationTopbar email={email} data={operationHeader} storeId={storeId} experienceMode={experienceMode} driverOnly={driverOnly} customerMessages={customerMessages} />

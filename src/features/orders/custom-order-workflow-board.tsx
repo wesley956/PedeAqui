@@ -15,6 +15,7 @@ import {
   orderChannelBadgeLabel,
 } from "@/features/orders/external-order-presentation";
 import { resolveOrderManagerRealtimeAction } from "@/features/orders/order-realtime-actions";
+import { BULK_SELECTION_LIMIT, selectBulkOrders, toggleBulkOrder } from "@/features/orders/bulk-selection";
 import { elapsedLabel, type OrderManagerRow } from "@/features/orders/manager-model";
 import { useOrderAlert } from "@/features/orders/use-order-alert";
 import { useRememberedOrderSearch } from "@/features/orders/order-navigation-memory";
@@ -115,7 +116,7 @@ function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean, payment
   return null;
 }
 
-function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone, bulkSelectable, bulkSelected, onBulkToggle }: {
+function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone, bulkSelectable, bulkSelected, bulkDisabled, onBulkToggle }: {
   order: OrderManagerRow;
   now: number;
   config: CustomWorkflowConfig;
@@ -124,10 +125,11 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
   timeZone: string;
   bulkSelectable: boolean;
   bulkSelected: boolean;
+  bulkDisabled: boolean;
   onBulkToggle: (orderId: string, selected: boolean) => void;
 }) {
   const action = nextAction(order, manualDeliveryMode, paymentPolicy, config);
-  const modality = order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : "Atendimento";
+  const modality = order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : order.channel === "pdv" && order.fulfillment_type === "counter" ? "Consumir no local" : "Atendimento";
   const external = order.external;
   const channelBadge = orderChannelBadgeLabel(order.channel, external);
   const logisticsLabel = external ? externalLogisticsLabel(external) : null;
@@ -143,6 +145,7 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
       <input
         type="checkbox"
         checked={bulkSelected}
+        disabled={bulkDisabled}
         onChange={(event) => onBulkToggle(order.id, event.target.checked)}
         aria-label={`Selecionar pedido #${order.display_number} para finalização em lote`}
       />
@@ -176,7 +179,7 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
   </article>;
 }
 
-function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, paymentPolicy, timeZone, selectedIds, onBulkToggle }: {
+function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, paymentPolicy, timeZone, selectedIds, bulkPending, onBulkToggle }: {
   title: string;
   stages: readonly WorkflowStage[];
   orders: OrderManagerRow[];
@@ -186,6 +189,7 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, p
   paymentPolicy: PaymentCompletionPolicy | null;
   timeZone: string;
   selectedIds: Set<string>;
+  bulkPending: boolean;
   onBulkToggle: (orderId: string, selected: boolean) => void;
 }) {
   return <section style={{ display: "grid", gap: 10 }}>
@@ -205,6 +209,7 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, p
             timeZone={timeZone}
             bulkSelectable={canBulkQuickFinish(order, config, manualDeliveryMode)}
             bulkSelected={selectedIds.has(order.id)}
+            bulkDisabled={bulkPending || (!selectedIds.has(order.id) && selectedIds.size >= BULK_SELECTION_LIMIT)}
             onBulkToggle={onBulkToggle}
           />)}{stageOrders.length === 0 ? <div className={styles.emptyLane}>Nenhum pedido</div> : null}</div>
         </section>;
@@ -274,27 +279,18 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
   const bulkEligibleOrders = filtered.filter((order) => canBulkQuickFinish(order, config, manualDeliveryMode));
   const selectedOrders = bulkEligibleOrders.filter((order) => selectedIds.has(order.id));
   const selectedPendingPayments = selectedOrders.filter((order) => !settledPaymentStatuses.has(order.payment_status));
-  const allEligibleSelected = bulkEligibleOrders.length > 0 && bulkEligibleOrders.every((order) => selectedIds.has(order.id));
+  const bulkEligibleIds = bulkEligibleOrders.map((order) => order.id);
+  const boundedEligibleIds = [...selectBulkOrders(bulkEligibleIds)];
+  const allEligibleSelected = boundedEligibleIds.length > 0 && boundedEligibleIds.every((id) => selectedIds.has(id));
 
   const toggleBulkSelection = (orderId: string, selected: boolean) => {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      if (selected) next.add(orderId);
-      else next.delete(orderId);
-      return next;
-    });
+    if (bulkPending) return;
+    setSelectedIds((current) => toggleBulkOrder(current, bulkEligibleIds, orderId, selected));
   };
 
   const toggleAllEligible = () => {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      if (allEligibleSelected) {
-        for (const order of bulkEligibleOrders) next.delete(order.id);
-      } else {
-        for (const order of bulkEligibleOrders) next.add(order.id);
-      }
-      return next;
-    });
+    if (bulkPending) return;
+    setSelectedIds(allEligibleSelected ? new Set() : selectBulkOrders(bulkEligibleIds));
   };
 
   return <div className={styles.board}>
@@ -302,12 +298,13 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
       <div className={styles.search}><Input label="Buscar pedido" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Número, cliente, canal ou código externo" /></div>
       <Button type="button" tone="secondary" onClick={() => void toggle()} aria-pressed={soundEnabled}>{primaryLabel}</Button>
       <Button type="button" tone="secondary" onClick={() => void test()}>Testar som</Button>
-      {bulkEligibleOrders.length > 0 ? <Button type="button" tone="secondary" onClick={toggleAllEligible}>
-        {allEligibleSelected ? "Desmarcar elegíveis" : `Selecionar elegíveis (${bulkEligibleOrders.length})`}
+      {bulkEligibleOrders.length > 0 ? <Button type="button" tone="secondary" disabled={bulkPending} onClick={toggleAllEligible}>
+        {allEligibleSelected ? "Desmarcar elegíveis" : `Selecionar elegíveis (${Math.min(bulkEligibleOrders.length, BULK_SELECTION_LIMIT)})`}
       </Button> : null}
       <div className={styles.toolbarMeta}>Fluxo personalizado · {filtered.length} pedido(s)</div>
       <OperationalRealtimeBadge status={realtimeStatus} />
     </div>
+    {bulkEligibleOrders.length > BULK_SELECTION_LIMIT ? <p className={styles.pageHint} role="status">Até {BULK_SELECTION_LIMIT} pedidos por lote. Finalize este lote para selecionar os próximos.</p> : null}
     {selectedOrders.length > 0 ? <form
       action={bulkAction}
       onSubmit={(event) => {
@@ -334,8 +331,8 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
     <div className={styles.noticeSlot} aria-live="polite">
       {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}
     </div>
-    <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} onBulkToggle={toggleBulkSelection} />
-    <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} onBulkToggle={toggleBulkSelection} />
+    <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} bulkPending={bulkPending} onBulkToggle={toggleBulkSelection} />
+    <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} bulkPending={bulkPending} onBulkToggle={toggleBulkSelection} />
   </div>;
 }
 

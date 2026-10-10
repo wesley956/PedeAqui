@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { ExperienceMode } from "@/modules/user-experience";
 import type { NavigationGroup, NavigationPriority } from "./navigation-model";
 
@@ -52,6 +52,7 @@ function NavigationLink({ item, compact, pathname }: { item: ShellNavigationItem
       className="app-nav-link"
       data-priority={item.priority}
       aria-current={active ? "page" : undefined}
+      aria-label={compact ? (item.key === "dashboard" ? "Início" : item.label) : undefined}
       title={compact ? item.label : undefined}
     >
       <span className="nav-link-marker" aria-hidden>{icons[item.key] ?? item.label.slice(0, 1)}</span>
@@ -60,7 +61,7 @@ function NavigationLink({ item, compact, pathname }: { item: ShellNavigationItem
   );
 }
 
-export function DesktopNavigation({ items, experienceMode = "standard" }: { items: readonly ShellNavigationItem[]; experienceMode?: ExperienceMode }) {
+export function DesktopNavigation({ items, experienceMode = "standard", children }: { items: readonly ShellNavigationItem[]; experienceMode?: ExperienceMode; children?: ReactNode }) {
   const pathname = usePathname();
   const [compact, setCompact] = useState(false);
   const visible = items.filter((item) => item.priority !== "hidden");
@@ -72,11 +73,17 @@ export function DesktopNavigation({ items, experienceMode = "standard" }: { item
 
   return (
     <div className="desktop-navigation" data-compact={compact ? "true" : "false"} data-experience={experienceMode}>
-      <button type="button" className="sidebar-toggle" onClick={() => setCompact((value) => !value)} aria-expanded={!compact}>
-        <span aria-hidden>{compact ? "›" : "‹"}</span>
-        <span className="sidebar-toggle-label">{compact ? "Expandir menu" : "Recolher menu"}</span>
-      </button>
-      <nav className="app-nav" aria-label="Navegação principal">
+      <div className="sidebar-heading">
+        <button type="button" className="sidebar-toggle" onClick={() => setCompact((value) => !value)} aria-expanded={!compact} aria-controls="desktop-main-navigation" aria-label={compact ? "Expandir menu" : "Recolher menu"} title={compact ? "Expandir menu" : "Recolher menu"}>
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="M9 4v16" />
+            <path d={compact ? "m13 9 3 3-3 3" : "m16 9-3 3 3 3"} />
+          </svg>
+        </button>
+        {children}
+      </div>
+      <nav id="desktop-main-navigation" className="app-nav" aria-label="Navegação principal">
         <section className="nav-group" aria-labelledby="nav-group-main">
           <h2 className="nav-group-title" id="nav-group-main">Principal</h2>
           <div className="nav-group-links">
@@ -87,7 +94,7 @@ export function DesktopNavigation({ items, experienceMode = "standard" }: { item
           <section className="nav-group" aria-labelledby="nav-group-more">
             <h2 className="nav-group-title" id="nav-group-more">Organização</h2>
             <div className="nav-group-links">
-              <Link href="/mais-ferramentas" className="app-nav-link" aria-current={moreActive ? "page" : undefined} title={compact ? "Mais ferramentas" : undefined}>
+              <Link href="/mais-ferramentas" className="app-nav-link" aria-current={moreActive ? "page" : undefined} aria-label={compact ? "Mais ferramentas" : undefined} title={compact ? "Mais ferramentas" : undefined}>
                 <span className="nav-link-marker" aria-hidden>•••</span>
                 <span className="nav-link-label">Mais ferramentas</span>
               </Link>

@@ -99,3 +99,11 @@
 .recentFinalizedItem{display:grid;gap:3px;min-height:54px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-2);color:var(--text);text-decoration:none}
 .recentFinalizedItem span{font-size:.78rem;color:var(--muted)}
 .deliveryAction{display:flex;align-items:center;justify-content:center;min-height:var(--control-height-md);padding:0 var(--space-4);border-radius:var(--radius-md);background:var(--accent);color:var(--text-on-brand);font-weight:var(--font-weight-extrabold);text-decoration:none}.deliveryAction:hover{filter:brightness(.96)}.deliveryAction:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+
+/* Keep operation explanations accessible without pushing the board down. */
+.page{gap:16px}.pageHeader{align-items:center;min-height:40px;gap:12px}.pageHeading h1{font-size:24px}
+.workflowNote{position:relative;padding:0;border:0;background:transparent;box-shadow:none}
+.workflowNote>summary{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--border-default);border-radius:50%;cursor:pointer;list-style:none}.workflowNote>summary::-webkit-details-marker{display:none}.workflowNote>summary:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.workflowHelpBody{position:absolute;top:calc(100% + 8px);right:0;width:min(360px,calc(100vw - 32px));padding:16px;border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--surface-1);box-shadow:var(--shadow-md);z-index:var(--z-overlay)}.workflowHelpBody p{margin:0}.workflowHelpBody p+p{margin-top:8px}
+.toolbar{padding:8px}
+@media(max-width:640px){.workflowHelpBody{position:fixed;top:calc(var(--app-topbar-height,64px) + 64px);right:16px}}

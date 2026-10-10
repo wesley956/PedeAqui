@@ -123,7 +123,7 @@ export class OrderService {
     const orders = [];
     for (let from = 0; ; from += operationalPageSize) {
       const { data, error } = await admin.from("orders")
-        .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
+        .select("id, display_number, channel, fulfillment_type, order_status, payment_status, payment_method_snapshot, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
         .eq("organization_id", context.organizationId)
         .eq("store_id", storeId)
         .not("order_status", "in", "(completed,rejected,canceled)")
@@ -137,7 +137,7 @@ export class OrderService {
     // ativos/agendados do quadro. O histórico completo permanece paginado à parte.
     const recentSince = new Date(Date.now() - recentFinalizedWindowMs).toISOString();
     const { data: recentFinalized, error: recentError } = await admin.from("orders")
-      .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
+      .select("id, display_number, channel, fulfillment_type, order_status, payment_status, payment_method_snapshot, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
       .in("order_status", ["completed", "rejected", "canceled"])
@@ -156,7 +156,7 @@ export class OrderService {
     const pageSize = Math.min(100, Math.max(10, Math.trunc(input.pageSize ?? 30)));
     const search = historySearchSchema.parse(input.search ?? "");
     let query = admin.from("orders")
-      .select("id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
+      .select("id, display_number, channel, fulfillment_type, order_status, payment_status, payment_method_snapshot, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at")
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
       .in("order_status", ["completed", "rejected", "canceled"]);

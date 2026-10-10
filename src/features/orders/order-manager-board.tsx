@@ -57,6 +57,7 @@ function money(cents: number | string) {
 
 function fulfillmentTypeLabel(type: string) {
   if (type === "delivery") return "Entrega";
+  if (type === "counter") return "Consumir no local";
   if (type === "pickup") return "Retirada";
   if (type === "dine_in" || type === "table") return "Mesa";
   return type;

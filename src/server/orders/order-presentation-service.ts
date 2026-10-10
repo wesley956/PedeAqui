@@ -6,7 +6,7 @@ import { PERMISSIONS } from "@/server/access/permissions";
 import type { OrderManagerRow } from "@/features/orders/manager-model";
 import { sanitizeExternalOrderPresentation } from "@/features/orders/external-order-presentation";
 
-const managerSelect = "id, display_number, channel, fulfillment_type, order_status, payment_status, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at";
+const managerSelect = "id, display_number, channel, fulfillment_type, order_status, payment_status, payment_method_snapshot, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at";
 const externalSelect = "order_id, provider, external_order_id, payment_owner, logistics_owner, sync_status, last_snapshot";
 const externalBatchSize = 100;
 
