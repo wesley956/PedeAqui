@@ -76,3 +76,12 @@ O navegador voltou a permitir a observação do carrinho preservado de R$ 14,50.
 Ajustes adicionais nesta revisão: a validação de pagamento passa a acontecer em cada alteração dos valores; o motivo de inconsistência aparece no resumo e o botão fica desabilitado até a soma e o recebido estarem corretos. O troco agregado de todas as parcelas em dinheiro fica no resumo fixo quando os pagamentos são válidos. Seletores e campos de cada parcela têm nomes acessíveis únicos, e o recebido está associado ao seu resultado de troco. A conferência visual também mostrou que os seletores de pagamento anteriores não tinham nomes e que os campos das parcelas repetiam o mesmo nome.
 
 Três testes financeiros adicionais verificam troco dinheiro/Pix, soma do troco de duas parcelas em dinheiro e rejeição de resumo para pagamento insuficiente/soma divergente. A suíte atual passou com 74 testes em 10 arquivos, ESLint sem erros e build de produção concluído. O botão desabilitado e o novo troco no resumo fixo ainda dependem de conferência visual da nova prévia; os comportamentos observados acima foram na versão anterior a este último ajuste. A proteção de credenciais pertence ao ambiente de navegador e não foi alterada pelo código do PDV.
+
+
+## Adicionais e falhas na busca de clientes
+
+A janela de adicionais usava uma seção com `role="dialog"`, sem mecanismo para manter o foco na janela, impedir a navegação por teclado para o carrinho ou fechar com Esc. Foi substituída por um diálogo modal nativo, seguindo o mecanismo já usado nos diálogos do projeto. O diálogo preserva o layout dos adicionais, fecha com Esc/Cancelar/clique fora e restaura o foco ao fechar. Erros de seleção são anunciados como alerta. Esses comportamentos ainda precisam de conferência no navegador; não foram observados visualmente nesta rodada.
+
+A busca de clientes agora trata também uma rejeição de transporte da Server Action, além dos erros retornados pelo servidor. Exibe uma mensagem para tentar novamente ou preencher manualmente, sem aplicar respostas de consultas antigas. Ao preencher dados manualmente ou escolher Consumidor, limpa a consulta, os resultados e os avisos anteriores; isso também invalida uma busca anterior em andamento.
+
+Os 74 testes existentes de PDV/pedidos, acessibilidade, layout e concorrência passaram. Typecheck, ESLint do componente e build de produção passaram. Essas verificações não substituem a homologação visual do diálogo nativo.

@@ -47,6 +47,13 @@ function CashChangePreview({ payment, totalCents, paymentCount }: { payment: Pay
 }
 
 function ProductConfigurator({ state, product, onChange, onCancel, onAdd }: { state: ConfiguratorState; product: PosProduct; onChange: (next: ConfiguratorState) => void; onCancel: () => void; onAdd: () => void }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+    return () => dialog.close();
+  }, []);
   const unitPrice = projectedUnitPriceCents(product, state.modifierIds);
   function toggleModifier(groupId: string, modifierId: string) {
     const selected = new Set(state.modifierIds);
@@ -57,8 +64,11 @@ function ProductConfigurator({ state, product, onChange, onCancel, onAdd }: { st
     selected.add(modifierId); onChange({ ...state, modifierIds: [...selected], error: null });
   }
   return (
-    <div className={styles.dialogBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
-      <section className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="pdv-config-title">
+      <dialog ref={dialogRef} className={styles.dialog} aria-labelledby="pdv-config-title" onCancel={(event) => { event.preventDefault(); onCancel(); }} onMouseDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) onCancel();
+      }}>
         <div className={styles.rowBetween}><div><div className={styles.mutedSmall}>CONFIGURAR ITEM</div><h2 id="pdv-config-title" style={{ margin: "3px 0 0" }}>{product.name}</h2></div><strong className={styles.productPrice}>{money(unitPrice)}</strong></div>
         {product.modifierGroups.map((group) => <div key={group.id} className={styles.group}>
           <div className={styles.rowBetween}><strong>{group.name}</strong><span className={styles.mutedSmall}>{group.minSelection === group.maxSelection ? `${group.minSelection} seleção(ões)` : `${group.minSelection}–${group.maxSelection} seleções`}{group.required ? " · obrigatório" : ""}</span></div>
@@ -66,10 +76,9 @@ function ProductConfigurator({ state, product, onChange, onCancel, onAdd }: { st
         </div>)}
         <label style={{ display: "grid", gap: 5 }}><strong style={{ fontSize: 13 }}>Observação</strong><textarea className={styles.field} value={state.note} maxLength={500} rows={3} placeholder="Ex.: sem cebola" onChange={(event) => onChange({ ...state, note: event.target.value, error: null })} /></label>
         <div className={styles.rowBetween}><strong>Quantidade</strong><div className={styles.qtyRow}><button type="button" className={styles.smallButton} onClick={() => onChange({ ...state, quantity: Math.max(1, state.quantity - 1) })}>−</button><strong>{state.quantity}</strong><button type="button" className={styles.smallButton} onClick={() => onChange({ ...state, quantity: Math.min(999, state.quantity + 1) })}>+</button></div></div>
-        {state.error ? <div className={styles.statusError}>{state.error}</div> : null}
+        {state.error ? <div className={styles.statusError} role="alert">{state.error}</div> : null}
         <div className={styles.dialogActions}><button type="button" className={styles.secondaryButton} onClick={onCancel}>Cancelar</button><button type="button" className={styles.primaryButton} onClick={onAdd}>Adicionar · {money(unitPrice * state.quantity)}</button></div>
-      </section>
-    </div>
+      </dialog>
   );
 }
 
@@ -100,10 +109,16 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
     if (!customerSearchEnabled || selectedCustomer || customerQuery.trim().length < 2) return;
     let active = true;
     const timer = window.setTimeout(() => startCustomerSearch(async () => {
-      const result = await searchPdvCustomersAction(customerQuery);
-      if (!active) return;
-      setCustomerMatches(result.customers);
-      setCustomerSearchError(result.error);
+      try {
+        const result = await searchPdvCustomersAction(customerQuery);
+        if (!active) return;
+        setCustomerMatches(result.customers);
+        setCustomerSearchError(result.error);
+      } catch {
+        if (!active) return;
+        setCustomerMatches([]);
+        setCustomerSearchError("Não foi possível buscar clientes agora. Tente novamente ou preencha os dados manualmente.");
+      }
     }), 250);
     return () => { active = false; window.clearTimeout(timer); };
   }, [customerSearchEnabled, customerQuery, selectedCustomer]);
@@ -135,8 +150,8 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
   function chooseProduct(product: PosProduct) { if (product.modifierGroups.length === 0) { addCartLine(product, [], 1, ""); return; } setConfigurator({ productId: product.id, modifierIds: [], quantity: 1, note: "", error: null }); }
   function changeQuantity(key: string, delta: number) { setCart((current) => current.flatMap((line) => { if (line.key !== key) return [line]; const quantity = line.quantity + delta; return quantity > 0 ? [{ ...line, quantity: Math.min(999, quantity) }] : []; })); touchSale(); }
   function removeLine(key: string) { setCart((current) => current.filter((line) => line.key !== key)); touchSale(); }
-  function selectCustomer(customer: PosCustomer | null) { setSelectedCustomer(customer); setCustomerMatches([]); setCustomerQuery(customer ? `${customer.name}${customer.phone ? ` · ${customer.phone}` : ""}` : ""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail(""); setCashbackText(""); setLoyaltyPointsText(""); touchSale(); }
-  function changeManualCustomer(field: "name" | "phone" | "email", value: string) { setSelectedCustomer(null); setCashbackText(""); setLoyaltyPointsText(""); if (field === "name") setCustomerName(value); if (field === "phone") setCustomerPhone(value); if (field === "email") setCustomerEmail(value); touchSale(); }
+  function selectCustomer(customer: PosCustomer | null) { setSelectedCustomer(customer); setCustomerMatches([]); setCustomerSearchError(null); setCustomerQuery(customer ? `${customer.name}${customer.phone ? ` · ${customer.phone}` : ""}` : ""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail(""); setCashbackText(""); setLoyaltyPointsText(""); touchSale(); }
+  function changeManualCustomer(field: "name" | "phone" | "email", value: string) { setSelectedCustomer(null); setCustomerQuery(""); setCustomerMatches([]); setCustomerSearchError(null); setCashbackText(""); setLoyaltyPointsText(""); if (field === "name") setCustomerName(value); if (field === "phone") setCustomerPhone(value); if (field === "email") setCustomerEmail(value); touchSale(); }
   function updatePayment(id: string, patch: Partial<PaymentDraft>) { setPayments((current) => current.map((payment) => payment.id === id ? { ...payment, ...patch } : payment)); touchSale(); }
   function addPayment() { setPayments((current) => [...current, { id: crypto.randomUUID(), method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]); touchSale(); }
   function removePayment(id: string) { setPayments((current) => { const remaining = current.filter((payment) => payment.id !== id); const [onlyPayment] = remaining; if (remaining.length === 1 && onlyPayment) return [{ ...onlyPayment, amountText: "" }]; return remaining; }); touchSale(); }
