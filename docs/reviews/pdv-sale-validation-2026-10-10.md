@@ -28,17 +28,23 @@ Asserções executadas diretamente no banco passaram para: repetição da mesma 
 
 A migração foi aplicada no projeto Supabase da sessão, mantendo a assinatura e as permissões existentes. Versão registrada: `20261010071418`. Função SECURITY INVOKER, inacessível para anon/authenticated, acessível somente para service_role. Advisors antes/depois tiveram os mesmos avisos preexistentes, sem avisos novos desta alteração.
 
+## Finalização operacional
+
+Foi encontrada uma divergência adicional: a aplicação chama `order_quick_finish_internal`, mas a função não existia no banco da sessão. A migração de reparo `20261010072147_ensure_order_quick_finish_atomic` instala a mesma função já prevista pelo projeto, sem mudar a regra operacional.
+
+Testados na RPC real: #19 (Pix/local) passou a concluído + servido; #23 (Pix/retirada) passou a concluído + retirado pelo cliente. Ambos mantiveram pagamento pago. A segunda finalização retornou `changed=false`, sem repetir as transições. Os demais sete pedidos demonstrativos seguem em preparo para inspeção.
+
 ## Verificações locais
 
 - Build de produção concluído.
 - Typecheck concluído.
 - ESLint dos arquivos alterados sem erros.
-- 61 testes passaram em 9 arquivos, incluindo matriz de modalidade/pagamento, pagamentos divididos, mensagens PostgREST, projeção do quadro, acessibilidade, layout móvel e concorrência.
+- 66 testes passaram em 10 arquivos, incluindo matriz de modalidade/pagamento, pagamentos divididos, mensagens PostgREST, projeção do quadro, acessibilidade, layout móvel e concorrência.
 
 ## Limites e pendências
 
 A proteção de credenciais do navegador impediu observar o PDV nesta rodada. Uma navegação de recuperação permitiu ver Pedidos antes da criação; depois a proteção voltou a impedir observação. Não foram copiados cookies nem desativadas proteções. Portanto, a nova opção, o fieldset de bloqueio e os cliques de finalização ainda precisam de homologação visual da versão de revisão. Não se deve apresentar os testes de RPC como homologação da interface.
 
-Impressão física, gateway Pix/cartão, mobile físico e ciclo completo servido/retirado não foram homologados nesta rodada. As formas personalizadas ainda não têm suporte na RPC do PDV e agora não aparecem como uma opção vazia. Adicionais por quantidade, edição de item e recuperação de rascunho permanecem no diagnóstico anterior.
+Impressão física, gateway Pix/cartão, mobile físico e cliques do ciclo completo servido/retirado não foram homologados nesta rodada. As formas personalizadas ainda não têm suporte na RPC do PDV e agora não aparecem como uma opção vazia. Adicionais por quantidade, edição de item e recuperação de rascunho permanecem no diagnóstico anterior.
 
-Os nove pedidos demonstrativos foram mantidos para inspeção, sem excluir dados nem alterar pedidos de clientes.
+Os nove pedidos demonstrativos foram mantidos para inspeção (dois concluídos nos testes de finalização), sem excluir dados nem alterar pedidos de clientes.
