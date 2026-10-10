@@ -96,13 +96,13 @@ export function NewUserGuide({
 
   return (
     <>
-      <button className={styles.trigger} type="button" onClick={reopen} aria-label="Abrir assistente do PedeAqui">
+      {!allDone ? <button className={styles.trigger} type="button" onClick={reopen} aria-label="Abrir assistente do PedeAqui">
         <span className={styles.triggerIcon} aria-hidden>{allDone ? "✓" : "?"}</span>
         <span className={styles.triggerText}>
           <strong>{isSetupChecklist ? "Configuração" : "Guia"}</strong>
           {isSetupChecklist ? <small>{progress.completed}/{progress.total} pronto</small> : <small>Ajuda por área</small>}
         </span>
-      </button>
+      </button> : null}
 
       {activeStep && !open ? (
         <aside className={styles.coach} aria-live="polite">

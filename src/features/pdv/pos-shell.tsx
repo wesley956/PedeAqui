@@ -170,8 +170,8 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
   }
 
   return (
-    <section className={styles.shell}>
-      <header className={styles.header}><div><p className="muted">Venda presencial · preços e benefícios revalidados no servidor</p><h1>PDV</h1></div><div className={styles.mutedSmall}>Selecione itens, confira a venda e finalize.</div></header>
+    <section className={styles.shell} data-pdv-workspace>
+      <header className={styles.header}><h1>PDV</h1><details className={styles.pageHelp}><summary aria-label="Como usar o PDV">?</summary><p>Selecione itens, confira a venda e finalize. Preços, adicionais e benefícios são conferidos antes de concluir.</p></details></header>
       {lastSale ? <div className={styles.statusSuccess}>Venda <strong>#{lastSale.displayNumber}</strong> finalizada em {money(lastSale.totalCents)}.{lastSale.changeDueCents > 0 ? <> Troco: <strong>{money(lastSale.changeDueCents)}</strong>.</> : null}{" "}<Link href={`/pedidos/${lastSale.orderId}`}>Abrir pedido</Link></div> : null}
       {error ? <div className={styles.statusError}>{error}</div> : null}
 
@@ -202,6 +202,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
 
         <form className={`card ${styles.cartPanel}`} data-pdv-panel="sale" onSubmit={finalizeSale}>
           <div className={styles.cartHeader}><div><div className={styles.mutedSmall}>VENDA ATUAL</div><h2 style={{ margin: "3px 0 0", fontSize: 19 }}>Carrinho</h2></div><strong>{cartItemCount} {cartItemCount === 1 ? "item" : "itens"}</strong></div>
+          <div className={styles.cartBody}>
           {cart.length === 0 ? <div className={styles.empty}>Selecione produtos para iniciar a venda.</div> : <div className={styles.cartList}>{cart.map((line) => <div key={line.key} className={styles.cartLine}><div className={styles.rowBetween}><strong>{line.productName}</strong><strong>{money(line.unitPriceCents * line.quantity)}</strong></div>{line.modifierLabels.length > 0 ? <div className={styles.mutedSmall}>{line.modifierLabels.join(" · ")}</div> : null}{line.note ? <div className={styles.mutedSmall}>Obs.: {line.note}</div> : null}<div className={styles.rowBetween}><div className={styles.qtyRow}><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, -1)}>−</button><strong>{line.quantity}</strong><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, 1)}>+</button></div><button type="button" className={styles.removeButton} onClick={() => removeLine(line.key)}>Remover</button></div></div>)}</div>}
 
           <details className={styles.advancedSection}>
@@ -229,7 +230,8 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
             {payments.map((payment, index) => <div key={payment.id} className={styles.paymentLine}><div className={styles.rowBetween}><strong>{payments.length > 1 ? `Parcela ${index + 1}` : "Forma de pagamento"}</strong>{payments.length > 1 ? <button type="button" className={styles.removeButton} onClick={() => removePayment(payment.id)}>Remover</button> : null}</div><select className={styles.select} value={payment.method} onChange={(event) => updatePayment(payment.id, { method: event.target.value as PosPaymentMethod, cashReceivedText: "", reference: "" })}>{paymentMethods.map((method) => <option key={method.method} value={method.method}>{method.label}</option>)}</select><div className={styles.twoColumns}><label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor {payments.length === 1 ? "(vazio = total)" : "da parcela"}</span><input className={styles.field} inputMode="decimal" value={payment.amountText} onChange={(event) => updatePayment(payment.id, { amountText: event.target.value })} placeholder={payments.length === 1 ? formatMoneyInput(saleTotal) : "0,00"} /></label>{payment.method === "cash" ? <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor recebido</span><input className={styles.field} inputMode="decimal" value={payment.cashReceivedText} onChange={(event) => updatePayment(payment.id, { cashReceivedText: event.target.value })} placeholder="Ex.: 50,00" /></label> : <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Referência/comprovante</span><input className={styles.field} value={payment.reference} onChange={(event) => updatePayment(payment.id, { reference: event.target.value })} maxLength={200} placeholder="Opcional" /></label>}</div></div>)}
           </div>
 
-          <div className={styles.section}>
+          </div>
+          <div className={`${styles.section} ${styles.cartFooter}`}>
             {growthProjection.valid && growthProjection.discountCents > 0 ? <><div className={styles.rowBetween}><span className={styles.mutedSmall}>Subtotal</span><span>{money(cartSubtotal)}</span></div><div className={styles.rowBetween}><span className={styles.mutedSmall}>Benefícios</span><span>− {money(growthProjection.discountCents)}</span></div></> : null}
             <div className={styles.rowBetween}><strong>Total</strong><span className={styles.total}>{money(saleTotal)}</span></div>
             <button type="submit" className={styles.primaryButton} disabled={pending || cart.length === 0 || paymentMethods.length === 0 || !growthProjection.valid}>{pending ? "Finalizando venda…" : `Finalizar · ${money(saleTotal)}`}</button>

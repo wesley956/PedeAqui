@@ -74,29 +74,30 @@ export default async function OrdersPage() {
       <OrderListPosition storageKey="orders:active" />
       <header className={styles.pageHeader}>
         <div className={styles.pageHeading}>
-          <p className={styles.pageEyebrow}>OPERAÇÃO</p>
           <h1>Pedidos</h1>
-          <p className={styles.pageHint}>Veja o que entrou, o que está em andamento e qual pedido precisa da próxima ação.</p>
         </div>
         <div className={styles.headerActions}>
+          <details className={styles.workflowNote} data-workflow-revision={effectiveBoardConfiguration?.workflow.revision ?? "orders:custom"}>
+            <summary aria-label="Como funciona o quadro de pedidos">?</summary>
+            <div className={styles.workflowHelpBody}>
+            <p className={styles.pageHint}>Veja o que entrou, o que está em andamento e qual pedido precisa da próxima ação.</p>
+            <p>{workflowMode === "simplified"
+              ? manualDeliveryMode
+                ? "Fluxo simplificado: Iniciar → Pronto → Finalizados. A entrega manual continua dentro do próprio pedido."
+                : "Fluxo simplificado: Iniciar → Pronto → Finalizados."
+              : workflowMode === "custom"
+                ? manualDeliveryMode
+                  ? "O quadro segue os checkpoints definidos em Configurações. Entregas sem gestão de entregador são atualizadas aqui mesmo."
+                  : "O quadro segue os checkpoints definidos em Configurações."
+                : manualDeliveryMode
+                  ? "Entrega manual ativa: pedidos de entrega avançam pelo próprio gestor de pedidos, sem exigir entregador cadastrado."
+                  : "A tela atualiza automaticamente enquanto a operação estiver aberta."}</p>
+            </div>
+          </details>
           <span className={styles.activeBadge}>{activeCount} ativo(s)</span>
           <Link href="/pedidos/historico" className={styles.detailsLink}>Ver histórico</Link>
         </div>
       </header>
-
-      <div className={styles.workflowNote} data-workflow-revision={effectiveBoardConfiguration?.workflow.revision ?? "orders:custom"}>
-        {workflowMode === "simplified"
-          ? manualDeliveryMode
-            ? "Fluxo simplificado: Iniciar → Pronto → Finalizados. A entrega manual continua dentro do próprio pedido."
-            : "Fluxo simplificado: Iniciar → Pronto → Finalizados."
-          : workflowMode === "custom"
-            ? manualDeliveryMode
-              ? "O quadro segue os checkpoints definidos em Configurações. Entregas sem gestão de entregador são atualizadas aqui mesmo."
-              : "O quadro segue os checkpoints definidos em Configurações."
-            : manualDeliveryMode
-              ? "Entrega manual ativa: pedidos de entrega avançam pelo próprio gestor de pedidos, sem exigir entregador cadastrado."
-              : "A tela atualiza automaticamente enquanto a operação estiver aberta."}
-      </div>
 
       {finalFulfillment.length > 0 ? <Alert
         tone={readyToReconcile.length > 0 ? "warning" : "info"}
