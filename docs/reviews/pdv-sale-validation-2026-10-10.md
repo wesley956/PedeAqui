@@ -39,7 +39,7 @@ Testados na RPC real: #19 (Pix/local) passou a concluído + servido; #23 (Pix/re
 - Build de produção concluído.
 - Typecheck concluído.
 - ESLint dos arquivos alterados sem erros.
-- 66 testes passaram em 10 arquivos, incluindo matriz de modalidade/pagamento, pagamentos divididos, mensagens PostgREST, projeção do quadro, acessibilidade, layout móvel e concorrência.
+- 71 testes passaram em 10 arquivos, incluindo matriz de modalidade/pagamento, pagamentos divididos, mensagens PostgREST, projeção do quadro, acessibilidade, layout móvel e concorrência.
 
 ## Limites e pendências
 
@@ -54,3 +54,17 @@ Os nove pedidos demonstrativos foram mantidos para inspeção (dois concluídos 
 O campo Valor recebido passa a mostrar o troco antes da finalização, recalculando ao alterar o valor, o total do carrinho ou a parcela em dinheiro. Em pagamento dividido, usa somente o valor da parcela em dinheiro. Mostra zero para valor exato e a diferença que falta para valor insuficiente; valores incompletos não produzem um troco estimado. O resultado é anunciado como status acessível.
 
 Exemplos verificados: venda R$ 15,90 / recebido R$ 20,00 = troco R$ 4,10; parcela dinheiro R$ 10,00 + Pix R$ 5,90 / recebido R$ 20,00 = troco R$ 10,00. Cinco testes de cálculo adicionados; 32 testes passaram nos quatro arquivos de PDV. Typecheck e ESLint dos arquivos alterados passaram. A limitação de homologação visual da sessão permanece.
+
+## Retomada da conferência visual — 04:34 BRT
+
+A prévia da branch abriu autenticada na Santa Rita, em tema claro e com menu recolhido. O carrinho preparado no navegador tinha água com gás, água mineral e casquinha com doce de leite, total R$ 14,50. A modalidade Consumir no local e a opção Levar embora estavam presentes.
+
+Observações reais do navegador:
+
+- Viewport 1363 × 936; largura do documento 1363, sem overflow horizontal.
+- Conteúdo de x=64 a x=1363, largura 1299, `max-width: none`: sem as antigas faixas laterais vazias.
+- Botão Finalizar entre y=863 e y=911, habilitado e dentro da viewport.
+- Recebido R$ 100,00: troco R$ 85,50.
+- Ao preencher R$ 20,00: status atualizado imediatamente para troco R$ 5,50.
+
+A tentativa seguinte de preencher R$ 10,00 foi seguida por bloqueio da observação pela proteção de credenciais. O carrinho foi preservado em sua aba; uma nova aba de Pedidos também teve observação bloqueada. Não foi repetida a solicitação de acesso nem contornada a proteção. Nenhuma venda adicional foi finalizada nesta rodada. A exibição do valor insuficiente, do troco dividido e os cliques de finalização permanecem validados por testes de cálculo/RPC, mas pendentes de conferência visual completa. A imagem observada mostra o contexto do layout; não foi possível salvar uma nova captura com o campo de troco visível após o bloqueio.
