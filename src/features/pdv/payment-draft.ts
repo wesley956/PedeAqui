@@ -42,3 +42,9 @@ export function projectedCashDifferenceCents(payment: PaymentDraft, totalCents: 
   if (totalCents === 0) return 0;
   return received - amount;
 }
+
+export function projectedTotalCashChangeCents(drafts: readonly PaymentDraft[], totalCents: number) {
+  const resolved = paymentPayload(drafts, totalCents);
+  if (!resolved.ok) return null;
+  return resolved.value.reduce((total, payment) => total + (payment.method === "cash" ? (payment.cashReceivedCents ?? payment.amountCents) - payment.amountCents : 0), 0);
+}

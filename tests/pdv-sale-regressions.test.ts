@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { paymentPayload, remainingPaymentCents, projectedCashDifferenceCents, type PaymentDraft } from "@/features/pdv/payment-draft";
+import { paymentPayload, remainingPaymentCents, projectedCashDifferenceCents, projectedTotalCashChangeCents, type PaymentDraft } from "@/features/pdv/payment-draft";
 import { friendlyPdvError } from "@/features/pdv/errors";
 import { posSaleSchema } from "@/server/pdv/schemas";
 
@@ -70,5 +70,21 @@ describe("cash change while typing", () => {
   });
   it("does not invent change for a fully discounted sale", () => {
     expect(projectedCashDifferenceCents(draft({ method: "cash", cashReceivedText: "20,00" }), 0, 1)).toBe(0);
+  });
+});
+
+describe("cash change in the fixed sale summary", () => {
+  it("includes only cash change when the sale mixes cash and Pix", () => {
+    const payments = [draft({ method: "cash", amountText: "10,00", cashReceivedText: "20,00" }), draft({ id: "two", amountText: "4,50" })];
+    expect(projectedTotalCashChangeCents(payments, 1450)).toBe(1000);
+  });
+  it("adds change from multiple cash portions without counting the paid amount twice", () => {
+    const payments = [draft({ method: "cash", amountText: "10,00", cashReceivedText: "20,00" }), draft({ id: "two", method: "cash", amountText: "4,50", cashReceivedText: "5,00" })];
+    expect(projectedTotalCashChangeCents(payments, 1450)).toBe(1050);
+  });
+  it("withholds the summary for unpaid or unbalanced sales", () => {
+    expect(projectedTotalCashChangeCents([draft({ method: "cash", cashReceivedText: "10,00" })], 1450)).toBeNull();
+    expect(projectedTotalCashChangeCents([draft({ method: "cash", amountText: "10,00", cashReceivedText: "20,00" }), draft({ id: "two", amountText: "5,00" })], 1450)).toBeNull();
+    expect(projectedTotalCashChangeCents([draft({ method: "cash", cashReceivedText: "14,50" })], 1450)).toBe(0);
   });
 });

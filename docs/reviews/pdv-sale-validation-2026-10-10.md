@@ -39,7 +39,7 @@ Testados na RPC real: #19 (Pix/local) passou a concluído + servido; #23 (Pix/re
 - Build de produção concluído.
 - Typecheck concluído.
 - ESLint dos arquivos alterados sem erros.
-- 71 testes passaram em 10 arquivos, incluindo matriz de modalidade/pagamento, pagamentos divididos, mensagens PostgREST, projeção do quadro, acessibilidade, layout móvel e concorrência.
+- 74 testes passaram em 10 arquivos, incluindo matriz de modalidade/pagamento, pagamentos divididos, mensagens PostgREST, projeção do quadro, acessibilidade, layout móvel e concorrência.
 
 ## Limites e pendências
 
@@ -68,3 +68,11 @@ Observações reais do navegador:
 - Ao preencher R$ 20,00: status atualizado imediatamente para troco R$ 5,50.
 
 A tentativa seguinte de preencher R$ 10,00 foi seguida por bloqueio da observação pela proteção de credenciais. O carrinho foi preservado em sua aba; uma nova aba de Pedidos também teve observação bloqueada. Não foi repetida a solicitação de acesso nem contornada a proteção. Nenhuma venda adicional foi finalizada nesta rodada. A exibição do valor insuficiente, do troco dividido e os cliques de finalização permanecem validados por testes de cálculo/RPC, mas pendentes de conferência visual completa. A imagem observada mostra o contexto do layout; não foi possível salvar uma nova captura com o campo de troco visível após o bloqueio.
+
+## Pagamento dividido e prevenção de finalização inválida — 04:48 BRT
+
+O navegador voltou a permitir a observação do carrinho preservado de R$ 14,50. Com dinheiro recebido R$ 10,00, mostrou `Faltam R$ 4,50`; ao clicar Finalizar, apresentou `O valor recebido em dinheiro é menor que a parcela.` sem criar uma nova venda. Depois foram preenchidos recebido R$ 20,00 e parcela dinheiro R$ 10,00, e adicionada uma segunda parcela Pix: a tela mostrou troco R$ 10,00 e falta distribuir R$ 4,50. A etapa seguinte voltou a sofrer bloqueio da proteção de credenciais; a venda dividida não foi finalizada.
+
+Ajustes adicionais nesta revisão: a validação de pagamento passa a acontecer em cada alteração dos valores; o motivo de inconsistência aparece no resumo e o botão fica desabilitado até a soma e o recebido estarem corretos. O troco agregado de todas as parcelas em dinheiro fica no resumo fixo quando os pagamentos são válidos. Seletores e campos de cada parcela têm nomes acessíveis únicos, e o recebido está associado ao seu resultado de troco. A conferência visual também mostrou que os seletores de pagamento anteriores não tinham nomes e que os campos das parcelas repetiam o mesmo nome.
+
+Três testes financeiros adicionais verificam troco dinheiro/Pix, soma do troco de duas parcelas em dinheiro e rejeição de resumo para pagamento insuficiente/soma divergente. A suíte atual passou com 74 testes em 10 arquivos, ESLint sem erros e build de produção concluído. O botão desabilitado e o novo troco no resumo fixo ainda dependem de conferência visual da nova prévia; os comportamentos observados acima foram na versão anterior a este último ajuste. A proteção de credenciais pertence ao ambiente de navegador e não foi alterada pelo código do PDV.

@@ -20,7 +20,7 @@ import {
   type PosPaymentMethodOption,
   type PosProduct,
 } from "@/features/pdv/model";
-import { paymentPayload, remainingPaymentCents, projectedCashDifferenceCents, type PaymentDraft } from "@/features/pdv/payment-draft";
+import { paymentPayload, remainingPaymentCents, projectedCashDifferenceCents, projectedTotalCashChangeCents, type PaymentDraft } from "@/features/pdv/payment-draft";
 import type { PosSaleInput } from "@/server/pdv/schemas";
 import styles from "@/features/pdv/pdv.module.css";
 
@@ -40,7 +40,7 @@ function modifierLabels(product: PosProduct, ids: readonly string[]) {
 
 function CashChangePreview({ payment, totalCents, paymentCount }: { payment: PaymentDraft; totalCents: number; paymentCount: number }) {
   const difference = projectedCashDifferenceCents(payment, totalCents, paymentCount);
-  return <output role="status" aria-live="polite" aria-atomic="true" className={styles.mutedSmall}>
+  return <output id={`pdv-change-${payment.id}`} role="status" aria-live="polite" aria-atomic="true" className={styles.mutedSmall}>
     {difference === null ? (payment.cashReceivedText.trim() ? "Informe valores válidos para calcular o troco." : "Troco: —")
       : difference < 0 ? `Faltam ${money(-difference)}` : <strong>Troco: {money(difference)}</strong>}
   </output>;
@@ -116,6 +116,9 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
     loyaltyRedeemPoints: Number.isInteger(loyaltyNumber) && loyaltyNumber >= 0 ? loyaltyNumber : -1,
   }), [cartSubtotal, couponCode, coupons, selectedCustomer, growthSettings, cashbackParsed, loyaltyNumber]);
   const saleTotal = growthProjection.valid ? growthProjection.totalCents : cartSubtotal;
+  const paymentValidation = paymentPayload(payments, saleTotal);
+  const totalCashChange = projectedTotalCashChangeCents(payments, saleTotal);
+  const showCashChange = payments.some((payment) => payment.method === "cash" && payment.cashReceivedText.trim());
   const cartItemCount = cart.reduce((sum, line) => sum + line.quantity, 0);
   const configProduct = configurator ? productIndex.get(configurator.productId) ?? null : null;
 
@@ -144,7 +147,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
     if (paymentMethods.length === 0) { setError("Nenhuma forma de pagamento está habilitada para esta unidade."); return; }
     if (!selectedCustomer && customerPhone.trim() && customerName.trim().length < 2) { setError("Informe o nome do cliente para cadastrar o telefone."); return; }
     if (!growthProjection.valid) { setError(growthProjection.message); return; }
-    const resolvedPayments = paymentPayload(payments, growthProjection.totalCents); if (!resolvedPayments.ok) { setError(resolvedPayments.error); return; }
+    const resolvedPayments = paymentValidation; if (!resolvedPayments.ok) { setError(resolvedPayments.error); return; }
     const customer: PosSaleInput["customer"] = selectedCustomer ? { id: selectedCustomer.id } : (customerName.trim() || customerPhone.trim() || customerEmail.trim()) ? { name: customerName.trim() || null, phone: customerPhone.trim() || null, email: customerEmail.trim() || null } : null;
     const input: PosSaleInput = { fulfillmentType, items: cart.map((line) => ({ productId: line.productId, quantity: line.quantity, note: line.note, modifierIds: line.modifierIds })), payments: resolvedPayments.value, customer, growth: { couponCode: couponCode.trim() || null, cashbackRedeemCents: cashbackParsed ?? 0, loyaltyRedeemPoints: loyaltyNumber } };
     submissionLock.current = true; setPending(true);
@@ -219,13 +222,15 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
               <div className={styles.rowBetween}><h3>Pagamento</h3><button type="button" className={styles.smallButton} disabled={paymentMethods.length === 0 || saleTotal === 0 || payments.length >= 10} onClick={addPayment}>+ Dividir</button></div>
               <div className={styles.mutedSmall}>Confirme o recebimento antes de finalizar a venda.</div>
               {payments.length > 1 ? <div className={styles.mutedSmall} role="status">Falta distribuir: {money(remainingPaymentCents(payments, saleTotal))}</div> : null}
-              {payments.map((payment, index) => <div key={payment.id} className={styles.paymentLine}><div className={styles.rowBetween}><strong>{payments.length > 1 ? `Parcela ${index + 1}` : "Forma de pagamento"}</strong>{payments.length > 1 ? <button type="button" className={styles.removeButton} onClick={() => removePayment(payment.id)}>Remover</button> : null}</div><select className={styles.select} value={payment.method} onChange={(event) => updatePayment(payment.id, { method: event.target.value as PosPaymentMethod, cashReceivedText: "", reference: "" })}>{paymentMethods.map((method) => <option key={method.method} value={method.method}>{method.label}</option>)}</select><div className={styles.twoColumns}><label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor {payments.length === 1 ? "(vazio = total)" : "da parcela"}</span><input className={styles.field} inputMode="decimal" value={payment.amountText} onChange={(event) => updatePayment(payment.id, { amountText: event.target.value })} placeholder={formatMoneyInput(payments.length === 1 ? saleTotal : remainingPaymentCents(payments.filter((item) => item.id !== payment.id), saleTotal))} /></label>{payment.method === "cash" ? <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor recebido</span><input className={styles.field} inputMode="decimal" value={payment.cashReceivedText} onChange={(event) => updatePayment(payment.id, { cashReceivedText: event.target.value })} placeholder="Ex.: 50,00" /><CashChangePreview payment={payment} totalCents={saleTotal} paymentCount={payments.length} /></label> : <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Referência/comprovante</span><input className={styles.field} value={payment.reference} onChange={(event) => updatePayment(payment.id, { reference: event.target.value })} maxLength={200} placeholder="Opcional" /></label>}</div></div>)}
+              {payments.map((payment, index) => <div key={payment.id} className={styles.paymentLine}><div className={styles.rowBetween}><strong>{payments.length > 1 ? `Parcela ${index + 1}` : "Forma de pagamento"}</strong>{payments.length > 1 ? <button type="button" className={styles.removeButton} onClick={() => removePayment(payment.id)}>Remover</button> : null}</div><select aria-label={payments.length > 1 ? `Forma de pagamento da parcela ${index + 1}` : "Forma de pagamento"} className={styles.select} value={payment.method} onChange={(event) => updatePayment(payment.id, { method: event.target.value as PosPaymentMethod, cashReceivedText: "", reference: "" })}>{paymentMethods.map((method) => <option key={method.method} value={method.method}>{method.label}</option>)}</select><div className={styles.twoColumns}><label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor {payments.length === 1 ? "(vazio = total)" : "da parcela"}</span><input aria-label={payments.length > 1 ? `Valor da parcela ${index + 1}` : "Valor da venda"} className={styles.field} inputMode="decimal" value={payment.amountText} onChange={(event) => updatePayment(payment.id, { amountText: event.target.value })} placeholder={formatMoneyInput(payments.length === 1 ? saleTotal : remainingPaymentCents(payments.filter((item) => item.id !== payment.id), saleTotal))} /></label>{payment.method === "cash" ? <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Valor recebido</span><input aria-label={payments.length > 1 ? `Valor recebido em dinheiro na parcela ${index + 1}` : "Valor recebido em dinheiro"} aria-describedby={`pdv-change-${payment.id}`} className={styles.field} inputMode="decimal" value={payment.cashReceivedText} onChange={(event) => updatePayment(payment.id, { cashReceivedText: event.target.value })} placeholder="Ex.: 50,00" /><CashChangePreview payment={payment} totalCents={saleTotal} paymentCount={payments.length} /></label> : <label style={{ display: "grid", gap: 4 }}><span className={styles.mutedSmall}>Referência/comprovante</span><input aria-label={payments.length > 1 ? `Referência da parcela ${index + 1}` : "Referência do pagamento"} className={styles.field} value={payment.reference} onChange={(event) => updatePayment(payment.id, { reference: event.target.value })} maxLength={200} placeholder="Opcional" /></label>}</div></div>)}
             </div>
           </div>
           <div className={`${styles.section} ${styles.cartFooter}`}>
             {growthProjection.valid && growthProjection.discountCents > 0 ? <><div className={styles.rowBetween}><span className={styles.mutedSmall}>Subtotal</span><span>{money(cartSubtotal)}</span></div><div className={styles.rowBetween}><span className={styles.mutedSmall}>Benefícios</span><span>− {money(growthProjection.discountCents)}</span></div></> : null}
+            {cart.length > 0 && !paymentValidation.ok ? <div id="pdv-payment-validation" className={styles.statusError} role="status" aria-live="polite">{paymentValidation.error}</div> : null}
+            {showCashChange && totalCashChange !== null ? <div className={styles.rowBetween}><strong>Troco</strong><strong>{money(totalCashChange)}</strong></div> : null}
             <div className={styles.rowBetween}><strong>Total</strong><span className={styles.total}>{money(saleTotal)}</span></div>
-            <button type="submit" className={styles.primaryButton} disabled={pending || cart.length === 0 || paymentMethods.length === 0 || !growthProjection.valid}>{pending ? "Finalizando venda…" : `Finalizar · ${money(saleTotal)}`}</button>
+            <button type="submit" className={styles.primaryButton} aria-describedby={cart.length > 0 && !paymentValidation.ok ? "pdv-payment-validation" : undefined} disabled={pending || cart.length === 0 || paymentMethods.length === 0 || !growthProjection.valid || !paymentValidation.ok}>{pending ? "Finalizando venda…" : `Finalizar · ${money(saleTotal)}`}</button>
           </div>
         </form>
       </div>
