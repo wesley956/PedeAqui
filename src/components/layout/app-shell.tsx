@@ -31,7 +31,7 @@ export function AppShell({ children, email, branding, navigationItems, operation
         <aside className="app-sidebar">
           <DesktopNavigation items={navigationItems} experienceMode={experienceMode}>
             <div className="brand-row" aria-label={branding.productName}>
-              {usesPlatformDefault ? <PedeAquiLogo size="sm" decorative /> : <>
+              {usesPlatformDefault ? <PedeAquiLogo size="sm" surface="dark" decorative /> : <>
                 {branding.logoUrl ? <img src={branding.logoUrl} alt="" width={32} height={32} className="brand-logo-image" /> : <div className="brand-mark" aria-hidden>{branding.productName.slice(0, 1).toUpperCase()}</div>}
                 <strong className="brand-wordmark"><span>{branding.productName}</span></strong>
               </>}
