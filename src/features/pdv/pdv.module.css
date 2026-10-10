@@ -27,3 +27,5 @@
 .cartHeader{position:static;margin:0;padding:0 0 10px}.cartBody{min-height:0;overflow:auto;padding:2px 4px 2px 2px;scrollbar-gutter:stable}
 .cartFooter{position:static;bottom:auto;margin:0;padding:12px 0 0;box-shadow:none}
 }
+
+@media(max-width:640px){.pageHelp>p{position:fixed;top:calc(var(--app-topbar-height,64px) + 64px);left:16px;right:16px;width:auto}}

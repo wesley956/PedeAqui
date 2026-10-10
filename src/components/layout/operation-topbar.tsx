@@ -28,11 +28,11 @@ export function OperationTopbar({ email, data, storeId, experienceMode = "standa
     <header className="app-topbar app-topbar-compact" data-driver-only={driverOnly}>
       <details className="app-operation-menu">
         <summary aria-label="Operação da loja" title={storeLabel}>
-            <strong>{storeLabel}</strong>
-            {data.receiving ? <span className="app-receiving-dot" data-accepting={data.receiving.accepting} role="img" aria-label={data.receiving.accepting ? "Recebimento de pedidos ativo" : "Pedidos pausados"} title={data.receiving.accepting ? "Recebimento de pedidos ativo" : "Pedidos pausados"} /> : null}
-            <span aria-hidden="true">⌄</span>
-          </summary>
-          <div className="app-topbar-panel app-operation-panel">
+          <strong>{storeLabel}</strong>
+          {data.receiving ? <span className="app-receiving-dot" data-accepting={data.receiving.accepting} role="img" aria-label={data.receiving.accepting ? "Recebimento de pedidos ativo" : "Pedidos pausados"} title={data.receiving.accepting ? "Recebimento de pedidos ativo" : "Pedidos pausados"} /> : null}
+          <span aria-hidden="true">⌄</span>
+        </summary>
+        <div className="app-topbar-panel app-operation-panel">
           <strong>{storeLabel}</strong>
           <div className="app-topbar-signals" aria-label="Estado da operação">
             {storeStatus ? <span>{storeStatus}</span> : null}
