@@ -69,7 +69,9 @@ Leia `print-agent/README.md`. Para desenvolver o painel não é preciso instalar
 
 `vercel.json` declara região `gru1` e cron de `/api/internal/order-notifications` a cada minuto. O workflow Pages publica `github-pages/`, não o servidor Next.js.
 
-A consulta pelo identificador do projeto, obtido no comentário de preview do PR #1224, confirmou [Vercel: projeto cruz, equipe pede-aqui](https://vercel.com/pede-aqui/cruz), Node.js 24.x e o domínio `www.pedeaqui.pp.ua`. A busca anterior por nome PedeAqui não encontrava o projeto porque o nome administrativo é `cruz`. O preview do PR aparece como READY; isso não certifica o commit em produção. Não foi comandado deploy nesta preparação; a integração Git da Vercel gera previews automaticamente ao abrir/atualizar o PR.
+A consulta pelo identificador do projeto, obtido no comentário de preview do PR #1224, confirmou [Vercel: projeto cruz, equipe pede-aqui](https://vercel.com/pede-aqui/cruz), Node.js 24.x e o domínio `www.pedeaqui.pp.ua`. A busca anterior por nome PedeAqui não encontrava o projeto porque o nome administrativo é `cruz`. A listagem de produção retornou [deploy READY](https://vercel.com/pede-aqui/cruz/HBX9PZ3xiLJpWKhKV7hjhNoaGcoS) na main em `e67f1e99`. Não foi comandado deploy nesta preparação; a integração Git da Vercel gera previews automaticamente ao abrir/atualizar o PR.
+
+A listagem de variáveis de ambiente, sem descriptografar valores, não mostrou destinos development: os registros disponíveis estão em production/preview. Não se deve assumir que um pull de development configurará o ambiente. Defina o ambiente de desenvolvimento antes de copiar credenciais; nenhum segredo foi copiado nesta preparação.
 
 ## Mensagem inicial sugerida
 
@@ -83,7 +85,8 @@ A consulta pelo identificador do projeto, obtido no comentário de preview do PR
 - [ ] Credenciais do ambiente escolhido configuradas fora do Git.
 - [x] Projeto/equipe/domínio da hospedagem identificados.
 - [x] Histórico remoto comparado por versão/nome: [relatório](DB_HISTORY_RECONCILIATION_20261011.md).
-- [ ] Commit de produção e reprodução completa do schema conferidos no ambiente escolhido.
+- [x] Commit do deploy de produção identificado: e67f1e99, READY.
+- [ ] Reprodução completa do schema conferida em ambiente isolado.
 - [ ] Pendências de navegador/hardware verificadas quando a tarefa exigir.
 
 Esses itens distinguem documentação pronta de ambiente operacional homologado.

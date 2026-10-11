@@ -22,7 +22,7 @@ Fontes: histórico Git e `docs/reviews/pdv-checkout-bar-2026-10-10.md`, `docs/re
 
 O relatório da barra do PDV registra **2.714 testes em 409 arquivos e build concluído** na rodada de 10/10. É evidência daquela revisão, não resultado de testes executados nesta preparação.
 
-O histórico da conversa “Avaliação de layout Pdv” relata integração na main e publicação. Nesta preparação, foi confirmado o projeto Vercel `cruz`, equipe `pede-aqui`, Node.js 24.x e domínio `www.pedeaqui.pp.ua`. O preview do PR #1224 aparece READY. O commit atualmente publicado em produção não foi certificado; preview e produção são ambientes distintos.
+O histórico da conversa “Avaliação de layout Pdv” relata integração na main e publicação. Nesta preparação, foi confirmado o projeto Vercel `cruz`, equipe `pede-aqui`, Node.js 24.x e domínio `www.pedeaqui.pp.ua`. A listagem de deployments de produção retornou `dpl_HBX9PZ3xiLJpWKhKV7hjhNoaGcoS`, READY, na main em `e67f1e99c6f2cad20cd5e24e937997e8ea65df2d`. O preview do PR #1224 é separado dessa produção.
 
 ## Banco: diferença que precisa permanecer visível
 
@@ -55,7 +55,7 @@ A conversa “Ajustar impressão” registra uma conexão secundária desativada
 
 1. Homologação autenticada da barra final, diálogo de adicionais, teclado e pagamento dividido: os relatórios distinguem observações efetivas de bloqueios do navegador e testes de código.
 2. Teste físico da impressora pretendida: separado de testes de fila, lease e idempotência.
-3. Commit publicado em produção: projeto/equipe/domínio Vercel identificados, mas o commit de produção ainda precisa de conferência.
+3. Configuração local: a listagem de variáveis Vercel apresentou destinos production/preview, sem development. Nenhum segredo foi descriptografado ou copiado para este checkout; é necessário definir o ambiente local pretendido.
 4. Instalação reprodutível: não há lockfile versionado no snapshot; o CI usa workaround de peers.
 5. Fluxo de restaurante por peso/balança: o diagnóstico anterior não identificou suporte nativo pronto. Não oferecer como homologado sem nova análise.
 6. Repetição/quantidade de complementos entre cardápio, PDV, salão, cozinha e impressão: validar o canal envolvido antes de assumir equivalência.
