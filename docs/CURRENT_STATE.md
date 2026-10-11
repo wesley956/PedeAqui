@@ -22,7 +22,7 @@ Fontes: histórico Git e `docs/reviews/pdv-checkout-bar-2026-10-10.md`, `docs/re
 
 O relatório da barra do PDV registra **2.714 testes em 409 arquivos e build concluído** na rodada de 10/10. É evidência daquela revisão, não resultado de testes executados nesta preparação.
 
-O histórico da conversa “Avaliação de layout Pdv” relata integração na main e publicação. Nesta preparação, o vínculo e o deploy Vercel atual não foram independentemente confirmados. Não converter esse relato em uma nova certificação de produção.
+O histórico da conversa “Avaliação de layout Pdv” relata integração na main e publicação. Nesta preparação, foi confirmado o projeto Vercel `cruz`, equipe `pede-aqui`, Node.js 24.x e domínio `www.pedeaqui.pp.ua`. O preview do PR #1224 aparece READY. O commit atualmente publicado em produção não foi certificado; preview e produção são ambientes distintos.
 
 ## Banco: diferença que precisa permanecer visível
 
@@ -34,16 +34,16 @@ O histórico da conversa “Avaliação de layout Pdv” relata integração na 
 - Os números 89 migrações e 113 tabelas/RLS do índice antigo são um snapshot de agosto. Não descrevem automaticamente o ambiente atual.
 - `db:drift` local usa `supabase/sql` e baseline + tail. Um resultado local válido não comprova equivalência com o projeto conectado.
 
-**Pendente:** reconciliar o histórico completo do banco correto com o baseline versionado em tarefa própria. Não trocar apenas o ref no JSON, mascarar divergências nem reaplicar todos os SQLs para fazer o check passar.
+A comparação completa por versão/nome confirmou que as 251 entradas locais existem no remoto, sem divergência de nomes; dez entradas remotas são adicionais. Veja o [relatório de reconciliação](DB_HISTORY_RECONCILIATION_20261011.md). A equivalência do SQL/schema e a atualização do baseline permanecem pendentes em tarefa própria. Não trocar apenas o ref no JSON, mascarar divergências nem reaplicar todos os SQLs para fazer o check passar.
 
 ### Verificações executadas nesta preparação
 
 - Node.js local: 24.19.0, compatível com o requisito 22+; CI continua configurado com 22.
 - `check-route-integrity.mjs`: passou, com 113 páginas e 241 referências internas literais.
-- `check-db-drift.mjs`: passou localmente, com 251 migrações no baseline combinado e um SQL local posterior à cauda. Isso difere das 261 entradas remotas; não houve comparação/reconciliação completa.
+- `check-db-drift.mjs`: passou localmente, com 251 migrações no baseline combinado e um SQL local posterior à cauda. A comparação remota por versão/nome encontrou dez entradas adicionais; não houve reconciliação estrutural nem mudança no baseline.
 - `production-preflight.mjs`: contratos estáticos passaram; checagem live ignorada por ausência de credenciais específicas.
 - Não foram instaladas dependências nem repetidos lint, typecheck, Vitest ou build; esta alteração é de documentação. Os resultados de 10/10 permanecem identificados como históricos.
-- Não foram criados pedidos, executadas migrações, alteradas conexões de impressão ou feitos deploys.
+- Não foram criados pedidos, executadas migrações ou alteradas conexões de impressão. Não foi comandado deploy; previews foram gerados automaticamente pela integração Git da Vercel.
 
 ## Impressão e operação
 
@@ -55,7 +55,7 @@ A conversa “Ajustar impressão” registra uma conexão secundária desativada
 
 1. Homologação autenticada da barra final, diálogo de adicionais, teclado e pagamento dividido: os relatórios distinguem observações efetivas de bloqueios do navegador e testes de código.
 2. Teste físico da impressora pretendida: separado de testes de fila, lease e idempotência.
-3. Vínculo de hospedagem e commit publicado: conector Vercel não retornou projeto na busca por PedeAqui nesta revisão.
+3. Commit publicado em produção: projeto/equipe/domínio Vercel identificados, mas o commit de produção ainda precisa de conferência.
 4. Instalação reprodutível: não há lockfile versionado no snapshot; o CI usa workaround de peers.
 5. Fluxo de restaurante por peso/balança: o diagnóstico anterior não identificou suporte nativo pronto. Não oferecer como homologado sem nova análise.
 6. Repetição/quantidade de complementos entre cardápio, PDV, salão, cozinha e impressão: validar o canal envolvido antes de assumir equivalência.

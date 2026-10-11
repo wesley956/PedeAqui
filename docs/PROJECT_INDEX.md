@@ -8,7 +8,7 @@ Este índice reúne documentação especializada e **baselines históricos**. Pa
 - O conector Supabase disponibilizou `idyjinpeijyqcejnunwm`; seu histórico remoto inclui as migrações de PDV de 10/10. O ref `zsbsczjhiujnhdznrzck` abaixo pertence ao baseline anterior.
 - O baseline versionado de migrações ainda exige reconciliação com o ambiente atual. Não substituir apenas o ref, renumerar SQL ou reaplicar o histórico para preparar o Codex.
 - O domínio da aplicação registrado no histórico é `https://www.pedeaqui.pp.ua`; GitHub Pages publica somente o site estático de apresentação.
-- A busca por PedeAqui no conector Vercel não retornou projeto nesta revisão; isso não comprova ausência de hospedagem. Confira equipe, vínculo, commit e ambiente antes de um deploy.
+- A busca inicial por PedeAqui não retornou projeto, mas a consulta pelo identificador informado no PR confirmou [o projeto Vercel cruz, equipe pede-aqui](https://vercel.com/pede-aqui/cruz), com o domínio `www.pedeaqui.pp.ua`. Confira commit e ambiente antes de um deploy.
 - [AGENTS.md](../AGENTS.md) contém instruções do repositório. Documentos de cliente, credenciais e configurações privadas de impressão não devem ser publicados.
 
 ## Identidade técnica e de produto

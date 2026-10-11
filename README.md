@@ -21,7 +21,7 @@ Plataforma SaaS multiempresa para operações de alimentação: cardápio digita
 | GitHub Pages | https://wesley956.github.io/PedeAqui/ — site estático de apresentação, não a aplicação Next.js |
 | Supabase disponível no conector em 11/10/2026 | `idyjinpeijyqcejnunwm`, região `sa-east-1` |
 | Ref histórico nos baselines de agosto | `zsbsczjhiujnhdznrzck` — não usar como destino atual por inferência |
-| Hospedagem | `vercel.json` declara `gru1`; projeto/deploy atual não foi confirmado pelo conector nesta revisão |
+| Hospedagem | [Vercel: equipe pede-aqui, projeto cruz](https://vercel.com/pede-aqui/cruz); Node.js 24.x; `vercel.json` declara `gru1` |
 
 A aplicação resolve a conexão de banco pelas variáveis de ambiente. Antes de preencher credenciais ou executar SQL, confira o projeto e o ambiente pretendidos. Não recrie o banco nem reaplique todo o histórico para preparar o Codex.
 

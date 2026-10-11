@@ -69,7 +69,7 @@ Leia `print-agent/README.md`. Para desenvolver o painel não é preciso instalar
 
 `vercel.json` declara região `gru1` e cron de `/api/internal/order-notifications` a cada minuto. O workflow Pages publica `github-pages/`, não o servidor Next.js.
 
-O conector Vercel não retornou projeto na busca por PedeAqui em 11/10/2026. Isso não prova ausência de hospedagem: vínculo, equipe e deploy precisam ser conferidos no ambiente correto antes de publicar. Nenhum deploy faz parte desta preparação.
+A consulta pelo identificador do projeto, obtido no comentário de preview do PR #1224, confirmou [Vercel: projeto cruz, equipe pede-aqui](https://vercel.com/pede-aqui/cruz), Node.js 24.x e o domínio `www.pedeaqui.pp.ua`. A busca anterior por nome PedeAqui não encontrava o projeto porque o nome administrativo é `cruz`. O preview do PR aparece como READY; isso não certifica o commit em produção. Não foi comandado deploy nesta preparação; a integração Git da Vercel gera previews automaticamente ao abrir/atualizar o PR.
 
 ## Mensagem inicial sugerida
 
@@ -81,7 +81,9 @@ O conector Vercel não retornou projeto na busca por PedeAqui em 11/10/2026. Iss
 - [x] Referências antigas de ambiente identificadas.
 - [ ] Dependências instaladas e gates completos no ambiente onde o projeto será executado.
 - [ ] Credenciais do ambiente escolhido configuradas fora do Git.
-- [ ] Vínculo do deploy atual e histórico remoto de migrações reconciliados.
+- [x] Projeto/equipe/domínio da hospedagem identificados.
+- [x] Histórico remoto comparado por versão/nome: [relatório](DB_HISTORY_RECONCILIATION_20261011.md).
+- [ ] Commit de produção e reprodução completa do schema conferidos no ambiente escolhido.
 - [ ] Pendências de navegador/hardware verificadas quando a tarefa exigir.
 
 Esses itens distinguem documentação pronta de ambiente operacional homologado.
