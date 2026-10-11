@@ -1,6 +1,15 @@
 # PedeAqui — Índice Mestre do Projeto
 
-Este documento é a **fonte canônica para retomar o projeto PedeAqui**. Antes de implementar ou alterar qualquer módulo, consulte este índice e os documentos especializados citados abaixo.
+Este índice reúne documentação especializada e **baselines históricos**. Para retomar o projeto no estado revisado em 11/10/2026, comece por [CURRENT_STATE.md](CURRENT_STATE.md), [CODEX_SETUP.md](CODEX_SETUP.md) e [CODE_MAP.md](CODE_MAP.md), conforme a tarefa. As contagens e declarações de conclusão abaixo pertencem aos ciclos em que foram registradas; não certificam o estado atual de produção.
+
+## Atualização de retomada — 11/10/2026
+
+- A main revisada é `e67f1e99`, incluindo as correções recentes do PDV e a barra fixa de pagamento (PRs #1222 e #1223).
+- O conector Supabase disponibilizou `idyjinpeijyqcejnunwm`; seu histórico remoto inclui as migrações de PDV de 10/10. O ref `zsbsczjhiujnhdznrzck` abaixo pertence ao baseline anterior.
+- O baseline versionado de migrações ainda exige reconciliação com o ambiente atual. Não substituir apenas o ref, renumerar SQL ou reaplicar o histórico para preparar o Codex.
+- O domínio da aplicação registrado no histórico é `https://www.pedeaqui.pp.ua`; GitHub Pages publica somente o site estático de apresentação.
+- A busca por PedeAqui no conector Vercel não retornou projeto nesta revisão; isso não comprova ausência de hospedagem. Confira equipe, vínculo, commit e ambiente antes de um deploy.
+- [AGENTS.md](../AGENTS.md) contém instruções do repositório. Documentos de cliente, credenciais e configurações privadas de impressão não devem ser publicados.
 
 ## Identidade técnica e de produto
 
@@ -11,8 +20,8 @@ Este documento é a **fonte canônica para retomar o projeto PedeAqui**. Antes d
 - Package técnico: **`pedeaqui`**
 - Branch principal: `main`
 - GitHub Pages: `https://wesley956.github.io/PedeAqui/`
-- Supabase oficial: project ref `zsbsczjhiujnhdznrzck`, região `sa-east-1`
-- Observação: o display name do projeto Supabase ainda aparece como `Cruz`; isso é somente um rótulo administrativo legado. **Não recriar o projeto nem trocar o project ref por causa desse nome.**
+- Supabase do baseline histórico de agosto: project ref `zsbsczjhiujnhdznrzck`, região `sa-east-1`. Consulte a atualização acima para o ambiente disponível atualmente.
+- Observação histórica: o display name aparecia como `Cruz`, um rótulo administrativo legado. Não recriar projetos por causa do nome; confirme o destino atual antes de qualquer operação.
 
 ## Ciclo de prontidão comercial — 22/08/2026
 
@@ -137,7 +146,7 @@ Evidências finais:
 - `POST_RENAME_INTEGRATIONS_322.md`
 - `FINAL_BASELINE_323.md`
 
-## Banco e migrations — baseline final
+## Banco e migrations — baseline histórico do ciclo [323]
 
 - Supabase project ref: `zsbsczjhiujnhdznrzck`
 - Migrations oficiais reconciliadas: **89**
@@ -206,7 +215,7 @@ Não são falhas de arquitetura, mas dependem de infraestrutura externa real:
 
 ## Como retomar o projeto
 
-Antes de começar qualquer nova issue:
+Para retomar hoje, use as instruções de `../AGENTS.md` e `CURRENT_STATE.md`. A lista abaixo registra o processo do ciclo original e não exige reler toda a documentação para uma alteração pequena:
 
 1. confirmar que está em `wesley956/PedeAqui` e `main` atualizada;
 2. ler este `PROJECT_INDEX.md`;
