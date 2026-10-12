@@ -16,7 +16,7 @@ import {
 } from "@/features/orders/external-order-presentation";
 import { resolveOrderManagerRealtimeAction } from "@/features/orders/order-realtime-actions";
 import { BULK_SELECTION_LIMIT, selectBulkOrders, toggleBulkOrder } from "@/features/orders/bulk-selection";
-import { elapsedLabel, type OrderManagerRow } from "@/features/orders/manager-model";
+import { elapsedLabel, isOrderAttentionLate, sortOrdersForAttention, type OrderManagerRow } from "@/features/orders/manager-model";
 import { useOrderAlert } from "@/features/orders/use-order-alert";
 import { useRememberedOrderSearch } from "@/features/orders/order-navigation-memory";
 import { OperationalRealtimeBadge, useOperationalRealtime } from "@/features/operations/use-operational-realtime";
@@ -27,9 +27,12 @@ import {
   type WorkflowStage,
 } from "@/features/orders/workflow-config";
 import { rawWorkflowStage, visibleWorkflowStage } from "@/server/conversations/order-workflow-visibility";
+import { OrderPreview } from "./order-preview";
+import { paymentMethodLabels } from "@/server/checkout/schemas";
 import styles from "./order-manager.module.css";
 
 const isOperationalOrder = (order: OrderManagerRow) => !["completed", "canceled", "rejected"].includes(order.order_status);
+const paymentStatusLabels: Record<string, string> = { pending: "Pagamento pendente", authorized: "Autorizado", paid: "Pago", failed: "Falhou", partially_refunded: "Estorno parcial", refunded: "Estornado" };
 const settledPaymentStatuses = new Set(["paid", "partially_refunded", "refunded"]);
 const offlineBulkPaymentMethods = new Set(["cash", "credit_card", "debit_card"]);
 const initialBulkQuickFinishState: BulkQuickFinishActionState = { ok: false, completed: 0, failed: 0, message: null, error: null };
@@ -92,6 +95,7 @@ function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean, payment
   if (order.order_status !== "confirmed") return null;
   if (["pending_confirmation", "queued"].includes(order.production_status)) return <OrderActionForm orderId={order.id} intent="start_production" label="Iniciar preparo" compact />;
   if (order.production_status === "preparing") return <OrderActionForm orderId={order.id} intent="mark_ready" label="Marcar pronto" compact />;
+  if (order.production_status === "ready" && order.fulfillment_type === "counter" && order.fulfillment_status === "pending") return <OrderActionForm orderId={order.id} intent="served" label="Marcar servido" compact />;
   if (order.production_status === "ready" && order.fulfillment_type === "pickup" && !["awaiting_pickup", "picked_up_by_customer"].includes(order.fulfillment_status)) {
     return <OrderActionForm orderId={order.id} intent="await_pickup" label="Aguardar retirada" compact />;
   }
@@ -116,7 +120,7 @@ function nextAction(order: OrderManagerRow, manualDeliveryMode: boolean, payment
   return null;
 }
 
-function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone, bulkSelectable, bulkSelected, bulkDisabled, onBulkToggle }: {
+function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone, bulkSelectable, bulkSelected, bulkDisabled, onBulkToggle, onPreview, selected }: {
   order: OrderManagerRow;
   now: number;
   config: CustomWorkflowConfig;
@@ -127,6 +131,8 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
   bulkSelected: boolean;
   bulkDisabled: boolean;
   onBulkToggle: (orderId: string, selected: boolean) => void;
+  onPreview?: () => void;
+  selected?: boolean;
 }) {
   const action = nextAction(order, manualDeliveryMode, paymentPolicy, config);
   const modality = order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : order.channel === "pdv" && order.fulfillment_type === "counter" ? "Consumir no local" : "Atendimento";
@@ -140,8 +146,8 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
     ? formatStoreDateTime(external.recommendedPreparationAt, timeZone, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
     : null;
 
-  return <article className={styles.orderCard} data-channel={external?.provider ?? "pedeaqui"}>
-    {bulkSelectable ? <label style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
+  return <article className={styles.orderCard} data-channel={external?.provider ?? "pedeaqui"} data-bucket={rawStage(order)} data-selected={selected || undefined} data-late={isOrderAttentionLate(order, now) || undefined}>
+    {bulkSelectable ? <label className={styles.bulkSelection} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
       <input
         type="checkbox"
         checked={bulkSelected}
@@ -160,7 +166,7 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
         <Tag>{channelBadge}</Tag>
         {external ? <Tag>{externalSyncLabel(external.syncStatus)}</Tag> : null}
       </div>
-      <span className={styles.metaText}>{modality} · {order.payment_status === "paid" ? "Pago" : "Pagamento pendente"} · {workflowStageLabels[rawStage(order)]}</span>
+      <span className={styles.metaText}>{modality} · {paymentStatusLabels[order.payment_status] ?? order.payment_status} · {workflowStageLabels[rawStage(order)]}</span>
       {external?.externalDisplayId ? <Tag>Cód. {external.externalDisplayId}</Tag> : null}
       {external ? <Tag>{externalPaymentLabel(external)}</Tag> : null}
       {logisticsLabel ? <Tag>{logisticsLabel}</Tag> : null}
@@ -168,6 +174,7 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
       {recommendedPreparationLabel ? <Tag>Preparar a partir de {recommendedPreparationLabel}</Tag> : null}
     </div>
     {action ? <div className={styles.primaryAction}>{action}</div> : null}
+    {onPreview ? <div className={styles.previewTrigger}><Button type="button" tone="secondary" size="sm" onClick={onPreview} aria-pressed={selected}>Ver resumo</Button><Link href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.mobileDetailLink}>Ver detalhes</Link></div> : null}
     <details className={styles.cardMore}>
       <summary>Mais</summary>
       <div className={styles.cardMoreBody}>
@@ -227,6 +234,9 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
   timeZone: string;
 }) {
   const [query, setQuery] = useState("");
+  const [view, setView] = useState<"queue" | "list" | "board">("queue");
+  const [stageFilter, setStageFilter] = useState<WorkflowStage | "all">("all");
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
@@ -283,6 +293,10 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
   const boundedEligibleIds = [...selectBulkOrders(bulkEligibleIds)];
   const allEligibleSelected = boundedEligibleIds.length > 0 && boundedEligibleIds.every((id) => selectedIds.has(id));
 
+  const previewOrder = orders.find((order) => order.id === previewId && isOperationalOrder(order));
+  const attentionOrders = sortOrdersForAttention(filtered.filter((order) => isOperationalOrder(order) && (stageFilter === "all" || rawStage(order) === stageFilter)));
+  const activeStages = ["new", "preparing", "ready", "delivering", "awaiting_pickup"] as const;
+
   const toggleBulkSelection = (orderId: string, selected: boolean) => {
     if (bulkPending) return;
     setSelectedIds((current) => toggleBulkOrder(current, bulkEligibleIds, orderId, selected));
@@ -303,6 +317,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
       </Button> : null}
       <div className={styles.toolbarMeta}>Fluxo personalizado · {filtered.length} pedido(s)</div>
       <OperationalRealtimeBadge status={realtimeStatus} />
+      <div className={styles.viewSwitch} role="group" aria-label="Visualização dos pedidos">{([['queue','Fila'],['list','Lista'],['board','Quadro']] as const).map(([key,label]) => <Button key={key} type="button" tone="secondary" size="sm" aria-pressed={view === key} onClick={() => setView(key)}>{label}</Button>)}</div>
     </div>
     {bulkEligibleOrders.length > BULK_SELECTION_LIMIT ? <p className={styles.pageHint} role="status">Até {BULK_SELECTION_LIMIT} pedidos por lote. Finalize este lote para selecionar os próximos.</p> : null}
     {selectedOrders.length > 0 ? <form
@@ -331,8 +346,38 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
     <div className={styles.noticeSlot} aria-live="polite">
       {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}
     </div>
-    <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} bulkPending={bulkPending} onBulkToggle={toggleBulkSelection} />
-    <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} bulkPending={bulkPending} onBulkToggle={toggleBulkSelection} />
+    {view === "board" ? <>    <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} bulkPending={bulkPending} onBulkToggle={toggleBulkSelection} />
+    <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} bulkPending={bulkPending} onBulkToggle={toggleBulkSelection} /></> : <>
+      <div className={styles.stageFilters} role="group" aria-label="Filtrar etapa">
+        <Button type="button" tone="secondary" aria-pressed={stageFilter === "all"} onClick={() => setStageFilter("all")}>Todos {filtered.length}</Button>
+        {activeStages.map((stage) => <Button key={stage} type="button" tone="secondary" aria-pressed={stageFilter === stage} onClick={() => setStageFilter(stage)}>{workflowStageLabels[stage]} {filtered.filter((order) => rawStage(order) === stage).length}</Button>)}
+      </div>
+      <div className={styles.attentionWorkspace} data-preview={Boolean(previewOrder)}>
+        <div className={styles.attentionRows} data-view={view} aria-label={view === "queue" ? "Fila de próximas ações" : "Lista de pedidos"}>
+          <p className={styles.queueHint}>Etapas reais do pedido; as ações continuam seguindo o fluxo configurado da loja.</p>
+          {view === "list" && attentionOrders.length > 0 ? <table className={styles.ordersTable}>
+            <caption className={styles.tableCaption}>Pedidos ativos e próximas ações</caption>
+            <thead><tr><th scope="col">Pedido / cliente</th><th scope="col">Tipo</th><th scope="col">Etapa</th><th scope="col">Espera</th><th scope="col">Total</th><th scope="col">Próxima ação</th></tr></thead>
+            <tbody>{attentionOrders.map((order) => <tr key={order.id} data-selected={previewOrder?.id === order.id || undefined} data-late={isOrderAttentionLate(order, now) || undefined}>
+              <th scope="row">
+                {canBulkQuickFinish(order, config, manualDeliveryMode) ? <input type="checkbox" aria-label={`Selecionar pedido #${order.display_number} para finalização em lote`} checked={selectedIds.has(order.id)} disabled={bulkPending || (!selectedIds.has(order.id) && selectedIds.size >= BULK_SELECTION_LIMIT)} onChange={(event) => toggleBulkSelection(order.id, event.target.checked)} /> : null}
+                <Button type="button" tone="ghost" size="sm" aria-label={`Ver resumo do pedido ${order.display_number}`} onClick={() => setPreviewId(order.id)}>#{order.display_number}</Button>
+                <span className={styles.tableCustomer}>{order.customer_name_snapshot}</span>
+                <span className={styles.metaText}>{paymentStatusLabels[order.payment_status] ?? order.payment_status} · {order.payment_method_snapshot ? paymentMethodLabels[order.payment_method_snapshot as keyof typeof paymentMethodLabels] ?? order.payment_method_snapshot : orderChannelBadgeLabel(order.channel, order.external)}</span>
+                <Link href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.tableDetails}>Detalhes completos</Link>
+              </th>
+              <td>{order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : "No local"}</td>
+              <td>{workflowStageLabels[rawStage(order)]}</td><td className={styles.elapsed}>{elapsedLabel(order.created_at, now)}</td><td className={styles.total}>{money(order.total_cents)}</td>
+              <td>{nextAction(order, manualDeliveryMode, paymentPolicy, config) ?? <Link href={`/pedidos/${order.id}`} className={styles.detailsLink}>Ver detalhes</Link>}</td>
+            </tr>)}</tbody>
+          </table> : null}
+          <div className={view === "list" ? styles.tableMobileCards : styles.queueCards}>{attentionOrders.map((order) => <Card key={order.id} order={order} now={now} config={config} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} bulkSelectable={canBulkQuickFinish(order, config, manualDeliveryMode)} bulkSelected={selectedIds.has(order.id)} bulkDisabled={bulkPending || (!selectedIds.has(order.id) && selectedIds.size >= BULK_SELECTION_LIMIT)} onBulkToggle={toggleBulkSelection} onPreview={() => setPreviewId(order.id)} selected={previewOrder?.id === order.id} />)}</div>
+          {attentionOrders.length === 0 ? <div className={styles.emptyLane}>{query || stageFilter !== "all" ? "Nenhum pedido para estes filtros." : "Nenhum pedido ativo."}</div> : null}
+        </div>
+        {previewOrder ? <OrderPreview key={previewOrder.id} order={previewOrder} revision={previewOrder.updated_at} onClose={() => setPreviewId(null)} primaryAction={nextAction(previewOrder, manualDeliveryMode, paymentPolicy, config)} /> : null}
+      </div>
+    </>}
+
   </div>;
 }
 

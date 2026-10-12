@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { OrderActionForm } from "./order-action-form";
 import type { OrderManagerRow } from "./manager-model";
@@ -12,7 +12,7 @@ import styles from "./order-manager.module.css";
 const money = (value: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value / 100);
 type PreviewResult = Awaited<ReturnType<typeof loadOrderPreviewAction>>;
 
-export function OrderPreview({ order, revision, onClose }: { order: OrderManagerRow; revision: string; onClose: () => void }) {
+export function OrderPreview({ order, revision, onClose, primaryAction }: { order: OrderManagerRow; revision: string; onClose: () => void; primaryAction?: ReactNode }) {
   const [result, setResult] = useState<{ revision: string; value: PreviewResult } | null>(null);
   const [attempt, setAttempt] = useState(0);
   const requestRevision = `${revision}:${attempt}`;
@@ -39,6 +39,7 @@ export function OrderPreview({ order, revision, onClose }: { order: OrderManager
       {current.detail.address ? <><h3>Entrega</h3><p>{current.detail.address}</p>{current.detail.reference ? <p>Referência: {current.detail.reference}</p> : null}</> : null}
     </> : <div role="alert"><p>{current.error}</p><Button type="button" tone="secondary" onClick={() => setAttempt((value) => value + 1)}>Tentar novamente</Button></div>}
     <footer className={styles.previewFooter}>
+      {primaryAction}
       {order.order_status === "confirmed" ? <OrderActionForm orderId={order.id} intent="print" label="Imprimir pedido" tone="secondary" /> : null}
       <Link href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.detailsLink}>Ver detalhes completos</Link>
     </footer>

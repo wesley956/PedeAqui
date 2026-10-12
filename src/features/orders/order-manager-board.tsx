@@ -267,7 +267,7 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
             <div className={view === "list" ? styles.tableMobileCards : styles.queueCards}>{attentionOrders.map((order) => <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} workflowMode={workflowMode} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} onPreview={() => setSelectedId(order.id)} selected={selectedOrder?.id === order.id} />)}</div>
             {attentionOrders.length === 0 ? <div className={styles.emptyLane}>{query || stage !== "all" ? "Nenhum pedido para estes filtros." : "Nenhum pedido ativo. Os novos pedidos aparecem aqui automaticamente."}</div> : null}
           </div>
-          {selectedOrder ? <OrderPreview key={selectedOrder.id} order={selectedOrder} revision={selectedOrder.updated_at} onClose={() => setSelectedId(null)} /> : null}
+          {selectedOrder ? <OrderPreview key={selectedOrder.id} order={selectedOrder} revision={selectedOrder.updated_at} onClose={() => setSelectedId(null)} primaryAction={(() => { const action = primaryActionForOrder(selectedOrder, workflowMode, manualDeliveryMode, paymentPolicy); return action ? <OrderActionForm orderId={selectedOrder.id} intent={action.intent} label={action.label} tone={action.tone} confirmPayment={action.confirmPayment} compact /> : null; })()} /> : null}
         </div>
       </> : workflowMode === "simplified" ? <div className={styles.activeGrid} aria-label="Pedidos em fluxo simplificado" data-mode="simplified">
         {simplifiedColumns.map((column) => <section key={column.key} aria-label={column.label} className={styles.lane} data-bucket={column.key}>

@@ -74,3 +74,7 @@ Fila inicial com prioridade operacional, Lista em tabela com alternativa de cart
 Build e typecheck aprovados; lint sem erros (8 avisos preexistentes). Suíte inicial completa: 2.722 testes em 412 arquivos. Teste de navegador dos componentes reais com dependências simuladas: trocar Fila/Lista/Quadro, abrir/fechar resumo, filtrar etapa e buscar; matriz 360/390/768/1024/1366/1920px em claro/escuro sem overflow horizontal. Esta evidência não certifica transações no backend produtivo.
 
 Custom conserva o quadro configurado existente; adequação das novas visualizações ao custom, ledger de pagamento dividido no resumo e padronização dos demais cabeçalhos permanecem pendentes. Nenhuma publicação em produção está implícita nestas evidências.
+
+### Complemento do fluxo personalizado
+
+Na continuidade, a homologação autenticada identificou a loja Santa Rita com fluxo custom: somente o quadro legado aparecia. Fila e Lista agora foram estendidas ao custom, reutilizando nextAction, seleção em lote, quick_finish e entrega gerenciada/manual existentes. A fila mostra a etapa operacional real; o Quadro continua respeitando os checkpoints configurados. O resumo recebe a mesma próxima ação da visualização. Esta implementação substitui a limitação anterior sobre a ausência de novas views no custom; não altera sua configuração persistida.

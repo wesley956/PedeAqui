@@ -169,3 +169,6 @@
 .tableDetails { display:inline-block;color:var(--text-secondary);text-decoration:underline;min-height:24px; }
 @media(max-width:900px) { .ordersTable { display:none; } .tableMobileCards { display:grid;gap:8px; } }
 @media(pointer:coarse) { .tableDetails { min-height:44px; } }
+.attentionRows .bulkSelection { grid-column:1;grid-row:3; }
+.ordersTable input[type="checkbox"] { accent-color:var(--accent);width:18px;height:18px; }
+@media(max-width:640px) { .attentionRows .bulkSelection { grid-row:auto; } }
