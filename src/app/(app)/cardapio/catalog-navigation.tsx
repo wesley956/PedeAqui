@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 import { usePathname } from "next/navigation";
 import styles from "./catalog-management.module.css";
 
 const links = [
-  { label: "Produtos", href: "/cardapio/produtos", hint: "Itens, preços e disponibilidade", icon: "🍔" },
-  { label: "Categorias", href: "/cardapio/categorias", hint: "Organização do cardápio", icon: "▦" },
-  { label: "Adicionais", href: "/cardapio/adicionais", hint: "Opções e complementos", icon: "+" },
-  { label: "Sugestões", href: "/cardapio/sugestoes", hint: "Itens para acompanhar", icon: "✨" },
-  { label: "Promoções", href: "/cardapio/promocoes", hint: "Ofertas por dia e horário", icon: "🏷️" },
+  { label: "Produtos", href: "/cardapio/produtos", hint: "Itens, preços e disponibilidade", icon: "catalog" },
+  { label: "Categorias", href: "/cardapio/categorias", hint: "Organização do cardápio", icon: "platform" },
+  { label: "Adicionais", href: "/cardapio/adicionais", hint: "Opções e complementos", icon: "settings" },
+  { label: "Sugestões", href: "/cardapio/sugestoes", hint: "Itens para acompanhar", icon: "growth" },
+  { label: "Promoções", href: "/cardapio/promocoes", hint: "Ofertas por dia e horário", icon: "purchases" },
 ] as const;
 
 export function CatalogNavigation() {
@@ -18,7 +19,7 @@ export function CatalogNavigation() {
     {links.map(({ label, href, hint, icon }) => {
       const active = pathname === href || pathname.startsWith(`${href}/`);
       return <Link key={href} href={href} className={styles.navLink} aria-current={active ? "page" : undefined}>
-        <span className={styles.navIcon} aria-hidden>{icon}</span>
+        <span className={styles.navIcon} aria-hidden><NavigationIcon name={icon} /></span>
         <span><strong className={styles.navTitle}>{label}</strong><small className={styles.navHint}>{hint}</small></span>
       </Link>;
     })}

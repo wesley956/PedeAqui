@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { ProductThumbnail } from "@/components/catalog/product-thumbnail";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 import { Button } from "@/components/ui/button";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 import { SearchInput, SelectField } from "@/components/ui/form-controls";
@@ -97,12 +99,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           <Link href="/cardapio/produtos">Limpar filtros</Link>
         </article>
       ) : (
-        <div className={styles.productList}>
+        <div className={styles.productList} role="list" aria-label="Produtos do catálogo">
           {filteredProducts.map((product) => {
             const availability = product.availability as keyof typeof labels;
             const presentation = statusPresentation[availability] ?? statusPresentation.inactive;
             return (
-              <article key={product.id} className={`card ${styles.productCard}`}>
+              <article key={product.id} className={`card ${styles.productCard}`} role="listitem">
+                <ProductThumbnail src={product.image_url} className={styles.productThumbnail} />
                 <div className={styles.productMain}>
                   <div className={styles.productTitleRow}>
                     <span className={styles.productName}>{product.name}</span>
@@ -115,26 +118,25 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     {product.image_url ? <span className={styles.metaChip}>Imagem cadastrada</span> : null}
                     <span className={styles.metaChip}>Ordem {product.sort_order}</span>
                   </div>
-                  <div className={styles.productActions}>
-                    <Link href={`/cardapio/produtos/${product.id}`}>Editar</Link>
-                    <ResilientMutationForm action={setProductAvailabilityFormAction} className={styles.quickAvailabilityForm}>
-                      <input type="hidden" name="productId" value={product.id} />
-                      <input type="hidden" name="availability" value={product.availability === "available" ? "inactive" : "available"} />
-                      <Button type="submit" tone="secondary">
-                        {product.availability === "available" ? "Pausar produto" : "Reativar produto"}
-                      </Button>
-                    </ResilientMutationForm>
-                    <form action={duplicateProductAction}>
-                      <input type="hidden" name="productId" value={product.id} />
-                      <Button type="submit" tone="secondary">Duplicar</Button>
-                    </form>
-                    <ResilientMutationForm action={removeProductAction}>
-                      <input type="hidden" name="productId" value={product.id} />
-                      <ConfirmSubmitButton confirmation="Remover este produto do catálogo? Pedidos e histórico serão preservados.">Remover</ConfirmSubmitButton>
-                    </ResilientMutationForm>
-                  </div>
                 </div>
                 <div className={styles.productPrice}>{formatCents(product.promotional_price_cents ?? product.price_cents)}</div>
+                <div className={styles.productActions}>
+                  <ResilientMutationForm action={setProductAvailabilityFormAction} className={styles.quickAvailabilityForm}>
+                    <input type="hidden" name="productId" value={product.id} />
+                    <input type="hidden" name="availability" value={product.availability === "available" ? "inactive" : "available"} />
+                    <Button type="submit" tone="secondary" role="switch" aria-checked={product.availability === "available"} aria-label={`${product.availability === "available" ? "Pausar produto" : "Reativar produto"}: ${product.name}`} className={styles.availabilitySwitch}>
+                      <span className={styles.switchTrack} aria-hidden="true" />Disponível
+                    </Button>
+                  </ResilientMutationForm>
+                  <details className={styles.productMenu}>
+                    <summary aria-label={`Ações do produto ${product.name}`}><NavigationIcon name="more" />Ações</summary>
+                    <div className={styles.productMenuBody}>
+                      <Link href={`/cardapio/produtos/${product.id}`}>Editar</Link>
+                      <form action={duplicateProductAction}><input type="hidden" name="productId" value={product.id} /><Button type="submit" tone="secondary">Duplicar</Button></form>
+                      <ResilientMutationForm action={removeProductAction}><input type="hidden" name="productId" value={product.id} /><ConfirmSubmitButton tone="secondary" confirmation="Remover este produto do catálogo? Pedidos e histórico serão preservados.">Remover</ConfirmSubmitButton></ResilientMutationForm>
+                    </div>
+                  </details>
+                </div>
               </article>
             );
           })}

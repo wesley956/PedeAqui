@@ -39,7 +39,8 @@ describe("WPP-03 Conversations Inbox UI", () => {
   });
 
   it("uses the available desktop viewport and keeps scrolling inside operational areas", () => {
-    expect(styles).toContain("grid-template-columns:minmax(270px,320px) minmax(420px,1fr) minmax(220px,270px)");
+    expect(styles).toContain("grid-template-columns:minmax(250px,300px) minmax(0,1fr) minmax(250px,280px)");
+    expect(styles).toContain('.workspace:not([data-context="true"])');
     expect(styles).toContain(".inboxList{min-height:0;overflow-y:auto;overflow-x:hidden");
     expect(styles).toContain(".messages{min-height:0;overflow-y:auto;overflow-x:hidden");
     expect(styles).toContain(".contextPanel{min-width:0;min-height:0;height:100%;overflow:hidden");

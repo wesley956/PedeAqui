@@ -60,7 +60,7 @@ export class PdvService {
 
     const [categoriesResult, productsResult, linksResult, groupsResult, modifiersResult, paymentMethods, customerAccess, growthSettingsResult, couponsResult] = await Promise.all([
       admin.from("categories").select("id, name, sort_order").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("active", true).is("deleted_at", null).order("sort_order").order("name"),
-      admin.from("products").select("id, category_id, name, description, sku, barcode, price_cents, promotional_price_cents").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("active", true).eq("availability", "available").is("deleted_at", null).order("name"),
+      admin.from("products").select("id, category_id, name, description, sku, barcode, image_url, price_cents, promotional_price_cents").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("active", true).eq("availability", "available").is("deleted_at", null).order("name"),
       admin.from("product_modifier_groups").select("product_id, modifier_group_id, sort_order").eq("organization_id", context.organizationId).eq("store_id", storeId).order("sort_order"),
       admin.from("modifier_groups").select("id, name, min_selection, max_selection, required, sort_order").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("active", true).is("deleted_at", null).order("sort_order"),
       admin.from("modifiers").select("id, modifier_group_id, name, price_cents, sort_order").eq("organization_id", context.organizationId).eq("store_id", storeId).eq("active", true).is("deleted_at", null).order("sort_order"),
@@ -102,7 +102,7 @@ export class PdvService {
     }
 
     const products: PosProduct[] = (productsResult.data ?? []).filter((row) => row.category_id === null || activeCategoryIds.has(row.category_id)).map((row) => ({
-      id: row.id, categoryId: row.category_id, name: row.name, description: row.description, sku: row.sku, barcode: row.barcode,
+      id: row.id, imageUrl: row.image_url ?? null, categoryId: row.category_id, name: row.name, description: row.description, sku: row.sku, barcode: row.barcode,
       priceCents: Number(row.promotional_price_cents ?? row.price_cents),
       modifierGroups: (groupIdsByProduct.get(row.id) ?? []).map((groupId) => groupsById.get(groupId)).filter((group): group is PosModifierGroup => Boolean(group)),
     }));
