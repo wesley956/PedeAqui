@@ -15,7 +15,7 @@ describe("authenticated navigation regressions", () => {
   it("keeps one page-level heading in the catalog products route", () => {
     const layout = read("src/app/(app)/cardapio/layout.tsx");
     const page = read("src/app/(app)/cardapio/produtos/page.tsx");
-    expect(layout).toContain("<h1>Organize o que você vende</h1>");
+    expect(layout).toContain("<h1>Cardápio</h1>");
     expect(page).toContain("<h2>Produtos</h2>");
     expect(page).not.toContain("<h1>Produtos</h1>");
   });

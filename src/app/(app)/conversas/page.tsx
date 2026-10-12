@@ -162,7 +162,7 @@ export default async function ConversationsPage({
       {params.erro === "provider_non_retryable" ? <div className={styles.alert} role="alert"><strong>A Meta rejeitou o envio.</strong><p>Revise a conexão ou o template aprovado antes de tentar novamente.</p></div> : null}
 
       {inbox.conversations.length === 0 && !params.cursor ? <div className={styles.empty}><EmptyState title="Nenhuma conversa nesta fila" description="Novas mensagens aparecerão aqui automaticamente quando um canal estiver conectado." /></div> : (
-        <div className={styles.workspace} data-selected={detail ? "true" : undefined}>
+        <div className={styles.workspace} data-selected={detail ? "true" : undefined} data-context={detail && detailContext ? "true" : undefined}>
           <aside className={styles.inboxPanel} aria-label="Lista de conversas">
             <div className={styles.inboxToolbar}>
               <div className={styles.inboxTitleRow}>

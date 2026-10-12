@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ProductThumbnail } from "@/components/catalog/product-thumbnail";
 import { Dialog } from "@/components/ui/feedback";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from "react";
 import { createPdvSaleAction, searchPdvCustomersAction } from "@/features/pdv/actions";
@@ -209,7 +210,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
       <div className={styles.layout} data-mobile-view={mobileView}>
         <div className={styles.catalog} data-pdv-panel="catalog">
           <div className={styles.toolbar}><input className={styles.search} type="search" value={search} onKeyDown={(event) => { if (event.key === "Enter") event.preventDefault(); }} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar produto, SKU ou código de barras" autoComplete="off" aria-label="Buscar produtos no PDV" /><div className={styles.categories} aria-label="Categorias do PDV"><button type="button" className={categoryId === null ? styles.categoryActive : styles.categoryButton} onClick={() => setCategoryId(null)}>Todos</button>{categories.map((category) => <button type="button" key={category.id} className={categoryId === category.id ? styles.categoryActive : styles.categoryButton} onClick={() => setCategoryId(category.id)}>{category.name}</button>)}</div></div>
-          {visibleProducts.length === 0 ? <div className={styles.empty}>Nenhum produto disponível para este filtro.</div> : <div className={styles.productGrid}>{visibleProducts.map((product) => <button type="button" key={product.id} className={styles.productCard} onClick={() => chooseProduct(product)}><span><span className={styles.productName}>{product.name}</span>{product.description ? <span className={styles.productDescription}>{product.description}</span> : null}</span><span className={styles.rowBetween}><span className={styles.productPrice}>{money(product.priceCents)}</span><span className={styles.mutedSmall}>{product.modifierGroups.length > 0 ? "Configurar" : "+ Adicionar"}</span></span></button>)}</div>}
+          {visibleProducts.length === 0 ? <div className={styles.empty}>Nenhum produto disponível para este filtro.</div> : <div className={styles.productGrid}>{visibleProducts.map((product) => <button type="button" key={product.id} className={styles.productCard} onClick={() => chooseProduct(product)}><span className={styles.productHeading}><ProductThumbnail src={product.imageUrl} className={styles.productThumbnail} /><span><span className={styles.productName}>{product.name}</span>{product.description ? <span className={styles.productDescription}>{product.description}</span> : null}</span></span><span className={styles.rowBetween}><span className={styles.productPrice}>{money(product.priceCents)}</span><span className={styles.mutedSmall}>{product.modifierGroups.length > 0 ? "Configurar" : "+ Adicionar"}</span></span></button>)}</div>}
         </div>
 
         <section className={`card ${styles.cartPanel}`} data-pdv-panel="sale">
