@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import type { ExperienceMode } from "@/modules/user-experience";
@@ -15,30 +16,6 @@ export type ShellNavigationItem = {
   easyPrimary?: boolean;
 };
 
-const icons: Record<string, string> = {
-  dashboard: "⌂",
-  orders: "▤",
-  conversations: "◌",
-  dining: "▦",
-  catalog: "☷",
-  pdv: "▣",
-  cash: "$",
-  finance: "↗",
-  fiscal: "§",
-  production: "◫",
-  deliveries: "➜",
-  driver: "⌁",
-  inventory: "□",
-  gas_containers: "◉",
-  suppliers: "◇",
-  purchases: "▥",
-  customers: "◎",
-  growth: "↟",
-  scale: "◷",
-  team: "♙",
-  settings: "⚙",
-  platform: "◆",
-};
 
 function isActive(pathname: string, href: string) {
   return pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
@@ -55,7 +32,7 @@ function NavigationLink({ item, compact, pathname }: { item: ShellNavigationItem
       aria-label={compact ? (item.key === "dashboard" ? "Início" : item.label) : undefined}
       title={compact ? item.label : undefined}
     >
-      <span className="nav-link-marker" aria-hidden>{icons[item.key] ?? item.label.slice(0, 1)}</span>
+      <span className="nav-link-marker" aria-hidden><NavigationIcon name={item.key} /></span>
       <span className="nav-link-label">{item.key === "dashboard" ? "Início" : item.label}</span>
     </Link>
   );
@@ -95,7 +72,7 @@ export function DesktopNavigation({ items, experienceMode = "standard", children
             <h2 className="nav-group-title" id="nav-group-more">Organização</h2>
             <div className="nav-group-links">
               <Link href="/mais-ferramentas" className="app-nav-link" aria-current={moreActive ? "page" : undefined} aria-label={compact ? "Mais ferramentas" : undefined} title={compact ? "Mais ferramentas" : undefined}>
-                <span className="nav-link-marker" aria-hidden>•••</span>
+                <span className="nav-link-marker" aria-hidden><NavigationIcon name="more" /></span>
                 <span className="nav-link-label">Mais ferramentas</span>
               </Link>
             </div>

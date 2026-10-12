@@ -102,3 +102,14 @@ export function completionBlockers(order: Pick<OrderManagerRow, "order_status" |
   if (!paymentAllowsOrderCompletion(order.payment_status)) blockers.push("pagamento ainda não está liquidado");
   return blockers;
 }
+
+/** Presentation order only: never changes workflow or payment eligibility. */
+export function sortOrdersForAttention(orders: readonly OrderManagerRow[]) {
+  const stagePriority: Record<OperationalOrderBucket, number> = { new: 0, ready: 1, queued: 2, preparing: 3, history: 5 };
+  const priority = (order: OrderManagerRow) => canCompleteFromManager(order) ? 4 : stagePriority[deriveOperationalBucket(order)];
+  const created = (order: OrderManagerRow) => {
+    const value = Date.parse(order.created_at);
+    return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
+  };
+  return [...orders].sort((a, b) => priority(a) - priority(b) || created(a) - created(b) || a.display_number - b.display_number);
+}

@@ -12,3 +12,14 @@
 @media(min-width:901px) and (max-width:1180px){.app-shell,.app-shell:has(.desktop-navigation[data-compact="true"]){grid-template-columns:82px minmax(0,1fr)}.app-sidebar{padding-inline:10px}.app-content{padding:22px}.app-main:has(.conversations-workspace-route)>.app-content{padding:9px 10px 10px}}
 @media(max-width:900px){.app-shell,.app-shell:has(.desktop-navigation[data-compact="true"]){grid-template-columns:1fr}.app-content{padding:18px 14px 92px}.mobile-nav{min-height:68px;background:color-mix(in srgb,var(--surface-0) 96%,transparent);backdrop-filter:blur(12px);box-shadow:0 -8px 24px rgba(0,0,0,.08)}.mobile-nav>a,.mobile-more>summary{min-height:68px;display:grid;grid-template-rows:22px auto;align-content:center;justify-items:center;gap:3px;padding:5px 2px;font-size:11px}.mobile-nav-icon{font-size:16px;line-height:1;color:inherit}.mobile-more>summary[aria-current="page"],.mobile-nav>a[aria-current="page"]{color:var(--text-primary);background:var(--surface-2);box-shadow:inset 0 3px 0 var(--accent)}.mobile-more-panel{bottom:calc(100% + 10px);border-radius:16px;padding:8px}.app-shell:has(.conversations-workspace-route) button[aria-label="Abrir assistente do PedeAqui"]{display:none!important}}
 @media(max-width:640px){.app-content{padding:16px 13px 88px}.app-topbar{min-height:58px}}
+
+/* Shared theme-aware navigation, with readable labels and a single icon family. */
+.app-sidebar{background:var(--surface-1);color:var(--text-primary);box-shadow:none;border-right:1px solid var(--border-default)}
+.brand-row,.brand-wordmark{color:var(--text-primary)}
+.sidebar-toggle{background:var(--surface-2);color:var(--text-secondary);border-color:var(--border-default)}
+.sidebar-toggle:hover{background:var(--surface-3);color:var(--text-primary);border-color:var(--border-default)}
+.nav-group-title{font-size:12px;color:var(--text-secondary)}
+.app-nav-link{color:var(--text-secondary);border-radius:8px;min-height:44px}
+.app-nav-link:hover,.app-nav-link[aria-current="page"]{background:var(--surface-2);color:var(--text-primary)}
+.nav-link-marker,.app-nav-link[aria-current="page"] .nav-link-marker{color:inherit}
+.mobile-nav-icon{display:grid;place-items:center}.mobile-nav>a,.mobile-more>summary{font-size:12px}

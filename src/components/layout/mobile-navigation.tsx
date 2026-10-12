@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 import { usePathname } from "next/navigation";
 import type { ExperienceMode } from "@/modules/user-experience";
 import type { OperationalContext } from "./navigation-model";
@@ -17,10 +18,6 @@ const preferredOrder: Record<OperationalContext, readonly string[]> = {
   administrative: ["catalog", "inventory", "purchases", "settings"],
 };
 
-const icons: Record<string, string> = {
-  dashboard: "⌂", orders: "▤", catalog: "☷", pdv: "▣", cash: "$", customers: "◎", conversations: "◌",
-  dining: "▦", production: "◫", deliveries: "➜", driver: "⌁", inventory: "□", purchases: "▥", settings: "⚙",
-};
 
 function isActive(pathname: string, href: string) {
   return pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
@@ -77,9 +74,9 @@ export function MobileNavigation({ items, contexts, experienceMode = "standard" 
     <nav className="mobile-nav" aria-label="Navegação principal mobile" data-experience={experienceMode}>
       {selected.map((item) => {
         const active = isActive(pathname, item.href);
-        return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}><span className="mobile-nav-icon" aria-hidden>{icons[item.key] ?? "•"}</span><span>{mobileLabel(item, contexts)}</span></Link>;
+        return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}><span className="mobile-nav-icon" aria-hidden><NavigationIcon name={item.key} /></span><span>{mobileLabel(item, contexts)}</span></Link>;
       })}
-      {more.length > 0 ? <details className="mobile-more"><summary aria-label="Abrir mais opções" aria-current={moreActive ? "page" : undefined}><span className="mobile-nav-icon" aria-hidden>•••</span><span>Mais</span></summary><div className="mobile-more-panel">
+      {more.length > 0 ? <details className="mobile-more"><summary aria-label="Abrir mais opções" aria-current={moreActive ? "page" : undefined}><span className="mobile-nav-icon" aria-hidden><NavigationIcon name="more" /></span><span>Mais</span></summary><div className="mobile-more-panel">
         <Link href="/mais-ferramentas" aria-current={pathname === "/mais-ferramentas" ? "page" : undefined}>Todas as ferramentas</Link>
         {more.map((item) => {
           const active = isActive(pathname, item.href);
