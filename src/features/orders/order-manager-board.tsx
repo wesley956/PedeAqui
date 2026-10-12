@@ -24,6 +24,7 @@ import {
   deriveOperationalBucket,
   deriveOrderLane,
   elapsedLabel,
+  sortOrdersForAttention,
   isOrderAttentionLate,
   operationalBucketLabels,
   shouldContinueInDeliveryCenter,
@@ -32,6 +33,7 @@ import {
 } from "@/features/orders/manager-model";
 import { orderStatusLabels, productionStatusLabels } from "@/server/orders/state-machines";
 import type { PaymentCompletionPolicy } from "@/modules/payment-completion-policy";
+import { OrderPreview } from "./order-preview";
 import styles from "./order-manager.module.css";
 
 const activeBuckets = ["new", "preparing", "ready", "queued"] as const satisfies readonly OperationalOrderBucket[];
@@ -93,6 +95,9 @@ export function primaryActionForOrder(order: OrderManagerRow, workflowMode: Boar
   if (order.production_status === "preparing") {
     return { intent: "mark_ready", label: workflowMode === "simplified" ? "Pronto" : "Marcar pronto" };
   }
+  if (order.production_status === "ready" && order.fulfillment_type === "counter" && order.fulfillment_status === "pending") {
+    return { intent: "served", label: "Marcar servido" };
+  }
   if (order.production_status === "ready" && order.fulfillment_type === "pickup" && order.fulfillment_status === "pending") {
     return { intent: "await_pickup", label: "Liberar retirada" };
   }
@@ -130,6 +135,9 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
   timeZone: string;
 }) {
   const [query, setQuery] = useState("");
+  const [view, setView] = useState<"queue" | "list" | "board">("queue");
+  const [stage, setStage] = useState<OperationalOrderBucket | "all">("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const seen = useRef(new Set(initialOrders.map((order) => order.id)));
@@ -200,6 +208,9 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
   const activeCount = activeBuckets.reduce((total, bucket) => total + grouped[bucket].length, 0);
   const lateCount = useMemo(() => filtered.filter((order) => isOrderAttentionLate(order, now)).length, [filtered, now]);
 
+  const attentionOrders = sortOrdersForAttention(filtered.filter((order) => deriveOperationalBucket(order) !== "history" && (stage === "all" || deriveOperationalBucket(order) === stage)));
+  const selectedOrder = orders.find((order) => order.id === selectedId && isOperationalOrder(order));
+
   const simplifiedColumns = [
     { key: "start", label: "Iniciar", orders: [...grouped.new, ...grouped.queued, ...grouped.preparing] },
     { key: "ready", label: "Pronto", orders: simplifiedReady },
@@ -230,13 +241,29 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
             : `${activeCount} ativo(s) · ${lateCount} atrasado(s) · ${grouped.history.length} no histórico`}
         </div>
         <OperationalRealtimeBadge status={realtimeStatus} />
+        <div className={styles.viewSwitch} role="group" aria-label="Visualização dos pedidos">
+          {([['queue', 'Fila'], ['list', 'Lista'], ['board', 'Quadro']] as const).map(([key, label]) => <Button key={key} type="button" size="sm" tone="secondary" aria-pressed={view === key} onClick={() => setView(key)}>{label}</Button>)}
+        </div>
       </div>
 
       <div className={styles.noticeSlot} aria-live="polite">
         {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}
       </div>
 
-      {workflowMode === "simplified" ? <div className={styles.activeGrid} aria-label="Pedidos em fluxo simplificado" data-mode="simplified">
+      {view !== "board" ? <>
+        <div className={styles.stageFilters} role="group" aria-label="Filtrar etapa">
+          <Button type="button" tone="secondary" aria-pressed={stage === "all"} onClick={() => setStage("all")}>Todos {activeCount}</Button>
+          {activeBuckets.map((bucket) => <Button key={bucket} type="button" tone="secondary" aria-pressed={stage === bucket} onClick={() => setStage(bucket)}>{operationalBucketLabels[bucket]} {grouped[bucket].length}</Button>)}
+        </div>
+        <div className={styles.attentionWorkspace} data-preview={Boolean(selectedOrder)}>
+          <div className={styles.attentionRows} data-view={view} aria-label={view === "queue" ? "Fila de próximas ações" : "Lista de pedidos"}>
+            <p className={styles.queueHint}>{view === "queue" ? "Novos para confirmar primeiro; pedidos mais antigos dentro de cada etapa." : "Confira etapa, pagamento e próxima ação sem sair da lista."}</p>
+            {attentionOrders.map((order) => <OrderCard key={order.id} order={order} now={now} bucket={deriveOperationalBucket(order)} workflowMode={workflowMode} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} onPreview={() => setSelectedId(order.id)} selected={selectedOrder?.id === order.id} />)}
+            {attentionOrders.length === 0 ? <div className={styles.emptyLane}>{query || stage !== "all" ? "Nenhum pedido para estes filtros." : "Nenhum pedido ativo. Os novos pedidos aparecem aqui automaticamente."}</div> : null}
+          </div>
+          {selectedOrder ? <OrderPreview key={selectedOrder.id} order={selectedOrder} revision={selectedOrder.updated_at} onClose={() => setSelectedId(null)} /> : null}
+        </div>
+      </> : workflowMode === "simplified" ? <div className={styles.activeGrid} aria-label="Pedidos em fluxo simplificado" data-mode="simplified">
         {simplifiedColumns.map((column) => <section key={column.key} aria-label={column.label} className={styles.lane} data-bucket={column.key}>
           <header className={styles.laneHeader}><strong>{column.label}</strong><span className={styles.laneCount}>{column.orders.length}</span></header>
           <div className={styles.laneBody}>
@@ -284,7 +311,7 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
   );
 }
 
-function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, paymentPolicy, timeZone, statusLabelOverride }: {
+function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, paymentPolicy, timeZone, statusLabelOverride, onPreview, selected }: {
   order: OrderManagerRow;
   now: number;
   bucket: OperationalOrderBucket;
@@ -293,6 +320,8 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, payme
   paymentPolicy: PaymentCompletionPolicy | null;
   timeZone: string;
   statusLabelOverride?: string;
+  onPreview?: () => void;
+  selected?: boolean;
 }) {
   const lane = deriveOrderLane(order);
   const blockers = completionBlockers(order);
@@ -315,7 +344,7 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, payme
     : null;
 
   return (
-    <article className={styles.orderCard} data-bucket={bucket} data-late={late || undefined} data-channel={external?.provider ?? "pedeaqui"}>
+    <article className={styles.orderCard} data-bucket={bucket} data-late={late || undefined} data-channel={external?.provider ?? "pedeaqui"} data-selected={selected || undefined}>
       <div className={styles.cardTop}>
         <div className={styles.orderIdentity}>
           <span className={styles.orderNumber}>#{order.display_number}</span>
@@ -356,6 +385,10 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, payme
 
       {order.order_status === "confirmed" && lane === "ready" && blockers.length > 0 && !(manualDeliveryMode && order.fulfillment_status === "out_for_delivery") ? <div className={styles.blockers}>Para concluir: {blockers.join("; ")}.</div> : null}
 
+      {onPreview ? <div className={styles.previewTrigger}>
+        <Button type="button" tone="secondary" size="sm" onClick={onPreview} aria-pressed={selected}>Ver resumo</Button>
+        <Link href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.mobileDetailLink}>Ver detalhes</Link>
+      </div> : null}
       <details className={styles.cardMore}>
         <summary>Mais</summary>
         <div className={styles.cardMoreBody}>
