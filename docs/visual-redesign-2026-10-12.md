@@ -57,3 +57,20 @@ Matriz visual: 360, 390, 768, 1024, 1366, 1920px; teclado, toque, zoom e textos 
 Não alterar preços, resolução de fotos, dados de clientes, contratos de APIs, estado de pedidos, autorização, módulos, Pix/WhatsApp, política de pagamento ou configuração de impressão. Não tocar migração de hospedagem #1225, DNS, compra ou banco neste trabalho visual. Fotos existentes apenas reutilizadas. Correções funcionais encontradas devem ser reproduzidas e registradas separadamente; não considerar diagnóstico antigo prova do estado atual.
 ## Conclusão
 Esta issue só fecha após todos os lotes entregues e validados; iniciar Lote 1 agora.
+
+## Rastreabilidade
+
+- MASTER: #1226.
+- Lote 1: #1227; implementação inicial no PR #1228.
+- Lote 2: #1229.
+- Lote 3: #1230.
+- Lote 4: #1231.
+- Lote 5: #1232.
+
+## Evidências da primeira etapa
+
+Fila inicial com prioridade operacional, Lista em tabela com alternativa de cartões no mobile, Quadro existente, filtro por etapa, busca compartilhada e resumo carregado sob demanda pelo serviço autorizado. SVGs de traço no menu desktop/mobile e superfícies do tema. A ação Marcar servido para consumo no local foi alinhada à ação existente na tela completa.
+
+Build e typecheck aprovados; lint sem erros (8 avisos preexistentes). Suíte inicial completa: 2.722 testes em 412 arquivos. Teste de navegador dos componentes reais com dependências simuladas: trocar Fila/Lista/Quadro, abrir/fechar resumo, filtrar etapa e buscar; matriz 360/390/768/1024/1366/1920px em claro/escuro sem overflow horizontal. Esta evidência não certifica transações no backend produtivo.
+
+Custom conserva o quadro configurado existente; adequação das novas visualizações ao custom, ledger de pagamento dividido no resumo e padronização dos demais cabeçalhos permanecem pendentes. Nenhuma publicação em produção está implícita nestas evidências.
