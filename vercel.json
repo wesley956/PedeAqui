@@ -1,8 +1,14 @@
 {
-  "regions": ["gru1"],
+  "regions": [
+    "gru1"
+  ],
   "crons": [
     {
       "path": "/api/internal/order-notifications",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/internal/fiscal-jobs",
       "schedule": "* * * * *"
     }
   ]

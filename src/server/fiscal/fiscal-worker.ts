@@ -6,7 +6,7 @@ import { resolveSecretReference } from "@/server/fiscal/fiscal-provider";
 import { FiscalArtifactService } from "@/server/fiscal/fiscal-artifact-service";
 
 type ClaimedJob={ id:string;organization_id:string;store_id:string;fiscal_document_id:string;integration_id:string;job_type:"issue"|"query"|"cancel";attempts:number;payload:Record<string,unknown> };
-type DocumentRow={ id:string;status:string;provider_document_id:string|null;issuer_snapshot:Record<string,unknown>;customer_snapshot:Record<string,unknown>;totals_snapshot:Record<string,unknown>;fiscal_payload:Record<string,unknown>;model:string;environment:string;access_key:string|null;protocol:string|null };
+type DocumentRow={ id:string;order_id:string;status:string;provider_document_id:string|null;issuer_snapshot:Record<string,unknown>;customer_snapshot:Record<string,unknown>;totals_snapshot:Record<string,unknown>;fiscal_payload:Record<string,unknown>;model:string;environment:string;access_key:string|null;protocol:string|null };
 type IntegrationRow={ id:string;provider_key:string;environment:"sandbox"|"homologation"|"production";secret_ref:string|null;config:Record<string,unknown>;active:boolean };
 
 function transitionKey(job:ClaimedJob,status:string){ return `fiscal-worker:${job.id}:${job.attempts}:${status}`; }
@@ -15,13 +15,19 @@ async function finish(admin:ReturnType<typeof createAdminClient>,job:ClaimedJob,
 
 async function loadEnvelope(admin:ReturnType<typeof createAdminClient>,job:ClaimedJob){
   const [documentResult,itemsResult,integrationResult]=await Promise.all([
-    admin.from("fiscal_documents").select("id,status,provider_document_id,issuer_snapshot,customer_snapshot,totals_snapshot,fiscal_payload,model,environment,access_key,protocol").eq("id",job.fiscal_document_id).eq("organization_id",job.organization_id).eq("store_id",job.store_id).single(),
+    admin.from("fiscal_documents").select("id,order_id,status,provider_document_id,issuer_snapshot,customer_snapshot,totals_snapshot,fiscal_payload,model,environment,access_key,protocol").eq("id",job.fiscal_document_id).eq("organization_id",job.organization_id).eq("store_id",job.store_id).single(),
     admin.from("fiscal_items").select("id,line_number,description,quantity,unit_price_cents,total_cents,fiscal_snapshot,product_id,order_item_id").eq("fiscal_document_id",job.fiscal_document_id).eq("organization_id",job.organization_id).eq("store_id",job.store_id).order("line_number"),
     admin.from("integrations").select("id,provider_key,environment,secret_ref,config,active").eq("id",job.integration_id).eq("organization_id",job.organization_id).eq("store_id",job.store_id).eq("kind","fiscal").single(),
   ]);
   if(documentResult.error) throw documentResult.error; if(itemsResult.error) throw itemsResult.error; if(integrationResult.error) throw integrationResult.error;
   const document=documentResult.data as DocumentRow; const integration=integrationResult.data as IntegrationRow; if(!integration.active) throw new Error("Fiscal integration is inactive");
-  const envelope:FiscalDocumentEnvelope={ document:{ ...document,idempotencyKey:`fiscal-document:${document.id}` },items:(itemsResult.data??[]) as Array<Record<string,unknown>> };
+  // Formas de pagamento do pedido: a NFC-e precisa informar como o consumidor pagou.
+  const paymentsResult=await admin.from("payments").select("method,status,amount_cents").eq("order_id",document.order_id).eq("organization_id",job.organization_id).eq("store_id",job.store_id).in("status",["paid","authorized","pending"]);
+  if(paymentsResult.error) throw paymentsResult.error;
+  const allPayments=(paymentsResult.data??[]) as Array<{ method:string;status:string;amount_cents:number }>;
+  const settled=allPayments.filter((payment)=>payment.status==="paid"||payment.status==="authorized");
+  const payments=(settled.length>0?settled:allPayments).map((payment)=>({ method:payment.method,amount_cents:payment.amount_cents }));
+  const envelope:FiscalDocumentEnvelope={ document:{ ...document,payments,idempotencyKey:`fiscal-document:${document.id}` },items:(itemsResult.data??[]) as Array<Record<string,unknown>> };
   const context:FiscalProviderContext={ providerKey:integration.provider_key,environment:integration.environment,secret:resolveSecretReference(integration.secret_ref),config:integration.config??{} };
   return { document,integration,envelope,context };
 }
