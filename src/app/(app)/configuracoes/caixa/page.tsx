@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { createCashRegisterAction, updateCashRegisterAction } from "@/features/cash/actions";
-import styles from "@/features/cash/cash.module.css";
+import styles from "../settings-form.module.css";
+import { Input, Checkbox } from "@/components/ui/form-controls";
+import { Button } from "@/components/ui/button";
+import { FormDisclosure } from "@/components/ui/form-disclosure";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { CashService } from "@/server/cash/cash-service";
@@ -11,28 +14,31 @@ export default async function CashSettingsPage() {
   const openByRegister = new Map(data.sessions.filter((session) => session.status === "open").map((session) => [session.cash_register_id, session]));
 
   return <section className={styles.page}>
-    <header className={styles.header}><div><p className={styles.muted}>CONFIGURAÇÕES · CAIXA</p><h1>Caixas da unidade</h1><p className={styles.muted}>Cadastre e mantenha os pontos físicos de caixa fora do fluxo do turno.</p></div><div className={styles.headerActions}><Link href="/caixa" className={styles.secondary}>Voltar ao caixa</Link></div></header>
+    <header className={styles.header}><div><p className={styles.meta}>CONFIGURAÇÕES · CAIXA</p><h1>Caixas da unidade</h1><p className={styles.meta}>Cadastre e mantenha os pontos físicos de caixa fora do fluxo do turno.</p></div><div className={styles.actions}><Link href="/caixa" >Voltar ao caixa</Link></div></header>
 
-    <article className={styles.panel}>
-      <h2>Criar caixa</h2>
-      <form action={createCashRegisterAction} className={styles.formGrid}>
-        <label className={styles.field}><span>CÓDIGO</span><input className={styles.input} name="code" required maxLength={32} placeholder="01" /></label>
-        <label className={styles.field}><span>NOME</span><input className={styles.input} name="name" required maxLength={80} placeholder="Caixa principal" /></label>
-        <button className={styles.primary} type="submit">Criar caixa</button>
+    <FormDisclosure className={styles.details} summary="Criar caixa">
+      <form action={createCashRegisterAction} className={styles.form} aria-label="Criar caixa">
+        <div className={styles.grid}>
+          <Input id="new-register-code" label="Código" name="code" required maxLength={32} placeholder="01" />
+          <Input id="new-register-name" label="Nome" name="name" required maxLength={80} placeholder="Caixa principal" />
+        </div>
+        <div className={styles.actions}><Button type="submit" loadingLabel="Criando caixa…">Criar caixa</Button></div>
       </form>
-    </article>
+    </FormDisclosure>
 
-    <article className={styles.panel}>
+    <article className={styles.card}>
       <h2>Caixas cadastrados</h2>
-      {data.registers.length === 0 ? <p className={styles.muted}>Nenhum caixa configurado.</p> : <div className={styles.settingsList}>{data.registers.map((register) => {
+      {data.registers.length === 0 ? <p className={styles.meta}>Nenhum caixa configurado.</p> : <div className={styles.list}>{data.registers.map((register) => {
         const open = openByRegister.get(register.id);
-        return <div className={styles.register} key={register.id}>
-          <div className={styles.registerHeader}><div><strong>{register.code} · {register.name}</strong><div className={styles.muted}>{register.active ? "Ativo" : "Desativado"}{open ? " · turno aberto" : " · livre"}</div></div></div>
-          <form action={updateCashRegisterAction.bind(null, register.id)} className={styles.formGrid}>
-            <label className={styles.field}><span>NOME</span><input className={styles.input} name="name" defaultValue={register.name} required maxLength={80} /></label>
-            <label className={styles.checkbox}><input type="checkbox" name="active" defaultChecked={register.active} /> Ativo</label>
-            <button className={styles.secondary} type="submit">Salvar</button>
+        return <div className={styles.row} key={register.id}>
+          <div className={styles.rowTop}><div><strong>{register.code} · {register.name}</strong><div className={styles.meta}>{register.active ? "Ativo" : "Desativado"}{open ? " · turno aberto" : " · livre"}</div></div></div>
+          <FormDisclosure className={styles.details} summary={`Editar ${register.name}`}>
+          <form action={updateCashRegisterAction.bind(null, register.id)} className={styles.form} aria-label={`Editar caixa ${register.name}`}>
+            <Input id={`register-${register.id}-name`} label="Nome" name="name" defaultValue={register.name} required maxLength={80} />
+            <Checkbox id={`register-${register.id}-active`} name="active" label="Ativo" defaultChecked={register.active} />
+            <div className={styles.actions}><Button type="submit" loadingLabel="Salvando caixa…">Salvar caixa</Button></div>
           </form>
+          </FormDisclosure>
         </div>;
       })}</div>}
     </article>

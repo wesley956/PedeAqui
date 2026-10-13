@@ -1,15 +1,17 @@
 "use client";
 
-import { useActionState, useMemo } from "react";
+import { useActionState, useMemo, useId } from "react";
 import { createDriverAction, deliveryOperationAction, updateDriverAction, type DeliveryActionState } from "@/features/delivery/actions";
 import { confirmDeliveryWithPaymentAction } from "@/features/delivery/delivery-confirmation-actions";
 import styles from "@/features/delivery/delivery.module.css";
+import { Input, PhoneInput, QuantityInput, Checkbox } from "@/components/ui/form-controls";
+import { Button } from "@/components/ui/button";
 
 const initial: DeliveryActionState = { ok: false, message: null, error: null };
 
 function Feedback({ state }: { state: DeliveryActionState }) {
-  if (state.error) return <div className={styles.feedback} data-tone="danger">{state.error}</div>;
-  if (state.message) return <div className={styles.feedback} data-tone="success">{state.message}</div>;
+  if (state.error) return <div role="alert" className={styles.feedback} data-tone="danger">{state.error}</div>;
+  if (state.message) return <div role="status" className={styles.feedback} data-tone="success">{state.message}</div>;
   return null;
 }
 
@@ -68,15 +70,16 @@ export function DeliveryOperationForm({
 }
 
 export function DriverCreateForm() {
+  const fieldId = useId();
   const [state, action, pending] = useActionState(createDriverAction, initial);
   const key = useMemo(() => crypto.randomUUID(), []);
   return <form action={action} className={styles.form}>
     <input type="hidden" name="idempotencyKey" value={key} />
-    <input name="name" required minLength={2} maxLength={100} placeholder="Nome do entregador" className={styles.input} />
-    <input name="phone" placeholder="Telefone" className={styles.input} />
-    <label className={styles.form}><span className={styles.driverMeta}>CAPACIDADE SIMULTÂNEA</span><input name="maxActiveDeliveries" type="number" min={1} max={20} defaultValue={3} className={styles.input} /></label>
+    <Input id={`${fieldId}-name`} label="Nome do entregador" name="name" required minLength={2} maxLength={100} placeholder="Nome do entregador" />
+    <PhoneInput id={`${fieldId}-phone`} label="Telefone" name="phone" placeholder="Telefone" />
+    <QuantityInput id={`${fieldId}-capacity`} label="Capacidade simultânea" name="maxActiveDeliveries" min={1} max={20} defaultValue={3} />
     <div className={styles.driverMeta}>O entregador será cadastrado como ativo e em serviço, pronto para receber pedidos. O acesso pelo celular poderá ser vinculado depois sem precisar informar nenhum código técnico.</div>
-    <button type="submit" disabled={pending} className={styles.button}>{pending ? "Salvando…" : "Cadastrar e deixar disponível"}</button>
+    <Button type="submit" loading={pending} loadingLabel="Salvando…">Cadastrar e deixar disponível</Button>
     <Feedback state={state} />
   </form>;
 }
@@ -87,14 +90,14 @@ export function DriverUpdateForm({ driver }: { driver: { id: string; name: strin
   return <form action={action} className={styles.form}>
     <input type="hidden" name="idempotencyKey" value={key} />
     <input type="hidden" name="driverId" value={driver.id} />
-    <input name="name" required defaultValue={driver.name} className={styles.input} />
-    <input name="phone" defaultValue={driver.phone ?? ""} placeholder="Telefone" className={styles.input} />
-    <input name="maxActiveDeliveries" type="number" min={Math.max(1, driver.activeDeliveries)} max={20} defaultValue={driver.max_active_deliveries} className={styles.input} />
+    <Input id={`driver-${driver.id}-name`} label="Nome do entregador" name="name" required defaultValue={driver.name} />
+    <PhoneInput id={`driver-${driver.id}-phone`} label="Telefone" name="phone" defaultValue={driver.phone ?? ""} placeholder="Telefone" />
+    <QuantityInput id={`driver-${driver.id}-capacity`} label="Capacidade simultânea" name="maxActiveDeliveries" min={Math.max(1, driver.activeDeliveries)} max={20} defaultValue={driver.max_active_deliveries} />
     <div className={styles.headerActions}>
-      <label><input name="active" type="checkbox" defaultChecked={driver.active} /> Ativo</label>
-      <label><input name="onDuty" type="checkbox" defaultChecked={driver.on_duty} /> Em serviço</label>
+      <Checkbox id={`driver-${driver.id}-active`} name="active" label="Ativo" defaultChecked={driver.active} />
+      <Checkbox id={`driver-${driver.id}-duty`} name="onDuty" label="Em serviço" defaultChecked={driver.on_duty} />
     </div>
-    <button type="submit" disabled={pending} className={styles.secondaryButton}>{pending ? "Salvando…" : "Atualizar"}</button>
+    <Button type="submit" loading={pending} loadingLabel="Salvando…">Salvar entregador</Button>
     <Feedback state={state} />
   </form>;
 }
