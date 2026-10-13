@@ -9,6 +9,7 @@ proto-8-checkout-2100
 real-1-menu
 real-2-menu-rolado
 real-3-produto
+real-3c-produto-rolado
 real-3b-depois-de-fechar
 real-checkout-novo-topo
 real-checkout-novo-700

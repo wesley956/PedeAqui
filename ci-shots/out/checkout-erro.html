@@ -240,7 +240,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .iconButton{width:40px;height:40px;display:grid;place-items:center;border-radius:var(--radius-pill);background:var(--surface-2);color:var(--text-primary);text-decoration:none}
 .iconButton:focus-visible{outline:3px solid var(--focus-ring);outline-offset:2px}
 .topHeading{margin:0;font-size:var(--font-size-lg);font-weight:var(--font-weight-bold)}
-.expressShell .stageViewport{padding:6px 14px 0;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:12px}
+.expressShell .stageViewport{padding:18px 14px 0;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:12px}
 .expressShell .stageViewport>*{width:min(640px,100%);margin-left:auto;margin-right:auto}
 .expressShell .alert,.expressShell .deliveryError{margin-top:6px;margin-bottom:0}
 /* O formulário não cria caixa própria: o rodapé com o botão fica preso ao fim da área que rola, sempre visível. */
@@ -335,8 +335,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .confirmButton:focus-visible{outline:3px solid var(--focus-ring);outline-offset:3px}
 .confirmButton:disabled{background:var(--surface-3);color:var(--text-secondary);cursor:not-allowed}
 .confirmButton[aria-busy=true]{background:var(--brand-primary);color:var(--text-on-brand);opacity:.85;cursor:progress}
-@media(max-width:480px){.expressShell .stageViewport{padding:6px 12px 0}.expressFooter{margin:0 -12px;padding-left:12px;padding-right:12px}}
+@media(max-width:480px){.expressShell .stageViewport{padding:18px 12px 0}.expressFooter{margin:0 -12px;padding-left:12px;padding-right:12px}}
 @media(prefers-reduced-motion:reduce){.expressShell *{scroll-behavior:auto}}
+.two+.help{margin:6px 0 0}
 
 .checkout-visual-viewport {
   height: 100vh;
