@@ -2,11 +2,11 @@ import { paymentMethodLabels, type PaymentMethod } from "@/server/checkout/schem
 import styles from "./final-order-options.module.css";
 
 export const paymentMethodHelp: Record<PaymentMethod, string> = {
-  pix: "Pix online com QR Code e confirmação automática. Para usar, informe seu e-mail em Seus dados.",
-  credit_card: "Cartão de crédito habilitado pelo estabelecimento.",
-  debit_card: "Cartão de débito habilitado pelo estabelecimento.",
-  cash: "Dinheiro; informe troco somente se precisar.",
-  custom: "Forma de pagamento aceita diretamente pelo estabelecimento.",
+  pix: "Aprovação na hora. O QR Code aparece logo depois de confirmar o pedido.",
+  credit_card: "Na maquininha, na hora de receber o pedido.",
+  debit_card: "Na maquininha, na hora de receber o pedido.",
+  cash: "Em dinheiro, na hora de receber. Diga se precisa de troco.",
+  custom: "Aceito pela loja, na hora de receber o pedido.",
 };
 
 export function CheckoutReviewState({ reviewed, ready }: { reviewed: boolean; ready: boolean }) {

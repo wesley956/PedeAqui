@@ -48,7 +48,7 @@ describe("[987] public journey baseline", () => {
 describe("[988-991] V1+V3 visual continuity", () => {
   it("keeps official server summary for the persistent cart bar", () => {
     expect(cartBar).toContain("PublicCartSummaryService.get");
-    expect(cartBar).toContain("/carrinho");
+    expect(cartBar).toContain("/checkout");
     expect(cartBar).toContain("return null");
     expect(cartBarCss).toContain("safe-area-inset-bottom");
     expect(cartBarCss).toContain("var(--brand-primary)");
