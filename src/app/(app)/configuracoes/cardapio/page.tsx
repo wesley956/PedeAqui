@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, Checkbox } from "@/components/ui/form-controls";
+import { FormDisclosure } from "@/components/ui/form-disclosure";
+import styles from "../settings-form.module.css";
 import { ImageUploadField } from "@/components/media/image-upload-field";
 import { pauseOrdersAction, resumeOrdersAction, saveMenuSettingsAction } from "@/features/menu/actions";
 import { StoreMenuService } from "@/server/menu/store-menu-service";
@@ -9,15 +11,15 @@ export default async function MenuSettingsPage() {
   const settings = await StoreMenuService.getSettings();
 
   return (
-    <section style={{ display: "grid", gap: 20, maxWidth: 900 }}>
-      <header>
+    <section className={styles.page}>
+      <header className={styles.header}>
         <p className="muted" style={{ margin: 0, fontSize: 13 }}>Configurações</p>
         <h1 style={{ margin: "4px 0" }}>Cardápio digital</h1>
         <p className="muted" style={{ margin: 0 }}>Identidade, canais e disponibilidade pública da unidade atual.</p>
       </header>
 
-      <article className="card" style={{ padding: 20, display: "grid", gap: 14 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+      <article className={styles.card}>
+        <div className={styles.rowTop}>
           <div>
             <strong>Recebimento de pedidos</strong>
             <p className="muted" style={{ margin: "4px 0 0" }}>
@@ -27,7 +29,7 @@ export default async function MenuSettingsPage() {
           {settings.accepting_orders ? (
             <form action={pauseOrdersAction} style={{ display: "flex", gap: 8, alignItems: "end", flexWrap: "wrap" }}>
               <Input label="Motivo da pausa" name="reason" placeholder="Ex.: muita demanda" />
-              <Button tone="danger" type="submit">Pausar pedidos</Button>
+              <Button tone="secondary" type="submit">Pausar pedidos</Button>
             </form>
           ) : (
             <form action={resumeOrdersAction}><Button type="submit">Retomar pedidos</Button></form>
@@ -35,23 +37,25 @@ export default async function MenuSettingsPage() {
         </div>
       </article>
 
-      <form action={saveMenuSettingsAction} className="card" style={{ padding: 20, display: "grid", gap: 18 }}>
+      <form action={saveMenuSettingsAction} className={styles.form} aria-label="Aparência e publicação do cardápio">
         <div>
           <h2 style={{ margin: 0 }}>Aparência e publicação</h2>
           <p className="muted">PedeAqui usa laranja + grafite como padrão. Cada loja pode ajustar apenas a cor principal.</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
+        <div className={styles.grid}>
           <Input label="Cor principal" name="primaryColor" defaultValue={settings.primary_color} pattern="#[0-9A-Fa-f]{6}" />
           <Input label="Pedido mínimo" name="minimumOrder" defaultValue={(settings.minimum_order_cents / 100).toFixed(2).replace(".", ",")} hint={`Atual: ${formatCents(settings.minimum_order_cents)}`} inputMode="decimal" />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14 }}>
+        <FormDisclosure className={styles.details} summary="Logo e capa do cardápio">
+        <div className={styles.grid}>
           <ImageUploadField name="logoFile" removeName="removeLogo" label="Logo do restaurante" currentUrl={settings.logo_url} />
           <ImageUploadField name="coverFile" removeName="removeCover" label="Capa do cardápio" currentUrl={settings.cover_url} />
         </div>
+        </FormDisclosure>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+        <div className={styles.grid}>
           {[
             ["active", "Cardápio publicado", settings.active],
             ["showSearch", "Mostrar busca", settings.show_search],
@@ -60,14 +64,11 @@ export default async function MenuSettingsPage() {
             ["allowDelivery", "Permitir entrega", settings.allow_delivery],
             ["allowPickup", "Permitir retirada", settings.allow_pickup],
           ].map(([name, label, checked]) => (
-            <label key={String(name)} className="card" style={{ padding: 12, display: "flex", gap: 10, alignItems: "center", background: "var(--surface-2)" }}>
-              <input type="checkbox" name={String(name)} defaultChecked={Boolean(checked)} />
-              <span>{String(label)}</span>
-            </label>
+            <Checkbox key={String(name)} id={`menu-${name}`} name={String(name)} label={String(label)} defaultChecked={Boolean(checked)} />
           ))}
         </div>
 
-        <div><Button type="submit">Salvar configurações</Button></div>
+        <div className={styles.stickyActions}><Button type="submit" loadingLabel="Salvando cardápio…">Salvar configurações</Button></div>
       </form>
     </section>
   );
