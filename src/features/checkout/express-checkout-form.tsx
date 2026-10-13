@@ -85,6 +85,33 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
   const [when, setWhen] = useState<"asap" | "scheduled">(defaults.scheduledLocal ? "scheduled" : "asap");
   const [payment, setPayment] = useState<string | null>(defaults.paymentValue);
   const errorRef = useRef<HTMLElement | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const [cepStatus, setCepStatus] = useState<"idle" | "loading" | "found" | "notfound">("idle");
+
+  // Como no protótipo: digitou o CEP, preenchemos rua, bairro, cidade e UF (o cliente pode corrigir).
+  async function lookupCep(raw: string) {
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    setCepStatus("loading");
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = await response.json() as { erro?: boolean; logradouro?: string; bairro?: string; localidade?: string; uf?: string };
+      if (!response.ok || data.erro) { setCepStatus("notfound"); return; }
+      const form = formRef.current;
+      const fill = (name: string, value: string | undefined, onlyIfEmpty: boolean) => {
+        const input = form?.elements.namedItem(name);
+        if (input instanceof HTMLInputElement && value && (!onlyIfEmpty || !input.value.trim())) input.value = value;
+      };
+      fill("street", data.logradouro, true);
+      fill("district", data.bairro, true);
+      fill("city", data.localidade, false);
+      fill("state", data.uf, false);
+      setCepStatus("found");
+      (form?.elements.namedItem("number") as HTMLInputElement | null)?.focus();
+    } catch {
+      setCepStatus("idle");
+    }
+  }
 
   useEffect(() => {
     if (!error) return;
@@ -102,7 +129,7 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
   const pixSelected = payment === "pix";
   const confirmLabel = pixSelected ? "Confirmar e pagar com Pix" : "Confirmar pedido";
   // Nome acessível com o valor, ex.: "Confirmar pedido · R$ 45,00".
-  const confirmName = knownTotal === null ? confirmLabel : pixSelected ? `Confirmar e pagar com Pix · ${money(knownTotal)}` : `Confirmar pedido · ${money(knownTotal)}`;
+  const confirmName = pixSelected ? `Confirmar e pagar com Pix · ${money(shownTotal)}` : `Confirmar pedido · ${money(shownTotal)}`;
 
   const block = (id: ExpressBlock, title: ReactNode, body: ReactNode, extra?: ReactNode) => {
     const failed = error?.block === id;
@@ -121,7 +148,7 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
   };
 
   return (
-    <form id="checkout-expresso" action={submitExpressCheckoutAction} className={styles.expressForm}>
+    <form ref={formRef} id="checkout-expresso" action={submitExpressCheckoutAction} className={styles.expressForm}>
       <input type="hidden" name="storeSlug" value={props.slug} />
       <input type="hidden" name="fulfillmentType" value={mode} />
       <input type="hidden" name="when" value={when} />
@@ -198,9 +225,23 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
             ? <NeighborhoodSelect neighborhoods={props.neighborhoods} defaultNeighborhoodId={defaults.neighborhoodId} inputClassName={styles.input} fieldClassName={styles.field} choicesClassName={styles.choices} choiceClassName={styles.choice} selectedClassName={styles.choiceSelected} detailClassName={styles.choiceDetail} secondaryButtonClassName={styles.neighborhoodChange} />
             : null}
           <div className={styles.two}>
-            <Field label="CEP (opcional)" name="postalCode" inputMode="numeric" autoComplete="postal-code" defaultValue={defaults.postalCode} placeholder="00000-000" />
+            <Field
+              label="CEP (opcional)"
+              name="postalCode"
+              inputMode="numeric"
+              autoComplete="postal-code"
+              defaultValue={defaults.postalCode}
+              placeholder="00000-000"
+              maxLength={9}
+              onChange={(event) => {
+                const digits = event.currentTarget.value.replace(/\D/g, "").slice(0, 8);
+                event.currentTarget.value = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
+                if (digits.length === 8) void lookupCep(digits);
+              }}
+            />
             <Field label="Número" name="number" inputMode="numeric" defaultValue={defaults.number} placeholder="123" required />
           </div>
+          <p className={styles.help} aria-live="polite">{cepStatus === "loading" ? "Buscando o endereço…" : cepStatus === "found" ? "Endereço preenchido pelo CEP. Confira o número." : cepStatus === "notfound" ? "Não achamos esse CEP. Preencha o endereço abaixo." : "Digite o CEP e preenchemos rua e bairro."}</p>
           <Field label="Rua" name="street" autoComplete="street-address" defaultValue={defaults.street} required />
           {!props.useNeighborhoods ? <>
             <Field label="Bairro" name="district" autoComplete="address-level3" defaultValue={defaults.district} required />
@@ -279,7 +320,7 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
         <ConfirmButton
           label={confirmLabel}
           accessibleName={confirmName}
-          total={knownTotal !== null ? money(knownTotal) : null}
+          total={money(shownTotal)}
           disabled={props.minimumMissingCents > 0 || !props.canOrder}
         />
       </footer>

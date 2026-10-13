@@ -41,11 +41,14 @@ await shot("real-1-menu");
 await page.mouse.wheel(0, 600);
 await shot("real-2-menu-rolado");
 await page.mouse.wheel(0, -2000);
-const withOptions = page.locator('a[aria-label^="Escolher opções"]').first();
+const monte = page.locator('a[aria-label^="Escolher opções de Monte"]').first();
+const withOptions = (await monte.count()) ? monte : page.locator('a[aria-label^="Escolher opções"]').first();
 if (await withOptions.count()) {
   await withOptions.click();
   await page.waitForSelector('[role="dialog"]', { timeout: 15000 }).catch(() => log.push("sem dialog"));
   await shot("real-3-produto");
+  await page.evaluate(() => { const s = document.querySelector('[role="dialog"]'); if (s) s.scrollTop = 600; });
+  await shot("real-3c-produto-rolado");
   await page.keyboard.press("Escape");
   await page.waitForTimeout(600);
   await shot("real-3b-depois-de-fechar");

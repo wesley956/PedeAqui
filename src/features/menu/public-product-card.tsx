@@ -85,13 +85,13 @@ export function PublicProductCard({ product, storeSlug, showImage, canOrder, opt
     <Link href={href} scroll={false} className={styles.productCopy} aria-label={`${product.name}, ${soldOut ? "esgotado" : `${fromPrice ? "a partir de " : ""}${money(displayPrice)}`}`}>
       <span className={styles.productTitleRow}>
         <strong className={styles.productTitle}>{product.name}</strong>
-        {!soldOut && hasPromotion ? <span className={styles.promo}>{product.promotion_label || "Oferta"}</span> : null}
       </span>
       {product.description ? <span className={styles.description}>{product.description}</span> : null}
       <span className={styles.priceRow}>
         {fromPrice ? <span className={styles.fromLabel}>a partir de</span> : null}
         <strong className={styles.price}>{money(displayPrice)}</strong>
         {hasPromotion ? <span className={styles.oldPrice}>{money(product.price_cents + (options?.minimumRequiredExtraCents ?? 0))}</span> : null}
+        {!soldOut && hasPromotion ? <span className={styles.promo}>{product.promotion_label || "Oferta"}</span> : null}
       </span>
     </Link>
     <div className={styles.productAction}>{action}</div>

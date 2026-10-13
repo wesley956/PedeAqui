@@ -1,9 +1,9 @@
-.root{min-height:100vh;background:var(--surface-0);color:var(--text-primary);overflow-x:hidden}
+.root{min-height:100vh;background:var(--surface-1);color:var(--text-primary);overflow-x:hidden}
 .container{width:min(760px,calc(100% - var(--space-4)));margin:0 auto;padding-bottom:var(--space-8)}
 .expressHeader{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) 0 var(--space-3);border-bottom:var(--border-width) solid var(--border-default)}
 .expressHeader>:first-child{flex:1;min-width:0}
-.statusLine{margin:0;display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px}
-.status{display:inline-flex;width:fit-content;padding:2px var(--space-2);border-radius:var(--radius-pill);font-size:var(--font-size-xs);font-weight:var(--font-weight-bold);background:var(--surface-3);color:var(--text-secondary)}
+.statusLine{margin:0;line-height:1.6}
+.status{display:inline-flex;width:fit-content;margin-right:6px;vertical-align:baseline;padding:2px var(--space-2);border-radius:var(--radius-pill);font-size:var(--font-size-xs);font-weight:var(--font-weight-bold);background:var(--surface-3);color:var(--text-secondary)}
 .statusOpen{background:var(--state-success-surface);color:var(--state-success-text)}
 .statusPaused{background:var(--state-warning-surface);color:var(--state-warning-text)}
 .headline{font-size:var(--font-size-support);color:var(--text-secondary)}
