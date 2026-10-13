@@ -343,7 +343,7 @@ export default async function ConversationSettingsPage() {
           </div>
         </div>
         </FormDisclosure>
-        <div className={styles.stickyActions}><Button type="submit">Salvar preferências</Button></div>
+        <div className={styles.stickyActions} data-sticky-actions><Button type="submit">Salvar preferências</Button></div>
       </form>
     </section>
   );

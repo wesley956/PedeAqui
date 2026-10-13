@@ -7,6 +7,7 @@ import "./shell-v3.css";
 import "./mobile.css";
 import "./accessibility.css";
 import "./compact-shell.css";
+import "./mobile-shell.css";
 
 export const metadata: Metadata = {
   title: {

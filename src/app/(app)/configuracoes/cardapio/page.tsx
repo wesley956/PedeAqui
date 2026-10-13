@@ -65,7 +65,7 @@ export default async function MenuSettingsPage() {
           ))}
         </div>
 
-        <div className={styles.stickyActions}><Button type="submit" loadingLabel="Salvando cardápio…">Salvar configurações</Button></div>
+        <div className={styles.stickyActions} data-sticky-actions><Button type="submit" loadingLabel="Salvando cardápio…">Salvar configurações</Button></div>
       </form>
     </section>
   );

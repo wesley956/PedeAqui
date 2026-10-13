@@ -1,0 +1,61 @@
+/*
+ * Casca do celular (guia visual). Carregada por último em layout.tsx:
+ * é a fonte única das medidas do painel abaixo de 900 px. As regras de
+ * shell.css, shell-v3.css, mobile.css e compact-shell.css continuam valendo
+ * para o computador; aqui ficam as que decidem o celular.
+ */
+:root {
+  --mobile-nav-height: 68px;
+  --mobile-gutter: 16px;
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    --app-topbar-height: 56px;
+  }
+
+  /* Uma barra do topo de 56 px, numa linha só. */
+  .app-shell .app-topbar-compact {
+    height: var(--app-topbar-height);
+    min-height: var(--app-topbar-height);
+    flex-wrap: nowrap;
+    padding: 6px 12px;
+  }
+
+  /* Espaço lateral único e folga para o menu inferior. */
+  .app-shell .app-content {
+    padding: var(--mobile-gutter) var(--mobile-gutter) calc(var(--mobile-nav-height) + var(--space-4) + env(safe-area-inset-bottom));
+  }
+
+  /* Menu inferior: altura fixa e rótulos de 12 px. */
+  .app-shell .mobile-nav {
+    min-height: var(--mobile-nav-height);
+  }
+  .app-shell .mobile-nav > a,
+  .app-shell .mobile-more > summary {
+    min-height: var(--mobile-nav-height);
+    font-size: var(--font-size-xs);
+  }
+
+  /* "Mais" abre como folha alta, com espaço para todas as ferramentas. */
+  .app-shell .mobile-more-panel {
+    max-height: min(72dvh, 560px);
+  }
+
+  /* Campos com 16 px: o iPhone não amplia a tela ao tocar. */
+  .app-shell .app-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  .app-shell .app-content select,
+  .app-shell .app-content textarea {
+    font-size: var(--font-size-md);
+  }
+
+  /* Barras fixas de ação ficam logo acima do menu inferior. */
+  .app-shell [data-sticky-actions] {
+    bottom: calc(var(--mobile-nav-height) + var(--space-3) + env(safe-area-inset-bottom));
+  }
+
+  /* O botão do guia não cobre barras fixas de ação. */
+  .app-shell:has([data-sticky-actions], [data-hides-guide]) button[aria-label="Abrir assistente do PedeAqui"] {
+    display: none;
+  }
+}

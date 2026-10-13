@@ -58,7 +58,7 @@ export default async function StoreProfileSettingsPage() {
         </div>
 
         </FormDisclosure>
-        <div className={styles.stickyActions}><Button type="submit" loadingLabel="Salvando dados…">Salvar dados da loja</Button></div>
+        <div className={styles.stickyActions} data-sticky-actions><Button type="submit" loadingLabel="Salvando dados…">Salvar dados da loja</Button></div>
       </form>
 
       <article className={styles.card}>
