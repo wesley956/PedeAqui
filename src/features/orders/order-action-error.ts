@@ -1,5 +1,8 @@
 export function friendlyOrderActionError(error: unknown) {
-  const message = error instanceof Error ? error.message : "";
+  const message = error instanceof Error ? error.message : typeof error === "object" && error !== null && "message" in error && typeof error.message === "string" ? error.message : "";
+  if (message.includes("financial payment account unavailable")) {
+    return "A conta financeira desta forma de pagamento não está disponível. Revise as contas no Financeiro e tente novamente.";
+  }
   if (message.includes("Reason is required") || message.includes("too_small")) {
     return "Informe um motivo com pelo menos 3 caracteres.";
   }
