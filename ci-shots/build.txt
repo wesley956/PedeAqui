@@ -13,7 +13,7 @@ https://nextjs.org/telemetry
   · serverActions
 
   Creating an optimized production build ...
-✓ Compiled successfully in 11.9s
+✓ Compiled successfully in 13.0s
   Running TypeScript ...
 
   We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
@@ -21,13 +21,13 @@ https://nextjs.org/telemetry
 
   	- include was updated to add '.next/dev/types/**/*.ts'
 
-  Finished TypeScript in 31.5s ...
+  Finished TypeScript in 34.5s ...
   Collecting page data using 3 workers ...
   Generating static pages using 3 workers (0/110) ...
   Generating static pages using 3 workers (27/110) 
   Generating static pages using 3 workers (54/110) 
   Generating static pages using 3 workers (82/110) 
-✓ Generating static pages using 3 workers (110/110) in 753ms
+✓ Generating static pages using 3 workers (110/110) in 666ms
   Finalizing page optimization ...
 
 Route (app)
