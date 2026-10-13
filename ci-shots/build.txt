@@ -21,18 +21,165 @@ https://nextjs.org/telemetry
 
   	- include was updated to add '.next/dev/types/**/*.ts'
 
-Failed to type check.
+  Finished TypeScript in 32.8s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/110) ...
+  Generating static pages using 3 workers (27/110) 
+  Generating static pages using 3 workers (54/110) 
+  Generating static pages using 3 workers (82/110) 
+✓ Generating static pages using 3 workers (110/110) in 774ms
+  Finalizing page optimization ...
 
-./ci-shots/vitest.shots.config.ts:5:10
-Type error: No overload matches this call.
-  The last overload gave the following error.
-    Object literal may only specify known properties, and 'include' does not exist in type 'CSSOptions'.
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /acesso-entregador
+├ ƒ /acesso-negado
+├ ƒ /api/conversations/[conversationId]/media/[mediaId]
+├ ƒ /api/conversations/[conversationId]/messages
+├ ƒ /api/health
+├ ƒ /api/integrations/mercado-pago/oauth/callback
+├ ƒ /api/integrations/mercado-pago/oauth/start
+├ ƒ /api/internal/campaign-messages
+├ ƒ /api/internal/conversation-auto-close
+├ ƒ /api/internal/ifood-order-intake
+├ ƒ /api/internal/order-notifications
+├ ƒ /api/internal/payment-reconciliation
+├ ƒ /api/internal/route-retention
+├ ƒ /api/internal/subscription-renewals
+├ ƒ /api/order-alert/events
+├ ƒ /api/order-alert/presence
+├ ƒ /api/print-agent/ack
+├ ƒ /api/print-agent/claim
+├ ƒ /api/print-agent/config
+├ ƒ /api/print-agent/fail
+├ ƒ /api/print-agent/heartbeat
+├ ƒ /api/print-agent/job-style
+├ ƒ /api/print-agent/order-alerts
+├ ƒ /api/product-experience/events
+├ ƒ /api/webhooks/billing/[providerKey]
+├ ƒ /api/webhooks/fiscal/[integrationId]
+├ ƒ /api/webhooks/payments/mercado-pago/[storeId]
+├ ƒ /api/webhooks/subscription-billing/mercado-pago
+├ ƒ /api/webhooks/whatsapp
+├ ƒ /assinatura
+├ ƒ /assinatura/contrato
+├ ƒ /assinatura/contrato/comprovante
+├ ƒ /auth/callback
+├ ƒ /cadastro
+├ ƒ /caixa
+├ ƒ /cardapio/adicionais
+├ ƒ /cardapio/categorias
+├ ƒ /cardapio/produtos
+├ ƒ /cardapio/produtos/[id]
+├ ƒ /cardapio/produtos/novo
+├ ƒ /cardapio/promocoes
+├ ƒ /cardapio/sugestoes
+├ ƒ /clientes
+├ ƒ /clientes/[id]
+├ ○ /como-funciona
+├ ƒ /compras
+├ ƒ /configuracoes
+├ ƒ /configuracoes/caixa
+├ ƒ /configuracoes/cardapio
+├ ƒ /configuracoes/conversas
+├ ƒ /configuracoes/entrega
+├ ƒ /configuracoes/entregadores
+├ ƒ /configuracoes/fluxo-pedidos
+├ ƒ /configuracoes/horarios
+├ ƒ /configuracoes/impressoes
+├ ƒ /configuracoes/impressoes/formato
+├ ƒ /configuracoes/impressoes/gerenciar
+├ ƒ /configuracoes/integracoes
+├ ƒ /configuracoes/loja
+├ ƒ /configuracoes/modulos
+├ ƒ /configuracoes/operacao
+├ ƒ /configuracoes/pagamentos
+├ ƒ /configuracoes/salao
+├ ƒ /conversas
+├ ƒ /convite
+├ ƒ /crescimento
+├ ƒ /crescimento/campanhas
+├ ƒ /dashboard
+├ ○ /empresa
+├ ○ /entrega-e-fidelizacao
+├ ƒ /entregador
+├ ƒ /entregas
+├ ƒ /equipe
+├ ƒ /escala
+├ ƒ /estoque
+├ ƒ /estoque/fichas
+├ ƒ /financeiro
+├ ƒ /fiscal
+├ ƒ /fornecedores
+├ ƒ /login
+├ ƒ /m/[slug]
+├ ƒ /m/[slug]/(.)produto/[id]
+├ ƒ /m/[slug]/[...rest]
+├ ƒ /m/[slug]/carrinho
+├ ƒ /m/[slug]/checkout
+├ ƒ /m/[slug]/pedido/[id]
+├ ƒ /m/[slug]/pedido/[id]/acesso
+├ ƒ /m/[slug]/produto/[id]
+├ ƒ /mais-ferramentas
+├ ƒ /mesa/[code]
+├ ƒ /movimento
+├ ƒ /nova-senha
+├ ƒ /onboarding
+├ ƒ /operacao
+├ ƒ /pdv
+├ ƒ /pedidos
+├ ○ /pedidos-e-atendimento
+├ ƒ /pedidos/[id]
+├ ƒ /pedidos/historico
+├ ƒ /planos
+├ ƒ /platform
+├ ƒ /platform/alertas
+├ ƒ /platform/apresentacao
+├ ƒ /platform/assinaturas
+├ ƒ /platform/auditoria
+├ ƒ /platform/comercial
+├ ƒ /platform/comunicacao
+├ ƒ /platform/configuracoes
+├ ƒ /platform/demo
+├ ƒ /platform/empresas/[organizationId]
+├ ƒ /platform/empresas/[organizationId]/unidades/[storeId]
+├ ƒ /platform/equipe
+├ ƒ /platform/financeiro
+├ ƒ /platform/fundadores
+├ ƒ /platform/incidentes
+├ ƒ /platform/integracoes
+├ ƒ /platform/integridade
+├ ƒ /platform/novo-restaurante
+├ ƒ /platform/onboarding
+├ ƒ /platform/operacao
+├ ƒ /platform/operacao/pedidos/[orderId]
+├ ƒ /platform/operacao/praticidade
+├ ƒ /platform/pendencias
+├ ƒ /platform/privacidade
+├ ƒ /platform/produto
+├ ƒ /platform/restaurantes/[storeId]
+├ ƒ /platform/suporte
+├ ƒ /platform/suporte/modo
+├ ƒ /platform/unidades/[storeId]
+├ ƒ /platform/unidades/[storeId]/configuracao-operacional
+├ ƒ /platform/unidades/[storeId]/whatsapp
+├ ƒ /platform/unidades/[storeId]/whatsapp/notificacoes
+├ ○ /politica-de-privacidade
+├ ƒ /primeiro-acesso-entregador
+├ ○ /privacidade
+├ ƒ /producao
+├ ƒ /recuperar-senha
+├ ƒ /recurso-indisponivel
+├ ○ /recursos
+├ ƒ /salao
+├ ƒ /salao/[tableId]
+├ ○ /termos-de-uso
+└ ƒ /vasilhames
 
-  [90m3 |[0m
-  [90m4 |[0m [36mexport[0m [36mdefault[0m defineConfig({
-[31m[1m>[0m [90m5 |[0m   css: { include: [[35m/.+/[0m], modules: { generateScopedName: [32m"[local]"[0m } },
-  [90m  |[0m          [31m[1m^[0m
-  [90m6 |[0m   test: { environment: [32m"node"[0m, include: [[32m"ci-shots/**/*.test.tsx"[0m], css: { include: [[35m/.+/[0m],...
-  [90m7 |[0m   resolve: {
-  [90m8 |[0m     alias: {
-Next.js build worker exited with code: 1 and signal: null
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
