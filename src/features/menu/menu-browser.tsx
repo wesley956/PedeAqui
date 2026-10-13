@@ -32,7 +32,7 @@ export function MenuBrowser({ menu, canOrder, productOptions, quickLines = {}, a
   const deferredQuery = useDeferredValue(query);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
-  const lockUntil = useRef(0);
+  const scrollLocked = useRef(false);
 
   const visibleCategories = useMemo(
     () => menu.categories.filter((category) => category.products.length > 0),
@@ -62,7 +62,7 @@ export function MenuBrowser({ menu, canOrder, productOptions, quickLines = {}, a
     const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-menu-section]"));
     if (sections.length === 0 || typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver((entries) => {
-      if (Date.now() < lockUntil.current) return;
+      if (scrollLocked.current) return;
       const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
       const id = visible[0]?.target.getAttribute("data-menu-section");
       if (id) setActiveCategory(id);
@@ -80,7 +80,8 @@ export function MenuBrowser({ menu, canOrder, productOptions, quickLines = {}, a
 
   function goToCategory(id: string) {
     setActiveCategory(id);
-    lockUntil.current = Date.now() + 800;
+    scrollLocked.current = true;
+    window.setTimeout(() => { scrollLocked.current = false; }, 800);
     const target = document.getElementById(`categoria-${id}`);
     if (!target) return;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
