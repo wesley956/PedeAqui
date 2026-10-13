@@ -24,10 +24,10 @@ describe("PA-PUBLIC-UX-008 final homologation gate", () => {
   it("keeps the approved menu incremental instead of replacing the public entry flow", () => {
     expect(menuPage).toContain("MenuBrowser");
     expect(menuPage).toContain("PublicCartBar");
-    expect(productPage).toContain("Adicionar ao carrinho");
+    expect(productPage).toContain("ProductPurchaseBar");
     expect(productPage).toContain("ModifierGroupSelector");
     expect(productPage).toContain("ComplementCategorySection");
-    expect(productPage).toContain("PublicCartBar");
+    expect(productPage).toContain('"Adicionar"');
   });
 
   it("treats quantity-per-option as a bounded maximum, not an exact-fill requirement", () => {

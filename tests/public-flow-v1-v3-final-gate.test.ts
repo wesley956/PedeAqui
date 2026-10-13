@@ -36,7 +36,7 @@ describe("PUBLIC FLOW V1+V3 final gate #993/#994", () => {
     expect(productPage).toContain("addToCartAction");
     expect(productPage).toContain("ModifierGroupSelector");
     expect(productPage).toContain("ComplementCategorySection");
-    expect(productPage).toContain("PublicCartBar");
+    expect(productPage).toContain("ProductPurchaseBar");
     expect(cartBar).toContain("/carrinho");
   });
 

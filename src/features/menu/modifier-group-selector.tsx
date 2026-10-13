@@ -104,7 +104,7 @@ function EqualSplitModifierGroup({ group, disabled, complementTargetId, initialS
           <button type="button" onClick={() => removeOption(modifier.id)} disabled={disabled || !checked} aria-label={`Remover opção ${modifier.name}`}>−</button>
           <output aria-live="polite" aria-label={`${quantity} unidade(s) de ${modifier.name}`}>{quantity}</output>
           <button type="button" onClick={() => addOption(modifier.id)} disabled={disabled || checked || maxReached || !validConfiguration} aria-label={`Adicionar opção ${modifier.name}`}>+</button>
-          <input type="hidden" name={`modifier_qty_${modifier.id}`} value={checked ? 1 : 0} />
+          <input type="hidden" name={`modifier_qty_${modifier.id}`} value={checked ? 1 : 0} data-modifier-id={modifier.id} data-priced-quantity={quantity} />
         </div>
       </div>;
     })}</div>
@@ -150,7 +150,7 @@ function QuantityModifierGroup({ group, disabled, complementTargetId, initialSel
           <button type="button" onClick={() => change(modifier.id, -1)} disabled={disabled || quantity <= 0} aria-label={`Remover uma unidade de ${modifier.name}`}>−</button>
           <output aria-live="polite" aria-label={`${quantity} unidade(s) de ${modifier.name}`}>{quantity}</output>
           <button type="button" onClick={() => change(modifier.id, 1)} disabled={disabled || maxReached} aria-label={`Adicionar uma unidade de ${modifier.name}`}>+</button>
-          <input type="hidden" name={`modifier_qty_${modifier.id}`} value={quantity} />
+          <input type="hidden" name={`modifier_qty_${modifier.id}`} value={quantity} data-modifier-id={modifier.id} data-priced-quantity={quantity} />
         </div>
       </div>;
     })}</div>

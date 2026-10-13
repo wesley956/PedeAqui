@@ -28,10 +28,10 @@ describe("persistent public cart bar", () => {
     expect(component).not.toContain("localStorage");
   });
 
-  it("is present on menu and product without replacing the product add CTA", () => {
+  it("is present on the menu, while the product page keeps a single fixed add bar", () => {
     expect(menuPage).toContain("<PublicCartBar");
-    expect(productPage).toContain("<PublicCartBar");
-    expect(productPage).toContain("Adicionar ao carrinho");
+    expect(productPage).not.toContain("<PublicCartBar");
+    expect(productPage).toContain("<ProductPurchaseBar");
   });
 
   it("reserves space, supports safe areas and remains keyboard accessible", () => {
