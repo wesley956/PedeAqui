@@ -30,7 +30,7 @@ describe("stabilization #829 commercial journey", () => {
     expect(read("src/app/m/[slug]/page.tsx")).toContain("MenuBrowser");
     expect(read("src/app/m/[slug]/produto/[id]/page.tsx")).toContain("addToCartAction");
     expect(read("src/app/m/[slug]/carrinho/page.tsx")).toContain("/checkout");
-    expect(read("src/app/m/[slug]/checkout/page.tsx")).toContain("confirmCheckoutOrderAction");
+    expect(read("src/features/checkout/express-actions.ts")).toContain("confirmCheckoutOrderAction");
     expect(read("src/features/checkout/confirm-order-action.ts")).toContain("createOrderFromCheckoutAction");
     expect(read("src/app/m/[slug]/pedido/[id]/page.tsx")).toContain("PublicOrderService");
     expect(read("src/server/orders/order-service.ts")).toContain("listHistory");

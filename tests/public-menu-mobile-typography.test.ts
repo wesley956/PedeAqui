@@ -33,7 +33,7 @@ describe("public menu mobile visual hierarchy", () => {
 
   it("uses a compact purchase row with a direct action and lazy images", () => {
     expect(menuBrowserCss).toContain(".product{display:grid;grid-template-columns:auto minmax(0,1fr) auto");
-    expect(menuBrowserCss).toContain(".image,.imageFallback{width:72px;height:72px}");
+    expect(menuBrowserCss).toContain(".image,.imageFallback{width:56px;height:56px}");
     expect(menuBrowserCss).toContain(".addButton{width:44px;height:44px");
     expect(productCard).toContain('width={88} height={88} loading="lazy" decoding="async"');
   });

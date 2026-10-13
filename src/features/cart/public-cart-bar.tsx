@@ -36,12 +36,14 @@ export async function PublicCartBar({ storeSlug }: { storeSlug: string }) {
         className={styles.bar}
         aria-label={`Carrinho: ${itemLabel}, total atual ${total}. Finalizar pedido`}
       >
+        <span className={styles.count} aria-hidden>{summary.itemCount}</span>
         <span className={styles.summary}>
-          <span className={styles.items}><NavigationIcon name="cart" width={16} height={16} /> {itemLabel}</span>
-          <span className={styles.total}>{total}</span>
-          {missingForMinimum > 0 ? <span className={styles.minimum}>Faltam {money(missingForMinimum)} para o pedido mínimo</span> : null}
+          <span className={styles.action}>Finalizar pedido</span>
+          {missingForMinimum > 0
+            ? <span className={styles.minimum}>Faltam {money(missingForMinimum)} para o pedido mínimo</span>
+            : <span className={styles.items}><NavigationIcon name="cart" width={14} height={14} /> {itemLabel}</span>}
         </span>
-        <span className={styles.action}>Finalizar pedido →</span>
+        <span className={styles.total}>{total}</span>
       </Link>
     </div>
   </>;

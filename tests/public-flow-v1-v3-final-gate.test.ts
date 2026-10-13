@@ -15,7 +15,7 @@ const cartPage = read("src/app/m/[slug]/carrinho/page.tsx");
 const cartCss = read("src/app/m/[slug]/carrinho/cart.module.css");
 const cartBar = read("src/features/cart/public-cart-bar.tsx");
 const cartBarCss = read("src/features/cart/public-cart-bar.module.css");
-const checkoutPage = read("src/app/m/[slug]/checkout/page.tsx");
+const checkoutPage = read("src/app/m/[slug]/checkout/page.tsx") + read("src/features/checkout/express-checkout-form.tsx") + read("src/features/checkout/express-actions.ts");  // Checkout Expresso: página + formulário único + ação
 const workflow = read(".github/workflows/ci.yml");
 
 describe("PUBLIC FLOW V1+V3 final gate #993/#994", () => {

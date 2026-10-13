@@ -104,7 +104,8 @@ export function StoreInformationSheet({ store, hours }: Props) {
 
   return <>
     <button ref={triggerRef} type="button" className={styles.trigger} onClick={openDialog} aria-haspopup="dialog">
-      <span aria-hidden>ⓘ</span> Informações da loja
+      <svg aria-hidden viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
+      <span className={styles.triggerLabel}>Informações da loja</span>
     </button>
 
     <dialog

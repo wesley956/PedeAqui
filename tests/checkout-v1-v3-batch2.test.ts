@@ -5,8 +5,9 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
-const page = read("src/app/m/[slug]/checkout/page.tsx");
-const actions = read("src/features/checkout/actions.ts");
+// Checkout Expresso: página do servidor + formulário único + ação que salva cada parte com as mesmas regras.
+const page = read("src/app/m/[slug]/checkout/page.tsx") + read("src/features/checkout/express-checkout-form.tsx");
+const actions = read("src/features/checkout/actions.ts") + read("src/features/checkout/express-actions.ts");
 const confirmAction = read("src/features/checkout/confirm-order-action.ts");
 const orderActions = read("src/features/orders/actions.ts");
 const checkoutService = read("src/server/checkout/checkout-service.ts");
@@ -33,29 +34,31 @@ describe("checkout V1+V3 batch 2", () => {
   });
 
   it("exposes existing scheduling without introducing a mandatory stage", () => {
-    expect(page).toContain("saveCheckoutScheduleAction");
-    expect(page).toContain("Quero agendar este pedido");
-    expect(page).toContain("name=\"mode\" value=\"asap\"");
-    expect(page).toContain("name=\"mode\" value=\"scheduled\"");
+    expect(page).toContain('<input type="hidden" name="when" value={when} />');
+    expect(page).toContain("<strong>Agora</strong>");
+    expect(page).toContain("<strong>Agendar</strong>");
+    expect(page).toContain('name="localDateTime" type="datetime-local"');
     expect(page).not.toContain("| \"schedule\"");
     expect(actions).toContain("CheckoutService.saveSchedule");
     expect(checkoutService).toContain("assertScheduledWindow");
     expect(checkoutService).toContain("zonedLocalDateTimeToUtc");
   });
 
-  it("keeps the final review editable and sourced from official cart/session values", () => {
-    expect(page).toContain("Alterar recebimento");
-    expect(page).toContain("Alterar dados");
-    expect(page).toContain("Alterar endereço");
-    expect(page).toContain("Alterar pagamento");
-    expect(page).toContain("FinalOrderOptions");
+  it("keeps every block editable on one screen and sourced from official cart/session values", () => {
+    expect(page).toContain("Como receber");
+    expect(page).toContain("Seus dados");
+    expect(page).toContain("Endereço");
+    expect(page).toContain("Pagamento");
+    expect(page).toContain("Resumo");
+    expect(page).not.toContain("?etapa=");
     expect(page).toContain("cart.subtotal_cents");
     expect(page).toContain("cart.delivery_fee_cents");
     expect(page).toContain("cart.total_cents");
   });
 
   it("preserves the safe confirmation chain and post-order side effects", () => {
-    expect(page).toContain("confirmCheckoutOrderAction");
+    expect(actions).toContain("await confirmCheckoutOrderAction(formData)");
+    expect(page).toContain("action={submitExpressCheckoutAction}");
     expect(confirmAction).toContain("assertStoreOperationalAccess");
     expect(confirmAction).toContain("createOrderFromCheckoutAction(formData)");
     expect(orderActions).toContain("OrderService.createFromCheckout");
@@ -80,7 +83,7 @@ describe("checkout V1+V3 batch 2", () => {
       "invalid_schedule", "checkout_not_ready", "benefit_invalid", "benefit_unavailable",
     ]) expect(page).toContain(code);
     expect(page).toContain("aria-live=\"assertive\"");
-    expect(page).toContain("data-error-stage={activeStage}");
+    expect(page).toContain("total_updated");
     expect(page).toContain("Não foi possível continuar. Confira os dados e tente novamente.");
   });
 });

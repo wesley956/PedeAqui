@@ -5,26 +5,23 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
-const page = read("src/app/m/[slug]/checkout/page.tsx");
+// Checkout Expresso: página do servidor + formulário único + ação que salva tudo.
+const page = read("src/app/m/[slug]/checkout/page.tsx") + read("src/features/checkout/express-checkout-form.tsx") + read("src/features/checkout/express-actions.ts");
 const css = read("src/app/m/[slug]/checkout/checkout.module.css");
 const checkoutService = read("src/server/checkout/checkout-service.ts");
 const orderAction = read("src/features/orders/actions.ts");
 
 describe("[980] persistent shell and navigation contracts", () => {
-  it("keeps adaptive 5-step delivery and 4-step pickup flows", () => {
-    expect(page).toContain('["fulfillment", "identity", "address", "payment", "review"]');
-    expect(page).toContain('["fulfillment", "identity", "payment", "review"]');
-    expect(page).toContain("stageOrder.indexOf(activeStage)");
-    expect(page).toContain("totalSteps = stageOrder.length");
+  it("adapts one screen to delivery and pickup (address only for delivery)", () => {
+    expect(page).toContain('{mode === "delivery" ? (');
+    expect(page).toContain('<section className={styles.block} aria-labelledby="bloco-endereco">');
+    expect(page).not.toContain("stageOrder");
   });
 
-  it("keeps contextual back navigation without client-side state authority", () => {
-    expect(page).toContain('activeStage === "fulfillment"');
-    expect(page).toContain('stageHref(slug, "fulfillment")');
-    expect(page).toContain('stageHref(slug, "identity")');
-    expect(page).toContain('stageHref(slug, "address")');
-    expect(page).toContain('stageHref(slug, "payment")');
+  it("keeps back navigation to the menu and the server as the authority", () => {
+    expect(page).toContain('aria-label="Voltar ao cardápio"');
     expect(page).toContain("CheckoutService.load");
+    expect(page).toContain("CheckoutService.saveFulfillment");
   });
 
   it("renders totals from official cart state", () => {
@@ -60,10 +57,10 @@ describe("[981] responsive and accessibility contracts", () => {
 
 describe("[982] final functional gate contracts", () => {
   it("preserves payment, growth and scheduling server actions", () => {
-    expect(page).toContain("saveCheckoutPaymentAction");
+    expect(page).toContain("CheckoutService.savePayment");
     expect(page).toContain("applyCheckoutBenefitsAction");
     expect(page).toContain("clearCheckoutBenefitsAction");
-    expect(page).toContain("saveCheckoutScheduleAction");
+    expect(page).toContain("CheckoutService.saveSchedule");
     expect(page).toContain("confirmCheckoutOrderAction");
   });
 

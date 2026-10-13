@@ -29,43 +29,48 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
     // As quantidades na lista são um atalho; sem elas o cardápio continua com o botão de adicionar.
     quickLines = {};
   }
-  const [status, detail] = statusCopy[menu.operational.label];
+  const [status] = statusCopy[menu.operational.label];
   const deliveryAvailable = menu.settings.allow_delivery && menu.delivery.enabled;
   const statusClass = menu.operational.label === "open" ? styles.statusOpen : menu.operational.label === "paused" ? styles.statusPaused : "";
+  const etaLabel = deliveryAvailable ? `${menu.delivery.estimated_min_minutes}–${menu.delivery.estimated_max_minutes} min` : menu.settings.allow_pickup ? "Retirada no local" : null;
+  const headline = [etaLabel, menu.settings.minimum_order_cents > 0 ? `mínimo ${money(menu.settings.minimum_order_cents)}` : null].filter(Boolean).join(" · ");
+  const serviceFacts = [
+    deliveryAvailable ? `Entrega a partir de ${money(menu.delivery.starting_fee_cents)}` : null,
+    deliveryAvailable && menu.delivery.free_delivery_over_cents !== null ? `Frete grátis acima de ${money(menu.delivery.free_delivery_over_cents)}` : null,
+    menu.settings.allow_pickup && deliveryAvailable ? "Retirada disponível" : null,
+  ].filter(Boolean).join(" · ");
+  const closedNotice = menu.operational.label === "closed"
+    ? `Estamos fechados agora.${menu.operational.nextOpening ? ` Abrimos ${menu.operational.nextOpening.label}.` : ""}`
+    : menu.operational.label === "paused" ? `Pedidos pausados no momento${menu.settings.pause_reason ? `: ${menu.settings.pause_reason}` : "."}` : null;
   return <main className={styles.root} style={restaurantBrandVars(menu.settings.primary_color)}>
-    <div className={styles.cover} style={menu.settings.cover_url ? { backgroundImage: `url(${menu.settings.cover_url})` } : undefined} aria-hidden />
     <div className={styles.container}>
-      <header className={styles.hero}>
+      <header className={styles.expressHeader}>
         <RestaurantBrand name={menu.store.name} logoUrl={menu.settings.logo_url} primaryColor={menu.settings.primary_color}>
-          <span className={`${styles.status} ${statusClass}`}>{status}</span>
-          <p className={styles.brandDetail}>{menu.operational.label === "closed" && menu.operational.nextOpening ? `Abre ${menu.operational.nextOpening.label}` : detail}{menu.settings.pause_reason && menu.operational.label === "paused" ? ` — ${menu.settings.pause_reason}` : ""}</p>
-          {(menu.store.city || menu.store.state) ? <p className={styles.location}>{[menu.store.city, menu.store.state].filter(Boolean).join(" - ")}</p> : null}
-          <StoreInformationSheet store={{
-            name: menu.store.name,
-            phone: menu.store.phone,
-            postal_code: menu.store.postal_code,
-            street: menu.store.street,
-            number: menu.store.number,
-            complement: menu.store.complement,
-            district: menu.store.district,
-            city: menu.store.city,
-            state: menu.store.state,
-            public_whatsapp: menu.store.public_whatsapp,
-            website_url: menu.store.website_url,
-            instagram_url: menu.store.instagram_url,
-            facebook_url: menu.store.facebook_url,
-            tiktok_url: menu.store.tiktok_url,
-          }} hours={menu.hours} />
+          <p className={styles.statusLine}>
+            <span className={`${styles.status} ${statusClass}`}>{menu.operational.label === "open" ? "Aberto agora" : status}</span>
+            {headline ? <span className={styles.headline}>{headline}</span> : null}
+          </p>
+          {serviceFacts ? <p className={styles.serviceLine} aria-label="Opções do pedido">{serviceFacts}</p> : null}
         </RestaurantBrand>
+        <StoreInformationSheet store={{
+          name: menu.store.name,
+          phone: menu.store.phone,
+          postal_code: menu.store.postal_code,
+          street: menu.store.street,
+          number: menu.store.number,
+          complement: menu.store.complement,
+          district: menu.store.district,
+          city: menu.store.city,
+          state: menu.store.state,
+          public_whatsapp: menu.store.public_whatsapp,
+          website_url: menu.store.website_url,
+          instagram_url: menu.store.instagram_url,
+          facebook_url: menu.store.facebook_url,
+          tiktok_url: menu.store.tiktok_url,
+        }} hours={menu.hours} />
       </header>
+      {closedNotice ? <div className={styles.closedNotice} role="status">{closedNotice}</div> : null}
       <div className={styles.content}>
-        <div className={styles.serviceSummary} aria-label="Opções do pedido" tabIndex={0}>
-          {deliveryAvailable ? <span className={styles.pill}>Entrega · a partir de {money(menu.delivery.starting_fee_cents)}</span> : null}
-          {deliveryAvailable ? <span className={styles.pill}>{menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span> : null}
-          {menu.settings.allow_pickup ? <span className={styles.pill}>Retirada disponível</span> : null}
-          {menu.settings.minimum_order_cents > 0 ? <span className={styles.pill}>Pedido mínimo {money(menu.settings.minimum_order_cents)}</span> : null}
-          {deliveryAvailable && menu.delivery.free_delivery_over_cents !== null ? <span className={styles.pill}>Frete grátis acima de {money(menu.delivery.free_delivery_over_cents)}</span> : null}
-        </div>
         <MenuBrowser menu={{
           store: { slug: menu.store.slug },
           settings: {

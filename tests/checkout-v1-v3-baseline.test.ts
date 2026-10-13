@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(path, "utf8");
-const page = read("src/app/m/[slug]/checkout/page.tsx");
+// Checkout Expresso: a página do servidor mais o formulário único e a ação que salva tudo de uma vez.
+const page = read("src/app/m/[slug]/checkout/page.tsx") + read("src/features/checkout/express-checkout-form.tsx") + read("src/features/checkout/express-actions.ts");
 const css = read("src/app/m/[slug]/checkout/checkout.module.css");
 const actions = read("src/features/checkout/actions.ts");
 const checkoutService = read("src/server/checkout/checkout-service.ts");
@@ -19,23 +20,23 @@ describe("checkout V1+V3 baseline", () => {
     expect(actions).toContain("saveCheckoutPaymentAction");
   });
 
-  it("keeps delivery and pickup as different stage sequences", () => {
-    expect(page).toContain('["fulfillment", "identity", "address", "payment", "review"]');
-    expect(page).toContain('["fulfillment", "identity", "payment", "review"]');
+  it("keeps delivery and pickup as different flows on the single Expresso screen", () => {
+    expect(page).toContain('{mode === "delivery" ? (');
+    expect(page).toContain('if (fulfillment === "delivery") {');
     expect(page).toContain('session?.fulfillment_type === "delivery"');
     expect(page).toContain("menu.settings.allow_delivery && menu.delivery.enabled");
     expect(page).toContain("menu.settings.allow_pickup");
   });
 
   it("keeps recognition gated before saved addresses are exposed", () => {
-    expect(page).toContain("recognizedForSession && recognizedCustomer && recognizedCustomer.addresses.length > 0");
+    expect(page).toContain("recognizedForSession && recognizedCustomer ? recognizedCustomer.addresses : []");
     expect(checkoutService).toContain("recognized.customerId !== session.customer_id");
-    expect(page).toContain("useSavedCheckoutAddressAction");
+    expect(page).toContain("applyRecognizedAddress.call(CheckoutService, storeSlug, token, recognitionToken, Number(savedIndex))");
   });
 
   it("keeps delivery quote state and optional postal code", () => {
     expect(page).toContain('session?.delivery_quote_status === "valid"');
-    expect(page).toContain('session?.delivery_quote_status === "unserviceable"');
+    expect(page).toContain('back(storeSlug, "total_updated")');
     expect(page).toContain('label="CEP (opcional)"');
     expect(checkoutService).toContain("DeliveryQuoteService.quote");
   });
@@ -59,6 +60,6 @@ describe("checkout V1+V3 baseline", () => {
     expect(css).toContain("height:100dvh");
     expect(css).toContain("overflow-y:auto");
     expect(page).toContain("stageViewport");
-    expect(page).toContain("activeStage");
+    expect(css).toContain(".expressShell{grid-template-rows:auto minmax(0,1fr)}");
   });
 });

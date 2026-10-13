@@ -3,7 +3,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import type { PublicMenu } from "@/server/menu/schemas";
 import { PublicProductCard, type ProductOptions, type QuickLine } from "./public-product-card";
-import { PublicPromotionCard } from "./public-promotion-card";
 import styles from "./menu-browser.module.css";
 
 type MenuBrowserData = Pick<PublicMenu, "categories"> & {
@@ -51,8 +50,8 @@ export function MenuBrowser({ menu, canOrder, productOptions, quickLines = {}, a
       .filter((category) => category.products.length > 0);
   }, [visibleCategories, deferredQuery]);
 
-  const promotionCategory = filtered.find((category) => category.id === PROMOTIONS_CATEGORY_ID) ?? null;
-  const standardCategories = filtered.filter((category) => category.id !== PROMOTIONS_CATEGORY_ID);
+  // Expresso: promoções aparecem como uma seção da lista, com o mesmo botão de adicionar.
+  const standardCategories = [...filtered].sort((a, b) => Number(b.id === PROMOTIONS_CATEGORY_ID) - Number(a.id === PROMOTIONS_CATEGORY_ID));
   const total = filtered.reduce((sum, category) => sum + category.products.length, 0);
   const catalogEmpty = visibleCategories.length === 0;
   const currentCategory = activeCategory ?? filtered[0]?.id ?? null;
@@ -91,12 +90,13 @@ export function MenuBrowser({ menu, canOrder, productOptions, quickLines = {}, a
   return (
     <div className={styles.browser}>
       {menu.settings.show_search ? (
-        <label className={styles.search}>
+        <label className={`${styles.search} ${styles.searchField}`}>
           <span className={styles.searchLabel}>Buscar no cardápio</span>
+          <svg className={styles.searchIcon} aria-hidden viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Ex.: X-Bacon, pizza, Coca-Cola..."
+            placeholder="Buscar pizza, lanche, bebida…"
             type="search"
             className={styles.searchInput}
           />
@@ -131,35 +131,6 @@ export function MenuBrowser({ menu, canOrder, productOptions, quickLines = {}, a
         </div>
       ) : (
         <>
-          {promotionCategory ? (
-            <section
-              id={`categoria-${promotionCategory.id}`}
-              data-menu-section={promotionCategory.id}
-              className={`${styles.section} ${styles.promotionSection}`}
-            >
-              <div className={styles.promotionHeader}>
-                <div>
-                  <h2>{promotionCategory.name}</h2>
-                  <p>{promotionCategory.description || "Ofertas válidas agora"}</p>
-                </div>
-                <span className={styles.promotionCount}>
-                  {promotionCategory.products.length} {promotionCategory.products.length === 1 ? "oferta" : "ofertas"}
-                </span>
-              </div>
-
-              <div className={styles.promotionRail} aria-label="Produtos em promoção">
-                {promotionCategory.products.map((product) => (
-                  <PublicPromotionCard
-                    key={product.id}
-                    product={product}
-                    storeSlug={menu.store.slug}
-                    showImage={menu.settings.show_product_images}
-                  />
-                ))}
-              </div>
-            </section>
-          ) : null}
-
           {standardCategories.map((category) => (
             <section key={category.id} id={`categoria-${category.id}`} data-menu-section={category.id} className={styles.section}>
               <div className={styles.sectionHeader}>
