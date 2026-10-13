@@ -1,6 +1,7 @@
 import { markCustomerPanelMessageReadAction } from "@/features/customer-messages/actions";
 import type { CustomerPanelMessageState } from "@/server/platform/customer-panel-message-service";
 import styles from "./customer-messages.module.css";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 
 const KIND_LABEL: Record<string, string> = {
   announcement: "Aviso",
@@ -21,7 +22,7 @@ export function CustomerMessageNotifications({ state }: { state: CustomerPanelMe
   return (
     <details className={styles.notifications}>
       <summary aria-label={`Notificações${state.unreadCount ? `, ${state.unreadCount} não lida(s)` : ""}`}>
-        <span aria-hidden>🔔</span>
+        <NavigationIcon name="bell" />
         <span className={styles.notificationLabel}>Avisos</span>
         {state.unreadCount > 0 ? <span className={styles.badge}>{state.unreadCount}</span> : null}
       </summary>

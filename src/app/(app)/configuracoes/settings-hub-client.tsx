@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import styles from "./settings-hub.module.css";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 
 export type SettingsHubItem = {
   title: string;
@@ -47,7 +48,7 @@ export function SettingsHubClient({ areas, canManageResources }: { areas: readon
       <div className={styles.sectionHeader}><h2 id="settings-main-title">Configurações do restaurante</h2><p>Tudo organizado pelo que você quer fazer, não pelo nome técnico da função.</p></div>
       <div className={styles.grid}>
         {filtered.map((area) => <article className={styles.areaCard} key={area.key}>
-          <span className={styles.areaIcon} aria-hidden>{area.icon}</span>
+          <span className={styles.areaIcon} aria-hidden><NavigationIcon name={area.icon} width={20} height={20} /></span>
           <div className={styles.areaCopy}><strong>{area.title}</strong><span>{area.description}</span></div>
           <div className={styles.areaLinks}>{area.items.map((item) => item.available ? <Link href={item.href} key={item.href}>{item.title}<span aria-hidden>→</span></Link> : <div className={styles.unavailableRow} key={item.href}><span>{item.title}<small>Recurso não ativo</small></span>{canManageResources && item.activationHref ? <Link href={item.activationHref}>Ativar</Link> : <em>Indisponível</em>}</div>)}</div>
         </article>)}

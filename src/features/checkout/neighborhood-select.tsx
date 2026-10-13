@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 
 type Neighborhood = {
   id: string;
@@ -126,7 +127,7 @@ export function NeighborhoodSelect({
                   role="option"
                   aria-selected="false"
                 >
-                  <strong>📍 {item.neighborhoodName}</strong>
+                  <strong><NavigationIcon name="pin" width={16} height={16} /> {item.neighborhoodName}</strong>
                   <span className={detailClassName}>Entrega {money(item.feeCents)} · {item.city}/{item.state}</span>
                   {item.minimumOrderCents ? <span className={detailClassName}>Pedido mínimo {money(item.minimumOrderCents)}</span> : null}
                 </button>

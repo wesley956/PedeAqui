@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { NavigationGroup } from "@/components/layout/navigation-model";
 import styles from "./more-tools.module.css";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 
 export type MoreToolItem = {
   key: string;
@@ -19,12 +20,6 @@ const groupMeta: readonly { key: NavigationGroup; label: string; description: st
   { key: "management", label: "Gestão", description: "Indicadores e controles administrativos." },
   { key: "administration", label: "Equipe e administração", description: "Pessoas, estrutura e configurações avançadas." },
 ];
-
-const icons: Record<string, string> = {
-  conversations: "💬", dining: "🪑", cash: "💵", finance: "💰", fiscal: "🧮", production: "🍳",
-  deliveries: "🚚", driver: "🛵", inventory: "📦", gas_containers: "🧯", suppliers: "🏭", purchases: "🧾",
-  customers: "👤", growth: "📣", scale: "🗓️", team: "👥", settings: "⚙️", platform: "◆",
-};
 
 export function MoreToolsClient({ items }: { items: readonly MoreToolItem[] }) {
   const [query, setQuery] = useState("");
@@ -48,7 +43,7 @@ export function MoreToolsClient({ items }: { items: readonly MoreToolItem[] }) {
       return <section className={styles.group} key={group.key} aria-labelledby={`more-tools-${group.key}`}>
         <div className={styles.groupHeader}><h2 id={`more-tools-${group.key}`}>{group.label}</h2><p>{group.description}</p></div>
         <div className={styles.grid}>{groupItems.map((item) => <Link href={item.href} className={styles.card} key={item.key}>
-          <span className={styles.icon} aria-hidden>{icons[item.key] ?? "•"}</span>
+          <span className={styles.icon} aria-hidden><NavigationIcon name={item.key} width={20} height={20} /></span>
           <span><strong>{item.label}</strong><small>Abrir ferramenta</small></span>
           <em aria-hidden>→</em>
         </Link>)}</div>

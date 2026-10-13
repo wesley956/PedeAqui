@@ -25,6 +25,7 @@ import { paymentMethodLabels } from "@/server/checkout/schemas";
 import { customerRecognitionCookieName } from "@/server/customers/recognition-token";
 import { GrowthService } from "@/server/growth/growth-service";
 import styles from "./checkout.module.css";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 
 function money(cents: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
@@ -143,8 +144,8 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
             <CheckoutStage number="1" title="Como vai receber?" eyebrow="Recebimento" description="Escolha entrega ou retirada. A previsão de entrega será atualizada após informar o endereço.">
               <form action={saveCheckoutFulfillmentAction} className={styles.receiveGrid}>
                 <input type="hidden" name="storeSlug" value={slug} />
-                {menu.settings.allow_delivery && menu.delivery.enabled ? <button type="submit" name="fulfillmentType" value="delivery" className={`${styles.receiveChoice} ${deliverySelected ? styles.choiceSelected : ""}`}><span className={styles.choiceIcon}>🛵</span><strong>Entrega</strong><span className={styles.choiceDetail}>Receba em casa</span><span className={styles.choiceMeta}>{menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span></button> : null}
-                {menu.settings.allow_pickup ? <button type="submit" name="fulfillmentType" value="pickup" className={`${styles.receiveChoice} ${session?.fulfillment_type === "pickup" ? styles.choiceSelected : ""}`}><span className={styles.choiceIcon}>🛍️</span><strong>Retirada</strong><span className={styles.choiceDetail}>Busque no estabelecimento</span><span className={styles.choiceMeta}>Sem taxa de entrega</span></button> : null}
+                {menu.settings.allow_delivery && menu.delivery.enabled ? <button type="submit" name="fulfillmentType" value="delivery" className={`${styles.receiveChoice} ${deliverySelected ? styles.choiceSelected : ""}`}><span className={styles.choiceIcon}><NavigationIcon name="deliveries" width={22} height={22} /></span><strong>Entrega</strong><span className={styles.choiceDetail}>Receba em casa</span><span className={styles.choiceMeta}>{menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span></button> : null}
+                {menu.settings.allow_pickup ? <button type="submit" name="fulfillmentType" value="pickup" className={`${styles.receiveChoice} ${session?.fulfillment_type === "pickup" ? styles.choiceSelected : ""}`}><span className={styles.choiceIcon}><NavigationIcon name="bag" width={22} height={22} /></span><strong>Retirada</strong><span className={styles.choiceDetail}>Busque no estabelecimento</span><span className={styles.choiceMeta}>Sem taxa de entrega</span></button> : null}
               </form>
             </CheckoutStage>
           ) : null}
@@ -170,7 +171,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                   <div className={styles.choices}>{recognizedCustomer.addresses.map((address, index) => (
                     <form action={useSavedCheckoutAddressAction} key={`${address.postalCode}-${address.street}-${address.number}-${index}`}>
                       <input type="hidden" name="storeSlug" value={slug} /><input type="hidden" name="addressIndex" value={index} />
-                      <button type="submit" className={styles.choice}><strong>{address.isDefault ? "📍 Endereço principal" : `📍 ${address.label}`}</strong><span className={styles.choiceDetail}>{address.street}, {address.number}{address.complement ? ` · ${address.complement}` : ""}<br />{address.district} · {address.city}/{address.state}</span><span className={styles.choiceMeta}>Usar este endereço →</span></button>
+                      <button type="submit" className={styles.choice}><strong><NavigationIcon name="pin" width={16} height={16} /> {address.isDefault ? "Endereço principal" : address.label}</strong><span className={styles.choiceDetail}>{address.street}, {address.number}{address.complement ? ` · ${address.complement}` : ""}<br />{address.district} · {address.city}/{address.state}</span><span className={styles.choiceMeta}>Usar este endereço →</span></button>
                     </form>
                   ))}</div>
                   <div className={styles.orDivider}><span>Ou informe outro endereço</span></div>
@@ -245,7 +246,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
               </nav>
 
               <Link href={`/m/${slug}`} className={styles.addMoreItems}>
-                <span>🛒 Adicionar mais itens</span>
+                <span><NavigationIcon name="cart" width={16} height={16} /> Adicionar mais itens</span>
                 <small>Voltar ao cardápio sem perder o que já está no carrinho.</small>
               </Link>
 
