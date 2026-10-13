@@ -33,7 +33,7 @@ export function MoreToolsClient({ items }: { items: readonly MoreToolItem[] }) {
 
   return <section className={styles.page}>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>ORGANIZAÇÃO</p><h1>Mais ferramentas</h1><p>As funções menos usadas ficam organizadas aqui, sem atrapalhar o dia a dia.</p></div>
+      <div><h1>Mais ferramentas</h1><p>As funções menos usadas ficam organizadas aqui, sem atrapalhar o dia a dia.</p></div>
       <span className={styles.badge}>Só o que você pode usar</span>
     </header>
 

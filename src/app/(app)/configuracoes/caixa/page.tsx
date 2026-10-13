@@ -14,7 +14,7 @@ export default async function CashSettingsPage() {
   const openByRegister = new Map(data.sessions.filter((session) => session.status === "open").map((session) => [session.cash_register_id, session]));
 
   return <section className={styles.page}>
-    <header className={styles.header}><div><p className={styles.meta}>CONFIGURAÇÕES · CAIXA</p><h1>Caixas da unidade</h1><p className={styles.meta}>Cadastre e mantenha os pontos físicos de caixa fora do fluxo do turno.</p></div><div className={styles.actions}><Link href="/caixa" >Voltar ao caixa</Link></div></header>
+    <header className={styles.header}><div><h1>Caixas da unidade</h1><p className={styles.meta}>Cadastre e mantenha os pontos físicos de caixa fora do fluxo do turno.</p></div><div className={styles.actions}><Link href="/caixa" >Voltar ao caixa</Link></div></header>
 
     <FormDisclosure className={styles.details} summary="Criar caixa">
       <form action={createCashRegisterAction} className={styles.form} aria-label="Criar caixa">

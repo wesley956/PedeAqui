@@ -19,6 +19,7 @@ import { paymentMethodLabels } from "@/server/checkout/schemas";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
 import { isMercadoPagoOAuthConfigured } from "@/server/payments/providers/mercado-pago-oauth";
 import { StorePaymentMethodService } from "@/server/payments/store-payment-method-service";
+import { PageHeader } from "@/components/ui/page-header";
 
 const paymentHints: Record<string, string> = {
   cash: "O cliente pode informar se precisa de troco.",
@@ -64,11 +65,7 @@ export default async function PaymentSettingsPage({ searchParams }: PaymentSetti
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Configurações</p>
-        <h1 style={{ margin: "4px 0" }}>Formas de pagamento</h1>
-        <p className="muted" style={{ margin: 0 }}>Defina as opções do cliente e conecte o Pix online da unidade.</p>
-      </header>
+      <PageHeader title="Formas de pagamento" description="Defina as opções do cliente e conecte o Pix online da unidade." />
 
       {mercadoPagoMessage ? <div role={mercadoPagoStatus === "connected" ? "status" : "alert"} className="card" style={{ padding: 14 }}>{mercadoPagoMessage}</div> : null}
 

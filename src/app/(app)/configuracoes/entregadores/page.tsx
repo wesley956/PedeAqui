@@ -14,7 +14,6 @@ export default async function DriverSettingsPage() {
   return <section className={styles.page}>
     <header className={styles.header}>
       <div>
-        <p className="muted">CONFIGURAÇÕES · ENTREGA</p>
         <h1>Entregadores</h1>
         <p className="muted">Cadastre o telefone do entregador e libere um primeiro acesso simples pelo WhatsApp. Depois ele entra somente com telefone + PIN.</p>
         <DeliveryRealtime storeId={data.context.storeId!} showStatus tables={DRIVER_SETTINGS_REALTIME_TABLES} />

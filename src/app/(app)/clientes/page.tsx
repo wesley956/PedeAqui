@@ -19,7 +19,6 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     <section className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerCopy}>
-          <p className="muted">CLIENTES E HISTÓRICO</p>
           <h1>Clientes</h1>
           <p className="muted">Encontre quem já comprou, veja o histórico e acesse os dados que ajudam no próximo atendimento.</p>
         </div>

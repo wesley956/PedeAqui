@@ -9,7 +9,7 @@ function money(cents: number | string) { return new Intl.NumberFormat("pt-BR", {
 export default async function SuppliersPage() {
   const data = await SupplierService.load();
   return <section className={styles.page}>
-    <header className={styles.header}><div className={styles.headerCopy}><p className="muted">ESTOQUE E COMPRAS</p><h1>Fornecedores</h1><p className="muted">Cadastre de quem você compra e configure prazo, pedido mínimo e itens fornecidos para esta unidade.</p></div><div className={styles.links}><Link href="/compras" className={styles.link}>← Compras</Link><Link href="/estoque" className={styles.link}>Estoque</Link></div></header>
+    <header className={styles.header}><div className={styles.headerCopy}><h1>Fornecedores</h1><p className="muted">Cadastre de quem você compra e configure prazo, pedido mínimo e itens fornecidos para esta unidade.</p></div><div className={styles.links}><Link href="/compras" className={styles.link}>← Compras</Link><Link href="/estoque" className={styles.link}>Estoque</Link></div></header>
 
     <div className={styles.columns}>
       <div className={styles.supplierList}>{data.suppliers.length===0 ? <article className={`card ${styles.card}`}><p className="muted">Nenhum fornecedor cadastrado.</p></article> : data.suppliers.map((supplier)=>{const config=supplier.config;return <article key={supplier.id} className={`card ${styles.supplier}`}>

@@ -11,7 +11,7 @@ export default async function OperationalSetupPage() {
   const driverAvailable = access.moduleAvailability.driver.available;
   const canManage = access.permissionKeys.includes(PERMISSIONS.STORES_MANAGE);
   return <section className={styles.page}>
-    <header><p className={styles.eyebrow}>CONFIGURAÇÃO GUIADA</p><h1>Como seu restaurante trabalha?</h1><p>Responda pensando no horário de maior movimento. Você verá o impacto antes de salvar.</p></header>
+    <header><h1>Como seu restaurante trabalha?</h1><p>Responda pensando no horário de maior movimento. Você verá o impacto antes de salvar.</p></header>
     <GuidedSetupForm settings={current.settings} deliveryAvailable={deliveryAvailable} driverAvailable={driverAvailable} canManage={canManage} />
     <section className={styles.related}><h2>Complete quando fizer sentido</h2><p>Estas configurações continuam independentes e respeitam seus módulos.</p><div>
       <Link href="/configuracoes/pagamentos"><strong>Pagamentos</strong><span>Escolha formas e confirmação.</span></Link>

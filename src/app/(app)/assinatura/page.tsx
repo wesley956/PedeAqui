@@ -27,7 +27,7 @@ export default async function CustomerSubscriptionPage() {
   const subscription = data.subscription;
 
   if (!subscription) {
-    return <main className={styles.page}><section className={styles.hero}><div><p className={styles.eyebrow}>MINHA CONTA</p><h1>Minha assinatura</h1><p>A assinatura do PedeAqui ainda não foi configurada para esta empresa.</p></div></section></main>;
+    return <main className={styles.page}><section className={styles.hero}><div><h1>Minha assinatura</h1><p>A assinatura do PedeAqui ainda não foi configurada para esta empresa.</p></div></section></main>;
   }
 
   const contract = await SubscriptionContractAcceptanceService.status(subscription.id);
@@ -51,7 +51,6 @@ export default async function CustomerSubscriptionPage() {
     <main className={styles.page}>
       <section className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>MINHA CONTA · PEDEAQUI</p>
           <h1>Minha assinatura</h1>
           <p>Veja seu plano, mensalidade, contrato, próximos vencimentos, módulos adicionais e histórico de pagamentos em um só lugar.</p>
         </div>

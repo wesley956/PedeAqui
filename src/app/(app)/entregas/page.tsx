@@ -42,7 +42,6 @@ export default async function DeliveryOperationsPage() {
   return <section className={styles.page}>
     <header className={styles.header}>
       <div>
-        <p className={styles.eyebrow}>OPERAÇÃO</p>
         <h1>Entregas</h1>
         <p className="muted">Veja o que está aguardando, quem está levando cada pedido e o que precisa de atenção.</p>
         <DeliveryRealtime storeId={data.context.storeId} showStatus />

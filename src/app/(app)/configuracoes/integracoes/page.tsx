@@ -10,7 +10,6 @@ export default async function IntegrationsSettingsPage() {
     <section className={styles.root}>
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>CONFIGURAÇÕES · INTEGRAÇÕES</p>
           <h1>Canais externos</h1>
           <p>Conecte canais de venda sem alterar automaticamente módulos, fluxo de pedidos ou quantidade de cards do painel.</p>
         </div>

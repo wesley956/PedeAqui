@@ -14,7 +14,7 @@ export default async function DiningSettingsPage() {
 
   return <section className={styles.page}>
     <header className={styles.header}>
-      <div><p className={styles.meta} style={{ margin: 0 }}>CONFIGURAÇÕES · SALÃO</p><h1>Mesas</h1><p className={styles.meta}>Cadastre a estrutura do salão fora do fluxo rápido do atendimento.</p></div>
+      <div><h1>Mesas</h1><p className={styles.meta}>Cadastre a estrutura do salão fora do fluxo rápido do atendimento.</p></div>
       <Link href="/salao" >Voltar ao salão</Link>
     </header>
 

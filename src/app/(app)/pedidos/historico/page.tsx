@@ -66,7 +66,6 @@ export default async function OrderHistoryPage({
       <OrderListPosition storageKey="orders:history" />
       <header className={styles.pageHeader}>
         <div className={styles.pageHeading}>
-          <p className={styles.pageEyebrow}>Consulta</p>
           <h1>Histórico de pedidos</h1>
           <p className={styles.pageHint}>Finalizados, cancelados e recusados ficam aqui e não ocupam o quadro da operação.</p>
         </div>
