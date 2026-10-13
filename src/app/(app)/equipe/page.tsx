@@ -50,7 +50,7 @@ export default async function TeamPage() {
                     <div className={styles.meta}>{member.roleNames.join(" · ") || "Sem função ativa"}</div>
                     <small className={styles.small}>Unidades: {member.storeNames.join(", ") || "acesso organizacional"} · Entrada: {dateFormatter.format(new Date(member.joinedAt))}</small>
                   </div>
-                  {member.canSuspend ? <form action={suspendTeamMemberAction}><input type="hidden" name="memberId" value={member.id} /><ConfirmTeamActionButton tone="danger" confirmation="Suspender este acesso? O histórico será preservado.">Suspender acesso</ConfirmTeamActionButton></form> : null}
+                  {member.canSuspend ? <form action={suspendTeamMemberAction}><input type="hidden" name="memberId" value={member.id} /><ConfirmTeamActionButton confirmation="Suspender este acesso? O histórico será preservado.">Suspender acesso</ConfirmTeamActionButton></form> : null}
                 </article>
               ))}
             </div>

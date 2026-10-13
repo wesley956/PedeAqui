@@ -8,6 +8,7 @@ import { CustomerService } from "@/server/customers/customer-service";
 import { formatCents } from "@/server/catalog/money";
 import styles from "../customers.module.css";
 import { PageHeader } from "@/components/ui/page-header";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 
 const orderStatusLabels: Record<string, string> = {
   pending_confirmation: "Aguardando confirmação",
@@ -148,7 +149,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                       <form action={removeCustomerAddressAction}>
                         <input type="hidden" name="customerId" value={id} />
                         <input type="hidden" name="addressId" value={address.id} />
-                        <Button tone="danger" type="submit">Remover</Button>
+                        <ConfirmSubmitButton confirmation="Remover este endereço do cliente? Pedidos antigos continuam com o endereço usado na época.">Remover endereço</ConfirmSubmitButton>
                       </form>
                     </div>
                   </article>
