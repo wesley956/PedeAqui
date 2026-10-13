@@ -15,7 +15,7 @@ export default async function CategoriesPage() {
   return (
     <section className={styles.page}>
       <div className={styles.headerCopy}>
-        <h1>Categorias</h1>
+        <h2>Categorias</h2>
         <p className="muted">Organize a navegação do cardápio por ordem e disponibilidade.</p>
       </div>
 

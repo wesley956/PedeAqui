@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import styles from "./page-header.module.css";
 
@@ -12,16 +13,20 @@ export function PageHeader({
   description,
   status,
   actions,
+  back,
 }: {
   title: ReactNode;
   description?: ReactNode;
   /** Etiquetas pequenas ao lado do título, como "Ao vivo". */
   status?: ReactNode;
   actions?: ReactNode;
+  /** Link de volta, em telas de detalhe (cliente, mesa). */
+  back?: { href: string; label: string };
 }) {
   return (
     <header className={styles.header}>
       <div className={styles.copy}>
+        {back ? <Link href={back.href} className={styles.back}>← {back.label}</Link> : null}
         <div className={styles.titleRow}>
           <h1 className={styles.title}>{title}</h1>
           {status ? <div className={styles.status}>{status}</div> : null}

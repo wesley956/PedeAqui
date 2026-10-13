@@ -7,6 +7,7 @@ import {
   InventorySettingsForm, InventoryTransferForm,
 } from "@/features/inventory/inventory-forms";
 import styles from "./inventory-operations.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 const movementLabels: Record<string, string> = { purchase: "Entrada", sale: "Venda", loss: "Perda", adjustment: "Ajuste", transfer: "Transferência", production: "Produção", return: "Retorno" };
 function costInput(micros: number | string, unit: InventoryBaseUnit) { const value = Number(micros); const reais = unit === "unit" ? value / 100_000_000 : value / 100_000; return reais.toFixed(2).replace(".", ","); }
@@ -20,10 +21,7 @@ export default async function InventoryPage() {
   const negative = configured.filter((item) => Number(item.balance?.quantity ?? 0) < 0);
 
   return <section className={styles.page}>
-    <header className={styles.header}>
-      <div className={styles.headerCopy}><h1>Estoque</h1><p className="muted">Veja o que você tem, identifique o que precisa de reposição e registre entradas, perdas, contagens ou transferências.</p></div>
-      <Link href="/estoque/fichas" className={styles.link}>Fichas técnicas →</Link>
-    </header>
+    <PageHeader title="Estoque" description="Veja o que você tem, identifique o que precisa de reposição e registre entradas, perdas, contagens ou transferências." actions={<Link href="/estoque/fichas" className={styles.link}>Fichas técnicas →</Link>} />
 
     <div className={styles.metrics}>
       <Metric label="Insumos controlados" value={configured.length} />

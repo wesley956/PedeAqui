@@ -5,6 +5,7 @@
 }
 
 .heading h1 { font-size: var(--font-size-2xl); line-height: 1.3; }
+.heading h2 { margin: 0; font-size: var(--font-size-lg); line-height: 1.3; }
 .heading p, .section p, .detailsBody p { font-size: var(--font-size-support); line-height: 1.5; }
 .section h2 { margin: 0; font-size: var(--font-size-lg); }
 .section, .detailsBody { min-width: 0; }

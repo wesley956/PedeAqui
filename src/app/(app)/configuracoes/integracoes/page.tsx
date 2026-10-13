@@ -2,19 +2,14 @@ import Link from "next/link";
 import { IfoodConnectionCard } from "./ifood-connection-card";
 import { IfoodIntegrationSettingsService } from "@/server/integrations/providers/ifood/ifood-integration-settings-service";
 import styles from "./integracoes.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function IntegrationsSettingsPage() {
   const snapshot = await IfoodIntegrationSettingsService.snapshot();
 
   return (
     <section className={styles.root}>
-      <header className={styles.header}>
-        <div>
-          <h1>Canais externos</h1>
-          <p>Conecte canais de venda sem alterar automaticamente módulos, fluxo de pedidos ou quantidade de cards do painel.</p>
-        </div>
-        <Link href="/configuracoes" className={styles.back}>← Configurações</Link>
-      </header>
+      <PageHeader title="Canais externos" description="Conecte canais de venda sem alterar automaticamente módulos, fluxo de pedidos ou quantidade de cards do painel." actions={<Link href="/configuracoes" className={styles.back}>← Configurações</Link>} />
 
       <aside className={styles.guardrail}>
         <strong>Integração não é módulo</strong>

@@ -11,6 +11,7 @@ import {
 import { GrowthService } from "@/server/growth/growth-service";
 import { GrowthObjectiveWizard } from "./growth-objective-wizard";
 import styles from "./growth.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 function money(cents: unknown) { return currency.format(Number(cents ?? 0) / 100); }
@@ -55,12 +56,7 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
 
   return (
     <main className={styles.root}>
-      <header className={styles.hero}>
-        <div>
-          <h1>Faça seus clientes voltarem</h1>
-          <p>Organize fidelidade, cupons, grupos de clientes e campanhas em um só lugar, com foco no que ajuda o restaurante a gerar novas compras.</p>
-        </div>
-      </header>
+      <PageHeader title="Faça seus clientes voltarem" description="Organize fidelidade, cupons, grupos de clientes e campanhas em um só lugar, com foco no que ajuda o restaurante a gerar novas compras." />
 
       {query.criado && createdLabels[query.criado] ? <p className={styles.success} role="status">{createdLabels[query.criado]}</p> : null}
 

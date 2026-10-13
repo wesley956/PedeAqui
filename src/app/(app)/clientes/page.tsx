@@ -5,6 +5,7 @@ import { createCustomerAction } from "@/features/customers/actions";
 import { CustomerService } from "@/server/customers/customer-service";
 import { formatCents } from "@/server/catalog/money";
 import styles from "./customers-list-v3.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 function dateLabel(value: string | null) {
   if (!value) return "Sem compras";
@@ -17,13 +18,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.headerCopy}>
-          <h1>Clientes</h1>
-          <p className="muted">Encontre quem já comprou, veja o histórico e acesse os dados que ajudam no próximo atendimento.</p>
-        </div>
-        <span className={styles.count}>{customers.length} nesta visualização</span>
-      </header>
+      <PageHeader title="Clientes" description="Encontre quem já comprou, veja o histórico e acesse os dados que ajudam no próximo atendimento." status={<span className={styles.count}>{customers.length} nesta visualização</span>} />
 
       <details className={styles.create}>
         <summary>Cadastrar cliente manualmente</summary>

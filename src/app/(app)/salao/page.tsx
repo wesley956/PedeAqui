@@ -2,6 +2,7 @@ import Link from "next/link";
 import styles from "@/features/dining/dining.module.css";
 import { DiningService } from "@/server/dining/dining-service";
 import { occupiedMinutes } from "@/server/dining/model";
+import { PageHeader } from "@/components/ui/page-header";
 
 const money = (cents: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 const statusLabel: Record<string, string> = { available: "Livre", occupied: "Em atendimento", reserved: "Reservada", cleaning: "Limpeza", disabled: "Desativada" };
@@ -12,13 +13,7 @@ export default async function DiningPage() {
   const settling = active.filter((table) => table.tab?.status === "settling");
 
   return <div className={styles.page}>
-    <header className={styles.header}>
-      <div>
-        <h1>Salão e mesas</h1>
-        <p className={styles.muted}>Veja quais mesas estão livres, em atendimento ou esperando o fechamento da conta.</p>
-      </div>
-      <Link href="/configuracoes/salao" className={styles.secondary}>Configurar salão</Link>
-    </header>
+    <PageHeader title="Salão e mesas" description="Veja quais mesas estão livres, em atendimento ou esperando o fechamento da conta." actions={<Link href="/configuracoes/salao" className={styles.secondary}>Configurar salão</Link>} />
 
     <div className={styles.diningSummary} aria-label="Resumo do salão">
       <span><strong>{tables.length - active.length}</strong> livres</span>

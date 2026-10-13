@@ -12,6 +12,7 @@ import {
 import { DiningRoundComposer } from "@/features/dining/round-composer";
 import styles from "@/features/dining/dining.module.css";
 import { DiningService } from "@/server/dining/dining-service";
+import { PageHeader } from "@/components/ui/page-header";
 
 const money = (cents: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 
@@ -21,10 +22,7 @@ export default async function DiningTablePage({ params }: { params: Promise<{ ta
   const { table, tab } = data;
 
   return <div className={styles.page}>
-    <header className={styles.header}>
-      <div><Link href="/salao" className={styles.muted}>← Mesas</Link><h1>{table.name}</h1><p className={styles.muted}>{table.capacity} lugares{table.area ? ` · ${table.area}` : ""}</p></div>
-      <Link href="/configuracoes/salao" className={styles.secondary}>Configurar</Link>
-    </header>
+    <PageHeader back={{ href: "/salao", label: "Mesas" }} title={table.name} description={`${table.capacity} lugares${table.area ? ` · ${table.area}` : ""}`} actions={<Link href="/configuracoes/salao" className={styles.secondary}>Configurar</Link>} />
 
     {!tab ? <>
       <div className={styles.flowSteps} aria-label="Fluxo de atendimento"><strong>1. Abrir mesa</strong><span>2. Adicionar itens</span><span>3. Enviar rodada</span><span>4. Pedir conta</span><span>5. Concluir</span></div>

@@ -4,6 +4,7 @@ import { PERMISSIONS } from "@/server/access/permissions";
 import { NavigationAccessService } from "@/server/access/navigation-access-service";
 import { SettingsHubClient, type SettingsHubArea, type SettingsHubItem } from "./settings-hub-client";
 import styles from "./settings-hub.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 type SettingDefinition = {
   title: string;
@@ -65,10 +66,7 @@ export default async function SettingsPage() {
   ].filter((area) => area.items.length > 0);
 
   return <section className={styles.root}>
-    <header className={styles.header}>
-      <div><h1>Configure seu negócio</h1><p>Procure pelo que você quer fazer. O PedeAqui cuida de onde essa configuração fica.</p></div>
-      <span className={styles.badge}>Modo simples</span>
-    </header>
+    <PageHeader title="Configure seu negócio" description="Procure pelo que você quer fazer. O PedeAqui cuida de onde essa configuração fica." status={<span className={styles.badge}>Modo simples</span>} />
 
     <SettingsHubClient areas={areas} canManageResources={canManageResources} />
 

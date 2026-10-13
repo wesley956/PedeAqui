@@ -9,6 +9,7 @@ import {
 import { SupplierPaymentTermForm } from "@/features/finance/supplier-term-form";
 import styles from "./finance-panel.module.css";
 import { OrderActionForm } from "@/features/orders/order-action-form";
+import { PageHeader } from "@/components/ui/page-header";
 
 type SearchParams = Promise<{ from?: string; to?: string }>;
 type Account = { id: string; name: string; account_type: string; system_key: string | null; balance_cents: number | string };
@@ -43,7 +44,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
   const externalChannels = data.externalChannelSummary as ExternalChannelSummary[];
 
   return <section className={styles.page}>
-    <header className={styles.header}><div className={styles.headerCopy}><h1>Financeiro</h1><p className="muted">Acompanhe receitas, despesas, valores a receber, contas a pagar e o resultado do negócio.</p></div><div className={styles.links}><Link href="/caixa" className={styles.link}>Caixa</Link><Link href="/compras" className={styles.link}>Compras</Link><Link href="/dashboard" className={styles.link}>Início →</Link></div></header>
+    <PageHeader title="Financeiro" description="Acompanhe receitas, despesas, valores a receber, contas a pagar e o resultado do negócio." actions={<><Link href="/caixa" className={styles.link}>Caixa</Link><Link href="/compras" className={styles.link}>Compras</Link><Link href="/dashboard" className={styles.link}>Início →</Link></>} />
 
     {data.canReports && report ? <>
       <form method="get" className={`card ${styles.period}`}><Input label="De" name="from" type="date" defaultValue={data.period.from} /><Input label="Até" name="to" type="date" defaultValue={data.period.to} /><Button type="submit">Aplicar período</Button><span className={styles.periodHint}>Resultados pelo período selecionado · {data.store.timezone}</span></form>
