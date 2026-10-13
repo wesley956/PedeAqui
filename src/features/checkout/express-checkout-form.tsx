@@ -85,6 +85,7 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
   const [when, setWhen] = useState<"asap" | "scheduled">(defaults.scheduledLocal ? "scheduled" : "asap");
   const [payment, setPayment] = useState<string | null>(defaults.paymentValue);
   const errorRef = useRef<HTMLElement | null>(null);
+  const restoreDraftRef = useRef<(() => void) | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const [cepStatus, setCepStatus] = useState<"idle" | "loading" | "found" | "notfound">("idle");
 
@@ -148,7 +149,38 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
   };
 
   return (
-    <form ref={formRef} id="checkout-expresso" action={submitExpressCheckoutAction} className={styles.expressForm}>
+    // React resets uncontrolled fields after successful server actions, including quantity/coupon.
+    // Use the entered values as the reset baseline, including invalid/partial fields.
+    <form onReset={() => {
+      // Restore after the native reset, also when new server defaults arrive with the action.
+      queueMicrotask(() => restoreDraftRef.current?.());
+    }} onSubmitCapture={(event) => {
+      const restore: Array<() => void> = [];
+      for (const field of event.currentTarget.elements) {
+        if (field instanceof HTMLInputElement) {
+          if (field.type === "checkbox" || field.type === "radio") {
+            const checked = field.checked;
+            field.defaultChecked = checked;
+            restore.push(() => { field.checked = checked; });
+          }
+          else if (field.type !== "hidden") {
+            const value = field.value;
+            field.defaultValue = value;
+            restore.push(() => { field.value = value; });
+          }
+        } else if (field instanceof HTMLTextAreaElement) {
+          const value = field.value;
+          field.defaultValue = value;
+          restore.push(() => { field.value = value; });
+        }
+        else if (field instanceof HTMLSelectElement) {
+          const value = field.value;
+          for (const option of field.options) option.defaultSelected = option.selected;
+          restore.push(() => { field.value = value; });
+        }
+      }
+      restoreDraftRef.current = () => restore.forEach((restoreField) => restoreField());
+    }} ref={formRef} id="checkout-expresso" action={submitExpressCheckoutAction} className={styles.expressForm}>
       <input type="hidden" name="storeSlug" value={props.slug} />
       <input type="hidden" name="fulfillmentType" value={mode} />
       <input type="hidden" name="when" value={when} />
