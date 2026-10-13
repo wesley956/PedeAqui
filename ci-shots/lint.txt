@@ -1,0 +1,22 @@
+
+/home/runner/work/PedeAqui/PedeAqui/src/app/m/[slug]/carrinho/page.tsx
+  57:44  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/runner/work/PedeAqui/PedeAqui/src/components/layout/app-shell.tsx
+  35:37  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/runner/work/PedeAqui/PedeAqui/src/features/delivery/operation-forms.tsx
+  89:50  warning  React Hook useMemo has an unnecessary dependency: 'driver.id'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/runner/work/PedeAqui/PedeAqui/src/features/inventory/recipe-form.tsx
+  31:25  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/runner/work/PedeAqui/PedeAqui/src/features/menu/public-brand.tsx
+  62:16  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/home/runner/work/PedeAqui/PedeAqui/src/server/conversations/whatsapp-learning-order-service.ts
+  85:32  warning  '_savedAddressChoices' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 6 problems (0 errors, 6 warnings)
+
+eslint exit 0

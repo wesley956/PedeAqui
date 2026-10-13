@@ -1,0 +1,27 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('#vtabs button[data-v="C"]')
+    - locator resolved to <button data-v="C" aria-pressed="false">3 · Expresso</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+      - waiting 100ms
+    58 × waiting for element to be visible, enabled and stable
+       - element is not visible
+     - retrying click action
+       - waiting 500ms
+
+    at /home/runner/work/PedeAqui/PedeAqui/ci-shots/shots.mjs:17:12 {
+  name: 'TimeoutError'
+}
+
+Node.js v22.23.3

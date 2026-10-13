@@ -1,0 +1,742 @@
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/home/runner/work/PedeAqui/PedeAqui[39m
+
+ [32m✓[39m tests/flow-10-e2e-certification.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m tests/intelligence-delivery-adapter.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m tests/order-whatsapp-notifications.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/intelligence-payment-adapter.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m tests/mercado-pago-homologation-853.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+ [32m✓[39m tests/catalog-editor-render.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 147[2mms[22m[39m
+ [32m✓[39m tests/operation-settings-render.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 132[2mms[22m[39m
+ [32m✓[39m tests/intelligence-order-workflow-adapter.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m tests/intelligence-catalog-adapter.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-order-catalog.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m tests/settings-form-render.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 133[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-automation-capabilities-434.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-ifood-order-intake.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m tests/unified-intelligence-router.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m tests/client-01-operational-profile.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/int-11-transaction-tools.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m tests/flow-10-final-lifecycle-notification.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-external-order-inbox-handler.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/int-14-shadow-observability.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m tests/presentation-billing-diagnostics.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/ifood-auth-service.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/plans-scale.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-preventive-handoff.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-order-workflow-sync-1017.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m tests/fiscal.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/rbac-multitenant-stabilization.test.ts [2m([22m[2m101 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m tests/modular-foundation.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m tests/growth.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/gas-segment-362-366.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/pricing.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/printing-simple-setup.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-ifood-order-runtime.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m tests/flow-10-whatsapp-tracking-identity.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/int-13-cross-domain-certification.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 361[2mms[22m[39m
+ [32m✓[39m tests/subscription-pix-billing-v1.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m tests/public-ux-final-gate.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m tests/flow-10-public-entry-cart.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 50[2mms[22m[39m
+ [32m✓[39m tests/migration-history.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/meta-embedded-signup.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/order-tracking-projection.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/wpp-09-coexistence-history-state-sync.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/conversation-auto-close-1018.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/subscription-whatsapp-foundation.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 61[2mms[22m[39m
+ [32m✓[39m tests/order-manager.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/intelligence-capability.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m tests/stabilization-e2e-829.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/flow-10-notification-safety-batch.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m tests/pdv-sale-regressions.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m tests/public-complements.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/stabilization-chaos-830.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/growth-bot-relationships-1022.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m tests/flow-10-whatsapp-checkout-validation.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m tests/flow-10-whatsapp-canonical-catalog.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m tests/growth-observability-1023.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-provider-registry.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-rollout-gate-949.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/modular-contract-regression-matrix.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m tests/wpp-13-whatsapp-operational-health.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/wpp-10-conversation-media.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/intelligence-authority.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m tests/platform-backoffice-v4.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m tests/wpp-11-meta-window.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/public-menu-improvements-1210.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 51[2mms[22m[39m
+ [32m✓[39m tests/flow-10-whatsapp-handoff-resume.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/finance.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/presentation-diagnostics-055-079.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/public-flow-v1-v3-final-gate.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-direct-orders.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/subscription-whatsapp-dispatcher.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m tests/progressive-checkout-ui.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-modifier-flow.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m tests/inventory.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-order-status-notifications.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/ifood-order-lifecycle-reconciliation.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m tests/e2e-context-journeys.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/driver-self-claim.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/wpp-04-inbox-pagination-realtime.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/production-resilience.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/module-rbac-rollout.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/wpp-14-integrated-regression-certification.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-payment-parity-int08.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-canonical-external-order.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/order-history-service.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m tests/wpp-12-inbox-rbac-lgpd.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/platform-whatsapp-order-template.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/public-checkout-simplification-798.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/wpp-03-conversations-inbox-ui.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/checkout-v1-v3-batch2.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/flow-10-whatsapp-closed-order.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m tests/operational-observability-831.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-effective-configuration.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/order-flow-readiness-036-040.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/manual-delivery-flow.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/final-crud-contracts.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/navigation-journeys.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/presentation-diagnostics-046-054.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/cash.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-external-finance.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/order-pix-provider-contract.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-greeting.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/component-accessibility.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m tests/flow-10-whatsapp-paused-isolation.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/int-12-inbox-handoff-coexistence.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/order-alert-native-backup.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/wpp-05-inbox-customer-order-context.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/flow-10-whatsapp-safe-greeting.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m tests/purchases.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/modular-experience.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/catalog-crud-readiness.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m tests/customer-recognition.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-health-model.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/wpp-cx-01-order-notification-message.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m tests/final-security-contracts.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/order-state-machines.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-robot-evolution-safe-return.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/flow-10-checkout-network-resilience.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-runtime-workers.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-health-support-contract.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-live-readiness.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/kitchen.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/presentation-diagnostics-080-095.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/printing-text-size-accessibility.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m tests/printing-templates.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m tests/conversation-bot-resume-policy.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/meta-app-webhook-subscription.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/delivery-operations.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/public-checkout-v2.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/mobile-full-layout-qa.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-intelligence-matrix.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m tests/security-hardening.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 121[2mms[22m[39m
+ [32m✓[39m tests/growth-recurring-campaigns-1021.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/checkout.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m tests/platform-owner-panel-337.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/public-flow-v1-v3-batch1.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/ifood-sandbox-fixture-sanitizer.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m tests/public-order-tracking-v2.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/public-security-surface-stabilization.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 252[2mms[22m[39m
+ [32m✓[39m tests/visual-identity-guardrails.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/int-09-growth-whatsapp-channel.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m tests/platform-commercial-composer-v1.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/ifood-order-lifecycle-http.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m tests/structural-tokens.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/access-isolation-contracts.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m tests/checkout-order-readiness-031-035.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/new-user-guide.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-int-evol-03-catalog-payment.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/saas-05-isolation-surface-contract.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-contextual-payment-tracking.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m tests/conversations-sql.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/order-alert-sound.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-kitchen-print.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/public-menu-mobile-typography.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/mercado-pago-resilience-contract.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/order-attention-render.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m tests/category-duplication.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/module-rollout-stabilization.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/checkout-v1-v3-baseline.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/interaction-feedback-stabilization.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/public-order-timeline.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/checkout-v1-v3-final-gate.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-rollout-contract-949.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/wpp-07-handoff-claim-hardening.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/public-store-information.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/printing-line-spacing.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/public-menu-readiness.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 968[2mms[22m[39m
+     [33m[2m✓[22m[39m converts a large upload to a bounded high-quality WebP [33m 961[2mms[22m[39m
+ [32m✓[39m tests/platform-support-actions-339.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/smart-onboarding-guide.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/custom-order-attention-render.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 59[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-coexistence.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/platform-commercial-billing-343.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/dining.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/store-operational-status.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m tests/flow-10-final-public-lifecycle.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-active-order-side-intent.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/platform-admin-v3-commercial.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/order-workflow-customization-807.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/delivery.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/platform-commercial-onboarding-486-regression.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/coexistence-observability.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/public-checkout-readiness.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/subscription-contract-acceptance.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/mercado-pago-oauth-contract.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/intelligence-architecture-baseline.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/flow-09-order-whatsapp-observability.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/dashboard-management-ui.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/platform-restaurant-360-338.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-order-follow-inbound.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m tests/pdv.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/flow-10-whatsapp-explicit-confirmation.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/order-pix-security-contract.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/growth-commercial-ui.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [31m❯[39m tests/presentation-readiness-inventory.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 39[2mms[22m[39m
+[31m     [31m×[31m keeps every current page and route handler in the checked-in inventory[39m[32m 33[2mms[22m[39m
+     [32m✓[39m documents every module and every system role context[32m 1[2mms[22m[39m
+     [32m✓[39m pins the canonical live services without storing their secrets[32m 1[2mms[22m[39m
+     [32m✓[39m keeps presentation mutations constrained to the isolated demo tenant[32m 0[2mms[22m[39m
+ [32m✓[39m tests/presentation-diagnostics-batch-011-015.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-order-context.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m tests/menu-schedule.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m tests/fluid-rollout-gate-888.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/saas-06-public-promotion-projection.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/driver-mutation-idempotency-stabilization.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/modifier-equal-split.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/monitoring-contracts.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/wpp-inbox-customer-attention.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/public-cart-edit.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/platform-support-homologation-348.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-bot-presentation-1016.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/platform-account-support-342.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/global-operational-health.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-external-payment-policy.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/driver-mobile-access.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/tablet-layout-qa.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/design-tokens.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 88[2mms[22m[39m
+ [32m✓[39m tests/conversations.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-language-learning.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/image-upload-ui.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/order-manager-click-reduction.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/button-system.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m tests/ux-residual-orders-catalog.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/public-order-whatsapp-follow.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/intelligence-disclosure.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/saas-tenant-isolation-certification.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/checkout-mobile-viewport.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/final-order-options-ui.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/order-bulk-quick-finish.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/growth-groups-consent-1020.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/module-feature-gates-rollout.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/growth-objectives-1019.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/backend-performance-contracts.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/order-manager-ui.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/order-alert-reliability.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/integration-inventory.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/order-manager-payment-projection.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/pdv-fast-path-ui.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/modifier-quantity-contract.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m tests/subscription-whatsapp-transport.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-non-commercial.test.ts [2m([22m[2m30 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m tests/order-history-filter-regression.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-robot-evolution-real-errors.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/platform-order-diagnostic-341.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/commercial-language-guard.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/platform-whatsapp-manual.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/full-accessibility-qa.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-order-presentation.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/desktop-visual-qa.test.ts [2m([22m[2m120 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m tests/style-migration.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/intelligence-identity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/panel-performance-336.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/catalog-pause-controls.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/db-drift.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 185[2mms[22m[39m
+ [32m✓[39m tests/wpp-08-platform-revalidation-diagnostics.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/commercial-site-final-polish.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/dashboard.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-webhook-routing.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-order-corrections.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m tests/order-quick-finish-atomic.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/delivery-realtime.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/product-experience-baseline-879.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-external-order-import.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/courier-mobile-ui.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/store-profile-settings.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/platform-integration-health-340.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/legacy-edge-functions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 113[2mms[22m[39m
+ [32m✓[39m tests/operational-queues-completeness.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/context-start-route.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/customer-panel-messages.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-real-conversation-hardening.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-language-context-v2.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m tests/contextual-navigation.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/flow-10-provider-retry.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m tests/brand-legacy-name.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 90[2mms[22m[39m
+ [32m✓[39m tests/auth-flows-hardening.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/platform-commercial-onboarding-contract.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/intelligence-context.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-external-delivery.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/internal-job-auth.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m tests/platform-support-mode-345.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/data-integrity-diagnostics-stabilization.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/public-modifiers-ui.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/final-baseline-323.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/disaster-recovery-runbook-contract.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/frontend-performance-qa.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/public-cart-bar.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/order-detail-ui.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/driver-history-control.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/operational-realtime-resilience.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/checkout-benefit-draft.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m tests/delivery-center-ui.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-external-snapshot-pii.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/payment-completion-policy.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/concurrency-contracts.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/language-normalization.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m tests/presentation-diagnostics-batch-006-010.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/settings-hub.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/platform-incidents-344.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/presentation-diagnostics-041-045.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/cash-ui.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/ifood-integration-ui-contract.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-order-memory.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-capability-scoped-claims.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/public-product-card.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/desktop-navigation.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/order-workflow-final-stage-consistency.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/theme-selector-icons.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/catalog.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/order-attention-priority.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/guided-operational-setup.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/print-agent-token.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/order-notification-cost-dedup.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-order-tracking-input.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-persistence-contracts.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-runtime-persistence.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/form-controls.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/mobile-contracts.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/final-cycle-review.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-merchant-scoped-identity.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/order-preview-projection.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-retry-policy.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/payments.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/mercado-pago-webhook-signature.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/mobile-shell.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/order-recipient-policy.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/meta-embedded-signup-popup-flow.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/brand-components.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m tests/workflow-settings-mutation-guard.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-automation-schema-187.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/mobile-navigation.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/meta-waba-subscription.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/page-header-unico.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/platform-alerts-347.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/product-editor-ui.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/modifier-quantity-journey-render.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-natural-navigation.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/inventory-historical-hardening.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-order-board-workflow.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/public-app-url.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/order-completion-reconciliation.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/operational-order-day.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/public-cart-ui.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-automation-presets.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-canonical-order.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/public-theme-cycle.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/pricing-composed-box.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/delivery-completion-consistency.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/subscription-manual-pix.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/status-language.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/human-attention-alert.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/feedback-system.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/catalog-management-ui.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-bot-human-tone.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-global-customer-context.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/kds-ui.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/operational-topbar.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/performance-contracts.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-ifood-order-runtime-contract.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/inventory-operations-ui.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/post-rename-integrations.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/commercial-plan-module-entitlements.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/driver-route-start-recovery.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/operational-contexts.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/product-purchase-price.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/dining-flow-ui.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-intelligence-classifier.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+ [32m✓[39m tests/driver-login-entry.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/courier-route-residual-843.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/card-system.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/mercado-pago-webhook-payload.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/technical-rename-map.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/platform-integrity-346.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/simplified-manual-delivery-board-contract.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/dining-overview-ui.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/data-list-system.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-platform-hardening.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/automation-session-hygiene.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/authenticated-navigation-regression.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/pdv-advanced-ui.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-external-order-side-effect-guards.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/order-pix-dispatch-contract.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/platform-operational-settings-navigation.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/auth-start-route-contract.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/order-notification-scheduler-contract.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/admin-residual-ux.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/procurement-ui.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-assorted-composition.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-bot-store-info.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/public-menu-layout.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/cash-payment-module-boundary.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/mercado-pago-webhook-reconciliation-contract.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/promotion-price-guard.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/finance-panel-ui.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/order-alert-background-refresh.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-natural-order-language.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/fiscal-panel-ui.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/store-timezone-display.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m tests/order-bulk-selection.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-external-discount-compat.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/movement-mode.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/design-color-guard.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 82[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-inline-composition-regression.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/customer-detail-ux.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/settings-centralization.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/public-menu-auth-isolation.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/omnichannel-external-order-worker-composition.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/confirmacao-no-tema.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/platform-commercial-onboarding-ui.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/privacy-policy.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/modules-settings-ux.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/public-brand-precedence.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-payment-guidance.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/escpos.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/inventory-store-status.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/driver-pin-auth-provider-boundary.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/catalog-image-quality.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/whatsapp-contextual-question.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/platform-unit-support-form-params.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/redact.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/design-scale-guard.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 111[2mms[22m[39m
+ [32m✓[39m tests/int-11-order-channel-rpc-acl.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/order-token.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/meta-embedded-signup-browser-security.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/order-notification-template-name-constraint.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/product-thumbnail-source.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m tests/driver-account-restriction.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/finance-cashflow-chart.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/order-action-finance-error.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/interface-sem-emoji.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m tests/public-zero-price-modifier-label.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/cart-token.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/order-notification-template-legacy-constraint.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/customer.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/checkout-payment-email-validation.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/presentation-readiness-inventory.test.ts[2m > [22mpresentation readiness inventory PA-DIAG-001..005[2m > [22mkeeps every current page and route handler in the checked-in inventory
+[31m[1mAssertionError[22m: /m/[slug]/@sheet/produto/[id] from src/app/m/[slug]/@sheet/(.)produto/[id]/page.tsx is missing: expected '# PedeAqui — baseline de prontidão co…' to contain '`/m/[slug]/@sheet/produto/[id]`'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- `/m/[slug]/@sheet/produto/[id]`[39m
+[31m+ # PedeAqui — baseline de prontidão comercial em 22/08/2026[39m
+[31m+[39m
+[31m+ Este documento registra as evidências das issues `PA-DIAG-001`–`PA-DIAG-005`[39m
+[31m+ (GitHub #540–#544). Ele complementa o baseline histórico [323] sem substituí-lo.[39m
+[31m+[39m
+[31m+ ## 1. Identificação congelada no início do ciclo[39m
+[31m+[39m
+[31m+ | Item | Estado verificado |[39m
+[31m+ | --- | --- |[39m
+[31m+ | Repositório | `wesley956/PedeAqui` |[39m
+[31m+ | Branch de trabalho | `codex/presentation-readiness-20260822` |[39m
+[31m+ | `origin/main` inicial | `9240fd885daa27983562bed7aa8a4c0774e09e0b` |[39m
+[31m+ | Domínio público canônico | `https://www.pedeaqui.pp.ua` |[39m
+[31m+ | Redirecionamento | `https://pedeaqui.pp.ua` redireciona para `www` |[39m
+[31m+ | URL antiga Vercel | `pedeaqui-cruzjade080-4490s-projects.vercel.app` exige Vercel SSO; não usar na apresentação |[39m
+[31m+ | Supabase | projeto `zsbsczjhiujnhdznrzck`, `ACTIVE_HEALTHY`, `sa-east-1`, PostgreSQL 17 |[39m
+[31m+ | Banco | 116 migrations de produção; prontidão do cardápio público aplicada em 22/08/2026 |[39m
+[31m+ | Aplicação | Next.js 16.2.12, React 19.2.8, Node >= 22 |[39m
+[31m+[39m
+[31m+ O conector Vercel disponível lista o time, mas não enxerga projetos. O domínio público e[39m
+[31m+ `/api/health` respondem normalmente pela internet; logs, configuração e deployment ID[39m
+[31m+ continuam bloqueados até a conta Vercel que possui o projeto ser conectada.[39m
+[31m+[39m
+[31m+ ## 2. Sinais live sem dados pessoais[39m
+[31m+[39m
+[31m+ Consulta somente de leitura em 22/08/2026:[39m
+[31m+[39m
+[31m+ - 8 organizações e 8 unidades ativas;[39m
+[31m+ - 1 unidade marcada como demonstração;[39m
+[31m+ - 1 platform admin ativo;[39m
+[31m+ - 3 planos e 7 features técnicas;[39m
+[31m+ - 0 assinaturas comerciais cadastradas;[39m
+[31m+ - 168 configurações de módulos (21 por unidade);[39m
+[31m+ - 23 produtos e 4 pedidos no ambiente;[39m
+[31m+ - RLS habilitado em todas as tabelas públicas listadas pelo conector.[39m
+[31m+[39m
+[31m+ O health check público confirmou a presença das quatro configurações de runtime esperadas[39m
+[31m+ sem expor seus valores. O Security Advisor não apontou tabela pública com RLS desligado;[39m
+[31m+ há avisos informativos para tabelas intencionalmente fechadas sem policy e o aviso[39m
+[31m+ administrativo conhecido de proteção de senhas vazadas. O Performance Advisor mantém[39m
+[31m+ pendências de índices que pertencem ao lote de desempenho.[39m
+[31m+[39m
+[31m+ ## 3. Baseline de qualidade local[39m
+[31m+[39m
+[31m+ | Gate | Resultado |[39m
+[31m+ | --- | --- |[39m
+[31m+ | Testes | 151 arquivos, 905 testes aprovados |[39m
+[31m+ | E2E contextual | 1 arquivo, 7 testes aprovados |[39m
+[31m+ | TypeScript | aprovado, zero erro |[39m
+[31m+ | ESLint | zero erro e 4 warnings |[39m
+[31m+ | Build Next.js | aprovado, 66 superfícies reportadas pelo build |[39m
+[31m+ | Rotas no código | 75 pages + 13 route handlers |[39m
+[31m+ | Server Actions | 35 arquivos de actions |[39m
+[31m+ | Serviços de servidor | 152 arquivos em `src/server` |[39m
+[31m+ | Drift local | 116 migrations alinhadas ao snapshot de produção |[39m
+[31m+ | Preflight estático | Server Actions 16 MiB; imagens limitadas a 4 MiB na aplicação e 5 MiB no bucket |[39m
+[31m+[39m
+[31m+ Warnings atuais: três usos de `<img>` fora do pipeline `next/image` e uma variável não[39m
+[31m+ utilizada em `recipe-form.tsx`. Não bloqueiam o build, mas entram no diagnóstico visual e[39m
+[31m+ de desempenho.[39m
+[31m+[39m
+[31m+ ## 4. Inventário completo das superfícies[39m
+[31m+[39m
+[31m+ ### Entrada, autenticação e páginas públicas[39m
+[31m+[39m
+[31m+ `/`, `/login`, `/cadastro`, `/recuperar-senha`, `/nova-senha`, `/convite`, `/onboarding`,[39m
+[31m+ `/privacidade`, `/acesso-entregador`, `/primeiro-acesso-entregador`, `/auth/callback`.[39m
+[31m+[39m
+[31m+ ### Painel autenticado do estabelecimento[39m
+[31m+[39m
+[31m+ `/acesso-negado`, `/recurso-indisponivel`, `/dashboard`, `/pedidos`, `/pedidos/[id]`,[39m
+[31m+ `/cardapio/categorias`, `/cardapio/produtos`, `/cardapio/produtos/novo`, `/cardapio/produtos/[id]`,[39m
+[31m+ `/cardapio/adicionais`, `/pdv`, `/caixa`, `/salao`, `/salao/[tableId]`, `/producao`,[39m
+[31m+ `/entregas`, `/entregador`, `/clientes`, `/clientes/[id]`, `/conversas`, `/estoque`,[39m
+[31m+ `/estoque/fichas`, `/fornecedores`, `/compras`, `/financeiro`, `/fiscal`, `/crescimento`, `/crescimento/campanhas`,[39m
+[31m+ `/escala`, `/vasilhames`, `/equipe`, `/configuracoes`, `/configuracoes/cardapio`,[39m
+[31m+ `/configuracoes/caixa`, `/configuracoes/conversas`, `/configuracoes/entrega`,[39m
+[31m+ `/configuracoes/entregadores`, `/configuracoes/horarios`, `/configuracoes/impressoes`,[39m
+[31m+ `/configuracoes/modulos`, `/configuracoes/pagamentos`, `/configuracoes/salao`.[39m
+[31m+[39m
+[31m+ O gap inicial de `team` foi encerrado no lote PA-DIAG-011–015 com a criação de `/equipe`.[39m
+[31m+[39m
+[31m+ ### Cardápio, checkout e acompanhamento públicos[39m
+[31m+[39m
+[31m+ `/m/[slug]`, `/m/[slug]/produto/[id]`, `/m/[slug]/carrinho`, `/m/[slug]/checkout`,[39m
+[31m+ `/m/[slug]/pedido/[id]`, `/m/[slug]/pedido/[id]/acesso`, `/mesa/[code]`.[39m
+[31m+[39m
+[31m+ ### Painel do Proprietário[39m
+[31m+[39m
+[31m+ `/platform`, `/platform/apresentacao`, `/platform/demo`, `/platform/novo-restaurante`, `/platform/assinaturas`,[39m
+[31m+ `/platform/alertas`, `/platform/incidentes`, `/platform/integracoes`,[39m
+[31m+ `/platform/integridade`, `/platform/operacao`, `/platform/operacao/pedidos/[orderId]`,[39m
+[31m+ `/platform/suporte`, `/platform/suporte/modo`, `/platform/restaurantes/[storeId]`,[39m
+[31m+ `/platform/unidades/[storeId]`,[39m
+[31m+ `/platform/empresas/[organizationId]/unidades/[storeId]`,[39m
+[31m+ `/platform/unidades/[storeId]/whatsapp`,[39m
+[31m+ `/platform/unidades/[storeId]/whatsapp/notificacoes`.[39m
+[31m+[39m
+[31m+ ### APIs, webhooks e agentes[39m
+[31m+[39m
+[31m+ `/api/health`, `/api/internal/order-notifications`, `/api/internal/campaign-messages`, `/api/internal/route-retention`, `/api/print-agent/ack`,[39m
+[31m+ `/api/print-agent/claim`, `/api/print-agent/config`, `/api/print-agent/fail`,[39m
+[31m+ `/api/print-agent/heartbeat`, `/api/webhooks/billing/[providerKey]`,[39m
+[31m+ `/api/webhooks/fiscal/[integrationId]`,[39m
+[31m+ `/api/webhooks/payments/mercado-pago/[storeId]`, `/api/webhooks/whatsapp`.[39m
+[31m+[39m
+[31m+ ## 5. Catálogo modular e classificação inicial[39m
+[31m+[39m
+[31m+ | Módulo | Tipo | Dependências | Estado inicial de prontidão |[39m
+[31m+ | --- | --- | --- | --- |[39m
+[31m+ | `dashboard` | core | — | implementado e testado |[39m
+[31m+ | `orders` | core | — | implementado e testado |[39m
+[31m+ | `conversations` | opcional | — | implementado; canal WhatsApp real precisa homologação |[39m
+[31m+ | `dining` | segmentado | `orders`, `catalog` | implementado para restaurante |[39m
+[31m+ | `catalog` | core | — | implementado; limite de foto corrigido para o transporte da Vercel |[39m
+[31m+ | `pdv` | opcional | `orders`, `catalog` | implementado e testado |[39m
+[31m+ | `cash` | opcional | `orders` | implementado e testado |[39m
+[31m+ | `finance` | opcional | — | financeiro do restaurante implementado |[39m
+[31m+ | `fiscal` | opcional | `orders` | contrato implementado; provider real não homologado |[39m
+[31m+ | `production` | opcional | `orders` | implementado e testado |[39m
+[31m+ | `deliveries` | opcional | `orders` | implementado e testado |[39m
+[31m+ | `driver` | opcional | `deliveries` | implementado, incluindo telefone + PIN |[39m
+[31m+ | `inventory` | opcional | — | implementado; sem massa operacional live |[39m
+[31m+ | `gas_containers` | segmentado | `orders`, `catalog` | implementado, desligado nas 8 unidades |[39m
+[31m+ | `suppliers` | opcional | — | implementado; sem massa operacional live |[39m
+[31m+ | `purchases` | opcional | `inventory`, `suppliers` | implementado; sem massa operacional live |[39m
+[31m+ | `customers` | core | — | implementado e testado |[39m
+[31m+ | `growth` | opcional | `customers`, `orders` | implementado; sem campanhas live |[39m
+[31m+ | `scale` | opcional | — | implementado e testado |[39m
+[31m+ | `team` | opcional | — | CRUD seguro implementado; aceite externo de convite ainda requer homologação |[39m
+[31m+ | `settings` | core | — | implementado e testado |[39m
+[31m+[39m
+[31m+ Camadas obrigatórias de disponibilidade: perfil do negócio, flag da unidade, dependências,[39m
+[31m+ entitlement do plano e RBAC. Uma camada nunca concede acesso no lugar de outra.[39m
+[31m+[39m
+[31m+ ## 6. Papéis e permissões[39m
+[31m+[39m
+[31m+ | Papel | Contexto | Permissões distintas no banco |[39m
+[31m+ | --- | --- | ---: |[39m
+[31m+ | `owner` | gestão | 71 |[39m
+[31m+ | `manager` | gerência | 70 |[39m
+[31m+ | `attendant` | atendimento | 18 |[39m
+[31m+ | `cashier` | caixa | 13 |[39m
+[31m+ | `financial` | administrativo | 13 |[39m
+[31m+ | `waiter` | salão | 7 |[39m
+[31m+ | `kitchen` | produção | 3 |[39m
+[31m+ | `driver` | entrega | 3 |[39m
+[31m+[39m
+[31m+ O Painel do Proprietário usa gate separado (`support` ou `super_admin`). O acesso global[39m
+[31m+ não é derivado dos papéis de uma unidade, e ações comerciais/mutações cross-tenant exigem[39m
+[31m+ `super_admin` no servidor.[39m
+[31m+[39m
+[31m+ ## 7. Classificação funcional consolidada[39m
+[31m+[39m
+[31m+ - **Aprovado estaticamente:** build, tipos, testes, rotas, RBAC, módulos e baseline local.[39m
+[31m+ - **Aprovado live:** domínio canônico, health, Supabase e cardápio público da demo.[39m
+[31m+ - **Parcial:** catálogo com upload real, WhatsApp real, impressão física e desempenho live.[39m
+[31m+ - **Estrutura pronta, sem operação:** billing SaaS possui tabelas/tela/state machine, mas zero assinatura.[39m
+[31m+ - **Fornecedor pendente:** PIX online e fiscal não possuem configuração live comprovada.[39m
+[31m+ - **Gap funcional encerrado:** `/equipe` implementa convite, leitura, suspensão e cancelamento auditado.[39m
+[31m+ - **Bloqueio de observabilidade:** conta Vercel conectada não possui acesso ao projeto publicado.[39m
+[31m+[39m
+[31m+ ## 8. Dados isolados[39m
+[31m+[39m
+[31m+ A política e a massa segura estão em `PRESENTATION_TEST_DATA_20260822.md`. Nenhuma[39m
+[31m+ credencial, token, telefone ou informação pessoal foi adicionada ao repositório.[39m
+[31m+[39m
+[31m+ # PedeAqui — adendo ao inventário de prontidão em 23/08/2026[39m
+[31m+[39m
+[31m+ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies adicionadas posteriormente.[39m
+[31m+[39m
+[31m+ ## Institucional e jurídico[39m
+[31m+[39m
+[31m+ - `/empresa` — página institucional pública do PedeAqui.[39m
+[31m+ - `/politica-de-privacidade` — política de privacidade pública.[39m
+[31m+ - `/termos-de-uso` — termos de uso públicos.[39m
+[31m+[39m
+[31m+ ## Site comercial público[39m
+[31m+[39m
+[31m+ - `/` — entrada comercial pública para visitantes anônimos; usuários já autenticados preservam o resolvedor contextual do painel.[39m
+[31m+ - `/como-funciona` — jornada comercial do cardápio à confirmação e acompanhamento do pedido.[39m
+[31m+ - `/pedidos-e-atendimento` — explicação do fluxo operacional após a confirmação, incluindo preparo e impressão quando configurados.[39m
+[31m+ - `/entrega-e-fidelizacao` — explicação integrada de bairros, taxas, entregador e benefícios de fidelização conforme módulos ativos.[39m
+[31m+ - `/recursos` — visão comercial dos recursos agrupados pelo problema que resolvem, sem expor detalhes técnicos internos.[39m
+[31m+ - `/planos` — apresentação dos planos e condições comerciais usando apenas preços e regras confirmados no produto.[39m
+[31m+[39m
+[31m+ ## Configurações da unidade[39m
+[31m+[39m
+[31m+ - `/configuracoes/loja` — perfil oficial da unidade para identificação, contato, endereço e metadados públicos autorizados. Mantém RBAC, isolamento por organização/unidade e não cria cadastro paralelo de endereço ou telefone.[39m
+[31m+ - `/configuracoes/fluxo-pedidos` — configuração do fluxo operacional da unidade com modos completo, simplificado ou personalizado. No modo personalizado, entrega e retirada possuem checkpoints visuais independentes; ocultar um checkpoint não remove nem enfraquece as máquinas de estado internas de pedido, pagamento, produção ou fulfillment.[39m
+[31m+ - `/configuracoes/operacao` — configuração operacional guiada pelo próprio restaurante. Mostra o impacto antes de salvar, preserva o estado existente, não ativa módulos e mantém delivery manual possível quando a gestão de motoboy está desligada.[39m
+[31m+ - `/configuracoes/impressoes/formato` — configuração de vias e conteúdo do comprovante comercial. Mantém detalhes operacionais obrigatórios na impressão de cozinha e não permite ocultar campos fiscais obrigatórios.[39m
+[31m+ - `/configuracoes/integracoes` — conexão self-service de canais externos, começando pelo iFood. Autenticação e vínculo Merchant ↔ Store permanecem separados de módulos e do fluxo operacional; Pedidos, Cardápio e Entrega ficam desligados até ativação explícita de cada capability.[39m
+[31m+[39m
+[31m+ ## Painel autenticado do cliente[39m
+[31m+[39m
+[31m+ - `/assinatura` — central de assinatura do cliente, com plano comercial, equivalência funcional, mensalidade, vencimento, histórico e estado da cobrança PIX. Exige `subscription.view` e não expõe credenciais do provedor.[39m
+[31m+ - `/assinatura/contrato` — leitura da versão contratual aplicável e do Anexo Comercial; após o aceite, renderiza o snapshot preservado e permite impressão/salvamento em PDF sem reescrever o documento histórico.[39m
+[31m+ - `/assinatura/contrato/comprovante` — comprovante eletrônico do aceite com protocolo, versão, responsável, condição comercial e hash SHA-256; IP, user-agent e documento opcional do representante permanecem protegidos no registro server-only e não são exibidos nesta superfície.[39m
+[31m+[39m
+[31m+ ## Painel do Proprietário[39m
+[31m+[39m
+[31m+ - `/mais-ferramentas` — hub das funções avançadas que saíram da navegação principal simplificada. Mantém acesso às superfícies permitidas por RBAC e disponibilidade de módulos sem remover funcionalidades do sistema.[39m
+[31m+ - `/platform/unidades/[storeId]/configuracao-operacional` — tela dedicada, exclusiva de `super_admin`, para configurar o comportamento operacional dos módulos já habilitados em uma unidade. Não ativa módulos nem altera contrato comercial.[39m
+[31m+ - `/platform/produto` — central comercial do proprietário para visualizar pacotes, catálogo técnico de módulos, aplicar composições transacionais e conferir a prontidão da cobrança SaaS.[39m
+[31m+ - `/platform/pendencias` — central consolidada de pendências operacionais, financeiras e técnicas com filtragem por papel administrativo.[39m
+[31m+ - `/platform/comercial` — CRM e funil de propostas do PedeAqui; superfície exclusiva do proprietário para dados comerciais.[39m
+[31m+ - `/platform/financeiro` — visão financeira SaaS com contratos, mensalidades e indicadores agregados da plataforma.[39m
+[31m+ - `/platform/fundadores` — gestão do Clube Fundadores, mantendo contrato, nível, PedeCoins, benefícios e resgates em trilhas separadas e auditáveis.[39m
+[31m+ - `/platform/auditoria` — auditoria global das mutações administrativas e financeiras da plataforma.[39m
+[31m+ - `/platform/onboarding` — checklist administrativo de implantação de clientes e unidades.[39m
+[31m+ - `/platform/comunicacao` — central administrativa de mensagens e comunicações planejadas para clientes.[39m
+[31m+ - `/platform/equipe` — gestão da equipe interna PedeAqui, incluindo papéis de plataforma e revogação de sessões.[39m
+[31m+ - `/platform/privacidade` — fila administrativa de solicitações de privacidade/LGPD e respectivos protocolos.[39m
+[31m+ - `/platform/configuracoes` — defaults globais não secretos e controle dedicado, auditado e protegido da cobrança SaaS.[39m
+[31m+ - `/platform/operacao/praticidade` — baseline comparativo dos clientes-piloto com métricas técnicas agregadas, sem conteúdo de pedidos, endereços, conversas ou dados financeiros.[39m
+[31m+ - `/platform/empresas/[organizationId]` — visão 360 da empresa, reunindo contrato, unidades, usuários, módulos adicionais, mensalidades, Clube Fundadores, CRM e incidentes sem misturar os domínios técnicos.[39m
+[31m+[39m
+[31m+ ## Gestão do cardápio[39m
+[31m+[39m
+[31m+ - `/cardapio/sugestoes` — configuração de categorias complementares sugeridas durante a montagem do pedido. É merchandising da unidade, permanece isolada por organização/loja, não ativa módulos e não altera contrato comercial. Para restaurantes, uma única categoria ativa chamada `Bebidas` pode ser sugerida como bootstrap seguro; depois a configuração é persistida e administrada por ID.[39m
+[31m+ - `/cardapio/promocoes` — gestão de promoções programadas por produto, com preço promocional, dias da semana, datas, horários e texto curto opcional. O preço normal permanece preservado, a oferta é calculada no timezone da loja, o produto continua na categoria original e a seção virtual de promoções só aparece quando existir oferta ativa e vendável.[39m
+[31m+[39m
+[31m+ ## Operação de pedidos[39m
+[31m+[39m
+[31m+ - `/operacao` — central guiada para conferir prontidão antes da abertura, pausar ou retomar novos pedidos e revisar pendências antes do encerramento. A pausa preserva pedidos existentes e não altera horários; módulos desativados não criam etapas obrigatórias.[39m
+[31m+ - `/movimento` — fila operacional única, atualizada incrementalmente, que prioriza falhas críticas e oferece uma ação principal por pedido conforme atendimento, cozinha ou expedição, sem criar estados paralelos.[39m
+[31m+[39m
+[31m+ - No fluxo simplificado, o quadro operacional possui `Iniciar`, `Pronto` e `Finalizados`. A coluna `Finalizados` representa a etapa em que o restaurante terminou sua operação e o pedido de delivery já iniciou rota (`out_for_delivery`), exibindo `Aguardando confirmação de entrega` até o entregador confirmar.[39m
+[31m+ - No fluxo personalizado, a unidade escolhe checkpoints visuais predefinidos separadamente para entrega e retirada. `Novo` e `Finalizado` permanecem obrigatórios; etapas intermediárias ocultas são agrupadas visualmente sem burlar as transições internas seguras. A operação de rota continua na Central de Entregas.[39m
+[31m+ - Ao confirmar uma entrega com pagamento pendente, o entregador confirma o recebimento por padrão e o PedeAqui liquida o único pagamento pendente de forma atômica junto com a entrega. Pedidos já pagos não recebem uma segunda baixa.[39m
+[31m+ - Se o cliente não pagar ou houver eventualidade, o entregador pode selecionar `Não recebi / houve problema` e deve registrar uma observação. A entrega fica confirmada, o pagamento permanece pendente e a exceção é gravada no histórico/auditoria para não falsificar o financeiro.[39m
+[31m+ - Quando a entrega é confirmada e o pagamento está liquidado, o backend conclui o pedido automaticamente; o pedido terminal deixa o quadro operacional e permanece consultável no histórico.[39m
+[31m+ - `/pedidos/historico` — histórico separado de pedidos realmente concluídos, cancelados e recusados, sem disputar espaço com pedidos em andamento.[39m
+[31m+[39m
+[31m+ ## APIs e agentes adicionados posteriormente[39m
+[31m+[39m
+[31m+ - `/api/order-alert/presence` — heartbeat autenticado do painel para o fallback nativo distinguir painel ativo de navegador fechado e respeitar a preferência explícita de som.[39m
+[31m+ - `/api/order-alert/events` — fallback autenticado do painel web para recuperar eventos recentes de novos pedidos quando o Realtime oscila; usa a loja ativa da sessão, evita alertas duplicados por pedido e não substitui o caminho Realtime.[39m
+[31m+ - `/api/product-experience/events` — captura autenticada e não bloqueante de eventos de praticidade allowlisted, isolados por organização/unidade e sem dados pessoais desnecessários.[39m
+[31m+ - `/api/print-agent/order-alerts` — endpoint autenticado pelo token do Print Agent para consumir eventos imutáveis de novos pedidos quando o painel não está ativo; não substitui nem bloqueia o alerta web.[39m
+[31m+ - `/api/print-agent/job-style` — endpoint autenticado e restrito ao job atribuído ao Print Agent para recuperar o espaçamento entre linhas preservado no próprio job de impressão.[39m
+[31m+ - `/api/integrations/mercado-pago/oauth/start` — inicia a autorização OAuth do Mercado Pago para a unidade autenticada, usando state e PKCE; conectar a conta não habilita Pix automaticamente.[39m
+[31m+ - `/api/integrations/mercado-pago/oauth/callback` — valida o retorno OAuth, reconfirma organização/unidade e persiste as credenciais somente no servidor/Vault, mantendo o Pix desativado até ativação explícita.[39m
+[31m+ - `/api/internal/payment-reconciliation` — job interno autenticado que reconcilia em lote limitado apenas cobranças Mercado Pago pendentes e atrasadas de unidades com Pix online habilitado, recuperando notificações perdidas sem expor credenciais ou payload bruto do provedor.[39m
+[31m+ - `/api/internal/subscription-renewals` — job interno autenticado de renovação das assinaturas PedeAqui. É invocado pelo scheduler do Supabase e não depende de Vercel Cron.[39m
+[31m+ - `/api/internal/ifood-order-intake` — job interno autenticado para polling, inbox durável, importação canônica e ACK de pedidos iFood. O scheduler de 30 segundos nasce pausado e nenhuma chamada ao iFood ocorre sem capability explicitamente habilitada.[39m
+[31m+ - `/api/internal/conversation-auto-close` — job interno autenticado que encerra conversas inativas conforme a política de cada unidade, preservando atendimentos aguardando humano, pedidos ativos, contexto crítico e histórico.[39m
+[31m+ - `/api/webhooks/subscription-billing/mercado-pago` — webhook dedicado à cobrança SaaS, com assinatura validada e reconciliação idempotente.[39m
+[31m+ - `/api/webhooks/payments/mercado-pago/[storeId]` — continua atendendo pagamentos de pedidos; na unidade que hospeda a autorização OAuth da plataforma, identifica primeiro cobranças de assinatura e preserva o fluxo normal do restaurante para os demais pagamentos.[39m
+[31m+[39m
+[31m+ ## Registro de rollout[39m
+[31m+[39m
+[31m+ - 29/08/2026 — novo gatilho de deploy de produção disparado após o merge do UX v3. Alteração exclusivamente documental, sem impacto funcional no painel.[39m
+[31m+ - 29/08/2026 — segundo gatilho de redeploy sem alteração funcional, usado apenas para testar a liberação da cota de builds da Vercel.[39m
+[31m+ - 29/08/2026 — adicionada a superfície `/platform/produto` ao inventário do ADM v3; nesta etapa a composição personalizada era apenas uma simulação administrativa e não modificava contratos reais.[39m
+[31m+ - 30/08/2026 — ADM comercial/backoffice, Clube Fundadores e cobrança SaaS foram estruturados em branch de homologação. O scheduler de renovação fica no Supabase e nasce pausado; não houve publicação na Vercel nem ativação automática de cobrança nesta etapa.[39m
+[31m+ - 30/08/2026 — adicionada a formalização eletrônica da assinatura com contrato versionado, Anexo Comercial imutável, protocolo e SHA-256. O aceite permanece bloqueado enquanto a identificação jurídica da CONTRATADA não estiver completa e ativa; nenhum cliente é marcado como aceito automaticamente.[39m
+[31m+ - 30/08/2026 — adicionadas as superfícies comerciais públicas multipágina e o novo login visual, preservando o roteamento contextual de usuários autenticados e sem alterar cardápio, checkout ou painel operacional.[39m
+[31m+[39m
+[31m+ # PedeAqui — adendo ao inventário de prontidão em 15/09/2026[39m
+[31m+[39m
+[31m+ Este adendo preserva os baselines históricos e registra superfícies adicionadas posteriormente.[39m
+[31m+[39m
+[31m+ ## Configurações da unidade[39m
+[31m+[39m
+[31m+ - `/configuracoes/impressoes/gerenciar` — gestão das conexões de impressora da unidade, com ativação/desativação reversível e desvínculo confirmado. A operação preserva configuração, quantidade de vias e histórico; as mutações exigem `PRINTING_MANAGE` e permanecem isoladas por organização e unidade.[39m
+[31m+[39m
+[31m+ ## Conversas / Inbox[39m
+[31m+[39m
+[31m+ - `/api/conversations/[conversationId]/messages` — endpoint autenticado e tenant-scoped para paginação e catch-up incremental do histórico da conversa. Exige permissão de visualização de Conversas, reutiliza a fonte canônica `messages`, não expõe credenciais Meta e não cria armazenamento paralelo.[39m
+[31m+ - `/api/conversations/[conversationId]/media/[mediaId]` — endpoint autenticado e tenant-scoped para projetar mídia privada da conversa por URL assinada curta; valida organização, unidade e conversa antes de redirecionar e não expõe caminho de storage nem credencial Meta.[39m
+[31m+[39m
+
+[36m [2m❯[22m tests/presentation-readiness-inventory.test.ts:[2m39:90[22m[39m
+    [90m 37|[39m     [34mexpect[39m(appFiles[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m 38|[39m     [35mfor[39m ([35mconst[39m file [35mof[39m appFiles) {
+    [90m 39|[39m       expect(baseline, `${routeFor(file)} from ${path.relative(root, f…
+    [90m   |[39m                                                                                          [31m^[39m
+    [90m 40|[39m         [32m`\`[39m[36m${[39m[34mrouteFor[39m(file)[36m}[39m[32m\``[39m[33m,[39m
+    [90m 41|[39m       )[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m427 passed[39m[22m[90m (428)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2787 passed[39m[22m[90m (2788)[39m
+[2m   Start at [22m 22:38:49
+[2m   Duration [22m 34.61s[2m (transform 5.88s, setup 0ms, import 24.37s, tests 8.13s, environment 67ms)[22m
+
+
+::error file=/home/runner/work/PedeAqui/PedeAqui/tests/presentation-readiness-inventory.test.ts,title=tests/presentation-readiness-inventory.test.ts > presentation readiness inventory PA-DIAG-001..005 > keeps every current page and route handler in the checked-in inventory,line=39,column=90::AssertionError: /m/[slug]/@sheet/produto/[id] from src/app/m/[slug]/@sheet/(.)produto/[id]/page.tsx is missing: expected '# PedeAqui — baseline de prontidão co…' to contain '`/m/[slug]/@sheet/produto/[id]`'%0A%0A- Expected%0A+ Received%0A%0A- `/m/[slug]/@sheet/produto/[id]`%0A+ # PedeAqui — baseline de prontidão comercial em 22/08/2026%0A+%0A+ Este documento registra as evidências das issues `PA-DIAG-001`–`PA-DIAG-005`%0A+ (GitHub #540–#544). Ele complementa o baseline histórico [323] sem substituí-lo.%0A+%0A+ ## 1. Identificação congelada no início do ciclo%0A+%0A+ | Item | Estado verificado |%0A+ | --- | --- |%0A+ | Repositório | `wesley956/PedeAqui` |%0A+ | Branch de trabalho | `codex/presentation-readiness-20260822` |%0A+ | `origin/main` inicial | `9240fd885daa27983562bed7aa8a4c0774e09e0b` |%0A+ | Domínio público canônico | `https://www.pedeaqui.pp.ua` |%0A+ | Redirecionamento | `https://pedeaqui.pp.ua` redireciona para `www` |%0A+ | URL antiga Vercel | `pedeaqui-cruzjade080-4490s-projects.vercel.app` exige Vercel SSO; não usar na apresentação |%0A+ | Supabase | projeto `zsbsczjhiujnhdznrzck`, `ACTIVE_HEALTHY`, `sa-east-1`, PostgreSQL 17 |%0A+ | Banco | 116 migrations de produção; prontidão do cardápio público aplicada em 22/08/2026 |%0A+ | Aplicação | Next.js 16.2.12, React 19.2.8, Node >= 22 |%0A+%0A+ O conector Vercel disponível lista o time, mas não enxerga projetos. O domínio público e%0A+ `/api/health` respondem normalmente pela internet; logs, configuração e deployment ID%0A+ continuam bloqueados até a conta Vercel que possui o projeto ser conectada.%0A+%0A+ ## 2. Sinais live sem dados pessoais%0A+%0A+ Consulta somente de leitura em 22/08/2026:%0A+%0A+ - 8 organizações e 8 unidades ativas;%0A+ - 1 unidade marcada como demonstração;%0A+ - 1 platform admin ativo;%0A+ - 3 planos e 7 features técnicas;%0A+ - 0 assinaturas comerciais cadastradas;%0A+ - 168 configurações de módulos (21 por unidade);%0A+ - 23 produtos e 4 pedidos no ambiente;%0A+ - RLS habilitado em todas as tabelas públicas listadas pelo conector.%0A+%0A+ O health check público confirmou a presença das quatro configurações de runtime esperadas%0A+ sem expor seus valores. O Security Advisor não apontou tabela pública com RLS desligado;%0A+ há avisos informativos para tabelas intencionalmente fechadas sem policy e o aviso%0A+ administrativo conhecido de proteção de senhas vazadas. O Performance Advisor mantém%0A+ pendências de índices que pertencem ao lote de desempenho.%0A+%0A+ ## 3. Baseline de qualidade local%0A+%0A+ | Gate | Resultado |%0A+ | --- | --- |%0A+ | Testes | 151 arquivos, 905 testes aprovados |%0A+ | E2E contextual | 1 arquivo, 7 testes aprovados |%0A+ | TypeScript | aprovado, zero erro |%0A+ | ESLint | zero erro e 4 warnings |%0A+ | Build Next.js | aprovado, 66 superfícies reportadas pelo build |%0A+ | Rotas no código | 75 pages + 13 route handlers |%0A+ | Server Actions | 35 arquivos de actions |%0A+ | Serviços de servidor | 152 arquivos em `src/server` |%0A+ | Drift local | 116 migrations alinhadas ao snapshot de produção |%0A+ | Preflight estático | Server Actions 16 MiB; imagens limitadas a 4 MiB na aplicação e 5 MiB no bucket |%0A+%0A+ Warnings atuais: três usos de `<img>` fora do pipeline `next/image` e uma variável não%0A+ utilizada em `recipe-form.tsx`. Não bloqueiam o build, mas entram no diagnóstico visual e%0A+ de desempenho.%0A+%0A+ ## 4. Inventário completo das superfícies%0A+%0A+ ### Entrada, autenticação e páginas públicas%0A+%0A+ `/`, `/login`, `/cadastro`, `/recuperar-senha`, `/nova-senha`, `/convite`, `/onboarding`,%0A+ `/privacidade`, `/acesso-entregador`, `/primeiro-acesso-entregador`, `/auth/callback`.%0A+%0A+ ### Painel autenticado do estabelecimento%0A+%0A+ `/acesso-negado`, `/recurso-indisponivel`, `/dashboard`, `/pedidos`, `/pedidos/[id]`,%0A+ `/cardapio/categorias`, `/cardapio/produtos`, `/cardapio/produtos/novo`, `/cardapio/produtos/[id]`,%0A+ `/cardapio/adicionais`, `/pdv`, `/caixa`, `/salao`, `/salao/[tableId]`, `/producao`,%0A+ `/entregas`, `/entregador`, `/clientes`, `/clientes/[id]`, `/conversas`, `/estoque`,%0A+ `/estoque/fichas`, `/fornecedores`, `/compras`, `/financeiro`, `/fiscal`, `/crescimento`, `/crescimento/campanhas`,%0A+ `/escala`, `/vasilhames`, `/equipe`, `/configuracoes`, `/configuracoes/cardapio`,%0A+ `/configuracoes/caixa`, `/configuracoes/conversas`, `/configuracoes/entrega`,%0A+ `/configuracoes/entregadores`, `/configuracoes/horarios`, `/configuracoes/impressoes`,%0A+ `/configuracoes/modulos`, `/configuracoes/pagamentos`, `/configuracoes/salao`.%0A+%0A+ O gap inicial de `team` foi encerrado no lote PA-DIAG-011–015 com a criação de `/equipe`.%0A+%0A+ ### Cardápio, checkout e acompanhamento públicos%0A+%0A+ `/m/[slug]`, `/m/[slug]/produto/[id]`, `/m/[slug]/carrinho`, `/m/[slug]/checkout`,%0A+ `/m/[slug]/pedido/[id]`, `/m/[slug]/pedido/[id]/acesso`, `/mesa/[code]`.%0A+%0A+ ### Painel do Proprietário%0A+%0A+ `/platform`, `/platform/apresentacao`, `/platform/demo`, `/platform/novo-restaurante`, `/platform/assinaturas`,%0A+ `/platform/alertas`, `/platform/incidentes`, `/platform/integracoes`,%0A+ `/platform/integridade`, `/platform/operacao`, `/platform/operacao/pedidos/[orderId]`,%0A+ `/platform/suporte`, `/platform/suporte/modo`, `/platform/restaurantes/[storeId]`,%0A+ `/platform/unidades/[storeId]`,%0A+ `/platform/empresas/[organizationId]/unidades/[storeId]`,%0A+ `/platform/unidades/[storeId]/whatsapp`,%0A+ `/platform/unidades/[storeId]/whatsapp/notificacoes`.%0A+%0A+ ### APIs, webhooks e agentes%0A+%0A+ `/api/health`, `/api/internal/order-notifications`, `/api/internal/campaign-messages`, `/api/internal/route-retention`, `/api/print-agent/ack`,%0A+ `/api/print-agent/claim`, `/api/print-agent/config`, `/api/print-agent/fail`,%0A+ `/api/print-agent/heartbeat`, `/api/webhooks/billing/[providerKey]`,%0A+ `/api/webhooks/fiscal/[integrationId]`,%0A+ `/api/webhooks/payments/mercado-pago/[storeId]`, `/api/webhooks/whatsapp`.%0A+%0A+ ## 5. Catálogo modular e classificação inicial%0A+%0A+ | Módulo | Tipo | Dependências | Estado inicial de prontidão |%0A+ | --- | --- | --- | --- |%0A+ | `dashboard` | core | — | implementado e testado |%0A+ | `orders` | core | — | implementado e testado |%0A+ | `conversations` | opcional | — | implementado; canal WhatsApp real precisa homologação |%0A+ | `dining` | segmentado | `orders`, `catalog` | implementado para restaurante |%0A+ | `catalog` | core | — | implementado; limite de foto corrigido para o transporte da Vercel |%0A+ | `pdv` | opcional | `orders`, `catalog` | implementado e testado |%0A+ | `cash` | opcional | `orders` | implementado e testado |%0A+ | `finance` | opcional | — | financeiro do restaurante implementado |%0A+ | `fiscal` | opcional | `orders` | contrato implementado; provider real não homologado |%0A+ | `production` | opcional | `orders` | implementado e testado |%0A+ | `deliveries` | opcional | `orders` | implementado e testado |%0A+ | `driver` | opcional | `deliveries` | implementado, incluindo telefone + PIN |%0A+ | `inventory` | opcional | — | implementado; sem massa operacional live |%0A+ | `gas_containers` | segmentado | `orders`, `catalog` | implementado, desligado nas 8 unidades |%0A+ | `suppliers` | opcional | — | implementado; sem massa operacional live |%0A+ | `purchases` | opcional | `inventory`, `suppliers` | implementado; sem massa operacional live |%0A+ | `customers` | core | — | implementado e testado |%0A+ | `growth` | opcional | `customers`, `orders` | implementado; sem campanhas live |%0A+ | `scale` | opcional | — | implementado e testado |%0A+ | `team` | opcional | — | CRUD seguro implementado; aceite externo de convite ainda requer homologação |%0A+ | `settings` | core | — | implementado e testado |%0A+%0A+ Camadas obrigatórias de disponibilidade: perfil do negócio, flag da unidade, dependências,%0A+ entitlement do plano e RBAC. Uma camada nunca concede acesso no lugar de outra.%0A+%0A+ ## 6. Papéis e permissões%0A+%0A+ | Papel | Contexto | Permissões distintas no banco |%0A+ | --- | --- | ---: |%0A+ | `owner` | gestão | 71 |%0A+ | `manager` | gerência | 70 |%0A+ | `attendant` | atendimento | 18 |%0A+ | `cashier` | caixa | 13 |%0A+ | `financial` | administrativo | 13 |%0A+ | `waiter` | salão | 7 |%0A+ | `kitchen` | produção | 3 |%0A+ | `driver` | entrega | 3 |%0A+%0A+ O Painel do Proprietário usa gate separado (`support` ou `super_admin`). O acesso global%0A+ não é derivado dos papéis de uma unidade, e ações comerciais/mutações cross-tenant exigem%0A+ `super_admin` no servidor.%0A+%0A+ ## 7. Classificação funcional consolidada%0A+%0A+ - **Aprovado estaticamente:** build, tipos, testes, rotas, RBAC, módulos e baseline local.%0A+ - **Aprovado live:** domínio canônico, health, Supabase e cardápio público da demo.%0A+ - **Parcial:** catálogo com upload real, WhatsApp real, impressão física e desempenho live.%0A+ - **Estrutura pronta, sem operação:** billing SaaS possui tabelas/tela/state machine, mas zero assinatura.%0A+ - **Fornecedor pendente:** PIX online e fiscal não possuem configuração live comprovada.%0A+ - **Gap funcional encerrado:** `/equipe` implementa convite, leitura, suspensão e cancelamento auditado.%0A+ - **Bloqueio de observabilidade:** conta Vercel conectada não possui acesso ao projeto publicado.%0A+%0A+ ## 8. Dados isolados%0A+%0A+ A política e a massa segura estão em `PRESENTATION_TEST_DATA_20260822.md`. Nenhuma%0A+ credencial, token, telefone ou informação pessoal foi adicionada ao repositório.%0A+%0A+ # PedeAqui — adendo ao inventário de prontidão em 23/08/2026%0A+%0A+ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies adicionadas posteriormente.%0A+%0A+ ## Institucional e jurídico%0A+%0A+ - `/empresa` — página institucional pública do PedeAqui.%0A+ - `/politica-de-privacidade` — política de privacidade pública.%0A+ - `/termos-de-uso` — termos de uso públicos.%0A+%0A+ ## Site comercial público%0A+%0A+ - `/` — entrada comercial pública para visitantes anônimos; usuários já autenticados preservam o resolvedor contextual do painel.%0A+ - `/como-funciona` — jornada comercial do cardápio à confirmação e acompanhamento do pedido.%0A+ - `/pedidos-e-atendimento` — explicação do fluxo operacional após a confirmação, incluindo preparo e impressão quando configurados.%0A+ - `/entrega-e-fidelizacao` — explicação integrada de bairros, taxas, entregador e benefícios de fidelização conforme módulos ativos.%0A+ - `/recursos` — visão comercial dos recursos agrupados pelo problema que resolvem, sem expor detalhes técnicos internos.%0A+ - `/planos` — apresentação dos planos e condições comerciais usando apenas preços e regras confirmados no produto.%0A+%0A+ ## Configurações da unidade%0A+%0A+ - `/configuracoes/loja` — perfil oficial da unidade para identificação, contato, endereço e metadados públicos autorizados. Mantém RBAC, isolamento por organização/unidade e não cria cadastro paralelo de endereço ou telefone.%0A+ - `/configuracoes/fluxo-pedidos` — configuração do fluxo operacional da unidade com modos completo, simplificado ou personalizado. No modo personalizado, entrega e retirada possuem checkpoints visuais independentes; ocultar um checkpoint não remove nem enfraquece as máquinas de estado internas de pedido, pagamento, produção ou fulfillment.%0A+ - `/configuracoes/operacao` — configuração operacional guiada pelo próprio restaurante. Mostra o impacto antes de salvar, preserva o estado existente, não ativa módulos e mantém delivery manual possível quando a gestão de motoboy está desligada.%0A+ - `/configuracoes/impressoes/formato` — configuração de vias e conteúdo do comprovante comercial. Mantém detalhes operacionais obrigatórios na impressão de cozinha e não permite ocultar campos fiscais obrigatórios.%0A+ - `/configuracoes/integracoes` — conexão self-service de canais externos, começando pelo iFood. Autenticação e vínculo Merchant ↔ Store permanecem separados de módulos e do fluxo operacional; Pedidos, Cardápio e Entrega ficam desligados até ativação explícita de cada capability.%0A+%0A+ ## Painel autenticado do cliente%0A+%0A+ - `/assinatura` — central de assinatura do cliente, com plano comercial, equivalência funcional, mensalidade, vencimento, histórico e estado da cobrança PIX. Exige `subscription.view` e não expõe credenciais do provedor.%0A+ - `/assinatura/contrato` — leitura da versão contratual aplicável e do Anexo Comercial; após o aceite, renderiza o snapshot preservado e permite impressão/salvamento em PDF sem reescrever o documento histórico.%0A+ - `/assinatura/contrato/comprovante` — comprovante eletrônico do aceite com protocolo, versão, responsável, condição comercial e hash SHA-256; IP, user-agent e documento opcional do representante permanecem protegidos no registro server-only e não são exibidos nesta superfície.%0A+%0A+ ## Painel do Proprietário%0A+%0A+ - `/mais-ferramentas` — hub das funções avançadas que saíram da navegação principal simplificada. Mantém acesso às superfícies permitidas por RBAC e disponibilidade de módulos sem remover funcionalidades do sistema.%0A+ - `/platform/unidades/[storeId]/configuracao-operacional` — tela dedicada, exclusiva de `super_admin`, para configurar o comportamento operacional dos módulos já habilitados em uma unidade. Não ativa módulos nem altera contrato comercial.%0A+ - `/platform/produto` — central comercial do proprietário para visualizar pacotes, catálogo técnico de módulos, aplicar composições transacionais e conferir a prontidão da cobrança SaaS.%0A+ - `/platform/pendencias` — central consolidada de pendências operacionais, financeiras e técnicas com filtragem por papel administrativo.%0A+ - `/platform/comercial` — CRM e funil de propostas do PedeAqui; superfície exclusiva do proprietário para dados comerciais.%0A+ - `/platform/financeiro` — visão financeira SaaS com contratos, mensalidades e indicadores agregados da plataforma.%0A+ - `/platform/fundadores` — gestão do Clube Fundadores, mantendo contrato, nível, PedeCoins, benefícios e resgates em trilhas separadas e auditáveis.%0A+ - `/platform/auditoria` — auditoria global das mutações administrativas e financeiras da plataforma.%0A+ - `/platform/onboarding` — checklist administrativo de implantação de clientes e unidades.%0A+ - `/platform/comunicacao` — central administrativa de mensagens e comunicações planejadas para clientes.%0A+ - `/platform/equipe` — gestão da equipe interna PedeAqui, incluindo papéis de plataforma e revogação de sessões.%0A+ - `/platform/privacidade` — fila administrativa de solicitações de privacidade/LGPD e respectivos protocolos.%0A+ - `/platform/configuracoes` — defaults globais não secretos e controle dedicado, auditado e protegido da cobrança SaaS.%0A+ - `/platform/operacao/praticidade` — baseline comparativo dos clientes-piloto com métricas técnicas agregadas, sem conteúdo de pedidos, endereços, conversas ou dados financeiros.%0A+ - `/platform/empresas/[organizationId]` — visão 360 da empresa, reunindo contrato, unidades, usuários, módulos adicionais, mensalidades, Clube Fundadores, CRM e incidentes sem misturar os domínios técnicos.%0A+%0A+ ## Gestão do cardápio%0A+%0A+ - `/cardapio/sugestoes` — configuração de categorias complementares sugeridas durante a montagem do pedido. É merchandising da unidade, permanece isolada por organização/loja, não ativa módulos e não altera contrato comercial. Para restaurantes, uma única categoria ativa chamada `Bebidas` pode ser sugerida como bootstrap seguro; depois a configuração é persistida e administrada por ID.%0A+ - `/cardapio/promocoes` — gestão de promoções programadas por produto, com preço promocional, dias da semana, datas, horários e texto curto opcional. O preço normal permanece preservado, a oferta é calculada no timezone da loja, o produto continua na categoria original e a seção virtual de promoções só aparece quando existir oferta ativa e vendável.%0A+%0A+ ## Operação de pedidos%0A+%0A+ - `/operacao` — central guiada para conferir prontidão antes da abertura, pausar ou retomar novos pedidos e revisar pendências antes do encerramento. A pausa preserva pedidos existentes e não altera horários; módulos desativados não criam etapas obrigatórias.%0A+ - `/movimento` — fila operacional única, atualizada incrementalmente, que prioriza falhas críticas e oferece uma ação principal por pedido conforme atendimento, cozinha ou expedição, sem criar estados paralelos.%0A+%0A+ - No fluxo simplificado, o quadro operacional possui `Iniciar`, `Pronto` e `Finalizados`. A coluna `Finalizados` representa a etapa em que o restaurante terminou sua operação e o pedido de delivery já iniciou rota (`out_for_delivery`), exibindo `Aguardando confirmação de entrega` até o entregador confirmar.%0A+ - No fluxo personalizado, a unidade escolhe checkpoints visuais predefinidos separadamente para entrega e retirada. `Novo` e `Finalizado` permanecem obrigatórios; etapas intermediárias ocultas são agrupadas visualmente sem burlar as transições internas seguras. A operação de rota continua na Central de Entregas.%0A+ - Ao confirmar uma entrega com pagamento pendente, o entregador confirma o recebimento por padrão e o PedeAqui liquida o único pagamento pendente de forma atômica junto com a entrega. Pedidos já pagos não recebem uma segunda baixa.%0A+ - Se o cliente não pagar ou houver eventualidade, o entregador pode selecionar `Não recebi / houve problema` e deve registrar uma observação. A entrega fica confirmada, o pagamento permanece pendente e a exceção é gravada no histórico/auditoria para não falsificar o financeiro.%0A+ - Quando a entrega é confirmada e o pagamento está liquidado, o backend conclui o pedido automaticamente; o pedido terminal deixa o quadro operacional e permanece consultável no histórico.%0A+ - `/pedidos/historico` — histórico separado de pedidos realmente concluídos, cancelados e recusados, sem disputar espaço com pedidos em andamento.%0A+%0A+ ## APIs e agentes adicionados posteriormente%0A+%0A+ - `/api/order-alert/presence` — heartbeat autenticado do painel para o fallback nativo distinguir painel ativo de navegador fechado e respeitar a preferência explícita de som.%0A+ - `/api/order-alert/events` — fallback autenticado do painel web para recuperar eventos recentes de novos pedidos quando o Realtime oscila; usa a loja ativa da sessão, evita alertas duplicados por pedido e não substitui o caminho Realtime.%0A+ - `/api/product-experience/events` — captura autenticada e não bloqueante de eventos de praticidade allowlisted, isolados por organização/unidade e sem dados pessoais desnecessários.%0A+ - `/api/print-agent/order-alerts` — endpoint autenticado pelo token do Print Agent para consumir eventos imutáveis de novos pedidos quando o painel não está ativo; não substitui nem bloqueia o alerta web.%0A+ - `/api/print-agent/job-style` — endpoint autenticado e restrito ao job atribuído ao Print Agent para recuperar o espaçamento entre linhas preservado no próprio job de impressão.%0A+ - `/api/integrations/mercado-pago/oauth/start` — inicia a autorização OAuth do Mercado Pago para a unidade autenticada, usando state e PKCE; conectar a conta não habilita Pix automaticamente.%0A+ - `/api/integrations/mercado-pago/oauth/callback` — valida o retorno OAuth, reconfirma organização/unidade e persiste as credenciais somente no servidor/Vault, mantendo o Pix desativado até ativação explícita.%0A+ - `/api/internal/payment-reconciliation` — job interno autenticado que reconcilia em lote limitado apenas cobranças Mercado Pago pendentes e atrasadas de unidades com Pix online habilitado, recuperando notificações perdidas sem expor credenciais ou payload bruto do provedor.%0A+ - `/api/internal/subscription-renewals` — job interno autenticado de renovação das assinaturas PedeAqui. É invocado pelo scheduler do Supabase e não depende de Vercel Cron.%0A+ - `/api/internal/ifood-order-intake` — job interno autenticado para polling, inbox durável, importação canônica e ACK de pedidos iFood. O scheduler de 30 segundos nasce pausado e nenhuma chamada ao iFood ocorre sem capability explicitamente habilitada.%0A+ - `/api/internal/conversation-auto-close` — job interno autenticado que encerra conversas inativas conforme a política de cada unidade, preservando atendimentos aguardando humano, pedidos ativos, contexto crítico e histórico.%0A+ - `/api/webhooks/subscription-billing/mercado-pago` — webhook dedicado à cobrança SaaS, com assinatura validada e reconciliação idempotente.%0A+ - `/api/webhooks/payments/mercado-pago/[storeId]` — continua atendendo pagamentos de pedidos; na unidade que hospeda a autorização OAuth da plataforma, identifica primeiro cobranças de assinatura e preserva o fluxo normal do restaurante para os demais pagamentos.%0A+%0A+ ## Registro de rollout%0A+%0A+ - 29/08/2026 — novo gatilho de deploy de produção disparado após o merge do UX v3. Alteração exclusivamente documental, sem impacto funcional no painel.%0A+ - 29/08/2026 — segundo gatilho de redeploy sem alteração funcional, usado apenas para testar a liberação da cota de builds da Vercel.%0A+ - 29/08/2026 — adicionada a superfície `/platform/produto` ao inventário do ADM v3; nesta etapa a composição personalizada era apenas uma simulação administrativa e não modificava contratos reais.%0A+ - 30/08/2026 — ADM comercial/backoffice, Clube Fundadores e cobrança SaaS foram estruturados em branch de homologação. O scheduler de renovação fica no Supabase e nasce pausado; não houve publicação na Vercel nem ativação automática de cobrança nesta etapa.%0A+ - 30/08/2026 — adicionada a formalização eletrônica da assinatura com contrato versionado, Anexo Comercial imutável, protocolo e SHA-256. O aceite permanece bloqueado enquanto a identificação jurídica da CONTRATADA não estiver completa e ativa; nenhum cliente é marcado como aceito automaticamente.%0A+ - 30/08/2026 — adicionadas as superfícies comerciais públicas multipágina e o novo login visual, preservando o roteamento contextual de usuários autenticados e sem alterar cardápio, checkout ou painel operacional.%0A+%0A+ # PedeAqui — adendo ao inventário de prontidão em 15/09/2026%0A+%0A+ Este adendo preserva os baselines históricos e registra superfícies adicionadas posteriormente.%0A+%0A+ ## Configurações da unidade%0A+%0A+ - `/configuracoes/impressoes/gerenciar` — gestão das conexões de impressora da unidade, com ativação/desativação reversível e desvínculo confirmado. A operação preserva configuração, quantidade de vias e histórico; as mutações exigem `PRINTING_MANAGE` e permanecem isoladas por organização e unidade.%0A+%0A+ ## Conversas / Inbox%0A+%0A+ - `/api/conversations/[conversationId]/messages` — endpoint autenticado e tenant-scoped para paginação e catch-up incremental do histórico da conversa. Exige permissão de visualização de Conversas, reutiliza a fonte canônica `messages`, não expõe credenciais Meta e não cria armazenamento paralelo.%0A+ - `/api/conversations/[conversationId]/media/[mediaId]` — endpoint autenticado e tenant-scoped para projetar mídia privada da conversa por URL assinada curta; valida organização, unidade e conversa antes de redirecionar e não expõe caminho de storage nem credencial Meta.%0A+%0A%0A ❯ tests/presentation-readiness-inventory.test.ts:39:90%0A%0A
+vitest exit 1

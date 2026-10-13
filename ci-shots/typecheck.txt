@@ -1,0 +1,4 @@
+ci-shots/vitest.shots.config.ts(5,10): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'include' does not exist in type 'CSSOptions'.
+tsc exit 2
