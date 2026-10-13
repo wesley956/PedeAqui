@@ -4,6 +4,10 @@
     {
       "path": "/api/internal/order-notifications",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/internal/fiscal-jobs",
+      "schedule": "* * * * *"
     }
   ]
 }
