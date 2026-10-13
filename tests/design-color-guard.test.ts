@@ -18,3 +18,9 @@ describe("cores do tema", () => {
     expect(readFileSync("src/features/pdv/pdv.module.css", "utf8")).toContain(".productPrice{color:var(--text-primary)");
   });
 });
+
+describe("controles nativos", () => {
+  it("usam a cor da marca em vez do azul do sistema", () => {
+    expect(readFileSync("src/app/globals.css", "utf8")).toContain("input, progress { accent-color: var(--brand-primary); }");
+  });
+});
