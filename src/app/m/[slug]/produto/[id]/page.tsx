@@ -118,8 +118,8 @@ export default async function PublicProductPage({ params, searchParams }: { para
         {gas.containerSaleEnabled ? <label style={{ display: "flex", gap: 10, alignItems: "start", padding: 12, border: "var(--border-width) solid var(--border-default)", borderRadius: "var(--radius-lg)", cursor: "pointer", color: "var(--text-primary)" }}><input type="radio" name="gasSaleMode" value="with_container" required={gas.requireContainerChoice} defaultChecked={editGasSaleMode === "with_container"} /><span><strong>Produto + vasilhame</strong><br /><small style={{ color: "var(--text-secondary)" }}>Inclui o casco. Acréscimo: {money(gas.containerSurchargeCents)}.</small></span></label> : null}
       </fieldset> : null}
 
-      {product.modifier_groups.map((group, index) => <div key={group.id} className={styles.stepBlock} id={`grupo-${index + 1}`}>
-        <ModifierGroupSelector group={group} disabled={orderUnavailable} complementTargetId={index === product.modifier_groups.length - 1 ? complementTargetId : undefined} initialSelections={initialSelections} />
+      {product.modifier_groups.map((group, index) => <div key={group.id} className={styles.stepBlock} id={`grupo-${group.id}`}>
+        <ModifierGroupSelector group={group} disabled={orderUnavailable} complementTargetId={index === product.modifier_groups.length - 1 ? complementTargetId : `grupo-${product.modifier_groups[index + 1]?.id}`} nextGroupName={product.modifier_groups[index + 1]?.name} initialSelections={initialSelections} />
       </div>)}
 
       {complements.length > 0 ? <div className={styles.stepBlock}>
