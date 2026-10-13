@@ -27,8 +27,9 @@ describe("checkout V1+V3 batch 2", () => {
 
   it("keeps Growth optional and calculated on the server", () => {
     expect(page).toContain("growthEnabled && benefits");
-    expect(page).toContain("applyCheckoutBenefitsAction");
-    expect(page).toContain("clearCheckoutBenefitsAction");
+    expect(page).toContain("formAction={action}");
+    expect(actions).toContain("await applyCheckoutBenefitsAction(formData)");
+    expect(actions).toContain("await clearCheckoutBenefitsAction(formData)");
     expect(page).toContain("cart.discount_cents");
     expect(page).toContain("cart.total_cents");
   });

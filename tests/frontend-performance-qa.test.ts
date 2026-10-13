@@ -26,7 +26,7 @@ describe("frontend performance QA [316]", () => {
   });
 
   it("prioritizes only the above-fold product hero", () => {
-    const page = read("src/app/m/[slug]/produto/[id]/page.tsx");
+    const page = (read("src/app/m/[slug]/produto/[id]/page.tsx") + read("src/features/menu/product-detail.tsx"));
     expect(page).toContain('width={720} height={360} fetchPriority="high" decoding="async"');
   });
 

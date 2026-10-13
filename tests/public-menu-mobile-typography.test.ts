@@ -6,7 +6,7 @@ const publicBrandCss = readFileSync("src/features/menu/public-brand.module.css",
 const menuBrowserCss = readFileSync("src/features/menu/menu-browser.module.css", "utf8");
 const modifierCss = readFileSync("src/features/menu/modifier-group-selector.module.css", "utf8");
 const productCss = readFileSync("src/app/m/[slug]/produto/[id]/public-product.module.css", "utf8");
-const productPage = readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8");
+const productPage = (readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8") + readFileSync("src/features/menu/product-detail.tsx", "utf8"));
 const productCard = readFileSync("src/features/menu/public-product-card.tsx", "utf8");
 const complements = readFileSync("src/features/menu/complement-category-section.tsx", "utf8");
 

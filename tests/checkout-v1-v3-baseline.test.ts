@@ -21,7 +21,7 @@ describe("checkout V1+V3 baseline", () => {
   });
 
   it("keeps delivery and pickup as different flows on the single Expresso screen", () => {
-    expect(page).toContain('{mode === "delivery" ? (');
+    expect(page).toContain('{mode === "delivery" ? block("endereco"');
     expect(page).toContain('if (fulfillment === "delivery") {');
     expect(page).toContain('session?.fulfillment_type === "delivery"');
     expect(page).toContain("menu.settings.allow_delivery && menu.delivery.enabled");
@@ -60,6 +60,6 @@ describe("checkout V1+V3 baseline", () => {
     expect(css).toContain("height:100dvh");
     expect(css).toContain("overflow-y:auto");
     expect(page).toContain("stageViewport");
-    expect(css).toContain(".expressShell{grid-template-rows:auto minmax(0,1fr)}");
+    expect(css).toContain(".expressShell{grid-template-rows:auto minmax(0,1fr)");
   });
 });

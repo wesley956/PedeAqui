@@ -10,7 +10,7 @@ function money(cents: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 }
 
-export async function PublicCartBar({ storeSlug }: { storeSlug: string }) {
+export async function PublicCartBar({ storeSlug, subtitle }: { storeSlug: string; subtitle?: string }) {
   const token = (await cookies()).get(cartCookieName(storeSlug))?.value;
   let summary = null;
 
@@ -41,7 +41,7 @@ export async function PublicCartBar({ storeSlug }: { storeSlug: string }) {
           <span className={styles.action}>Finalizar pedido</span>
           {missingForMinimum > 0
             ? <span className={styles.minimum}>Faltam {money(missingForMinimum)} para o pedido mínimo</span>
-            : <span className={styles.items}><NavigationIcon name="cart" width={14} height={14} /> {itemLabel}</span>}
+            : <span className={styles.items}>{subtitle ?? <><NavigationIcon name="cart" width={14} height={14} /> {itemLabel}</>}</span>}
         </span>
         <span className={styles.total}>{total}</span>
       </Link>

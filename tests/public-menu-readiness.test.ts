@@ -23,7 +23,7 @@ describe("public menu readiness PA-DIAG-021 to PA-DIAG-025", () => {
   });
 
   it("blocks ordering while closed in both the product UI and cart service", () => {
-    const product = read("src/app/m/[slug]/produto/[id]/page.tsx");
+    const product = (read("src/app/m/[slug]/produto/[id]/page.tsx") + read("src/features/menu/product-detail.tsx"));
     const cart = read("src/server/cart/cart-service.ts");
     expect(product).toContain("orderUnavailable = soldOut || !operational.canOrder");
     expect(product).toContain("Cardápio fechado");

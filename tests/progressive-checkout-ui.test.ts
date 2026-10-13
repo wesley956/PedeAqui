@@ -14,30 +14,31 @@ const expressActions = readFileSync("src/features/checkout/express-actions.ts", 
 // Checkout Expresso (protótipo opção 3): uma tela, blocos editáveis e um único botão de confirmar.
 describe("express checkout UI", () => {
   it("keeps the approved customer-facing block order on one screen", () => {
-    const items = page.indexOf("Seu pedido");
-    const coupon = page.indexOf("Tenho cupom");
-    const formAt = page.indexOf("<ExpressCheckoutForm");
+    expect(page).toContain("Seu pedido");
+    expect(page).toContain("<ExpressCheckoutForm");
+    const items = form.indexOf('block("itens", `Itens · ${itemCount}`');
     expect(items).toBeGreaterThan(-1);
-    expect(coupon).toBeGreaterThan(items);
-    expect(formAt).toBeGreaterThan(coupon);
-    const receiving = form.indexOf(">Como receber</h2>");
-    const identity = form.indexOf(">Seus dados</h2>");
-    const address = form.indexOf(">Endereço</h2>");
-    const payment = form.indexOf(">Pagamento</h2>");
-    const when = form.indexOf(">Quando</h2>");
+    const receiving = form.indexOf('block("receber", "Como receber"');
+    const identity = form.indexOf('block("dados", "Seus dados"');
+    const address = form.indexOf('block("endereco", "Endereço"');
+    const payment = form.indexOf('block("pagamento", "Pagamento"');
+    const when = form.indexOf('block("quando", "Quando"');
     const summary = form.indexOf(">Resumo</h2>");
     expect(receiving).toBeGreaterThan(-1);
     expect(identity).toBeGreaterThan(receiving);
     expect(address).toBeGreaterThan(identity);
     expect(payment).toBeGreaterThan(address);
     expect(when).toBeGreaterThan(payment);
-    expect(summary).toBeGreaterThan(when);
+    const coupon = form.indexOf('block("cupom", "Cupom"');
+    expect(receiving).toBeGreaterThan(items);
+    expect(coupon).toBeGreaterThan(when);
+    expect(summary).toBeGreaterThan(coupon);
   });
 
   it("switches delivery and pickup without a reload and keeps the server state as default", () => {
     expect(page).toContain('const deliverySelected = session?.fulfillment_type === "delivery"');
     expect(form).toContain('useState<"delivery" | "pickup">(initialMode)');
-    expect(form).toContain('{mode === "delivery" ? (');
+    expect(form).toContain('{mode === "delivery" ? block("endereco"');
     expect(form).toContain('<input type="hidden" name="fulfillmentType" value={mode} />');
     expect(page).not.toContain("?etapa=");
   });
@@ -69,18 +70,21 @@ describe("express checkout UI", () => {
   });
 
   it("keeps benefits optional and module-gated", () => {
-    expect(page).toContain("Tenho cupom");
-    expect(page).toContain("benefits.cashbackEnabled ?");
-    expect(page).toContain("benefits.loyaltyEnabled ?");
+    expect(form).toContain("Tem cupom?");
+    expect(form).toContain("props.benefits.cashbackEnabled ?");
+    expect(form).toContain("props.benefits.loyaltyEnabled ?");
     expect(page).toContain("growthEnabled && benefits");
-    expect(page).toContain("applyCheckoutBenefitsAction");
+    expect(expressActions).toContain("await applyCheckoutBenefitsAction(formData)");
     expect(service).toContain('StoreModuleStateService.isEnabled(cartResult.store.organization_id, cartResult.store.id, "growth")');
   });
 
   it("lets the customer change item quantities without leaving the checkout", () => {
-    expect(page).toContain('<input type="hidden" name="returnTo" value="checkout" />');
-    expect(page).toContain("updateCartQuantityAction");
-    expect(page).toContain("removeCartItemAction");
+    // − / + no próprio checkout: guarda o que já foi preenchido e volta para o checkout.
+    expect(form).toContain('formAction={expressItemAction} formNoValidate');
+    expect(expressActions).toContain('next.set("returnTo", "checkout")');
+    expect(expressActions).toContain("await updateCartQuantityAction(next)");
+    expect(expressActions).toContain("if (kind === \"remove\") await removeCartItemAction(next)");
+    expect(expressActions).toContain('await saveParts(formData, "draft")');
   });
 
   it("keeps one prominent final completion action with the authoritative total", () => {

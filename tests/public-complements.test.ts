@@ -8,7 +8,7 @@ const versionedChainMigration = readFileSync("supabase/migrations/20260919203000
 const service = readFileSync("src/server/menu/complement-category-service.ts", "utf8");
 const actions = readFileSync("src/features/menu/complement-actions.ts", "utf8");
 const settingsPage = readFileSync("src/app/(app)/cardapio/sugestoes/page.tsx", "utf8");
-const productPage = readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8");
+const productPage = (readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8") + readFileSync("src/features/menu/product-detail.tsx", "utf8"));
 const section = readFileSync("src/features/menu/complement-category-section.tsx", "utf8");
 const selector = readFileSync("src/features/menu/modifier-group-selector.tsx", "utf8");
 

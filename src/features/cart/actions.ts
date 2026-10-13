@@ -95,6 +95,7 @@ export async function addToCartAction(formData: FormData) {
       logger.error("public_cart_edit_failed", { errorType: error instanceof Error ? error.name : "unknown" });
       redirect(`/m/${values.storeSlug}/produto/${values.productId}?editar=${editItemId}&erro=cart_edit_failed`);
     }
+    if (formData.get("returnTo") === "checkout") redirect(`/m/${values.storeSlug}/checkout`);
     redirect(`/m/${values.storeSlug}/carrinho`);
   }
 
