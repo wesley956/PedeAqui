@@ -31,7 +31,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     <section className={styles.page}>
       <div className={styles.heading}>
         <Link href="/cardapio/produtos" className={styles.back}>← Voltar para produtos</Link>
-        <h1>Editar produto</h1>
+        <h2>Editar produto</h2>
         <p className="muted">Atualize cadastro, preço, promoção, foto e disponibilidade sem perder o histórico.</p>
       </div>
 

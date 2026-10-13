@@ -76,7 +76,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className={styles.previewTicket}>
-            <small style={{ color: "#8a8580", fontWeight: 800 }}>PEDIDO #1048</small>
+            <small style={{ color: "#8a8580", fontWeight: "var(--font-weight-bold)" }}>PEDIDO #1048</small>
             <h3>Já chega organizado</h3>
             <div className={styles.ticketLine}><span>2 itens escolhidos</span><strong>✓</strong></div>
             <div className={styles.ticketLine}><span>Endereço informado</span><strong>✓</strong></div>

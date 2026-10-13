@@ -147,7 +147,7 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
     : null;
 
   return <article className={styles.orderCard} data-channel={external?.provider ?? "pedeaqui"} data-bucket={rawStage(order)} data-selected={selected || undefined} data-late={isOrderAttentionLate(order, now) || undefined}>
-    {bulkSelectable ? <label className={styles.bulkSelection} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
+    {bulkSelectable ? <label className={styles.bulkSelection} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: "var(--font-size-xs)", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>
       <input
         type="checkbox"
         checked={bulkSelected}
@@ -200,7 +200,7 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, p
   onBulkToggle: (orderId: string, selected: boolean) => void;
 }) {
   return <section style={{ display: "grid", gap: 10 }}>
-    <header style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}><h2 style={{ margin: 0, fontSize: 17 }}>{title}</h2><span className="muted" style={{ fontSize: 12 }}>{orders.length} pedido(s)</span></header>
+    <header style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}><h2 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>{title}</h2><span className="muted" style={{ fontSize: "var(--font-size-xs)" }}>{orders.length} pedido(s)</span></header>
     <div className={styles.activeGrid} data-mode="custom">
       {stages.map((stage) => {
         const stageOrders = orders.filter((order) => visibleStage(order, config) === stage);
@@ -329,16 +329,16 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
           event.preventDefault();
         }
       }}
-      style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", padding: 12, border: "1px solid var(--border)", borderRadius: 12, background: "var(--surface-2)" }}
+      style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", padding: 12, border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", background: "var(--surface-2)" }}
     >
       {selectedOrders.map((order) => <input key={order.id} type="hidden" name="orderIds" value={order.id} />)}
       {selectedPendingPayments.length > 0 ? <input type="hidden" name="paymentReceived" value="yes" /> : null}
-      <strong style={{ fontSize: 13 }}>{selectedOrders.length} pedido(s) selecionado(s)</strong>
+      <strong style={{ fontSize: "var(--font-size-support)" }}>{selectedOrders.length} pedido(s) selecionado(s)</strong>
       <Button type="submit" disabled={bulkPending}>
         {bulkPending ? "Finalizando em lote…" : `Finalizar selecionados (${selectedOrders.length})`}
       </Button>
       <Button type="button" tone="secondary" disabled={bulkPending} onClick={() => setSelectedIds(new Set())}>Limpar seleção</Button>
-      <span className="muted" style={{ fontSize: 12 }}>Processamento controlado, um pedido por vez.</span>
+      <span className="muted" style={{ fontSize: "var(--font-size-xs)" }}>Processamento controlado, um pedido por vez.</span>
     </form> : null}
     {bulkState.message ? <Alert tone={bulkState.failed > 0 ? "warning" : "info"} title={bulkState.message}>
       {bulkState.error ?? "A fila de pedidos foi atualizada."}

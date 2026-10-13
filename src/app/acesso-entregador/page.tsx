@@ -24,7 +24,7 @@ export default async function DriverAccessPage({
   return (
     <AuthCard
       variant="driver"
-      title="Olá, entregador 👋"
+      title="Olá, entregador"
       subtitle="Entre com seu telefone e PIN para acessar suas entregas do dia."
     >
       {params.error ? <Alert tone="danger">{loginErrors[params.error] ?? "Não foi possível entrar."}</Alert> : null}

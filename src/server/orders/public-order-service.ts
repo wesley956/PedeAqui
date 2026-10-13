@@ -86,7 +86,7 @@ export class PublicOrderService {
     const id = uuidSchema.parse(orderId);
     const admin = createAdminClient();
     const { data: store, error: storeError } = await admin.from("stores")
-      .select("id, organization_id, name, slug, business_type, timezone")
+      .select("id, organization_id, name, slug, business_type, timezone, phone, public_whatsapp")
       .ilike("slug", storeSlug).maybeSingle();
     if (storeError) throw storeError;
     if (!store) return null;

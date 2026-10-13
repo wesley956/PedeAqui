@@ -35,7 +35,7 @@ export default async function ConvitePage({
 
   return (
     <AuthCard title="Aceitar convite" subtitle="Confirme para entrar na organização e unidades liberadas para você.">
-      {params.error ? <p role="alert" style={{ color: "#ff8a93", margin: 0 }}>Não foi possível aceitar este convite. Ele pode estar expirado ou pertencer a outro e-mail.</p> : null}
+      {params.error ? <p role="alert" style={{ color: "var(--state-danger-text)", margin: 0 }}>Não foi possível aceitar este convite. Ele pode estar expirado ou pertencer a outro e-mail.</p> : null}
       <form action={acceptInvitationAction}>
         <input type="hidden" name="token" value={params.token} />
         <Button type="submit">Aceitar convite</Button>

@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { saveUserGuideProgressAction } from "@/features/user-guide/actions";
 import { guideProgress, type UserGuideStatus, type UserGuideStep } from "@/features/user-guide/guide-model";
 import styles from "./new-user-guide.module.css";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 
 export function NewUserGuide({
   initialStatus,
@@ -112,7 +113,7 @@ export function NewUserGuide({
           </div>
           <strong className={styles.coachTitle}>{activeStep.title}</strong>
           <p>{activeStep.description}</p>
-          {activeStep.tip ? <div className={styles.tip}><span aria-hidden>💡</span><span>{activeStep.tip}</span></div> : null}
+          {activeStep.tip ? <div className={styles.tip}><NavigationIcon name="tip" /><span>{activeStep.tip}</span></div> : null}
           {activeStep.completionLabel ? <div className={styles.detected} data-done={activeStep.state === "done"}>{activeStep.state === "done" ? "✓" : "○"} {activeStep.completionLabel}</div> : null}
           <div className={styles.coachActions}>
             <button className={styles.secondary} type="button" onClick={() => router.refresh()} disabled={isPending}>Verificar progresso</button>

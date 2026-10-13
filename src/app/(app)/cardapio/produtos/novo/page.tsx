@@ -21,7 +21,7 @@ export default async function NewProductPage() {
     <section className={styles.page}>
       <div className={styles.heading}>
         <Link href="/cardapio/produtos" className={styles.back}>← Voltar para produtos</Link>
-        <h1>Novo produto</h1>
+        <h2>Novo produto</h2>
         <p className="muted">Preencha primeiro o essencial. Dados técnicos ficam recolhidos para não atrapalhar o cadastro comum.</p>
       </div>
 

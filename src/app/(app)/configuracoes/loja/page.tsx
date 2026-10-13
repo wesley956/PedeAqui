@@ -5,6 +5,7 @@ import { FormDisclosure } from "@/components/ui/form-disclosure";
 import { saveStoreProfileAction } from "@/features/stores/actions";
 import { StoreProfileService } from "@/server/stores/store-profile-service";
 import styles from "../settings-form.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function StoreProfileSettingsPage() {
   const store = await StoreProfileService.getProfile();
@@ -13,13 +14,7 @@ export default async function StoreProfileSettingsPage() {
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>Configurações</p>
-        <h1 style={{ margin: "4px 0" }}>Dados da loja</h1>
-        <p className="muted" style={{ margin: 0 }}>
-          Edite o nome, contato e localização usados pelo PedeAqui. Nome, telefone, cidade e estado concluem o primeiro passo do assistente.
-        </p>
-      </header>
+      <PageHeader title="Dados da loja" description="Edite o nome, contato e localização usados pelo PedeAqui. Nome, telefone, cidade e estado concluem o primeiro passo do assistente." />
 
       <form action={saveStoreProfileAction} className={styles.form} aria-label="Dados da loja">
         <div>
@@ -63,7 +58,7 @@ export default async function StoreProfileSettingsPage() {
         </div>
 
         </FormDisclosure>
-        <div className={styles.stickyActions}><Button type="submit" loadingLabel="Salvando dados…">Salvar dados da loja</Button></div>
+        <div className={styles.stickyActions} data-sticky-actions><Button type="submit" loadingLabel="Salvando dados…">Salvar dados da loja</Button></div>
       </form>
 
       <article className={styles.card}>

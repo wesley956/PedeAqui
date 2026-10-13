@@ -7,6 +7,7 @@ import { DriverLocationTracker } from "@/features/delivery/driver-location-track
 import { DriverRouteStartForm } from "@/features/delivery/driver-route-start-form";
 import { DriverHistoryPolicyService } from "@/server/delivery/driver-history-policy-service";
 import { RouteTrackingService } from "@/server/delivery/route-tracking-service";
+import { PageHeader } from "@/components/ui/page-header";
 
 function address(order: NonNullable<Awaited<ReturnType<typeof DeliveryOperationsService.loadDriverView>>["deliveries"][number]["order"]>) {
   const line = [order.address_street_snapshot, order.address_number_snapshot].filter(Boolean).join(", ");
@@ -76,13 +77,7 @@ export default async function DriverPage() {
   const atCapacity = data.activeDeliveryCount >= data.driver.max_active_deliveries;
 
   return <section className={styles.page}>
-    <header className={styles.header}>
-      <div className={styles.headerTop}>
-        <div><p className="muted" style={{ margin: 0 }}>MEU ROTEIRO</p><h1>Minhas entregas</h1><div className={styles.driverState}>{data.driver.name} · {data.driver.active ? (data.driver.on_duty ? "em serviço" : "fora de serviço") : "inativo"}</div></div>
-        <DeliveryRealtime storeId={data.context.storeId} showStatus />
-      </div>
-      <a href="/entregador" className={styles.refresh}>Atualizar lista</a>
-    </header>
+    <PageHeader title="Minhas entregas" description={`${data.driver.name} · ${data.driver.active ? (data.driver.on_duty ? "em serviço" : "fora de serviço") : "inativo"}`} status={<DeliveryRealtime storeId={data.context.storeId} showStatus />} actions={<a href="/entregador" className={styles.refresh}>Atualizar lista</a>} />
 
     {!data.driver.active || !data.driver.on_duty ? <article className={styles.offDuty}><strong>Você está fora de serviço.</strong><p>Entregas já atribuídas continuam visíveis, mas novas atribuições ficam bloqueadas pela operação até seu status ser alterado.</p></article> : null}
 

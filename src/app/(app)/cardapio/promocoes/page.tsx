@@ -44,7 +44,7 @@ export default async function PromotionsPage() {
   return <section className={styles.page}>
     <header className={styles.header}>
       <div className={styles.headerCopy}>
-        <h1>Promoções</h1>
+        <h2>Promoções</h2>
         <p className="muted">Crie campanhas com vários produtos e defina dias, horários e períodos diferentes para cada item.</p>
       </div>
     </header>

@@ -17,10 +17,11 @@ import { WhatsAppAutomationCapabilityService } from "@/server/conversations/what
 import { WhatsAppOperationalHealthService } from "@/server/conversations/whatsapp-operational-health-service";
 import type { WhatsAppOperationalHealthState, WhatsAppOperationalIssueCode } from "@/server/conversations/whatsapp-operational-health-model";
 import { DEFAULT_CONVERSATION_AUTO_CLOSE_MESSAGE } from "@/server/conversations/conversation-lifecycle";
+import { PageHeader } from "@/components/ui/page-header";
 
 const fieldStyle = {
   minHeight: 44,
-  borderRadius: 8,
+  borderRadius: "var(--radius-sm)",
   border: "1px solid var(--border-default)",
   background: "var(--surface-2)",
   color: "var(--text-primary)",
@@ -118,75 +119,71 @@ export default async function ConversationSettingsPage() {
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>Atendimento</p>
-        <h1 style={{ margin: "4px 0" }}>Conversas e WhatsApp</h1>
-        <p className="muted" style={{ margin: 0 }}>Conecte o WhatsApp da loja, continue atendendo pelo celular se quiser e escolha como o PedeAqui conversa com seus clientes.</p>
-      </header>
+      <PageHeader title="Conversas e WhatsApp" description="Conecte o WhatsApp da loja, continue atendendo pelo celular se quiser e escolha como o PedeAqui conversa com seus clientes." />
 
       <MetaEmbeddedSignupCard status={embeddedStatus} platformReady={platformConfig.ready} />
 
       <Card style={{ display: "grid", gap: 12 }} aria-labelledby="whatsapp-health-title">
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start", flexWrap: "wrap" }}>
           <div>
-            <p className="muted" style={{ margin: 0, fontSize: 13 }}>DIAGNÓSTICO OPERACIONAL</p>
-            <h2 id="whatsapp-health-title" style={{ margin: "3px 0 0", fontSize: 18 }}>Saúde do WhatsApp</h2>
+            <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>DIAGNÓSTICO OPERACIONAL</p>
+            <h2 id="whatsapp-health-title" style={{ margin: "3px 0 0", fontSize: "var(--font-size-lg)" }}>Saúde do WhatsApp</h2>
           </div>
-          <strong style={{ fontSize: 13 }}>{HEALTH_STATE_LABELS[operationalHealth.state]}</strong>
+          <strong style={{ fontSize: "var(--font-size-support)" }}>{HEALTH_STATE_LABELS[operationalHealth.state]}</strong>
         </div>
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>{healthGuidance(operationalHealth.state)}</p>
+        <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>{healthGuidance(operationalHealth.state)}</p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8 }}>
-          <div style={{ padding: 10, border: "1px solid var(--border-default)", borderRadius: 8 }}>
-            <strong style={{ display: "block", fontSize: 13 }}>Conexão</strong>
-            <span className="muted" style={{ fontSize: 13 }}>
+          <div style={{ padding: 10, border: "1px solid var(--border-default)", borderRadius: "var(--radius-sm)" }}>
+            <strong style={{ display: "block", fontSize: "var(--font-size-support)" }}>Conexão</strong>
+            <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>
               {operationalHealth.connection.enabled ? (operationalHealth.connection.status === "connected" ? "Conectada" : "Requer atenção") : "Desligada"}
               {operationalHealth.connection.mode === "coexistence" ? " · Coexistência" : operationalHealth.connection.mode === "cloud_api" ? " · Cloud API" : ""}
             </span>
           </div>
-          <div style={{ padding: 10, border: "1px solid var(--border-default)", borderRadius: 8 }}>
-            <strong style={{ display: "block", fontSize: 13 }}>Webhook</strong>
-            <span className="muted" style={{ fontSize: 13 }}>
+          <div style={{ padding: 10, border: "1px solid var(--border-default)", borderRadius: "var(--radius-sm)" }}>
+            <strong style={{ display: "block", fontSize: "var(--font-size-support)" }}>Webhook</strong>
+            <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>
               {operationalHealth.connection.mode === "coexistence"
                 ? operationalHealth.webhook.subscriptionStatus === "subscribed" && operationalHealth.webhook.appWebhookStatus === "subscribed" ? "Assinaturas confirmadas" : "Confirmação pendente/revisar"
                 : "Monitorado pelo canal oficial"}
             </span>
           </div>
-          <div style={{ padding: 10, border: "1px solid var(--border-default)", borderRadius: 8 }}>
-            <strong style={{ display: "block", fontSize: 13 }}>Último inbound</strong>
-            <span className="muted" style={{ fontSize: 13 }}>{healthWhen(operationalHealth.activity.lastInboundAt, operationalHealth.timezone)}</span>
+          <div style={{ padding: 10, border: "1px solid var(--border-default)", borderRadius: "var(--radius-sm)" }}>
+            <strong style={{ display: "block", fontSize: "var(--font-size-support)" }}>Último inbound</strong>
+            <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>{healthWhen(operationalHealth.activity.lastInboundAt, operationalHealth.timezone)}</span>
           </div>
-          {operationalHealth.connection.mode === "coexistence" ? <div style={{ padding: 10, border: "1px solid var(--border-default)", borderRadius: 8 }}>
-            <strong style={{ display: "block", fontSize: 13 }}>Último echo do Business App</strong>
-            <span className="muted" style={{ fontSize: 13 }}>{healthWhen(operationalHealth.webhook.lastEchoPersistedAt ?? operationalHealth.webhook.lastEchoWebhookAt, operationalHealth.timezone)}</span>
+          {operationalHealth.connection.mode === "coexistence" ? <div style={{ padding: 10, border: "1px solid var(--border-default)", borderRadius: "var(--radius-sm)" }}>
+            <strong style={{ display: "block", fontSize: "var(--font-size-support)" }}>Último echo do Business App</strong>
+            <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>{healthWhen(operationalHealth.webhook.lastEchoPersistedAt ?? operationalHealth.webhook.lastEchoWebhookAt, operationalHealth.timezone)}</span>
           </div> : null}
         </div>
 
-        <div style={{ display: "grid", gap: 4, padding: 10, border: "1px solid var(--border-default)", borderRadius: 8 }}>
-          <strong style={{ fontSize: 13 }}>Filas e atendimento</strong>
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+        <div style={{ display: "grid", gap: 4, padding: 10, border: "1px solid var(--border-default)", borderRadius: "var(--radius-sm)" }}>
+          <strong style={{ fontSize: "var(--font-size-support)" }}>Filas e atendimento</strong>
+          <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>
             {operationalHealth.queues.outboundPending} mensagem(ns) pendente(s) · {operationalHealth.queues.mediaPending} mídia(s) em processamento · {operationalHealth.activity.waitingAgentCount} aguardando atendente
           </p>
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+          <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>
             Janela de falhas recentes: {operationalHealth.recentFailureWindowHours}h · {operationalHealth.queues.outboundFailedRecent} envio(s) falho(s) · {operationalHealth.queues.mediaFailedRecent} mídia(s) falha(s)
           </p>
         </div>
 
         {operationalHealth.issues.length > 0 ? <div style={{ display: "grid", gap: 5 }}>
-          <strong style={{ fontSize: 13 }}>Itens para verificar</strong>
+          <strong style={{ fontSize: "var(--font-size-support)" }}>Itens para verificar</strong>
           <ul style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 4 }}>
-            {operationalHealth.issues.map((issue) => <li key={issue} className="muted" style={{ fontSize: 13 }}>{HEALTH_ISSUE_LABELS[issue]}</li>)}
+            {operationalHealth.issues.map((issue) => <li key={issue} className="muted" style={{ fontSize: "var(--font-size-support)" }}>{HEALTH_ISSUE_LABELS[issue]}</li>)}
           </ul>
-        </div> : <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>Nenhuma pendência operacional detectada.</p>}
+        </div> : <p style={{ margin: 0, fontSize: "var(--font-size-support)", fontWeight: "var(--font-weight-bold)" }}>Nenhuma pendência operacional detectada.</p>}
 
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+        <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>
           Este diagnóstico não mostra mensagens, telefones, endereços, tokens ou identificadores técnicos da conta Meta.
         </p>
       </Card>
 
       <form action={saveConversationSettingsAction} aria-label="Preferências do WhatsApp" className={styles.stack}>
         <Card className={styles.card}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>WhatsApp da unidade</h2>
+          <h2 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>WhatsApp da unidade</h2>
           {connectionConfigured ? <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
             <input type="checkbox" name="whatsappEnabled" defaultChecked={Boolean(settings?.whatsapp_enabled)} />
             <span>Usar este WhatsApp no atendimento</span>
@@ -196,7 +193,7 @@ export default async function ConversationSettingsPage() {
         <FormDisclosure summary="Avisos do andamento do pedido" className={styles.details}>
           <div className={styles.stack}>
           <div>
-            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Escolha um fluxo pronto ou personalize as etapas e textos. Os avisos são sincronizados com o fluxo de pedidos da unidade, disparados somente por estados reais e nunca mudam o andamento do pedido.</p>
+            <p className="muted" style={{ margin: "5px 0 0", fontSize: "var(--font-size-support)" }}>Escolha um fluxo pronto ou personalize as etapas e textos. Os avisos são sincronizados com o fluxo de pedidos da unidade, disparados somente por estados reais e nunca mudam o andamento do pedido.</p>
           </div>
 
           <WhatsAppAutomationSettings
@@ -218,73 +215,73 @@ export default async function ConversationSettingsPage() {
             }}
           />
 
-          <div style={{ display: "grid", gap: 5, padding: 12, borderRadius: 8, border: "1px solid var(--border-default)" }}>
+          <div style={{ display: "grid", gap: 5, padding: 12, borderRadius: "var(--radius-sm)", border: "1px solid var(--border-default)" }}>
             <strong>Sincronizado com o fluxo de pedidos ✓</strong>
-            <p className="muted" style={{ margin: 0, fontSize: 13 }}>Etapas ocultas no fluxo Completo, Simplificado ou Personalizado não são anunciadas ao cliente. As preferências ficam guardadas caso a etapa volte a ser usada.</p>
+            <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Etapas ocultas no fluxo Completo, Simplificado ou Personalizado não são anunciadas ao cliente. As preferências ficam guardadas caso a etapa volte a ser usada.</p>
           </div>
 
-          <div style={{ display: "grid", gap: 5, padding: 12, borderRadius: 8, border: "1px solid var(--border-default)" }}>
+          <div style={{ display: "grid", gap: 5, padding: 12, borderRadius: "var(--radius-sm)", border: "1px solid var(--border-default)" }}>
             <strong>Envio seguro pelo WhatsApp</strong>
-            <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+            <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>
               {orderTemplateConfigured
                 ? "O modelo aprovado está configurado para avisos que precisem ser enviados fora da janela de atendimento."
                 : "Dentro da janela aberta pelo cliente, os avisos podem seguir normalmente. Para avisos fora dela, é necessário ter um modelo de mensagem aprovado pelo WhatsApp."}
             </p>
-            {!orderTemplateConfigured && connectionConfigured ? <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>Modelo para avisos fora da janela: pendente.</p> : null}
-            <p className="muted" style={{ margin: 0, fontSize: 13 }}>Se o WhatsApp, um módulo, o plano ou um modelo ficarem indisponíveis, a automação é suspensa sem apagar a preferência nem o texto personalizado. O pedido continua funcionando normalmente.</p>
+            {!orderTemplateConfigured && connectionConfigured ? <p style={{ margin: 0, fontSize: "var(--font-size-support)", fontWeight: "var(--font-weight-bold)" }}>Modelo para avisos fora da janela: pendente.</p> : null}
+            <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Se o WhatsApp, um módulo, o plano ou um modelo ficarem indisponíveis, a automação é suspensa sem apagar a preferência nem o texto personalizado. O pedido continua funcionando normalmente.</p>
           </div>
           <input type="hidden" name="orderNotificationTemplateName" value={settings?.order_notification_template_name ?? ""} />
           <input type="hidden" name="orderNotificationTemplateLanguage" value={settings?.order_notification_template_language ?? "pt_BR"} />
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>Eventos já ignorados durante uma suspensão não são reenviados retroativamente quando a capability volta.</p>
+          <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Eventos já ignorados durante uma suspensão não são reenviados retroativamente quando a capability volta.</p>
         </div>
         </FormDisclosure>
 
         <Card className={styles.card}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Atendimento automático</h2>
+          <h2 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>Atendimento automático</h2>
           <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="botEnabled" defaultChecked={settings?.default_bot_enabled ?? true} /><span>Responder automaticamente quando não houver atendente</span></label>
           <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="aiEnabled" defaultChecked={Boolean(settings?.ai_enabled)} /><span>Usar o assistente inteligente nas conversas</span></label>
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>O assistente só utiliza as funções autorizadas do PedeAqui e respeita o acesso configurado para esta unidade.</p>
+          <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>O assistente só utiliza as funções autorizadas do PedeAqui e respeita o acesso configurado para esta unidade.</p>
         </Card>
 
         <FormDisclosure summary="Mensagem inicial e menu" className={styles.details}>
           <div className={styles.stack}>
           <div>
-            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Escolha se o atendimento começa como conversa, mostra as opções imediatamente ou oferece um botão.</p>
+            <p className="muted" style={{ margin: "5px 0 0", fontSize: "var(--font-size-support)" }}>Escolha se o atendimento começa como conversa, mostra as opções imediatamente ou oferece um botão.</p>
           </div>
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontWeight: 700 }}>Como apresentar as opções</span>
+            <span style={{ fontWeight: "var(--font-weight-bold)" }}>Como apresentar as opções</span>
             <select name="botMenuMode" defaultValue={settings?.bot_menu_mode ?? "conversation_first"} style={fieldStyle}>
               <option value="conversation_first">Conversa limpa + cliente digita “menu” (recomendado)</option>
               <option value="interactive">Conversa limpa + botão “Ver opções”</option>
               <option value="menu_first">Mostrar todas as opções logo no início</option>
             </select>
-            <span className="muted" style={{ fontSize: 13 }}>Mesmo no modo com botão, o cliente sempre pode digitar <strong>menu</strong>. Se a Meta não aceitar o botão, o PedeAqui envia a alternativa em texto.</span>
+            <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>Mesmo no modo com botão, o cliente sempre pode digitar <strong>menu</strong>. Se a Meta não aceitar o botão, o PedeAqui envia a alternativa em texto.</span>
           </label>
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontWeight: 700 }}>Nome do robô <span className="muted">(opcional)</span></span>
+            <span style={{ fontWeight: "var(--font-weight-bold)" }}>Nome do robô <span className="muted">(opcional)</span></span>
             <input name="botDisplayName" defaultValue={settings?.bot_display_name ?? ""} maxLength={60} placeholder="Ex.: Maria" style={fieldStyle} />
           </label>
           <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="greetingEnabled" defaultChecked={Boolean(settings?.greeting_enabled)} disabled={!connectionConfigured} /><span>Enviar uma saudação no primeiro contato</span></label>
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontWeight: 700 }}>Mensagem enviada ao cliente</span>
+            <span style={{ fontWeight: "var(--font-weight-bold)" }}>Mensagem enviada ao cliente</span>
             <textarea name="greetingTemplate" defaultValue={greetingForEditor(settings?.greeting_template ?? DEFAULT_WHATSAPP_GREETING)} style={textareaStyle} />
-            <span className="muted" style={{ fontSize: 13 }}>O PedeAqui troca <strong>[nome do restaurante]</strong> e, quando usado, <strong>[link do cardápio]</strong> pelos dados corretos da unidade. O link é obrigatório apenas quando todas as opções aparecem logo no início.</span>
+            <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>O PedeAqui troca <strong>[nome do restaurante]</strong> e, quando usado, <strong>[link do cardápio]</strong> pelos dados corretos da unidade. O link é obrigatório apenas quando todas as opções aparecem logo no início.</span>
           </label>
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontWeight: 700 }}>Mensagem quando o cardápio estiver indisponível</span>
+            <span style={{ fontWeight: "var(--font-weight-bold)" }}>Mensagem quando o cardápio estiver indisponível</span>
             <textarea name="greetingFallbackMessage" defaultValue={settings?.greeting_fallback_message ?? DEFAULT_WHATSAPP_GREETING_FALLBACK} style={textareaStyle} />
-            <span className="muted" style={{ fontSize: 13 }}>Quando não for possível direcionar o cliente ao cardápio, esta mensagem mantém o contato com a equipe.</span>
+            <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>Quando não for possível direcionar o cliente ao cardápio, esta mensagem mantém o contato com a equipe.</span>
           </label>
         </div>
         </FormDisclosure>
 
         <Card className={styles.card}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Pedido pelo WhatsApp</h2>
-          <label style={{ display: "flex", gap: 9, alignItems: "flex-start", padding: 12, borderRadius: 8, border: "1px solid var(--border-default)" }}>
+          <h2 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>Pedido pelo WhatsApp</h2>
+          <label style={{ display: "flex", gap: 9, alignItems: "flex-start", padding: 12, borderRadius: "var(--radius-sm)", border: "1px solid var(--border-default)" }}>
             <input type="checkbox" name="whatsappOrdersEnabled" defaultChecked={Boolean(settings?.whatsapp_orders_enabled)} disabled={!connectionConfigured} style={{ marginTop: 3 }} />
             <span>
               <strong>Aceitar pedidos pelo WhatsApp</strong>
-              <span className="muted" style={{ display: "block", fontSize: 13, marginTop: 3 }}>O robô monta o carrinho, pergunta entrega ou retirada e pagamento, e confirma tudo antes de criar o pedido.</span>
+              <span className="muted" style={{ display: "block", fontSize: "var(--font-size-support)", marginTop: 3 }}>O robô monta o carrinho, pergunta entrega ou retirada e pagamento, e confirma tudo antes de criar o pedido.</span>
             </span>
           </label>
         </Card>
@@ -292,14 +289,14 @@ export default async function ConversationSettingsPage() {
         <FormDisclosure summary="Transferência e ajuda" className={styles.details}>
           <div className={styles.stack}>
           <div>
-            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Defina como o robô responde quando o cliente pede uma pessoa ou quando não entende a mensagem.</p>
+            <p className="muted" style={{ margin: "5px 0 0", fontSize: "var(--font-size-support)" }}>Defina como o robô responde quando o cliente pede uma pessoa ou quando não entende a mensagem.</p>
           </div>
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontWeight: 700 }}>Ao chamar um atendente</span>
+            <span style={{ fontWeight: "var(--font-weight-bold)" }}>Ao chamar um atendente</span>
             <textarea name="handoffMessage" defaultValue={settings?.handoff_message ?? DEFAULT_WHATSAPP_HANDOFF_MESSAGE} style={textareaStyle} />
           </label>
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontWeight: 700 }}>Quando não entender</span>
+            <span style={{ fontWeight: "var(--font-weight-bold)" }}>Quando não entender</span>
             <textarea name="unknownMessage" defaultValue={settings?.unknown_intent_message ?? DEFAULT_WHATSAPP_UNKNOWN_MESSAGE} style={textareaStyle} />
           </label>
         </div>
@@ -308,45 +305,45 @@ export default async function ConversationSettingsPage() {
         <FormDisclosure summary="Encerramento das conversas" className={styles.details}>
           <div className={styles.stack}>
           <div>
-            <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>A própria loja escolhe quando um atendimento sem novas mensagens deve ser encerrado.</p>
+            <p className="muted" style={{ margin: "5px 0 0", fontSize: "var(--font-size-support)" }}>A própria loja escolhe quando um atendimento sem novas mensagens deve ser encerrado.</p>
           </div>
           <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
             <input type="checkbox" name="conversationAutoCloseEnabled" defaultChecked={Boolean(settings?.conversation_auto_close_enabled)} />
             <span>Encerrar conversas automaticamente por inatividade</span>
           </label>
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>A fila aguardando atendente permanece aberta. Depois do encerramento, uma nova mensagem do cliente inicia outra conversa com o robô, conforme a configuração da loja.</p>
+          <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>A fila aguardando atendente permanece aberta. Depois do encerramento, uma nova mensagem do cliente inicia outra conversa com o robô, conforme a configuração da loja.</p>
           <div className={styles.grid}>
             <label style={{ display: "grid", gap: 6 }}>
-              <span style={{ fontWeight: 700 }}>Conversa com o robô</span>
+              <span style={{ fontWeight: "var(--font-weight-bold)" }}>Conversa com o robô</span>
               <input type="number" name="botAutoCloseMinutes" min={5} max={1440} step={1} defaultValue={settings?.bot_auto_close_minutes ?? 30} style={fieldStyle} />
-              <span className="muted" style={{ fontSize: 13 }}>Tempo em minutos. Exemplos: 15, 30, 60 ou 120.</span>
+              <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>Tempo em minutos. Exemplos: 15, 30, 60 ou 120.</span>
             </label>
             <label style={{ display: "grid", gap: 6 }}>
-              <span style={{ fontWeight: 700 }}>Atendimento humano</span>
+              <span style={{ fontWeight: "var(--font-weight-bold)" }}>Atendimento humano</span>
               <input type="number" name="humanAutoCloseMinutes" min={5} max={1440} step={1} defaultValue={settings?.human_auto_close_minutes ?? 60} style={fieldStyle} />
-              <span className="muted" style={{ fontSize: 13 }}>Pode ser diferente do tempo usado pelo robô.</span>
+              <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>Pode ser diferente do tempo usado pelo robô.</span>
             </label>
           </div>
           <label style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
             <input type="checkbox" name="keepOpenWhileOrderActive" defaultChecked={settings?.keep_open_while_order_active ?? true} style={{ marginTop: 3 }} />
-            <span><strong>Manter aberta enquanto houver pedido ativo</strong><span className="muted" style={{ display: "block", fontSize: 13, marginTop: 3 }}>Pedidos pendentes ou em andamento e pedidos ainda sendo montados pelo WhatsApp impedem o encerramento.</span></span>
+            <span><strong>Manter aberta enquanto houver pedido ativo</strong><span className="muted" style={{ display: "block", fontSize: "var(--font-size-support)", marginTop: 3 }}>Pedidos pendentes ou em andamento e pedidos ainda sendo montados pelo WhatsApp impedem o encerramento.</span></span>
           </label>
           <label style={{ display: "flex", gap: 9, alignItems: "center" }}>
             <input type="checkbox" name="sendAutoCloseMessage" defaultChecked={settings?.send_auto_close_message ?? true} />
             <span>Avisar o cliente antes de encerrar</span>
           </label>
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontWeight: 700 }}>Mensagem de encerramento</span>
+            <span style={{ fontWeight: "var(--font-weight-bold)" }}>Mensagem de encerramento</span>
             <textarea name="autoCloseMessage" defaultValue={settings?.auto_close_message ?? DEFAULT_CONVERSATION_AUTO_CLOSE_MESSAGE} style={textareaStyle} />
-            <span className="muted" style={{ fontSize: 13 }}>A tentativa de envio respeita a disponibilidade e a janela do WhatsApp. Se a Meta não permitir o envio, a conversa ainda é encerrada corretamente.</span>
+            <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>A tentativa de envio respeita a disponibilidade e a janela do WhatsApp. Se a Meta não permitir o envio, a conversa ainda é encerrada corretamente.</span>
           </label>
-          <div style={{ display: "grid", gap: 5, padding: 12, borderRadius: 8, border: "1px solid var(--border-default)" }}>
+          <div style={{ display: "grid", gap: 5, padding: 12, borderRadius: "var(--radius-sm)", border: "1px solid var(--border-default)" }}>
             <strong>Proteções automáticas</strong>
-            <p className="muted" style={{ margin: 0, fontSize: 13 }}>Conversas aguardando atendente nunca são encerradas por esta regra. Se o cliente voltar depois, uma nova conversa limpa é aberta sem apagar o histórico anterior.</p>
+            <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Conversas aguardando atendente nunca são encerradas por esta regra. Se o cliente voltar depois, uma nova conversa limpa é aberta sem apagar o histórico anterior.</p>
           </div>
         </div>
         </FormDisclosure>
-        <div className={styles.stickyActions}><Button type="submit">Salvar preferências</Button></div>
+        <div className={styles.stickyActions} data-sticky-actions><Button type="submit">Salvar preferências</Button></div>
       </form>
     </section>
   );

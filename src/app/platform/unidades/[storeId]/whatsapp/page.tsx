@@ -13,7 +13,7 @@ import styles from "@/app/platform/platform.module.css";
 const dateTime = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" });
 const fieldStyle = {
   minHeight: 44,
-  borderRadius: 10,
+  borderRadius: "var(--radius-sm)",
   border: "1px solid var(--border)",
   background: "var(--surface-2)",
   color: "var(--text)",
@@ -142,11 +142,11 @@ export default async function PlatformManualWhatsAppPage({
         <form action={connectManualWhatsAppAction} style={{ display: "grid", gap: 14, maxWidth: 680 }}>
           <input type="hidden" name="storeId" value={storeId} />
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontWeight: 800 }}>WABA ID</span>
+            <span style={{ fontWeight: "var(--font-weight-bold)" }}>WABA ID</span>
             <input name="wabaId" required inputMode="numeric" autoComplete="off" defaultValue={settings?.whatsapp_business_account_id ?? ""} style={fieldStyle} placeholder="Conta do WhatsApp Business" />
           </label>
           <label style={{ display: "grid", gap: 6 }}>
-            <span style={{ fontWeight: 800 }}>Phone Number ID</span>
+            <span style={{ fontWeight: "var(--font-weight-bold)" }}>Phone Number ID</span>
             <input name="phoneNumberId" required inputMode="numeric" autoComplete="off" defaultValue={settings?.whatsapp_phone_number_id ?? ""} style={fieldStyle} placeholder="ID do número na Cloud API" />
           </label>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>

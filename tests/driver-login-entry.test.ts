@@ -10,7 +10,7 @@ const pinActions = readFileSync(join(root, "src/features/delivery/driver-pin-aut
 describe("driver login entry", () => {
   it("provides a dedicated public phone + PIN login for the courier area", () => {
     expect(accessPage).toContain('variant="driver"');
-    expect(accessPage).toContain('title="Olá, entregador 👋"');
+    expect(accessPage).toContain('title="Olá, entregador"');
     expect(accessPage).toContain('name="phone"');
     expect(accessPage).toContain('name="pin"');
     expect(accessPage).toContain("Entrar nas minhas entregas");

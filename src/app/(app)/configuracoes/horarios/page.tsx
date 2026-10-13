@@ -4,6 +4,7 @@ import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 import styles from "../settings-form.module.css";
 import { addStoreHourAction, removeStoreHourAction } from "@/features/menu/actions";
 import { StoreMenuService } from "@/server/menu/store-menu-service";
+import { PageHeader } from "@/components/ui/page-header";
 
 const weekdays = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
@@ -12,11 +13,7 @@ export default async function StoreHoursPage() {
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>Configurações</p>
-        <h1 style={{ margin: "4px 0" }}>Horários de funcionamento</h1>
-        <p className="muted" style={{ margin: 0 }}>Cadastre mais de um período por dia. Fechamento após meia-noite é suportado.</p>
-      </header>
+      <PageHeader title="Horários de funcionamento" description="Cadastre mais de um período por dia. Fechamento após meia-noite é suportado." />
 
       <details className={styles.details}>
         <summary>Adicionar período</summary>
@@ -34,7 +31,7 @@ export default async function StoreHoursPage() {
       </form>
       </details>
 
-      <h2 style={{ margin: 0, fontSize: 18 }}>Períodos cadastrados</h2>
+      <h2 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>Períodos cadastrados</h2>
       <article className={styles.list}>
         {hours.length === 0 ? (
           <div className={styles.empty}>

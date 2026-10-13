@@ -2,6 +2,7 @@ import { SemanticStatus } from "@/components/ui/status";
 import { FiscalReadService } from "@/server/fiscal/fiscal-read-service";
 import { CancelFiscalDocumentForm,CreateFiscalDraftForm,FiscalIntegrationForm,FiscalProfileForm,ProductFiscalProfileForm,QueueFiscalDocumentForm } from "@/features/fiscal/fiscal-forms";
 import styles from "./fiscal-panel.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 const statusLabel:Record<string,string>={draft:"Rascunho",queued:"Na fila",processing:"Processando",authorized:"Autorizado",rejected:"Rejeitado",cancelled:"Cancelado",contingency:"Contingência"};
 const statusPresentation:Record<string,{tone:"neutral"|"info"|"success"|"warning"|"danger";icon:string}>={draft:{tone:"neutral",icon:"○"},queued:{tone:"info",icon:"→"},processing:{tone:"info",icon:"…"},authorized:{tone:"success",icon:"✓"},rejected:{tone:"danger",icon:"×"},cancelled:{tone:"neutral",icon:"○"},contingency:{tone:"warning",icon:"!"}};
@@ -16,7 +17,7 @@ export default async function FiscalPage(){
   const attention=data.documents.filter((doc)=>["rejected","contingency"].includes(doc.status));
   const completed=data.documents.filter((doc)=>["authorized","cancelled"].includes(doc.status));
   return <section className={styles.page}>
-    <header className={styles.header}><p className="muted">GESTÃO</p><h1>Fiscal</h1><p className="muted">Acompanhe documentos que precisam ser emitidos, situações que exigem atenção e o que já foi concluído.</p></header>
+    <PageHeader title="Fiscal" description="Acompanhe documentos que precisam ser emitidos, situações que exigem atenção e o que já foi concluído." />
     <div className={styles.metrics}><Metric label="Pendentes" value={pending.length}/><Metric label="Com atenção" value={attention.length} tone={attention.length?"danger":undefined}/><Metric label="Concluídos" value={completed.length}/><Metric label="Pedidos prontos para documento" value={data.eligibleOrders.length} tone={data.eligibleOrders.length?"warning":undefined}/></div>
     {data.canIssue?<article className={`card ${styles.card}`}><div><h2>Pedidos aguardando documento</h2><p className="muted">Crie o documento fiscal a partir do pedido. Antes do envio, o PedeAqui confere se os produtos possuem os dados fiscais necessários.</p></div>{data.eligibleOrders.length===0?<p className="muted">Nenhum pedido recente aguardando documento.</p>:<div className={styles.eligible}>{data.eligibleOrders.map((order)=><div key={order.id} className={styles.eligibleItem}><div><strong>Pedido #{order.display_number}</strong><div className={styles.meta}>{order.customer_name_snapshot} · {brl(order.total_cents)}</div></div><CreateFiscalDraftForm orderId={order.id} model={data.profile?.default_document_model??"65"}/></div>)}</div>}</article>:null}
     <div className={styles.queues}><DocumentQueue title="Pendentes" documents={pending} empty="Nenhum documento pendente." data={data} jobsByDocument={jobsByDocument}/><DocumentQueue title="Exigem atenção" documents={attention} empty="Nenhuma rejeição ou contingência." data={data} jobsByDocument={jobsByDocument}/><DocumentQueue title="Concluídos" documents={completed} empty="Nenhum documento concluído." data={data} jobsByDocument={jobsByDocument}/></div>

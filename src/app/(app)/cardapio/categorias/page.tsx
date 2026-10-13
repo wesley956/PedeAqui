@@ -15,7 +15,7 @@ export default async function CategoriesPage() {
   return (
     <section className={styles.page}>
       <div className={styles.headerCopy}>
-        <h1>Categorias</h1>
+        <h2>Categorias</h2>
         <p className="muted">Organize a navegação do cardápio por ordem e disponibilidade.</p>
       </div>
 
@@ -42,7 +42,7 @@ export default async function CategoriesPage() {
             <div className={styles.managementTop}>
               <div>
                 <strong>{category.name}</strong>
-                <div className="muted" style={{ fontSize: 13 }}>Ordem {category.sort_order}</div>
+                <div className="muted" style={{ fontSize: "var(--font-size-support)" }}>Ordem {category.sort_order}</div>
               </div>
               <span className={styles.stateBadge} data-active={category.active}>{category.active ? "Ativa" : "Pausada"}</span>
             </div>
@@ -55,7 +55,7 @@ export default async function CategoriesPage() {
               <summary>Duplicar categoria</summary>
               <ResilientMutationForm action={duplicateCategoryFormAction} className={styles.editBody}>
                 <input type="hidden" name="categoryId" value={category.id} />
-                <p className="muted" style={{ margin: 0, fontSize: 13 }}>A cópia será criada pausada para você revisar nome, preços e itens antes de publicar.</p>
+                <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>A cópia será criada pausada para você revisar nome, preços e itens antes de publicar.</p>
                 <Checkbox id={`category-${category.id}-include-products`} name="includeProducts" label="Incluir os produtos desta categoria e seus vínculos de adicionais" />
                 <p className={styles.formHint}>Sugestões de venda, promoções e histórico não são copiados automaticamente.</p>
                 <div className={styles.managementActions}><Button type="submit" tone="secondary">Criar cópia</Button></div>

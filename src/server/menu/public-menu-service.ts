@@ -7,8 +7,19 @@ import { resolveStoreOperationalStatus } from "@/server/menu/store-operational-s
 import { publicMenuSchema, publicProductSchema, type PublicMenu, type PublicProduct } from "@/server/menu/schemas";
 import { isPromotionActive, PromotionService } from "@/server/promotions/promotion-service";
 
+export type PublicProductOptionsSummary = {
+  /** O produto tem grupos de opções ativos: abre a tela do produto em vez de adicionar direto. */
+  hasOptions: boolean;
+  /** Menor acréscimo obrigatório (centavos). Quando maior que zero, o cardápio mostra "a partir de". */
+  minimumRequiredExtraCents: number;
+  /** O produto tem opções com preços diferentes, então o valor final pode subir. */
+  priceVaries: boolean;
+};
+
 export type PublicMenuState = PublicMenu & {
   businessType: BusinessType;
+  /** Resumo das opções por produto. Produto ausente = tratar como "tem opções". */
+  productOptions?: Record<string, PublicProductOptionsSummary>;
   operational: {
     scheduleOpen: boolean;
     acceptingOrders: boolean;
@@ -175,6 +186,55 @@ async function publicGasOption(organizationStoreId: string, productId: string): 
   };
 }
 
+type OptionGroupRow = {
+  product_id: string;
+  modifier_groups: {
+    min_selection: number;
+    required: boolean;
+    active: boolean;
+    deleted_at: string | null;
+    selection_mode?: string | null;
+    modifiers: Array<{ price_cents: number; active: boolean; deleted_at: string | null }> | null;
+  } | null;
+};
+
+export function summarizeProductOptions(productIds: string[], rows: OptionGroupRow[]) {
+  const summary: Record<string, PublicProductOptionsSummary> = {};
+  for (const id of productIds) summary[id] = { hasOptions: false, minimumRequiredExtraCents: 0, priceVaries: false };
+  for (const row of rows) {
+    const group = row.modifier_groups;
+    const target = summary[row.product_id];
+    if (!target || !group || !group.active || group.deleted_at) continue;
+    const prices = (group.modifiers ?? []).filter((modifier) => modifier.active && !modifier.deleted_at).map((modifier) => Number(modifier.price_cents ?? 0));
+    if (prices.length === 0) continue;
+    target.hasOptions = true;
+    if (prices.some((price) => price > 0)) target.priceVaries = true;
+    const minimum = group.required ? Math.max(1, Number(group.min_selection ?? 0)) : Number(group.min_selection ?? 0);
+    // Só o modo de escolhas distintas tem acréscimo mínimo previsível; nos demais o piso fica no preço base.
+    if (minimum > 0 && (group.selection_mode ?? "distinct_choices") === "distinct_choices") {
+      const cheapest = [...prices].sort((a, b) => a - b).slice(0, minimum);
+      if (cheapest.length === minimum) target.minimumRequiredExtraCents += cheapest.reduce((sum, price) => sum + price, 0);
+    }
+  }
+  return summary;
+}
+
+async function loadProductOptions(storeId: string, productIds: string[]) {
+  if (productIds.length === 0) return {};
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin.from("product_modifier_groups")
+      .select("product_id, modifier_groups(min_selection, required, active, deleted_at, selection_mode, modifiers(price_cents, active, deleted_at))")
+      .eq("store_id", storeId)
+      .in("product_id", productIds);
+    if (error) throw error;
+    return summarizeProductOptions(productIds, (data ?? []) as unknown as OptionGroupRow[]);
+  } catch {
+    // Sem o resumo, todo produto abre a própria tela: nunca adiciona algo incompleto.
+    return {};
+  }
+}
+
 export class PublicMenuService {
   static async getMenu(slug: string, now = new Date()): Promise<PublicMenuState | null> {
     const supabase = createPublicClient();
@@ -196,7 +256,9 @@ export class PublicMenuService {
       now,
     });
 
-    return { ...menu, businessType, operational };
+    const productIds = [...new Set(menu.categories.flatMap((category) => category.products.map((product) => product.id)))];
+    const productOptions = await loadProductOptions(menu.store.id, productIds);
+    return { ...menu, businessType, operational, productOptions };
   }
 
   static async getProduct(slug: string, productId: string, now = new Date()): Promise<PublicProductState | null> {

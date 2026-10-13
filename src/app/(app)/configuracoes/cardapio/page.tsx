@@ -6,17 +6,14 @@ import { ImageUploadField } from "@/components/media/image-upload-field";
 import { pauseOrdersAction, resumeOrdersAction, saveMenuSettingsAction } from "@/features/menu/actions";
 import { StoreMenuService } from "@/server/menu/store-menu-service";
 import { formatCents } from "@/server/catalog/money";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function MenuSettingsPage() {
   const settings = await StoreMenuService.getSettings();
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>Configurações</p>
-        <h1 style={{ margin: "4px 0" }}>Cardápio digital</h1>
-        <p className="muted" style={{ margin: 0 }}>Identidade, canais e disponibilidade pública da unidade atual.</p>
-      </header>
+      <PageHeader title="Cardápio digital" description="Identidade, canais e disponibilidade pública da unidade atual." />
 
       <article className={styles.card}>
         <div className={styles.rowTop}>
@@ -68,7 +65,7 @@ export default async function MenuSettingsPage() {
           ))}
         </div>
 
-        <div className={styles.stickyActions}><Button type="submit" loadingLabel="Salvando cardápio…">Salvar configurações</Button></div>
+        <div className={styles.stickyActions} data-sticky-actions><Button type="submit" loadingLabel="Salvando cardápio…">Salvar configurações</Button></div>
       </form>
     </section>
   );

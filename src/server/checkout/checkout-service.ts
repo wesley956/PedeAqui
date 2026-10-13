@@ -1,5 +1,7 @@
 import "server-only";
 
+import { z } from "zod";
+
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CartService } from "@/server/cart/cart-service";
 import { hashCartToken } from "@/server/cart/cart-token";
@@ -216,6 +218,15 @@ export class CheckoutService {
     });
   }
 
+  /** E-mail exigido pelo Pix online, informado na etapa de pagamento. */
+  static async savePaymentEmail(storeSlug: string, token: string, email: string) {
+    const parsed = z.string().trim().email().max(254).safeParse(email);
+    if (!parsed.success) throw new CheckoutError("invalid_payment_email", "Informe um e-mail válido para o Pix");
+    const cartResult = await this.requireCart(storeSlug, token);
+    const admin = createAdminClient();
+    await this.upsertSession(admin, cartResult.store, cartResult.cart.id, { customer_email: parsed.data });
+  }
+
   static async savePayment(storeSlug: string, token: string, input: CheckoutPaymentInput) {
     const values = this.parseInput(checkoutPaymentSchema.safeParse(input), "invalid_payment", "Escolha uma forma de pagamento válida");
     const cartResult = await this.requireCart(storeSlug, token);
@@ -224,7 +235,7 @@ export class CheckoutService {
       values.method === "pix" ? this.getSession(admin, cartResult.cart.id) : Promise.resolve(null),
       StorePaymentMethodService.listForStore(cartResult.store.organization_id, cartResult.store.id),
     ]);
-    if (values.method === "pix" && !session?.customer_email) throw new CheckoutError("pix_email_required", "Informe seu e-mail em Seus dados para gerar o Pix online");
+    if (values.method === "pix" && !session?.customer_email) throw new CheckoutError("pix_email_required", "Informe seu e-mail em Pagamento para gerar o Pix online");
     const selected = values.method === "custom"
       ? methods.find((item) => item.method === "custom" && item.customPaymentMethodId === values.customPaymentMethodId && item.enabled)
       : methods.find((item) => item.method === values.method && item.enabled);

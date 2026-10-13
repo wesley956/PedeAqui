@@ -9,6 +9,7 @@ import {
 } from "@/features/team/actions";
 import { TeamManagementService } from "@/server/team/team-management-service";
 import styles from "./team.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" });
 const statusLabels = { active: "Ativo", invited: "Convidado", suspended: "Suspenso" } as const;
@@ -19,10 +20,7 @@ export default async function TeamPage() {
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <div><p className={styles.eyebrow}>EQUIPE E ACESSOS</p><h1>Equipe</h1><p>Veja quem trabalha no PedeAqui, qual função cada pessoa possui e em quais unidades pode entrar.</p></div>
-        <span className={styles.count}>{state.members.length} funcionário(s)</span>
-      </header>
+      <PageHeader title="Equipe" description="Veja quem trabalha no PedeAqui, qual função cada pessoa possui e em quais unidades pode entrar." status={<span className={styles.count}>{state.members.length} funcionário(s)</span>} />
 
       <div className={styles.grid}>
         <section className={`card ${styles.invite}`} aria-labelledby="team-invite-title">
@@ -52,7 +50,7 @@ export default async function TeamPage() {
                     <div className={styles.meta}>{member.roleNames.join(" · ") || "Sem função ativa"}</div>
                     <small className={styles.small}>Unidades: {member.storeNames.join(", ") || "acesso organizacional"} · Entrada: {dateFormatter.format(new Date(member.joinedAt))}</small>
                   </div>
-                  {member.canSuspend ? <form action={suspendTeamMemberAction}><input type="hidden" name="memberId" value={member.id} /><ConfirmTeamActionButton tone="danger" confirmation="Suspender este acesso? O histórico será preservado.">Suspender acesso</ConfirmTeamActionButton></form> : null}
+                  {member.canSuspend ? <form action={suspendTeamMemberAction}><input type="hidden" name="memberId" value={member.id} /><ConfirmTeamActionButton confirmation="Suspender este acesso? O histórico será preservado.">Suspender acesso</ConfirmTeamActionButton></form> : null}
                 </article>
               ))}
             </div>

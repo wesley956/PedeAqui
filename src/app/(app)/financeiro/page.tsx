@@ -9,6 +9,8 @@ import {
 import { SupplierPaymentTermForm } from "@/features/finance/supplier-term-form";
 import styles from "./finance-panel.module.css";
 import { OrderActionForm } from "@/features/orders/order-action-form";
+import { PageHeader } from "@/components/ui/page-header";
+import { CashflowChart } from "@/features/finance/cashflow-chart";
 
 type SearchParams = Promise<{ from?: string; to?: string }>;
 type Account = { id: string; name: string; account_type: string; system_key: string | null; balance_cents: number | string };
@@ -43,11 +45,12 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
   const externalChannels = data.externalChannelSummary as ExternalChannelSummary[];
 
   return <section className={styles.page}>
-    <header className={styles.header}><div className={styles.headerCopy}><p className="muted">GESTÃO</p><h1>Financeiro</h1><p className="muted">Acompanhe receitas, despesas, valores a receber, contas a pagar e o resultado do negócio.</p></div><div className={styles.links}><Link href="/caixa" className={styles.link}>Caixa</Link><Link href="/compras" className={styles.link}>Compras</Link><Link href="/dashboard" className={styles.link}>Início →</Link></div></header>
+    <PageHeader title="Financeiro" description="Acompanhe receitas, despesas, valores a receber, contas a pagar e o resultado do negócio." actions={<><Link href="/caixa" className={styles.link}>Caixa</Link><Link href="/compras" className={styles.link}>Compras</Link><Link href="/dashboard" className={styles.link}>Início →</Link></>} />
 
     {data.canReports && report ? <>
       <form method="get" className={`card ${styles.period}`}><Input label="De" name="from" type="date" defaultValue={data.period.from} /><Input label="Até" name="to" type="date" defaultValue={data.period.to} /><Button type="submit">Aplicar período</Button><span className={styles.periodHint}>Resultados pelo período selecionado · {data.store.timezone}</span></form>
       <div className={styles.metrics}><Metric label="Resultado" value={brl(report.dre.net_result)} tone={Number(report.dre.net_result) < 0 ? "bad" : "good"} /><Metric label="Entradas e saídas realizadas" value={brl(report.cashflow.net_realized_cents)} /><Metric label="A receber" value={brl(report.obligations.receivable_open_cents)} warning={Number(report.obligations.receivable_overdue_cents) > 0} /><Metric label="A pagar" value={brl(report.obligations.payable_open_cents)} warning={Number(report.obligations.payable_overdue_cents) > 0} /></div>
+      <article className={`card ${styles.card}`}><div><h2>Entradas e saídas por dia</h2><p className="muted">Saldo realizado em cada dia com movimento, de {date(report.period.from)} a {date(report.period.to)}.</p></div><CashflowChart daily={report.cashflow.daily ?? []} /></article>
       <div className={styles.reportGrid}><article className={`card ${styles.card}`}><h2>Resultado do período</h2><Rows rows={[["Receita bruta", report.dre.gross_revenue], ["Deduções e reembolsos", report.dre.deductions], ["Receita de entrega", report.dre.delivery_revenue], ["Custo dos produtos", report.dre.cogs], ["Despesas operacionais", report.dre.operating_expense], ["Outras receitas", report.dre.other_revenue], ["Outras despesas", report.dre.other_expense]]} /><div className={`${styles.row} ${styles.total}`}><span>Resultado</span><span>{brl(report.dre.net_result)}</span></div></article><article className={`card ${styles.card}`}><h2>Vencimentos</h2><Rows rows={[["A receber em aberto", report.obligations.receivable_open_cents], ["A receber vencido", report.obligations.receivable_overdue_cents], ["A pagar em aberto", report.obligations.payable_open_cents], ["A pagar vencido", report.obligations.payable_overdue_cents]]} /><p className="muted">Os valores vencidos são identificados automaticamente pela data de vencimento.</p></article></div>
     </> : <article className={`card ${styles.card}`}><h2>Visão financeira</h2><p className="muted">Os indicadores completos ficam disponíveis apenas para perfis autorizados. Seus lançamentos permitidos continuam acessíveis abaixo.</p></article>}
 

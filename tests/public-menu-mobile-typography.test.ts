@@ -16,13 +16,13 @@ describe("public menu mobile visual hierarchy", () => {
     expect(productCss).not.toContain("font-size:80%");
     expect(publicMenuCss).not.toContain("--font-size-xs:calc(.75rem * .8)");
     expect(productCss).not.toContain("--font-size-xs:calc(.75rem * .8)");
-    expect(publicBrandCss).toContain("font-size:1.125rem;font-weight:900");
-    expect(menuBrowserCss).toContain(".productTitle{font-size:.9375rem");
-    expect(menuBrowserCss).toContain(".description{font-size:.8125rem");
-    expect(menuBrowserCss).toContain(".price{font-size:1rem}");
-    expect(productCss).toContain(".productTitle{font-size:1.25rem");
-    expect(modifierCss).toContain(".heading legend{font-size:1rem");
-    expect(modifierCss).toContain(".optionName{display:grid;gap:2px;font-size:.875rem");
+    expect(publicBrandCss).toContain(".name{font-size:var(--font-size-lg);font-weight:var(--font-weight-bold)");
+    expect(menuBrowserCss).toContain(".productTitle{font-size:var(--font-size-md)");
+    expect(menuBrowserCss).toContain(".description{font-size:var(--font-size-support)");
+    expect(menuBrowserCss).toContain(".price{font-size:var(--font-size-md)}");
+    expect(productCss).toContain(".productTitle{font-size:var(--font-size-lg)");
+    expect(modifierCss).toContain(".heading legend{font-size:var(--font-size-md)");
+    expect(modifierCss).toContain(".optionName{display:grid;gap:2px;font-size:var(--font-size-sm)");
   });
 
   it("keeps categories available while the customer scrolls the catalog", () => {
@@ -31,26 +31,26 @@ describe("public menu mobile visual hierarchy", () => {
     expect(menuBrowserCss).toContain("scroll-margin-top:62px");
   });
 
-  it("makes product cards more purchase-oriented without losing performance contracts", () => {
-    expect(menuBrowserCss).toContain("grid-template-columns:minmax(0,1fr) 108px");
-    expect(menuBrowserCss).toContain(".image,.placeholder{width:108px;height:108px");
-    expect(menuBrowserCss).toContain("border-color:transparent;border-radius:16px;box-shadow:var(--shadow-sm)");
-    expect(productCard).toContain("Ver opções →");
-    expect(productCard).toContain('width={104} height={104} loading="lazy" decoding="async"');
+  it("uses a compact purchase row with a direct action and lazy images", () => {
+    expect(menuBrowserCss).toContain(".product{display:grid;grid-template-columns:auto minmax(0,1fr) auto");
+    expect(menuBrowserCss).toContain(".image,.imageFallback{width:72px;height:72px}");
+    expect(menuBrowserCss).toContain(".addButton{width:44px;height:44px");
+    expect(productCard).toContain('width={88} height={88} loading="lazy" decoding="async"');
   });
 
-  it("presents product configuration as a guided purchase flow while keeping server authority explicit", () => {
-    expect(productPage).toContain("Monte do seu jeito");
-    expect(productPage).toContain("Etapa {index + 1}");
-    expect(productPage).toContain("Finalizar item");
-    expect(productPage).toContain("Tudo certo?");
-    expect(productPage).toContain("Confira o valor com as opções escolhidas no carrinho antes de continuar.");
+  it("shows the live item total in a fixed bar while keeping server authority explicit", () => {
+    const purchaseBar = readFileSync("src/features/menu/product-purchase-bar.tsx", "utf8");
+    expect(productPage).toContain("<ProductPurchaseBar");
+    expect(productPage).toContain("Alguma observação?");
+    expect(productPage).not.toContain("Etapa {index + 1}");
+    expect(purchaseBar).toContain("o servidor recalcula o preço ao adicionar ao carrinho");
+    expect(purchaseBar).toContain("(basePriceCents + modifiersCents) * quantity");
     expect(productCss).toContain(".stepBlock{display:grid;gap:7px;scroll-margin-top:64px}");
   });
 
   it("keeps touch targets physically large", () => {
-    expect(modifierCss).toContain(".stepper button{min-width:42px;min-height:42px;font-size:24px}");
+    expect(modifierCss).toContain(".stepper button{min-width:42px;min-height:42px;font-size:var(--font-size-2xl)}");
     expect(complements).toContain("width: 44, minHeight: 44");
-    expect(complements).toContain("fontSize: 24");
+    expect(complements).toContain('fontSize: "var(--font-size-2xl)"');
   });
 });

@@ -150,15 +150,15 @@ function downloadAssistedInstaller(token: string) {
 function InstallerCard({ state }: { state: AgentCreationState }) {
   if (!state.token) return null;
   return (
-    <div style={{ padding: 14, borderRadius: 14, background: "var(--surface-2)", border: "1px solid var(--border)", display: "grid", gap: 10 }}>
+    <div style={{ padding: 14, borderRadius: "var(--radius-lg)", background: "var(--surface-2)", border: "1px solid var(--border)", display: "grid", gap: 10 }}>
       <strong>Computador preparado: {state.name}</strong>
-      <span className="muted" style={{ fontSize: 13 }}>Baixe e execute o instalador abaixo neste computador. Ele conecta a impressora, ativa recuperação automática, atualização automática e reinicia o agente sozinho se ele parar.</span>
+      <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>Baixe e execute o instalador abaixo neste computador. Ele conecta a impressora, ativa recuperação automática, atualização automática e reinicia o agente sozinho se ele parar.</span>
       <button type="button" onClick={() => downloadAssistedInstaller(state.token!)} style={buttonStyle}>Baixar instalador assistido (Windows)</button>
-      <span className="muted" style={{ fontSize: 13 }}>O Windows pode pedir confirmação para executar o arquivo. Depois, volte para esta tela e atualize o status.</span>
+      <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>O Windows pode pedir confirmação para executar o arquivo. Depois, volte para esta tela e atualize o status.</span>
       <details>
-        <summary style={{ cursor: "pointer", fontWeight: 800 }}>Configuração manual</summary>
+        <summary style={{ cursor: "pointer", fontWeight: "var(--font-weight-bold)" }}>Configuração manual</summary>
         <div style={{ display: "grid", gap: 6, marginTop: 8 }}>
-          <span className="muted" style={{ fontSize: 13 }}>Use esta chave somente se precisar configurar o aplicativo de impressão manualmente. Ela será mostrada uma única vez.</span>
+          <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>Use esta chave somente se precisar configurar o aplicativo de impressão manualmente. Ela será mostrada uma única vez.</span>
           <code style={{ overflowWrap: "anywhere", userSelect: "all" }}>{state.token}</code>
         </div>
       </details>
@@ -177,7 +177,7 @@ export function AgentTokenCreatorClient({ intentSeed }: { intentSeed: string }) 
         <Input id={nameId} name="name" label="Nome do computador" required minLength={2} maxLength={100} placeholder="Ex.: Computador do caixa" />
         <button type="submit" disabled={pending} style={buttonStyle}>{pending ? "Preparando…" : "Conectar este computador"}</button>
       </form>
-      {state.error ? <div style={{ color: "#f97066", fontSize: 13 }}>{state.error}</div> : null}
+      {state.error ? <div style={{ color: "var(--state-danger-text)", fontSize: "var(--font-size-support)" }}>{state.error}</div> : null}
       <InstallerCard state={state} />
     </div>
   );
@@ -197,16 +197,16 @@ export function AgentReconnectInstallerClient({ agentId, upgrade = false, intent
           <button type="submit" disabled={pending} style={secondaryButtonStyle}>{pending ? "Preparando…" : upgrade ? "Atualizar proteção automática" : "Reinstalar conexão"}</button>
         </form>
       </div>
-      <span className="muted" style={{ fontSize: 13 }}>
+      <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>
         {upgrade
           ? "Esta atualização é feita uma vez. Depois dela, o PedeAqui passa a recuperar travamentos e buscar novas versões do agente automaticamente."
           : "“Atualizar status” apenas consulta a situação atual. “Reinstalar conexão” gera uma nova chave e deve ser usado somente quando for necessário instalar ou reconectar este computador novamente."}
       </span>
-      {state.error ? <div style={{ color: "#f97066", fontSize: 13 }}>{state.error}</div> : null}
+      {state.error ? <div style={{ color: "var(--state-danger-text)", fontSize: "var(--font-size-support)" }}>{state.error}</div> : null}
       <InstallerCard state={state} />
     </div>
   );
 }
 
-const buttonStyle: React.CSSProperties = { minHeight: 44, border: 0, borderRadius: 10, background: "var(--accent)", color: "#fff", fontWeight: 850, padding: "9px 13px", cursor: "pointer" };
-const secondaryButtonStyle: React.CSSProperties = { minHeight: 44, border: "1px solid var(--border)", borderRadius: 10, background: "var(--surface-2)", color: "var(--text)", fontWeight: 800, padding: "8px 11px", cursor: "pointer" };
+const buttonStyle: React.CSSProperties = { minHeight: 44, border: 0, borderRadius: "var(--radius-sm)", background: "var(--accent)", color: "var(--text-on-brand)", fontWeight: "var(--font-weight-bold)", padding: "9px 13px", cursor: "pointer" };
+const secondaryButtonStyle: React.CSSProperties = { minHeight: 44, border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface-2)", color: "var(--text)", fontWeight: "var(--font-weight-bold)", padding: "8px 11px", cursor: "pointer" };

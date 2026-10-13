@@ -7,16 +7,14 @@ import { FormDisclosure } from "@/components/ui/form-disclosure";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { DiningService } from "@/server/dining/dining-service";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function DiningSettingsPage() {
   await authorize(PERMISSIONS.DINING_MANAGE);
   const { tables } = await DiningService.listTables();
 
   return <section className={styles.page}>
-    <header className={styles.header}>
-      <div><p className={styles.meta} style={{ margin: 0 }}>CONFIGURAÇÕES · SALÃO</p><h1>Mesas</h1><p className={styles.meta}>Cadastre a estrutura do salão fora do fluxo rápido do atendimento.</p></div>
-      <Link href="/salao" >Voltar ao salão</Link>
-    </header>
+    <PageHeader title="Mesas" description="Cadastre a estrutura do salão fora do fluxo rápido do atendimento." actions={<Link href="/salao">Voltar ao salão</Link>} />
 
     <FormDisclosure className={styles.details} summary="Cadastrar mesa">
       <form action={createDiningTableAction} className={styles.form} aria-label="Cadastrar mesa">

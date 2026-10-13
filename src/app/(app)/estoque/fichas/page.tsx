@@ -4,6 +4,7 @@ import { RecipeService } from "@/server/inventory/recipe-service";
 import { formatQuantity, type InventoryBaseUnit } from "@/server/inventory/values";
 import { RecipeVersionForm } from "@/features/inventory/recipe-form";
 import styles from "../inventory-operations.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 function money(cents: number) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100); }
 
@@ -14,10 +15,7 @@ export default async function RecipesPage() {
   const activeRecipes = recipes.filter((recipe) => recipe.latest).length;
 
   return <section className={styles.page}>
-    <header className={styles.header}>
-      <div className={styles.headerCopy}><p className="muted">Composição, versão e custo</p><h1>Fichas técnicas</h1><p className="muted">Cada alteração cria uma nova versão. O histórico é somente leitura e o pedido conserva a versão vigente quando foi confirmado.</p></div>
-      <Link href="/estoque" className={styles.link}>← Voltar ao estoque</Link>
-    </header>
+    <PageHeader title="Fichas técnicas" description="Cada alteração cria uma nova versão. O histórico é somente leitura e o pedido conserva a versão vigente quando foi confirmado." actions={<Link href="/estoque" className={styles.link}>← Voltar ao estoque</Link>} />
 
     <div className={styles.metrics}>
       <Metric label="Fichas ativas" value={activeRecipes} />

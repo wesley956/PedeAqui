@@ -7,6 +7,7 @@ import { DeliveryOperationsService } from "@/server/delivery/delivery-operations
 import { ExternalDeliveryPolicyService } from "@/server/delivery/external-delivery-policy-service";
 import { RouteTrackingService } from "@/server/delivery/route-tracking-service";
 import { RouteTrackingPanel } from "@/features/delivery/route-tracking-panel";
+import { PageHeader } from "@/components/ui/page-header";
 
 function address(order: Awaited<ReturnType<typeof DeliveryOperationsService.loadOperations>>["deliveries"][number]) {
   const line = [order.address_street_snapshot, order.address_number_snapshot].filter(Boolean).join(", ");
@@ -40,18 +41,7 @@ export default async function DeliveryOperationsPage() {
   const externallyManagedOpen = boardDeliveries.filter((order) => Boolean(order.external_delivery)).length;
 
   return <section className={styles.page}>
-    <header className={styles.header}>
-      <div>
-        <p className={styles.eyebrow}>OPERAÇÃO</p>
-        <h1>Entregas</h1>
-        <p className="muted">Veja o que está aguardando, quem está levando cada pedido e o que precisa de atenção.</p>
-        <DeliveryRealtime storeId={data.context.storeId} showStatus />
-      </div>
-      <div className={styles.headerActions}>
-        <Link href="/configuracoes/entrega" className={styles.secondaryLink}>Configurar entrega</Link>
-        {data.canManageDrivers ? <Link href="/configuracoes/entregadores" className={styles.secondaryLink}>Gerenciar entregadores</Link> : null}
-      </div>
-    </header>
+    <PageHeader title="Entregas" description="Veja o que está aguardando, quem está levando cada pedido e o que precisa de atenção." status={<DeliveryRealtime storeId={data.context.storeId} showStatus />} actions={<><Link href="/configuracoes/entrega" className={styles.secondaryLink}>Configurar entrega</Link>{data.canManageDrivers ? <Link href="/configuracoes/entregadores" className={styles.secondaryLink}>Gerenciar entregadores</Link> : null}</>} />
 
     <div className={styles.metrics} aria-label="Resumo das entregas">
       <Metric label="Abertas" value={open.length} />

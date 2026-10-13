@@ -18,15 +18,15 @@ export default async function ComplementSettingsPage({ searchParams }: { searchP
   const sourceRuleMap = new Map(sourceRules.map((rule) => [rule.targetCategoryId, rule]));
 
   return <section className={styles.page}>
-    <header className={styles.headerCopy}><h1>Sugestões durante o pedido</h1><p className="muted">Configure o que aparece como complemento durante a montagem do produto. Defina sugestões por categoria ou uma configuração geral para as demais categorias.</p></header>
+    <header className={styles.headerCopy}><h2>Sugestões durante o pedido</h2><p className="muted">Configure o que aparece como complemento durante a montagem do produto. Defina sugestões por categoria ou uma configuração geral para as demais categorias.</p></header>
 
     <div className={`card ${styles.formCard}`}>
       <div className={styles.promotionSectionHeader}><h2>Por categoria</h2><p className={styles.formHint}>Use esta área para criar sequências como <strong>Salgados → Churros → Bebidas</strong>, definir a ordem e trocar o título exibido ao cliente, por exemplo “Vai um docinho?”.</p></div>
       {activeCategories.length === 0 ? <div className="muted">Crie e ative pelo menos uma categoria antes de configurar regras específicas.</div> : <>
         <form method="get" className={styles.suggestionSourceForm}>
-          <label htmlFor="source-category" style={{ fontWeight: 700 }}>Quando o cliente estiver comprando um item de</label>
+          <label htmlFor="source-category" style={{ fontWeight: "var(--font-weight-bold)" }}>Quando o cliente estiver comprando um item de</label>
           <div className={styles.suggestionSourceControls}>
-            <select id="source-category" name="source" defaultValue={sourceCategory?.id} style={{ minHeight: 44, borderRadius: 10, border: "var(--border-width) solid var(--border-default)", background: "var(--surface-2)", color: "var(--text-primary)", padding: "8px 10px" }}>
+            <select id="source-category" name="source" defaultValue={sourceCategory?.id} style={{ minHeight: 44, borderRadius: "var(--radius-sm)", border: "var(--border-width) solid var(--border-default)", background: "var(--surface-2)", color: "var(--text-primary)", padding: "8px 10px" }}>
               {activeCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
             </select>
             <Button type="submit" tone="secondary">Carregar categoria</Button>
@@ -44,7 +44,7 @@ export default async function ComplementSettingsPage({ searchParams }: { searchP
               <QuantityInput id={`suggestion-rule-order-${category.id}`} label="Ordem" name={`rule_order_${category.id}`} min={0} max={10000} defaultValue={rule?.sortOrder ?? category.sortOrder} />
             </div>;
           })}
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>{sourceRules.length > 0 ? `${sourceRules.length} categoria(s) configurada(s) especificamente para ${sourceCategory.name}.` : `Nenhuma regra específica para ${sourceCategory.name}; hoje ela herda a configuração global abaixo.`}</p>
+          <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>{sourceRules.length > 0 ? `${sourceRules.length} categoria(s) configurada(s) especificamente para ${sourceCategory.name}.` : `Nenhuma regra específica para ${sourceCategory.name}; hoje ela herda a configuração global abaixo.`}</p>
           <Button type="submit">Salvar regra de {sourceCategory.name}</Button>
         </ResilientMutationForm> : null}
       </>}
@@ -58,7 +58,7 @@ export default async function ComplementSettingsPage({ searchParams }: { searchP
         <Checkbox id={`suggestion-global-${category.id}`} name="categoryId" value={category.id} defaultChecked={category.selected} disabled={!category.active} label={`${category.name}${category.suggestedDefault ? " · sugestão padrão" : ""}${!category.active ? " · inativa" : ""}`} />
         <QuantityInput id={`suggestion-global-order-${category.id}`} label="Ordem" name={`order_${category.id}`} min={0} max={10000} defaultValue={category.sortOrder} />
       </div>)}
-      <p className="muted" style={{ margin: 0, fontSize: 13 }}>Categorias inativas ou sem produtos disponíveis não aparecem ao consumidor. Desmarcar uma categoria não apaga produtos nem histórico.</p>
+      <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Categorias inativas ou sem produtos disponíveis não aparecem ao consumidor. Desmarcar uma categoria não apaga produtos nem histórico.</p>
       <Button type="submit" disabled={categories.length === 0}>Salvar sugestões gerais</Button>
     </ResilientMutationForm>
     </details>

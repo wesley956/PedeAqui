@@ -4,6 +4,7 @@ import { cashMovementLabels, type CashMovementType } from "@/features/cash/model
 import { DEFAULT_STORE_TIMEZONE, formatStoreDateTime } from "@/lib/store-date-time";
 import styles from "@/features/cash/cash.module.css";
 import { CashService } from "@/server/cash/cash-service";
+import { PageHeader } from "@/components/ui/page-header";
 
 function money(value: unknown) {
   const cents = Number(value ?? 0);
@@ -24,10 +25,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
   const freeRegisters = registers.filter((register) => register.active && !openByRegister.has(register.id));
 
   return <section className={styles.page}>
-    <header className={styles.header}>
-      <div><p className={styles.muted}>OPERAÇÃO</p><h1>Caixa</h1><p className={styles.muted}>Abra o turno, acompanhe o saldo e registre entradas ou saídas quando precisar.</p></div>
-      {abilities.manage ? <div className={styles.headerActions}><Link href="/configuracoes/caixa" className={styles.secondary}>Configurar caixas</Link></div> : null}
-    </header>
+    <PageHeader title="Caixa" description="Abra o turno, acompanhe o saldo e registre entradas ou saídas quando precisar." actions={abilities.manage ? <Link href="/configuracoes/caixa" className={styles.secondary}>Configurar caixas</Link> : null} />
 
     {notice.ok ? <div className={styles.notice} data-tone="success">{notice.ok}</div> : null}
     {notice.error ? <div className={styles.notice} data-tone="danger">{notice.error}</div> : null}

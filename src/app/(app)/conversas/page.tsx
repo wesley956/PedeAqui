@@ -20,6 +20,7 @@ import { InboxIntelligenceService } from "@/server/conversations/inbox-intellige
 import { conversationStatusLabel, type ConversationStatus } from "@/server/conversations/model";
 import { ConversationTimeline } from "./conversation-timeline";
 import styles from "./conversations.module.css";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 
 const orderStatusLabels: Record<string, string> = {
   pending_confirmation: "Aguardando confirmação",
@@ -255,7 +256,7 @@ export default async function ConversationsPage({
               <div className={styles.actions}>
                 {detail.conversation.status !== "human" ? <form action={assumeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button type="submit">Assumir atendimento</Button></form> : null}
                 {detail.conversation.status !== "waiting_agent" && detail.conversation.status !== "closed" ? <form action={queueConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Colocar na fila</Button></form> : null}
-                {detail.conversation.status !== "closed" ? <form action={closeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="danger" type="submit">Encerrar</Button></form> : null}
+                {detail.conversation.status !== "closed" ? <form action={closeConversationAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button tone="secondary" type="submit">Encerrar</Button></form> : null}
               </div>
 
               {detail.conversation.status === "human" && isAssignedToCurrentUser ? <div className={styles.sendStatus} data-open={detail.sendCapability.canSendFreeform || undefined}>
@@ -305,7 +306,7 @@ export default async function ConversationsPage({
               {detail.conversation.status === "human" && isAssignedToCurrentUser && !detail.sendCapability.canSendFreeform && detail.sendCapability.canSendTemplate && detail.sendCapability.templateCatalogAvailable && detail.sendCapability.templates.length === 0 ? <p className={styles.replyHint}>Não há template aprovado compatível disponível para resposta manual nesta conta.</p> : null}
             </div>
           </Card> : <div className={styles.threadPlaceholder}>
-            <div className={styles.placeholderIcon} aria-hidden="true">💬</div>
+            <div className={styles.placeholderIcon} aria-hidden="true"><NavigationIcon name="conversations" width={28} height={28} /></div>
             <strong>Selecione uma conversa</strong>
             <p>Abra um contato da caixa de entrada para ver o histórico e iniciar o atendimento.</p>
           </div>}

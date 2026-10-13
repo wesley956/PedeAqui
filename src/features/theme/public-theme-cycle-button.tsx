@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import styles from "./public-theme-cycle-button.module.css";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 
 type ThemePreference = "system" | "light" | "dark";
 
@@ -14,9 +15,9 @@ const labels: Record<ThemePreference, string> = {
 };
 
 const icons: Record<ThemePreference, string> = {
-  system: "◐",
-  light: "☀",
-  dark: "☾",
+  system: "contrast",
+  light: "sun",
+  dark: "moon",
 };
 
 function isThemePreference(value: string | undefined | null): value is ThemePreference {
@@ -71,7 +72,7 @@ export function PublicThemeCycleButton() {
       aria-label={label}
       title={label}
     >
-      <span aria-hidden="true" className={styles.icon}>{icons[preference]}</span>
+      <span aria-hidden="true" className={styles.icon}><NavigationIcon name={icons[preference]} width={16} height={16} /></span>
     </button>
   );
 }

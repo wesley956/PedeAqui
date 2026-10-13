@@ -8,6 +8,7 @@ import {
   verifyDomainAction,
 } from "@/features/platform/actions";
 import styles from "./scale-v3.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 function money(cents: number | bigint | null | undefined) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents ?? 0) / 100);
@@ -50,11 +51,7 @@ export default async function ScalePage() {
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <p className={styles.eyebrow}>GESTÃO AVANÇADA</p>
-        <h1>Plano e expansão</h1>
-        <p className={styles.muted}>Veja o que está incluído no plano, organize várias unidades e configure recursos de marca própria quando precisar.</p>
-      </header>
+      <PageHeader title="Plano e expansão" description="Veja o que está incluído no plano, organize várias unidades e configure recursos de marca própria quando precisar." />
 
       <div className={styles.metrics}>
         <article className={`card ${styles.metric}`}><span>Plano atual</span><strong>{data.plan?.name ?? "Sem plano ativo"}</strong></article>

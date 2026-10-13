@@ -4,6 +4,7 @@ import { PERMISSIONS } from "@/server/access/permissions";
 import { NavigationAccessService } from "@/server/access/navigation-access-service";
 import { SettingsHubClient, type SettingsHubArea, type SettingsHubItem } from "./settings-hub-client";
 import styles from "./settings-hub.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 type SettingDefinition = {
   title: string;
@@ -54,21 +55,18 @@ export default async function SettingsPage() {
     .map((item) => ({ title: item.label, description: item.key === "team" ? "Funcionários, funções e permissões." : "Organização da escala da equipe.", href: item.href, available: true, activationHref: null, keywords: item.key === "team" ? ["equipe", "funcionario", "usuario", "permissao", "acesso"] : ["escala", "horario", "equipe"] }));
 
   const areas: SettingsHubArea[] = [
-    { key: "store", icon: "🏪", title: "Minha loja", description: "Identidade, dados e funcionamento do estabelecimento.", items: [resolve(definitions.store), resolve(definitions.catalog), resolve(definitions.hours)].filter((item): item is SettingsHubItem => Boolean(item)) },
-    { key: "orders", icon: "🧾", title: "Pedidos e atendimento", description: "Como os pedidos entram, avançam e são atendidos.", items: [resolve(definitions.operation), resolve(definitions.flow), resolve(definitions.dining), resolve(definitions.cash)].filter((item): item is SettingsHubItem => Boolean(item)) },
-    { key: "payments", icon: "💳", title: "Pagamentos", description: "Defina como seus clientes podem pagar.", items: [resolve(definitions.payments)].filter((item): item is SettingsHubItem => Boolean(item)) },
-    { key: "delivery", icon: "🚚", title: "Entrega e retirada", description: "Bairros, taxas, prazo e equipe de entrega.", items: [resolve(definitions.delivery), resolve(definitions.drivers)].filter((item): item is SettingsHubItem => Boolean(item)) },
-    { key: "whatsapp", icon: "💬", title: "WhatsApp", description: "Conexão, atendimento e mensagens da unidade.", items: [resolve(definitions.whatsapp)].filter((item): item is SettingsHubItem => Boolean(item)) },
-    { key: "integrations", icon: "🔌", title: "Integrações", description: "Canais de venda externos e conexões da unidade.", items: [resolve(definitions.integrations)].filter((item): item is SettingsHubItem => Boolean(item)) },
-    { key: "printing", icon: "🖨️", title: "Impressão automática", description: "Conexão, vias, conteúdo e acompanhamento da impressão.", items: [resolve(definitions.printing), resolve(definitions.printFormat)].filter((item): item is SettingsHubItem => Boolean(item)) },
-    { key: "team", icon: "👥", title: "Equipe e acessos", description: "Pessoas, funções, permissões e escalas.", items: teamItems },
+    { key: "store", icon: "store", title: "Minha loja", description: "Identidade, dados e funcionamento do estabelecimento.", items: [resolve(definitions.store), resolve(definitions.catalog), resolve(definitions.hours)].filter((item): item is SettingsHubItem => Boolean(item)) },
+    { key: "orders", icon: "orders", title: "Pedidos e atendimento", description: "Como os pedidos entram, avançam e são atendidos.", items: [resolve(definitions.operation), resolve(definitions.flow), resolve(definitions.dining), resolve(definitions.cash)].filter((item): item is SettingsHubItem => Boolean(item)) },
+    { key: "payments", icon: "payments", title: "Pagamentos", description: "Defina como seus clientes podem pagar.", items: [resolve(definitions.payments)].filter((item): item is SettingsHubItem => Boolean(item)) },
+    { key: "delivery", icon: "deliveries", title: "Entrega e retirada", description: "Bairros, taxas, prazo e equipe de entrega.", items: [resolve(definitions.delivery), resolve(definitions.drivers)].filter((item): item is SettingsHubItem => Boolean(item)) },
+    { key: "whatsapp", icon: "conversations", title: "WhatsApp", description: "Conexão, atendimento e mensagens da unidade.", items: [resolve(definitions.whatsapp)].filter((item): item is SettingsHubItem => Boolean(item)) },
+    { key: "integrations", icon: "integrations", title: "Integrações", description: "Canais de venda externos e conexões da unidade.", items: [resolve(definitions.integrations)].filter((item): item is SettingsHubItem => Boolean(item)) },
+    { key: "printing", icon: "printing", title: "Impressão automática", description: "Conexão, vias, conteúdo e acompanhamento da impressão.", items: [resolve(definitions.printing), resolve(definitions.printFormat)].filter((item): item is SettingsHubItem => Boolean(item)) },
+    { key: "team", icon: "team", title: "Equipe e acessos", description: "Pessoas, funções, permissões e escalas.", items: teamItems },
   ].filter((area) => area.items.length > 0);
 
   return <section className={styles.root}>
-    <header className={styles.header}>
-      <div><p className={styles.eyebrow}>CONFIGURAÇÕES</p><h1>Configure seu negócio</h1><p>Procure pelo que você quer fazer. O PedeAqui cuida de onde essa configuração fica.</p></div>
-      <span className={styles.badge}>Modo simples</span>
-    </header>
+    <PageHeader title="Configure seu negócio" description="Procure pelo que você quer fazer. O PedeAqui cuida de onde essa configuração fica." status={<span className={styles.badge}>Modo simples</span>} />
 
     <SettingsHubClient areas={areas} canManageResources={canManageResources} />
 

@@ -16,9 +16,9 @@ function scrollToTarget(targetId: string) {
   target.querySelector<HTMLElement>("button, a, input, select, textarea, [tabindex]")?.focus({ preventScroll: true });
 }
 
-export function ModifierGroupSelector({ group, disabled = false, complementTargetId, initialSelections = {} }: { group: Group; disabled?: boolean; complementTargetId?: string; initialSelections?: InitialSelections }) {
-  if (group.selection_mode === "equal_split_options") return <EqualSplitModifierGroup group={group} disabled={disabled} complementTargetId={complementTargetId} initialSelections={initialSelections} />;
-  if (group.selection_mode === "quantity_per_option") return <QuantityModifierGroup group={group} disabled={disabled} complementTargetId={complementTargetId} initialSelections={initialSelections} />;
+export function ModifierGroupSelector({ group, disabled = false, complementTargetId, nextGroupName, initialSelections = {} }: { group: Group; disabled?: boolean; complementTargetId?: string; nextGroupName?: string; initialSelections?: InitialSelections }) {
+  if (group.selection_mode === "equal_split_options") return <EqualSplitModifierGroup group={group} disabled={disabled} complementTargetId={complementTargetId} nextGroupName={nextGroupName} initialSelections={initialSelections} />;
+  if (group.selection_mode === "quantity_per_option") return <QuantityModifierGroup group={group} disabled={disabled} complementTargetId={complementTargetId} nextGroupName={nextGroupName} initialSelections={initialSelections} />;
   return <DistinctModifierGroup group={group} disabled={disabled} initialSelections={initialSelections} />;
 }
 
@@ -58,7 +58,7 @@ function DistinctModifierGroup({ group, disabled, initialSelections }: { group: 
   </fieldset>;
 }
 
-function EqualSplitModifierGroup({ group, disabled, complementTargetId, initialSelections }: { group: Group; disabled: boolean; complementTargetId?: string; initialSelections: InitialSelections }) {
+function EqualSplitModifierGroup({ group, disabled, complementTargetId, nextGroupName, initialSelections }: { group: Group; disabled: boolean; complementTargetId?: string; nextGroupName?: string; initialSelections: InitialSelections }) {
   const [selected, setSelected] = useState<string[]>(() => group.modifiers.filter((modifier) => (initialSelections[modifier.id] ?? 0) > 0).map((modifier) => modifier.id));
   const validationInput = useRef<HTMLInputElement | null>(null);
   const selectedSet = new Set(selected);
@@ -104,16 +104,16 @@ function EqualSplitModifierGroup({ group, disabled, complementTargetId, initialS
           <button type="button" onClick={() => removeOption(modifier.id)} disabled={disabled || !checked} aria-label={`Remover opção ${modifier.name}`}>−</button>
           <output aria-live="polite" aria-label={`${quantity} unidade(s) de ${modifier.name}`}>{quantity}</output>
           <button type="button" onClick={() => addOption(modifier.id)} disabled={disabled || checked || maxReached || !validConfiguration} aria-label={`Adicionar opção ${modifier.name}`}>+</button>
-          <input type="hidden" name={`modifier_qty_${modifier.id}`} value={checked ? 1 : 0} />
+          <input type="hidden" name={`modifier_qty_${modifier.id}`} value={checked ? 1 : 0} data-modifier-id={modifier.id} data-priced-quantity={quantity} />
         </div>
       </div>;
     })}</div>
     {selectedModifiers.length > 0 ? <div className={styles.rule}><strong>Divisão automática</strong><span>{selectedModifiers.map((modifier) => `${distribution.get(modifier.id)}x ${modifier.name}`).join(" · ")}</span></div> : null}
-    {complementTargetId && complete ? <button type="button" onClick={() => scrollToTarget(complementTargetId)} style={{ justifySelf: "start", border: 0, background: "transparent", color: "#9a4a00", fontWeight: 900, padding: "6px 0", cursor: "pointer" }}>Pronto, ver complementos →</button> : null}
+    {complementTargetId && complete ? <button type="button" onClick={() => scrollToTarget(complementTargetId)} style={{ justifySelf: "start", border: 0, background: "transparent", color: "#9a4a00", fontWeight: "var(--font-weight-bold)", padding: "6px 0", cursor: "pointer" }}>{nextGroupName ? `Continuar: ${nextGroupName} →` : "Pronto, ver complementos →"}</button> : null}
   </fieldset>;
 }
 
-function QuantityModifierGroup({ group, disabled, complementTargetId, initialSelections }: { group: Group; disabled: boolean; complementTargetId?: string; initialSelections: InitialSelections }) {
+function QuantityModifierGroup({ group, disabled, complementTargetId, nextGroupName, initialSelections }: { group: Group; disabled: boolean; complementTargetId?: string; nextGroupName?: string; initialSelections: InitialSelections }) {
   const [quantities, setQuantities] = useState<Record<string, number>>(() => Object.fromEntries(group.modifiers.map((modifier) => [modifier.id, Math.max(0, Number(initialSelections[modifier.id] ?? 0))])));
   const validationInput = useRef<HTMLInputElement | null>(null);
   const minimum = group.required ? Math.max(1, group.min_selection) : group.min_selection;
@@ -140,7 +140,7 @@ function QuantityModifierGroup({ group, disabled, complementTargetId, initialSel
 
   return <fieldset disabled={disabled} className={styles.group}>
     <GroupHeading group={group} />
-    <div className={styles.rule}><strong>{instruction}</strong><span aria-live="polite">{total} unidade(s) selecionada(s) · máximo {group.max_selection}{complete ? " · ok" : minimum > 0 ? ` · mínimo ${minimum}` : ""}</span></div>
+    <div className={styles.rule}><strong>{instruction}</strong><span aria-live="polite">{minimum === group.max_selection ? `${total}/${group.max_selection} escolhidos${complete ? " · completo" : ` · faltam ${Math.max(0, minimum - total)}`}` : `${total} unidade(s) selecionada(s) · máximo ${group.max_selection}${complete ? " · ok" : minimum > 0 ? ` · mínimo ${minimum}` : ""}`}</span></div>
     <input ref={validationInput} className={styles.validationInput} tabIndex={-1} aria-hidden="true" value={String(total)} onChange={() => undefined} />
     <div className={styles.options}>{group.modifiers.map((modifier) => {
       const quantity = quantities[modifier.id] ?? 0;
@@ -150,11 +150,11 @@ function QuantityModifierGroup({ group, disabled, complementTargetId, initialSel
           <button type="button" onClick={() => change(modifier.id, -1)} disabled={disabled || quantity <= 0} aria-label={`Remover uma unidade de ${modifier.name}`}>−</button>
           <output aria-live="polite" aria-label={`${quantity} unidade(s) de ${modifier.name}`}>{quantity}</output>
           <button type="button" onClick={() => change(modifier.id, 1)} disabled={disabled || maxReached} aria-label={`Adicionar uma unidade de ${modifier.name}`}>+</button>
-          <input type="hidden" name={`modifier_qty_${modifier.id}`} value={quantity} />
+          <input type="hidden" name={`modifier_qty_${modifier.id}`} value={quantity} data-modifier-id={modifier.id} data-priced-quantity={quantity} />
         </div>
       </div>;
     })}</div>
-    {complementTargetId && complete ? <button type="button" onClick={() => scrollToTarget(complementTargetId)} style={{ justifySelf: "start", border: 0, background: "transparent", color: "#9a4a00", fontWeight: 900, padding: "6px 0", cursor: "pointer" }}>Pronto, ver complementos →</button> : null}
+    {complementTargetId && complete ? <button type="button" onClick={() => scrollToTarget(complementTargetId)} style={{ justifySelf: "start", border: 0, background: "transparent", color: "#9a4a00", fontWeight: "var(--font-weight-bold)", padding: "6px 0", cursor: "pointer" }}>{nextGroupName ? `Continuar: ${nextGroupName} →` : "Pronto, ver complementos →"}</button> : null}
   </fieldset>;
 }
 

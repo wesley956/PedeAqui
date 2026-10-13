@@ -43,13 +43,16 @@
   /* Typography */
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  /* Escala do guia visual: 12 · 13 · 14 · 16 · 18 · 24 · 28 px (exibição só no site comercial) */
   --font-size-xs: 0.75rem;
+  --font-size-support: 0.8125rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
   --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
+  --font-size-xl: 1.125rem;
   --font-size-2xl: 1.5rem;
-  --font-size-3xl: 2rem;
+  --font-size-3xl: 1.75rem;
+  --font-size-page-title: var(--font-size-2xl);
   --font-size-display: 2.5rem;
   --line-height-tight: 1.1;
   --line-height-snug: 1.25;
@@ -59,7 +62,7 @@
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  --font-weight-extrabold: 800;
+  --font-weight-extrabold: 700; /* alias legado: o guia não usa pesos acima de 700 */
 
   /* Spacing — base 4px */
   --space-0: 0;
@@ -76,15 +79,17 @@
 
   /* Borders, radius and elevation */
   --border-width: 1px;
-  --radius-xs: 6px;
+  /* Raios do guia: 8 px (campos e botões), 12 px (cartões e painéis) e pílula */
+  --radius-xs: 8px;
   --radius-sm: 8px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
-  --radius-2xl: 22px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 12px;
+  --radius-2xl: 12px;
   --radius-pill: 999px;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.18);
-  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.24);
+  /* Tema escuro: superfícies se separam pela borda de 1 px; só sobreposições (menus, diálogos) têm sombra. */
+  --shadow-sm: none;
+  --shadow-md: none;
   --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.32);
 
   /* Controls and density */
@@ -182,6 +187,8 @@ body {
 }
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; }
+/* Caixas de seleção, botões de opção e barras de progresso na cor da marca, não no azul do sistema. */
+input, progress { accent-color: var(--brand-primary); }
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;

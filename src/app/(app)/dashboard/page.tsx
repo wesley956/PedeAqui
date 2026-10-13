@@ -6,6 +6,8 @@ import { DashboardService } from "@/server/dashboard/dashboard-service";
 import { hourlyBarPercent, maxHourlySales, percentageDelta } from "@/server/dashboard/dashboard-model";
 import { OnboardingReadinessService } from "@/server/onboarding/onboarding-readiness-service";
 import styles from "./dashboard.module.css";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
+import { PageHeader } from "@/components/ui/page-header";
 
 type MetricTone = "positive" | "negative" | "attention" | "neutral";
 type MetricDefinition = { label: string; value: string; footer: string; tone: MetricTone };
@@ -19,11 +21,11 @@ function deltaLabel(current: number, previous: number) {
 }
 
 const actionMeta: Record<string, { title: string; note: string; icon: string }> = {
-  orders: { title: "Ver pedidos", note: "Acompanhar pedidos e próximas ações", icon: "🧾" },
-  catalog: { title: "Editar catálogo", note: "Itens, preços e adicionais", icon: "🍔" },
-  pdv: { title: "Novo pedido no balcão", note: "Abrir o PDV", icon: "💵" },
-  deliveries: { title: "Acompanhar entregas", note: "Pedidos em rota e atrasos", icon: "🚚" },
-  settings: { title: "Configurar negócio", note: "Horário, pagamentos, entrega...", icon: "⚙️" },
+  orders: { title: "Ver pedidos", note: "Acompanhar pedidos e próximas ações", icon: "orders" },
+  catalog: { title: "Editar catálogo", note: "Itens, preços e adicionais", icon: "catalog" },
+  pdv: { title: "Novo pedido no balcão", note: "Abrir o PDV", icon: "pdv" },
+  deliveries: { title: "Acompanhar entregas", note: "Pedidos em rota e atrasos", icon: "deliveries" },
+  settings: { title: "Configurar negócio", note: "Horário, pagamentos, entrega...", icon: "settings" },
 };
 
 export default async function DashboardPage() {
@@ -64,10 +66,7 @@ export default async function DashboardPage() {
   ];
 
   return <section className={styles.page} data-experience={access.experienceMode}>
-    <header className={styles.header}>
-      <div><p className={styles.eyebrow}>HOJE</p><h1>Início</h1><p className="muted">O essencial para cuidar do seu negócio agora.</p></div>
-      <div className={styles.dateBadge}>{localDateLabel(snapshot.local_date)}</div>
-    </header>
+    <PageHeader title="Início" description="O essencial para cuidar do seu negócio agora." status={<span className={styles.dateBadge}>{localDateLabel(snapshot.local_date)}</span>} />
 
     {readinessPercent < 100 ? <section className={styles.readiness} aria-label="Progresso de configuração">
       <div><span className={styles.eyebrow}>SEU NEGÓCIO</span><h2>Está quase tudo pronto</h2><p>O PedeAqui detectou o que já está configurado e mostra somente o que ainda merece atenção.</p></div>
@@ -85,7 +84,7 @@ export default async function DashboardPage() {
     <SectionTitle title="O que você quer fazer?" description="As ações mais usadas sempre à mão." />
     <div className={styles.actionsGrid}>
       {actions.map(({ item, meta }, index) => <HomeAction key={item.key} href={item.href} icon={meta.icon} title={meta.title} note={meta.note} primary={index === 0} />)}
-      <HomeAction href="/mais-ferramentas" icon="•••" title="Mais ferramentas" note="Estoque, financeiro, clientes e outras áreas" />
+      <HomeAction href="/mais-ferramentas" icon="more" title="Mais ferramentas" note="Estoque, financeiro, clientes e outras áreas" />
     </div>
 
     <SectionTitle title="Precisa de atenção" description="Só mostramos aqui o que pode exigir uma ação." />
@@ -117,7 +116,7 @@ function Metric({ label, value, footer, tone }: MetricDefinition) {
 }
 
 function HomeAction({ href, icon, title, note, primary = false }: { href: string; icon: string; title: string; note: string; primary?: boolean }) {
-  return <Link href={href} className={styles.actionCard} data-primary={primary || undefined}><span className={styles.actionIcon} aria-hidden>{icon}</span><span><strong>{title}</strong><small>{note}</small></span><em aria-hidden>→</em></Link>;
+  return <Link href={href} className={styles.actionCard} data-primary={primary || undefined}><span className={styles.actionIcon} aria-hidden><NavigationIcon name={icon} width={20} height={20} /></span><span><strong>{title}</strong><small>{note}</small></span><em aria-hidden>→</em></Link>;
 }
 
 function AttentionRow({ href, title, description, action, urgent = false }: { href: string; title: string; description: string; action: string; urgent?: boolean }) {

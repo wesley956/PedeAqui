@@ -39,14 +39,14 @@ const boxStyle = {
   display: "grid",
   gap: 6,
   padding: 12,
-  borderRadius: 12,
+  borderRadius: "var(--radius-lg)",
   border: "1px solid var(--border)",
   background: "var(--surface-2)",
 } as const;
 
 const textStyle = {
   minHeight: 86,
-  borderRadius: 8,
+  borderRadius: "var(--radius-sm)",
   border: "1px solid var(--border)",
   background: "var(--surface)",
   color: "var(--text)",
@@ -129,38 +129,38 @@ export function WhatsAppAutomationSettings({ connected, enabled, preset: initial
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
-      <label style={{ display: "flex", gap: 9, alignItems: "center", fontWeight: 700 }}>
+      <label style={{ display: "flex", gap: 9, alignItems: "center", fontWeight: "var(--font-weight-bold)" }}>
         <input type="checkbox" name="orderNotificationsEnabled" defaultChecked={enabled} disabled={!connected} />
         <span>Enviar atualizações do pedido pelo WhatsApp</span>
       </label>
-      {!connected ? <p className="muted" style={{ margin: 0, fontSize: 13 }}>Você pode preparar as preferências abaixo agora. O envio só poderá ser ativado depois que o WhatsApp estiver conectado.</p> : null}
+      {!connected ? <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Você pode preparar as preferências abaixo agora. O envio só poderá ser ativado depois que o WhatsApp estiver conectado.</p> : null}
 
       <div className={styles.presets}>
         <label style={boxStyle}>
-          <span style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 800 }}>
+          <span style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: "var(--font-weight-bold)" }}>
             <input type="radio" name="orderNotificationPreset" value="simple" checked={preset === "simple"} onChange={() => setPreset("simple")} />
             Simples
           </span>
-          <span className="muted" style={{ fontSize: 13 }}>Menos mensagens: recebido, aviso principal de retirada/entrega e cancelamento.</span>
+          <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>Menos mensagens: recebido, aviso principal de retirada/entrega e cancelamento.</span>
         </label>
         <label style={boxStyle}>
-          <span style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 800 }}>
+          <span style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: "var(--font-weight-bold)" }}>
             <input type="radio" name="orderNotificationPreset" value="complete" checked={preset === "complete"} onChange={() => setPreset("complete")} />
             Completo
           </span>
-          <span className="muted" style={{ fontSize: 13 }}>Seleciona todas as etapas, mas nenhuma delas ignora módulo, plano, operação ou saúde do canal.</span>
+          <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>Seleciona todas as etapas, mas nenhuma delas ignora módulo, plano, operação ou saúde do canal.</span>
         </label>
         <label style={boxStyle}>
-          <span style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 800 }}>
+          <span style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: "var(--font-weight-bold)" }}>
             <input type="radio" name="orderNotificationPreset" value="custom" checked={preset === "custom"} onChange={() => setPreset("custom")} />
             Personalizado
           </span>
-          <span className="muted" style={{ fontSize: 13 }}>A unidade escolhe individualmente quais etapas elegíveis deseja comunicar.</span>
+          <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>A unidade escolhe individualmente quais etapas elegíveis deseja comunicar.</span>
         </label>
       </div>
 
       <div style={boxStyle}>
-        <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontWeight: 700 }}>
+        <label style={{ display: "flex", gap: 9, alignItems: "flex-start", fontWeight: "var(--font-weight-bold)" }}>
           <input
             type="checkbox"
             checked={includeInitialTrackingLink}
@@ -169,7 +169,7 @@ export function WhatsAppAutomationSettings({ connected, enabled, preset: initial
           />
           <span>
             Incluir link de acompanhamento na confirmação inicial
-            <span className="muted" style={{ display: "block", fontSize: 13, fontWeight: 400, marginTop: 3 }}>
+            <span className="muted" style={{ display: "block", fontSize: "var(--font-size-support)", fontWeight: "var(--font-weight-regular)", marginTop: 3 }}>
               Quando desligado, o primeiro aviso enviado como mensagem livre não inclui o link. As atualizações seguintes continuam sem repetir o link. Fora da janela de atendimento, o modelo aprovado pela Meta não é alterado por esta opção.
             </span>
           </span>
@@ -178,8 +178,8 @@ export function WhatsAppAutomationSettings({ connected, enabled, preset: initial
 
       <div style={{ ...boxStyle, opacity: custom ? 1 : 0.86 }}>
         <strong>Etapas do fluxo e textos</strong>
-        {!custom ? <span className="muted" style={{ fontSize: 13 }}>O preset altera somente quais avisos ficam ligados. Os textos podem ser preparados sem ativar módulos, comprar plano ou ampliar permissões.</span> : null}
-        <span className="muted" style={{ fontSize: 13 }}>O texto editado é usado apenas quando a Meta permite mensagem livre. Fora da janela de atendimento, o PedeAqui continua usando o modelo aprovado na Meta; editar aqui não altera nem contorna essa aprovação.</span>
+        {!custom ? <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>O preset altera somente quais avisos ficam ligados. Os textos podem ser preparados sem ativar módulos, comprar plano ou ampliar permissões.</span> : null}
+        <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>O texto editado é usado apenas quando a Meta permite mensagem livre. Fora da janela de atendimento, o PedeAqui continua usando o modelo aprovado na Meta; editar aqui não altera nem contorna essa aprovação.</span>
         <div style={{ display: "grid", gap: 9 }}>
           {automationFields.map((field) => {
             const capability = capabilities[field.key];
@@ -195,14 +195,14 @@ export function WhatsAppAutomationSettings({ connected, enabled, preset: initial
                       <input type="checkbox" name={field.name} defaultChecked={defaults[field.defaultKey]} disabled={disabledToggle} style={{ marginTop: 3 }} />
                       <span>
                         <strong>{capability.label}</strong>
-                        <span className="muted" style={{ display: "block", fontSize: 13, marginTop: 2 }}>{capability.description}</span>
+                        <span className="muted" style={{ display: "block", fontSize: "var(--font-size-support)", marginTop: 2 }}>{capability.description}</span>
                       </span>
                     </span>
-                    <span style={{ fontSize: 13, fontWeight: 800, overflowWrap: "anywhere" }}>{stateLabel[capability.state]}</span>
+                    <span style={{ fontSize: "var(--font-size-support)", fontWeight: "var(--font-weight-bold)", overflowWrap: "anywhere" }}>{stateLabel[capability.state]}</span>
                   </span>
-                  <span className="muted" style={{ fontSize: 13, paddingLeft: 26 }}>Gatilho: {capability.triggerLabel}</span>
-                  {capability.dependencyLabel ? <span className="muted" style={{ fontSize: 13, paddingLeft: 26 }}>Depende de: {capability.dependencyLabel}</span> : null}
-                  {capability.reason ? <span style={{ fontSize: 13, paddingLeft: 26, fontWeight: 700 }}>{capability.reason}</span> : null}
+                  <span className="muted" style={{ fontSize: "var(--font-size-support)", paddingLeft: 26 }}>Gatilho: {capability.triggerLabel}</span>
+                  {capability.dependencyLabel ? <span className="muted" style={{ fontSize: "var(--font-size-support)", paddingLeft: 26 }}>Depende de: {capability.dependencyLabel}</span> : null}
+                  {capability.reason ? <span style={{ fontSize: "var(--font-size-support)", paddingLeft: 26, fontWeight: "var(--font-weight-bold)" }}>{capability.reason}</span> : null}
                 </label>
 
                 <FormDisclosure summary="Editar texto e visualizar prévia" className={styles.editor}>
@@ -216,10 +216,10 @@ export function WhatsAppAutomationSettings({ connected, enabled, preset: initial
                       onChange={(event) => setTexts((current) => ({ ...current, [field.key]: event.target.value }))}
                       style={textStyle}
                     />
-                    <span className="muted" style={{ fontSize: 13 }}>
+                    <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>
                       Variáveis permitidas: {ORDER_NOTIFICATION_PLACEHOLDERS.map((placeholder) => `{${placeholder}}`).join(", ")}.
                     </span>
-                    {!validation.ok ? <span style={{ fontSize: 13, fontWeight: 700 }}>{validation.message}</span> : null}
+                    {!validation.ok ? <span style={{ fontSize: "var(--font-size-support)", fontWeight: "var(--font-weight-bold)" }}>{validation.message}</span> : null}
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <button
                         type="button"
@@ -230,9 +230,9 @@ export function WhatsAppAutomationSettings({ connected, enabled, preset: initial
                         Restaurar texto padrão
                       </button>
                     </div>
-                    <div style={{ padding: 10, borderRadius: 8, border: "1px dashed var(--border)" }}>
-                      <strong style={{ fontSize: 13 }}>Prévia</strong>
-                      <p style={{ margin: "5px 0 0", fontSize: 13, whiteSpace: "pre-wrap" }}>{preview ?? "A prévia usa o texto padrão quando faltar uma variável real no pedido."}</p>
+                    <div style={{ padding: 10, borderRadius: "var(--radius-sm)", border: "1px dashed var(--border)" }}>
+                      <strong style={{ fontSize: "var(--font-size-support)" }}>Prévia</strong>
+                      <p style={{ margin: "5px 0 0", fontSize: "var(--font-size-support)", whiteSpace: "pre-wrap" }}>{preview ?? "A prévia usa o texto padrão quando faltar uma variável real no pedido."}</p>
                     </div>
                   </div>
                 </FormDisclosure>

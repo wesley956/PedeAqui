@@ -116,7 +116,7 @@ export default async function PlatformPage() {
             <div className={styles.featureList}>
               {whatsappPending.slice(0, 8).map((unit) => <div key={unit.id} className={styles.featureRow}>
                 <span>{unit.name}<small>{organizationById.get(unit.organizationId)?.name ?? "Empresa"}</small></span>
-                <Link href={`/platform/restaurantes/${unit.id}`} style={{ fontWeight: 800 }}>Abrir</Link>
+                <Link href={`/platform/restaurantes/${unit.id}`} style={{ fontWeight: "var(--font-weight-bold)" }}>Abrir</Link>
               </div>)}
               {whatsappPending.length === 0 ? <div className={styles.empty}>Nenhum cliente pendente de WhatsApp.</div> : null}
             </div>

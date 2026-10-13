@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { PublicMenu } from "@/server/menu/schemas";
+import { ProductImageFallback } from "./product-image-fallback";
 import styles from "./menu-browser.module.css";
 
 type Product = PublicMenu["categories"][number]["products"][number];
@@ -43,7 +44,7 @@ export function PublicPromotionCard({
             className={styles.promotionImage}
           />
         ) : (
-          <div aria-hidden className={styles.promotionPlaceholder}>Sem foto</div>
+          <ProductImageFallback className={styles.promotionPlaceholder} />
         )
       ) : null}
 

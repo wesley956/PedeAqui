@@ -7,6 +7,7 @@ import { FormDisclosure } from "@/components/ui/form-disclosure";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { CashService } from "@/server/cash/cash-service";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function CashSettingsPage() {
   await authorize(PERMISSIONS.CASH_MANAGE);
@@ -14,7 +15,7 @@ export default async function CashSettingsPage() {
   const openByRegister = new Map(data.sessions.filter((session) => session.status === "open").map((session) => [session.cash_register_id, session]));
 
   return <section className={styles.page}>
-    <header className={styles.header}><div><p className={styles.meta}>CONFIGURAÇÕES · CAIXA</p><h1>Caixas da unidade</h1><p className={styles.meta}>Cadastre e mantenha os pontos físicos de caixa fora do fluxo do turno.</p></div><div className={styles.actions}><Link href="/caixa" >Voltar ao caixa</Link></div></header>
+    <PageHeader title="Caixas da unidade" description="Cadastre e mantenha os pontos físicos de caixa fora do fluxo do turno." actions={<Link href="/caixa">Voltar ao caixa</Link>} />
 
     <FormDisclosure className={styles.details} summary="Criar caixa">
       <form action={createCashRegisterAction} className={styles.form} aria-label="Criar caixa">

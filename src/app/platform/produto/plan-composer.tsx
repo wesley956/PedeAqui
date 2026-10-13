@@ -96,13 +96,13 @@ export function PlanComposer({ modules }: { modules: ComposerModule[] }) {
   return (
     <div style={{ display: "grid", gap: 16 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: 10 }}>
-        <label style={{ display: "grid", gap: 6, fontWeight: 800 }}>
+        <label style={{ display: "grid", gap: 6, fontWeight: "var(--font-weight-bold)" }}>
           Tipo de negócio
           <select value={businessType} onChange={(event) => selectBusiness(event.target.value as BusinessType)} style={fieldStyle}>
             {(Object.keys(businessLabels) as BusinessType[]).map((key) => <option value={key} key={key}>{businessLabels[key]}</option>)}
           </select>
         </label>
-        <label style={{ display: "grid", gap: 6, fontWeight: 800 }}>
+        <label style={{ display: "grid", gap: 6, fontWeight: "var(--font-weight-bold)" }}>
           Mensalidade-base (R$)
           <input value={basePrice} onChange={(event) => setBasePrice(event.target.value)} inputMode="decimal" style={fieldStyle} aria-label="Mensalidade-base" />
         </label>
@@ -113,7 +113,7 @@ export function PlanComposer({ modules }: { modules: ComposerModule[] }) {
           const isSelected = selected.has(item.key);
           const isCore = item.kind === "core";
           return (
-            <div key={item.key} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(130px,180px)", gap: 12, alignItems: "center", padding: 12, border: "1px solid var(--border)", borderRadius: 12, background: isSelected ? "color-mix(in srgb,var(--accent) 7%,var(--surface-2))" : "var(--surface-2)" }}>
+            <div key={item.key} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(130px,180px)", gap: 12, alignItems: "center", padding: 12, border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", background: isSelected ? "color-mix(in srgb,var(--accent) 7%,var(--surface-2))" : "var(--surface-2)" }}>
               <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: isCore ? "default" : "pointer" }}>
                 <input type="checkbox" checked={isSelected} disabled={isCore} onChange={() => toggle(item.key)} style={{ marginTop: 4 }} />
                 <span style={{ display: "grid", gap: 3 }}>
@@ -122,8 +122,8 @@ export function PlanComposer({ modules }: { modules: ComposerModule[] }) {
                   <small style={{ color: "var(--muted)" }}>{groupLabels[item.group] ?? item.group}{item.dependencies.length ? ` · depende de ${item.dependencies.map((key) => moduleByKey.get(key)?.label ?? key).join(", ")}` : ""}</small>
                 </span>
               </label>
-              {isCore ? <strong style={{ textAlign: "right", fontSize: 12 }}>Incluído na base</strong> : (
-                <label style={{ display: "grid", gap: 5, fontSize: 11, fontWeight: 800 }}>
+              {isCore ? <strong style={{ textAlign: "right", fontSize: "var(--font-size-xs)" }}>Incluído na base</strong> : (
+                <label style={{ display: "grid", gap: 5, fontSize: "var(--font-size-xs)", fontWeight: "var(--font-weight-bold)" }}>
                   Preço avulso (R$)
                   <input disabled={!isSelected} value={prices[item.key] ?? ""} onChange={(event) => setPrices((current) => ({ ...current, [item.key]: event.target.value }))} inputMode="decimal" placeholder="0,00" style={fieldStyle} />
                 </label>
@@ -133,18 +133,18 @@ export function PlanComposer({ modules }: { modules: ComposerModule[] }) {
         })}
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap", padding: 16, border: "1px solid color-mix(in srgb,var(--accent) 32%,var(--border))", borderRadius: 14, background: "color-mix(in srgb,var(--accent) 8%,var(--surface))" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap", padding: 16, border: "1px solid color-mix(in srgb,var(--accent) 32%,var(--border))", borderRadius: "var(--radius-lg)", background: "color-mix(in srgb,var(--accent) 8%,var(--surface))" }}>
         <span style={{ display: "grid", gap: 2 }}>
           <strong>{selectedModules.length} módulo(s) na composição</strong>
           <small style={{ color: "var(--muted)" }}>Simulação comercial. Dependências são incluídas automaticamente.</small>
         </span>
         <span style={{ display: "grid", gap: 2, textAlign: "right" }}>
           <small style={{ color: "var(--muted)" }}>Valor mensal simulado</small>
-          <strong style={{ fontSize: 26 }}>{money.format(total)}</strong>
+          <strong style={{ fontSize: "var(--font-size-2xl)" }}>{money.format(total)}</strong>
         </span>
       </div>
 
-      <p style={{ margin: 0, color: "var(--muted)", fontSize: 12, lineHeight: 1.5 }}>
+      <p style={{ margin: 0, color: "var(--muted)", fontSize: "var(--font-size-xs)", lineHeight: 1.5 }}>
         Este simulador não altera contrato, assinatura nem módulos de cliente real. A contratação continua passando por proposta, aceite e aplicação controlada em Assinaturas.
       </p>
     </div>
@@ -155,7 +155,7 @@ const fieldStyle = {
   width: "100%",
   minHeight: 42,
   border: "1px solid var(--border)",
-  borderRadius: 10,
+  borderRadius: "var(--radius-sm)",
   background: "var(--surface)",
   color: "var(--text)",
   padding: "8px 10px",

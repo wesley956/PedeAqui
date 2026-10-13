@@ -3,6 +3,7 @@ import { setPrinterActiveAction, unlinkPrinterAction } from "@/features/printing
 import { PrintConfigService } from "@/server/printing/print-config-service";
 import { effectivePrintHealth, type PrintHealth } from "@/server/printing/printer-health";
 import styles from "../printing.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 const healthLabels: Record<PrintHealth, string> = {
   unknown: "Aguardando comunicação",
@@ -36,13 +37,7 @@ export default async function ManagePrinterConnectionsPage({
 
   return (
     <section className={styles.root}>
-      <header className={styles.hero}>
-        <div>
-          <p className={styles.eyebrow}>Conexões de impressão</p>
-          <h1>Gerenciar impressoras</h1>
-          <p className={styles.hint}>Desative temporariamente sem perder a configuração, reative quando precisar ou desvincule a impressora do computador com confirmação.</p>
-        </div>
-      </header>
+      <PageHeader title="Gerenciar impressoras" description="Desative temporariamente sem perder a configuração, reative quando precisar ou desvincule a impressora do computador com confirmação." />
 
       {params.status && successLabels[params.status] ? (
         <div className={styles.successBanner} role="status">

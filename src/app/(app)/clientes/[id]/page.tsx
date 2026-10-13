@@ -7,6 +7,8 @@ import { getAccessContext } from "@/server/access/context";
 import { CustomerService } from "@/server/customers/customer-service";
 import { formatCents } from "@/server/catalog/money";
 import styles from "../customers.module.css";
+import { PageHeader } from "@/components/ui/page-header";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 
 const orderStatusLabels: Record<string, string> = {
   pending_confirmation: "Aguardando confirmação",
@@ -30,14 +32,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
 
   return (
     <section className={styles.page}>
-      <header className={styles.profileHeader}>
-        <div>
-          <Link href="/clientes" className="muted">← Voltar para clientes</Link>
-          <h1>{customer.name}</h1>
-          <p className={styles.profileContact}>{customer.phone || customer.email || "Sem contato informado"}</p>
-        </div>
-        <div className={styles.countBadge}>Cliente desde {formatStoreDate(customer.created_at, timeZone)}</div>
-      </header>
+      <PageHeader back={{ href: "/clientes", label: "Voltar para clientes" }} title={customer.name} description={customer.phone || customer.email || "Sem contato informado"} status={<span className={styles.countBadge}>Cliente desde {formatStoreDate(customer.created_at, timeZone)}</span>} />
 
       <div className={styles.profileMetrics}>
         <article className={`card ${styles.metric}`}><span>PEDIDOS CONCLUÍDOS</span><strong>{customer.orders_count}</strong></article>
@@ -154,7 +149,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                       <form action={removeCustomerAddressAction}>
                         <input type="hidden" name="customerId" value={id} />
                         <input type="hidden" name="addressId" value={address.id} />
-                        <Button tone="danger" type="submit">Remover</Button>
+                        <ConfirmSubmitButton confirmation="Remover este endereço do cliente? Pedidos antigos continuam com o endereço usado na época.">Remover endereço</ConfirmSubmitButton>
                       </form>
                     </div>
                   </article>
@@ -169,5 +164,5 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
 }
 
 function Info({ label, value }: { label: string; value: string }) {
-  return <div><span className="muted" style={{ fontSize: 10, fontWeight: 850 }}>{label.toUpperCase()}</span><div style={{ marginTop: 3 }}>{value}</div></div>;
+  return <div><span className="muted" style={{ fontSize: "var(--font-size-xs)", fontWeight: "var(--font-weight-bold)" }}>{label.toUpperCase()}</span><div style={{ marginTop: 3 }}>{value}</div></div>;
 }

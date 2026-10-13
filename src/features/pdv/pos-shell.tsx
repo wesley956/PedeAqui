@@ -76,7 +76,7 @@ function ProductConfigurator({ state, product, onChange, onCancel, onAdd }: { st
           <div className={styles.rowBetween}><strong>{group.name}</strong><span className={styles.mutedSmall}>{group.minSelection === group.maxSelection ? `${group.minSelection} seleção(ões)` : `${group.minSelection}–${group.maxSelection} seleções`}{group.required ? " · obrigatório" : ""}</span></div>
           {group.modifiers.map((modifier) => { const checked = state.modifierIds.includes(modifier.id); return <label key={modifier.id} className={styles.modifierOption}><span className={styles.modifierLabel}><input type="checkbox" checked={checked} onChange={() => toggleModifier(group.id, modifier.id)} /><span>{modifier.name}</span></span><strong>{modifier.priceCents > 0 ? `+ ${money(modifier.priceCents)}` : "Incluso"}</strong></label>; })}
         </div>)}
-        <label style={{ display: "grid", gap: 5 }}><strong style={{ fontSize: 13 }}>Observação</strong><textarea className={styles.field} value={state.note} maxLength={500} rows={3} placeholder="Ex.: sem cebola" onChange={(event) => onChange({ ...state, note: event.target.value, error: null })} /></label>
+        <label style={{ display: "grid", gap: 5 }}><strong style={{ fontSize: "var(--font-size-support)" }}>Observação</strong><textarea className={styles.field} value={state.note} maxLength={500} rows={3} placeholder="Ex.: sem cebola" onChange={(event) => onChange({ ...state, note: event.target.value, error: null })} /></label>
         <div className={styles.rowBetween}><strong>Quantidade</strong><div className={styles.qtyRow}><button type="button" className={styles.smallButton} onClick={() => onChange({ ...state, quantity: Math.max(1, state.quantity - 1) })}>−</button><strong>{state.quantity}</strong><button type="button" className={styles.smallButton} onClick={() => onChange({ ...state, quantity: Math.min(999, state.quantity + 1) })}>+</button></div></div>
         {state.error ? <div className={styles.statusError} role="alert">{state.error}</div> : null}
         <div className={styles.dialogActions}><button type="button" className={styles.secondaryButton} onClick={onCancel}>Cancelar</button><button type="button" className={styles.primaryButton} onClick={onAdd}>Adicionar · {money(unitPrice * state.quantity)}</button></div>
@@ -91,6 +91,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
   const defaultMethod = paymentMethods[0]?.method ?? "cash";
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<MobilePdvView>("catalog");
+  const [checkoutExpanded, setCheckoutExpanded] = useState(false);
   const [search, setSearch] = useState(""); const deferredSearch = useDeferredValue(search);
   const [cart, setCart] = useState<PosCartLine[]>([]); const [configurator, setConfigurator] = useState<ConfiguratorState | null>(null);
   const [customerQuery, setCustomerQuery] = useState("");
@@ -214,7 +215,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
         </div>
 
         <section className={`card ${styles.cartPanel}`} data-pdv-panel="sale">
-          <div className={styles.cartHeader}><div><div className={styles.mutedSmall}>VENDA ATUAL</div><h2 style={{ margin: "3px 0 0", fontSize: 19 }}>Carrinho</h2></div><strong>{cartItemCount} {cartItemCount === 1 ? "item" : "itens"}</strong></div>
+          <div className={styles.cartHeader}><div><div className={styles.mutedSmall}>VENDA ATUAL</div><h2 style={{ margin: "3px 0 0", fontSize: "var(--font-size-lg)" }}>Carrinho</h2></div><strong>{cartItemCount} {cartItemCount === 1 ? "item" : "itens"}</strong></div>
           <div className={styles.cartBody}>
             <label className={styles.fulfillmentField}><strong>Tipo de venda</strong><select className={styles.select} aria-label="Tipo de venda" value={fulfillmentType} onChange={(event) => { setFulfillmentType(event.target.value as PosSaleInput["fulfillmentType"]); touchSale(); }}><option value="counter">Consumir no local</option><option value="pickup">Levar embora</option></select></label>
             {cart.length === 0 ? <div className={styles.empty}>Selecione produtos para iniciar a venda.</div> : <div className={styles.cartList}>{cart.map((line) => <div key={line.key} className={styles.cartLine}><div className={styles.rowBetween}><strong>{line.productName}</strong><strong>{money(line.unitPriceCents * line.quantity)}</strong></div>{line.modifierLabels.length > 0 ? <div className={styles.mutedSmall}>{line.modifierLabels.join(" · ")}</div> : null}{line.note ? <div className={styles.mutedSmall}>Obs.: {line.note}</div> : null}<div className={styles.rowBetween}><div className={styles.qtyRow}><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, -1)}>−</button><strong>{line.quantity}</strong><button type="button" className={styles.smallButton} onClick={() => changeQuantity(line.key, 1)}>+</button></div><button type="button" className={styles.removeButton} onClick={() => removeLine(line.key)}>Remover</button></div></div>)}</div>}
@@ -242,8 +243,13 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
           </div>
         </section>
       </div>
-      <footer className={styles.checkoutBar} aria-label="Pagamento e finalização da venda">
-        <div className={styles.checkoutPayment}>
+      <footer className={styles.checkoutBar} aria-label="Pagamento e finalização da venda" data-expanded={checkoutExpanded ? "true" : "false"} data-has-cash={showCashChange ? "true" : undefined} data-hides-guide>
+        <button type="button" className={styles.checkoutToggle} aria-expanded={checkoutExpanded} aria-controls="pdv-checkout-details" onClick={() => setCheckoutExpanded((value) => !value)}>
+          <span className={styles.mutedSmall}>Pagamento</span>
+          <strong>{singlePayment ? paymentMethods.find((method) => method.method === singlePayment.method)?.label ?? "Escolher" : `${payments.length} parcelas`}</strong>
+          <span aria-hidden="true" className={styles.checkoutToggleIcon}>{checkoutExpanded ? "Fechar" : "Alterar"}</span>
+        </button>
+        <div className={styles.checkoutPayment} id="pdv-checkout-details">
           <div className={styles.rowBetween}><strong>Pagamento</strong><button type="button" className={styles.paymentDetailsButton} disabled={paymentMethods.length === 0} onClick={() => setPaymentDialogOpen(true)}>{payments.length > 1 ? `Editar ${payments.length} parcelas` : "Detalhes / Dividir"}</button></div>
           {singlePayment ? <div className={styles.paymentMethods} role="group" aria-label="Forma de pagamento">{paymentMethods.map((method) => <button type="button" key={method.method} className={singlePayment.method === method.method ? styles.paymentMethodActive : styles.paymentMethodButton} aria-pressed={singlePayment.method === method.method} onClick={() => { if (singlePayment.method !== method.method) updatePayment(singlePayment.id, { method: method.method, cashReceivedText: "", reference: "" }); }}>{method.label}</button>)}</div> : <button type="button" className={styles.secondaryButton} onClick={() => setPaymentDialogOpen(true)}>Pagamento dividido · {payments.length} parcelas</button>}
         </div>

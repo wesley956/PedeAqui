@@ -29,21 +29,21 @@ export function PaymentActionForm({
 
       {intent === "confirm" && method === "cash" ? (
         <label style={{ display: "grid", gap: 4 }}>
-          <span className="muted" style={{ fontSize: 11 }}>VALOR RECEBIDO</span>
+          <span className="muted" style={{ fontSize: "var(--font-size-xs)" }}>VALOR RECEBIDO</span>
           <input name="cashReceived" inputMode="decimal" defaultValue={defaultCashReceived ?? ""} placeholder="Ex.: 50,00" style={inputStyle} />
         </label>
       ) : null}
 
       {intent === "confirm" && method !== "cash" ? (
         <label style={{ display: "grid", gap: 4 }}>
-          <span className="muted" style={{ fontSize: 11 }}>REFERÊNCIA OPCIONAL</span>
+          <span className="muted" style={{ fontSize: "var(--font-size-xs)" }}>REFERÊNCIA OPCIONAL</span>
           <input name="reference" maxLength={200} placeholder={method === "pix" ? "Ex.: comprovante/NSU informado" : "Ex.: comprovante da maquininha"} style={inputStyle} />
         </label>
       ) : null}
 
       {destructive ? (
         <label style={{ display: "grid", gap: 4 }}>
-          <span className="muted" style={{ fontSize: 11 }}>{intent === "refund" ? "MOTIVO DO ESTORNO" : "MOTIVO"}</span>
+          <span className="muted" style={{ fontSize: "var(--font-size-xs)" }}>{intent === "refund" ? "MOTIVO DO ESTORNO" : "MOTIVO"}</span>
           <input name="reason" required minLength={3} maxLength={intent === "refund" ? 500 : 240} placeholder={intent === "refund" ? "Ex.: venda cancelada após recebimento" : "Ex.: Pix não localizado"} style={inputStyle} />
         </label>
       ) : null}
@@ -51,15 +51,15 @@ export function PaymentActionForm({
       <button type="submit" disabled={pending} style={destructive ? dangerButton : primaryButton}>
         {pending ? "Processando…" : intent === "confirm" ? "Confirmar pagamento" : intent === "refund" ? "Estornar pagamento" : "Marcar tentativa como falha"}
       </button>
-      {state.message ? <div style={{ color: "#22c55e", fontSize: 12 }}>{state.message}</div> : null}
-      {state.error ? <div style={{ color: "#f97066", fontSize: 12 }}>{state.error}</div> : null}
+      {state.message ? <div style={{ color: "var(--state-success)", fontSize: "var(--font-size-xs)" }}>{state.message}</div> : null}
+      {state.error ? <div style={{ color: "var(--state-danger-text)", fontSize: "var(--font-size-xs)" }}>{state.error}</div> : null}
     </form>
   );
 }
 
 const inputStyle: React.CSSProperties = {
   minHeight: 40,
-  borderRadius: 10,
+  borderRadius: "var(--radius-sm)",
   border: "1px solid var(--border)",
   background: "var(--surface-2)",
   color: "var(--text)",
@@ -68,14 +68,14 @@ const inputStyle: React.CSSProperties = {
 const primaryButton: React.CSSProperties = {
   minHeight: 40,
   border: 0,
-  borderRadius: 10,
+  borderRadius: "var(--radius-sm)",
   background: "var(--accent)",
-  color: "#fff",
+  color: "var(--text-on-brand)",
   padding: "8px 12px",
-  fontWeight: 850,
+  fontWeight: "var(--font-weight-bold)",
   cursor: "pointer",
 };
 const dangerButton: React.CSSProperties = {
   ...primaryButton,
-  background: "#b42318",
+  background: "var(--state-danger)",
 };

@@ -22,9 +22,9 @@ export default async function PlatformWhatsAppLayout({
           margin: "0 auto",
         }}
       >
-        <Link href={`/platform/unidades/${storeId}/whatsapp`} style={{ fontWeight: 800 }}>Conexão manual</Link>
+        <Link href={`/platform/unidades/${storeId}/whatsapp`} style={{ fontWeight: "var(--font-weight-bold)" }}>Conexão manual</Link>
         <span aria-hidden="true">·</span>
-        <Link href={`/platform/unidades/${storeId}/whatsapp/notificacoes`} style={{ fontWeight: 800 }}>Notificações automáticas</Link>
+        <Link href={`/platform/unidades/${storeId}/whatsapp/notificacoes`} style={{ fontWeight: "var(--font-weight-bold)" }}>Notificações automáticas</Link>
       </nav>
       {children}
     </>

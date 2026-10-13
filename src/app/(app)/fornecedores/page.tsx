@@ -3,13 +3,14 @@ import { SemanticStatus } from "@/components/ui/status";
 import { SupplierService } from "@/server/purchases/supplier-service";
 import { SupplierCatalogForm, SupplierConfigForm, SupplierCreateForm } from "@/features/purchases/purchase-forms";
 import styles from "@/features/purchases/procurement.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 function money(cents: number | string) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents || 0) / 100); }
 
 export default async function SuppliersPage() {
   const data = await SupplierService.load();
   return <section className={styles.page}>
-    <header className={styles.header}><div className={styles.headerCopy}><p className="muted">ESTOQUE E COMPRAS</p><h1>Fornecedores</h1><p className="muted">Cadastre de quem você compra e configure prazo, pedido mínimo e itens fornecidos para esta unidade.</p></div><div className={styles.links}><Link href="/compras" className={styles.link}>← Compras</Link><Link href="/estoque" className={styles.link}>Estoque</Link></div></header>
+    <PageHeader title="Fornecedores" description="Cadastre de quem você compra e configure prazo, pedido mínimo e itens fornecidos para esta unidade." actions={<><Link href="/compras" className={styles.link}>← Compras</Link><Link href="/estoque" className={styles.link}>Estoque</Link></>} />
 
     <div className={styles.columns}>
       <div className={styles.supplierList}>{data.suppliers.length===0 ? <article className={`card ${styles.card}`}><p className="muted">Nenhum fornecedor cadastrado.</p></article> : data.suppliers.map((supplier)=>{const config=supplier.config;return <article key={supplier.id} className={`card ${styles.supplier}`}>

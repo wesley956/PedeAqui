@@ -66,10 +66,10 @@ export function ResilientMutationForm({
           aria-live="polite"
           style={{
             border: "1px solid var(--border)",
-            borderRadius: 10,
+            borderRadius: "var(--radius-sm)",
             padding: "10px 12px",
             background: "var(--surface-2)",
-            fontSize: 14,
+            fontSize: "var(--font-size-sm)",
           }}
         >
           {result.message}

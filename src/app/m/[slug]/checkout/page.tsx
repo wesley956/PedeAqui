@@ -18,6 +18,7 @@ import { confirmCheckoutOrderAction } from "@/features/checkout/confirm-order-ac
 import { FinalOrderOptions, paymentMethodHelp } from "@/features/checkout/final-order-options";
 import { NeighborhoodSelect } from "@/features/checkout/neighborhood-select";
 import { PaymentMethodFields } from "@/features/checkout/payment-method-fields";
+import { ScrollToActiveStage } from "@/features/checkout/scroll-to-active-stage";
 import { SubmitOrderButton } from "@/features/checkout/submit-order-button";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { CheckoutService } from "@/server/checkout/checkout-service";
@@ -25,6 +26,7 @@ import { paymentMethodLabels } from "@/server/checkout/schemas";
 import { customerRecognitionCookieName } from "@/server/customers/recognition-token";
 import { GrowthService } from "@/server/growth/growth-service";
 import styles from "./checkout.module.css";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 
 function money(cents: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
@@ -46,7 +48,7 @@ const errorMessages: Record<string, string> = {
   pickup_disabled: "Retirada não está disponível nesta loja.", delivery_disabled: "Entrega não está disponível nesta loja.",
   delivery_not_selected: "Escolha entrega antes de informar o endereço.", delivery_minimum: "O pedido ainda não atingiu o mínimo exigido para este bairro.",
   neighborhood_not_served: "Selecione um bairro atendido pela loja.", payment_unavailable: "A forma de pagamento selecionada não está disponível.",
-  invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.", pix_email_required: "Informe seu e-mail em Seus dados para gerar o Pix online.",
+  invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.", pix_email_required: "Informe seu e-mail em Pagamento para gerar o Pix online.", invalid_payment_email: "Informe um e-mail válido para o Pix.",
   checkout_not_ready: "Não foi possível confirmar o pedido. Confira o motivo abaixo e faça o ajuste necessário.", benefit_invalid: "Não foi possível aplicar esses benefícios. Confira o cupom e tente novamente.",
   benefit_unavailable: "Benefícios não estão disponíveis nesta loja.", saved_address_invalid: "Este endereço salvo não está mais disponível.",
   recognition_required: "Por segurança, informe o endereço novamente neste dispositivo.", identity_required: "Confirme seu nome e WhatsApp antes de reutilizar um endereço.",
@@ -55,7 +57,7 @@ const errorMessages: Record<string, string> = {
 type CheckoutStageId = "fulfillment" | "identity" | "address" | "payment" | "review";
 const errorStage: Partial<Record<string, CheckoutStageId>> = {
   invalid_fulfillment: "fulfillment", pickup_disabled: "fulfillment", delivery_disabled: "fulfillment", invalid_phone: "identity", invalid_identity: "identity",
-  pix_email_required: "identity", invalid_address: "address", delivery_not_selected: "address", delivery_minimum: "address", neighborhood_not_served: "address",
+  pix_email_required: "payment", invalid_payment_email: "payment", invalid_address: "address", delivery_not_selected: "address", delivery_minimum: "address", neighborhood_not_served: "address",
   saved_address_invalid: "address", recognition_required: "address", identity_required: "address", invalid_payment: "payment", payment_unavailable: "payment",
   invalid_change: "payment", invalid_schedule: "review", checkout_not_ready: "review", benefit_invalid: "review", benefit_unavailable: "review",
 };
@@ -125,6 +127,35 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
       ? reviewBlockerMessage
       : query.erro ? errorMessages[query.erro] ?? "Não foi possível continuar. Confira os dados e tente novamente." : null;
 
+  const stageTitles: Record<CheckoutStageId, string> = { fulfillment: "Como vai receber?", identity: "Seus dados", address: "Onde entregar?", payment: "Pagamento", review: "Revisão final" };
+  const paymentPlace = deliverySelected ? "na entrega" : "na retirada";
+  const stageSummaries: Record<CheckoutStageId, string> = {
+    fulfillment: deliverySelected ? `Entrega · ${menu.delivery.estimated_min_minutes}–${menu.delivery.estimated_max_minutes} min` : "Retirada no estabelecimento",
+    identity: identityComplete ? `${identityName} · ${identityPhone}` : "",
+    address: addressComplete && session?.address_street ? `${session.address_street}, ${session.address_number ?? ""} · ${session.address_district ?? ""} · taxa ${money(Number(session.delivery_fee_cents ?? 0))}` : "",
+    payment: selectedPayment === "pix" ? "Pix agora, pelo celular" : selectedPaymentLabel ? `${selectedPaymentLabel} ${paymentPlace}` : "",
+    review: "",
+  };
+  const stageEdit: Partial<Record<CheckoutStageId, { href: string; label: string }>> = {
+    fulfillment: { href: stageHref(slug, "fulfillment"), label: "Alterar recebimento" },
+    identity: { href: stageHref(slug, "identity"), label: "Alterar dados" },
+    address: { href: stageHref(slug, "address"), label: "Alterar endereço" },
+    payment: { href: stageHref(slug, "payment"), label: "Alterar pagamento" },
+  };
+  // Expresso: as etapas ficam empilhadas numa tela só. As já preenchidas viram uma linha com "Alterar";
+  // as seguintes aparecem bloqueadas até a anterior ser concluída.
+  const stageRow = (stage: CheckoutStageId) => {
+    if (!stageOrder.includes(stage) || stage === "review") return null;
+    const index = stageOrder.indexOf(stage);
+    const done = index < activeIndex || Boolean(stageSummaries[stage]);
+    const edit = stageEdit[stage];
+    return <section className={`${styles.stageRow} ${done ? styles.stageRowDone : styles.stageRowLocked}`} aria-label={stageTitles[stage]}>
+      <span className={styles.stageRowNumber} aria-hidden>{index + 1}</span>
+      <span className={styles.stageRowText}><strong>{stageTitles[stage]}</strong><span>{done ? stageSummaries[stage] : "Preencha a etapa anterior"}</span></span>
+      {done && edit ? <Link href={edit.href} className={styles.stageRowEdit} aria-label={edit.label}>Alterar</Link> : null}
+    </section>;
+  };
+
   return (
     <main className={styles.root}>
       <div className={styles.appShell}>
@@ -137,17 +168,33 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
 
         <div className={styles.stageViewport}>
           <StoreOrderStatus operational={menu.operational} />
+          {activeIndex > 0 || query.erro ? <ScrollToActiveStage targetId="checkout-atual" /> : null}
           {displayErrorMessage ? <div role="alert" aria-live="assertive" data-error-stage={activeStage} className={styles.alert}>{displayErrorMessage}</div> : null}
+
+          <section className={styles.reviewItems} aria-label="Itens do pedido">
+            <div className={styles.itemsHeader}><h2>Seu pedido</h2><Link href={`/m/${slug}/carrinho`}>Editar itens no carrinho</Link></div>
+            {cart.items.map((item) => <article key={item.id} className={styles.reviewItem}>
+              <div><strong>{item.quantity}× {item.product_name_snapshot}</strong><strong>{money(Number(item.line_total_cents))}</strong></div>
+              {item.modifiers.length > 0 ? <p>{item.modifiers.map((option) => `${Number(option.quantity ?? 1)}× ${option.modifier_name_snapshot}`).join(" · ")}</p> : null}
+              {item.note ? <p>Observação: {item.note}</p> : null}
+              {item.gas ? <p>{item.gas.sale_mode === "exchange" ? "Troca de vasilhame" : "Produto + vasilhame"}{item.gas.container_name_snapshot ? ` · ${item.gas.container_name_snapshot}` : ""}</p> : null}
+            </article>)}
+            {missingMinimumCents > 0 ? <p className={styles.minimumHint}>Faltam {money(missingMinimumCents)} para o pedido mínimo de {money(minimumOrderCents)}.</p> : null}
+            <Link href={`/m/${slug}`} className={styles.addMoreItems}>
+              <span><NavigationIcon name="cart" width={16} height={16} /> Adicionar mais itens</span>
+              <small>Voltar ao cardápio sem perder o que já está no carrinho.</small>
+            </Link>
+          </section>
 
           {activeStage === "fulfillment" ? (
             <CheckoutStage number="1" title="Como vai receber?" eyebrow="Recebimento" description="Escolha entrega ou retirada. A previsão de entrega será atualizada após informar o endereço.">
               <form action={saveCheckoutFulfillmentAction} className={styles.receiveGrid}>
                 <input type="hidden" name="storeSlug" value={slug} />
-                {menu.settings.allow_delivery && menu.delivery.enabled ? <button type="submit" name="fulfillmentType" value="delivery" className={`${styles.receiveChoice} ${deliverySelected ? styles.choiceSelected : ""}`}><span className={styles.choiceIcon}>🛵</span><strong>Entrega</strong><span className={styles.choiceDetail}>Receba em casa</span><span className={styles.choiceMeta}>{menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span></button> : null}
-                {menu.settings.allow_pickup ? <button type="submit" name="fulfillmentType" value="pickup" className={`${styles.receiveChoice} ${session?.fulfillment_type === "pickup" ? styles.choiceSelected : ""}`}><span className={styles.choiceIcon}>🛍️</span><strong>Retirada</strong><span className={styles.choiceDetail}>Busque no estabelecimento</span><span className={styles.choiceMeta}>Sem taxa de entrega</span></button> : null}
+                {menu.settings.allow_delivery && menu.delivery.enabled ? <button type="submit" name="fulfillmentType" value="delivery" className={`${styles.receiveChoice} ${deliverySelected ? styles.choiceSelected : ""}`}><span className={styles.choiceIcon}><NavigationIcon name="deliveries" width={22} height={22} /></span><strong>Entrega</strong><span className={styles.choiceDetail}>Receba em casa</span><span className={styles.choiceMeta}>{menu.delivery.estimated_min_minutes}–{menu.delivery.estimated_max_minutes} min</span></button> : null}
+                {menu.settings.allow_pickup ? <button type="submit" name="fulfillmentType" value="pickup" className={`${styles.receiveChoice} ${session?.fulfillment_type === "pickup" ? styles.choiceSelected : ""}`}><span className={styles.choiceIcon}><NavigationIcon name="bag" width={22} height={22} /></span><strong>Retirada</strong><span className={styles.choiceDetail}>Busque no estabelecimento</span><span className={styles.choiceMeta}>Sem taxa de entrega</span></button> : null}
               </form>
             </CheckoutStage>
-          ) : null}
+          ) : stageRow("fulfillment")}
 
           {activeStage === "identity" ? (
             <CheckoutStage number="2" title="Seus dados" eyebrow="Identificação" description="Só precisamos do essencial para identificar e acompanhar seu pedido.">
@@ -156,11 +203,11 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                 <input type="hidden" name="storeSlug" value={slug} />
                 <Field label="WhatsApp" name="phone" type="tel" inputMode="tel" autoComplete="tel" defaultValue={identityPhone ?? ""} placeholder="(19) 99999-9999" required />
                 <Field label="Nome" name="name" autoComplete="name" defaultValue={identityName} required />
-                <details className={styles.inlineOptional} open={Boolean(identityEmail) || query.erro === "pix_email_required"}><summary>E-mail {query.erro === "pix_email_required" ? "· necessário para o Pix selecionado" : "· opcional"}</summary><div className={styles.inlineOptionalBody}><Field label="E-mail" name="email" type="email" autoComplete="email" defaultValue={identityEmail ?? ""} required={query.erro === "pix_email_required"} /></div></details>
+                <details className={styles.inlineOptional} open={Boolean(identityEmail)}><summary>E-mail · opcional</summary><div className={styles.inlineOptionalBody}><Field label="E-mail" name="email" type="email" autoComplete="email" defaultValue={identityEmail ?? ""} /></div></details>
                 <ActionButton>Continuar</ActionButton>
               </form>
             </CheckoutStage>
-          ) : null}
+          ) : stageRow("identity")}
 
           {activeStage === "address" && fulfillmentComplete && identityComplete && deliverySelected ? (
             <CheckoutStage number="3" title="Onde entregar?" eyebrow="Entrega" description="Informe um endereço atendido pela loja. Você verá a taxa e a previsão de entrega antes de confirmar.">
@@ -170,7 +217,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                   <div className={styles.choices}>{recognizedCustomer.addresses.map((address, index) => (
                     <form action={useSavedCheckoutAddressAction} key={`${address.postalCode}-${address.street}-${address.number}-${index}`}>
                       <input type="hidden" name="storeSlug" value={slug} /><input type="hidden" name="addressIndex" value={index} />
-                      <button type="submit" className={styles.choice}><strong>{address.isDefault ? "📍 Endereço principal" : `📍 ${address.label}`}</strong><span className={styles.choiceDetail}>{address.street}, {address.number}{address.complement ? ` · ${address.complement}` : ""}<br />{address.district} · {address.city}/{address.state}</span><span className={styles.choiceMeta}>Usar este endereço →</span></button>
+                      <button type="submit" className={styles.choice}><strong><NavigationIcon name="pin" width={16} height={16} /> {address.isDefault ? "Endereço principal" : address.label}</strong><span className={styles.choiceDetail}>{address.street}, {address.number}{address.complement ? ` · ${address.complement}` : ""}<br />{address.district} · {address.city}/{address.state}</span><span className={styles.choiceMeta}>Usar este endereço →</span></button>
                     </form>
                   ))}</div>
                   <div className={styles.orDivider}><span>Ou informe outro endereço</span></div>
@@ -191,7 +238,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                 <ActionButton>Continuar</ActionButton>
               </form>
             </CheckoutStage>
-          ) : null}
+          ) : stageRow("address")}
 
           {activeStage === "payment" && identityComplete && fulfillmentComplete && addressComplete ? (
             <CheckoutStage number={deliverySelected ? "4" : "3"} title="Pagamento" eyebrow="Pagamento" description="Escolha somente entre as formas habilitadas pelo estabelecimento.">
@@ -206,7 +253,9 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                       label: item.method === "custom" ? item.label ?? paymentMethodLabels.custom : paymentMethodLabels[item.method],
                       help: paymentMethodHelp[item.method],
                     }))}
-                    defaultValue={selectedPaymentValue}
+                    defaultValue={(query.erro === "pix_email_required" || query.erro === "invalid_payment_email") && enabledMethods.some((item) => item.method === "pix") ? "pix" : selectedPaymentValue}
+                    fulfillmentType={session?.fulfillment_type ?? null}
+                    pixEmail={identityEmail}
                     defaultChangeFor={changeForValue}
                     groupsClassName={styles.paymentGroups}
                     groupClassName={styles.paymentGroup}
@@ -225,29 +274,10 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                 {enabledMethods.length > 0 ? <ActionButton>Continuar</ActionButton> : null}
               </form>
             </CheckoutStage>
-          ) : null}
+          ) : stageRow("payment")}
 
           {activeStage === "review" && paymentComplete ? (
             <CheckoutStage number={deliverySelected ? "5" : "4"} title="Revisar e confirmar" eyebrow="Última etapa" description={`Confira os principais dados antes de enviar para ${menu.store.name}.`}>
-              <section className={styles.reviewItems} aria-label="Itens e identificação do pedido">
-                <h2>Seu pedido</h2>
-                <p><strong>{identityName}</strong> · {identityPhone}</p>
-                {cart.items.map((item) => <article key={item.id} className={styles.reviewItem}>
-                  <div><strong>{item.quantity}× {item.product_name_snapshot}</strong><strong>{money(Number(item.line_total_cents))}</strong></div>
-                  {item.modifiers.length > 0 ? <p>{item.modifiers.map((option) => `${Number(option.quantity ?? 1)}× ${option.modifier_name_snapshot}`).join(" · ")}</p> : null}
-                  {item.note ? <p>Observação: {item.note}</p> : null}
-                  {item.gas ? <p>{item.gas.sale_mode === "exchange" ? "Troca de vasilhame" : "Produto + vasilhame"}{item.gas.container_name_snapshot ? ` · ${item.gas.container_name_snapshot}` : ""}</p> : null}
-                </article>)}
-                <Link href={`/m/${slug}/carrinho`}>Editar itens no carrinho</Link>
-              </section>
-              <nav className={styles.reviewEditNav} aria-label="Alterar dados do checkout">
-                <Link href={stageHref(slug, "fulfillment")}>Alterar recebimento</Link><Link href={stageHref(slug, "identity")}>Alterar dados</Link>{deliverySelected ? <Link href={stageHref(slug, "address")}>Alterar endereço</Link> : null}<Link href={stageHref(slug, "payment")}>Alterar pagamento</Link>
-              </nav>
-
-              <Link href={`/m/${slug}`} className={styles.addMoreItems}>
-                <span>🛒 Adicionar mais itens</span>
-                <small>Voltar ao cardápio sem perder o que já está no carrinho.</small>
-              </Link>
 
               {paymentComplete && growthEnabled && benefits ? (
                 <details className={styles.optional} open={totalDiscount > 0 || query.erro === "benefit_invalid" || query.erro === "benefit_unavailable"}>
@@ -312,7 +342,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
 }
 
 function CheckoutStage({ number, title, eyebrow, description, children }: { number: string; title: string; eyebrow: string; description: string; children: ReactNode }) {
-  return <section className={styles.stage} aria-labelledby={`checkout-stage-${number}`}><header className={styles.stageHeader}><p className={styles.eyebrow}>{eyebrow}</p><h1 id={`checkout-stage-${number}`}>{title}</h1><p>{description}</p></header><div className={styles.stageBody}>{children}</div></section>;
+  return <section id="checkout-atual" className={styles.stage} aria-labelledby={`checkout-stage-${number}`}><header className={styles.stageHeader}><p className={styles.eyebrow}>{eyebrow}</p><h1 id={`checkout-stage-${number}`}>{title}</h1><p>{description}</p></header><div className={styles.stageBody}>{children}</div></section>;
 }
 
 function Field({ label, ...input }: InputHTMLAttributes<HTMLInputElement> & { label: string }) { return <label className={styles.field}><span>{label}</span><CheckoutInput {...input} label={label} className={styles.input} /></label>; }

@@ -34,7 +34,7 @@ describe("tablet layout QA [313]", () => {
     expect(css).toContain("minmax(330px,380px)");
     expect(css).toContain("@media(max-width:820px)");
     expect(css).toContain(".cartPanel{position:static;max-height:none}");
-    expect(css).toContain("bottom:calc(64px + env(safe-area-inset-bottom))");
+    expect(css).toContain("bottom:calc(var(--mobile-nav-height,68px) + env(safe-area-inset-bottom))");
     expect(css).toContain("@media(pointer:coarse)");
   });
 
