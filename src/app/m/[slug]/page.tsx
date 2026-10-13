@@ -1,9 +1,12 @@
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import { PublicCartBar } from "@/features/cart/public-cart-bar";
 import { MenuBrowser } from "@/features/menu/menu-browser";
 import { RestaurantBrand, restaurantBrandVars } from "@/features/menu/public-brand";
 import { StoreInformationSheet } from "@/features/menu/store-information-sheet";
+import { cartCookieName } from "@/server/cart/cart-token";
+import { PublicCartQuickLinesService, type PublicCartQuickLine } from "@/server/cart/public-cart-quick-lines-service";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
 import styles from "./public-menu.module.css";
 
@@ -18,6 +21,14 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
   const { slug } = await params;
   const menu = await PublicMenuService.getMenu(slug);
   if (!menu) notFound();
+  const cartToken = (await cookies()).get(cartCookieName(menu.store.slug))?.value ?? null;
+  let quickLines: Record<string, PublicCartQuickLine> = {};
+  try {
+    quickLines = await PublicCartQuickLinesService.get(menu.store.slug, cartToken);
+  } catch {
+    // As quantidades na lista são um atalho; sem elas o cardápio continua com o botão de adicionar.
+    quickLines = {};
+  }
   const [status, detail] = statusCopy[menu.operational.label];
   const deliveryAvailable = menu.settings.allow_delivery && menu.delivery.enabled;
   const statusClass = menu.operational.label === "open" ? styles.statusOpen : menu.operational.label === "paused" ? styles.statusPaused : "";
@@ -63,7 +74,7 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
             show_product_images: menu.settings.show_product_images,
           },
           categories: menu.categories,
-        }} canOrder={menu.operational.canOrder} />
+        }} canOrder={menu.operational.canOrder} productOptions={menu.productOptions} quickLines={quickLines} allowQuickAdd={menu.businessType !== "gas"} />
       </div>
       <footer className={styles.signature} aria-label="PedeAqui — Seu pedido começa aqui"><PedeAquiLogo size="xs" decorative /><span>Seu pedido começa aqui.</span></footer>
     </div>

@@ -31,12 +31,11 @@ describe("public menu mobile visual hierarchy", () => {
     expect(menuBrowserCss).toContain("scroll-margin-top:62px");
   });
 
-  it("makes product cards more purchase-oriented without losing performance contracts", () => {
-    expect(menuBrowserCss).toContain("grid-template-columns:minmax(0,1fr) 108px");
-    expect(menuBrowserCss).toContain(".image,.placeholder{width:108px;height:108px");
-    expect(menuBrowserCss).toContain("border-color:transparent;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)");
-    expect(productCard).toContain("Ver opções →");
-    expect(productCard).toContain('width={104} height={104} loading="lazy" decoding="async"');
+  it("uses a compact purchase row with a direct action and lazy images", () => {
+    expect(menuBrowserCss).toContain(".product{display:grid;grid-template-columns:auto minmax(0,1fr) auto");
+    expect(menuBrowserCss).toContain(".image,.imageFallback{width:72px;height:72px}");
+    expect(menuBrowserCss).toContain(".addButton{width:44px;height:44px");
+    expect(productCard).toContain('width={88} height={88} loading="lazy" decoding="async"');
   });
 
   it("presents product configuration as a guided purchase flow while keeping server authority explicit", () => {

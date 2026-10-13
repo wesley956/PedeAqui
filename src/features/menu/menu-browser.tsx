@@ -1,8 +1,8 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import type { PublicMenu } from "@/server/menu/schemas";
-import { PublicProductCard } from "./public-product-card";
+import { PublicProductCard, type ProductOptions, type QuickLine } from "./public-product-card";
 import { PublicPromotionCard } from "./public-promotion-card";
 import styles from "./menu-browser.module.css";
 
@@ -14,13 +14,25 @@ type MenuBrowserData = Pick<PublicMenu, "categories"> & {
 const PROMOTIONS_CATEGORY_ID = "00000000-0000-4000-8000-000000000999";
 
 function normalize(value: string) {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  return value.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 }
 
-export function MenuBrowser({ menu, canOrder }: { menu: MenuBrowserData; canOrder: boolean }) {
+/**
+ * Cardápio Expresso: categorias presas no topo que levam até a seção (sem esconder as outras),
+ * busca que filtra na hora e lista compacta com ação direta em cada item.
+ */
+export function MenuBrowser({ menu, canOrder, productOptions, quickLines = {}, allowQuickAdd = true }: {
+  menu: MenuBrowserData;
+  canOrder: boolean;
+  productOptions?: Record<string, ProductOptions>;
+  quickLines?: Record<string, QuickLine>;
+  allowQuickAdd?: boolean;
+}) {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
-  const [categoryId, setCategoryId] = useState<string>("all");
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const categoriesRef = useRef<HTMLDivElement | null>(null);
+  const scrollLocked = useRef(false);
 
   const visibleCategories = useMemo(
     () => menu.categories.filter((category) => category.products.length > 0),
@@ -30,7 +42,6 @@ export function MenuBrowser({ menu, canOrder }: { menu: MenuBrowserData; canOrde
   const filtered = useMemo(() => {
     const needle = normalize(deferredQuery);
     return visibleCategories
-      .filter((category) => categoryId === "all" || category.id === categoryId)
       .map((category) => ({
         ...category,
         products: category.products.filter(
@@ -38,12 +49,44 @@ export function MenuBrowser({ menu, canOrder }: { menu: MenuBrowserData; canOrde
         ),
       }))
       .filter((category) => category.products.length > 0);
-  }, [visibleCategories, deferredQuery, categoryId]);
+  }, [visibleCategories, deferredQuery]);
 
   const promotionCategory = filtered.find((category) => category.id === PROMOTIONS_CATEGORY_ID) ?? null;
   const standardCategories = filtered.filter((category) => category.id !== PROMOTIONS_CATEGORY_ID);
   const total = filtered.reduce((sum, category) => sum + category.products.length, 0);
   const catalogEmpty = visibleCategories.length === 0;
+  const currentCategory = activeCategory ?? filtered[0]?.id ?? null;
+
+  // Acompanha a rolagem e marca a categoria que está no topo da tela.
+  useEffect(() => {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-menu-section]"));
+    if (sections.length === 0 || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver((entries) => {
+      if (scrollLocked.current) return;
+      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      const id = visible[0]?.target.getAttribute("data-menu-section");
+      if (id) setActiveCategory(id);
+    }, { rootMargin: "-72px 0px -60% 0px", threshold: 0 });
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, [filtered]);
+
+  // Mantém o botão da categoria ativa visível na barra que rola de lado.
+  useEffect(() => {
+    if (!currentCategory || !categoriesRef.current) return;
+    const button = categoriesRef.current.querySelector<HTMLElement>(`[data-category="${currentCategory}"]`);
+    if (button) categoriesRef.current.scrollTo({ left: button.offsetLeft - 12, behavior: "smooth" });
+  }, [currentCategory]);
+
+  function goToCategory(id: string) {
+    setActiveCategory(id);
+    scrollLocked.current = true;
+    window.setTimeout(() => { scrollLocked.current = false; }, 800);
+    const target = document.getElementById(`categoria-${id}`);
+    if (!target) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  }
 
   return (
     <div className={styles.browser}>
@@ -60,22 +103,15 @@ export function MenuBrowser({ menu, canOrder }: { menu: MenuBrowserData; canOrde
         </label>
       ) : null}
 
-      {menu.settings.show_categories && visibleCategories.length > 1 ? (
-        <div role="group" aria-label="Categorias" tabIndex={0} className={styles.categories}>
-          <button
-            type="button"
-            onClick={() => setCategoryId("all")}
-            aria-pressed={categoryId === "all"}
-            className={styles.categoryButton}
-          >
-            Todos
-          </button>
-          {visibleCategories.map((category) => (
+      {menu.settings.show_categories && filtered.length > 1 ? (
+        <div role="group" aria-label="Categorias" ref={categoriesRef} className={styles.categories}>
+          {filtered.map((category) => (
             <button
               key={category.id}
               type="button"
-              onClick={() => setCategoryId(category.id)}
-              aria-pressed={categoryId === category.id}
+              data-category={category.id}
+              onClick={() => goToCategory(category.id)}
+              aria-pressed={currentCategory === category.id}
               className={styles.categoryButton}
             >
               {category.name}
@@ -90,7 +126,7 @@ export function MenuBrowser({ menu, canOrder }: { menu: MenuBrowserData; canOrde
           <p>
             {catalogEmpty
               ? "O estabelecimento está preparando o cardápio. Tente novamente mais tarde."
-              : "Tente outro termo ou categoria."}
+              : "Tente outro nome ou limpe a busca."}
           </p>
         </div>
       ) : (
@@ -98,6 +134,7 @@ export function MenuBrowser({ menu, canOrder }: { menu: MenuBrowserData; canOrde
           {promotionCategory ? (
             <section
               id={`categoria-${promotionCategory.id}`}
+              data-menu-section={promotionCategory.id}
               className={`${styles.section} ${styles.promotionSection}`}
             >
               <div className={styles.promotionHeader}>
@@ -124,7 +161,7 @@ export function MenuBrowser({ menu, canOrder }: { menu: MenuBrowserData; canOrde
           ) : null}
 
           {standardCategories.map((category) => (
-            <section key={category.id} id={`categoria-${category.id}`} className={styles.section}>
+            <section key={category.id} id={`categoria-${category.id}`} data-menu-section={category.id} className={styles.section}>
               <div className={styles.sectionHeader}>
                 <h2>{category.name}</h2>
                 {category.description ? <p>{category.description}</p> : null}
@@ -137,6 +174,9 @@ export function MenuBrowser({ menu, canOrder }: { menu: MenuBrowserData; canOrde
                     storeSlug={menu.store.slug}
                     showImage={menu.settings.show_product_images}
                     canOrder={canOrder}
+                    options={productOptions?.[product.id]}
+                    quickLine={quickLines[product.id]}
+                    allowQuickAdd={allowQuickAdd}
                   />
                 ))}
               </div>

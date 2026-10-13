@@ -21,7 +21,7 @@ describe("frontend performance QA [316]", () => {
 
   it("keeps product thumbnails lazy with explicit dimensions and async decode", () => {
     const card = read("src/features/menu/public-product-card.tsx");
-    expect(card).toContain('width={104} height={104} loading="lazy" decoding="async"');
+    expect(card).toContain('width={88} height={88} loading="lazy" decoding="async"');
     expect(card).not.toContain('fetchPriority="high"');
   });
 
