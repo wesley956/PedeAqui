@@ -38,12 +38,13 @@ describe("public menu mobile visual hierarchy", () => {
     expect(productCard).toContain('width={88} height={88} loading="lazy" decoding="async"');
   });
 
-  it("presents product configuration as a guided purchase flow while keeping server authority explicit", () => {
-    expect(productPage).toContain("Monte do seu jeito");
-    expect(productPage).toContain("Etapa {index + 1}");
-    expect(productPage).toContain("Finalizar item");
-    expect(productPage).toContain("Tudo certo?");
-    expect(productPage).toContain("Confira o valor com as opções escolhidas no carrinho antes de continuar.");
+  it("shows the live item total in a fixed bar while keeping server authority explicit", () => {
+    const purchaseBar = readFileSync("src/features/menu/product-purchase-bar.tsx", "utf8");
+    expect(productPage).toContain("<ProductPurchaseBar");
+    expect(productPage).toContain("Alguma observação?");
+    expect(productPage).not.toContain("Etapa {index + 1}");
+    expect(purchaseBar).toContain("o servidor recalcula o preço ao adicionar ao carrinho");
+    expect(purchaseBar).toContain("(basePriceCents + modifiersCents) * quantity");
     expect(productCss).toContain(".stepBlock{display:grid;gap:7px;scroll-margin-top:64px}");
   });
 

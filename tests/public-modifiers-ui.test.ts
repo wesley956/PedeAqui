@@ -33,7 +33,7 @@ describe("public modifier selector", () => {
 
   it("keeps server-side add-to-cart as final authority", () => {
     expect(page).toContain("addToCartAction");
-    expect(page).toContain("Confira o valor com as opções escolhidas no carrinho antes de continuar.");
+    expect(readFileSync("src/features/menu/product-purchase-bar.tsx", "utf8")).toContain("o servidor recalcula o preço ao adicionar ao carrinho");
   });
 
   it("disables modifier groups when the product or store is unavailable", () => {

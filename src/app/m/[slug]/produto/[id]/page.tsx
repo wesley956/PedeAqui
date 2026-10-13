@@ -2,10 +2,11 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { addToCartAction } from "@/features/cart/actions";
-import { PublicCartBar } from "@/features/cart/public-cart-bar";
 import { ComplementCategorySection } from "@/features/menu/complement-category-section";
 import { StoreOrderStatus } from "@/features/menu/store-order-status";
 import { ModifierGroupSelector } from "@/features/menu/modifier-group-selector";
+import { ProductImageFallback } from "@/features/menu/product-image-fallback";
+import { ProductPurchaseBar } from "@/features/menu/product-purchase-bar";
 import { businessVocabulary } from "@/modules/business-vocabulary";
 import { CartService } from "@/server/cart/cart-service";
 import { cartCookieName } from "@/server/cart/cart-token";
@@ -34,6 +35,7 @@ export default async function PublicProductPage({ params, searchParams }: { para
   const soldOut = product.availability === "sold_out";
   const orderUnavailable = soldOut || !operational.canOrder;
   const timeLabel = businessType === "restaurant" ? "Preparo estimado" : businessType === "gas" ? "Separação estimada" : "Prazo estimado";
+  const modifierPrices = Object.fromEntries(product.modifier_groups.flatMap((group) => group.modifiers.map((modifier) => [modifier.id, modifier.price_cents])));
   const notePlaceholder = businessType === "restaurant" ? "Ex.: sem cebola, molho separado..." : businessType === "gas" ? "Ex.: tocar a campainha, referência da entrega..." : "Alguma observação para este item?";
 
   let editItemId: string | null = null;
@@ -92,7 +94,7 @@ export default async function PublicProductPage({ params, searchParams }: { para
           // Catalog uploads are pre-sized WebP files; raw rendering preserves arbitrary legacy HTTPS URLs.
           // eslint-disable-next-line @next/next/no-img-element
           <img src={product.image_url} alt={product.name} width={720} height={360} fetchPriority="high" decoding="async" className={styles.productImage} />
-        ) : <div aria-hidden className={styles.productPlaceholder}>P</div>}
+        ) : <ProductImageFallback className={styles.productPlaceholder} />}
         <div className={styles.productInfo}>
           <div className={styles.productTop}>
             <div>
@@ -116,43 +118,28 @@ export default async function PublicProductPage({ params, searchParams }: { para
         {gas.containerSaleEnabled ? <label style={{ display: "flex", gap: 10, alignItems: "start", padding: 12, border: "var(--border-width) solid var(--border-default)", borderRadius: "var(--radius-lg)", cursor: "pointer", color: "var(--text-primary)" }}><input type="radio" name="gasSaleMode" value="with_container" required={gas.requireContainerChoice} defaultChecked={editGasSaleMode === "with_container"} /><span><strong>Produto + vasilhame</strong><br /><small style={{ color: "var(--text-secondary)" }}>Inclui o casco. Acréscimo: {money(gas.containerSurchargeCents)}.</small></span></label> : null}
       </fieldset> : null}
 
-      {product.modifier_groups.length > 0 ? <section className={styles.assemblyIntro} aria-labelledby="montagem-titulo">
-        <span className={styles.assemblyEyebrow}>Monte do seu jeito</span>
-        <a className={styles.backLink} href="#finalizar-item">Ir para quantidade e observação ↓</a>
-        <h2 id="montagem-titulo" className={styles.assemblyTitle}>Escolha como você quer</h2>
-        <p className={styles.assemblyText}>Selecione as opções e quantidades que desejar dentro dos limites de cada grupo.</p>
-      </section> : null}
-
-      {product.modifier_groups.map((group, index) => <div key={group.id} className={styles.stepBlock}>
-        <span className={styles.stepLabel}>Etapa {index + 1}</span>
+      {product.modifier_groups.map((group, index) => <div key={group.id} className={styles.stepBlock} id={`grupo-${index + 1}`}>
         <ModifierGroupSelector group={group} disabled={orderUnavailable} complementTargetId={index === product.modifier_groups.length - 1 ? complementTargetId : undefined} initialSelections={initialSelections} />
       </div>)}
 
-      <section id="finalizar-item" className={styles.finalSection}>
-        <header className={styles.finalHeader}>
-          <span className={styles.stepLabel}>Finalizar item</span>
-          <h2 className={styles.finalTitle}>Tudo certo?</h2>
-          <p className={styles.finalText}>Se quiser, deixe uma observação e confirme a quantidade deste item.</p>
-        </header>
-        <label style={{ display: "grid", gap: 6, color: "var(--text-primary)" }}>
-          <strong>Observação</strong>
-          <textarea name="note" maxLength={500} placeholder={notePlaceholder} defaultValue={editNote} disabled={orderUnavailable} style={{ minHeight: 88, resize: "vertical", padding: 12, borderRadius: "var(--radius-lg)", border: "var(--border-width) solid var(--border-default)", background: "var(--surface-2)", color: "var(--text-primary)" }} />
-        </label>
-        <div className={styles.finalGrid}>
-          <label style={{ display: "grid", gap: 6, color: "var(--text-primary)" }}>
-            <strong>Quantidade</strong>
-            <input name="quantity" type="number" min={1} max={99} defaultValue={editQuantity} required disabled={orderUnavailable} style={{ minHeight: 48, borderRadius: "var(--radius-lg)", border: "var(--border-width) solid var(--border-default)", padding: "10px 12px", background: "var(--surface-2)", color: "var(--text-primary)" }} />
-          </label>
-          <button className={styles.submitButton} type="submit" disabled={orderUnavailable} style={{ background: orderUnavailable ? "var(--surface-3)" : "var(--brand-primary)", color: orderUnavailable ? "var(--text-secondary)" : "var(--text-on-brand)", cursor: orderUnavailable ? "not-allowed" : "pointer" }}>{soldOut ? `${productLabel} esgotado` : operational.label === "paused" ? "Pedidos pausados" : operational.label === "closed" ? "Cardápio fechado" : editItemId ? "Salvar alterações" : "Adicionar ao carrinho"}</button>
-        </div>
-        <small className={styles.helper}>Confira o valor com as opções escolhidas no carrinho antes de continuar.</small>
-      </section>
       {complements.length > 0 ? <div className={styles.stepBlock}>
-        <span className={styles.stepLabel}>Etapa {product.modifier_groups.length + 1} · Opcional</span>
         <ComplementCategorySection categories={complements} storeSlug={store.slug} businessType={businessType} disabled={orderUnavailable} />
       </div> : null}
 
+      <section id="finalizar-item" className={styles.finalSection}>
+        <label className={styles.noteField}>
+          <strong>Alguma observação?</strong>
+          <textarea name="note" maxLength={500} placeholder={notePlaceholder} defaultValue={editNote} disabled={orderUnavailable} className={styles.note} />
+        </label>
+      </section>
+
+      <ProductPurchaseBar
+        basePriceCents={price}
+        modifierPrices={modifierPrices}
+        initialQuantity={editQuantity}
+        unavailable={orderUnavailable}
+        label={soldOut ? `${productLabel} esgotado` : operational.label === "paused" ? "Pedidos pausados" : operational.label === "closed" ? "Cardápio fechado" : editItemId ? "Salvar alterações" : "Adicionar"}
+      />
     </form>
-    <PublicCartBar storeSlug={store.slug} />
   </main>;
 }
