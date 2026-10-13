@@ -14,6 +14,7 @@ import {
 } from "@/features/catalog/actions";
 import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import { formatCents } from "@/server/catalog/money";
+import styles from "../catalog-management.module.css";
 
 function editableMoney(cents: number) {
   return (cents / 100).toFixed(2).replace(".", ",");
@@ -30,7 +31,7 @@ function SelectionModeField({ id, defaultValue = "distinct_choices" }: { id: str
 function DistributionTotalField({ id, defaultValue }: { id: string; defaultValue?: number | null }) {
   return <div style={{ display: "grid", gap: 4 }}>
     <QuantityInput id={id} label="Total a distribuir (divisão igual)" name="distributionTotal" min={1} max={100} defaultValue={defaultValue ?? ""} />
-    <span className="muted" style={{ fontSize: 12 }}>Preencha somente no modo de divisão igual. Ex.: 50 para uma caixa com 50 unidades.</span>
+    <span className="muted" style={{ fontSize: 13 }}>Preencha somente no modo de divisão igual. Ex.: 50 para uma caixa com 50 unidades.</span>
   </div>;
 }
 
@@ -41,43 +42,49 @@ export default async function ModifiersPage() {
   ]);
 
   return (
-    <section style={{ display: "grid", gap: 20 }}>
-      <div>
-        <h1 style={{ margin: 0 }}>Adicionais, tamanhos e sabores</h1>
+    <section className={styles.page}>
+      <div className={styles.headerCopy}>
+        <h1>Adicionais, tamanhos e sabores</h1>
         <p className="muted">Configure cada grupo conforme a operação do restaurante: escolha comum, quantidade manual ou divisão automática.</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
-        <ResilientMutationForm action={createModifierGroupFormAction} className="card" style={{ padding: 18, display: "grid", gap: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Novo grupo</h2>
+      <div className={styles.createGrid}>
+        <details className={styles.createDetails}>
+          <summary>Novo grupo</summary>
+        <ResilientMutationForm action={createModifierGroupFormAction} className={styles.editBody}>
+          <p className={styles.formHint}>Reúna escolhas como sabores, tamanhos ou acompanhamentos e defina a regra do grupo.</p>
           <Input id="new-group-name" label="Nome" name="name" required />
           <Input id="new-group-description" label="Descrição" name="description" />
           <SelectionModeField id="new-group-selection-mode" />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div className={styles.formGrid}>
             <QuantityInput id="new-group-min" label="Mínimo de opções/unidades" name="minSelection" min={0} defaultValue={0} />
             <QuantityInput id="new-group-max" label="Máximo de opções/unidades" name="maxSelection" min={1} defaultValue={1} />
           </div>
           <DistributionTotalField id="new-group-distribution-total" />
           <QuantityInput id="new-group-order" label="Ordem" name="sortOrder" min={0} defaultValue={0} />
-          <Checkbox name="required" label="Obrigatório" />
-          <Checkbox name="active" label="Ativo" defaultChecked />
+          <Checkbox id="new-group-required" name="required" label="Obrigatório" />
+          <Checkbox id="new-group-active" name="active" label="Ativo" defaultChecked />
           <Button type="submit">Criar grupo</Button>
         </ResilientMutationForm>
+        </details>
 
-        <ResilientMutationForm action={createModifierFormAction} className="card" style={{ padding: 18, display: "grid", gap: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Novo adicional ou opção</h2>
+        <details className={styles.createDetails}>
+          <summary>Novo adicional ou opção</summary>
+        <ResilientMutationForm action={createModifierFormAction} className={styles.editBody}>
+          <p className={styles.formHint}>Escolha o grupo ao qual esta opção pertence. O preço é o acréscimo por unidade.</p>
           <SelectField id="new-modifier-group" name="modifierGroupId" label="Grupo" required disabled={groups.length === 0}>
               {groups.length === 0 ? <option value="">Crie um grupo primeiro</option> : groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
           </SelectField>
           <Input id="new-modifier-name" label="Nome" name="name" required />
           <MoneyInput id="new-modifier-price" label="Preço adicional por unidade" name="price" defaultValue="0,00" required />
           <QuantityInput id="new-modifier-order" label="Ordem" name="sortOrder" min={0} defaultValue={0} />
-          <Checkbox name="active" label="Ativo" defaultChecked />
+          <Checkbox id="new-modifier-active" name="active" label="Ativo" defaultChecked />
           <Button type="submit" disabled={groups.length === 0}>Criar opção</Button>
         </ResilientMutationForm>
+        </details>
       </div>
 
-      <div style={{ display: "grid", gap: 14 }}>
+      <div className={styles.managementList}>
         {groups.length === 0 ? <article className="card" style={{ padding: 18 }}><span className="muted">Nenhum grupo cadastrado.</span></article> : null}
         {groups.map((group) => {
           const items = modifiers.filter((modifier) => modifier.modifier_group_id === group.id);
@@ -85,17 +92,17 @@ export default async function ModifiersPage() {
           const equalSplitMode = group.selection_mode === "equal_split_options";
           const pricedPerUnit = quantityMode || equalSplitMode;
           return (
-            <article key={group.id} className="card" style={{ padding: 18, display: "grid", gap: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+            <article key={group.id} className={`card ${styles.managementCard}`}>
+              <div className={styles.managementTop}>
                 <div>
                   <strong>{group.name}</strong>
                   <div className="muted" style={{ fontSize: 13 }}>
-                    {group.required ? "Obrigatório" : "Opcional"} · {equalSplitMode ? `${group.min_selection}–${group.max_selection} opção(ões) · divide ${group.distribution_total ?? "?"} unidades` : quantityMode ? `${group.min_selection}–${group.max_selection} unidades no total` : `${group.min_selection}–${group.max_selection} seleção(ões)`} · ordem {group.sort_order}
+                    {group.required ? "Obrigatório" : "Opcional"} · {equalSplitMode ? `${group.min_selection}–${group.max_selection} opção(ões) · divide ${group.distribution_total ?? "?"} unidades` : quantityMode ? `${group.min_selection}–${group.max_selection} unidades no total` : `${group.min_selection}–${group.max_selection} seleção(ões)`} · {items.length} opção(ões) · ordem {group.sort_order}
                   </div>
-                  {quantityMode ? <div className="muted" style={{ fontSize: 12 }}>O máximo é um teto. O cliente pode continuar antes dele assim que o mínimo estiver atendido.</div> : null}
-                  {equalSplitMode ? <div className="muted" style={{ fontSize: 12 }}>O cliente escolhe entre o mínimo e o máximo de opções; o total configurado é repartido igualmente entre elas.</div> : null}
+                  {quantityMode ? <div className="muted" style={{ fontSize: 13 }}>O máximo é um teto. O cliente pode continuar antes dele assim que o mínimo estiver atendido.</div> : null}
+                  {equalSplitMode ? <div className="muted" style={{ fontSize: 13 }}>O cliente escolhe entre o mínimo e o máximo de opções; o total configurado é repartido igualmente entre elas.</div> : null}
                 </div>
-                <span className="muted">{group.active ? "Ativo" : "Pausado"}</span>
+                <span className={styles.stateBadge} data-active={group.active}>{group.active ? "Ativo" : "Pausado"}</span>
               </div>
 
               <ResilientMutationForm action={setModifierGroupActiveFormAction} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
@@ -104,46 +111,52 @@ export default async function ModifiersPage() {
                 <Button type="submit" tone="secondary">{group.active ? "Pausar grupo" : "Reativar grupo"}</Button>
               </ResilientMutationForm>
 
-              <details>
-                <summary style={{ cursor: "pointer", fontWeight: 700 }}>Editar grupo</summary>
-                <ResilientMutationForm action={updateModifierGroupFormAction} successReset={false} style={{ display: "grid", gap: 10, marginTop: 12 }}>
+              <details className={styles.editDetails}>
+                <summary>Editar grupo</summary>
+                <ResilientMutationForm action={updateModifierGroupFormAction} successReset={false} className={styles.editBody}>
                   <input type="hidden" name="modifierGroupId" value={group.id} />
                   <Input id={`group-${group.id}-name`} label="Nome" name="name" required defaultValue={group.name} />
                   <Input id={`group-${group.id}-description`} label="Descrição" name="description" defaultValue={group.description ?? ""} />
                   <SelectionModeField id={`group-${group.id}-selection-mode`} defaultValue={group.selection_mode ?? "distinct_choices"} />
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div className={styles.formGrid}>
                     <QuantityInput id={`group-${group.id}-min`} label="Mínimo de opções/unidades" name="minSelection" min={0} defaultValue={group.min_selection} />
                     <QuantityInput id={`group-${group.id}-max`} label="Máximo de opções/unidades" name="maxSelection" min={1} defaultValue={group.max_selection} />
                   </div>
                   <DistributionTotalField id={`group-${group.id}-distribution-total`} defaultValue={group.distribution_total} />
                   <QuantityInput id={`group-${group.id}-order`} label="Ordem" name="sortOrder" min={0} defaultValue={group.sort_order} />
-                  <Checkbox name="required" label="Obrigatório" defaultChecked={group.required} />
-                  <Checkbox name="active" label="Ativo" defaultChecked={group.active} />
+                  <Checkbox id={`group-${group.id}-required`} name="required" label="Obrigatório" defaultChecked={group.required} />
+                  <Checkbox id={`group-${group.id}-active`} name="active" label="Ativo" defaultChecked={group.active} />
                   <Button type="submit">Salvar grupo</Button>
                 </ResilientMutationForm>
               </details>
 
-              <ResilientMutationForm action={removeModifierGroupAction}>
+              <details className={styles.editDetails}>
+                <summary>Remover grupo</summary>
+              <ResilientMutationForm action={removeModifierGroupAction} className={styles.editBody}>
                 <input type="hidden" name="modifierGroupId" value={group.id} />
                 <ConfirmSubmitButton confirmation="Remover este grupo do catálogo? Produtos e pedidos antigos serão preservados.">Remover grupo</ConfirmSubmitButton>
               </ResilientMutationForm>
+              </details>
 
-              <div style={{ display: "grid", gap: 10 }}>
+              <div className={styles.optionList}>
                 {items.length === 0 ? <span className="muted">Nenhuma opção neste grupo.</span> : items.map((item) => (
-                  <section key={item.id} style={{ display: "grid", gap: 10, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                  <section key={item.id} className={styles.optionRow}>
+                    <div className={styles.managementTop}>
                       <span>{item.name} {!item.active ? <span className="muted">· pausado</span> : null}</span>
                       <span className="muted">+ {formatCents(item.price_cents)}{pricedPerUnit ? " por unidade" : ""}</span>
                     </div>
+                    <details className={styles.editDetails}>
+                      <summary>Gerenciar opção: {item.name}</summary>
+                      <div className={styles.editBody}>
                     <ResilientMutationForm action={setModifierActiveFormAction} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                       <input type="hidden" name="modifierId" value={item.id} />
                       <input type="hidden" name="active" value={item.active ? "false" : "true"} />
-                      <Checkbox name="allMatching" label="Aplicar ao mesmo sabor em todos os grupos" defaultChecked />
+                      <Checkbox id={`modifier-${item.id}-matching`} name="allMatching" label="Aplicar ao mesmo sabor em todos os grupos" defaultChecked />
                       <Button type="submit" tone="secondary">{item.active ? "Pausar opção" : "Reativar opção"}</Button>
                     </ResilientMutationForm>
-                    <details>
-                      <summary style={{ cursor: "pointer" }}>Editar opção</summary>
-                      <ResilientMutationForm action={updateModifierFormAction} successReset={false} style={{ display: "grid", gap: 10, marginTop: 12 }}>
+                    <details className={styles.editDetails}>
+                      <summary>Editar opção</summary>
+                      <ResilientMutationForm action={updateModifierFormAction} successReset={false} className={styles.editBody}>
                         <input type="hidden" name="modifierId" value={item.id} />
                         <SelectField id={`modifier-${item.id}-group`} name="modifierGroupId" label="Grupo" required defaultValue={item.modifier_group_id}>
                             {groups.map((optionGroup) => <option key={optionGroup.id} value={optionGroup.id}>{optionGroup.name}</option>)}
@@ -151,7 +164,7 @@ export default async function ModifiersPage() {
                         <Input id={`modifier-${item.id}-name`} label="Nome" name="name" required defaultValue={item.name} />
                         <MoneyInput id={`modifier-${item.id}-price`} label="Preço adicional" name="price" required defaultValue={editableMoney(item.price_cents)} />
                         <QuantityInput id={`modifier-${item.id}-order`} label="Ordem" name="sortOrder" min={0} defaultValue={item.sort_order} />
-                        <Checkbox name="active" label="Ativo" defaultChecked={item.active} />
+                        <Checkbox id={`modifier-${item.id}-active`} name="active" label="Ativo" defaultChecked={item.active} />
                         <Button type="submit">Salvar opção</Button>
                       </ResilientMutationForm>
                     </details>
@@ -159,6 +172,8 @@ export default async function ModifiersPage() {
                       <input type="hidden" name="modifierId" value={item.id} />
                       <ConfirmSubmitButton confirmation="Remover esta opção? Pedidos antigos serão preservados.">Remover opção</ConfirmSubmitButton>
                     </ResilientMutationForm>
+                      </div>
+                    </details>
                   </section>
                 ))}
               </div>

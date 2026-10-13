@@ -554,3 +554,23 @@
 .productMenu{position:relative}.productMenu>summary{min-height:44px;display:flex;align-items:center;gap:6px;padding:8px;cursor:pointer;list-style:none;border:1px solid var(--border-default);border-radius:8px;font-size:13px}.productMenu>summary::-webkit-details-marker{display:none}.productMenu>summary:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}.productMenuBody{position:absolute;right:0;top:calc(100% + 4px);width:200px;max-width:calc(100vw - 48px);z-index:var(--z-overlay);display:grid;gap:8px;padding:12px;border:1px solid var(--border-default);border-radius:8px;background:var(--surface-1);box-shadow:var(--shadow-md)}.productMenuBody button,.productMenuBody>a{width:100%;min-height:44px}.productMenuBody>a{display:grid;place-items:center;border:1px solid var(--border-default);border-radius:8px;font-size:14px}
 @media(max-width:1100px){.productCard{grid-template-columns:64px minmax(0,1fr) auto}.productActions{grid-column:2/-1}}
 @media(max-width:640px){.productCard{grid-template-columns:48px minmax(0,1fr);gap:12px;padding:12px}.productThumbnail{width:48px;height:48px}.productPrice{grid-column:2;text-align:left}.productActions{grid-column:1/-1;justify-content:space-between}.navLink{flex:1 1 auto;justify-content:center}.filters{padding:12px}}
+
+/* The editors use the same compact surfaces as the catalog list. */
+.headerCopy h1{font-size:24px;line-height:1.3}
+.createGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+.createDetails{min-width:0;padding:16px;border:1px solid var(--border-default);border-radius:12px;background:var(--surface-1)}
+.createDetails>summary,.editDetails>summary{min-height:44px;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.createDetails>summary::before,.editDetails>summary::before{content:"";width:6px;height:6px;border-right:2px solid var(--text-secondary);border-bottom:2px solid var(--text-secondary);transform:rotate(-45deg);flex-shrink:0;margin-right:4px}
+.createDetails[open]>summary::before,.editDetails[open]>summary::before{transform:rotate(45deg)}
+.createDetails>summary::-webkit-details-marker,.editDetails>summary::-webkit-details-marker{display:none}
+.createDetails>summary:focus-visible,.editDetails>summary:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px;border-radius:8px}
+.createDetails .editBody,.editDetails .editBody{min-width:0;padding-top:12px;border-top:1px solid var(--border-default)}
+.formHint{margin:0;font-size:13px;line-height:1.5;color:var(--text-secondary)}
+.managementCard{min-width:0;border-radius:12px;box-shadow:none;gap:8px}
+.managementTop>div{min-width:0;overflow-wrap:anywhere}.managementTop strong{font-size:14px;font-weight:600}
+.stateBadge{display:inline-flex;align-items:center;min-height:28px;padding:4px 8px;border-radius:999px;background:var(--surface-2);color:var(--text-secondary);font-size:12px;white-space:nowrap}
+.stateBadge[data-active="true"]{color:var(--state-success);background:color-mix(in srgb,var(--state-success) 10%,var(--surface-1))}
+.optionList{display:grid;gap:0}.optionRow{min-width:0;padding:12px 0;border-top:1px solid var(--border-default);display:grid;gap:4px;font-size:14px}
+.editBody{min-width:0}.editBody button,.optionRow button{max-width:100%;min-height:44px}.editBody small{font-size:13px}
+.formGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:640px){.createGrid,.formGrid{grid-template-columns:minmax(0,1fr)}.createDetails,.managementCard{padding:12px}.editBody input,.editBody select,.editBody textarea{font-size:16px}.managementActions{justify-content:flex-end}}

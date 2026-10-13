@@ -49,7 +49,7 @@ describe("catalog CRUD readiness PA-DIAG-016 to PA-DIAG-020", () => {
     for (const action of ["updateModifierGroupFormAction", "removeModifierGroupAction", "updateModifierFormAction", "removeModifierAction", "linkModifierGroupAction", "unlinkModifierGroupAction"]) expect(actions).toContain(action);
     expect(page).toContain("Editar grupo");
     expect(page).toContain("Editar opção");
-    expect(productEditor).toContain("Vincular ou atualizar ordem");
+    expect(productEditor).toContain("Salvar vínculo do grupo");
     expect(productEditor).toContain("Desvincular");
     expect(service).not.toMatch(/from\("modifier_groups"\)\.delete\(\)/);
     expect(service).not.toMatch(/from\("modifiers"\)\.delete\(\)/);
