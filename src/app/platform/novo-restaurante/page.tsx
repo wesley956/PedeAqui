@@ -73,7 +73,7 @@ export default async function NewRestaurantPage({
             <span>{invite === "sent" ? "✓ Convite do proprietário enviado por e-mail" : invite === "manual" ? "! E-mail informado, mas o convite automático precisa ser reenviado depois" : "○ Proprietário pode ser convidado depois"}</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 10 }}>
-            <Link href={`/m/${slug}`} target="_blank" style={{ minHeight: 46, borderRadius: "var(--radius-lg)", background: "var(--accent)", color: "white", display: "grid", placeItems: "center", fontWeight: "var(--font-weight-bold)", textDecoration: "none", padding: "0 14px" }}>Abrir cardápio</Link>
+            <Link href={`/m/${slug}`} target="_blank" style={{ minHeight: 46, borderRadius: "var(--radius-lg)", background: "var(--accent)", color: "var(--text-on-brand)", display: "grid", placeItems: "center", fontWeight: "var(--font-weight-bold)", textDecoration: "none", padding: "0 14px" }}>Abrir cardápio</Link>
             <Link href={overviewHref} style={{ minHeight: 46, borderRadius: "var(--radius-lg)", border: "1px solid var(--border)", display: "grid", placeItems: "center", fontWeight: "var(--font-weight-bold)", textDecoration: "none", padding: "0 14px" }}>Abrir visão 360</Link>
           </div>
           <Link href="/platform/novo-restaurante" style={{ fontWeight: "var(--font-weight-bold)" }}>Cadastrar outro restaurante</Link>
@@ -103,7 +103,7 @@ export default async function NewRestaurantPage({
           </div>
 
           {error ? <p role="alert" style={{ margin: 0, fontWeight: "var(--font-weight-bold)" }}>Não foi possível concluir o cadastro. Revise os dados e tente novamente.</p> : null}
-          <button type="submit" style={{ minHeight: 50, border: 0, borderRadius: "var(--radius-lg)", background: "var(--accent)", color: "white", fontSize: "var(--font-size-md)", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Criar restaurante</button>
+          <button type="submit" style={{ minHeight: 50, border: 0, borderRadius: "var(--radius-lg)", background: "var(--accent)", color: "var(--text-on-brand)", fontSize: "var(--font-size-md)", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Criar restaurante</button>
         </form>
       )}
 

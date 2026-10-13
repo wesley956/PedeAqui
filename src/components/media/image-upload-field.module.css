@@ -106,7 +106,7 @@
 .chooseButton {
   border: 0;
   background: var(--accent);
-  color: #fff;
+  color:var(--text-on-brand);
 }
 
 .removeButton {
@@ -127,7 +127,7 @@
 }
 
 .error {
-  color: #d92d20;
+  color: var(--state-danger);
   font-weight: var(--font-weight-bold);
 }
 

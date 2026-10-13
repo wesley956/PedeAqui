@@ -51,8 +51,8 @@ export function PaymentActionForm({
       <button type="submit" disabled={pending} style={destructive ? dangerButton : primaryButton}>
         {pending ? "Processando…" : intent === "confirm" ? "Confirmar pagamento" : intent === "refund" ? "Estornar pagamento" : "Marcar tentativa como falha"}
       </button>
-      {state.message ? <div style={{ color: "#22c55e", fontSize: "var(--font-size-xs)" }}>{state.message}</div> : null}
-      {state.error ? <div style={{ color: "#f97066", fontSize: "var(--font-size-xs)" }}>{state.error}</div> : null}
+      {state.message ? <div style={{ color: "var(--state-success)", fontSize: "var(--font-size-xs)" }}>{state.message}</div> : null}
+      {state.error ? <div style={{ color: "var(--state-danger-text)", fontSize: "var(--font-size-xs)" }}>{state.error}</div> : null}
     </form>
   );
 }
@@ -70,12 +70,12 @@ const primaryButton: React.CSSProperties = {
   border: 0,
   borderRadius: "var(--radius-sm)",
   background: "var(--accent)",
-  color: "#fff",
+  color: "var(--text-on-brand)",
   padding: "8px 12px",
   fontWeight: "var(--font-weight-bold)",
   cursor: "pointer",
 };
 const dangerButton: React.CSSProperties = {
   ...primaryButton,
-  background: "#b42318",
+  background: "var(--state-danger)",
 };

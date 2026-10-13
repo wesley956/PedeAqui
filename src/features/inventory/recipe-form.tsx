@@ -5,7 +5,7 @@ import { createRecipeVersionAction, type InventoryActionState } from "@/features
 
 const initial: InventoryActionState = { ok: false, message: null, error: null };
 const inputStyle: React.CSSProperties = { minHeight: 40, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "8px 10px", width: "100%" };
-const buttonStyle: React.CSSProperties = { minHeight: 40, border: 0, borderRadius: "var(--radius-sm)", background: "var(--accent)", color: "#fff", padding: "8px 12px", fontWeight: "var(--font-weight-bold)", cursor: "pointer" };
+const buttonStyle: React.CSSProperties = { minHeight: 40, border: 0, borderRadius: "var(--radius-sm)", background: "var(--accent)", color: "var(--text-on-brand)", padding: "8px 12px", fontWeight: "var(--font-weight-bold)", cursor: "pointer" };
 
 type InventoryOption = { id: string; name: string; base_unit: string };
 type TargetOption = { id: string; name: string };
@@ -40,8 +40,8 @@ export function RecipeVersionForm({ products, modifiers, inventoryItems }: { pro
       <textarea name="notes" maxLength={1000} placeholder="Observações da versão (opcional)" style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} />
       <div className="muted" style={{ fontSize: "var(--font-size-xs)" }}>Salvar cria uma nova versão imutável. Versões anteriores não são editadas e continuam válidas para pedidos confirmados no período correspondente.</div>
       <button type="submit" disabled={pending || inventoryItems.length === 0 || targets.length === 0} style={buttonStyle}>{pending ? "Criando versão…" : "Criar nova versão"}</button>
-      {state.message ? <div style={{ color: "#22c55e", fontSize: "var(--font-size-xs)" }}>{state.message}</div> : null}
-      {state.error ? <div style={{ color: "#f97066", fontSize: "var(--font-size-xs)" }}>{state.error}</div> : null}
+      {state.message ? <div style={{ color: "var(--state-success)", fontSize: "var(--font-size-xs)" }}>{state.message}</div> : null}
+      {state.error ? <div style={{ color: "var(--state-danger-text)", fontSize: "var(--font-size-xs)" }}>{state.error}</div> : null}
     </form>
   );
 }

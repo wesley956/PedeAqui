@@ -30,9 +30,9 @@
 .success {
   margin: 0;
   padding: 12px 14px;
-  border: 1px solid color-mix(in srgb, #16a34a 45%, var(--border));
+  border: 1px solid color-mix(in srgb, var(--state-success) 45%, var(--border));
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, #16a34a 10%, var(--surface));
+  background: color-mix(in srgb, var(--state-success) 10%, var(--surface));
   color: var(--text);
   font-size: var(--font-size-support);
   font-weight: var(--font-weight-bold);
@@ -226,7 +226,7 @@
 .primary {
   border: 0;
   background: var(--accent);
-  color: #fff;
+  color:var(--text-on-brand);
 }
 .secondary {
   border: 1px solid var(--border);

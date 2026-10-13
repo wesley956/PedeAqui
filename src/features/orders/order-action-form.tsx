@@ -126,7 +126,7 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
           <input name="reason" required minLength={3} maxLength={500} placeholder={reasonPlaceholder} style={inputStyle} />
         )}
         {isCancellationIntent && cancellationError ? (
-          <span role="alert" style={{ color: "#f97066", fontSize: "var(--font-size-support)" }}>{cancellationError}</span>
+          <span role="alert" style={{ color: "var(--state-danger-text)", fontSize: "var(--font-size-support)" }}>{cancellationError}</span>
         ) : null}
       </label> : null}
       <button
@@ -138,8 +138,8 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
       >
         {iconOnlyPrint ? <PrinterIcon pending={pending} /> : pending ? "Processando…" : label}
       </button>
-      {state.error ? <span role="alert" style={{ color: "#f97066", fontSize: "var(--font-size-support)" }}>{state.error}</span> : null}
-      {state.ok && state.message ? <span role="status" style={{ color: "#75c88a", fontSize: "var(--font-size-support)" }}>{state.message}</span> : null}
+      {state.error ? <span role="alert" style={{ color: "var(--state-danger-text)", fontSize: "var(--font-size-support)" }}>{state.error}</span> : null}
+      {state.ok && state.message ? <span role="status" style={{ color: "var(--state-success-text)", fontSize: "var(--font-size-support)" }}>{state.message}</span> : null}
     </form>
   );
 }

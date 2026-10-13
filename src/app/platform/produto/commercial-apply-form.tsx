@@ -186,4 +186,4 @@ const summaryStyle = { display: "flex", justifyContent: "space-between", gap: 16
 const warningStyle = { padding: 12, borderRadius: "var(--radius-lg)", border: "1px solid #a96b12", background: "color-mix(in srgb,#a96b12 12%,var(--surface))", lineHeight: 1.5 } as const;
 const successStyle = { padding: 12, borderRadius: "var(--radius-lg)", border: "1px solid #318454", background: "color-mix(in srgb,#318454 10%,var(--surface))" } as const;
 const errorStyle = { padding: 12, borderRadius: "var(--radius-lg)", border: "1px solid #a83d3d", background: "color-mix(in srgb,#a83d3d 10%,var(--surface))" } as const;
-const buttonStyle = { minHeight: 44, border: 0, borderRadius: "var(--radius-sm)", padding: "10px 16px", background: "var(--accent)", color: "white", fontWeight: "var(--font-weight-bold)", cursor: "pointer" } as const;
+const buttonStyle = { minHeight: 44, border: 0, borderRadius: "var(--radius-sm)", padding: "10px 16px", background: "var(--accent)", color: "var(--text-on-brand)", fontWeight: "var(--font-weight-bold)", cursor: "pointer" } as const;
