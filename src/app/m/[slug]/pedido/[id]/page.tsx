@@ -6,6 +6,7 @@ import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import { PublicOrderRefresh } from "@/features/orders/public-order-refresh";
 import { PublicOrderTimeline } from "@/features/orders/public-order-timeline";
 import { PixCopyButton } from "@/features/payments/pix-copy-button";
+import { PixDocumentForm } from "@/features/payments/pix-document-form";
 import { businessVocabulary, productionStatusLabelForBusiness } from "@/modules/business-vocabulary";
 import { isBusinessType } from "@/modules/module-catalog";
 import { paymentMethodLabels, type FulfillmentType } from "@/server/checkout/schemas";
@@ -101,6 +102,9 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
             {pixPayment.qrCodeBase64 ? <Image src={`data:image/png;base64,${pixPayment.qrCodeBase64}`} alt="QR Code Pix do pedido" width={240} height={240} unoptimized style={{ maxWidth: "100%", height: "auto", borderRadius: "var(--radius-lg)" }} /> : null}
             <div style={{ width: "100%", display: "grid", gap: 8 }}><label htmlFor="pix-code" style={{ fontWeight: "var(--font-weight-semibold)" }}>Pix Copia e Cola</label><textarea id="pix-code" value={pixPayment.qrCode} readOnly rows={3} style={{ width: "100%", resize: "none" }} /><PixCopyButton code={pixPayment.qrCode} /></div>
             {pixPayment.expiresAt ? <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-xs)" }}>Este QR Code é temporário. Se expirar, a página gera uma nova cobrança segura.</p> : null}
+          </> : pixPayment.status === "needs_document" ? <>
+            <div><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-xs)" }}>PAGAMENTO PIX</p><h2 style={{ margin: "4px 0" }}>Falta só o CPF</h2><p className="muted" style={{ margin: 0 }}>Valor: <strong>{money(pixPayment.amountCents)}</strong></p></div>
+            <PixDocumentForm slug={slug} orderId={order.id} />
           </> : pixPayment.status === "unavailable" ? <><h2>Pix temporariamente indisponível</h2><p className="muted">Seu pedido foi registrado. Esta página tentará gerar o Pix novamente sem duplicar a cobrança.</p></>
             : <><h2>Preparando seu Pix…</h2><p className="muted">Aguarde a atualização automática desta página. Não é necessário refazer o pedido.</p></>}
       </section> : null}

@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 
-export const orderPaymentProviderSchema = z.literal("mercado_pago");
+export const orderPaymentProviderSchema = z.enum(["mercado_pago", "pagbank"]);
 export type OrderPaymentProviderKey = z.infer<typeof orderPaymentProviderSchema>;
 
 const environmentSchema = z.enum(["test", "production"]);
@@ -14,6 +14,9 @@ const healthErrorCodeSchema = z.enum([
   "mercado_pago_auth_failed",
   "mercado_pago_provider_unavailable",
   "mercado_pago_request_failed",
+  "pagbank_auth_failed",
+  "pagbank_provider_unavailable",
+  "pagbank_request_failed",
   "reconciliation_failed",
 ]);
 export type OrderPaymentProviderHealthErrorCode = z.infer<typeof healthErrorCodeSchema>;
@@ -51,13 +54,13 @@ export type OrderPaymentProviderCredentials = {
 };
 
 export class OrderPaymentProviderConfigService {
-  static async getForStore(organizationId: string, storeId: string): Promise<OnlinePixConfigView | null> {
+  static async getForStore(organizationId: string, storeId: string, provider: OrderPaymentProviderKey = "mercado_pago"): Promise<OnlinePixConfigView | null> {
     const admin = createAdminClient();
     const { data, error } = await admin.from("order_payment_provider_configs")
       .select("provider, environment, enabled, connection_mode, provider_account_id, access_token_secret_id, refresh_token_secret_id, webhook_secret_id, access_token_expires_at, authorized_at, revoked_at, last_health_status, last_health_checked_at, last_error_code")
       .eq("organization_id", organizationId)
       .eq("store_id", storeId)
-      .eq("provider", "mercado_pago")
+      .eq("provider", provider)
       .maybeSingle();
     if (error) throw error;
     if (!data) return null;
@@ -84,15 +87,24 @@ export class OrderPaymentProviderConfigService {
   static async getCurrentStore() {
     const context = await authorize(PERMISSIONS.PAYMENTS_MANAGE);
     if (!context.storeId) throw new Error("An active store is required");
-    return {
-      context,
-      config: await this.getForStore(context.organizationId, context.storeId),
-    };
+    const [config, pagbank] = await Promise.all([
+      this.getForStore(context.organizationId, context.storeId),
+      this.getForStore(context.organizationId, context.storeId, "pagbank"),
+    ]);
+    return { context, config, pagbank };
+  }
+
+  /** Provedor de Pix online ativo na unidade. Só um fica ativo por vez (índice único no banco). */
+  static async activeProvider(organizationId: string, storeId: string): Promise<OrderPaymentProviderKey | null> {
+    for (const provider of orderPaymentProviderSchema.options) {
+      const config = await this.getForStore(organizationId, storeId, provider);
+      if (config?.enabled && config.credentialsConfigured && !config.revokedAt) return provider;
+    }
+    return null;
   }
 
   static async isOnlinePixReady(organizationId: string, storeId: string) {
-    const config = await this.getForStore(organizationId, storeId);
-    return Boolean(config?.enabled && config.credentialsConfigured && !config.revokedAt);
+    return Boolean(await this.activeProvider(organizationId, storeId));
   }
 
   static async configureCurrentStore(input: {
@@ -107,6 +119,7 @@ export class OrderPaymentProviderConfigService {
     }
     const environment = environmentSchema.parse(input.environment);
     const admin = createAdminClient();
+    if (input.enabled) await this.disableOtherProviders(context.storeId!, "mercado_pago");
     const { data, error } = await admin.rpc("order_payment_provider_configure_manual_internal", {
       p_store_id: context.storeId,
       p_environment: environment,
@@ -121,14 +134,86 @@ export class OrderPaymentProviderConfigService {
   static async setCurrentStoreEnabled(enabled: boolean) {
     const { context, config } = await this.getCurrentStore();
     if (!config?.credentialsConfigured) throw new Error("Mercado Pago credentials are not configured");
+    return this.setEnabled(context.storeId!, "mercado_pago", enabled);
+  }
+
+  static async setPagBankEnabledCurrentStore(enabled: boolean) {
+    const { context, pagbank } = await this.getCurrentStore();
+    if (!pagbank?.credentialsConfigured) throw new Error("PagBank is not connected");
+    return this.setEnabled(context.storeId!, "pagbank", enabled);
+  }
+
+  /** Ativar um provedor desativa o outro na mesma unidade. */
+  private static async setEnabled(storeId: string, provider: OrderPaymentProviderKey, enabled: boolean) {
     const admin = createAdminClient();
-    const { data, error } = await admin.rpc("order_payment_provider_configure_internal", {
-      p_store_id: context.storeId,
-      p_provider: "mercado_pago",
-      p_environment: config.environment,
+    const { data, error } = await admin.rpc("order_payment_provider_set_enabled_internal", {
+      p_store_id: storeId,
+      p_provider: provider,
       p_enabled: Boolean(enabled),
-      p_access_token: null,
-      p_webhook_secret: null,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  private static async disableOtherProviders(storeId: string, keep: OrderPaymentProviderKey) {
+    const admin = createAdminClient();
+    const { error } = await admin.from("order_payment_provider_configs")
+      .update({ enabled: false })
+      .eq("store_id", storeId)
+      .neq("provider", keep)
+      .eq("enabled", true);
+    if (error) throw error;
+  }
+
+  static async connectPagBankCurrentStore(input: {
+    environment: "test" | "production";
+    accessToken: string;
+    refreshToken: string;
+    webhookSecret: string;
+    providerAccountId: string;
+    accessTokenExpiresAt: string;
+  }) {
+    const context = await authorize(PERMISSIONS.PAYMENTS_MANAGE);
+    if (!context.storeId) throw new Error("An active store is required");
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("order_payment_provider_pagbank_connect_internal", {
+      p_store_id: context.storeId,
+      p_environment: environmentSchema.parse(input.environment),
+      p_access_token: input.accessToken,
+      p_refresh_token: input.refreshToken,
+      p_webhook_secret: input.webhookSecret,
+      p_provider_account_id: input.providerAccountId,
+      p_access_token_expires_at: input.accessTokenExpiresAt,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async disconnectPagBankCurrentStore() {
+    const context = await authorize(PERMISSIONS.PAYMENTS_MANAGE);
+    if (!context.storeId) throw new Error("An active store is required");
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("order_payment_provider_pagbank_disconnect_internal", {
+      p_store_id: context.storeId,
+    });
+    if (error) throw error;
+    return data;
+  }
+
+  static async persistPagBankRefresh(input: {
+    storeId: string;
+    accessToken: string;
+    refreshToken: string;
+    accessTokenExpiresAt: string;
+    expectedUpdatedAt: string;
+  }) {
+    const admin = createAdminClient();
+    const { data, error } = await admin.rpc("order_payment_provider_pagbank_refresh_internal", {
+      p_store_id: input.storeId,
+      p_access_token: input.accessToken,
+      p_refresh_token: input.refreshToken,
+      p_access_token_expires_at: input.accessTokenExpiresAt,
+      p_expected_updated_at: input.expectedUpdatedAt,
     });
     if (error) throw error;
     return data;
@@ -218,12 +303,12 @@ export class OrderPaymentProviderConfigService {
   static async recordHealth(storeId: string, input: {
     status: "healthy" | "error";
     errorCode?: OrderPaymentProviderHealthErrorCode | null;
-  }) {
+  }, provider: OrderPaymentProviderKey = "mercado_pago") {
     const admin = createAdminClient();
     const checkedAt = new Date().toISOString();
     const errorCode = input.status === "healthy"
       ? null
-      : healthErrorCodeSchema.parse(input.errorCode ?? "mercado_pago_request_failed");
+      : healthErrorCodeSchema.parse(input.errorCode ?? `${provider}_request_failed`);
     const { error } = await admin.from("order_payment_provider_configs")
       .update({
         last_health_status: input.status,
@@ -231,7 +316,7 @@ export class OrderPaymentProviderConfigService {
         last_error_code: errorCode,
       })
       .eq("store_id", storeId)
-      .eq("provider", "mercado_pago");
+      .eq("provider", provider);
     if (error) throw error;
   }
 }

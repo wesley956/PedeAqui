@@ -21,6 +21,65 @@ export type PixReconciliationResult = {
 
 export class OrderPixReconciliationService {
   static async runBatch(): Promise<PixReconciliationResult> {
+    const mercadoPago = await this.runMercadoPagoBatch();
+    const pagBank = await this.runPagBankBatch();
+    return {
+      scanned: mercadoPago.scanned + pagBank.scanned,
+      reconciled: mercadoPago.reconciled + pagBank.reconciled,
+      failed: mercadoPago.failed + pagBank.failed,
+    };
+  }
+
+  /** PagBank: mesma regra do Mercado Pago, para cobranças pendentes que não receberam notificação. */
+  static async runPagBankBatch(): Promise<PixReconciliationResult> {
+    const admin = createAdminClient();
+    const { data: configs, error: configError } = await admin.from("order_payment_provider_configs")
+      .select("store_id")
+      .eq("provider", "pagbank")
+      .eq("enabled", true)
+      .is("revoked_at", null);
+    if (configError) throw configError;
+
+    const storeIds = [...new Set((configs ?? []).map((item) => item.store_id).filter(Boolean))];
+    if (!storeIds.length) return { scanned: 0, reconciled: 0, failed: 0 };
+
+    const cutoff = new Date(Date.now() - STALE_AFTER_MS).toISOString();
+    const { data: pending, error: pendingError } = await admin.from("order_payment_provider_charges")
+      .select("id, store_id, provider_order_id")
+      .in("store_id", storeIds)
+      .eq("provider", "pagbank")
+      .eq("status", "pending")
+      .not("provider_order_id", "is", null)
+      .or(`last_reconciled_at.is.null,last_reconciled_at.lt.${cutoff}`)
+      .order("updated_at", { ascending: true })
+      .limit(MAX_BATCH);
+    if (pendingError) throw pendingError;
+
+    const charges = (pending ?? []) as PendingCharge[];
+    let reconciled = 0;
+    let failed = 0;
+    for (const charge of charges) {
+      try {
+        await OrderPixService.reconcile(charge.store_id, charge.provider_order_id, "pagbank");
+        reconciled += 1;
+      } catch {
+        failed += 1;
+        const now = new Date().toISOString();
+        await admin.from("order_payment_provider_charges").update({
+          last_reconciled_at: now,
+          last_error_code: "reconciliation_failed",
+          updated_at: now,
+        }).eq("id", charge.id);
+        await OrderPaymentProviderConfigService.recordHealth(charge.store_id, {
+          status: "error",
+          errorCode: "reconciliation_failed",
+        }, "pagbank").catch(() => undefined);
+      }
+    }
+    return { scanned: charges.length, reconciled, failed };
+  }
+
+  static async runMercadoPagoBatch(): Promise<PixReconciliationResult> {
     const admin = createAdminClient();
     const { data: configs, error: configError } = await admin.from("order_payment_provider_configs")
       .select("store_id")
