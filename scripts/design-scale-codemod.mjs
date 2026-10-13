@@ -10,8 +10,8 @@ const ROOT = new URL("..", import.meta.url).pathname;
 const SRC = join(ROOT, "src");
 const CHECK = process.argv.includes("--check");
 
-// Arquivos de vitrine comercial mantêm tamanhos de destaque acima de 34px e seus clamp().
-const DISPLAY_SCOPES = ["components/marketing/", "app/login/", "app/ux-v3-preview/"];
+// Vitrine comercial e tela da cozinha (lida à distância) mantêm tamanhos de destaque acima de 34px e seus clamp().
+const DISPLAY_SCOPES = ["components/marketing/", "app/login/", "app/ux-v3-preview/", "features/kitchen/"];
 // globals.css define a escala; não é reescrito.
 const SKIP_FILES = new Set(["app/globals.css"]);
 
