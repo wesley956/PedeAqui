@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { PublicCartSummaryService } from "@/server/cart/public-cart-summary-service";
 import styles from "./public-cart-bar.module.css";
+import { NavigationIcon } from "@/components/ui/navigation-icon";
 
 function money(cents: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
@@ -33,7 +34,7 @@ export async function PublicCartBar({ storeSlug }: { storeSlug: string }) {
         aria-label={`Carrinho: ${itemLabel}, total atual ${total}. Ver carrinho`}
       >
         <span className={styles.summary}>
-          <span className={styles.items}>🛒 {itemLabel}</span>
+          <span className={styles.items}><NavigationIcon name="cart" width={16} height={16} /> {itemLabel}</span>
           <span className={styles.total}>{total}</span>
         </span>
         <span className={styles.action}>Ver carrinho →</span>
