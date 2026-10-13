@@ -1,5 +1,7 @@
 import "server-only";
 
+import { z } from "zod";
+
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CartService } from "@/server/cart/cart-service";
 import { hashCartToken } from "@/server/cart/cart-token";
@@ -214,6 +216,15 @@ export class CheckoutService {
       postalCode: saved.postalCode, street: saved.street, number: saved.number, complement: saved.complement,
       district: saved.district, city: saved.city, state: saved.state, reference: saved.reference,
     });
+  }
+
+  /** E-mail exigido pelo Pix online, informado na etapa de pagamento. */
+  static async savePaymentEmail(storeSlug: string, token: string, email: string) {
+    const parsed = z.string().trim().email().max(254).safeParse(email);
+    if (!parsed.success) throw new CheckoutError("invalid_identity", "Informe um e-mail válido para o Pix");
+    const cartResult = await this.requireCart(storeSlug, token);
+    const admin = createAdminClient();
+    await this.upsertSession(admin, cartResult.store, cartResult.cart.id, { customer_email: parsed.data });
   }
 
   static async savePayment(storeSlug: string, token: string, input: CheckoutPaymentInput) {

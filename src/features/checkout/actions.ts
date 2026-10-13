@@ -132,6 +132,9 @@ export async function saveCheckoutPaymentAction(formData: FormData) {
         throw new CheckoutError("invalid_change", "Informe um valor válido para o troco");
       }
     }
+    // O Pix pede o e-mail na própria etapa de pagamento, só quando é escolhido.
+    const pixEmail = method === "pix" ? optional(formData.get("email")) : null;
+    if (pixEmail) await CheckoutService.savePaymentEmail(storeSlug, token, pixEmail);
     await CheckoutService.savePayment(storeSlug, token, { method, customPaymentMethodId, cashChangeForCents });
   } catch (error) {
     if (error instanceof CheckoutError) errorRedirect(storeSlug, error);
