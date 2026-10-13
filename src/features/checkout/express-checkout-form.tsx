@@ -89,6 +89,16 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
   const formRef = useRef<HTMLFormElement | null>(null);
   const [cepStatus, setCepStatus] = useState<"idle" | "loading" | "found" | "notfound">("idle");
 
+  useEffect(() => {
+    const form = formRef.current;
+    const restoreAfterReset = () => {
+      // A task runs after React and the browser finish resetting the form.
+      setTimeout(() => restoreDraftRef.current?.(), 0);
+    };
+    form?.addEventListener("reset", restoreAfterReset);
+    return () => form?.removeEventListener("reset", restoreAfterReset);
+  }, []);
+
   // Como no protótipo: digitou o CEP, preenchemos rua, bairro, cidade e UF (o cliente pode corrigir).
   async function lookupCep(raw: string) {
     const digits = raw.replace(/\D/g, "");
@@ -151,10 +161,7 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
   return (
     // React resets uncontrolled fields after successful server actions, including quantity/coupon.
     // Use the entered values as the reset baseline, including invalid/partial fields.
-    <form onReset={() => {
-      // Restore after the native reset, also when new server defaults arrive with the action.
-      queueMicrotask(() => restoreDraftRef.current?.());
-    }} onSubmitCapture={(event) => {
+    <form onSubmitCapture={(event) => {
       const restore: Array<() => void> = [];
       for (const field of event.currentTarget.elements) {
         if (field instanceof HTMLInputElement) {
