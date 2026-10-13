@@ -11,7 +11,7 @@ export default function NotFound() {
       }}
     >
       <section aria-labelledby="not-found-title" style={{ maxWidth: 560, textAlign: "center" }}>
-        <p aria-hidden="true" style={{ fontSize: 14, fontWeight: 700, letterSpacing: "0.08em" }}>
+        <p aria-hidden="true" style={{ fontSize: "var(--font-size-sm)", fontWeight: "var(--font-weight-bold)", letterSpacing: "0.08em" }}>
           ERRO 404
         </p>
         <h1 id="not-found-title">Página não encontrada</h1>

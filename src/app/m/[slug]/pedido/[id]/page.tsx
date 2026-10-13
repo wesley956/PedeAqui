@@ -97,10 +97,10 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
       {pixPayment ? <section className={`card ${styles.card} ${styles.pixCard}`}>
         {pixPayment.status === "paid" || order.payment_status === "paid" ? <><h2>Pix confirmado ✓</h2><p className="muted">O pagamento de {money(pixPayment.amountCents)} já foi confirmado automaticamente.</p></>
           : pixPayment.status === "waiting" && pixPayment.qrCode ? <>
-            <div><p className="muted" style={{ margin: 0, fontSize: 12 }}>PAGAMENTO PIX</p><h2 style={{ margin: "4px 0" }}>Escaneie o QR Code</h2><p className="muted" style={{ margin: 0 }}>Valor exato: <strong>{money(pixPayment.amountCents)}</strong></p></div>
-            {pixPayment.qrCodeBase64 ? <Image src={`data:image/png;base64,${pixPayment.qrCodeBase64}`} alt="QR Code Pix do pedido" width={240} height={240} unoptimized style={{ maxWidth: "100%", height: "auto", borderRadius: 12 }} /> : null}
-            <div style={{ width: "100%", display: "grid", gap: 8 }}><label htmlFor="pix-code" style={{ fontWeight: 600 }}>Pix Copia e Cola</label><textarea id="pix-code" value={pixPayment.qrCode} readOnly rows={3} style={{ width: "100%", resize: "none" }} /><PixCopyButton code={pixPayment.qrCode} /></div>
-            {pixPayment.expiresAt ? <p className="muted" style={{ margin: 0, fontSize: 12 }}>Este QR Code é temporário. Se expirar, a página gera uma nova cobrança segura.</p> : null}
+            <div><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-xs)" }}>PAGAMENTO PIX</p><h2 style={{ margin: "4px 0" }}>Escaneie o QR Code</h2><p className="muted" style={{ margin: 0 }}>Valor exato: <strong>{money(pixPayment.amountCents)}</strong></p></div>
+            {pixPayment.qrCodeBase64 ? <Image src={`data:image/png;base64,${pixPayment.qrCodeBase64}`} alt="QR Code Pix do pedido" width={240} height={240} unoptimized style={{ maxWidth: "100%", height: "auto", borderRadius: "var(--radius-lg)" }} /> : null}
+            <div style={{ width: "100%", display: "grid", gap: 8 }}><label htmlFor="pix-code" style={{ fontWeight: "var(--font-weight-semibold)" }}>Pix Copia e Cola</label><textarea id="pix-code" value={pixPayment.qrCode} readOnly rows={3} style={{ width: "100%", resize: "none" }} /><PixCopyButton code={pixPayment.qrCode} /></div>
+            {pixPayment.expiresAt ? <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-xs)" }}>Este QR Code é temporário. Se expirar, a página gera uma nova cobrança segura.</p> : null}
           </> : pixPayment.status === "unavailable" ? <><h2>Pix temporariamente indisponível</h2><p className="muted">Seu pedido foi registrado. Esta página tentará gerar o Pix novamente sem duplicar a cobrança.</p></>
             : <><h2>Preparando seu Pix…</h2><p className="muted">Aguarde a atualização automática desta página. Não é necessário refazer o pedido.</p></>}
       </section> : null}

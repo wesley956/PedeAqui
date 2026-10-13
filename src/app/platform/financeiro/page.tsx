@@ -64,5 +64,5 @@ export default async function PlatformFinanceiroPage() {
 }
 
 function Metric({ label, value, helper }: { label: string; value: string; helper: string }) {
-  return <div className={styles.metric}><span>{label}</span><strong style={{ fontSize: 22 }}>{value}</strong><small>{helper}</small></div>;
+  return <div className={styles.metric}><span>{label}</span><strong style={{ fontSize: "var(--font-size-2xl)" }}>{value}</strong><small>{helper}</small></div>;
 }

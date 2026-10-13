@@ -110,7 +110,7 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
       {confirmPayment || paymentReceived ? <input type="hidden" name="paymentReceived" value="yes" /> : null}
       {printJobId ? <input type="hidden" name="printJobId" value={printJobId} /> : null}
       {reasonLabel ? <label style={{ display: "grid", gap: 4 }}>
-        <span style={{ fontSize: 13, fontWeight: 800 }}>{needsIfoodCancellationReason ? "Motivo aceito pelo iFood" : reasonLabel}</span>
+        <span style={{ fontSize: "var(--font-size-support)", fontWeight: "var(--font-weight-bold)" }}>{needsIfoodCancellationReason ? "Motivo aceito pelo iFood" : reasonLabel}</span>
         {resolvingOrderOrigin ? (
           <select disabled style={inputStyle} defaultValue="checking">
             <option value="checking">Verificando origem do pedido…</option>
@@ -126,7 +126,7 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
           <input name="reason" required minLength={3} maxLength={500} placeholder={reasonPlaceholder} style={inputStyle} />
         )}
         {isCancellationIntent && cancellationError ? (
-          <span role="alert" style={{ color: "#f97066", fontSize: 13 }}>{cancellationError}</span>
+          <span role="alert" style={{ color: "#f97066", fontSize: "var(--font-size-support)" }}>{cancellationError}</span>
         ) : null}
       </label> : null}
       <button
@@ -138,14 +138,14 @@ export function OrderActionForm({ orderId, intent, label, tone = "primary", reas
       >
         {iconOnlyPrint ? <PrinterIcon pending={pending} /> : pending ? "Processando…" : label}
       </button>
-      {state.error ? <span role="alert" style={{ color: "#f97066", fontSize: 13 }}>{state.error}</span> : null}
-      {state.ok && state.message ? <span role="status" style={{ color: "#75c88a", fontSize: 13 }}>{state.message}</span> : null}
+      {state.error ? <span role="alert" style={{ color: "#f97066", fontSize: "var(--font-size-support)" }}>{state.error}</span> : null}
+      {state.ok && state.message ? <span role="status" style={{ color: "#75c88a", fontSize: "var(--font-size-support)" }}>{state.message}</span> : null}
     </form>
   );
 }
 
 function PrinterIcon({ pending }: { pending: boolean }) {
-  if (pending) return <span aria-hidden="true" style={{ fontSize: 12, lineHeight: 1 }}>…</span>;
+  if (pending) return <span aria-hidden="true" style={{ fontSize: "var(--font-size-xs)", lineHeight: 1 }}>…</span>;
   return (
     <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 9V3h12v6" />
@@ -155,7 +155,7 @@ function PrinterIcon({ pending }: { pending: boolean }) {
   );
 }
 
-const inputStyle: React.CSSProperties = { minHeight: 38, borderRadius: 9, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "7px 9px" };
-function buttonStyle(tone: "primary" | "secondary" | "danger"): React.CSSProperties { return { minHeight: 38, borderRadius: 9, border: tone === "secondary" ? "1px solid var(--border)" : 0, background: tone === "danger" ? "#b42318" : tone === "secondary" ? "var(--surface-3)" : "var(--accent)", color: "var(--text)", padding: "7px 11px", fontWeight: 600, cursor: "pointer" }; }
-const compactStyle: React.CSSProperties = { minHeight: 32, padding: "5px 8px", fontSize: 12 };
-const iconOnlyPrintStyle: React.CSSProperties = { width: 30, height: 30, minHeight: 30, padding: 0, borderRadius: 7, background: "transparent", color: "var(--text-secondary)", justifySelf: "start", display: "inline-grid", placeItems: "center" };
+const inputStyle: React.CSSProperties = { minHeight: 38, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "7px 9px" };
+function buttonStyle(tone: "primary" | "secondary" | "danger"): React.CSSProperties { return { minHeight: 38, borderRadius: "var(--radius-sm)", border: tone === "secondary" ? "1px solid var(--border)" : 0, background: tone === "danger" ? "#b42318" : tone === "secondary" ? "var(--surface-3)" : "var(--accent)", color: "var(--text)", padding: "7px 11px", fontWeight: "var(--font-weight-semibold)", cursor: "pointer" }; }
+const compactStyle: React.CSSProperties = { minHeight: 32, padding: "5px 8px", fontSize: "var(--font-size-xs)" };
+const iconOnlyPrintStyle: React.CSSProperties = { width: 30, height: 30, minHeight: 30, padding: 0, borderRadius: "var(--radius-sm)", background: "transparent", color: "var(--text-secondary)", justifySelf: "start", display: "inline-grid", placeItems: "center" };

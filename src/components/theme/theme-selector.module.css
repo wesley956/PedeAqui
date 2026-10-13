@@ -13,8 +13,8 @@
 }
 
 .label {
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--font-size-support);
+  font-weight: var(--font-weight-bold);
 }
 
 .segmented {
@@ -24,7 +24,7 @@
   width: fit-content;
   padding: 4px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--surface-2);
 }
 
@@ -33,13 +33,13 @@
 }
 
 .compact .segmented {
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .option {
   min-height: 38px;
   border: 0;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--muted);
   display: inline-flex;
@@ -48,8 +48,8 @@
   gap: 7px;
   padding: 7px 10px;
   font: inherit;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
   transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
 }
@@ -58,7 +58,7 @@
   width: 34px;
   min-height: 34px;
   padding: 5px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .option:hover {
@@ -99,7 +99,7 @@
 .help {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   line-height: 1.45;
 }
 

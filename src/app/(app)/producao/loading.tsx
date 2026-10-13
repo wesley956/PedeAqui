@@ -2,7 +2,7 @@ export default function ProductionLoading() {
   return (
     <section style={{ display: "grid", gap: 14 }} aria-busy="true" aria-live="polite">
       <div>
-        <div className="muted" style={{ fontSize: 13 }}>KDS · Produção em tempo real</div>
+        <div className="muted" style={{ fontSize: "var(--font-size-support)" }}>KDS · Produção em tempo real</div>
         <h1 style={{ margin: "4px 0" }}>Produção</h1>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: 12 }}>

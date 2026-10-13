@@ -11,7 +11,7 @@
 .app-topbar-compact { height: var(--app-topbar-height); min-height: var(--app-topbar-height); flex: 0 0 var(--app-topbar-height); flex-wrap: nowrap; gap: 12px; padding: 6px 16px; }
 .app-operation-menu { position: relative; flex: 1 1 0; min-width: 0; }
 .app-operation-menu > summary { display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; min-height: 40px; cursor: pointer; list-style: none; }
-.app-operation-menu > summary > strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.app-operation-menu > summary > strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--font-size-sm); }
 .app-operation-menu > summary > span { flex-shrink: 0; }
 .app-receiving-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--state-warning); }
 .app-receiving-dot[data-accepting="true"] { background: var(--state-success); }
@@ -45,7 +45,7 @@
   .app-topbar-compact { gap: 8px; }
   .app-topbar-compact .app-movement-shortcut { display: none; }
   .app-topbar-compact .operational-health > summary { width: 44px; min-height: 44px; padding: 0; justify-content: center; font-size: 0; }
-  .app-topbar-compact .operational-health > summary::after { content: "•"; font-size: 18px; }
+  .app-topbar-compact .operational-health > summary::after { content: "•"; font-size: var(--font-size-lg); }
   .app-topbar-compact .operational-health[data-severity="P0"] > summary::after, .app-topbar-compact .operational-health[data-severity="P1"] > summary::after { content: "!"; }
   .app-topbar-compact .app-account-menu > summary { width: 44px; min-height: 44px; }
   .app-topbar-compact .app-topbar-actions { gap: 6px; }

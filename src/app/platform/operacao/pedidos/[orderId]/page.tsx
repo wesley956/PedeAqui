@@ -28,5 +28,5 @@ export default async function PlatformOrderDiagnosticPage({params}:{params:Promi
   <section className={styles.section}><div className={styles.sectionHeader}><div><h2>Proteções</h2><p>Esta tela é diagnóstica. Pagamentos, produção e entrega continuam sob os serviços oficiais do PedeAqui.</p></div></div><p className={styles.advancedNote}>Não existe botão para forçar “pago”, “entregue” ou “concluído”. Reprocessamentos só serão disponibilizados quando houver operação idempotente segura para aquele domínio.</p></section>
  </div>;
 }
-function Metric({label,value}:{label:string;value:string}){return <article className={styles.metric}><span>{label}</span><strong style={{fontSize:15}}>{value}</strong><small>estado persistido</small></article>}
+function Metric({label,value}:{label:string;value:string}){return <article className={styles.metric}><span>{label}</span><strong style={{fontSize: "var(--font-size-md)"}}>{value}</strong><small>estado persistido</small></article>}
 function Info({title,lines}:{title:string;lines:string[]}){return <article className={styles.supportCard}><strong>{title}</strong>{lines.map((line,index)=><span key={`${title}:${index}`}>{line}</span>)}</article>}

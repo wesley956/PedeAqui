@@ -75,7 +75,7 @@
 
 .root[data-variant="driver"] .card {
   width: min(100%, 460px);
-  border-radius: 22px;
+  border-radius: var(--radius-lg);
   border-color: color-mix(in srgb, var(--accent) 28%, var(--border-default));
   box-shadow: var(--shadow-lg);
 }
@@ -87,15 +87,15 @@
   display: inline-flex;
   align-items: center;
   padding: 0 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--accent) 10%, var(--surface-1));
   color: var(--accent);
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-extrabold);
   letter-spacing: .08em;
 }
 
-.root[data-variant="driver"] .title { font-size: clamp(1.7rem, 5vw, 2.15rem); }
+.root[data-variant="driver"] .title { font-size: var(--font-size-2xl); }
 .root[data-variant="driver"] .subtitle { font-size: var(--font-size-md); }
 
 @media (max-width: 640px) {

@@ -150,7 +150,7 @@ export function CommercialApplyForm({ organizations, plans, modules }: { organiz
 
       <div style={summaryStyle}>
         <span><strong>{plan?.name ?? "Selecione um plano"}</strong><small style={mutedStyle}>{mode === "package" ? "Pacote fechado" : `${effectiveExtras.size} módulo(s) adicional(is)`}</small></span>
-        <span style={{ textAlign: "right" }}><small style={mutedStyle}>Mensalidade calculada</small><strong style={{ display: "block", fontSize: 26 }}>{money(totalPrice)}</strong></span>
+        <span style={{ textAlign: "right" }}><small style={mutedStyle}>Mensalidade calculada</small><strong style={{ display: "block", fontSize: "var(--font-size-2xl)" }}>{money(totalPrice)}</strong></span>
       </div>
 
       <div style={gridStyle}>
@@ -162,7 +162,7 @@ export function CommercialApplyForm({ organizations, plans, modules }: { organiz
         </label>
       </div>
 
-      <label style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 800 }}><input type="checkbox" name="priceLocked" value="on" /> Proteger este valor no contrato</label>
+      <label style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: "var(--font-weight-bold)" }}><input type="checkbox" name="priceLocked" value="on" /> Proteger este valor no contrato</label>
       <label style={labelStyle}>Motivo da proteção de preço
         <input name="priceLockReason" placeholder="Obrigatório se marcar proteção" style={fieldStyle} />
       </label>
@@ -178,12 +178,12 @@ export function CommercialApplyForm({ organizations, plans, modules }: { organiz
 }
 
 const gridStyle = { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: 10 } as const;
-const labelStyle = { display: "grid", gap: 6, fontWeight: 800 } as const;
-const fieldStyle = { width: "100%", minHeight: 42, border: "1px solid var(--border)", borderRadius: 10, background: "var(--surface)", color: "var(--text)", padding: "8px 10px", font: "inherit" } as const;
+const labelStyle = { display: "grid", gap: 6, fontWeight: "var(--font-weight-bold)" } as const;
+const fieldStyle = { width: "100%", minHeight: 42, border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface)", color: "var(--text)", padding: "8px 10px", font: "inherit" } as const;
 const mutedStyle = { display: "block", marginTop: 3, color: "var(--muted)", lineHeight: 1.45 } as const;
-const moduleBoxStyle = { display: "flex", justifyContent: "space-between", gap: 14, alignItems: "center", padding: 12, border: "1px solid var(--border)", borderRadius: 12, background: "var(--surface-2)" } as const;
-const summaryStyle = { display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap", padding: 16, border: "1px solid color-mix(in srgb,var(--accent) 32%,var(--border))", borderRadius: 14, background: "color-mix(in srgb,var(--accent) 8%,var(--surface))" } as const;
-const warningStyle = { padding: 12, borderRadius: 12, border: "1px solid #a96b12", background: "color-mix(in srgb,#a96b12 12%,var(--surface))", lineHeight: 1.5 } as const;
-const successStyle = { padding: 12, borderRadius: 12, border: "1px solid #318454", background: "color-mix(in srgb,#318454 10%,var(--surface))" } as const;
-const errorStyle = { padding: 12, borderRadius: 12, border: "1px solid #a83d3d", background: "color-mix(in srgb,#a83d3d 10%,var(--surface))" } as const;
-const buttonStyle = { minHeight: 44, border: 0, borderRadius: 10, padding: "10px 16px", background: "var(--accent)", color: "white", fontWeight: 900, cursor: "pointer" } as const;
+const moduleBoxStyle = { display: "flex", justifyContent: "space-between", gap: 14, alignItems: "center", padding: 12, border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", background: "var(--surface-2)" } as const;
+const summaryStyle = { display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap", padding: 16, border: "1px solid color-mix(in srgb,var(--accent) 32%,var(--border))", borderRadius: "var(--radius-lg)", background: "color-mix(in srgb,var(--accent) 8%,var(--surface))" } as const;
+const warningStyle = { padding: 12, borderRadius: "var(--radius-lg)", border: "1px solid #a96b12", background: "color-mix(in srgb,#a96b12 12%,var(--surface))", lineHeight: 1.5 } as const;
+const successStyle = { padding: 12, borderRadius: "var(--radius-lg)", border: "1px solid #318454", background: "color-mix(in srgb,#318454 10%,var(--surface))" } as const;
+const errorStyle = { padding: 12, borderRadius: "var(--radius-lg)", border: "1px solid #a83d3d", background: "color-mix(in srgb,#a83d3d 10%,var(--surface))" } as const;
+const buttonStyle = { minHeight: 44, border: 0, borderRadius: "var(--radius-sm)", padding: "10px 16px", background: "var(--accent)", color: "white", fontWeight: "var(--font-weight-bold)", cursor: "pointer" } as const;

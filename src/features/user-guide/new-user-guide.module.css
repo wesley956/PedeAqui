@@ -37,7 +37,7 @@
 
 .triggerText { display: grid; text-align: left; line-height: 1.05; }
 .triggerText strong { font-size: var(--font-size-sm); }
-.triggerText small { margin-top: 3px; color: var(--text-secondary); font-size: 11px; font-weight: var(--font-weight-semibold); }
+.triggerText small { margin-top: 3px; color: var(--text-secondary); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); }
 
 .backdrop {
   position: fixed;
@@ -90,7 +90,7 @@
   background: var(--surface-2);
   color: var(--text-primary);
   font: inherit;
-  font-size: 1.3rem;
+  font-size: var(--font-size-lg);
   cursor: pointer;
 }
 
@@ -102,7 +102,7 @@
   padding: var(--space-4) var(--space-6) var(--space-5);
 }
 
-.hero h2 { margin: 0 0 var(--space-2); font-size: clamp(1.5rem, 3vw, 2rem); line-height: var(--line-height-tight); }
+.hero h2 { margin: 0 0 var(--space-2); font-size: var(--font-size-2xl); line-height: var(--line-height-tight); }
 .hero p { max-width: 58ch; margin: 0; color: var(--text-secondary); line-height: var(--line-height-relaxed); }
 
 .score {
@@ -116,8 +116,8 @@
   background: color-mix(in srgb, var(--accent) 8%, var(--surface-2));
   line-height: 1;
 }
-.score strong { color: var(--accent); font-size: 1.35rem; }
-.score span { color: var(--text-secondary); font-size: 11px; font-weight: var(--font-weight-semibold); }
+.score strong { color: var(--accent); font-size: var(--font-size-2xl); }
+.score span { color: var(--text-secondary); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); }
 
 .progressTrack {
   height: 6px;
@@ -172,8 +172,8 @@
 .taskBody { min-width: 0; }
 .taskTitleRow { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
 .taskBody p { margin: 5px 0 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.45; }
-.taskBody small { display: block; margin-top: 7px; color: var(--text-secondary); font-size: 11px; }
-.stateLabel { flex: 0 0 auto; color: var(--text-secondary); font-size: 11px; font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: .04em; }
+.taskBody small { display: block; margin-top: 7px; color: var(--text-secondary); font-size: var(--font-size-xs); }
+.stateLabel { flex: 0 0 auto; color: var(--text-secondary); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: .04em; }
 .task[data-state="done"] .stateLabel { color: var(--state-success-text); }
 .task[data-state="todo"] .stateLabel { color: var(--accent); }
 
@@ -217,7 +217,7 @@
   box-shadow: var(--shadow-lg);
   animation: guideEnter var(--motion-normal) var(--ease-standard);
 }
-.coachTitle { font-size: 1.12rem; }
+.coachTitle { font-size: var(--font-size-lg); }
 .coach p { margin: -4px 0 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.5; }
 .tip { display: flex; gap: 8px; padding: 10px 12px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--accent) 8%, var(--surface-2)); color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.4; }
 .detected { padding: 9px 12px; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--surface-2); color: var(--text-secondary); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); }
@@ -234,7 +234,7 @@
   .topline { padding: var(--space-4) var(--space-4) var(--space-2); }
   .hero { align-items: flex-start; padding: var(--space-3) var(--space-4) var(--space-4); }
   .score { width: 72px; height: 72px; flex-basis: 72px; border-width: 5px; }
-  .score strong { font-size: 1.05rem; }
+  .score strong { font-size: var(--font-size-lg); }
   .progressTrack { margin: 0 var(--space-4) var(--space-4); }
   .successBanner { margin: 0 var(--space-4) var(--space-4); }
   .checklist { padding: 0 var(--space-4) var(--space-4); }

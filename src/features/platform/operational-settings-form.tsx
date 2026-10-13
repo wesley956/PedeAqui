@@ -8,11 +8,11 @@ const groupStyle = {
   margin: 0,
   padding: 12,
   border: "1px solid var(--border)",
-  borderRadius: 10,
+  borderRadius: "var(--radius-sm)",
 } as const;
 
-const labelStyle = { display: "grid", gap: 5, color: "var(--text)", fontSize: 12 } as const;
-const checkStyle = { display: "flex", gap: 8, alignItems: "center", color: "var(--text)", fontSize: 12 } as const;
+const labelStyle = { display: "grid", gap: 5, color: "var(--text)", fontSize: "var(--font-size-xs)" } as const;
+const checkStyle = { display: "flex", gap: 8, alignItems: "center", color: "var(--text)", fontSize: "var(--font-size-xs)" } as const;
 
 export function OperationalSettingsForm({ organizationId, storeId, settings, modules }: {
   organizationId: string;
@@ -31,7 +31,7 @@ export function OperationalSettingsForm({ organizationId, storeId, settings, mod
     <span>Configure apenas como os módulos já habilitados funcionam nesta unidade. Alterar estas opções não ativa módulos novos.</span>
 
     <fieldset style={groupStyle}>
-      <legend style={{ padding: "0 5px", fontWeight: 900 }}>Pedidos</legend>
+      <legend style={{ padding: "0 5px", fontWeight: "var(--font-weight-bold)" }}>Pedidos</legend>
       <label style={checkStyle}>
         <input type="checkbox" name="ordersAutoAccept" defaultChecked={settings.ordersAutoAccept} />
         Autoaceitar pedidos elegíveis
@@ -47,7 +47,7 @@ export function OperationalSettingsForm({ organizationId, storeId, settings, mod
     </fieldset>
 
     <fieldset style={groupStyle}>
-      <legend style={{ padding: "0 5px", fontWeight: 900 }}>Entregas</legend>
+      <legend style={{ padding: "0 5px", fontWeight: "var(--font-weight-bold)" }}>Entregas</legend>
       <label style={checkStyle}>
         <input type="checkbox" name="deliveriesAutoCreateWhenReady" defaultChecked={settings.deliveriesAutoCreateWhenReady} />
         Enviar delivery pronto automaticamente para Entregas
@@ -73,7 +73,7 @@ export function OperationalSettingsForm({ organizationId, storeId, settings, mod
     </fieldset>
 
     <fieldset style={groupStyle}>
-      <legend style={{ padding: "0 5px", fontWeight: 900 }}>Marketing e campanhas</legend>
+      <legend style={{ padding: "0 5px", fontWeight: "var(--font-weight-bold)" }}>Marketing e campanhas</legend>
       <label style={checkStyle} title={campaignsAvailable ? undefined : "Ative Growth, Clientes e Conversas para usar campanhas"}>
         <input type="checkbox" name="growthCampaignsEnabled" defaultChecked={settings.growthCampaignsEnabled} disabled={!campaignsAvailable} />
         Campanhas promocionais oficiais
@@ -86,7 +86,7 @@ export function OperationalSettingsForm({ organizationId, storeId, settings, mod
     </fieldset>
 
     <fieldset style={groupStyle}>
-      <legend style={{ padding: "0 5px", fontWeight: 900 }}>Registro da alteração</legend>
+      <legend style={{ padding: "0 5px", fontWeight: "var(--font-weight-bold)" }}>Registro da alteração</legend>
       <label style={labelStyle}>
         Motivo da alteração
         <input className={styles.field} name="reason" required minLength={5} maxLength={500} placeholder="Ex.: operação simplificada solicitada pelo cliente" />

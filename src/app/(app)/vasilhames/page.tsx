@@ -1,8 +1,8 @@
 import { adjustGasContainerAction, configureGasProductAction, createGasContainerTypeAction } from "@/features/gas-containers/actions";
 import { GasContainerService } from "@/server/gas/gas-container-service";
 
-const fieldStyle = { minHeight: 46, borderRadius: 10, border: "1px solid var(--border-default)", padding: "10px 12px", background: "var(--surface-1)", color: "inherit" } as const;
-const cardStyle = { border: "1px solid var(--border-default)", borderRadius: 16, padding: 16, background: "var(--surface-1)" } as const;
+const fieldStyle = { minHeight: 46, borderRadius: "var(--radius-sm)", border: "1px solid var(--border-default)", padding: "10px 12px", background: "var(--surface-1)", color: "inherit" } as const;
+const cardStyle = { border: "1px solid var(--border-default)", borderRadius: "var(--radius-lg)", padding: 16, background: "var(--surface-1)" } as const;
 
 export default async function GasContainersPage() {
   const { balances, profiles, products, movements } = await GasContainerService.load();
@@ -19,9 +19,9 @@ export default async function GasContainersPage() {
       {balances.length === 0 ? <div style={cardStyle}><strong>Nenhum tipo cadastrado</strong><p className="muted">Cadastre P13, P20, P45 ou outro vasilhame usado nesta unidade.</p></div> : balances.map((balance) => <article key={balance.container_type_id} style={cardStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><strong>{balance.code} · {balance.name}</strong>{balance.nominal_weight_kg ? <span className="muted">{Number(balance.nominal_weight_kg)} kg</span> : null}</div>
         <dl style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 0 }}>
-          <div><dt className="muted">Cheios</dt><dd style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>{Number(balance.full_quantity)}</dd></div>
-          <div><dt className="muted">Vazios</dt><dd style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>{Number(balance.empty_quantity)}</dd></div>
-          <div><dt className="muted">Em rota</dt><dd style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>{Number(balance.in_route_quantity)}</dd></div>
+          <div><dt className="muted">Cheios</dt><dd style={{ margin: 0, fontSize: "var(--font-size-2xl)", fontWeight: "var(--font-weight-bold)" }}>{Number(balance.full_quantity)}</dd></div>
+          <div><dt className="muted">Vazios</dt><dd style={{ margin: 0, fontSize: "var(--font-size-2xl)", fontWeight: "var(--font-weight-bold)" }}>{Number(balance.empty_quantity)}</dd></div>
+          <div><dt className="muted">Em rota</dt><dd style={{ margin: 0, fontSize: "var(--font-size-2xl)", fontWeight: "var(--font-weight-bold)" }}>{Number(balance.in_route_quantity)}</dd></div>
         </dl>
       </article>)}
     </div>
@@ -32,7 +32,7 @@ export default async function GasContainersPage() {
         <label style={{ display: "grid", gap: 6 }}><strong>Código</strong><input name="code" required maxLength={24} placeholder="P13" style={fieldStyle} /></label>
         <label style={{ display: "grid", gap: 6 }}><strong>Nome</strong><input name="name" required maxLength={100} placeholder="Botijão residencial" style={fieldStyle} /></label>
         <label style={{ display: "grid", gap: 6 }}><strong>Peso nominal (kg)</strong><input name="nominalWeightKg" inputMode="decimal" placeholder="13" style={fieldStyle} /></label>
-        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--brand-primary)", color: "white", fontWeight: 900, cursor: "pointer" }}>Cadastrar vasilhame</button>
+        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--brand-primary)", color: "white", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Cadastrar vasilhame</button>
       </form>
 
       <form action={adjustGasContainerAction} style={{ ...cardStyle, display: "grid", gap: 12 }}>
@@ -44,7 +44,7 @@ export default async function GasContainersPage() {
           <label style={{ display: "grid", gap: 6 }}><strong>Em rota ±</strong><input name="inRouteDelta" type="number" defaultValue={0} style={fieldStyle} /></label>
         </div>
         <label style={{ display: "grid", gap: 6 }}><strong>Motivo</strong><input name="reason" required minLength={3} maxLength={500} placeholder="Ex.: inventário inicial" style={fieldStyle} /></label>
-        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--brand-primary)", color: "white", fontWeight: 900, cursor: "pointer" }}>Registrar ajuste</button>
+        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--brand-primary)", color: "white", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Registrar ajuste</button>
       </form>
     </div>
 
@@ -60,7 +60,7 @@ export default async function GasContainersPage() {
         <label><input name="containerSaleEnabled" type="checkbox" defaultChecked /> Permitir produto + casco</label>
         <label><input name="requireContainerChoice" type="checkbox" defaultChecked /> Exigir escolha no pedido</label>
       </div>
-      <button type="submit" style={{ ...fieldStyle, justifySelf: "start", border: 0, background: "var(--brand-primary)", color: "white", fontWeight: 900, cursor: "pointer" }}>Salvar vínculo</button>
+      <button type="submit" style={{ ...fieldStyle, justifySelf: "start", border: 0, background: "var(--brand-primary)", color: "white", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Salvar vínculo</button>
     </form>
 
     <article style={cardStyle}>

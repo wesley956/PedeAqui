@@ -4,12 +4,12 @@
   max-width: 920px;
 }
 
-.heading h1 { font-size: 24px; line-height: 1.3; }
-.heading p, .section p, .detailsBody p { font-size: 13px; line-height: 1.5; }
-.section h2 { margin: 0; font-size: 18px; }
+.heading h1 { font-size: var(--font-size-2xl); line-height: 1.3; }
+.heading p, .section p, .detailsBody p { font-size: var(--font-size-support); line-height: 1.5; }
+.section h2 { margin: 0; font-size: var(--font-size-lg); }
 .section, .detailsBody { min-width: 0; }
 .section button, .detailsBody button { min-height: 44px; }
-.form small { font-size: 13px; }
+.form small { font-size: var(--font-size-support); }
 
 .heading {
   display: grid;
@@ -150,7 +150,7 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  .form input, .form select, .form textarea { font-size: 16px; }
+  .form input, .form select, .form textarea { font-size: var(--font-size-md); }
 
   .actions a,
   .actions button {
