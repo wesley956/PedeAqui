@@ -19,3 +19,5 @@
 .details>p{font-size:13px;line-height:1.5;color:var(--text-secondary);margin:8px 0}
 @media(max-width:900px){.stickyActions{bottom:calc(80px + env(safe-area-inset-bottom,0px))}}
 @media(max-width:640px){.grid{grid-template-columns:minmax(0,1fr)}.card,.form,.details,.row{padding:12px}.page input,.page select,.page textarea{font-size:16px}.stickyActions button{width:100%}.rowTop{align-items:flex-start}.actions{justify-content:flex-start}}
+
+.stack{display:grid;gap:12px;min-width:0}.checkLabel{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}.details>.stack{padding-top:12px;border-top:1px solid var(--border-default)}

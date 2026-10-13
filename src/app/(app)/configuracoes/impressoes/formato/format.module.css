@@ -8,3 +8,5 @@
 @media(max-width:900px){.grid{grid-template-columns:1fr}.preview{position:static;order:-1}.options{grid-template-columns:1fr}}
 @media(max-width:640px){.header{align-items:stretch}.back{justify-content:center}.card{padding:var(--space-3)}.row{grid-template-columns:1fr}.copiesForm{display:grid;grid-template-columns:1fr auto}.copiesField input{width:100%}}
 @media(pointer:coarse){.input,.primary,.secondary,.back{min-height:var(--control-height-lg)}}
+
+.header h1{font-size:24px;line-height:1.3}.card h2{font-size:18px}.hint,.meta,.optionCopy small,.copiesField span{font-size:13px;line-height:1.5}.input,.primary,.secondary,.back{min-height:44px}.page,.stack,.card,.identity{min-width:0}.identity{overflow-wrap:anywhere}@media(max-width:640px){.input{font-size:16px}}
