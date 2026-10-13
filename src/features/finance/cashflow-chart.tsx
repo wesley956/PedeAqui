@@ -47,7 +47,7 @@ export function CashflowChart({ daily }: { daily: readonly Day[] }) {
         <line x1={left} x2={width - right} y1={zero} y2={zero} className={styles.zero} />
         <text x={left - 8} y={zero + 4} textAnchor="end" className={styles.axisText}>R$ 0</text>
         <g className={styles.axisText}>
-          {labelDays.map((index) => <text key={rows[index].day} x={left + index * band + band / 2} y={height - 8} textAnchor="middle">{shortDate(rows[index].day)}</text>)}
+          {rows.map((row, index) => labelDays.includes(index) ? <text key={row.day} x={left + index * band + band / 2} y={height - 8} textAnchor="middle">{shortDate(row.day)}</text> : null)}
         </g>
       </svg>
       <figcaption className={styles.caption}>
