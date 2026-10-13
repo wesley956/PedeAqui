@@ -9,11 +9,11 @@ import type { InventoryBaseUnit } from "@/server/inventory/values";
 
 const initial: InventoryActionState = { ok: false, message: null, error: null };
 const inputStyle: React.CSSProperties = { minHeight: 40, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "8px 10px", width: "100%" };
-const buttonStyle: React.CSSProperties = { minHeight: 40, border: 0, borderRadius: "var(--radius-sm)", background: "var(--accent)", color: "#fff", padding: "8px 12px", fontWeight: "var(--font-weight-bold)", cursor: "pointer" };
+const buttonStyle: React.CSSProperties = { minHeight: 40, border: 0, borderRadius: "var(--radius-sm)", background: "var(--accent)", color: "var(--text-on-brand)", padding: "8px 12px", fontWeight: "var(--font-weight-bold)", cursor: "pointer" };
 
 function Feedback({ state }: { state: InventoryActionState }) {
-  if (state.error) return <div style={{ color: "#f97066", fontSize: "var(--font-size-xs)" }}>{state.error}</div>;
-  if (state.message) return <div style={{ color: "#22c55e", fontSize: "var(--font-size-xs)" }}>{state.message}</div>;
+  if (state.error) return <div style={{ color: "var(--state-danger-text)", fontSize: "var(--font-size-xs)" }}>{state.error}</div>;
+  if (state.message) return <div style={{ color: "var(--state-success)", fontSize: "var(--font-size-xs)" }}>{state.message}</div>;
   return null;
 }
 function costLabel(unit: InventoryBaseUnit) { return unit === "g" ? "Custo por kg (R$)" : unit === "ml" ? "Custo por litro (R$)" : "Custo por unidade (R$)"; }

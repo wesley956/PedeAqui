@@ -16,7 +16,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
 
   return (
     <AuthCard title="Configure seu PedeAqui" subtitle={`Seu teste de ${trialDays} dias começa quando esta configuração for concluída.`}>
-      {params.error ? <p role="alert" style={{ margin: 0, color: "#ff8a93" }}>Não foi possível concluir a configuração. Revise os dados e tente novamente.</p> : null}
+      {params.error ? <p role="alert" style={{ margin: 0, color: "var(--state-danger-text)" }}>Não foi possível concluir a configuração. Revise os dados e tente novamente.</p> : null}
       <ModularOnboardingForm
         plans={plans.map((plan) => ({ key: plan.key, name: plan.name, monthlyPriceCents: plan.monthlyPriceCents }))}
         initialPlanKey={selectedPlanKey}

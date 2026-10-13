@@ -177,7 +177,7 @@ export function AgentTokenCreatorClient({ intentSeed }: { intentSeed: string }) 
         <Input id={nameId} name="name" label="Nome do computador" required minLength={2} maxLength={100} placeholder="Ex.: Computador do caixa" />
         <button type="submit" disabled={pending} style={buttonStyle}>{pending ? "Preparando…" : "Conectar este computador"}</button>
       </form>
-      {state.error ? <div style={{ color: "#f97066", fontSize: "var(--font-size-support)" }}>{state.error}</div> : null}
+      {state.error ? <div style={{ color: "var(--state-danger-text)", fontSize: "var(--font-size-support)" }}>{state.error}</div> : null}
       <InstallerCard state={state} />
     </div>
   );
@@ -202,11 +202,11 @@ export function AgentReconnectInstallerClient({ agentId, upgrade = false, intent
           ? "Esta atualização é feita uma vez. Depois dela, o PedeAqui passa a recuperar travamentos e buscar novas versões do agente automaticamente."
           : "“Atualizar status” apenas consulta a situação atual. “Reinstalar conexão” gera uma nova chave e deve ser usado somente quando for necessário instalar ou reconectar este computador novamente."}
       </span>
-      {state.error ? <div style={{ color: "#f97066", fontSize: "var(--font-size-support)" }}>{state.error}</div> : null}
+      {state.error ? <div style={{ color: "var(--state-danger-text)", fontSize: "var(--font-size-support)" }}>{state.error}</div> : null}
       <InstallerCard state={state} />
     </div>
   );
 }
 
-const buttonStyle: React.CSSProperties = { minHeight: 44, border: 0, borderRadius: "var(--radius-sm)", background: "var(--accent)", color: "#fff", fontWeight: "var(--font-weight-bold)", padding: "9px 13px", cursor: "pointer" };
+const buttonStyle: React.CSSProperties = { minHeight: 44, border: 0, borderRadius: "var(--radius-sm)", background: "var(--accent)", color: "var(--text-on-brand)", fontWeight: "var(--font-weight-bold)", padding: "9px 13px", cursor: "pointer" };
 const secondaryButtonStyle: React.CSSProperties = { minHeight: 44, border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--surface-2)", color: "var(--text)", fontWeight: "var(--font-weight-bold)", padding: "8px 11px", cursor: "pointer" };

@@ -8,8 +8,8 @@ import {
 
 const initial: PurchaseActionState = { ok: false, message: null, error: null };
 const inputStyle: React.CSSProperties = { minHeight: 40, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "8px 10px", width: "100%" };
-const buttonStyle: React.CSSProperties = { minHeight: 40, border: 0, borderRadius: "var(--radius-sm)", background: "var(--accent)", color: "#fff", padding: "8px 12px", fontWeight: "var(--font-weight-bold)", cursor: "pointer" };
-function Feedback({ state }: { state: PurchaseActionState }) { if (state.error) return <div style={{ color: "#f97066", fontSize: "var(--font-size-xs)" }}>{state.error}</div>; if (state.message) return <div style={{ color: "#22c55e", fontSize: "var(--font-size-xs)" }}>{state.message}</div>; return null; }
+const buttonStyle: React.CSSProperties = { minHeight: 40, border: 0, borderRadius: "var(--radius-sm)", background: "var(--accent)", color: "var(--text-on-brand)", padding: "8px 12px", fontWeight: "var(--font-weight-bold)", cursor: "pointer" };
+function Feedback({ state }: { state: PurchaseActionState }) { if (state.error) return <div style={{ color: "var(--state-danger-text)", fontSize: "var(--font-size-xs)" }}>{state.error}</div>; if (state.message) return <div style={{ color: "var(--state-success)", fontSize: "var(--font-size-xs)" }}>{state.message}</div>; return null; }
 type PurchaseServerAction = (previous: PurchaseActionState, formData: FormData) => Promise<PurchaseActionState>;
 function useIdempotentAction(serverAction: PurchaseServerAction) {
   const keyRef = useRef<string | null>(null);
@@ -74,7 +74,7 @@ export function PurchaseCreateForm({ suppliers, catalog }: { suppliers: Array<{ 
 }
 
 export function SendPurchaseForm({ orderId }: { orderId: string }) { const [state,action,pending] = useActionState(sendPurchaseAction,initial); return <form action={action} style={{ display: "grid", gap: 5 }}><input type="hidden" name="purchaseOrderId" value={orderId} /><button disabled={pending} style={buttonStyle}>{pending ? "Enviando…" : "Marcar enviado"}</button><Feedback state={state} /></form>; }
-export function CancelPurchaseForm({ orderId }: { orderId: string }) { const [state,action,pending] = useActionState(cancelPurchaseAction,initial); return <form action={action} style={{ display: "grid", gap: 5 }}><input type="hidden" name="purchaseOrderId" value={orderId} /><input name="reason" required minLength={3} maxLength={500} placeholder="Motivo do cancelamento" aria-label="Motivo do cancelamento" style={inputStyle} /><button disabled={pending} style={{ ...buttonStyle, background: "#b42318" }}>{pending ? "Cancelando…" : "Cancelar pedido"}</button><Feedback state={state} /></form>; }
+export function CancelPurchaseForm({ orderId }: { orderId: string }) { const [state,action,pending] = useActionState(cancelPurchaseAction,initial); return <form action={action} style={{ display: "grid", gap: 5 }}><input type="hidden" name="purchaseOrderId" value={orderId} /><input name="reason" required minLength={3} maxLength={500} placeholder="Motivo do cancelamento" aria-label="Motivo do cancelamento" style={inputStyle} /><button disabled={pending} style={{ ...buttonStyle, background: "var(--state-danger)" }}>{pending ? "Cancelando…" : "Cancelar pedido"}</button><Feedback state={state} /></form>; }
 
 type PurchaseItem = { id: string; inventory_name_snapshot: string; purchase_unit_label_snapshot: string; ordered_purchase_quantity: string | number; received_purchase_quantity: string | number; unit_cost_cents: string | number };
 export function ReceivePurchaseForm({ orderId, items }: { orderId: string; items: PurchaseItem[] }) {

@@ -21,7 +21,7 @@ const buttonStyle: React.CSSProperties = {
   border: 0,
   borderRadius: "var(--radius-sm)",
   background: "var(--accent)",
-  color: "#fff",
+  color: "var(--text-on-brand)",
   padding: "8px 12px",
   fontWeight: "var(--font-weight-bold)",
   cursor: "pointer",

@@ -31,7 +31,7 @@ export default async function GasContainersPage() {
         <label style={{ display: "grid", gap: 6 }}><strong>Código</strong><input name="code" required maxLength={24} placeholder="P13" style={fieldStyle} /></label>
         <label style={{ display: "grid", gap: 6 }}><strong>Nome</strong><input name="name" required maxLength={100} placeholder="Botijão residencial" style={fieldStyle} /></label>
         <label style={{ display: "grid", gap: 6 }}><strong>Peso nominal (kg)</strong><input name="nominalWeightKg" inputMode="decimal" placeholder="13" style={fieldStyle} /></label>
-        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--brand-primary)", color: "white", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Cadastrar vasilhame</button>
+        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--brand-primary)", color: "var(--text-on-brand)", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Cadastrar vasilhame</button>
       </form>
 
       <form action={adjustGasContainerAction} style={{ ...cardStyle, display: "grid", gap: 12 }}>
@@ -43,7 +43,7 @@ export default async function GasContainersPage() {
           <label style={{ display: "grid", gap: 6 }}><strong>Em rota ±</strong><input name="inRouteDelta" type="number" defaultValue={0} style={fieldStyle} /></label>
         </div>
         <label style={{ display: "grid", gap: 6 }}><strong>Motivo</strong><input name="reason" required minLength={3} maxLength={500} placeholder="Ex.: inventário inicial" style={fieldStyle} /></label>
-        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--brand-primary)", color: "white", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Registrar ajuste</button>
+        <button type="submit" style={{ ...fieldStyle, border: 0, background: "var(--brand-primary)", color: "var(--text-on-brand)", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Registrar ajuste</button>
       </form>
     </div>
 
@@ -59,7 +59,7 @@ export default async function GasContainersPage() {
         <label><input name="containerSaleEnabled" type="checkbox" defaultChecked /> Permitir produto + casco</label>
         <label><input name="requireContainerChoice" type="checkbox" defaultChecked /> Exigir escolha no pedido</label>
       </div>
-      <button type="submit" style={{ ...fieldStyle, justifySelf: "start", border: 0, background: "var(--brand-primary)", color: "white", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Salvar vínculo</button>
+      <button type="submit" style={{ ...fieldStyle, justifySelf: "start", border: 0, background: "var(--brand-primary)", color: "var(--text-on-brand)", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Salvar vínculo</button>
     </form>
 
     <article style={cardStyle}>
