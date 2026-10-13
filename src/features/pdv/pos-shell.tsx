@@ -91,6 +91,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
   const defaultMethod = paymentMethods[0]?.method ?? "cash";
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<MobilePdvView>("catalog");
+  const [checkoutExpanded, setCheckoutExpanded] = useState(false);
   const [search, setSearch] = useState(""); const deferredSearch = useDeferredValue(search);
   const [cart, setCart] = useState<PosCartLine[]>([]); const [configurator, setConfigurator] = useState<ConfiguratorState | null>(null);
   const [customerQuery, setCustomerQuery] = useState("");
@@ -242,8 +243,13 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
           </div>
         </section>
       </div>
-      <footer className={styles.checkoutBar} aria-label="Pagamento e finalização da venda">
-        <div className={styles.checkoutPayment}>
+      <footer className={styles.checkoutBar} aria-label="Pagamento e finalização da venda" data-expanded={checkoutExpanded ? "true" : "false"} data-hides-guide>
+        <button type="button" className={styles.checkoutToggle} aria-expanded={checkoutExpanded} aria-controls="pdv-checkout-details" onClick={() => setCheckoutExpanded((value) => !value)}>
+          <span className={styles.mutedSmall}>Pagamento</span>
+          <strong>{singlePayment ? paymentMethods.find((method) => method.method === singlePayment.method)?.label ?? "Escolher" : `${payments.length} parcelas`}</strong>
+          <span aria-hidden="true" className={styles.checkoutToggleIcon}>{checkoutExpanded ? "Fechar" : "Alterar"}</span>
+        </button>
+        <div className={styles.checkoutPayment} id="pdv-checkout-details">
           <div className={styles.rowBetween}><strong>Pagamento</strong><button type="button" className={styles.paymentDetailsButton} disabled={paymentMethods.length === 0} onClick={() => setPaymentDialogOpen(true)}>{payments.length > 1 ? `Editar ${payments.length} parcelas` : "Detalhes / Dividir"}</button></div>
           {singlePayment ? <div className={styles.paymentMethods} role="group" aria-label="Forma de pagamento">{paymentMethods.map((method) => <button type="button" key={method.method} className={singlePayment.method === method.method ? styles.paymentMethodActive : styles.paymentMethodButton} aria-pressed={singlePayment.method === method.method} onClick={() => { if (singlePayment.method !== method.method) updatePayment(singlePayment.id, { method: method.method, cashReceivedText: "", reference: "" }); }}>{method.label}</button>)}</div> : <button type="button" className={styles.secondaryButton} onClick={() => setPaymentDialogOpen(true)}>Pagamento dividido · {payments.length} parcelas</button>}
         </div>

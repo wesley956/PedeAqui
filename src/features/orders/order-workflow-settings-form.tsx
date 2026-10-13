@@ -98,7 +98,7 @@ export function OrderWorkflowSettingsForm({ mode: initialMode, custom }: Props) 
       <WorkflowPicker title="Retirada" prefix="pickup" canonical={pickupWorkflowStages} selected={pickup} onChange={setPickup} />
     </div> : null}
 
-    <footer className={styles.footer}>
+    <footer className={styles.footer} data-sticky-actions>
       <div><strong>Modo selecionado: {modes.find((item) => item.value === mode)?.title}</strong><p>A alteração vale somente para esta unidade.</p></div>
       <Button type="submit">Salvar fluxo de pedidos</Button>
     </footer>
