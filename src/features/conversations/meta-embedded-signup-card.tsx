@@ -244,68 +244,68 @@ export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Stat
   const connectionDisabled = pending || !platformReady || !sdkReady || sdkFailed;
 
   return (
-    <div style={{ display: "grid", gap: 14, padding: 16, border: "1px solid var(--border)", borderRadius: 12, background: "var(--surface-2)" }}>
+    <div style={{ display: "grid", gap: 14, padding: 16, border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", background: "var(--surface-2)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
         <div>
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>WhatsApp da loja</p>
-          <strong style={{ fontSize: 18 }}>{humanStatus(status)}</strong>
+          <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>WhatsApp da loja</p>
+          <strong style={{ fontSize: "var(--font-size-lg)" }}>{humanStatus(status)}</strong>
         </div>
-        {connected ? <span style={{ fontSize: 13, fontWeight: 800, color: "var(--accent)" }}>Funcionando</span> : null}
+        {connected ? <span style={{ fontSize: "var(--font-size-support)", fontWeight: "var(--font-weight-bold)", color: "var(--accent)" }}>Funcionando</span> : null}
       </div>
 
       {connected ? <>
-        <div style={{ display: "grid", gap: 4, fontSize: 13 }}>
+        <div style={{ display: "grid", gap: 4, fontSize: "var(--font-size-support)" }}>
           {status.verified_name ? <span>Perfil: <strong>{status.verified_name}</strong></span> : null}
           {status.display_phone_number ? <span>Número: <strong>{status.display_phone_number}</strong></span> : null}
           <span>Como está conectado: <strong>{connectionModeLabel(status.connection_mode)}</strong></span>
           {status.quality_rating ? <span>Qualidade da conexão: <strong>{status.quality_rating}</strong></span> : null}
         </div>
 
-        <div style={{ display: "grid", gap: 7, padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface)" }}>
-          <strong style={{ fontSize: 14 }}>Faça um teste rápido</strong>
-          <span className="muted" style={{ fontSize: 13 }}>1. De outro número, envie uma mensagem para o WhatsApp da loja.</span>
-          <span className="muted" style={{ fontSize: 13 }}>2. Confira se a conversa aparece no PedeAqui e responda por lá.</span>
-          {status.connection_mode === "coexistence" ? <span className="muted" style={{ fontSize: 13 }}>3. Responda também pelo WhatsApp Business do celular e confirme que a conversa continua sincronizada.</span> : null}
-          <span className="muted" style={{ fontSize: 13 }}>Esse teste verifica somente o atendimento e não cria nem altera pedidos.</span>
+        <div style={{ display: "grid", gap: 7, padding: 12, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)" }}>
+          <strong style={{ fontSize: "var(--font-size-sm)" }}>Faça um teste rápido</strong>
+          <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>1. De outro número, envie uma mensagem para o WhatsApp da loja.</span>
+          <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>2. Confira se a conversa aparece no PedeAqui e responda por lá.</span>
+          {status.connection_mode === "coexistence" ? <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>3. Responda também pelo WhatsApp Business do celular e confirme que a conversa continua sincronizada.</span> : null}
+          <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>Esse teste verifica somente o atendimento e não cria nem altera pedidos.</span>
         </div>
       </> : <div style={{ display: "grid", gap: 12 }}>
         <div>
-          <strong style={{ fontSize: 15 }}>Como você usa o WhatsApp hoje?</strong>
-          <p className="muted" style={{ margin: "5px 0 0", fontSize: 13 }}>Escolha a opção que combina com a sua loja. O PedeAqui cuida da parte técnica.</p>
+          <strong style={{ fontSize: "var(--font-size-md)" }}>Como você usa o WhatsApp hoje?</strong>
+          <p className="muted" style={{ margin: "5px 0 0", fontSize: "var(--font-size-support)" }}>Escolha a opção que combina com a sua loja. O PedeAqui cuida da parte técnica.</p>
         </div>
 
         <button
           type="button"
           onClick={() => connect("coexistence")}
           disabled={connectionDisabled}
-          style={{ textAlign: "left", padding: 14, borderRadius: 12, border: "2px solid var(--accent)", background: "var(--surface)", color: "var(--text)", cursor: connectionDisabled ? "not-allowed" : "pointer" }}
+          style={{ textAlign: "left", padding: 14, borderRadius: "var(--radius-lg)", border: "2px solid var(--accent)", background: "var(--surface)", color: "var(--text)", cursor: connectionDisabled ? "not-allowed" : "pointer" }}
         >
-          <span style={{ display: "inline-block", marginBottom: 7, padding: "3px 7px", borderRadius: 999, fontSize: 13, fontWeight: 800, background: "var(--surface-2)" }}>RECOMENDADO</span>
+          <span style={{ display: "inline-block", marginBottom: 7, padding: "3px 7px", borderRadius: "var(--radius-pill)", fontSize: "var(--font-size-support)", fontWeight: "var(--font-weight-bold)", background: "var(--surface-2)" }}>RECOMENDADO</span>
           <strong style={{ display: "block" }}>Já uso WhatsApp Business no celular</strong>
-          <span className="muted" style={{ display: "block", marginTop: 5, fontSize: 13 }}>Continue atendendo normalmente pelo aplicativo e use o PedeAqui ao mesmo tempo. Durante a conexão, o WhatsApp pode pedir uma confirmação ou mostrar um QR Code para você escanear no celular.</span>
+          <span className="muted" style={{ display: "block", marginTop: 5, fontSize: "var(--font-size-support)" }}>Continue atendendo normalmente pelo aplicativo e use o PedeAqui ao mesmo tempo. Durante a conexão, o WhatsApp pode pedir uma confirmação ou mostrar um QR Code para você escanear no celular.</span>
         </button>
 
         <button
           type="button"
           onClick={() => connect("cloud_api")}
           disabled={connectionDisabled}
-          style={{ textAlign: "left", padding: 12, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", cursor: connectionDisabled ? "not-allowed" : "pointer" }}
+          style={{ textAlign: "left", padding: 12, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", cursor: connectionDisabled ? "not-allowed" : "pointer" }}
         >
           <strong>Quero usar um número exclusivo no PedeAqui</strong>
-          <span className="muted" style={{ display: "block", marginTop: 4, fontSize: 13 }}>Escolha esta opção quando o número será dedicado ao atendimento pelo sistema.</span>
+          <span className="muted" style={{ display: "block", marginTop: 4, fontSize: "var(--font-size-support)" }}>Escolha esta opção quando o número será dedicado ao atendimento pelo sistema.</span>
         </button>
 
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>Você não precisa enviar senha, código de segurança ou token ao PedeAqui. Quando necessário, a autorização é feita diretamente na janela oficial do WhatsApp/Meta.</p>
+        <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Você não precisa enviar senha, código de segurança ou token ao PedeAqui. Quando necessário, a autorização é feita diretamente na janela oficial do WhatsApp/Meta.</p>
       </div>}
 
-      {!platformReady ? <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>A conexão do WhatsApp está temporariamente indisponível nesta conta. Tente novamente mais tarde ou fale com o suporte.</p> : null}
-      {platformReady && !sdkReady && !sdkFailed ? <p className="muted" style={{ margin: 0, fontSize: 13 }}>Preparando a conexão segura com o WhatsApp…</p> : null}
-      {status.last_connection_error_kind ? <p className="muted" style={{ margin: 0, fontSize: 13 }}>A última tentativa não foi concluída. Você pode iniciar a conexão novamente sem perder o histórico.</p> : null}
-      {message ? <p role="status" style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>{message}</p> : null}
+      {!platformReady ? <p style={{ margin: 0, fontSize: "var(--font-size-support)", fontWeight: "var(--font-weight-bold)" }}>A conexão do WhatsApp está temporariamente indisponível nesta conta. Tente novamente mais tarde ou fale com o suporte.</p> : null}
+      {platformReady && !sdkReady && !sdkFailed ? <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Preparando a conexão segura com o WhatsApp…</p> : null}
+      {status.last_connection_error_kind ? <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>A última tentativa não foi concluída. Você pode iniciar a conexão novamente sem perder o histórico.</p> : null}
+      {message ? <p role="status" style={{ margin: 0, fontSize: "var(--font-size-support)", fontWeight: "var(--font-weight-bold)" }}>{message}</p> : null}
       {connected ? <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <Button type="button" onClick={() => connect(status.connection_mode)} disabled={connectionDisabled}>{pending ? "Conectando…" : "Reconectar WhatsApp"}</Button>
         <Button type="button" tone="secondary" onClick={disconnect} disabled={pending}>Desconectar</Button>
-      </div> : pending ? <p role="status" style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>Conectando seu WhatsApp… siga as etapas na janela que foi aberta.</p> : null}
+      </div> : pending ? <p role="status" style={{ margin: 0, fontSize: "var(--font-size-support)", fontWeight: "var(--font-weight-bold)" }}>Conectando seu WhatsApp… siga as etapas na janela que foi aberta.</p> : null}
     </div>
   );
 }

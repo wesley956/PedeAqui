@@ -109,7 +109,7 @@ function EqualSplitModifierGroup({ group, disabled, complementTargetId, initialS
       </div>;
     })}</div>
     {selectedModifiers.length > 0 ? <div className={styles.rule}><strong>Divisão automática</strong><span>{selectedModifiers.map((modifier) => `${distribution.get(modifier.id)}x ${modifier.name}`).join(" · ")}</span></div> : null}
-    {complementTargetId && complete ? <button type="button" onClick={() => scrollToTarget(complementTargetId)} style={{ justifySelf: "start", border: 0, background: "transparent", color: "#9a4a00", fontWeight: 900, padding: "6px 0", cursor: "pointer" }}>Pronto, ver complementos →</button> : null}
+    {complementTargetId && complete ? <button type="button" onClick={() => scrollToTarget(complementTargetId)} style={{ justifySelf: "start", border: 0, background: "transparent", color: "#9a4a00", fontWeight: "var(--font-weight-bold)", padding: "6px 0", cursor: "pointer" }}>Pronto, ver complementos →</button> : null}
   </fieldset>;
 }
 
@@ -154,7 +154,7 @@ function QuantityModifierGroup({ group, disabled, complementTargetId, initialSel
         </div>
       </div>;
     })}</div>
-    {complementTargetId && complete ? <button type="button" onClick={() => scrollToTarget(complementTargetId)} style={{ justifySelf: "start", border: 0, background: "transparent", color: "#9a4a00", fontWeight: 900, padding: "6px 0", cursor: "pointer" }}>Pronto, ver complementos →</button> : null}
+    {complementTargetId && complete ? <button type="button" onClick={() => scrollToTarget(complementTargetId)} style={{ justifySelf: "start", border: 0, background: "transparent", color: "#9a4a00", fontWeight: "var(--font-weight-bold)", padding: "6px 0", cursor: "pointer" }}>Pronto, ver complementos →</button> : null}
   </fieldset>;
 }
 

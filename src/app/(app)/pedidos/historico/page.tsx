@@ -86,15 +86,15 @@ export default async function OrderHistoryPage({
       >
         <div className={styles.historyStatus}>
           <span>Pedidos no período</span><br />
-          <strong style={{ fontSize: "1.35rem" }}>{summary.totalOrders}</strong>
+          <strong style={{ fontSize: "var(--font-size-2xl)" }}>{summary.totalOrders}</strong>
         </div>
         <div className={styles.historyStatus}>
           <span>Valor vendido</span><br />
-          <strong style={{ fontSize: "1.35rem" }}>{money(summary.soldTotalCents)}</strong>
+          <strong style={{ fontSize: "var(--font-size-2xl)" }}>{money(summary.soldTotalCents)}</strong>
         </div>
         <div className={styles.historyStatus}>
           <span>Ticket médio</span><br />
-          <strong style={{ fontSize: "1.35rem" }}>{money(summary.averageTicketCents)}</strong>
+          <strong style={{ fontSize: "var(--font-size-2xl)" }}>{money(summary.averageTicketCents)}</strong>
           <span style={{ display: "block", marginTop: "var(--space-1)", opacity: 0.75 }}>
             {summary.completedOrders} pedido(s) finalizado(s)
           </span>

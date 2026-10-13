@@ -31,7 +31,7 @@ function SelectionModeField({ id, defaultValue = "distinct_choices" }: { id: str
 function DistributionTotalField({ id, defaultValue }: { id: string; defaultValue?: number | null }) {
   return <div style={{ display: "grid", gap: 4 }}>
     <QuantityInput id={id} label="Total a distribuir (divisão igual)" name="distributionTotal" min={1} max={100} defaultValue={defaultValue ?? ""} />
-    <span className="muted" style={{ fontSize: 13 }}>Preencha somente no modo de divisão igual. Ex.: 50 para uma caixa com 50 unidades.</span>
+    <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>Preencha somente no modo de divisão igual. Ex.: 50 para uma caixa com 50 unidades.</span>
   </div>;
 }
 
@@ -96,11 +96,11 @@ export default async function ModifiersPage() {
               <div className={styles.managementTop}>
                 <div>
                   <strong>{group.name}</strong>
-                  <div className="muted" style={{ fontSize: 13 }}>
+                  <div className="muted" style={{ fontSize: "var(--font-size-support)" }}>
                     {group.required ? "Obrigatório" : "Opcional"} · {equalSplitMode ? `${group.min_selection}–${group.max_selection} opção(ões) · divide ${group.distribution_total ?? "?"} unidades` : quantityMode ? `${group.min_selection}–${group.max_selection} unidades no total` : `${group.min_selection}–${group.max_selection} seleção(ões)`} · {items.length} opção(ões) · ordem {group.sort_order}
                   </div>
-                  {quantityMode ? <div className="muted" style={{ fontSize: 13 }}>O máximo é um teto. O cliente pode continuar antes dele assim que o mínimo estiver atendido.</div> : null}
-                  {equalSplitMode ? <div className="muted" style={{ fontSize: 13 }}>O cliente escolhe entre o mínimo e o máximo de opções; o total configurado é repartido igualmente entre elas.</div> : null}
+                  {quantityMode ? <div className="muted" style={{ fontSize: "var(--font-size-support)" }}>O máximo é um teto. O cliente pode continuar antes dele assim que o mínimo estiver atendido.</div> : null}
+                  {equalSplitMode ? <div className="muted" style={{ fontSize: "var(--font-size-support)" }}>O cliente escolhe entre o mínimo e o máximo de opções; o total configurado é repartido igualmente entre elas.</div> : null}
                 </div>
                 <span className={styles.stateBadge} data-active={group.active}>{group.active ? "Ativo" : "Pausado"}</span>
               </div>

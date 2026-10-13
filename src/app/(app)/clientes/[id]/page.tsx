@@ -169,5 +169,5 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
 }
 
 function Info({ label, value }: { label: string; value: string }) {
-  return <div><span className="muted" style={{ fontSize: 10, fontWeight: 850 }}>{label.toUpperCase()}</span><div style={{ marginTop: 3 }}>{value}</div></div>;
+  return <div><span className="muted" style={{ fontSize: "var(--font-size-xs)", fontWeight: "var(--font-weight-bold)" }}>{label.toUpperCase()}</span><div style={{ marginTop: 3 }}>{value}</div></div>;
 }

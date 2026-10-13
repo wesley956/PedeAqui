@@ -13,7 +13,7 @@ export default async function StoreHoursPage() {
   return (
     <section className={styles.page}>
       <header className={styles.header}>
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>Configurações</p>
+        <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Configurações</p>
         <h1 style={{ margin: "4px 0" }}>Horários de funcionamento</h1>
         <p className="muted" style={{ margin: 0 }}>Cadastre mais de um período por dia. Fechamento após meia-noite é suportado.</p>
       </header>
@@ -34,7 +34,7 @@ export default async function StoreHoursPage() {
       </form>
       </details>
 
-      <h2 style={{ margin: 0, fontSize: 18 }}>Períodos cadastrados</h2>
+      <h2 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>Períodos cadastrados</h2>
       <article className={styles.list}>
         {hours.length === 0 ? (
           <div className={styles.empty}>

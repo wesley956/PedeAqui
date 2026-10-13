@@ -47,7 +47,7 @@ export function ConnectivityGuard() {
   }, []);
 
   return online ? null : (
-    <div role="alert" aria-live="assertive" style={{ position: "fixed", inset: "0 0 auto", zIndex: 9999, padding: "10px 16px", textAlign: "center", background: "#7a271a", color: "#fff", fontWeight: 800 }}>
+    <div role="alert" aria-live="assertive" style={{ position: "fixed", inset: "0 0 auto", zIndex: 9999, padding: "10px 16px", textAlign: "center", background: "#7a271a", color: "#fff", fontWeight: "var(--font-weight-bold)" }}>
       Sem internet. Não feche esta página: confira os dados e envie quando a conexão voltar.
     </div>
   );

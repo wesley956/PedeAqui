@@ -83,8 +83,8 @@ export default async function PublicProductPage({ params, searchParams }: { para
         <Link className={styles.backLink} href={editItemId ? `/m/${store.slug}/carrinho` : `/m/${store.slug}`}>{editItemId ? "← Voltar ao carrinho" : `← Voltar para ${store.name}`}</Link>
       </div>
 
-      {editItemId ? <div role="status" style={{ padding: 14, borderRadius: 14, background: "var(--state-warning-surface)", color: "var(--state-warning-text)", fontWeight: 800 }}>Editando este item. Se você voltar sem salvar, a montagem atual do carrinho permanece intacta.</div> : null}
-      {errorMessage ? <div role="alert" style={{ padding: 14, borderRadius: 14, background: "var(--state-danger-surface)", color: "var(--state-danger-text)", fontWeight: 700 }}>{errorMessage}</div> : null}
+      {editItemId ? <div role="status" style={{ padding: 14, borderRadius: "var(--radius-lg)", background: "var(--state-warning-surface)", color: "var(--state-warning-text)", fontWeight: "var(--font-weight-bold)" }}>Editando este item. Se você voltar sem salvar, a montagem atual do carrinho permanece intacta.</div> : null}
+      {errorMessage ? <div role="alert" style={{ padding: 14, borderRadius: "var(--radius-lg)", background: "var(--state-danger-surface)", color: "var(--state-danger-text)", fontWeight: "var(--font-weight-bold)" }}>{errorMessage}</div> : null}
       <StoreOrderStatus operational={operational} />
 
       <article className={styles.productCard}>
@@ -99,7 +99,7 @@ export default async function PublicProductPage({ params, searchParams }: { para
               <h1 className={styles.productTitle}>{product.name}</h1>
               {product.description ? <p className={styles.productDescription}>{product.description}</p> : null}
             </div>
-            {soldOut ? <span style={{ background: "var(--state-danger-surface)", color: "var(--state-danger-text)", fontWeight: 900, borderRadius: 999, padding: "5px 8px", fontSize: ".6875rem" }}>ESGOTADO</span> : null}
+            {soldOut ? <span style={{ background: "var(--state-danger-surface)", color: "var(--state-danger-text)", fontWeight: "var(--font-weight-bold)", borderRadius: "var(--radius-pill)", padding: "5px 8px", fontSize: "var(--font-size-xs)" }}>ESGOTADO</span> : null}
           </div>
           <div className={styles.priceRow}>
             <strong className={styles.productPrice}>{money(price)}</strong>
@@ -109,11 +109,11 @@ export default async function PublicProductPage({ params, searchParams }: { para
         </div>
       </article>
 
-      {gas ? <fieldset disabled={orderUnavailable} style={{ ...cardSurface, margin: 0, borderRadius: 18, padding: 18, display: "grid", gap: 12 }}>
-        <legend style={{ fontWeight: 900, padding: "0 6px", color: "var(--text-primary)" }}>Como será o {gas.containerName.toLowerCase()}?</legend>
+      {gas ? <fieldset disabled={orderUnavailable} style={{ ...cardSurface, margin: 0, borderRadius: "var(--radius-lg)", padding: 18, display: "grid", gap: 12 }}>
+        <legend style={{ fontWeight: "var(--font-weight-bold)", padding: "0 6px", color: "var(--text-primary)" }}>Como será o {gas.containerName.toLowerCase()}?</legend>
         <p style={{ margin: 0, color: "var(--text-secondary)" }}>Escolha a modalidade para {gas.containerCode}. Confira o valor da modalidade escolhida no carrinho.</p>
-        {gas.exchangeEnabled ? <label style={{ display: "flex", gap: 10, alignItems: "start", padding: 12, border: "var(--border-width) solid var(--border-default)", borderRadius: 14, cursor: "pointer", color: "var(--text-primary)" }}><input type="radio" name="gasSaleMode" value="exchange" required={gas.requireContainerChoice} defaultChecked={editGasSaleMode === "exchange"} /><span><strong>Troca de vasilhame</strong><br /><small style={{ color: "var(--text-secondary)" }}>Você entrega um casco vazio compatível na entrega ou retirada.</small></span></label> : null}
-        {gas.containerSaleEnabled ? <label style={{ display: "flex", gap: 10, alignItems: "start", padding: 12, border: "var(--border-width) solid var(--border-default)", borderRadius: 14, cursor: "pointer", color: "var(--text-primary)" }}><input type="radio" name="gasSaleMode" value="with_container" required={gas.requireContainerChoice} defaultChecked={editGasSaleMode === "with_container"} /><span><strong>Produto + vasilhame</strong><br /><small style={{ color: "var(--text-secondary)" }}>Inclui o casco. Acréscimo: {money(gas.containerSurchargeCents)}.</small></span></label> : null}
+        {gas.exchangeEnabled ? <label style={{ display: "flex", gap: 10, alignItems: "start", padding: 12, border: "var(--border-width) solid var(--border-default)", borderRadius: "var(--radius-lg)", cursor: "pointer", color: "var(--text-primary)" }}><input type="radio" name="gasSaleMode" value="exchange" required={gas.requireContainerChoice} defaultChecked={editGasSaleMode === "exchange"} /><span><strong>Troca de vasilhame</strong><br /><small style={{ color: "var(--text-secondary)" }}>Você entrega um casco vazio compatível na entrega ou retirada.</small></span></label> : null}
+        {gas.containerSaleEnabled ? <label style={{ display: "flex", gap: 10, alignItems: "start", padding: 12, border: "var(--border-width) solid var(--border-default)", borderRadius: "var(--radius-lg)", cursor: "pointer", color: "var(--text-primary)" }}><input type="radio" name="gasSaleMode" value="with_container" required={gas.requireContainerChoice} defaultChecked={editGasSaleMode === "with_container"} /><span><strong>Produto + vasilhame</strong><br /><small style={{ color: "var(--text-secondary)" }}>Inclui o casco. Acréscimo: {money(gas.containerSurchargeCents)}.</small></span></label> : null}
       </fieldset> : null}
 
       {product.modifier_groups.length > 0 ? <section className={styles.assemblyIntro} aria-labelledby="montagem-titulo">
@@ -136,12 +136,12 @@ export default async function PublicProductPage({ params, searchParams }: { para
         </header>
         <label style={{ display: "grid", gap: 6, color: "var(--text-primary)" }}>
           <strong>Observação</strong>
-          <textarea name="note" maxLength={500} placeholder={notePlaceholder} defaultValue={editNote} disabled={orderUnavailable} style={{ minHeight: 88, resize: "vertical", padding: 12, borderRadius: 12, border: "var(--border-width) solid var(--border-default)", background: "var(--surface-2)", color: "var(--text-primary)" }} />
+          <textarea name="note" maxLength={500} placeholder={notePlaceholder} defaultValue={editNote} disabled={orderUnavailable} style={{ minHeight: 88, resize: "vertical", padding: 12, borderRadius: "var(--radius-lg)", border: "var(--border-width) solid var(--border-default)", background: "var(--surface-2)", color: "var(--text-primary)" }} />
         </label>
         <div className={styles.finalGrid}>
           <label style={{ display: "grid", gap: 6, color: "var(--text-primary)" }}>
             <strong>Quantidade</strong>
-            <input name="quantity" type="number" min={1} max={99} defaultValue={editQuantity} required disabled={orderUnavailable} style={{ minHeight: 48, borderRadius: 12, border: "var(--border-width) solid var(--border-default)", padding: "10px 12px", background: "var(--surface-2)", color: "var(--text-primary)" }} />
+            <input name="quantity" type="number" min={1} max={99} defaultValue={editQuantity} required disabled={orderUnavailable} style={{ minHeight: 48, borderRadius: "var(--radius-lg)", border: "var(--border-width) solid var(--border-default)", padding: "10px 12px", background: "var(--surface-2)", color: "var(--text-primary)" }} />
           </label>
           <button className={styles.submitButton} type="submit" disabled={orderUnavailable} style={{ background: orderUnavailable ? "var(--surface-3)" : "var(--brand-primary)", color: orderUnavailable ? "var(--text-secondary)" : "var(--text-on-brand)", cursor: orderUnavailable ? "not-allowed" : "pointer" }}>{soldOut ? `${productLabel} esgotado` : operational.label === "paused" ? "Pedidos pausados" : operational.label === "closed" ? "Cardápio fechado" : editItemId ? "Salvar alterações" : "Adicionar ao carrinho"}</button>
         </div>

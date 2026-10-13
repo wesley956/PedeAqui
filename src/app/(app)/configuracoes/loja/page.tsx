@@ -14,7 +14,7 @@ export default async function StoreProfileSettingsPage() {
   return (
     <section className={styles.page}>
       <header className={styles.header}>
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>Configurações</p>
+        <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Configurações</p>
         <h1 style={{ margin: "4px 0" }}>Dados da loja</h1>
         <p className="muted" style={{ margin: 0 }}>
           Edite o nome, contato e localização usados pelo PedeAqui. Nome, telefone, cidade e estado concluem o primeiro passo do assistente.

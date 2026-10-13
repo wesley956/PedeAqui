@@ -16,7 +16,7 @@
   width: 11px;
   height: 11px;
   flex: 0 0 auto;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: #ff5a36;
   box-shadow: 0 0 0 0 rgb(255 90 54 / 55%);
   animation: attention-pulse 1.6s infinite;
@@ -31,22 +31,22 @@
 
 .copy strong {
   color: #fff;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 .copy span {
   color: rgb(255 255 255 / 72%);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
 }
 
 .action {
   flex: 0 0 auto;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 9px 13px;
   background: #ff5a36;
   color: #120704;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--font-size-support);
+  font-weight: var(--font-weight-bold);
   text-decoration: none;
 }
 
@@ -74,6 +74,6 @@
 
   .action {
     padding: 8px 10px;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 }

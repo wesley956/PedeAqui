@@ -10,7 +10,7 @@ export function StoreOrderStatus({ operational }: { operational: {
   const message = operational.label === "paused"
     ? `Pedidos temporariamente pausados.${operational.pauseReason ? ` ${operational.pauseReason}` : ""}`
     : `Loja fechada agora.${operational.nextOpening ? ` Abre ${operational.nextOpening.label}.` : ""}`;
-  return <div role="status" style={{ padding: 14, borderRadius: 14, background: "var(--state-warning-surface)", color: "var(--state-warning-text)", fontWeight: 700 }}>
+  return <div role="status" style={{ padding: 14, borderRadius: "var(--radius-lg)", background: "var(--state-warning-surface)", color: "var(--state-warning-text)", fontWeight: "var(--font-weight-bold)" }}>
     {message} Você pode consultar o cardápio e revisar seu carrinho. A confirmação estará disponível quando a loja voltar a aceitar pedidos.
   </div>;
 }

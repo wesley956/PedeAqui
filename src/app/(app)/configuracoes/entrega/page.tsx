@@ -19,7 +19,7 @@ export default async function DeliverySettingsPage() {
   return (
     <section className={styles.page}>
       <header className={styles.header}>
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>Configurações</p>
+        <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Configurações</p>
         <h1 style={{ margin: "4px 0" }}>Entrega</h1>
         <p className="muted" style={{ margin: 0 }}>Regras padrão da unidade e taxas específicas por bairro.</p>
       </header>
@@ -38,7 +38,7 @@ export default async function DeliverySettingsPage() {
           <Input label="Taxa padrão" name="defaultFee" inputMode="decimal" defaultValue={(settings.default_fee_cents / 100).toFixed(2).replace(".", ",")} />
           <Input label="Frete grátis acima de" name="freeDeliveryOver" inputMode="decimal" defaultValue={settings.free_delivery_over_cents === null ? "" : (settings.free_delivery_over_cents / 100).toFixed(2).replace(".", ",")} />
           <div role="note" className={styles.note}>
-            <strong style={{ fontSize: 14 }}>Cobertura validada por bairro</strong>
+            <strong style={{ fontSize: "var(--font-size-sm)" }}>Cobertura validada por bairro</strong>
             <span className={styles.meta}>Cadastre os bairros atendidos para definir a cobertura e evitar pedidos fora da área de entrega.</span>
           </div>
           <Input label="Prazo mínimo (min)" name="estimatedMinMinutes" type="number" min={0} defaultValue={settings.estimated_min_minutes} />
@@ -84,7 +84,7 @@ export default async function DeliverySettingsPage() {
         </form>
         </details>
 
-        <h2 style={{ fontSize: 18, margin: "16px 0 12px" }}>Bairros e taxas</h2>
+        <h2 style={{ fontSize: "var(--font-size-lg)", margin: "16px 0 12px" }}>Bairros e taxas</h2>
         <div className={styles.list}>
           {neighborhoods.length === 0 ? (
             <div className={styles.empty}>

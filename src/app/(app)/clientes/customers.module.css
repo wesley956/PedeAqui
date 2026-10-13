@@ -17,11 +17,11 @@
 .countBadge {
   padding: 8px 11px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
 }
 
 .layout {
@@ -38,8 +38,8 @@
   position: sticky;
   top: 16px;
 }
-.createCard h2 { margin: 0; font-size: 18px; }
-.createCard p { margin: -4px 0 2px; font-size: 12px; }
+.createCard h2 { margin: 0; font-size: var(--font-size-lg); }
+.createCard p { margin: -4px 0 2px; font-size: var(--font-size-xs); }
 
 .listArea { display: grid; gap: 12px; min-width: 0; }
 .filters {
@@ -63,10 +63,10 @@
 .customerRow:hover { background: var(--surface-2); }
 .customerIdentity { min-width: 0; }
 .customerName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.contact { color: var(--muted); font-size: 12px; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.openHint { color: var(--accent); font-size: 10px; font-weight: 900; margin-top: 5px; letter-spacing: .03em; }
+.contact { color: var(--muted); font-size: var(--font-size-xs); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.openHint { color: var(--accent); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); margin-top: 5px; letter-spacing: .03em; }
 .stat { text-align: right; min-width: 0; }
-.statLabel { display: block; color: var(--muted); font-size: 9px; font-weight: 850; letter-spacing: .05em; }
+.statLabel { display: block; color: var(--muted); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); letter-spacing: .05em; }
 .statValue { display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .empty {
@@ -91,8 +91,8 @@
   gap: 10px;
 }
 .metric { padding: 14px; }
-.metric span { display: block; color: var(--muted); font-size: 10px; font-weight: 850; letter-spacing: .05em; }
-.metric strong { display: block; margin-top: 5px; font-size: 20px; }
+.metric span { display: block; color: var(--muted); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); letter-spacing: .05em; }
+.metric strong { display: block; margin-top: 5px; font-size: var(--font-size-lg); }
 
 .profileGrid {
   display: grid;
@@ -101,16 +101,16 @@
   align-items: start;
 }
 .sectionCard { padding: 17px; display: grid; gap: 12px; }
-.sectionCard h2 { margin: 0; font-size: 18px; }
+.sectionCard h2 { margin: 0; font-size: var(--font-size-lg); }
 .sectionHeader { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
-.sectionSub { color: var(--muted); font-size: 11px; margin-top: 3px; }
+.sectionSub { color: var(--muted); font-size: var(--font-size-xs); margin-top: 3px; }
 .addressComposer { overflow: hidden; }
 .addressComposer > summary { cursor: pointer; list-style: none; padding: 17px; }
 .addressComposer > summary::-webkit-details-marker { display: none; }
 .addressComposer > summary span { display: grid; gap: 3px; padding-right: 28px; }
-.addressComposer > summary strong { font-size: 16px; }
-.addressComposer > summary small { color: var(--muted); font-size: 11px; font-weight: 500; }
-.addressComposer > summary::after { content: "+"; float: right; margin-top: -29px; color: var(--accent); font-size: 20px; font-weight: 900; }
+.addressComposer > summary strong { font-size: var(--font-size-md); }
+.addressComposer > summary small { color: var(--muted); font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); }
+.addressComposer > summary::after { content: "+"; float: right; margin-top: -29px; color: var(--accent); font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); }
 .addressComposer[open] > summary::after { content: "−"; }
 .addressComposer > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -3px; }
 .addressForm { display: grid; gap: 12px; padding: 14px 17px 17px; border-top: 1px solid var(--border); }
@@ -118,28 +118,28 @@
 .addressList, .orderList { display: grid; }
 .address, .orderRow { padding: 12px 0; border-top: 1px solid var(--border); display: grid; gap: 7px; }
 .addressTop, .orderTop { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
-.addressMeta, .orderMeta { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.addressMeta, .orderMeta { color: var(--muted); font-size: var(--font-size-xs); line-height: 1.5; }
 .badge {
   display: inline-flex;
   align-items: center;
   width: fit-content;
   padding: 4px 7px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-3);
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 900;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   letter-spacing: .04em;
   text-transform: uppercase;
 }
 .badgeAccent { color: var(--accent); }
-.orderValue { font-weight: 850; white-space: nowrap; }
-.orderLink { color: var(--accent); font-size: 11px; font-weight: 850; }
+.orderValue { font-weight: var(--font-weight-bold); white-space: nowrap; }
+.orderLink { color: var(--accent); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); }
 
 .formGrid { display: grid; gap: 10px; }
 .twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.restricted { padding: 12px; border-radius: 10px; background: var(--surface-2); color: var(--muted); font-size: 12px; }
+.restricted { padding: 12px; border-radius: var(--radius-sm); background: var(--surface-2); color: var(--muted); font-size: var(--font-size-xs); }
 
 @media (max-width: 1050px) {
   .layout, .profileGrid { grid-template-columns: 1fr; }

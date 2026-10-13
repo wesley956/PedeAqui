@@ -19,7 +19,7 @@ describe("#486 commercial mobile onboarding regression", () => {
     expect(platform).toContain("Abrir demonstração");
     expect(platform).toContain('href="/platform/novo-restaurante"');
     expect(platform).toContain("+ Novo restaurante");
-    expect(form).toContain('fontSize: "clamp(28px, 7vw, 40px)"');
+    expect(form).toContain('fontSize: "var(--font-size-2xl)"');
     expect(form).toContain("minHeight: 48");
     expect(form).toContain("repeat(auto-fit,minmax(180px,1fr))");
   });

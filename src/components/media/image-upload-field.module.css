@@ -11,14 +11,14 @@
 }
 
 .label {
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--font-size-support);
+  font-weight: var(--font-weight-bold);
   color: var(--text);
 }
 
 .ready {
-  font-size: 11px;
-  font-weight: 800;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   color: var(--accent);
 }
 
@@ -29,14 +29,14 @@
   align-items: stretch;
   padding: 12px;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   background: var(--surface-2);
 }
 
 .preview {
   min-height: 112px;
   border: 1px dashed var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--surface);
 }
@@ -60,8 +60,8 @@
   justify-items: center;
   gap: 6px;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
 }
 
 .controls {
@@ -95,11 +95,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 8px 12px;
   font: inherit;
-  font-size: 13px;
-  font-weight: 850;
+  font-size: var(--font-size-support);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
 }
 
@@ -118,7 +118,7 @@
 .hint,
 .error {
   flex-basis: 100%;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   line-height: 1.45;
 }
 
@@ -128,7 +128,7 @@
 
 .error {
   color: #d92d20;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 @media (max-width: 560px) {
