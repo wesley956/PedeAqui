@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
+import { Input, MoneyInput } from "@/components/ui/form-controls";
 import { SemanticStatus } from "@/components/ui/status";
 import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import { removePromotionAction, savePromotionAction } from "@/features/promotions/actions";
@@ -53,43 +55,45 @@ export default async function PromotionsPage() {
       <span><strong>{eligibleProducts.length}</strong> produtos disponíveis</span>
     </div>
 
-    <ResilientMutationForm action={savePromotionAction} successReset className={`card ${styles.formCard} ${styles.promotionForm}`}>
+    <details className={styles.createDetails}>
+      <summary>Nova promoção</summary>
+    <ResilientMutationForm action={savePromotionAction} successReset className={styles.editBody}>
       <div className={styles.promotionFormHeader}>
         <div>
-          <h2>Nova promoção</h2>
-          <p className="muted">Selecione os produtos e programe cada um do jeito que quiser dentro da mesma campanha.</p>
+          <p className={styles.formHint}>Selecione os produtos e preencha a programação dos itens marcados. Cada produto pode ter um preço e um período diferente.</p>
         </div>
         <span className={styles.metaChip}>Programação por produto</span>
       </div>
 
-      <label>Nome da promoção
-        <input name="campaignName" maxLength={80} placeholder="Ex.: Promoção da semana" />
-      </label>
+      <Input id="promotion-name" label="Nome da promoção" name="campaignName" maxLength={80} placeholder="Ex.: Promoção da semana" />
 
       <div className={styles.promotionSectionHeader}>
         <div>
-          <h3>Produtos da promoção</h3>
-          <p className="muted">Marque os produtos desejados. Cada produto pode ter preço, dias e horários próprios.</p>
+          <h2>Produtos da promoção</h2>
+          <p className={styles.formHint}>{eligibleProducts.length === 0 ? "Cadastre e ative um produto antes de criar uma promoção." : "Marque os produtos desejados e informe o preço promocional."}</p>
         </div>
       </div>
 
       <div className={styles.managementList}>
-        {eligibleProducts.map((product) => <article key={product.id} className={`card ${styles.managementCard}`}>
+        {eligibleProducts.map((product) => <article key={product.id} className={`card ${styles.managementCard} ${styles.promotionProduct}`}>
           <div className={styles.managementTop}>
             <div className={styles.productMain}>
               <div className={styles.productTitleRow}>
-                <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <label className={styles.promotionProductChoice}>
                   <input type="checkbox" name="productId" value={product.id} />
                   <span className={styles.productName}>{product.name}</span>
                 </label>
               </div>
               <span className="muted">Preço normal: {money(product.price_cents)}</span>
             </div>
-            <label style={{ minWidth: 180 }}>Preço promocional
-              <input name={`price_${product.id}`} inputMode="decimal" placeholder="Ex.: 6,50" aria-label={`Preço promocional de ${product.name}`} />
-            </label>
+            <div className={styles.promotionProductPrice}>
+              <MoneyInput id={`promotion-price-${product.id}`} label="Preço promocional" name={`price_${product.id}`} placeholder="Ex.: 6,50" aria-label={`Preço promocional de ${product.name}`} />
+            </div>
           </div>
 
+          <details className={styles.editDetails}>
+            <summary>Dias, horário e período de {product.name}</summary>
+            <div className={styles.editBody}>
           <fieldset className={styles.promotionDays}>
             <legend>Dias desse produto</legend>
             <div className={styles.dayChips}>
@@ -100,28 +104,26 @@ export default async function PromotionsPage() {
             </div>
           </fieldset>
 
-          <details className={styles.promotionAdvanced}>
-            <summary>Horário e período desse produto</summary>
-            <p className="muted">Opcional. Sem data final, ele continua recorrente nos dias marcados.</p>
+            <p className={styles.formHint}>Horário e período são opcionais. Sem data final, a promoção continua recorrente nos dias marcados.</p>
             <div className={styles.formGrid}>
-              <label>Começa em<input type="date" name={`startsOn_${product.id}`} /></label>
-              <label>Termina em<input type="date" name={`endsOn_${product.id}`} /></label>
-              <label>Horário inicial<input type="time" name={`startsAt_${product.id}`} /></label>
-              <label>Horário final<input type="time" name={`endsAt_${product.id}`} /></label>
+              <Input id={`promotion-start-date-${product.id}`} label="Começa em" type="date" name={`startsOn_${product.id}`} />
+              <Input id={`promotion-end-date-${product.id}`} label="Termina em" type="date" name={`endsOn_${product.id}`} />
+              <Input id={`promotion-start-time-${product.id}`} label="Horário inicial" type="time" name={`startsAt_${product.id}`} />
+              <Input id={`promotion-end-time-${product.id}`} label="Horário final" type="time" name={`endsAt_${product.id}`} />
+            </div>
             </div>
           </details>
         </article>)}
       </div>
 
-      <label>Texto curto da campanha
-        <input name="label" maxLength={48} placeholder="Ex.: Oferta especial" />
-      </label>
+      <Input id="promotion-label" label="Texto curto da campanha" name="label" maxLength={48} placeholder="Ex.: Oferta especial" />
 
       <div className={styles.promotionFormActions}>
         <label className={styles.promotionActiveToggle}><input type="checkbox" name="active" defaultChecked /> Ativar promoção ao salvar</label>
         <Button type="submit" disabled={eligibleProducts.length === 0}>Criar promoção</Button>
       </div>
     </ResilientMutationForm>
+    </details>
 
     <div className={styles.promotionSectionHeader}>
       <div>
@@ -132,7 +134,7 @@ export default async function PromotionsPage() {
 
     {campaigns.length === 0 ? <article className={`card ${styles.empty}`}>
       <h2>Nenhuma promoção cadastrada</h2>
-      <p className="muted">Crie a primeira promoção usando o formulário acima.</p>
+      <p className="muted">Abra Nova promoção para selecionar produtos e definir a programação.</p>
     </article> : <div className={styles.managementList}>
       {campaigns.map(([groupId, rows]) => {
         const first = rows[0];
@@ -158,7 +160,7 @@ export default async function PromotionsPage() {
               const startDate = dateLabel(promotion.starts_on);
               const endDate = dateLabel(promotion.ends_on);
               const schedule = `${time(promotion.starts_at) || "Dia inteiro"}${promotion.ends_at ? ` – ${time(promotion.ends_at)}` : ""}`;
-              return <div key={promotion.id} className={styles.managementTop}>
+              return <div key={promotion.id} className={`${styles.managementTop} ${styles.promotionScheduleRow}`}>
                 <div className={styles.productMain}>
                   <strong>{product?.name ?? "Produto removido"}</strong>
                   <div className={styles.productMeta}>
@@ -179,7 +181,7 @@ export default async function PromotionsPage() {
             <span className="muted">Cada produto segue sua própria programação. Em sobreposição, vale o menor preço ativo.</span>
             <ResilientMutationForm action={removePromotionAction} successReset={false}>
               <input type="hidden" name="promotionGroupId" value={groupId} />
-              <Button type="submit" tone="secondary">Remover promoção</Button>
+              <ConfirmSubmitButton tone="secondary" size="md" confirmation={`Remover a promoção ${first.campaign_name || first.label || "selecionada"}? Os preços normais dos produtos serão preservados.`}>Remover promoção</ConfirmSubmitButton>
             </ResilientMutationForm>
           </div>
         </article>;
