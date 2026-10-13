@@ -37,7 +37,7 @@ describe("PUBLIC FLOW V1+V3 final gate #993/#994", () => {
     expect(productPage).toContain("ModifierGroupSelector");
     expect(productPage).toContain("ComplementCategorySection");
     expect(productPage).toContain("ProductPurchaseBar");
-    expect(cartBar).toContain("/carrinho");
+    expect(cartBar).toContain("/checkout");
   });
 
   it("preserves product edit, unavailable, modifier and gas variants", () => {

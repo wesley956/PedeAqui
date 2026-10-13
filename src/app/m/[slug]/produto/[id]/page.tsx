@@ -79,7 +79,7 @@ export default async function PublicProductPage({ params, searchParams }: { para
     <form action={addToCartAction} className={styles.form}>
       <input type="hidden" name="storeSlug" value={store.slug} />
       <input type="hidden" name="productId" value={product.id} />
-      {editItemId ? <input type="hidden" name="cartItemId" value={editItemId} /> : null}
+      {editItemId ? <input type="hidden" name="cartItemId" value={editItemId} /> : <input type="hidden" name="returnTo" value="menu" />}
 
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
         <Link className={styles.backLink} href={editItemId ? `/m/${store.slug}/carrinho` : `/m/${store.slug}`}>{editItemId ? "← Voltar ao carrinho" : `← Voltar para ${store.name}`}</Link>

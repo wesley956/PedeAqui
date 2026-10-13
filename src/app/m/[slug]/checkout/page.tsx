@@ -18,6 +18,7 @@ import { confirmCheckoutOrderAction } from "@/features/checkout/confirm-order-ac
 import { FinalOrderOptions, paymentMethodHelp } from "@/features/checkout/final-order-options";
 import { NeighborhoodSelect } from "@/features/checkout/neighborhood-select";
 import { PaymentMethodFields } from "@/features/checkout/payment-method-fields";
+import { ScrollToActiveStage } from "@/features/checkout/scroll-to-active-stage";
 import { SubmitOrderButton } from "@/features/checkout/submit-order-button";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { CheckoutService } from "@/server/checkout/checkout-service";
@@ -126,6 +127,35 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
       ? reviewBlockerMessage
       : query.erro ? errorMessages[query.erro] ?? "Não foi possível continuar. Confira os dados e tente novamente." : null;
 
+  const stageTitles: Record<CheckoutStageId, string> = { fulfillment: "Como vai receber?", identity: "Seus dados", address: "Onde entregar?", payment: "Pagamento", review: "Revisar e confirmar" };
+  const paymentPlace = deliverySelected ? "na entrega" : "na retirada";
+  const stageSummaries: Record<CheckoutStageId, string> = {
+    fulfillment: deliverySelected ? `Entrega · ${menu.delivery.estimated_min_minutes}–${menu.delivery.estimated_max_minutes} min` : "Retirada no estabelecimento",
+    identity: identityComplete ? `${identityName} · ${identityPhone}` : "",
+    address: addressComplete && session?.address_street ? `${session.address_street}, ${session.address_number ?? ""} · ${session.address_district ?? ""} · taxa ${money(Number(session.delivery_fee_cents ?? 0))}` : "",
+    payment: selectedPayment === "pix" ? "Pix agora, pelo celular" : selectedPaymentLabel ? `${selectedPaymentLabel} ${paymentPlace}` : "",
+    review: "",
+  };
+  const stageEdit: Partial<Record<CheckoutStageId, { href: string; label: string }>> = {
+    fulfillment: { href: stageHref(slug, "fulfillment"), label: "Alterar recebimento" },
+    identity: { href: stageHref(slug, "identity"), label: "Alterar dados" },
+    address: { href: stageHref(slug, "address"), label: "Alterar endereço" },
+    payment: { href: stageHref(slug, "payment"), label: "Alterar pagamento" },
+  };
+  // Expresso: as etapas ficam empilhadas numa tela só. As já preenchidas viram uma linha com "Alterar";
+  // as seguintes aparecem bloqueadas até a anterior ser concluída.
+  const stageRow = (stage: CheckoutStageId) => {
+    if (!stageOrder.includes(stage) || stage === "review") return null;
+    const index = stageOrder.indexOf(stage);
+    const done = index < activeIndex || Boolean(stageSummaries[stage]);
+    const edit = stageEdit[stage];
+    return <section className={`${styles.stageRow} ${done ? styles.stageRowDone : styles.stageRowLocked}`} aria-label={stageTitles[stage]}>
+      <span className={styles.stageRowNumber} aria-hidden>{index + 1}</span>
+      <span className={styles.stageRowText}><strong>{stageTitles[stage]}</strong><span>{done ? stageSummaries[stage] : "Preencha a etapa anterior"}</span></span>
+      {done && edit ? <Link href={edit.href} className={styles.stageRowEdit} aria-label={edit.label}>Alterar</Link> : null}
+    </section>;
+  };
+
   return (
     <main className={styles.root}>
       <div className={styles.appShell}>
@@ -138,7 +168,23 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
 
         <div className={styles.stageViewport}>
           <StoreOrderStatus operational={menu.operational} />
+          {activeIndex > 0 || query.erro ? <ScrollToActiveStage targetId="checkout-atual" /> : null}
           {displayErrorMessage ? <div role="alert" aria-live="assertive" data-error-stage={activeStage} className={styles.alert}>{displayErrorMessage}</div> : null}
+
+          <section className={styles.reviewItems} aria-label="Itens do pedido">
+            <div className={styles.itemsHeader}><h2>Seu pedido</h2><Link href={`/m/${slug}/carrinho`}>Editar itens no carrinho</Link></div>
+            {cart.items.map((item) => <article key={item.id} className={styles.reviewItem}>
+              <div><strong>{item.quantity}× {item.product_name_snapshot}</strong><strong>{money(Number(item.line_total_cents))}</strong></div>
+              {item.modifiers.length > 0 ? <p>{item.modifiers.map((option) => `${Number(option.quantity ?? 1)}× ${option.modifier_name_snapshot}`).join(" · ")}</p> : null}
+              {item.note ? <p>Observação: {item.note}</p> : null}
+              {item.gas ? <p>{item.gas.sale_mode === "exchange" ? "Troca de vasilhame" : "Produto + vasilhame"}{item.gas.container_name_snapshot ? ` · ${item.gas.container_name_snapshot}` : ""}</p> : null}
+            </article>)}
+            {missingMinimumCents > 0 ? <p className={styles.minimumHint}>Faltam {money(missingMinimumCents)} para o pedido mínimo de {money(minimumOrderCents)}.</p> : null}
+            <Link href={`/m/${slug}`} className={styles.addMoreItems}>
+              <span><NavigationIcon name="cart" width={16} height={16} /> Adicionar mais itens</span>
+              <small>Voltar ao cardápio sem perder o que já está no carrinho.</small>
+            </Link>
+          </section>
 
           {activeStage === "fulfillment" ? (
             <CheckoutStage number="1" title="Como vai receber?" eyebrow="Recebimento" description="Escolha entrega ou retirada. A previsão de entrega será atualizada após informar o endereço.">
@@ -148,7 +194,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                 {menu.settings.allow_pickup ? <button type="submit" name="fulfillmentType" value="pickup" className={`${styles.receiveChoice} ${session?.fulfillment_type === "pickup" ? styles.choiceSelected : ""}`}><span className={styles.choiceIcon}><NavigationIcon name="bag" width={22} height={22} /></span><strong>Retirada</strong><span className={styles.choiceDetail}>Busque no estabelecimento</span><span className={styles.choiceMeta}>Sem taxa de entrega</span></button> : null}
               </form>
             </CheckoutStage>
-          ) : null}
+          ) : stageRow("fulfillment")}
 
           {activeStage === "identity" ? (
             <CheckoutStage number="2" title="Seus dados" eyebrow="Identificação" description="Só precisamos do essencial para identificar e acompanhar seu pedido.">
@@ -161,7 +207,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                 <ActionButton>Continuar</ActionButton>
               </form>
             </CheckoutStage>
-          ) : null}
+          ) : stageRow("identity")}
 
           {activeStage === "address" && fulfillmentComplete && identityComplete && deliverySelected ? (
             <CheckoutStage number="3" title="Onde entregar?" eyebrow="Entrega" description="Informe um endereço atendido pela loja. Você verá a taxa e a previsão de entrega antes de confirmar.">
@@ -192,7 +238,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                 <ActionButton>Continuar</ActionButton>
               </form>
             </CheckoutStage>
-          ) : null}
+          ) : stageRow("address")}
 
           {activeStage === "payment" && identityComplete && fulfillmentComplete && addressComplete ? (
             <CheckoutStage number={deliverySelected ? "4" : "3"} title="Pagamento" eyebrow="Pagamento" description="Escolha somente entre as formas habilitadas pelo estabelecimento.">
@@ -208,6 +254,8 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                       help: paymentMethodHelp[item.method],
                     }))}
                     defaultValue={selectedPaymentValue}
+                    fulfillmentType={session?.fulfillment_type ?? null}
+                    pixEmail={identityEmail}
                     defaultChangeFor={changeForValue}
                     groupsClassName={styles.paymentGroups}
                     groupClassName={styles.paymentGroup}
@@ -226,29 +274,10 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                 {enabledMethods.length > 0 ? <ActionButton>Continuar</ActionButton> : null}
               </form>
             </CheckoutStage>
-          ) : null}
+          ) : stageRow("payment")}
 
           {activeStage === "review" && paymentComplete ? (
             <CheckoutStage number={deliverySelected ? "5" : "4"} title="Revisar e confirmar" eyebrow="Última etapa" description={`Confira os principais dados antes de enviar para ${menu.store.name}.`}>
-              <section className={styles.reviewItems} aria-label="Itens e identificação do pedido">
-                <h2>Seu pedido</h2>
-                <p><strong>{identityName}</strong> · {identityPhone}</p>
-                {cart.items.map((item) => <article key={item.id} className={styles.reviewItem}>
-                  <div><strong>{item.quantity}× {item.product_name_snapshot}</strong><strong>{money(Number(item.line_total_cents))}</strong></div>
-                  {item.modifiers.length > 0 ? <p>{item.modifiers.map((option) => `${Number(option.quantity ?? 1)}× ${option.modifier_name_snapshot}`).join(" · ")}</p> : null}
-                  {item.note ? <p>Observação: {item.note}</p> : null}
-                  {item.gas ? <p>{item.gas.sale_mode === "exchange" ? "Troca de vasilhame" : "Produto + vasilhame"}{item.gas.container_name_snapshot ? ` · ${item.gas.container_name_snapshot}` : ""}</p> : null}
-                </article>)}
-                <Link href={`/m/${slug}/carrinho`}>Editar itens no carrinho</Link>
-              </section>
-              <nav className={styles.reviewEditNav} aria-label="Alterar dados do checkout">
-                <Link href={stageHref(slug, "fulfillment")}>Alterar recebimento</Link><Link href={stageHref(slug, "identity")}>Alterar dados</Link>{deliverySelected ? <Link href={stageHref(slug, "address")}>Alterar endereço</Link> : null}<Link href={stageHref(slug, "payment")}>Alterar pagamento</Link>
-              </nav>
-
-              <Link href={`/m/${slug}`} className={styles.addMoreItems}>
-                <span><NavigationIcon name="cart" width={16} height={16} /> Adicionar mais itens</span>
-                <small>Voltar ao cardápio sem perder o que já está no carrinho.</small>
-              </Link>
 
               {paymentComplete && growthEnabled && benefits ? (
                 <details className={styles.optional} open={totalDiscount > 0 || query.erro === "benefit_invalid" || query.erro === "benefit_unavailable"}>
@@ -313,7 +342,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
 }
 
 function CheckoutStage({ number, title, eyebrow, description, children }: { number: string; title: string; eyebrow: string; description: string; children: ReactNode }) {
-  return <section className={styles.stage} aria-labelledby={`checkout-stage-${number}`}><header className={styles.stageHeader}><p className={styles.eyebrow}>{eyebrow}</p><h1 id={`checkout-stage-${number}`}>{title}</h1><p>{description}</p></header><div className={styles.stageBody}>{children}</div></section>;
+  return <section id="checkout-atual" className={styles.stage} aria-labelledby={`checkout-stage-${number}`}><header className={styles.stageHeader}><p className={styles.eyebrow}>{eyebrow}</p><h1 id={`checkout-stage-${number}`}>{title}</h1><p>{description}</p></header><div className={styles.stageBody}>{children}</div></section>;
 }
 
 function Field({ label, ...input }: InputHTMLAttributes<HTMLInputElement> & { label: string }) { return <label className={styles.field}><span>{label}</span><CheckoutInput {...input} label={label} className={styles.input} /></label>; }

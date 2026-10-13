@@ -13,6 +13,10 @@ type Method = {
 
 type Props = {
   methods: Method[];
+  /** "delivery" ou "pickup": muda o título do grupo pago depois ("na entrega" / "na retirada"). */
+  fulfillmentType?: string | null;
+  /** E-mail já informado; o Pix pede o e-mail só quando é escolhido. */
+  pixEmail?: string | null;
   defaultValue?: string | null;
   defaultChangeFor?: string;
   choicesClassName?: string;
@@ -35,6 +39,8 @@ function classes(...values: Array<string | undefined | false>) {
 
 export function PaymentMethodFields({
   methods,
+  fulfillmentType = null,
+  pixEmail = null,
   defaultValue = null,
   defaultChangeFor = "",
   choicesClassName,
@@ -57,9 +63,8 @@ export function PaymentMethodFields({
     <>
       <div className={groupsClassName}>
         {[
-          {label: methods.some((item) => item.method === "pix") ? methods.some((item) => item.method === "cash") ? "Pix e dinheiro" : "Pix" : "Dinheiro", methods: methods.filter((item) => item.method === "pix" || item.method === "cash")},
-          {label: "Cartões", methods: methods.filter((item) => item.method === "credit_card" || item.method === "debit_card")},
-          {label: "Vales e outras formas", methods: methods.filter((item) => item.method === "custom")},
+          {label: "Pagar agora, pelo celular", methods: methods.filter((item) => item.method === "pix")},
+          {label: fulfillmentType === "pickup" ? "Pagar na retirada" : "Pagar na entrega", methods: methods.filter((item) => item.method !== "pix")},
         ].filter((group) => group.methods.length > 0).map((group) => <fieldset key={group.label} className={groupClassName}>
           <legend>{group.label}</legend><div className={choicesClassName}>
         {group.methods.map((item) => (
@@ -81,7 +86,12 @@ export function PaymentMethodFields({
           </div></fieldset>)}
       </div>
 
-      {selected ? <p className={detailClassName} role="status">{selected.help}</p> : null}
+      {selected?.method === "pix" ? (
+        <label className={fieldClassName}>
+          <span>E-mail para o comprovante do Pix</span>
+          <input className={inputClassName} type="email" name="email" autoComplete="email" inputMode="email" defaultValue={pixEmail ?? ""} required placeholder="voce@email.com" />
+        </label>
+      ) : null}
 
       {selected?.method === "cash" ? (
         <CashChangeFields
