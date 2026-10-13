@@ -57,7 +57,6 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
     <main className={styles.root}>
       <header className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>CRESCIMENTO</p>
           <h1>Faça seus clientes voltarem</h1>
           <p>Organize fidelidade, cupons, grupos de clientes e campanhas em um só lugar, com foco no que ajuda o restaurante a gerar novas compras.</p>
         </div>

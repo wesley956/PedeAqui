@@ -15,7 +15,7 @@ export default async function RecipesPage() {
 
   return <section className={styles.page}>
     <header className={styles.header}>
-      <div className={styles.headerCopy}><p className="muted">Composição, versão e custo</p><h1>Fichas técnicas</h1><p className="muted">Cada alteração cria uma nova versão. O histórico é somente leitura e o pedido conserva a versão vigente quando foi confirmado.</p></div>
+      <div className={styles.headerCopy}><h1>Fichas técnicas</h1><p className="muted">Cada alteração cria uma nova versão. O histórico é somente leitura e o pedido conserva a versão vigente quando foi confirmado.</p></div>
       <Link href="/estoque" className={styles.link}>← Voltar ao estoque</Link>
     </header>
 

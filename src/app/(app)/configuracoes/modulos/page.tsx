@@ -82,7 +82,7 @@ export default async function ModulesSettingsPage({ searchParams }: { searchPara
 
   return <section className={styles.page}>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>CONFIGURAÇÕES</p><h1>Recursos do PedeAqui</h1><p>Use os recursos incluídos no seu plano e solicite módulos extras quando precisar.</p></div>
+      <div><h1>Recursos do PedeAqui</h1><p>Use os recursos incluídos no seu plano e solicite módulos extras quando precisar.</p></div>
       <Link href="/configuracoes" className={styles.back}>← Voltar</Link>
     </header>
 

@@ -51,7 +51,6 @@ export default async function ScalePage() {
   return (
     <section className={styles.page}>
       <header className={styles.header}>
-        <p className={styles.eyebrow}>GESTÃO AVANÇADA</p>
         <h1>Plano e expansão</h1>
         <p className={styles.muted}>Veja o que está incluído no plano, organize várias unidades e configure recursos de marca própria quando precisar.</p>
       </header>

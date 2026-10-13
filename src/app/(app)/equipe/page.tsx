@@ -20,7 +20,7 @@ export default async function TeamPage() {
   return (
     <section className={styles.page}>
       <header className={styles.header}>
-        <div><p className={styles.eyebrow}>EQUIPE E ACESSOS</p><h1>Equipe</h1><p>Veja quem trabalha no PedeAqui, qual função cada pessoa possui e em quais unidades pode entrar.</p></div>
+        <div><h1>Equipe</h1><p>Veja quem trabalha no PedeAqui, qual função cada pessoa possui e em quais unidades pode entrar.</p></div>
         <span className={styles.count}>{state.members.length} funcionário(s)</span>
       </header>
 

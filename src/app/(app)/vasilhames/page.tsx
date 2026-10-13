@@ -10,7 +10,6 @@ export default async function GasContainersPage() {
 
   return <section style={{ display: "grid", gap: "var(--space-5)" }}>
     <header>
-      <p className="muted" style={{ margin: 0 }}>REVENDA DE GÁS · CONTROLE OPERACIONAL</p>
       <h1 style={{ marginBottom: 6 }}>Vasilhames</h1>
       <p className="muted" style={{ maxWidth: 760, margin: 0 }}>Controle cascos cheios, vazios e em rota sem misturar o saldo físico de vasilhames com o estoque comercial dos produtos.</p>
     </header>

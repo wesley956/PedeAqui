@@ -14,7 +14,6 @@ export default async function DiningPage() {
   return <div className={styles.page}>
     <header className={styles.header}>
       <div>
-        <p className={styles.eyebrow}>OPERAÇÃO</p>
         <h1>Salão e mesas</h1>
         <p className={styles.muted}>Veja quais mesas estão livres, em atendimento ou esperando o fechamento da conta.</p>
       </div>

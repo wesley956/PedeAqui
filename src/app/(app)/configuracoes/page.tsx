@@ -66,7 +66,7 @@ export default async function SettingsPage() {
 
   return <section className={styles.root}>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>CONFIGURAÇÕES</p><h1>Configure seu negócio</h1><p>Procure pelo que você quer fazer. O PedeAqui cuida de onde essa configuração fica.</p></div>
+      <div><h1>Configure seu negócio</h1><p>Procure pelo que você quer fazer. O PedeAqui cuida de onde essa configuração fica.</p></div>
       <span className={styles.badge}>Modo simples</span>
     </header>
 

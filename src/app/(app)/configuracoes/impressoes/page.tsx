@@ -137,7 +137,6 @@ export default async function PrintingSettingsPage({
     <section className={styles.root}>
       <header className={`${styles.hero} ${printingReady ? styles.heroReady : ""}`}>
         <div>
-          <p className={styles.eyebrow}>Impressão de pedidos</p>
           <h1>{printingReady ? "Impressão funcionando" : "Vamos conectar sua impressora"}</h1>
           <p className={styles.hint}>{printingReady
             ? "O PedeAqui está recebendo comunicação da impressora e o destino dos pedidos está configurado."

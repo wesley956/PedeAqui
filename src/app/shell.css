@@ -196,3 +196,11 @@
   .theme-selector-compact { position: relative; }
   .theme-selector-compact::after { content: "◐"; pointer-events: none; position: absolute; inset: 0; display: grid; place-items: center; color: var(--text-primary); }
 }
+
+/* Título de página único no painel (guia visual): 24 px, peso 700, sem variações por tela. */
+.app-shell .app-content h1 {
+  font-size: var(--font-size-page-title);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  letter-spacing: normal;
+}

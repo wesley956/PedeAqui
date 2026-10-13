@@ -78,7 +78,7 @@ export default async function DriverPage() {
   return <section className={styles.page}>
     <header className={styles.header}>
       <div className={styles.headerTop}>
-        <div><p className="muted" style={{ margin: 0 }}>MEU ROTEIRO</p><h1>Minhas entregas</h1><div className={styles.driverState}>{data.driver.name} · {data.driver.active ? (data.driver.on_duty ? "em serviço" : "fora de serviço") : "inativo"}</div></div>
+        <div><h1>Minhas entregas</h1><div className={styles.driverState}>{data.driver.name} · {data.driver.active ? (data.driver.on_duty ? "em serviço" : "fora de serviço") : "inativo"}</div></div>
         <DeliveryRealtime storeId={data.context.storeId} showStatus />
       </div>
       <a href="/entregador" className={styles.refresh}>Atualizar lista</a>

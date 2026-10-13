@@ -15,7 +15,6 @@ export default async function ProductionPage() {
     <section className={styles.page}>
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>OPERAÇÃO · TEMPO REAL</p>
           <h1>{vocabulary.productionLabel}</h1>
           <p>{vocabulary.productionDescription}</p>
         </div>

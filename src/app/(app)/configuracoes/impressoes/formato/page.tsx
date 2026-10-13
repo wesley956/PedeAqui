@@ -101,7 +101,6 @@ export default async function PrintFormatPage() {
     <section className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerCopy}>
-          <p className={styles.hint}>CONFIGURAÇÕES · IMPRESSÃO</p>
           <h1>Formato e vias</h1>
           <p className={styles.hint}>Escolha quantas vias cada impressora tira e quais informações aparecem nos comprovantes operacionais do pedido.</p>
         </div>

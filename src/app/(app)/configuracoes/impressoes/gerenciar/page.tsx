@@ -38,7 +38,6 @@ export default async function ManagePrinterConnectionsPage({
     <section className={styles.root}>
       <header className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>Conexões de impressão</p>
           <h1>Gerenciar impressoras</h1>
           <p className={styles.hint}>Desative temporariamente sem perder a configuração, reative quando precisar ou desvincule a impressora do computador com confirmação.</p>
         </div>

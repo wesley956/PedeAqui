@@ -21,7 +21,7 @@ export default async function InventoryPage() {
 
   return <section className={styles.page}>
     <header className={styles.header}>
-      <div className={styles.headerCopy}><p className="muted">ESTOQUE E COMPRAS</p><h1>Estoque</h1><p className="muted">Veja o que você tem, identifique o que precisa de reposição e registre entradas, perdas, contagens ou transferências.</p></div>
+      <div className={styles.headerCopy}><h1>Estoque</h1><p className="muted">Veja o que você tem, identifique o que precisa de reposição e registre entradas, perdas, contagens ou transferências.</p></div>
       <Link href="/estoque/fichas" className={styles.link}>Fichas técnicas →</Link>
     </header>
 

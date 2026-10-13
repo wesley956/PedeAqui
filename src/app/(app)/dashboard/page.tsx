@@ -65,7 +65,7 @@ export default async function DashboardPage() {
 
   return <section className={styles.page} data-experience={access.experienceMode}>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>HOJE</p><h1>Início</h1><p className="muted">O essencial para cuidar do seu negócio agora.</p></div>
+      <div><h1>Início</h1><p className="muted">O essencial para cuidar do seu negócio agora.</p></div>
       <div className={styles.dateBadge}>{localDateLabel(snapshot.local_date)}</div>
     </header>
 

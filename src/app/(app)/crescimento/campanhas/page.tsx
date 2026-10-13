@@ -20,7 +20,7 @@ export default async function CampaignCenterPage() {
   const data = await GrowthService.loadCampaignCenter();
   const allGroup = data.groupSummaries.find((group) => group.group_key === "preset:all");
   return <main className={styles.root}>
-    <header className={styles.hero}><div><p className={styles.eyebrow}>GROWTH · CAMPANHAS</p><h1>Campanhas pelo WhatsApp oficial</h1><p>Envie templates aprovados somente para clientes elegíveis. A fila controla volume, retry, opt-out e isolamento da unidade.</p></div><Link href="/crescimento" className={styles.secondary}>Voltar ao Growth</Link></header>
+    <header className={styles.hero}><div><h1>Campanhas pelo WhatsApp oficial</h1><p>Envie templates aprovados somente para clientes elegíveis. A fila controla volume, retry, opt-out e isolamento da unidade.</p></div><Link href="/crescimento" className={styles.secondary}>Voltar ao Growth</Link></header>
 
     <section className={styles.metrics} aria-label="Prontidão de campanhas">
       <Metric label="Elegíveis" value={data.eligibleCustomers} />

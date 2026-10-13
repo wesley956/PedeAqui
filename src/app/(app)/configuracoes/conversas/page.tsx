@@ -17,6 +17,7 @@ import { WhatsAppAutomationCapabilityService } from "@/server/conversations/what
 import { WhatsAppOperationalHealthService } from "@/server/conversations/whatsapp-operational-health-service";
 import type { WhatsAppOperationalHealthState, WhatsAppOperationalIssueCode } from "@/server/conversations/whatsapp-operational-health-model";
 import { DEFAULT_CONVERSATION_AUTO_CLOSE_MESSAGE } from "@/server/conversations/conversation-lifecycle";
+import { PageHeader } from "@/components/ui/page-header";
 
 const fieldStyle = {
   minHeight: 44,
@@ -118,11 +119,7 @@ export default async function ConversationSettingsPage() {
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Atendimento</p>
-        <h1 style={{ margin: "4px 0" }}>Conversas e WhatsApp</h1>
-        <p className="muted" style={{ margin: 0 }}>Conecte o WhatsApp da loja, continue atendendo pelo celular se quiser e escolha como o PedeAqui conversa com seus clientes.</p>
-      </header>
+      <PageHeader title="Conversas e WhatsApp" description="Conecte o WhatsApp da loja, continue atendendo pelo celular se quiser e escolha como o PedeAqui conversa com seus clientes." />
 
       <MetaEmbeddedSignupCard status={embeddedStatus} platformReady={platformConfig.ready} />
 

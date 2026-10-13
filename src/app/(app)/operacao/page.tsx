@@ -22,7 +22,7 @@ export default async function OperationDayPage() {
   const accepting = day.menu.accepting_orders;
   return <section className={styles.page}>
     <header className={styles.hero} data-accepting={accepting}>
-      <div><p className={styles.eyebrow}>OPERAÇÃO DO DIA</p><h1>{accepting ? "Restaurante recebendo pedidos" : "Recebimento pausado"}</h1><p>{accepting ? "Pedidos novos podem entrar. Acompanhe as pendências antes do movimento." : `${day.menu.pause_reason ?? "Pausa operacional"}. Os pedidos já recebidos continuam normalmente.`}</p></div>
+      <div><h1>{accepting ? "Restaurante recebendo pedidos" : "Recebimento pausado"}</h1><p>{accepting ? "Pedidos novos podem entrar. Acompanhe as pendências antes do movimento." : `${day.menu.pause_reason ?? "Pausa operacional"}. Os pedidos já recebidos continuam normalmente.`}</p></div>
       {accepting ? <form action={pauseOrdersAction}><input type="hidden" name="reason" value="Encerramento ou pausa pela central da operação" /><Button tone="secondary" type="submit">Pausar recebimento</Button></form> : <form action={resumeOrdersAction}><Button type="submit">Retomar em 1 clique</Button></form>}
     </header>
 

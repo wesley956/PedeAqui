@@ -25,7 +25,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
 
   return <section className={styles.page}>
     <header className={styles.header}>
-      <div><p className={styles.muted}>OPERAÇÃO</p><h1>Caixa</h1><p className={styles.muted}>Abra o turno, acompanhe o saldo e registre entradas ou saídas quando precisar.</p></div>
+      <div><h1>Caixa</h1><p className={styles.muted}>Abra o turno, acompanhe o saldo e registre entradas ou saídas quando precisar.</p></div>
       {abilities.manage ? <div className={styles.headerActions}><Link href="/configuracoes/caixa" className={styles.secondary}>Configurar caixas</Link></div> : null}
     </header>
 

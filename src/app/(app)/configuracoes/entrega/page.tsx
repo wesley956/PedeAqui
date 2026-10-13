@@ -8,6 +8,7 @@ import { saveDriverHistoryVisibilityAction } from "@/features/delivery/driver-hi
 import { DeliveryService } from "@/server/delivery/delivery-service";
 import { DriverHistoryPolicyService } from "@/server/delivery/driver-history-policy-service";
 import { formatCents } from "@/server/catalog/money";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function DeliverySettingsPage() {
   const [settings, neighborhoods, driverHistoryVisible] = await Promise.all([
@@ -18,11 +19,7 @@ export default async function DeliverySettingsPage() {
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Configurações</p>
-        <h1 style={{ margin: "4px 0" }}>Entrega</h1>
-        <p className="muted" style={{ margin: 0 }}>Regras padrão da unidade e taxas específicas por bairro.</p>
-      </header>
+      <PageHeader title="Entrega" description="Regras padrão da unidade e taxas específicas por bairro." />
 
       <form action={saveDeliverySettingsAction} className={styles.form} aria-label="Regras da entrega">
         <div>
