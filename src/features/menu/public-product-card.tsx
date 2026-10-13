@@ -71,27 +71,27 @@ export function PublicProductCard({ product, storeSlug, showImage, canOrder, opt
   } else if (quick) {
     action = <QuickForm action={addToCartAction} storeSlug={storeSlug} productId={product.id} fields={{ quantity: "1" }}><PendingButton className={styles.addButton} label={`Adicionar ${product.name} ao carrinho`}><PlusIcon /></PendingButton></QuickForm>;
   } else {
-    action = <Link href={href} className={styles.addButton} aria-label={`Escolher opções de ${product.name}`}><PlusIcon /></Link>;
+    action = <Link href={href} scroll={false} className={styles.addButton} aria-label={`Escolher opções de ${product.name}`}><PlusIcon /></Link>;
   }
 
-  return <article id={`produto-${product.id}`} className={`${styles.product} ${unavailable ? styles.productUnavailable : ""}`}>
-    {showImage ? <Link href={href} className={styles.productMedia} tabIndex={-1} aria-hidden>
+  return <article id={`produto-${product.id}`} className={`${styles.product} ${showImage ? "" : styles.productTextOnly} ${unavailable ? styles.productUnavailable : ""}`}>
+    {showImage ? <Link href={href} scroll={false} className={styles.productMedia} tabIndex={-1} aria-hidden>
       {product.image_url
         // Catalog uploads are pre-sized WebP files; raw rendering preserves arbitrary legacy HTTPS URLs.
         // eslint-disable-next-line @next/next/no-img-element
         ? <img src={product.image_url} alt="" width={88} height={88} loading="lazy" decoding="async" className={styles.image} />
         : <ProductImageFallback className={styles.image} />}
     </Link> : null}
-    <Link href={href} className={styles.productCopy} aria-label={`${product.name}, ${soldOut ? "esgotado" : `${fromPrice ? "a partir de " : ""}${money(displayPrice)}`}`}>
+    <Link href={href} scroll={false} className={styles.productCopy} aria-label={`${product.name}, ${soldOut ? "esgotado" : `${fromPrice ? "a partir de " : ""}${money(displayPrice)}`}`}>
       <span className={styles.productTitleRow}>
         <strong className={styles.productTitle}>{product.name}</strong>
-        {!soldOut && hasPromotion ? <span className={styles.promo}>{product.promotion_label || "Oferta"}</span> : null}
       </span>
       {product.description ? <span className={styles.description}>{product.description}</span> : null}
       <span className={styles.priceRow}>
         {fromPrice ? <span className={styles.fromLabel}>a partir de</span> : null}
         <strong className={styles.price}>{money(displayPrice)}</strong>
         {hasPromotion ? <span className={styles.oldPrice}>{money(product.price_cents + (options?.minimumRequiredExtraCents ?? 0))}</span> : null}
+        {!soldOut && hasPromotion ? <span className={styles.promo}>{product.promotion_label || "Oferta"}</span> : null}
       </span>
     </Link>
     <div className={styles.productAction}>{action}</div>

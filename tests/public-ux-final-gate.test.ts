@@ -6,7 +6,7 @@ import { buildPublicOrderTimeline } from "@/features/orders/public-order-timelin
 const read = (path: string) => readFileSync(path, "utf8");
 
 const menuPage = read("src/app/m/[slug]/page.tsx");
-const productPage = read("src/app/m/[slug]/produto/[id]/page.tsx");
+const productPage = (read("src/app/m/[slug]/produto/[id]/page.tsx") + read("src/features/menu/product-detail.tsx"));
 const modifierSelector = read("src/features/menu/modifier-group-selector.tsx");
 const complementsService = read("src/server/menu/complement-category-service.ts");
 const complementsMigration = read("supabase/sql/135_public_complement_categories.sql");

@@ -38,7 +38,7 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
     deliveryAvailable ? `Entrega a partir de ${money(menu.delivery.starting_fee_cents)}` : null,
     deliveryAvailable && menu.delivery.free_delivery_over_cents !== null ? `Frete grátis acima de ${money(menu.delivery.free_delivery_over_cents)}` : null,
     menu.settings.allow_pickup && deliveryAvailable ? "Retirada disponível" : null,
-  ].filter(Boolean).join(" · ");
+  ].filter((fact): fact is string => Boolean(fact));
   const closedNotice = menu.operational.label === "closed"
     ? `Estamos fechados agora.${menu.operational.nextOpening ? ` Abrimos ${menu.operational.nextOpening.label}.` : ""}`
     : menu.operational.label === "paused" ? `Pedidos pausados no momento${menu.settings.pause_reason ? `: ${menu.settings.pause_reason}` : "."}` : null;
@@ -46,11 +46,10 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
     <div className={styles.container}>
       <header className={styles.expressHeader}>
         <RestaurantBrand name={menu.store.name} logoUrl={menu.settings.logo_url} primaryColor={menu.settings.primary_color}>
-          <p className={styles.statusLine}>
+          <p className={styles.statusLine} aria-label="Opções do pedido">
             <span className={`${styles.status} ${statusClass}`}>{menu.operational.label === "open" ? "Aberto agora" : status}</span>
             {headline ? <span className={styles.headline}>{headline}</span> : null}
           </p>
-          {serviceFacts ? <p className={styles.serviceLine} aria-label="Opções do pedido">{serviceFacts}</p> : null}
         </RestaurantBrand>
         <StoreInformationSheet store={{
           name: menu.store.name,
@@ -67,7 +66,7 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
           instagram_url: menu.store.instagram_url,
           facebook_url: menu.store.facebook_url,
           tiktok_url: menu.store.tiktok_url,
-        }} hours={menu.hours} />
+        }} hours={menu.hours} serviceFacts={serviceFacts} />
       </header>
       {closedNotice ? <div className={styles.closedNotice} role="status">{closedNotice}</div> : null}
       <div className={styles.content}>
@@ -83,6 +82,6 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
       </div>
       <footer className={styles.signature} aria-label="PedeAqui — Seu pedido começa aqui"><PedeAquiLogo size="xs" decorative /><span>Seu pedido começa aqui.</span></footer>
     </div>
-    <PublicCartBar storeSlug={menu.store.slug} />
+    <PublicCartBar storeSlug={menu.store.slug} subtitle={!menu.operational.canOrder ? "Loja fechada agora" : deliveryAvailable ? `Entrega em ${etaLabel}` : etaLabel ?? undefined} />
   </main>;
 }

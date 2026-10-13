@@ -34,13 +34,15 @@ function SubmitButton({ label, totalCents, disabled }: { label: string; totalCen
   </button>;
 }
 
-export function ProductPurchaseBar({ basePriceCents, modifierPrices, initialQuantity, label, unavailable, containerSurchargeCents = 0 }: {
+export function ProductPurchaseBar({ basePriceCents, modifierPrices, initialQuantity, label, unavailable, containerSurchargeCents = 0, docked = false }: {
   basePriceCents: number;
   modifierPrices: Record<string, number>;
   initialQuantity: number;
   label: string;
   unavailable: boolean;
   containerSurchargeCents?: number;
+  /** Dentro da gaveta do produto a barra fica presa ao rodapé da gaveta, não da tela. */
+  docked?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [quantity, setQuantity] = useState(Math.min(99, Math.max(1, initialQuantity)));
@@ -69,7 +71,7 @@ export function ProductPurchaseBar({ basePriceCents, modifierPrices, initialQuan
 
   const totalCents = (basePriceCents + modifiersCents) * quantity;
 
-  return <div ref={rootRef} className={styles.bar} role="group" aria-label="Quantidade e adicionar">
+  return <div ref={rootRef} className={`${styles.bar} ${docked ? styles.docked : ""}`} role="group" aria-label="Quantidade e adicionar">
     <input type="hidden" name="quantity" value={quantity} />
     <div className={styles.stepper} role="group" aria-label="Quantidade">
       <button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))} disabled={unavailable || quantity <= 1} aria-label="Diminuir quantidade">

@@ -1,12 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import type { InputHTMLAttributes } from "react";
-import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
-import { removeCartItemAction, updateCartQuantityAction } from "@/features/cart/actions";
-import { applyCheckoutBenefitsAction, clearCheckoutBenefitsAction } from "@/features/checkout/benefit-actions";
-import { CheckoutInput } from "@/features/checkout/checkout-input";
-import { ExpressCheckoutForm } from "@/features/checkout/express-checkout-form";
+import { ExpressCheckoutForm, type ExpressBlock } from "@/features/checkout/express-checkout-form";
 import { paymentMethodHelp } from "@/features/checkout/final-order-options";
 import { ScrollToActiveStage } from "@/features/checkout/scroll-to-active-stage";
 import { StoreOrderStatus } from "@/features/menu/store-order-status";
@@ -84,8 +79,8 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
       ? reviewBlockerMessage
       : query.erro ? errorMessages[query.erro] ?? "Não foi possível continuar. Confira os dados e tente novamente." : null;
 
-  // Expresso: uma tela só. Itens e cupom ficam acima (cada um com seu próprio envio);
-  // recebimento, dados, endereço, pagamento e horário ficam num único formulário com um botão de confirmar.
+  // Expresso (protótipo opção 3): itens, recebimento, dados, endereço, pagamento, horário e cupom
+  // numa tela só, num único formulário, com um botão de confirmar.
   const recognizedAddresses = recognizedForSession && recognizedCustomer ? recognizedCustomer.addresses : [];
   const savedAddresses = recognizedAddresses.map((address, index) => ({
     index,
@@ -97,59 +92,34 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
   const couponDraft = query.erro === "benefit_invalid" ? cookieStore.get(`pedeaqui_coupon_draft_${slug}`)?.value ?? benefits?.current.couponCode ?? "" : benefits?.current.couponCode ?? "";
   const closedMessage = menu.operational.canOrder ? null : "A loja não está recebendo pedidos agora. Você pode montar o pedido e confirmar quando ela abrir.";
 
+  // Erros que pertencem a um bloco aparecem dentro dele (como no protótipo); os demais, no topo.
+  const errorBlock: Partial<Record<string, ExpressBlock>> = {
+    invalid_fulfillment: "receber", pickup_disabled: "receber", delivery_disabled: "receber",
+    invalid_phone: "dados", invalid_identity: "dados",
+    invalid_address: "endereco", delivery_not_selected: "endereco", delivery_minimum: "endereco", neighborhood_not_served: "endereco",
+    saved_address_invalid: "endereco", recognition_required: "endereco", identity_required: "endereco",
+    invalid_payment: "pagamento", payment_unavailable: "pagamento", invalid_change: "pagamento", pix_email_required: "pagamento", invalid_payment_email: "pagamento",
+    invalid_schedule: "quando", benefit_invalid: "cupom", benefit_unavailable: "cupom", total_updated: "resumo",
+  };
+  const blockForError = query.erro ? errorBlock[query.erro] ?? null : null;
+  const formError = blockForError && displayErrorMessage ? { block: blockForError, message: displayErrorMessage } : null;
+  const topError = formError ? null : displayErrorMessage;
+  const returningName = recognizedCustomer?.customer.name ? recognizedCustomer.customer.name.trim().split(/\s+/)[0] ?? null : null;
+
   return (
     <main className={styles.root}>
       <div className={`${styles.appShell} ${styles.expressShell}`}>
         <header className={styles.topbar}>
-          <Link href={`/m/${slug}`} className={styles.back} aria-label="Voltar ao cardápio">← Cardápio</Link>
-          <div className={styles.topTitle}><PedeAquiLogo size="xs" decorative /><span>Finalizar pedido</span></div>
-          <span className={styles.stepCounter}>{menu.store.name}</span>
+          <Link href={`/m/${slug}`} className={styles.iconButton} aria-label="Voltar ao cardápio">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M15 5l-7 7 7 7" /></svg>
+          </Link>
+          <h1 className={styles.topHeading}>Seu pedido</h1>
         </header>
 
         <div className={styles.stageViewport}>
           <StoreOrderStatus operational={menu.operational} />
-          {query.erro ? <ScrollToActiveStage targetId="checkout-alerta" /> : null}
-          {displayErrorMessage ? <div id="checkout-alerta" role="alert" aria-live="assertive" className={styles.alert}>{displayErrorMessage}</div> : null}
-
-          <section className={`${styles.block} ${styles.reviewItems}`} aria-label="Itens do pedido">
-            <div className={styles.itemsHeader}><h2>Seu pedido</h2><Link href={`/m/${slug}`}>+ Adicionar itens</Link></div>
-            {cart.items.map((item) => <article key={item.id} className={styles.reviewItem}>
-              <div className={styles.itemLine}>
-                <div className={styles.itemStepper} role="group" aria-label={`Quantidade de ${item.product_name_snapshot}`}>
-                  {Number(item.quantity) > 1
-                    ? <form action={updateCartQuantityAction}><QuickFields slug={slug} itemId={item.id} /><input type="hidden" name="quantity" value={Number(item.quantity) - 1} /><button type="submit" aria-label={`Diminuir quantidade de ${item.product_name_snapshot}`}>−</button></form>
-                    : <form action={removeCartItemAction}><QuickFields slug={slug} itemId={item.id} /><button type="submit" aria-label={`Remover ${item.product_name_snapshot}`}>−</button></form>}
-                  <output aria-label={`${item.quantity} unidade(s)`}>{item.quantity}</output>
-                  <form action={updateCartQuantityAction}><QuickFields slug={slug} itemId={item.id} /><input type="hidden" name="quantity" value={Math.min(99, Number(item.quantity) + 1)} /><button type="submit" disabled={Number(item.quantity) >= 99} aria-label={`Aumentar quantidade de ${item.product_name_snapshot}`}>+</button></form>
-                </div>
-                <strong className={styles.itemName}>{item.product_name_snapshot}</strong>
-                <strong>{money(Number(item.line_total_cents))}</strong>
-              </div>
-              {item.modifiers.length > 0 ? <p>{item.modifiers.map((option) => `${Number(option.quantity ?? 1)}× ${option.modifier_name_snapshot}`).join(" · ")}</p> : null}
-              {item.note ? <p>Observação: {item.note}</p> : null}
-              {item.gas ? <p>{item.gas.sale_mode === "exchange" ? "Troca de vasilhame" : "Produto + vasilhame"}{item.gas.container_name_snapshot ? ` · ${item.gas.container_name_snapshot}` : ""}</p> : null}
-            </article>)}
-            {missingMinimumCents > 0 ? <p className={styles.minimumHint}>Faltam {money(missingMinimumCents)} para o pedido mínimo de {money(minimumOrderCents)}.</p> : null}
-          </section>
-
-          {growthEnabled && benefits ? (
-            <details className={`${styles.block} ${styles.optional}`} open={totalDiscount > 0 || query.erro === "benefit_invalid" || query.erro === "benefit_unavailable"}>
-              <summary>Tenho cupom{benefits.cashbackEnabled ? ", cashback" : ""}{benefits.loyaltyEnabled ? " ou pontos" : ""}{totalDiscount > 0 ? ` · economia ${money(totalDiscount)}` : ""}</summary>
-              <div className={styles.optionalBody}>
-                <form action={applyCheckoutBenefitsAction} className={styles.form}>
-                  <input type="hidden" name="storeSlug" value={slug} />
-                  <div className={styles.grid2}>
-                    <Field label="Cupom" name="couponCode" defaultValue={couponDraft} placeholder="Ex.: VOLTA20" />
-                    {benefits.cashbackEnabled ? <Field label={`Cashback${benefits.customerIdentified ? ` · saldo ${money(benefits.cashbackBalanceCents)}` : ""}`} name="cashbackAmount" inputMode="decimal" defaultValue={benefits.current.cashbackRedeemCents ? (benefits.current.cashbackRedeemCents / 100).toFixed(2).replace(".", ",") : ""} disabled={!benefits.customerIdentified} /> : null}
-                    {benefits.loyaltyEnabled ? <Field label={`Pontos${benefits.customerIdentified ? ` · saldo ${benefits.loyaltyBalancePoints}` : ""}`} name="loyaltyPoints" type="number" min={0} defaultValue={benefits.current.loyaltyRedeemPoints || ""} disabled={!benefits.customerIdentified} /> : null}
-                  </div>
-                  {(benefits.cashbackEnabled || benefits.loyaltyEnabled) && !benefits.customerIdentified ? <p className={styles.optionalHint}>Confirme o pedido uma vez com seu WhatsApp para consultar seu saldo de benefícios.</p> : null}
-                  <div className={styles.benefitActions}><button type="submit" className={styles.action}>Aplicar</button>{totalDiscount > 0 ? <button formAction={clearCheckoutBenefitsAction} type="submit" className={styles.secondary}>Remover</button> : null}</div>
-                </form>
-              </div>
-            </details>
-          ) : null}
-
+          {topError ? <ScrollToActiveStage targetId="checkout-alerta" /> : null}
+          {topError ? <div id="checkout-alerta" role="alert" aria-live="assertive" className={styles.alert}>{topError}</div> : null}
           {recognizedCustomer && !recognizedForSession && deliverySelected ? <div className={styles.deliveryError}>Por segurança, confirme o endereço novamente para este WhatsApp.</div> : null}
 
           <ExpressCheckoutForm
@@ -163,6 +133,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
             neighborhoods={deliveryNeighborhoods}
             storeCity={menu.store.city ?? ""}
             storeState={menu.store.state ?? ""}
+            returningName={returningName}
             defaults={{
               fulfillment: session?.fulfillment_type === "delivery" || session?.fulfillment_type === "pickup" ? session.fulfillment_type : null,
               name: identityName,
@@ -181,6 +152,20 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
               changeFor: changeForValue,
               scheduledLocal: scheduledLocalValue,
             }}
+            items={cart.items.map((item) => ({
+              id: item.id,
+              productId: item.product_id,
+              name: item.product_name_snapshot,
+              imageUrl: item.product_image_url_snapshot || null,
+              quantity: Number(item.quantity),
+              lineTotalCents: Number(item.line_total_cents),
+              details: [
+                item.modifiers.map((option) => `${Number(option.quantity ?? 1) > 1 ? `${Number(option.quantity)}× ` : ""}${option.modifier_name_snapshot}`).join(" · "),
+                item.gas ? `${item.gas.sale_mode === "exchange" ? "Troca de vasilhame" : "Produto + vasilhame"}${item.gas.container_name_snapshot ? ` · ${item.gas.container_name_snapshot}` : ""}` : "",
+                item.note ? `Obs.: ${item.note}` : "",
+              ].filter(Boolean).join(" · "),
+              editable: item.modifiers.length > 0 || Boolean(item.gas) || Boolean(item.note),
+            }))}
             savedAddresses={savedAddresses}
             paymentMethods={enabledMethods.map((item) => ({
               value: item.method === "custom" && item.customPaymentMethodId ? `custom:${item.customPaymentMethodId}` : item.method,
@@ -188,6 +173,16 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
               label: item.method === "custom" ? item.label ?? paymentMethodLabels.custom : paymentMethodLabels[item.method],
               help: paymentMethodHelp[item.method],
             }))}
+            benefits={growthEnabled && benefits ? {
+              couponCode: couponDraft,
+              cashbackEnabled: benefits.cashbackEnabled,
+              loyaltyEnabled: benefits.loyaltyEnabled,
+              customerIdentified: benefits.customerIdentified,
+              cashbackBalanceCents: benefits.cashbackBalanceCents,
+              loyaltyBalancePoints: benefits.loyaltyBalancePoints,
+              cashbackValue: benefits.current.cashbackRedeemCents ? (benefits.current.cashbackRedeemCents / 100).toFixed(2).replace(".", ",") : "",
+              loyaltyValue: benefits.current.loyaltyRedeemPoints ? String(benefits.current.loyaltyRedeemPoints) : "",
+            } : null}
             totals={{
               subtotalCents,
               discountCents: totalDiscount,
@@ -195,16 +190,12 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
               totalCents: Number(cart.total_cents),
               quotedDelivery: deliverySelected && session?.delivery_quote_status === "valid",
             }}
+            minimumOrderCents={minimumOrderCents}
             minimumMissingCents={missingMinimumCents}
+            error={formError}
           />
         </div>
       </div>
     </main>
   );
 }
-
-function QuickFields({ slug, itemId }: { slug: string; itemId: string }) {
-  return <><input type="hidden" name="storeSlug" value={slug} /><input type="hidden" name="itemId" value={itemId} /><input type="hidden" name="returnTo" value="checkout" /></>;
-}
-
-function Field({ label, ...input }: InputHTMLAttributes<HTMLInputElement> & { label: string }) { return <label className={styles.field}><span>{label}</span><CheckoutInput {...input} label={label} className={styles.input} /></label>; }

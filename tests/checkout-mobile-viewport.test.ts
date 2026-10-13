@@ -32,7 +32,7 @@ describe("FLOW-06 mobile checkout viewport", () => {
     expect(viewportCss).toContain("env(safe-area-inset-bottom)");
     expect(checkoutPage).toContain("<footer className={styles.expressFooter}>");
     expect(checkoutCss).toContain(".expressFooter{position:sticky;bottom:0");
-    expect(checkoutPage).toContain("<SubmitOrderButton");
+    expect(checkoutPage).toContain("<ConfirmButton");
     expect(checkoutPage).toContain("Confirmar pedido");
     expect(checkoutCss).toContain("grid-template-rows:auto auto minmax(0,1fr) auto");
     expect(checkoutCss).toContain(".stageViewport{min-height:0;overflow-y:auto");

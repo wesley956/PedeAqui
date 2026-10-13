@@ -13,9 +13,9 @@ const paymentFields = readFileSync("src/features/checkout/payment-method-fields.
 
 describe("refined public checkout", () => {
   it("starts with fulfillment, then identity, and removes delivery address from pickup", () => {
-    expect(page.indexOf(">Como receber</h2>")).toBeLessThan(page.indexOf(">Seus dados</h2>"));
-    expect(page.indexOf(">Seus dados</h2>")).toBeLessThan(page.indexOf(">Endereço</h2>"));
-    expect(page).toContain('{mode === "delivery" ? (');
+    expect(page.indexOf('block("receber", "Como receber"')).toBeLessThan(page.indexOf('block("dados", "Seus dados"'));
+    expect(page.indexOf('block("dados", "Seus dados"')).toBeLessThan(page.indexOf('block("endereco", "Endereço"'));
+    expect(page).toContain('{mode === "delivery" ? block("endereco"');
     expect(page).toContain('setMode("delivery")');
     expect(page).toContain('setMode("pickup")');
   });

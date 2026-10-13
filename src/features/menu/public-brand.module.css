@@ -11,4 +11,5 @@
   .copy{gap:3px}
   .name{font-size:var(--font-size-lg);font-weight:var(--font-weight-bold)}
   .platformSignature{font-size:var(--font-size-xs)}
-}
+}/* Expresso: sem logo, as iniciais aparecem na cor da loja sobre fundo claro (como no protótipo). */
+.fallback{background:var(--surface-1);color:var(--restaurant-primary);border:var(--border-width) solid var(--border-default)}

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const selector = readFileSync("src/features/menu/modifier-group-selector.tsx", "utf8");
-const page = readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8");
+const page = (readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8") + readFileSync("src/features/menu/product-detail.tsx", "utf8"));
 const adminPage = readFileSync("src/app/(app)/cardapio/adicionais/page.tsx", "utf8");
 
 describe("public modifier selector", () => {

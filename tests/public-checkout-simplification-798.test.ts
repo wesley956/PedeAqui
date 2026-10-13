@@ -12,17 +12,17 @@ const orderService = read("src/server/orders/order-service.ts");
 
 describe("PA-PUBLIC-UX-011 / #798 checkout simplification", () => {
   it("keeps identity before delivery address and payment after the address", () => {
-    const fulfillmentAt = page.indexOf(">Como receber</h2>");
-    const identityAt = page.indexOf(">Seus dados</h2>");
-    const addressAt = page.indexOf(">Endereço</h2>");
-    const paymentAt = page.indexOf(">Pagamento</h2>");
-    const confirmationAt = page.indexOf("Confirmar pedido ·");
+    const fulfillmentAt = page.indexOf('block("receber", "Como receber"');
+    const identityAt = page.indexOf('block("dados", "Seus dados"');
+    const addressAt = page.indexOf('block("endereco", "Endereço"');
+    const paymentAt = page.indexOf('block("pagamento", "Pagamento"');
+    const confirmationAt = page.indexOf("<ConfirmButton");
     expect(fulfillmentAt).toBeGreaterThan(-1);
     expect(identityAt).toBeGreaterThan(fulfillmentAt);
     expect(addressAt).toBeGreaterThan(identityAt);
     expect(paymentAt).toBeGreaterThan(addressAt);
     expect(confirmationAt).toBeGreaterThan(paymentAt);
-    expect(page).toContain('{mode === "delivery" ? (');
+    expect(page).toContain('{mode === "delivery" ? block("endereco"');
   });
 
   it("does not dump neighborhoods before the customer searches", () => {
@@ -52,11 +52,13 @@ describe("PA-PUBLIC-UX-011 / #798 checkout simplification", () => {
       state: "SP",
     });
     expect(parsedWithoutCep.success).toBe(true);
-    const referenceAt = page.indexOf('label="Referência (opcional)"');
+    // Protótipo Expresso: CEP (opcional) e número lado a lado, depois rua e complemento.
     const cepAt = page.indexOf('label="CEP (opcional)"');
-    const addressEndAt = page.indexOf("Entregamos aí", cepAt);
-    expect(cepAt).toBeGreaterThan(referenceAt);
-    expect(addressEndAt).toBeGreaterThan(cepAt);
+    const streetAt = page.indexOf('label="Rua"');
+    const complementAt = page.indexOf('label="Complemento e referência"');
+    expect(cepAt).toBeGreaterThan(-1);
+    expect(streetAt).toBeGreaterThan(cepAt);
+    expect(complementAt).toBeGreaterThan(streetAt);
     expect(checkoutService).toContain("postalCode: session.address_postal_code ?? null");
   });
 
@@ -68,7 +70,7 @@ describe("PA-PUBLIC-UX-011 / #798 checkout simplification", () => {
   });
 
   it("hides growth benefits when the module is unavailable and guards the actions server-side", () => {
-    expect(page).toContain("growthEnabled && benefits ? (");
+    expect(page).toContain("benefits={growthEnabled && benefits ? {");
     expect(checkoutService).toContain('StoreModuleStateService.isEnabled(cartResult.store.organization_id, cartResult.store.id, "growth")');
     expect(benefitActions).toContain('StoreModuleStateService.isEnabled(');
     expect(benefitActions).toContain('"growth"');

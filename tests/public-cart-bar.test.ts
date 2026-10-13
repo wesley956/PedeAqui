@@ -5,7 +5,7 @@ const component = readFileSync("src/features/cart/public-cart-bar.tsx", "utf8");
 const styles = readFileSync("src/features/cart/public-cart-bar.module.css", "utf8");
 const summary = readFileSync("src/server/cart/public-cart-summary-service.ts", "utf8");
 const menuPage = readFileSync("src/app/m/[slug]/page.tsx", "utf8");
-const productPage = readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8");
+const productPage = (readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8") + readFileSync("src/features/menu/product-detail.tsx", "utf8"));
 
 describe("persistent public cart bar", () => {
   it("reads the authoritative cart token scoped to the current slug", () => {
