@@ -1,0 +1,13 @@
+.figure { margin: 0; display: grid; gap: var(--space-2); }
+.svg { width: 100%; height: auto; display: block; }
+.grid line { stroke: var(--border-default); stroke-dasharray: 3 4; }
+.grid text, .axisText, .axisText text { fill: var(--text-secondary); font-size: var(--font-size-xs); }
+.zero { stroke: var(--border-strong); }
+.positive { fill: var(--state-success); fill-opacity: 0.75; }
+.negative { fill: var(--state-danger); fill-opacity: 0.75; }
+.caption { display: flex; flex-wrap: wrap; gap: var(--space-4); color: var(--text-secondary); font-size: var(--font-size-xs); }
+.caption span { display: inline-flex; align-items: center; gap: var(--space-1); }
+.swatchPositive, .swatchNegative { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.swatchPositive { background: var(--state-success); opacity: 0.75; }
+.swatchNegative { background: var(--state-danger); opacity: 0.75; }
+.empty { margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm); }
