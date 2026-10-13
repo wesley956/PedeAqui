@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { PublicCartSummaryService } from "@/server/cart/public-cart-summary-service";
+import { getPublicStoreBrand } from "@/server/menu/public-store-brand-service";
 import styles from "./public-cart-bar.module.css";
 import { NavigationIcon } from "@/components/ui/navigation-icon";
 
@@ -24,6 +25,8 @@ export async function PublicCartBar({ storeSlug }: { storeSlug: string }) {
 
   const itemLabel = summary.itemCount === 1 ? "1 item" : `${summary.itemCount} itens`;
   const total = money(summary.totalCents);
+  const brand = await getPublicStoreBrand(storeSlug);
+  const missingForMinimum = brand && brand.minimumOrderCents > summary.subtotalCents ? brand.minimumOrderCents - summary.subtotalCents : 0;
 
   return <>
     <div className={styles.spacer} aria-hidden />
@@ -36,6 +39,7 @@ export async function PublicCartBar({ storeSlug }: { storeSlug: string }) {
         <span className={styles.summary}>
           <span className={styles.items}><NavigationIcon name="cart" width={16} height={16} /> {itemLabel}</span>
           <span className={styles.total}>{total}</span>
+          {missingForMinimum > 0 ? <span className={styles.minimum}>Faltam {money(missingForMinimum)} para o pedido mínimo</span> : null}
         </span>
         <span className={styles.action}>Ver carrinho →</span>
       </Link>

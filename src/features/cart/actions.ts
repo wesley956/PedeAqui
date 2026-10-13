@@ -44,6 +44,13 @@ function safeUuid(value: FormDataEntryValue | null) {
   return value;
 }
 
+/** Ações rápidas do cardápio (+ e −) voltam para o próprio item no cardápio, sem abrir o carrinho. */
+function menuReturnPath(formData: FormData, storeSlug: string) {
+  if (formData.get("returnTo") !== "menu") return null;
+  const productId = safeUuid(formData.get("productId"));
+  return `/m/${storeSlug}${productId ? `#produto-${productId}` : ""}`;
+}
+
 export async function addToCartAction(formData: FormData) {
   const rawStoreSlug = String(formData.get("storeSlug") ?? "");
   const rawProductId = String(formData.get("productId") ?? "");
@@ -108,6 +115,8 @@ export async function addToCartAction(formData: FormData) {
     });
   }
 
+  const menuPath = menuReturnPath(formData, result.store.slug);
+  if (menuPath) redirect(menuPath);
   redirect(`/m/${result.store.slug}/carrinho`);
 }
 
@@ -128,6 +137,8 @@ export async function updateCartQuantityAction(formData: FormData) {
     logger.error("public_cart_quantity_failed", { errorType: error instanceof Error ? error.name : "unknown" });
     redirect(`/m/${values.storeSlug}/carrinho?erro=cart_update_failed`);
   }
+  const menuPath = menuReturnPath(formData, values.storeSlug);
+  if (menuPath) redirect(menuPath);
   redirect(`/m/${values.storeSlug}/carrinho`);
 }
 
@@ -144,5 +155,7 @@ export async function removeCartItemAction(formData: FormData) {
     logger.error("public_cart_remove_failed", { errorType: error instanceof Error ? error.name : "unknown" });
     redirect(`/m/${values.storeSlug}/carrinho?erro=cart_remove_failed`);
   }
+  const menuPath = menuReturnPath(formData, values.storeSlug);
+  if (menuPath) redirect(menuPath);
   redirect(`/m/${values.storeSlug}/carrinho`);
 }

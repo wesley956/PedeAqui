@@ -21,12 +21,12 @@
   .container{width:min(100% - 12px,960px);margin-top:-16px}
   .hero{display:grid;grid-template-columns:1fr;padding:12px;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
   .status{font-size:var(--font-size-xs);padding:3px 7px}
-  .brandDetail{font-size:var(--font-size-xs)}
+  .brandDetail{font-size:var(--font-size-support)}
   .location{font-size:var(--font-size-xs)}
   .content{margin-top:14px;gap:14px}
-  .serviceSummary{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:0;padding:0 0 2px;max-width:100%}
+  .serviceSummary{flex-wrap:wrap;gap:6px;margin-inline:0;max-width:100%}
   .serviceSummary::-webkit-scrollbar{display:none}
-  .pill{flex:0 0 auto;padding:6px 10px;font-size:var(--font-size-xs);white-space:nowrap}
+  .pill{flex:0 0 auto;padding:6px 10px;font-size:var(--font-size-support);white-space:nowrap}
   .signature{font-size:var(--font-size-xs);margin-top:18px}
 }
 @media(prefers-reduced-motion:reduce){.container{animation:none}}

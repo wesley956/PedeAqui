@@ -23,7 +23,7 @@ function contrastRatio(first: number, second: number) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-function contrastText(hex: string) {
+export function contrastText(hex: string) {
   const background = relativeLuminance(hex);
   const dark = "#171717";
   const white = "#FFFFFF";
@@ -34,6 +34,26 @@ function contrastText(hex: string) {
 
 export function restaurantBrandVars(primaryColor: string) {
   return { "--restaurant-primary": primaryColor, "--restaurant-on-primary": contrastText(primaryColor) } as CSSProperties;
+}
+
+/**
+ * Aplica a cor da loja sobre os tokens de marca do PedeAqui em todas as telas públicas.
+ * Fontes, cantos e componentes continuam do PedeAqui; só a cor de destaque muda.
+ */
+export function publicStoreThemeVars(primaryColor: string) {
+  const onBrand = contrastText(primaryColor);
+  const pressed = `color-mix(in srgb, ${primaryColor} 86%, #000)`;
+  return {
+    ...restaurantBrandVars(primaryColor),
+    "--brand-primary": primaryColor,
+    "--brand-primary-hover": pressed,
+    "--brand-primary-active": pressed,
+    "--brand-highlight": primaryColor,
+    "--text-on-brand": onBrand,
+    "--accent": primaryColor,
+    "--accent-strong": pressed,
+    "--focus-ring": primaryColor,
+  } as CSSProperties;
 }
 
 export function RestaurantBrand({ name, logoUrl, primaryColor, children }: { name: string; logoUrl: string | null; primaryColor: string; children?: ReactNode }) {
