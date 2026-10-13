@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, Checkbox, SelectField } from "@/components/ui/form-controls";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
+import styles from "../settings-form.module.css";
 import { createDeliveryNeighborhoodAction, removeDeliveryNeighborhoodAction, saveDeliverySettingsAction, toggleDeliveryNeighborhoodAction } from "@/features/delivery/actions";
 import { updateDeliveryNeighborhoodAction } from "@/features/delivery/neighborhood-actions";
 import { saveDriverHistoryVisibilityAction } from "@/features/delivery/driver-history-actions";
@@ -15,107 +17,110 @@ export default async function DeliverySettingsPage() {
   ]);
 
   return (
-    <section style={{ display: "grid", gap: 20, maxWidth: 980 }}>
-      <header>
+    <section className={styles.page}>
+      <header className={styles.header}>
         <p className="muted" style={{ margin: 0, fontSize: 13 }}>Configurações</p>
         <h1 style={{ margin: "4px 0" }}>Entrega</h1>
         <p className="muted" style={{ margin: 0 }}>Regras padrão da unidade e taxas específicas por bairro.</p>
       </header>
 
-      <form action={saveDeliverySettingsAction} className="card" style={{ padding: 20, display: "grid", gap: 16 }}>
+      <form action={saveDeliverySettingsAction} className={styles.form} aria-label="Regras da entrega">
         <div>
           <h2 style={{ margin: 0 }}>Configuração básica</h2>
           <p className="muted">Estas regras serão usadas pelo checkout e aparecem resumidas no cardápio público.</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 12 }}>
-          <label style={{ display: "grid", gap: 6 }}>
-            <strong style={{ fontSize: 14 }}>Modo da taxa</strong>
-            <select name="feeMode" defaultValue={settings.fee_mode} style={{ minHeight: 44, borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "10px 12px" }}>
-              <option value="neighborhood">Por bairro</option>
-              <option value="default">Taxa padrão</option>
-            </select>
-          </label>
+        <div className={styles.grid}>
+          <SelectField id="delivery-fee-mode" label="Modo da taxa" name="feeMode" defaultValue={settings.fee_mode}>
+            <option value="neighborhood">Por bairro</option>
+            <option value="default">Taxa padrão</option>
+          </SelectField>
           <Input label="Taxa padrão" name="defaultFee" inputMode="decimal" defaultValue={(settings.default_fee_cents / 100).toFixed(2).replace(".", ",")} />
           <Input label="Frete grátis acima de" name="freeDeliveryOver" inputMode="decimal" defaultValue={settings.free_delivery_over_cents === null ? "" : (settings.free_delivery_over_cents / 100).toFixed(2).replace(".", ",")} />
-          <div role="note" style={{ display: "grid", gap: 6, padding: 12, border: "1px solid var(--border)", borderRadius: 10 }}>
+          <div role="note" className={styles.note}>
             <strong style={{ fontSize: 14 }}>Cobertura validada por bairro</strong>
-            <span className="muted" style={{ fontSize: 12 }}>O checkout não usa distância sem geocodificação. Cadastre os bairros atendidos para não aceitar um endereço fora da área.</span>
+            <span className={styles.meta}>Cadastre os bairros atendidos para definir a cobertura e evitar pedidos fora da área de entrega.</span>
           </div>
           <Input label="Prazo mínimo (min)" name="estimatedMinMinutes" type="number" min={0} defaultValue={settings.estimated_min_minutes} />
           <Input label="Prazo máximo (min)" name="estimatedMaxMinutes" type="number" min={0} defaultValue={settings.estimated_max_minutes} />
         </div>
 
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-          <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="enabled" defaultChecked={settings.enabled} /> Entrega ativa</label>
-          <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="requireNeighborhoodMatch" defaultChecked={settings.require_neighborhood_match} /> Exigir bairro cadastrado</label>
+          <Checkbox id="delivery-enabled" name="enabled" label="Entrega ativa" defaultChecked={settings.enabled} />
+          <Checkbox id="delivery-require-neighborhood" name="requireNeighborhoodMatch" label="Exigir bairro cadastrado" defaultChecked={settings.require_neighborhood_match} />
         </div>
 
         <div><Button type="submit">Salvar entrega</Button></div>
       </form>
 
-      <form action={saveDriverHistoryVisibilityAction} className="card" style={{ padding: 20, display: "grid", gap: 14 }}>
+      <details className={styles.details}>
+        <summary>Portal do entregador</summary>
+      <form action={saveDriverHistoryVisibilityAction} className={styles.form} aria-label="Histórico do entregador">
         <div>
           <h2 style={{ margin: 0 }}>Portal do entregador</h2>
           <p className="muted" style={{ marginBottom: 0 }}>A loja decide se entregadores podem consultar pedidos que já concluíram. Quando desativado, somente entregas ativas aparecem no portal.</p>
         </div>
         <label style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
           <input type="checkbox" name="driverHistoryVisible" defaultChecked={driverHistoryVisible} style={{ marginTop: 3 }} />
-          <span><strong>Mostrar histórico de entregas concluídas ao entregador</strong><br /><span className="muted" style={{ fontSize: 12 }}>O histórico continua disponível para o restaurante mesmo quando esta opção estiver desligada.</span></span>
+          <span><strong>Mostrar histórico de entregas concluídas ao entregador</strong><br /><span className={styles.meta}>O histórico continua disponível para o restaurante mesmo quando esta opção estiver desligada.</span></span>
         </label>
         <div><Button type="submit">Salvar acesso do entregador</Button></div>
       </form>
+      </details>
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(300px, 390px) minmax(0,1fr)", gap: 18, alignItems: "start" }}>
-        <form action={createDeliveryNeighborhoodAction} className="card" style={{ padding: 18, display: "grid", gap: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Adicionar bairro</h2>
-          <Input label="Bairro" name="neighborhoodName" required />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 80px", gap: 10 }}>
-            <Input label="Cidade" name="city" required />
-            <Input label="UF" name="state" maxLength={2} placeholder="SP" required />
+      <div>
+        <details className={styles.details}>
+          <summary>Adicionar bairro</summary>
+        <form action={createDeliveryNeighborhoodAction} className={styles.form} aria-label="Adicionar bairro">
+          <Input id="new-neighborhood-neighborhoodName" label="Bairro" name="neighborhoodName" required />
+          <div className={styles.grid}>
+            <Input id="new-neighborhood-city" label="Cidade" name="city" required />
+            <Input id="new-neighborhood-state" label="UF" name="state" maxLength={2} placeholder="SP" required />
           </div>
-          <Input label="Taxa" name="fee" inputMode="decimal" placeholder="5,00" required />
-          <Input label="Pedido mínimo do bairro" name="minimumOrder" inputMode="decimal" hint="Opcional; prevalece na cotação deste bairro." />
-          <Input label="Minutos adicionais" name="additionalMinutes" type="number" min={0} defaultValue={0} hint="Somados ao prazo padrão da loja." />
+          <Input id="new-neighborhood-fee" label="Taxa" name="fee" inputMode="decimal" placeholder="5,00" required />
+          <Input id="new-neighborhood-minimumOrder" label="Pedido mínimo do bairro" name="minimumOrder" inputMode="decimal" hint="Opcional; prevalece na cotação deste bairro." />
+          <Input id="new-neighborhood-additionalMinutes" label="Minutos adicionais" name="additionalMinutes" type="number" min={0} defaultValue={0} hint="Somados ao prazo padrão da loja." />
           <Button type="submit">Adicionar bairro</Button>
         </form>
+        </details>
 
-        <div className="card" style={{ overflow: "hidden" }}>
+        <h2 style={{ fontSize: 18, margin: "16px 0 12px" }}>Bairros e taxas</h2>
+        <div className={styles.list}>
           {neighborhoods.length === 0 ? (
-            <div style={{ padding: 24 }}>
+            <div className={styles.empty}>
               <strong>Nenhum bairro cadastrado</strong>
               <p className="muted" style={{ marginBottom: 0 }}>Se “Exigir bairro cadastrado” estiver ativo, o checkout bloqueará endereços fora desta lista.</p>
             </div>
           ) : neighborhoods.map((row) => (
-            <article key={row.id} style={{ padding: 15, borderBottom: "1px solid var(--border)", display: "grid", gap: 9 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "start" }}>
+            <article key={row.id} className={styles.row}>
+              <div className={styles.rowTop}>
                 <div>
                   <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                     <strong>{row.neighborhood_name}</strong>
-                    <span style={{ fontSize: 10, fontWeight: 900, color: row.active ? "var(--success)" : "var(--muted)" }}>{row.active ? "ATIVO" : "PAUSADO"}</span>
+                    <span className={styles.badge} data-active={row.active}>{row.active ? "Ativo" : "Pausado"}</span>
                   </div>
-                  <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{row.city}/{row.state}</div>
+                  <div className={styles.meta}>{row.city}/{row.state}</div>
                 </div>
-                <strong style={{ color: "var(--accent)" }}>{formatCents(row.fee_cents)}</strong>
+                <strong>{formatCents(row.fee_cents)}</strong>
               </div>
-              <div className="muted" style={{ fontSize: 12 }}>
+              <div className={styles.meta}>
                 {row.minimum_order_cents !== null ? `Mínimo ${formatCents(row.minimum_order_cents)} · ` : ""}
                 {row.additional_minutes > 0 ? `+${row.additional_minutes} min` : "Prazo padrão"}
               </div>
 
-              <details style={{ border: "1px solid var(--border)", borderRadius: 10, padding: "0 10px" }}>
-                <summary style={{ cursor: "pointer", padding: "10px 2px", fontWeight: 800, fontSize: 13 }}>Editar bairro</summary>
-                <form action={updateDeliveryNeighborhoodAction} style={{ display: "grid", gap: 10, padding: "2px 0 12px" }}>
+              <details className={styles.details}>
+                <summary>Editar bairro</summary>
+                <form action={updateDeliveryNeighborhoodAction} className={styles.form} aria-label={`Editar bairro ${row.neighborhood_name}`}>
                   <input type="hidden" name="neighborhoodId" value={row.id} />
-                  <Input label="Bairro" name="neighborhoodName" defaultValue={row.neighborhood_name} required />
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 80px", gap: 10 }}>
-                    <Input label="Cidade" name="city" defaultValue={row.city} required />
-                    <Input label="UF" name="state" maxLength={2} defaultValue={row.state} required />
+                  <Input id={`neighborhood-${row.id}-neighborhoodName`} label="Bairro" name="neighborhoodName" defaultValue={row.neighborhood_name} required />
+                  <div className={styles.grid}>
+                    <Input id={`neighborhood-${row.id}-city`} label="Cidade" name="city" defaultValue={row.city} required />
+                    <Input id={`neighborhood-${row.id}-state`} label="UF" name="state" maxLength={2} defaultValue={row.state} required />
                   </div>
-                  <Input label="Taxa" name="fee" inputMode="decimal" defaultValue={(row.fee_cents / 100).toFixed(2).replace(".", ",")} required />
-                  <Input label="Pedido mínimo do bairro" name="minimumOrder" inputMode="decimal" defaultValue={row.minimum_order_cents === null ? "" : (row.minimum_order_cents / 100).toFixed(2).replace(".", ",")} hint="Opcional; prevalece na cotação deste bairro." />
-                  <Input label="Minutos adicionais" name="additionalMinutes" type="number" min={0} defaultValue={row.additional_minutes} hint="Somados ao prazo padrão da loja." />
-                  <div><Button type="submit">Salvar alterações</Button></div>
+                  <Input id={`neighborhood-${row.id}-fee`} label="Taxa" name="fee" inputMode="decimal" defaultValue={(row.fee_cents / 100).toFixed(2).replace(".", ",")} required />
+                  <Input id={`neighborhood-${row.id}-minimumOrder`} label="Pedido mínimo do bairro" name="minimumOrder" inputMode="decimal" defaultValue={row.minimum_order_cents === null ? "" : (row.minimum_order_cents / 100).toFixed(2).replace(".", ",")} hint="Opcional; prevalece na cotação deste bairro." />
+                  <Input id={`neighborhood-${row.id}-additionalMinutes`} label="Minutos adicionais" name="additionalMinutes" type="number" min={0} defaultValue={row.additional_minutes} hint="Somados ao prazo padrão da loja." />
+                  <div><Button type="submit" loadingLabel="Salvando bairro…">Salvar bairro</Button></div>
                 </form>
               </details>
 
@@ -127,7 +132,7 @@ export default async function DeliverySettingsPage() {
                 </form>
                 <form action={removeDeliveryNeighborhoodAction}>
                   <input type="hidden" name="neighborhoodId" value={row.id} />
-                  <Button tone="danger" type="submit">Remover</Button>
+                  <ConfirmSubmitButton tone="secondary" size="md" confirmation={`Remover o bairro ${row.neighborhood_name} da área de entrega?`}>Remover bairro</ConfirmSubmitButton>
                 </form>
               </div>
             </article>

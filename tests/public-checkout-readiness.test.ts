@@ -38,7 +38,8 @@ describe("public cart and checkout readiness [PA-DIAG-026-030]", () => {
   });
 
   it("does not present distance as enforced without geocoding", () => {
-    expect(deliveryPage).toContain("O checkout não usa distância sem geocodificação");
+    expect(deliveryPage).toContain("Cadastre os bairros atendidos para definir a cobertura");
+    expect(deliveryPage).not.toContain('value="distance"');
     expect(deliveryPage).toContain("Cobertura validada por bairro");
     expect(deliveryPage).not.toContain('name="maxDistanceKm"');
   });
