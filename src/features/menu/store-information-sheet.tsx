@@ -25,6 +25,8 @@ type StoreInformation = Pick<
 type Props = {
   store: StoreInformation;
   hours: PublicMenu["hours"];
+  /** Taxa, frete grátis e retirada: ficam aqui para o topo do cardápio seguir enxuto como no protótipo. */
+  serviceFacts?: string[];
 };
 
 const dayNames = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"] as const;
@@ -73,7 +75,7 @@ function hoursByDay(hours: PublicMenu["hours"]) {
   }));
 }
 
-export function StoreInformationSheet({ store, hours }: Props) {
+export function StoreInformationSheet({ store, hours, serviceFacts = [] }: Props) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const address = addressLines(store);
@@ -104,7 +106,8 @@ export function StoreInformationSheet({ store, hours }: Props) {
 
   return <>
     <button ref={triggerRef} type="button" className={styles.trigger} onClick={openDialog} aria-haspopup="dialog">
-      <span aria-hidden>ⓘ</span> Informações da loja
+      <svg aria-hidden viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></svg>
+      <span className={styles.triggerLabel}>Informações da loja</span>
     </button>
 
     <dialog
@@ -124,6 +127,11 @@ export function StoreInformationSheet({ store, hours }: Props) {
         </header>
 
         <div className={styles.content}>
+          {serviceFacts.length > 0 ? <section className={styles.section} aria-labelledby="store-service-title">
+            <h3 id="store-service-title">Entrega e retirada</h3>
+            <ul className={styles.facts}>{serviceFacts.map((fact) => <li key={fact}>{fact}</li>)}</ul>
+          </section> : null}
+
           {address.length > 0 ? <section className={styles.section} aria-labelledby="store-address-title">
             <h3 id="store-address-title">Endereço</h3>
             <address className={styles.address}>{address.map((line) => <span key={line}>{line}</span>)}</address>

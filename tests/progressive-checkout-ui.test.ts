@@ -8,38 +8,52 @@ const service = readFileSync("src/server/checkout/checkout-service.ts", "utf8");
 const orderService = readFileSync("src/server/orders/order-service.ts", "utf8");
 const styles = readFileSync("src/app/m/[slug]/checkout/checkout.module.css", "utf8");
 
-describe("progressive checkout UI", () => {
-  it("keeps the approved customer-facing checkout sequence", () => {
-    const receiving = page.indexOf('title="Como vai receber?"');
-    const identity = page.indexOf('title="Seus dados"');
-    const address = page.indexOf('title="Onde entregar?"');
-    const payment = page.indexOf('title="Pagamento"');
-    const review = page.indexOf("Revisar e confirmar");
+const form = readFileSync("src/features/checkout/express-checkout-form.tsx", "utf8");
+const expressActions = readFileSync("src/features/checkout/express-actions.ts", "utf8");
+
+// Checkout Expresso (protótipo opção 3): uma tela, blocos editáveis e um único botão de confirmar.
+describe("express checkout UI", () => {
+  it("keeps the approved customer-facing block order on one screen", () => {
+    expect(page).toContain("Seu pedido");
+    expect(page).toContain("<ExpressCheckoutForm");
+    const items = form.indexOf('block("itens", `Itens · ${itemCount}`');
+    expect(items).toBeGreaterThan(-1);
+    const receiving = form.indexOf('block("receber", "Como receber"');
+    const identity = form.indexOf('block("dados", "Seus dados"');
+    const address = form.indexOf('block("endereco", "Endereço"');
+    const payment = form.indexOf('block("pagamento", "Pagamento"');
+    const when = form.indexOf('block("quando", "Quando"');
+    const summary = form.indexOf(">Resumo</h2>");
     expect(receiving).toBeGreaterThan(-1);
     expect(identity).toBeGreaterThan(receiving);
     expect(address).toBeGreaterThan(identity);
     expect(payment).toBeGreaterThan(address);
-    expect(review).toBeGreaterThan(payment);
+    expect(when).toBeGreaterThan(payment);
+    const coupon = form.indexOf('block("cupom", "Cupom"');
+    expect(receiving).toBeGreaterThan(items);
+    expect(coupon).toBeGreaterThan(when);
+    expect(summary).toBeGreaterThan(coupon);
   });
 
-  it("derives delivery and pickup stages from the persisted server state", () => {
+  it("switches delivery and pickup without a reload and keeps the server state as default", () => {
     expect(page).toContain('const deliverySelected = session?.fulfillment_type === "delivery"');
-    expect(page).toContain('["fulfillment", "identity", "address", "payment", "review"]');
-    expect(page).toContain('["fulfillment", "identity", "payment", "review"]');
-    expect(page).toContain('activeStage === "address" && fulfillmentComplete && identityComplete && deliverySelected');
-    expect(page).toContain('activeStage === "payment" && identityComplete && fulfillmentComplete && addressComplete');
-    expect(page).toContain('activeStage === "review" && paymentComplete');
+    expect(form).toContain('useState<"delivery" | "pickup">(initialMode)');
+    expect(form).toContain('{mode === "delivery" ? block("endereco"');
+    expect(form).toContain('<input type="hidden" name="fulfillmentType" value={mode} />');
+    expect(page).not.toContain("?etapa=");
   });
 
-  it("preserves checkout actions and uses one final confirmation action", () => {
-    for (const action of [
-      "saveCheckoutIdentityAction",
-      "saveCheckoutFulfillmentAction",
-      "saveCheckoutAddressAction",
-      "saveCheckoutPaymentAction",
-      "useSavedCheckoutAddressAction",
-      "confirmCheckoutOrderAction",
-    ]) expect(page).toContain(action);
+  it("saves every part with the existing server rules and then confirms once", () => {
+    for (const call of [
+      "CheckoutService.saveFulfillment",
+      "CheckoutService.saveIdentity",
+      "CheckoutService.saveAddress",
+      "CheckoutService.useRecognizedAddress",
+      "CheckoutService.savePayment",
+      "CheckoutService.saveSchedule",
+      "await confirmCheckoutOrderAction(formData)",
+    ]) expect(expressActions).toContain(call);
+    expect(form).toContain("action={submitExpressCheckoutAction}");
     expect(actions).toContain("saveCheckoutScheduleAction");
     expect(service).toContain("static async saveSchedule");
     expect(confirmAction).toContain("createOrderFromCheckoutAction");
@@ -48,29 +62,36 @@ describe("progressive checkout UI", () => {
     expect(page).not.toContain("Pendente de revisão");
   });
 
+  it("never confirms a total the customer has not seen", () => {
+    expect(expressActions).toContain('const expected = Number(text(formData, "expectedTotalCents"));');
+    expect(expressActions).toContain('back(storeSlug, "total_updated")');
+    expect(form).toContain('<input type="hidden" name="expectedTotalCents" value={knownTotal ?? ""} />');
+    expect(page).toContain("total_updated:");
+  });
+
   it("keeps benefits optional and module-gated", () => {
-    expect(page).toContain("Tenho cupom");
-    expect(page).toContain("benefits.cashbackEnabled ?");
-    expect(page).toContain("benefits.loyaltyEnabled ?");
-    expect(page).toContain("paymentComplete && growthEnabled && benefits");
-    expect(page).toContain("applyCheckoutBenefitsAction");
+    expect(form).toContain("Tem cupom?");
+    expect(form).toContain("props.benefits.cashbackEnabled ?");
+    expect(form).toContain("props.benefits.loyaltyEnabled ?");
+    expect(page).toContain("growthEnabled && benefits");
+    expect(expressActions).toContain("await applyCheckoutBenefitsAction(formData)");
     expect(service).toContain('StoreModuleStateService.isEnabled(cartResult.store.organization_id, cartResult.store.id, "growth")');
   });
 
-  it("restores the active stage from persisted completion and targeted errors", () => {
-    expect(page).toContain("const firstIncomplete: CheckoutStageId");
-    expect(page).toContain("const errorStage:");
-    expect(page).toContain('pix_email_required: "payment"');
-    expect(page).toContain('neighborhood_not_served: "address"');
-    expect(page).toContain("const validErrorStage: CheckoutStageId | null");
-    expect(page).toContain("requestedStage && requestedAllowed");
+  it("lets the customer change item quantities without leaving the checkout", () => {
+    // − / + no próprio checkout: guarda o que já foi preenchido e volta para o checkout.
+    expect(form).toContain('formAction={expressItemAction} formNoValidate');
+    expect(expressActions).toContain('next.set("returnTo", "checkout")');
+    expect(expressActions).toContain("await updateCartQuantityAction(next)");
+    expect(expressActions).toContain("if (kind === \"remove\") await removeCartItemAction(next)");
+    expect(expressActions).toContain('await saveParts(formData, "draft")');
   });
 
   it("keeps one prominent final completion action with the authoritative total", () => {
-    expect(page).toContain("Confirmar pedido ·");
-    expect(page).toContain("styles.footer");
+    expect(form).toContain("Confirmar pedido ·");
+    expect(form).toContain("<footer className={styles.expressFooter}>");
     expect(page).toContain("cart.total_cents");
-    expect(styles).toContain("grid-template-rows:auto auto minmax(0,1fr) auto");
+    expect(styles).toContain(".expressFooter{position:sticky;bottom:0");
   });
 
   it("uses a fullscreen responsive shell with safe overflow fallback", () => {

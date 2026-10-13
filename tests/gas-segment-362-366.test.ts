@@ -63,7 +63,7 @@ describe("gas segment [362]-[366]", () => {
   });
 
   it("preserves structured gas choice from public catalog to immutable order snapshot", () => {
-    const productPage = read("src/app/m/[slug]/produto/[id]/page.tsx");
+    const productPage = (read("src/app/m/[slug]/produto/[id]/page.tsx") + read("src/features/menu/product-detail.tsx"));
     const publicMenu = read("src/server/menu/public-menu-service.ts");
     expect(productPage).toContain('name="gasSaleMode" value="exchange"');
     expect(productPage).toContain('name="gasSaleMode" value="with_container"');

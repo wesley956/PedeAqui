@@ -37,3 +37,5 @@
   .hourRow{grid-template-columns:82px minmax(0,1fr)}
 }
 @media(prefers-reduced-motion:reduce){.trigger{transition:none}}
+.triggerLabel{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.trigger{width:44px;height:44px;min-height:44px;flex:none;justify-content:center;padding:0;margin-top:0;border-radius:var(--radius-pill);color:var(--text-primary)}
+.facts{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:var(--font-size-sm);color:var(--text-secondary)}

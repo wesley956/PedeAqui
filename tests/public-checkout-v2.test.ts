@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 // Keep these assertions at the component/service boundary that owns each behavior.
-const page = readFileSync("src/app/m/[slug]/checkout/page.tsx", "utf8");
+const page = readFileSync("src/app/m/[slug]/checkout/page.tsx", "utf8") + readFileSync("src/features/checkout/express-checkout-form.tsx", "utf8") + readFileSync("src/features/checkout/express-actions.ts", "utf8");  // Checkout Expresso: página + formulário único + ação
 const actions = readFileSync("src/features/checkout/actions.ts", "utf8");
 const benefitActions = readFileSync("src/features/checkout/benefit-actions.ts", "utf8");
 const confirmAction = readFileSync("src/features/checkout/confirm-order-action.ts", "utf8");
@@ -13,13 +13,11 @@ const paymentFields = readFileSync("src/features/checkout/payment-method-fields.
 
 describe("refined public checkout", () => {
   it("starts with fulfillment, then identity, and removes delivery address from pickup", () => {
-    expect(page).toContain('<CheckoutStage number="1" title="Como vai receber?"');
-    expect(page.indexOf('title="Seus dados"')).toBeLessThan(page.indexOf('title="Onde entregar?"'));
-    expect(page).toContain('activeStage === "address" && fulfillmentComplete && identityComplete && deliverySelected');
-    expect(page).toContain('["fulfillment", "identity", "address", "payment", "review"]');
-    expect(page).toContain('["fulfillment", "identity", "payment", "review"]');
-    expect(page).toContain('value="delivery"');
-    expect(page).toContain('value="pickup"');
+    expect(page.indexOf('block("receber", "Como receber"')).toBeLessThan(page.indexOf('block("dados", "Seus dados"'));
+    expect(page.indexOf('block("dados", "Seus dados"')).toBeLessThan(page.indexOf('block("endereco", "Endereço"'));
+    expect(page).toContain('{mode === "delivery" ? block("endereco"');
+    expect(page).toContain('setMode("delivery")');
+    expect(page).toContain('setMode("pickup")');
   });
 
   it("keeps recognition privacy before exposing saved addresses", () => {
@@ -30,9 +28,10 @@ describe("refined public checkout", () => {
   });
 
   it("keeps email secondary and opens payment when Pix requires it", () => {
-    expect(page).toContain("styles.inlineOptional");
+    expect(page).not.toContain('name="email" type="email"');
+    expect(page).toContain("pixEmail={defaults.email}");
     expect(page).toContain('query.erro === "pix_email_required"');
-    expect(page).toContain('pix_email_required: "payment"');
+    expect(page).toContain('pix_email_required: "Informe seu e-mail em Pagamento');
     expect(service).toContain('values.method === "pix" && !session?.customer_email');
     expect(service).toContain("pix_email_required");
   });
@@ -49,7 +48,7 @@ describe("refined public checkout", () => {
   it("preserves scheduling and module-gates benefits", () => {
     expect(actions).toContain("saveCheckoutScheduleAction");
     expect(service).toContain("static async saveSchedule");
-    expect(page).toContain("paymentComplete && growthEnabled && benefits");
+    expect(page).toContain("growthEnabled && benefits");
     expect(page).toContain("applyCheckoutBenefitsAction");
     expect(benefitActions).toContain("StoreModuleStateService.isEnabled");
   });
@@ -58,7 +57,7 @@ describe("refined public checkout", () => {
     expect(page).toContain("confirmCheckoutOrderAction");
     expect(page).not.toContain("reviewCheckoutAction");
     expect(page).not.toContain("CheckoutReviewState");
-    expect(page).toContain("FinalOrderOptions");
+    expect(page).toContain(">Resumo</h2>");
     expect(confirmAction).toContain("createOrderFromCheckoutAction");
     expect(orderService).toContain("CheckoutService.review(storeSlug, token)");
   });

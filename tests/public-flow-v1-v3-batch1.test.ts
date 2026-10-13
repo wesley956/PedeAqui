@@ -7,7 +7,7 @@ const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
 const menuPage = read("src/app/m/[slug]/page.tsx");
 const menuBrowser = read("src/features/menu/menu-browser.tsx");
-const productPage = read("src/app/m/[slug]/produto/[id]/page.tsx");
+const productPage = (read("src/app/m/[slug]/produto/[id]/page.tsx") + read("src/features/menu/product-detail.tsx"));
 const cartPage = read("src/app/m/[slug]/carrinho/page.tsx");
 const cartActions = read("src/features/cart/actions.ts");
 const cartBar = read("src/features/cart/public-cart-bar.tsx");
@@ -75,7 +75,7 @@ describe("[992] route transition contracts", () => {
     expect(cartActions).toContain("redirect(`/m/${result.store.slug}/carrinho`)");
     expect(cartActions).toContain("redirect(`/m/${values.storeSlug}/carrinho`)");
     expect(cartPage).toContain("href={`/m/${slug}/checkout`}");
-    expect(productPage).toContain("href={editItemId ? `/m/${store.slug}/carrinho` : `/m/${store.slug}`}");
+    expect(productPage).toContain("const closeHref = editItemId ? `/m/${store.slug}/carrinho` : `/m/${store.slug}`;");
   });
 
   it("makes motion optional", () => {

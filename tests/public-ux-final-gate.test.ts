@@ -6,7 +6,7 @@ import { buildPublicOrderTimeline } from "@/features/orders/public-order-timelin
 const read = (path: string) => readFileSync(path, "utf8");
 
 const menuPage = read("src/app/m/[slug]/page.tsx");
-const productPage = read("src/app/m/[slug]/produto/[id]/page.tsx");
+const productPage = (read("src/app/m/[slug]/produto/[id]/page.tsx") + read("src/features/menu/product-detail.tsx"));
 const modifierSelector = read("src/features/menu/modifier-group-selector.tsx");
 const complementsService = read("src/server/menu/complement-category-service.ts");
 const complementsMigration = read("supabase/sql/135_public_complement_categories.sql");
@@ -15,7 +15,7 @@ const quantityMigration = read("supabase/sql/134_modifier_quantity_selection.sql
 const cartBar = read("src/features/cart/public-cart-bar.tsx");
 const cartBarService = read("src/server/cart/public-cart-summary-service.ts");
 const cartReplace = read("supabase/sql/138_public_cart_atomic_item_replace.sql");
-const checkoutPage = read("src/app/m/[slug]/checkout/page.tsx");
+const checkoutPage = read("src/app/m/[slug]/checkout/page.tsx") + read("src/features/checkout/express-checkout-form.tsx") + read("src/features/checkout/express-actions.ts");  // Checkout Expresso: página + formulário único + ação
 const orderPage = read("src/app/m/[slug]/pedido/[id]/page.tsx");
 const orderTrackingCss = read("src/app/m/[slug]/pedido/[id]/order-tracking.module.css");
 const workflow = read(".github/workflows/ci.yml");

@@ -31,7 +31,7 @@ describe("customer recognition token", () => {
 describe("[324] privacy and persistence contracts", () => {
   const migration = read("supabase/sql/91_customer_recognition.sql");
   const checkout = read("src/server/checkout/checkout-service.ts");
-  const page = read("src/app/m/[slug]/checkout/page.tsx");
+  const page = read("src/app/m/[slug]/checkout/page.tsx") + read("src/features/checkout/express-checkout-form.tsx") + read("src/features/checkout/express-actions.ts");  // Checkout Expresso: página + formulário único + ação
   const orderAction = read("src/features/orders/actions.ts");
   const recognition = read("src/server/customers/recognition-service.ts");
 
@@ -55,8 +55,7 @@ describe("[324] privacy and persistence contracts", () => {
     expect(checkout).toContain("CustomerRecognitionService.resolve");
     expect(checkout).toContain("recognized.customerId !== session.customer_id");
     expect(checkout).toContain("Por segurança, informe o endereço novamente neste dispositivo");
-    expect(page).toContain("fulfillmentComplete && identityComplete && deliverySelected");
-    expect(page).toContain("recognizedForSession && recognizedCustomer && recognizedCustomer.addresses.length > 0");
+    expect(page).toContain("recognizedForSession && recognizedCustomer ? recognizedCustomer.addresses : []");
     expect(page).toContain("recognizedCustomer && !recognizedForSession");
     expect(page).toContain("Por segurança, confirme o endereço novamente para este WhatsApp");
   });
@@ -64,10 +63,10 @@ describe("[324] privacy and persistence contracts", () => {
   it("reuses saved addresses through the canonical server-side delivery quote path", () => {
     expect(checkout).toContain("return this.saveAddress(storeSlug, token");
     expect(checkout).toContain("DeliveryQuoteService.quote");
-    expect(page).toContain("useSavedCheckoutAddressAction");
-    expect(page).toContain("recognizedForSession && recognizedCustomer && recognizedCustomer.addresses.length > 0");
-    expect(page).toContain("addressIndex");
-    expect(page).toContain("Usar este endereço");
+    expect(page).toContain("applyRecognizedAddress.call(CheckoutService, storeSlug, token, recognitionToken, Number(savedIndex))");
+    expect(page).toContain("recognizedForSession && recognizedCustomer ? recognizedCustomer.addresses : []");
+    expect(page).toContain('name="savedAddressIndex"');
+    expect(page).toContain("Outro endereço");
   });
 
   it("issues recognition only after order creation using an HttpOnly store-scoped cookie", () => {

@@ -22,10 +22,10 @@ export function CashChangeFields({ defaultChangeFor = "", inputClassName, fieldC
     <span>Precisa de troco?</span>
     <div className={choicesClassName} role="radiogroup" aria-label="Precisa de troco?">
       <label className={classes(choiceClassName, !needsChange && selectedClassName)}>
-        <span><input type="radio" name="needsChange" value="no" checked={!needsChange} onChange={() => setNeedsChange(false)} /> <strong>Não</strong></span>
+        <span><input type="radio" name="needsChange" value="no" checked={!needsChange} onChange={() => setNeedsChange(false)} /> <strong>Não preciso de troco</strong></span>
       </label>
       <label className={classes(choiceClassName, needsChange && selectedClassName)}>
-        <span><input type="radio" name="needsChange" value="yes" checked={needsChange} onChange={() => setNeedsChange(true)} /> <strong>Sim</strong></span>
+        <span><input type="radio" name="needsChange" value="yes" checked={needsChange} onChange={() => setNeedsChange(true)} /> <strong>Preciso de troco</strong></span>
       </label>
     </div>
     {needsChange ? <label className={fieldClassName}><span>Troco para quanto?</span><input className={inputClassName} name="changeFor" inputMode="decimal" defaultValue={defaultChangeFor} placeholder="Ex.: 100,00" required /></label> : <input type="hidden" name="changeFor" value="" />}

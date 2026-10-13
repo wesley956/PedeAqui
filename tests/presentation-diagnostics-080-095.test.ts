@@ -14,7 +14,7 @@ describe("[PA-DIAG-080..090] desempenho e resposta percebida", () => {
   const loading = read("src/app/(app)/loading.tsx");
   const menuCss = read("src/features/menu/menu-browser.module.css");
   const productCard = read("src/features/menu/public-product-card.tsx");
-  const product = read("src/app/m/[slug]/produto/[id]/page.tsx");
+  const product = (read("src/app/m/[slug]/produto/[id]/page.tsx") + read("src/features/menu/product-detail.tsx"));
 
   it("remove consultas sem uso e deduplica leituras repetidas no mesmo request", () => {
     expect(admin).toContain("static async loadCommercial()");

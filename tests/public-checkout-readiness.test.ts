@@ -6,7 +6,7 @@ import { parseMoneyToCents } from "@/server/catalog/money";
 
 const checkoutService = readFileSync("src/server/checkout/checkout-service.ts", "utf8");
 const checkoutActions = readFileSync("src/features/checkout/actions.ts", "utf8");
-const checkoutPage = readFileSync("src/app/m/[slug]/checkout/page.tsx", "utf8");
+const checkoutPage = readFileSync("src/app/m/[slug]/checkout/page.tsx", "utf8") + readFileSync("src/features/checkout/express-checkout-form.tsx", "utf8") + readFileSync("src/features/checkout/express-actions.ts", "utf8");  // Checkout Expresso: página + formulário único + ação
 const cartActions = readFileSync("src/features/cart/actions.ts", "utf8");
 const deliveryPage = readFileSync("src/app/(app)/configuracoes/entrega/page.tsx", "utf8");
 

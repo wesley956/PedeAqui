@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { checkoutAddressSchema } from "@/server/checkout/schemas";
 
 const read = (path: string) => readFileSync(path, "utf8");
-const page = read("src/app/m/[slug]/checkout/page.tsx");
+const page = read("src/app/m/[slug]/checkout/page.tsx") + read("src/features/checkout/express-checkout-form.tsx") + read("src/features/checkout/express-actions.ts");  // Checkout Expresso: página + formulário único + ação
 const neighborhood = read("src/features/checkout/neighborhood-select.tsx");
 const checkoutService = read("src/server/checkout/checkout-service.ts");
 const benefitActions = read("src/features/checkout/benefit-actions.ts");
@@ -12,17 +12,17 @@ const orderService = read("src/server/orders/order-service.ts");
 
 describe("PA-PUBLIC-UX-011 / #798 checkout simplification", () => {
   it("keeps identity before delivery address and payment after the address", () => {
-    const fulfillmentAt = page.indexOf('title="Como vai receber?"');
-    const identityAt = page.indexOf('title="Seus dados"');
-    const addressAt = page.indexOf('title="Onde entregar?"');
-    const paymentAt = page.indexOf('title="Pagamento"');
-    const confirmationAt = page.indexOf("Revisar e confirmar");
+    const fulfillmentAt = page.indexOf('block("receber", "Como receber"');
+    const identityAt = page.indexOf('block("dados", "Seus dados"');
+    const addressAt = page.indexOf('block("endereco", "Endereço"');
+    const paymentAt = page.indexOf('block("pagamento", "Pagamento"');
+    const confirmationAt = page.indexOf("<ConfirmButton");
     expect(fulfillmentAt).toBeGreaterThan(-1);
     expect(identityAt).toBeGreaterThan(fulfillmentAt);
     expect(addressAt).toBeGreaterThan(identityAt);
     expect(paymentAt).toBeGreaterThan(addressAt);
     expect(confirmationAt).toBeGreaterThan(paymentAt);
-    expect(page).toContain("fulfillmentComplete && identityComplete && deliverySelected");
+    expect(page).toContain('{mode === "delivery" ? block("endereco"');
   });
 
   it("does not dump neighborhoods before the customer searches", () => {
@@ -52,11 +52,13 @@ describe("PA-PUBLIC-UX-011 / #798 checkout simplification", () => {
       state: "SP",
     });
     expect(parsedWithoutCep.success).toBe(true);
-    const referenceAt = page.indexOf('label="Referência (opcional)"');
+    // Protótipo Expresso: CEP (opcional) e número lado a lado, depois rua e complemento.
     const cepAt = page.indexOf('label="CEP (opcional)"');
-    const continueAt = page.indexOf("<ActionButton>Continuar</ActionButton>", cepAt);
-    expect(cepAt).toBeGreaterThan(referenceAt);
-    expect(continueAt).toBeGreaterThan(cepAt);
+    const streetAt = page.indexOf('label="Rua"');
+    const complementAt = page.indexOf('label="Complemento e referência"');
+    expect(cepAt).toBeGreaterThan(-1);
+    expect(streetAt).toBeGreaterThan(cepAt);
+    expect(complementAt).toBeGreaterThan(streetAt);
     expect(checkoutService).toContain("postalCode: session.address_postal_code ?? null");
   });
 
@@ -64,11 +66,11 @@ describe("PA-PUBLIC-UX-011 / #798 checkout simplification", () => {
     expect(page).not.toContain("Salvar dados");
     expect(page).not.toContain("Salvar endereço");
     expect(page).not.toContain("Salvar pagamento");
-    expect(page.match(/<ActionButton>Continuar<\/ActionButton>/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
+    expect(page).not.toContain("<ActionButton>Continuar</ActionButton>");
   });
 
   it("hides growth benefits when the module is unavailable and guards the actions server-side", () => {
-    expect(page).toContain("paymentComplete && growthEnabled && benefits");
+    expect(page).toContain("benefits={growthEnabled && benefits ? {");
     expect(checkoutService).toContain('StoreModuleStateService.isEnabled(cartResult.store.organization_id, cartResult.store.id, "growth")');
     expect(benefitActions).toContain('StoreModuleStateService.isEnabled(');
     expect(benefitActions).toContain('"growth"');
@@ -85,7 +87,7 @@ describe("PA-PUBLIC-UX-011 / #798 checkout simplification", () => {
   });
 
   it("keeps saved addresses behind trusted recognition instead of phone lookup", () => {
-    expect(page).toContain("recognizedForSession && recognizedCustomer && recognizedCustomer.addresses.length > 0");
+    expect(page).toContain("recognizedForSession && recognizedCustomer ? recognizedCustomer.addresses : []");
     expect(page).toContain("recognizedCustomer && !recognizedForSession");
     expect(checkoutService).toContain("recognized.customerId !== session.customer_id");
   });

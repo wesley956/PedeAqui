@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 const migration = readFileSync("supabase/sql/138_public_cart_atomic_item_replace.sql", "utf8");
 const service = readFileSync("src/server/cart/cart-item-edit-service.ts", "utf8");
 const actions = readFileSync("src/features/cart/actions.ts", "utf8");
-const productPage = readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8");
+const productPage = (readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8") + readFileSync("src/features/menu/product-detail.tsx", "utf8"));
 const selector = readFileSync("src/features/menu/modifier-group-selector.tsx", "utf8");
 const cartPage = readFileSync("src/app/m/[slug]/carrinho/page.tsx", "utf8");
 

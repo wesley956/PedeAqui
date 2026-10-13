@@ -44,8 +44,12 @@ function safeUuid(value: FormDataEntryValue | null) {
   return value;
 }
 
-/** Ações rápidas do cardápio (+ e −) voltam para o próprio item no cardápio, sem abrir o carrinho. */
+/**
+ * Ações rápidas (+ e −) voltam para onde o cliente estava: o próprio item no cardápio
+ * ou a tela única do checkout Expresso, sem abrir o carrinho.
+ */
 function menuReturnPath(formData: FormData, storeSlug: string) {
+  if (formData.get("returnTo") === "checkout") return `/m/${storeSlug}/checkout`;
   if (formData.get("returnTo") !== "menu") return null;
   const productId = safeUuid(formData.get("productId"));
   return `/m/${storeSlug}${productId ? `#produto-${productId}` : ""}`;
@@ -91,6 +95,7 @@ export async function addToCartAction(formData: FormData) {
       logger.error("public_cart_edit_failed", { errorType: error instanceof Error ? error.name : "unknown" });
       redirect(`/m/${values.storeSlug}/produto/${values.productId}?editar=${editItemId}&erro=cart_edit_failed`);
     }
+    if (formData.get("returnTo") === "checkout") redirect(`/m/${values.storeSlug}/checkout`);
     redirect(`/m/${values.storeSlug}/carrinho`);
   }
 

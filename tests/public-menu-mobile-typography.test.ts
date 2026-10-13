@@ -6,7 +6,7 @@ const publicBrandCss = readFileSync("src/features/menu/public-brand.module.css",
 const menuBrowserCss = readFileSync("src/features/menu/menu-browser.module.css", "utf8");
 const modifierCss = readFileSync("src/features/menu/modifier-group-selector.module.css", "utf8");
 const productCss = readFileSync("src/app/m/[slug]/produto/[id]/public-product.module.css", "utf8");
-const productPage = readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8");
+const productPage = (readFileSync("src/app/m/[slug]/produto/[id]/page.tsx", "utf8") + readFileSync("src/features/menu/product-detail.tsx", "utf8"));
 const productCard = readFileSync("src/features/menu/public-product-card.tsx", "utf8");
 const complements = readFileSync("src/features/menu/complement-category-section.tsx", "utf8");
 
@@ -33,7 +33,7 @@ describe("public menu mobile visual hierarchy", () => {
 
   it("uses a compact purchase row with a direct action and lazy images", () => {
     expect(menuBrowserCss).toContain(".product{display:grid;grid-template-columns:auto minmax(0,1fr) auto");
-    expect(menuBrowserCss).toContain(".image,.imageFallback{width:72px;height:72px}");
+    expect(menuBrowserCss).toContain(".image,.imageFallback{width:56px;height:56px}");
     expect(menuBrowserCss).toContain(".addButton{width:44px;height:44px");
     expect(productCard).toContain('width={88} height={88} loading="lazy" decoding="async"');
   });

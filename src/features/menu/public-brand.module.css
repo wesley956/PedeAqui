@@ -1,14 +1,15 @@
 .restaurantBrand{display:flex;gap:var(--space-3);align-items:center;min-width:0}
-.logo,.fallback{width:74px;height:74px;flex:0 0 74px;border-radius:var(--radius-lg);border:var(--border-width) solid var(--border-default);object-fit:cover}
+.logo,.fallback{width:56px;height:56px;flex:0 0 56px;border-radius:var(--radius-lg);border:var(--border-width) solid var(--border-default);object-fit:cover}
 .fallback{display:grid;place-items:center;background:var(--restaurant-primary);color:var(--restaurant-on-primary);font-size:var(--font-size-2xl);font-weight:var(--font-weight-bold)}
 .copy{min-width:0;display:grid;gap:var(--space-1)}
-.name{margin:0;font-size:var(--font-size-xl);overflow-wrap:anywhere;line-height:var(--line-height-snug)}
+.name{margin:0;font-size:var(--font-size-lg);font-weight:var(--font-weight-bold);overflow-wrap:anywhere;line-height:var(--line-height-snug)}
 .platformSignature{display:flex;justify-content:center;align-items:center;gap:var(--space-2);flex-wrap:wrap;color:var(--text-secondary);font-size:var(--font-size-xs);margin-top:var(--space-6)}
 @media(max-width:640px){
   .restaurantBrand{gap:10px}
-  .logo,.fallback{width:56px;height:56px;flex-basis:56px;border-radius:var(--radius-lg)}
+  .logo,.fallback{width:48px;height:48px;flex-basis:48px;border-radius:var(--radius-lg)}
   .fallback{font-size:var(--font-size-lg)}
   .copy{gap:3px}
   .name{font-size:var(--font-size-lg);font-weight:var(--font-weight-bold)}
   .platformSignature{font-size:var(--font-size-xs)}
-}
+}/* Expresso: sem logo, as iniciais aparecem na cor da loja sobre fundo claro (como no protótipo). */
+.fallback{background:var(--surface-1);color:var(--restaurant-primary);border:var(--border-width) solid var(--border-default)}

@@ -7,7 +7,7 @@ const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 const viewportCss = read("src/app/m/[slug]/checkout/checkout-viewport.css");
 const checkoutCss = read("src/app/m/[slug]/checkout/checkout.module.css");
 const checkoutLayout = read("src/app/m/[slug]/checkout/layout.tsx");
-const checkoutPage = read("src/app/m/[slug]/checkout/page.tsx");
+const checkoutPage = read("src/app/m/[slug]/checkout/page.tsx") + read("src/features/checkout/express-checkout-form.tsx");
 const browserHomologation = read("scripts/browser-homologation.mjs");
 
 describe("FLOW-06 mobile checkout viewport", () => {
@@ -28,10 +28,11 @@ describe("FLOW-06 mobile checkout viewport", () => {
     expect(checkoutLayout).not.toContain("maximumScale");
   });
 
-  it("keeps safe-area padding and the final CTA in the grid footer", () => {
+  it("keeps safe-area padding and the final CTA in a footer pinned to the scroll area", () => {
     expect(viewportCss).toContain("env(safe-area-inset-bottom)");
-    expect(checkoutPage).toContain("<footer className={styles.footer}>");
-    expect(checkoutPage).toContain("<SubmitOrderButton");
+    expect(checkoutPage).toContain("<footer className={styles.expressFooter}>");
+    expect(checkoutCss).toContain(".expressFooter{position:sticky;bottom:0");
+    expect(checkoutPage).toContain("<ConfirmButton");
     expect(checkoutPage).toContain("Confirmar pedido");
     expect(checkoutCss).toContain("grid-template-rows:auto auto minmax(0,1fr) auto");
     expect(checkoutCss).toContain(".stageViewport{min-height:0;overflow-y:auto");

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(path, "utf8");
-const checkoutPage = read("src/app/m/[slug]/checkout/page.tsx");
+const checkoutPage = read("src/app/m/[slug]/checkout/page.tsx") + read("src/features/checkout/express-checkout-form.tsx") + read("src/features/checkout/express-actions.ts");  // Checkout Expresso: página + formulário único + ação
 const checkoutService = read("src/server/checkout/checkout-service.ts");
 const publicOrderPage = read("src/app/m/[slug]/pedido/[id]/page.tsx");
 const manager = read("src/features/orders/order-manager-board.tsx");
