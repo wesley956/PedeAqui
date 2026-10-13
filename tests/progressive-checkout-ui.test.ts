@@ -60,7 +60,7 @@ describe("progressive checkout UI", () => {
   it("restores the active stage from persisted completion and targeted errors", () => {
     expect(page).toContain("const firstIncomplete: CheckoutStageId");
     expect(page).toContain("const errorStage:");
-    expect(page).toContain('pix_email_required: "identity"');
+    expect(page).toContain('pix_email_required: "payment"');
     expect(page).toContain('neighborhood_not_served: "address"');
     expect(page).toContain("const validErrorStage: CheckoutStageId | null");
     expect(page).toContain("requestedStage && requestedAllowed");

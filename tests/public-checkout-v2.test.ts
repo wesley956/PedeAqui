@@ -29,10 +29,10 @@ describe("refined public checkout", () => {
     expect(service).toContain("identity_required");
   });
 
-  it("keeps email secondary but reopens identity when Pix requires it", () => {
+  it("keeps email secondary and opens payment when Pix requires it", () => {
     expect(page).toContain("styles.inlineOptional");
     expect(page).toContain('query.erro === "pix_email_required"');
-    expect(page).toContain('pix_email_required: "identity"');
+    expect(page).toContain('pix_email_required: "payment"');
     expect(service).toContain('values.method === "pix" && !session?.customer_email');
     expect(service).toContain("pix_email_required");
   });

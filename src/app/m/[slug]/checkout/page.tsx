@@ -48,7 +48,7 @@ const errorMessages: Record<string, string> = {
   pickup_disabled: "Retirada não está disponível nesta loja.", delivery_disabled: "Entrega não está disponível nesta loja.",
   delivery_not_selected: "Escolha entrega antes de informar o endereço.", delivery_minimum: "O pedido ainda não atingiu o mínimo exigido para este bairro.",
   neighborhood_not_served: "Selecione um bairro atendido pela loja.", payment_unavailable: "A forma de pagamento selecionada não está disponível.",
-  invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.", pix_email_required: "Informe seu e-mail em Seus dados para gerar o Pix online.",
+  invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.", pix_email_required: "Informe seu e-mail em Pagamento para gerar o Pix online.", invalid_payment_email: "Informe um e-mail válido para o Pix.",
   checkout_not_ready: "Não foi possível confirmar o pedido. Confira o motivo abaixo e faça o ajuste necessário.", benefit_invalid: "Não foi possível aplicar esses benefícios. Confira o cupom e tente novamente.",
   benefit_unavailable: "Benefícios não estão disponíveis nesta loja.", saved_address_invalid: "Este endereço salvo não está mais disponível.",
   recognition_required: "Por segurança, informe o endereço novamente neste dispositivo.", identity_required: "Confirme seu nome e WhatsApp antes de reutilizar um endereço.",
@@ -57,7 +57,7 @@ const errorMessages: Record<string, string> = {
 type CheckoutStageId = "fulfillment" | "identity" | "address" | "payment" | "review";
 const errorStage: Partial<Record<string, CheckoutStageId>> = {
   invalid_fulfillment: "fulfillment", pickup_disabled: "fulfillment", delivery_disabled: "fulfillment", invalid_phone: "identity", invalid_identity: "identity",
-  pix_email_required: "identity", invalid_address: "address", delivery_not_selected: "address", delivery_minimum: "address", neighborhood_not_served: "address",
+  pix_email_required: "payment", invalid_payment_email: "payment", invalid_address: "address", delivery_not_selected: "address", delivery_minimum: "address", neighborhood_not_served: "address",
   saved_address_invalid: "address", recognition_required: "address", identity_required: "address", invalid_payment: "payment", payment_unavailable: "payment",
   invalid_change: "payment", invalid_schedule: "review", checkout_not_ready: "review", benefit_invalid: "review", benefit_unavailable: "review",
 };
@@ -203,7 +203,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                 <input type="hidden" name="storeSlug" value={slug} />
                 <Field label="WhatsApp" name="phone" type="tel" inputMode="tel" autoComplete="tel" defaultValue={identityPhone ?? ""} placeholder="(19) 99999-9999" required />
                 <Field label="Nome" name="name" autoComplete="name" defaultValue={identityName} required />
-                <details className={styles.inlineOptional} open={Boolean(identityEmail) || query.erro === "pix_email_required"}><summary>E-mail {query.erro === "pix_email_required" ? "· necessário para o Pix selecionado" : "· opcional"}</summary><div className={styles.inlineOptionalBody}><Field label="E-mail" name="email" type="email" autoComplete="email" defaultValue={identityEmail ?? ""} required={query.erro === "pix_email_required"} /></div></details>
+                <details className={styles.inlineOptional} open={Boolean(identityEmail)}><summary>E-mail · opcional</summary><div className={styles.inlineOptionalBody}><Field label="E-mail" name="email" type="email" autoComplete="email" defaultValue={identityEmail ?? ""} /></div></details>
                 <ActionButton>Continuar</ActionButton>
               </form>
             </CheckoutStage>
@@ -253,7 +253,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
                       label: item.method === "custom" ? item.label ?? paymentMethodLabels.custom : paymentMethodLabels[item.method],
                       help: paymentMethodHelp[item.method],
                     }))}
-                    defaultValue={selectedPaymentValue}
+                    defaultValue={(query.erro === "pix_email_required" || query.erro === "invalid_payment_email") && enabledMethods.some((item) => item.method === "pix") ? "pix" : selectedPaymentValue}
                     fulfillmentType={session?.fulfillment_type ?? null}
                     pixEmail={identityEmail}
                     defaultChangeFor={changeForValue}

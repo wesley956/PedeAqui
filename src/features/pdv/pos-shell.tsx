@@ -243,7 +243,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
           </div>
         </section>
       </div>
-      <footer className={styles.checkoutBar} aria-label="Pagamento e finalização da venda" data-expanded={checkoutExpanded ? "true" : "false"} data-hides-guide>
+      <footer className={styles.checkoutBar} aria-label="Pagamento e finalização da venda" data-expanded={checkoutExpanded ? "true" : "false"} data-has-cash={showCashChange ? "true" : undefined} data-hides-guide>
         <button type="button" className={styles.checkoutToggle} aria-expanded={checkoutExpanded} aria-controls="pdv-checkout-details" onClick={() => setCheckoutExpanded((value) => !value)}>
           <span className={styles.mutedSmall}>Pagamento</span>
           <strong>{singlePayment ? paymentMethods.find((method) => method.method === singlePayment.method)?.label ?? "Escolher" : `${payments.length} parcelas`}</strong>
