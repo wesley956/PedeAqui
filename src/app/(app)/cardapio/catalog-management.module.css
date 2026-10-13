@@ -574,3 +574,10 @@
 .editBody{min-width:0}.editBody button,.optionRow button{max-width:100%;min-height:44px}.editBody small{font-size:13px}
 .formGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:640px){.createGrid,.formGrid{grid-template-columns:minmax(0,1fr)}.createDetails,.managementCard{padding:12px}.editBody input,.editBody select,.editBody textarea{font-size:16px}.managementActions{justify-content:flex-end}}
+
+.promotionProduct{gap:8px}.promotionProductChoice{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}.promotionProductPrice{flex:0 1 220px;min-width:0}.promotionProduct:has(input[name="productId"]:checked){border-color:var(--accent)}
+.dayChip span{min-height:44px}.promotionScheduleRow{padding:12px 0;border-top:1px solid var(--border-default)}.promotionPriceBlock strong{color:var(--text-primary);font-size:14px;font-weight:600}.promotionCard .managementActions>span{font-size:13px}
+.suggestionSourceForm{display:grid;gap:8px;max-width:520px}.suggestionSourceControls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.suggestionSourceControls select{min-width:0}
+.suggestionRuleRow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,2fr) minmax(100px,140px);gap:12px;align-items:end;padding:12px 0;border-top:1px solid var(--border-default)}
+.suggestionRuleRow>*,.suggestionRow>*{min-width:0}.sectionCopy h2{margin:0;font-size:18px}.sectionCopy{display:grid;gap:8px}.suggestionRuleRow input{max-width:100%}
+@media(max-width:640px){.suggestionRuleRow{grid-template-columns:minmax(0,1fr)}.suggestionSourceControls{grid-template-columns:minmax(0,1fr)}.promotionProductPrice{flex-basis:100%}.suggestionRuleRow input,.suggestionSourceControls select{font-size:16px}.promotionFormActions button{width:100%}}

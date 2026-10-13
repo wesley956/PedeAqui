@@ -61,7 +61,7 @@ describe("public complementary categories", () => {
   it("keeps global settings as a compatibility fallback when a source has no rule", () => {
     expect(service).toContain("source-specific rules win");
     expect(service).toContain('admin.from("store_complement_categories")');
-    expect(settingsPage).toContain("Sugestões globais (fallback)");
+    expect(settingsPage).toContain("Sugestões gerais");
     expect(settingsPage).toContain("regra específica");
   });
 
