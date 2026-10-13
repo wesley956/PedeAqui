@@ -77,7 +77,7 @@ export function OrderWorkflowSettingsForm({ mode: initialMode, custom }: Props) 
 
   return <form action={saveOrderWorkflowSettingsAction} className={styles.form}>
     <fieldset className={styles.modeGrid}>
-      <legend className="sr-only">Escolha o modo do fluxo de pedidos</legend>
+      <legend className={styles.legend}>Escolha o modo do fluxo de pedidos</legend>
       {modes.map((option) => <label key={option.value} className={styles.modeCard} data-selected={mode === option.value || undefined}>
         <input type="radio" name="mode" value={option.value} checked={mode === option.value} onChange={() => setMode(option.value)} />
         <span className={styles.modeText}><strong>{option.title}</strong><small>{option.description}</small><em>{option.preview}</em></span>

@@ -1,3 +1,5 @@
+import { FormDisclosure } from "@/components/ui/form-disclosure";
+import settingsStyles from "../settings-form.module.css";
 import Link from "next/link";
 import { AgentReconnectInstaller, AgentTokenCreator } from "@/features/printing/agent-token-creator";
 import {
@@ -281,7 +283,8 @@ export default async function PrintingSettingsPage({
           <div className={styles.grid}>
             <article className={styles.list}>
               <h2>Adicionar impressora manualmente</h2>
-              <form action={createPrinterAction} className={styles.form}>
+              <FormDisclosure summary="Adicionar impressora manualmente" className={settingsStyles.details}>
+              <form aria-label="Adicionar impressora manualmente" action={createPrinterAction} className={styles.form}>
                 <Field name="name" label="Nome para identificar" placeholder="Ex.: Impressora da cozinha" required />
                 <label className={styles.field}>
                   <span>Conexão</span>
@@ -307,12 +310,14 @@ export default async function PrintingSettingsPage({
                 </label>
                 <button type="submit" className={`${styles.primary} ${styles.wide}`}>Adicionar manualmente</button>
               </form>
+              </FormDisclosure>
             </article>
 
             <article className={styles.list}>
               <h2>Locais de impressão</h2>
               <p className={styles.hint}>Ex.: Cozinha, Chapa, Balcão ou Expedição.</p>
-              <form action={createPrintStationAction} className={styles.form}>
+              <FormDisclosure summary="Adicionar local de impressão" className={settingsStyles.details}>
+              <form aria-label="Adicionar local de impressão" action={createPrintStationAction} className={styles.form}>
                 <Field name="name" label="Nome" placeholder="Ex.: Cozinha" required />
                 <Field name="code" label="Identificador" placeholder="cozinha" required pattern="[a-z0-9][a-z0-9_-]{1,39}" />
                 <label className={styles.field}>
@@ -321,6 +326,7 @@ export default async function PrintingSettingsPage({
                 </label>
                 <button type="submit" className={styles.primary}>Criar local</button>
               </form>
+              </FormDisclosure>
               {config.stations.map((station) => <div className={styles.item} key={station.id}><strong>{station.name}</strong><span className={styles.hint}>{stationKindLabels[station.kind] ?? "Operação"} · {station.active ? "ativo" : "inativo"}</span></div>)}
             </article>
           </div>
@@ -362,7 +368,7 @@ export default async function PrintingSettingsPage({
                 <div className={styles.actions}>
                   {job.status === "failed" ? <form action={retryPrintJobAction}><input type="hidden" name="jobId" value={job.id} /><button className={styles.secondary}>Tentar novamente</button></form> : null}
                   {job.status === "pending" || job.status === "failed" ? <form action={cancelPrintJobAction}><input type="hidden" name="jobId" value={job.id} /><button className={styles.danger}>Cancelar</button></form> : null}
-                  <form action={reprintJobAction} className={styles.reprintForm}><input type="hidden" name="jobId" value={job.id} /><input name="reason" required minLength={3} maxLength={500} placeholder="Motivo" className={styles.input} /><button className={styles.secondary}>Reimprimir</button></form>
+                  <form action={reprintJobAction} className={styles.reprintForm}><input type="hidden" name="jobId" value={job.id} /><input aria-label={`Motivo da reimpressão ${job.display_number ? `do pedido #${job.display_number}` : "avulsa"}`} name="reason" required minLength={3} maxLength={500} placeholder="Motivo" className={styles.input} /><button className={styles.secondary}>Reimprimir</button></form>
                 </div>
               </div>
             ))}

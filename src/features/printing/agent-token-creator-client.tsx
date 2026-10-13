@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
+import { Input } from "@/components/ui/form-controls";
 import { useRouter } from "next/navigation";
 import {
   createPrintAgentAction,
@@ -153,11 +154,11 @@ function InstallerCard({ state }: { state: AgentCreationState }) {
       <strong>Computador preparado: {state.name}</strong>
       <span className="muted" style={{ fontSize: 13 }}>Baixe e execute o instalador abaixo neste computador. Ele conecta a impressora, ativa recuperação automática, atualização automática e reinicia o agente sozinho se ele parar.</span>
       <button type="button" onClick={() => downloadAssistedInstaller(state.token!)} style={buttonStyle}>Baixar instalador assistido (Windows)</button>
-      <span className="muted" style={{ fontSize: 12 }}>O Windows pode pedir confirmação para executar o arquivo. Depois, volte para esta tela e atualize o status.</span>
+      <span className="muted" style={{ fontSize: 13 }}>O Windows pode pedir confirmação para executar o arquivo. Depois, volte para esta tela e atualize o status.</span>
       <details>
         <summary style={{ cursor: "pointer", fontWeight: 800 }}>Configuração manual</summary>
         <div style={{ display: "grid", gap: 6, marginTop: 8 }}>
-          <span className="muted" style={{ fontSize: 12 }}>Use esta chave somente se precisar configurar o aplicativo de impressão manualmente. Ela será mostrada uma única vez.</span>
+          <span className="muted" style={{ fontSize: 13 }}>Use esta chave somente se precisar configurar o aplicativo de impressão manualmente. Ela será mostrada uma única vez.</span>
           <code style={{ overflowWrap: "anywhere", userSelect: "all" }}>{state.token}</code>
         </div>
       </details>
@@ -166,13 +167,14 @@ function InstallerCard({ state }: { state: AgentCreationState }) {
 }
 
 export function AgentTokenCreatorClient({ intentSeed }: { intentSeed: string }) {
+  const nameId = useId();
   const [state, action, pending] = useActionState(createPrintAgentAction, initialState);
   const idempotencyKey = intentKey("print-agent-create", intentSeed, state.intentRevision);
   return (
     <div style={{ display: "grid", gap: 10 }}>
       <form action={action} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
-        <input name="name" required minLength={2} maxLength={100} placeholder="Ex.: Computador do caixa" style={inputStyle} />
+        <Input id={nameId} name="name" label="Nome do computador" required minLength={2} maxLength={100} placeholder="Ex.: Computador do caixa" />
         <button type="submit" disabled={pending} style={buttonStyle}>{pending ? "Preparando…" : "Conectar este computador"}</button>
       </form>
       {state.error ? <div style={{ color: "#f97066", fontSize: 13 }}>{state.error}</div> : null}
@@ -195,7 +197,7 @@ export function AgentReconnectInstallerClient({ agentId, upgrade = false, intent
           <button type="submit" disabled={pending} style={secondaryButtonStyle}>{pending ? "Preparando…" : upgrade ? "Atualizar proteção automática" : "Reinstalar conexão"}</button>
         </form>
       </div>
-      <span className="muted" style={{ fontSize: 12 }}>
+      <span className="muted" style={{ fontSize: 13 }}>
         {upgrade
           ? "Esta atualização é feita uma vez. Depois dela, o PedeAqui passa a recuperar travamentos e buscar novas versões do agente automaticamente."
           : "“Atualizar status” apenas consulta a situação atual. “Reinstalar conexão” gera uma nova chave e deve ser usado somente quando for necessário instalar ou reconectar este computador novamente."}
@@ -206,6 +208,5 @@ export function AgentReconnectInstallerClient({ agentId, upgrade = false, intent
   );
 }
 
-const inputStyle: React.CSSProperties = { minHeight: 42, flex: "1 1 220px", borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "9px 11px" };
-const buttonStyle: React.CSSProperties = { minHeight: 42, border: 0, borderRadius: 10, background: "var(--accent)", color: "#fff", fontWeight: 850, padding: "9px 13px", cursor: "pointer" };
-const secondaryButtonStyle: React.CSSProperties = { minHeight: 38, border: "1px solid var(--border)", borderRadius: 10, background: "var(--surface-2)", color: "var(--text)", fontWeight: 800, padding: "8px 11px", cursor: "pointer" };
+const buttonStyle: React.CSSProperties = { minHeight: 44, border: 0, borderRadius: 10, background: "var(--accent)", color: "#fff", fontWeight: 850, padding: "9px 13px", cursor: "pointer" };
+const secondaryButtonStyle: React.CSSProperties = { minHeight: 44, border: "1px solid var(--border)", borderRadius: 10, background: "var(--surface-2)", color: "var(--text)", fontWeight: 800, padding: "8px 11px", cursor: "pointer" };
