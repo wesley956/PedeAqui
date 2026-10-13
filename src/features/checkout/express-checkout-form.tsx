@@ -33,7 +33,6 @@ export type ExpressCheckoutProps = {
   neighborhoods: Array<{ id: string; neighborhoodName: string; city: string; state: string; feeCents: number; minimumOrderCents: number | null }>;
   storeCity: string;
   storeState: string;
-  pickupAddress: string;
   returningName: string | null;
   defaults: {
     fulfillment: "delivery" | "pickup" | null;
@@ -203,12 +202,15 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
             <Field label="Número" name="number" inputMode="numeric" defaultValue={defaults.number} placeholder="123" required />
           </div>
           <Field label="Rua" name="street" autoComplete="street-address" defaultValue={defaults.street} required />
-          {!props.useNeighborhoods ? <div className={styles.grid2}><Field label="Bairro" name="district" autoComplete="address-level3" defaultValue={defaults.district} required /><Field label="Cidade" name="city" autoComplete="address-level2" defaultValue={defaults.city || props.storeCity} required /><Field label="UF" name="state" autoComplete="address-level1" defaultValue={defaults.state || props.storeState} maxLength={2} required /></div> : null}
+          {!props.useNeighborhoods ? <>
+            <Field label="Bairro" name="district" autoComplete="address-level3" defaultValue={defaults.district} required />
+            <div className={styles.cityRow}><Field label="Cidade" name="city" autoComplete="address-level2" defaultValue={defaults.city || props.storeCity} required /><Field label="UF" name="state" autoComplete="address-level1" defaultValue={defaults.state || props.storeState} maxLength={2} required /></div>
+          </> : null}
           <Field label="Complemento e referência" name="complement" defaultValue={[defaults.complement, defaults.reference].filter(Boolean).join(" · ")} placeholder="Apto, bloco, portão azul…" />
           <input type="hidden" name="reference" value="" />
         </> : null}
         {totals.quotedDelivery ? <p className={styles.okBox}><strong>Entregamos aí</strong> · taxa {totals.deliveryFeeCents > 0 ? money(totals.deliveryFeeCents) : "grátis"} · {props.deliveryEta}</p> : null}
-      </>) : block("endereco", "Retirada", <p className={styles.infoBox}><strong>Retirada no balcão</strong><br />{props.pickupAddress}</p>)}
+      </>) : null}
 
       {block("pagamento", "Pagamento", props.paymentMethods.length === 0
         ? <p className={styles.errorText}>Este estabelecimento não tem uma forma de pagamento disponível no momento.</p>

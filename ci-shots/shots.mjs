@@ -14,7 +14,7 @@ const shot = async (name, opts = {}) => { await page.waitForTimeout(400); await 
 // ---------- protótipo, opção 3 ----------
 await page.goto("file://" + path.resolve("ci-shots/prototipo.html"));
 await page.addStyleTag({ content: ".topbar,.notes{display:none!important}.stage{padding:0!important;display:block!important}.phone{width:390px!important;height:844px!important;border-radius:0!important;padding:0!important;box-shadow:none!important}#app{border-radius:0!important}" });
-await page.click('#vtabs button[data-v="C"]');
+await page.evaluate(() => document.querySelector('#vtabs button[data-v="C"]').click());
 await shot("proto-1-menu");
 await page.evaluate(() => { const s = document.querySelector("#scroll"); if (s) s.scrollTop = 600; });
 await shot("proto-2-menu-rolado");

@@ -7,7 +7,7 @@ const css = fs.readFileSync("src/app/globals.css", "utf8") + "\n" + fs.readFileS
 
 const base: ExpressCheckoutProps = {
   slug: "santa-rita", canOrder: true, closedMessage: null, allowDelivery: true, allowPickup: true, deliveryEta: "25–45 min",
-  useNeighborhoods: false, neighborhoods: [], storeCity: "Campinas", storeState: "SP", pickupAddress: "Av. Francisco Glicério, 950 · Centro · Campinas", returningName: null,
+  useNeighborhoods: false, neighborhoods: [], storeCity: "Campinas", storeState: "SP", returningName: null,
   defaults: { fulfillment: null, name: "", phone: "", email: "", neighborhoodId: "", postalCode: "", street: "", number: "", complement: "", district: "", city: "", state: "", reference: "", paymentValue: null, changeFor: "", scheduledLocal: "" },
   items: [
     { id: "i1", productId: "p1", name: "Pizza Calabresa", imageUrl: null, quantity: 1, lineTotalCents: 5490, details: "Grande · Borda de catupiry", editable: true },

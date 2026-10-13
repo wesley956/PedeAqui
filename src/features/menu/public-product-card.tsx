@@ -74,7 +74,7 @@ export function PublicProductCard({ product, storeSlug, showImage, canOrder, opt
     action = <Link href={href} scroll={false} className={styles.addButton} aria-label={`Escolher opções de ${product.name}`}><PlusIcon /></Link>;
   }
 
-  return <article id={`produto-${product.id}`} className={`${styles.product} ${unavailable ? styles.productUnavailable : ""}`}>
+  return <article id={`produto-${product.id}`} className={`${styles.product} ${showImage ? "" : styles.productTextOnly} ${unavailable ? styles.productUnavailable : ""}`}>
     {showImage ? <Link href={href} scroll={false} className={styles.productMedia} tabIndex={-1} aria-hidden>
       {product.image_url
         // Catalog uploads are pre-sized WebP files; raw rendering preserves arbitrary legacy HTTPS URLs.

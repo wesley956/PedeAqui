@@ -14,7 +14,7 @@ const orderAction = read("src/features/orders/actions.ts");
 describe("[980] persistent shell and navigation contracts", () => {
   it("adapts one screen to delivery and pickup (address only for delivery)", () => {
     expect(page).toContain('{mode === "delivery" ? block("endereco"');
-    expect(page).toContain('block("endereco", "Retirada"');
+    expect(page).toContain('</>) : null}');
     expect(page).not.toContain("stageOrder");
   });
 

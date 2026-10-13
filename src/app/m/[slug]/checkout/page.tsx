@@ -104,7 +104,6 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
   const blockForError = query.erro ? errorBlock[query.erro] ?? null : null;
   const formError = blockForError && displayErrorMessage ? { block: blockForError, message: displayErrorMessage } : null;
   const topError = formError ? null : displayErrorMessage;
-  const pickupAddress = [[menu.store.street, menu.store.number].filter(Boolean).join(", "), menu.store.district, menu.store.city].filter(Boolean).join(" · ") || menu.store.name;
   const returningName = recognizedCustomer?.customer.name ? recognizedCustomer.customer.name.trim().split(/\s+/)[0] ?? null : null;
 
   return (
@@ -134,7 +133,6 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
             neighborhoods={deliveryNeighborhoods}
             storeCity={menu.store.city ?? ""}
             storeState={menu.store.state ?? ""}
-            pickupAddress={pickupAddress}
             returningName={returningName}
             defaults={{
               fulfillment: session?.fulfillment_type === "delivery" || session?.fulfillment_type === "pickup" ? session.fulfillment_type : null,
