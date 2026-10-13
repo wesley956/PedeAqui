@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getAccessContext } from "@/server/access/context";
 import { ResourcesClient, type ResourceItem } from "./resources-client";
 import styles from "./resources.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 const errorMessages: Record<string, string> = {
   conflict: "A configuração mudou em outra aba. Confira novamente antes de confirmar.",
@@ -81,10 +82,7 @@ export default async function ModulesSettingsPage({ searchParams }: { searchPara
       : params.success ? "Configuração atualizada com sucesso." : null;
 
   return <section className={styles.page}>
-    <header className={styles.header}>
-      <div><h1>Recursos do PedeAqui</h1><p>Use os recursos incluídos no seu plano e solicite módulos extras quando precisar.</p></div>
-      <Link href="/configuracoes" className={styles.back}>← Voltar</Link>
-    </header>
+    <PageHeader title="Recursos do PedeAqui" description="Use os recursos incluídos no seu plano e solicite módulos extras quando precisar." actions={<Link href="/configuracoes" className={styles.back}>← Voltar</Link>} />
 
     <div className={styles.notice}><strong>Regra comercial:</strong> recursos fora do plano não podem ser ativados diretamente. Quando houver preço adicional, você verá o valor e poderá solicitar a ativação. Nada é cobrado ou liberado sem aprovação.</div>
     {params.error ? <div className={styles.error} role="alert">{errorMessages[params.error] ?? errorMessages.failed}</div> : null}

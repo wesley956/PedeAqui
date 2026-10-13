@@ -7,6 +7,7 @@ import { hourlyBarPercent, maxHourlySales, percentageDelta } from "@/server/dash
 import { OnboardingReadinessService } from "@/server/onboarding/onboarding-readiness-service";
 import styles from "./dashboard.module.css";
 import { NavigationIcon } from "@/components/ui/navigation-icon";
+import { PageHeader } from "@/components/ui/page-header";
 
 type MetricTone = "positive" | "negative" | "attention" | "neutral";
 type MetricDefinition = { label: string; value: string; footer: string; tone: MetricTone };
@@ -65,10 +66,7 @@ export default async function DashboardPage() {
   ];
 
   return <section className={styles.page} data-experience={access.experienceMode}>
-    <header className={styles.header}>
-      <div><h1>Início</h1><p className="muted">O essencial para cuidar do seu negócio agora.</p></div>
-      <div className={styles.dateBadge}>{localDateLabel(snapshot.local_date)}</div>
-    </header>
+    <PageHeader title="Início" description="O essencial para cuidar do seu negócio agora." status={<span className={styles.dateBadge}>{localDateLabel(snapshot.local_date)}</span>} />
 
     {readinessPercent < 100 ? <section className={styles.readiness} aria-label="Progresso de configuração">
       <div><span className={styles.eyebrow}>SEU NEGÓCIO</span><h2>Está quase tudo pronto</h2><p>O PedeAqui detectou o que já está configurado e mostra somente o que ainda merece atenção.</p></div>

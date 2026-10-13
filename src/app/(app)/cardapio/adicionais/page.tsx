@@ -44,7 +44,7 @@ export default async function ModifiersPage() {
   return (
     <section className={styles.page}>
       <div className={styles.headerCopy}>
-        <h1>Adicionais, tamanhos e sabores</h1>
+        <h2>Adicionais, tamanhos e sabores</h2>
         <p className="muted">Configure cada grupo conforme a operação do restaurante: escolha comum, quantidade manual ou divisão automática.</p>
       </div>
 

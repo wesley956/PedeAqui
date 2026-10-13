@@ -23,4 +23,11 @@ describe("cabeçalho de página único", () => {
       expect(source).not.toMatch(/<p[^>]*>[^<{]{2,60}<\/p>\s*<h1/);
     }
   });
+
+  it("usa o componente nas telas de lista, gestão e detalhe", () => {
+    for (const page of ["caixa", "clientes", "compras", "estoque", "financeiro", "fiscal", "fornecedores", "equipe", "entregas", "salao", "dashboard", "producao", "vasilhames", "clientes/[id]", "salao/[tableId]", "configuracoes"]) {
+      expect(read(`src/app/(app)/${page}/page.tsx`)).toContain("<PageHeader");
+    }
+    expect(read("src/app/(app)/cardapio/layout.tsx")).toContain('<PageHeader title="Cardápio" />');
+  });
 });

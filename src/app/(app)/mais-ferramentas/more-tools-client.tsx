@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import type { NavigationGroup } from "@/components/layout/navigation-model";
 import styles from "./more-tools.module.css";
 import { NavigationIcon } from "@/components/ui/navigation-icon";
+import { PageHeader } from "@/components/ui/page-header";
 
 export type MoreToolItem = {
   key: string;
@@ -27,10 +28,7 @@ export function MoreToolsClient({ items }: { items: readonly MoreToolItem[] }) {
   const filtered = useMemo(() => normalized ? items.filter((item) => item.label.toLocaleLowerCase("pt-BR").includes(normalized)) : items, [items, normalized]);
 
   return <section className={styles.page}>
-    <header className={styles.header}>
-      <div><h1>Mais ferramentas</h1><p>As funções menos usadas ficam organizadas aqui, sem atrapalhar o dia a dia.</p></div>
-      <span className={styles.badge}>Só o que você pode usar</span>
-    </header>
+    <PageHeader title="Mais ferramentas" description="As funções menos usadas ficam organizadas aqui, sem atrapalhar o dia a dia." status={<span className={styles.badge}>Só o que você pode usar</span>} />
 
     <label className={styles.search}>
       <span aria-hidden>⌕</span>

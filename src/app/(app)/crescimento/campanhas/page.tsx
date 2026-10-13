@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cancelCampaignAction, createCampaignAction, enqueueCampaignAction, pauseCampaignAction, saveCampaignPolicyAction, setMarketingPreferenceAction, updateCampaignContentAction } from "@/features/growth/actions";
 import { GrowthService } from "@/server/growth/growth-service";
 import styles from "../growth.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 const statusLabels: Record<string, string> = { draft: "Rascunho", scheduled: "Agendada", running: "Em envio", completed: "Concluída", partially_failed: "Concluída com falhas", canceled: "Cancelada" };
 const operationLabels: Record<string, string> = {
@@ -20,7 +21,7 @@ export default async function CampaignCenterPage() {
   const data = await GrowthService.loadCampaignCenter();
   const allGroup = data.groupSummaries.find((group) => group.group_key === "preset:all");
   return <main className={styles.root}>
-    <header className={styles.hero}><div><h1>Campanhas pelo WhatsApp oficial</h1><p>Envie templates aprovados somente para clientes elegíveis. A fila controla volume, retry, opt-out e isolamento da unidade.</p></div><Link href="/crescimento" className={styles.secondary}>Voltar ao Growth</Link></header>
+    <PageHeader title="Campanhas pelo WhatsApp oficial" description="Envie templates aprovados somente para clientes elegíveis. A fila controla volume, retry, opt-out e isolamento da unidade." actions={<Link href="/crescimento" className={styles.secondary}>Voltar ao Growth</Link>} />
 
     <section className={styles.metrics} aria-label="Prontidão de campanhas">
       <Metric label="Elegíveis" value={data.eligibleCustomers} />

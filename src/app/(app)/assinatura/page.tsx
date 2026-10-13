@@ -6,6 +6,7 @@ import { ContractAcceptanceForm } from "./contract-acceptance-form";
 import { GeneratePixButton } from "./generate-pix-button";
 import { PixCopyButton } from "./pix-copy-button";
 import styles from "./assinatura.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 const money = (value: number, currency = "BRL") => (value / 100).toLocaleString("pt-BR", { style: "currency", currency });
 const dateTime = (value: string | null) => value ? new Date(value).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "Não definido";
@@ -27,7 +28,7 @@ export default async function CustomerSubscriptionPage() {
   const subscription = data.subscription;
 
   if (!subscription) {
-    return <main className={styles.page}><section className={styles.hero}><div><h1>Minha assinatura</h1><p>A assinatura do PedeAqui ainda não foi configurada para esta empresa.</p></div></section></main>;
+    return <main className={styles.page}><PageHeader title="Minha assinatura" description="A assinatura do PedeAqui ainda não foi configurada para esta empresa." /></main>;
   }
 
   const contract = await SubscriptionContractAcceptanceService.status(subscription.id);
@@ -49,13 +50,7 @@ export default async function CustomerSubscriptionPage() {
 
   return (
     <main className={styles.page}>
-      <section className={styles.hero}>
-        <div>
-          <h1>Minha assinatura</h1>
-          <p>Veja seu plano, mensalidade, contrato, próximos vencimentos, módulos adicionais e histórico de pagamentos em um só lugar.</p>
-        </div>
-        <span className={styles.badge}>{subscriptionStatus[subscription.status] ?? subscription.status}</span>
-      </section>
+      <PageHeader title="Minha assinatura" description="Veja seu plano, mensalidade, contrato, próximos vencimentos, módulos adicionais e histórico de pagamentos em um só lugar." status={<span className={styles.badge}>{subscriptionStatus[subscription.status] ?? subscription.status}</span>} />
 
       {headline ? <section className={styles.card} aria-live="polite">
         <div><p className={styles.eyebrow}>SITUAÇÃO DA CONTA</p><h2>{headline}</h2></div>

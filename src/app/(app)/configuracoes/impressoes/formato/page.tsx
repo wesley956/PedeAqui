@@ -10,6 +10,7 @@ import { PrintConfigService } from "@/server/printing/print-config-service";
 import { PrintLineSpacingService } from "@/server/printing/print-line-spacing-service";
 import { renderPrintDocument } from "@/server/printing/templates";
 import styles from "./format.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 const samplePayload = {
   order: {
@@ -99,13 +100,7 @@ export default async function PrintFormatPage() {
 
   return (
     <section className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.headerCopy}>
-          <h1>Formato e vias</h1>
-          <p className={styles.hint}>Escolha quantas vias cada impressora tira e quais informações aparecem nos comprovantes operacionais do pedido.</p>
-        </div>
-        <Link href="/configuracoes/impressoes" className={styles.back}>← Conexão e impressoras</Link>
-      </header>
+      <PageHeader title="Formato e vias" description="Escolha quantas vias cada impressora tira e quais informações aparecem nos comprovantes operacionais do pedido." actions={<Link href="/configuracoes/impressoes" className={styles.back}>← Conexão e impressoras</Link>} />
 
       <div className={styles.notice}>
         Documentos fiscais continuam usando o formato fiscal obrigatório. As opções abaixo valem para pedidos, balcão, expedição e produção.

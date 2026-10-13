@@ -187,6 +187,8 @@ body {
 }
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; }
+/* Caixas de seleção, botões de opção e barras de progresso na cor da marca, não no azul do sistema. */
+input, progress { accent-color: var(--brand-primary); }
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;

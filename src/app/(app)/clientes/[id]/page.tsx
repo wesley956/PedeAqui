@@ -7,6 +7,7 @@ import { getAccessContext } from "@/server/access/context";
 import { CustomerService } from "@/server/customers/customer-service";
 import { formatCents } from "@/server/catalog/money";
 import styles from "../customers.module.css";
+import { PageHeader } from "@/components/ui/page-header";
 
 const orderStatusLabels: Record<string, string> = {
   pending_confirmation: "Aguardando confirmação",
@@ -30,14 +31,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
 
   return (
     <section className={styles.page}>
-      <header className={styles.profileHeader}>
-        <div>
-          <Link href="/clientes" className="muted">← Voltar para clientes</Link>
-          <h1>{customer.name}</h1>
-          <p className={styles.profileContact}>{customer.phone || customer.email || "Sem contato informado"}</p>
-        </div>
-        <div className={styles.countBadge}>Cliente desde {formatStoreDate(customer.created_at, timeZone)}</div>
-      </header>
+      <PageHeader back={{ href: "/clientes", label: "Voltar para clientes" }} title={customer.name} description={customer.phone || customer.email || "Sem contato informado"} status={<span className={styles.countBadge}>Cliente desde {formatStoreDate(customer.created_at, timeZone)}</span>} />
 
       <div className={styles.profileMetrics}>
         <article className={`card ${styles.metric}`}><span>PEDIDOS CONCLUÍDOS</span><strong>{customer.orders_count}</strong></article>

@@ -1,5 +1,6 @@
 import { adjustGasContainerAction, configureGasProductAction, createGasContainerTypeAction } from "@/features/gas-containers/actions";
 import { GasContainerService } from "@/server/gas/gas-container-service";
+import { PageHeader } from "@/components/ui/page-header";
 
 const fieldStyle = { minHeight: 46, borderRadius: "var(--radius-sm)", border: "1px solid var(--border-default)", padding: "10px 12px", background: "var(--surface-1)", color: "inherit" } as const;
 const cardStyle = { border: "1px solid var(--border-default)", borderRadius: "var(--radius-lg)", padding: 16, background: "var(--surface-1)" } as const;
@@ -9,10 +10,7 @@ export default async function GasContainersPage() {
   const profileByProduct = new Map(profiles.map((profile) => [profile.product_id, profile]));
 
   return <section style={{ display: "grid", gap: "var(--space-5)" }}>
-    <header>
-      <h1 style={{ marginBottom: 6 }}>Vasilhames</h1>
-      <p className="muted" style={{ maxWidth: 760, margin: 0 }}>Controle cascos cheios, vazios e em rota sem misturar o saldo físico de vasilhames com o estoque comercial dos produtos.</p>
-    </header>
+    <PageHeader title="Vasilhames" description="Controle cascos cheios, vazios e em rota sem misturar o saldo físico de vasilhames com o estoque comercial dos produtos." />
 
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: 12 }}>
       {balances.length === 0 ? <div style={cardStyle}><strong>Nenhum tipo cadastrado</strong><p className="muted">Cadastre P13, P20, P45 ou outro vasilhame usado nesta unidade.</p></div> : balances.map((balance) => <article key={balance.container_type_id} style={cardStyle}>
