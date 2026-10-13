@@ -12,6 +12,8 @@ O controle de histórico continua sendo salvo exclusivamente pelo serviço exist
 
 Cabeçalhos24px, seções18px e grade2colunas/1no celular. Dados públicos opcionais recolhidos sem desmontar campos; link/slug público preservado e fora do formulário. Barra de salvar dados considera a navegação inferior móvel. Botões existentes já têm estado pendente pelo useFormStatus; não foi criado wrapper redundante.
 
+FormDisclosure abre a seção de informações públicas quando um campo dispara validação nativa. Teste de navegador do componente real hidratado: preencher URL inválida, recolher e validar; seção reabre e foco vai para websiteUrl. Sem esse tratamento, a seção permanecia fechada e o erro não ficava acessível. Não altera validação do servidor nem valores.
+
 Novo período sob demanda; lista de horários, fechamento no dia seguinte e identificador da remoção preservados. Remover período exige confirmação pelo dia e horário. Sem alterações às regras de funcionamento, timezone, checkout, preços ou taxas da loja.
 
 ## Verificação

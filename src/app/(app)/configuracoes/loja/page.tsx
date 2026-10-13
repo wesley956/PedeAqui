@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormDisclosure } from "@/components/ui/form-disclosure";
 import { saveStoreProfileAction } from "@/features/stores/actions";
 import { StoreProfileService } from "@/server/stores/store-profile-service";
 import styles from "../settings-form.module.css";
@@ -47,8 +48,7 @@ export default async function StoreProfileSettingsPage() {
           <Input label="Estado / UF" name="state" defaultValue={store.state ?? ""} required autoComplete="address-level1" hint="Ex.: SP" />
         </div>
 
-        <details className={styles.details}>
-          <summary>Informações públicas opcionais</summary>
+        <FormDisclosure className={styles.details} summary="Informações públicas opcionais">
         <div className={styles.sectionHeading}>
           <h2 style={{ margin: 0 }}>Informações públicas</h2>
           <p className="muted" style={{ marginBottom: 0 }}>Campos opcionais exibidos em “Informações da loja”. Deixe em branco o que não quiser publicar.</p>
@@ -62,7 +62,7 @@ export default async function StoreProfileSettingsPage() {
           <Input label="TikTok" name="tiktokUrl" defaultValue={store.tiktok_url ?? ""} type="url" placeholder="https://tiktok.com/@sualoja" />
         </div>
 
-        </details>
+        </FormDisclosure>
         <div className={styles.stickyActions}><Button type="submit" loadingLabel="Salvando dados…">Salvar dados da loja</Button></div>
       </form>
 
