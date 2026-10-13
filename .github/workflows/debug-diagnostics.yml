@@ -1,0 +1,40 @@
+name: Debug diagnostics (temporary)
+on:
+  push:
+    branches: ["ci-debug/**"]
+permissions:
+  contents: write
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BASE_URL: http://127.0.0.1:3000
+      APP_URL: http://127.0.0.1:3000
+      DEMO_SLUG: santa-rita
+      NEXT_PUBLIC_SUPABASE_URL: https://idyjinpeijyqcejnunwm.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_RPOdbBk09PVZioKrDPX_rw_7Y3dl7Ou
+      SUPABASE_SERVICE_ROLE_KEY: browser_server_only_placeholder
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --legacy-peer-deps --no-audit --no-fund
+      - run: npm install --no-save --legacy-peer-deps --no-audit --no-fund playwright@1.55.0 @axe-core/playwright@4.10.2
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npx eslint . > lint.txt 2>&1 || true
+      - run: npx tsc --noEmit > tsc.txt 2>&1 || true
+      - run: npm run build > build.txt 2>&1 || true
+      - run: nohup npm run start -- --hostname 127.0.0.1 --port 3000 > app.log 2>&1 &
+      - run: sleep 15; curl -s -o /dev/null -w "%{http_code}\n" $BASE_URL/m/$DEMO_SLUG || true
+      - run: node scripts/browser-homologation.mjs > homolog.txt 2>&1 || true
+      - run: |
+          {
+            echo "### lint"; echo '```'; grep -B1 -A3 " error " lint.txt | head -60; tail -3 lint.txt; echo '```'
+            echo "### tsc"; echo '```'; head -40 tsc.txt; echo '```'
+            echo "### build"; echo '```'; grep -i -A8 "error\|failed" build.txt | head -60; echo '```'
+            echo "### homolog"; echo '```'; tail -c 6000 homolog.txt; echo '```'
+            echo "### app log"; echo '```'; grep -i -B2 -A6 "error" app.log | head -60; echo '```'
+          } > body.md
+          gh api repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/comments -F body=@body.md > /dev/null
