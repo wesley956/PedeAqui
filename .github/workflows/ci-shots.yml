@@ -1,0 +1,50 @@
+name: CI shots (debug)
+
+on:
+  push:
+    branches: ["ci-debug/**"]
+
+permissions:
+  contents: write
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BASE_URL: http://127.0.0.1:3000
+      APP_URL: http://127.0.0.1:3000
+      NEXT_PUBLIC_SUPABASE_URL: https://idyjinpeijyqcejnunwm.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_RPOdbBk09PVZioKrDPX_rw_7Y3dl7Ou
+      SUPABASE_SERVICE_ROLE_KEY: browser_server_only_placeholder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --legacy-peer-deps --no-audit --no-fund
+      - run: npm install --no-save --legacy-peer-deps --no-audit --no-fund playwright@1.55.0
+      - run: npx playwright install --with-deps chromium
+      - name: Typecheck, lint and tests
+        run: |
+          set +e
+          npx tsc --noEmit > ci-shots/typecheck.txt 2>&1; echo "tsc exit $?" >> ci-shots/typecheck.txt
+          npx eslint src > ci-shots/lint.txt 2>&1; echo "eslint exit $?" >> ci-shots/lint.txt
+          npx vitest run > ci-shots/vitest.txt 2>&1; echo "vitest exit $?" >> ci-shots/vitest.txt
+          true
+      - name: Render admin pages (after)
+        run: PEDEAQUI_EDITOR_QA_DIR=ci-shots/depois npx vitest run tests/catalog-editor-render.test.ts > ci-shots/render-depois.txt 2>&1 || true
+      - name: Render admin pages (before, main)
+        run: |
+          git fetch origin main
+          git worktree add /tmp/antes origin/main
+          ln -s "$PWD/node_modules" /tmp/antes/node_modules
+          (cd /tmp/antes && PEDEAQUI_EDITOR_QA_DIR=$GITHUB_WORKSPACE/ci-shots/antes npx vitest run tests/catalog-editor-render.test.ts > $GITHUB_WORKSPACE/ci-shots/render-antes.txt 2>&1 || true)
+      - run: node ci-shots/admin-shots.mjs > ci-shots/shots.txt 2>&1 || true
+      - name: Publish screenshots to the branch
+        run: |
+          git config user.name "ci-shots"
+          git config user.email "ci-shots@users.noreply.github.com"
+          git add -f ci-shots || true
+          git commit -m "ci-shots: screenshots [skip ci]" || true
+          git push origin HEAD:${GITHUB_REF_NAME}
