@@ -129,8 +129,9 @@ export default async function PromotionsPage() {
         const active = rows.some((row) => row.active);
         const name = first.campaign_name || first.label || "Promoção";
         return <section className={styles.groupCard} key={groupId} aria-label={`Promoção ${name}`}>
-          <div className={styles.productList} role="list">
+          <div className={styles.productList}>
             <CatalogRow
+              listItem={false}
               main={<>
                 <div className={styles.productTitleRow}>
                   <span className={styles.productName}>{name}</span>
@@ -150,7 +151,7 @@ export default async function PromotionsPage() {
                 </ResilientMutationForm>
               }
             />
-            {rows.map((promotion) => {
+            <div role="list" aria-label={`Produtos da promoção ${name}`}>{rows.map((promotion) => {
               const product = productMap.get(promotion.product_id);
               const startDate = dateLabel(promotion.starts_on);
               const endDate = dateLabel(promotion.ends_on);
@@ -171,7 +172,7 @@ export default async function PromotionsPage() {
                   <strong>{money(promotion.promotional_price_cents)}</strong>
                 </span>}
               />;
-            })}
+            })}</div>
           </div>
         </section>;
       })}

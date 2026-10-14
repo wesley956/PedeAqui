@@ -14,7 +14,7 @@ import {
 } from "@/features/catalog/actions";
 import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import { formatCents } from "@/server/catalog/money";
-import { CatalogRow, CatalogSectionHeader } from "@/features/catalog/catalog-list";
+import { CatalogRow, CatalogSectionHeader, CatalogSubList } from "@/features/catalog/catalog-list";
 import { CatalogSwitch } from "@/features/catalog/catalog-switch";
 import styles from "../catalog-management.module.css";
 
@@ -118,8 +118,9 @@ export default async function ModifiersPage() {
             : quantityMode ? `${group.min_selection}–${group.max_selection} unidades no total` : `${group.min_selection}–${group.max_selection} seleção(ões)`;
           return (
             <section key={group.id} className={styles.groupCard} aria-label={`Grupo ${group.name}`}>
-              <div className={styles.productList} role="list">
+              <div className={styles.productList}>
                 <CatalogRow
+                  listItem={false}
                   main={<>
                     <div className={styles.productTitleRow}>
                       <span className={styles.productName}>{group.name}</span>
@@ -174,7 +175,7 @@ export default async function ModifiersPage() {
                     </ResilientMutationForm>
                   }
                 />
-                {items.length === 0 ? <p className={styles.subEmpty}>Nenhuma opção neste grupo. Use Nova opção para adicionar.</p> : items.map((item) => (
+                {items.length === 0 ? <p className={styles.subEmpty}>Nenhuma opção neste grupo. Use Nova opção para adicionar.</p> : <CatalogSubList count={items.length} noun={["opção", "opções"]} summary={items.map((item) => item.name).join(", ")}>{items.map((item) => (
                   <CatalogRow
                     key={item.id}
                     compact
@@ -215,7 +216,7 @@ export default async function ModifiersPage() {
                       </ResilientMutationForm>
                     </>}
                   />
-                ))}
+                ))}</CatalogSubList>}
               </div>
             </section>
           );

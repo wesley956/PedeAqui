@@ -49,7 +49,7 @@ export function CatalogSectionHeader({ title, description, actions = [] }: { tit
   );
 }
 
-export function CatalogRow({ main, aside, toggle, editor, editLabel, menu, menuLabel, compact = false }: {
+export function CatalogRow({ main, aside, toggle, editor, editLabel, menu, menuLabel, compact = false, listItem = true }: {
   main: ReactNode;
   aside?: ReactNode;
   toggle?: ReactNode;
@@ -58,10 +58,12 @@ export function CatalogRow({ main, aside, toggle, editor, editLabel, menu, menuL
   menu?: ReactNode;
   menuLabel?: string;
   compact?: boolean;
+  /** Linha de cabeçalho de um grupo (fora de lista) usa false. */
+  listItem?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   return (
-    <article className={`${styles.row} ${compact ? styles.rowCompact : ""}`} role="listitem">
+    <article className={`${styles.row} ${compact ? styles.rowCompact : ""}`} role={listItem ? "listitem" : undefined}>
       <div className={styles.rowMain}>{main}</div>
       {aside ? <div className={styles.rowAside}>{aside}</div> : null}
       <div className={styles.rowActions}>
@@ -80,5 +82,20 @@ export function CatalogRow({ main, aside, toggle, editor, editLabel, menu, menuL
       </div>
       {editor ? <div className={styles.rowEditor} hidden={!editing}>{editor}</div> : null}
     </article>
+  );
+}
+
+/** Opções de um grupo: fechadas mostram só o resumo ("Chocolate, Morango, Flocos…"), abertas mostram as linhas. */
+export function CatalogSubList({ count, summary, noun, children }: { count: number; summary: string; noun: [string, string]; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const label = count === 1 ? `1 ${noun[0]}` : `${count} ${noun[1]}`;
+  return (
+    <>
+      <button type="button" className={styles.subToggle} aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+        <span className={styles.subToggleLabel}>{open ? `Ocultar ${noun[1]}` : `Ver ${label}`}</span>
+        {!open && summary ? <span className={styles.subToggleSummary}>{summary}</span> : null}
+      </button>
+      <div role="list" hidden={!open}>{children}</div>
+    </>
   );
 }
