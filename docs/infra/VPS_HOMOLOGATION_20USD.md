@@ -94,3 +94,28 @@ Priority: speed for customer menu, checkout, PDV and order status, not merely ab
 - For operational acceptance, capture and compare **the same** representative browser, mobile and PDV workflows against Vercel and candidate VPS, with regional RTT and test-only Supabase. Record p50/p95/p99, endpoint TTFB, actual action confirmation times, server RAM peaks, DB roundtrips, queues and failures.
 - Suggested **provisional** targets (not measured): p95 menu <=1.5s, PDV/status <=1s, checkout <=2s, no material regression against current production equivalent. Agree targets using real baselines before approving cutover.
 - Do not launch heavy requests against production, payment providers, WhatsApp, or live customer Supabase. Separate budget for any staging project/server.
+
+## Measured CPU and RAM during stress — final CI verification 2026-10-14
+
+GitHub Actions run **38527416990** completed **success**. All validation stages passed, including 150k pure checkout/order-state checks, repeated multi-store contract suites 3x, Next build, Docker build, boot, 200-request microbenchmark, and a 7,000-request staged synthetic HTTP benchmark. Image size **750,212,081 bytes**.
+
+Boundaries: Docker cgroup restricted to **0.9 CPU** and **1.5 GiB RAM**; network disabled; no real DB, Pix, WhatsApp, production browser, kitchen printer or internet RTT. Performance cannot be extrapolated into a production capacity claim.
+
+| Concurrent | HTTP health p95 | Public static page p95 | Errors |
+| --- | ---: | ---: | ---: |
+| 10 | 106ms | 92ms | 0 |
+| 40 | 259ms | 289ms | 0 |
+| 80 | 377ms | 414ms | 0 |
+
+Aggregate: 7k sequential-stage requests, ~27.0 seconds, **0 errors**.
+
+**Peak sampled during load** (1-second collection intervals): RAM **17.65%** of 1.5GiB cap (~271MiB at sampled maximum), Docker CPU **93.47%** (close to one CPU core; this is Docker CPU% not percentage of the 0.9 limit), with **10 samples**. These sampled percentages do not catch sub-second spikes. One-vCPU VPS is **not production-approved** on this evidence: CPU may be a bottleneck when adding Supabase network RTT and real order processing.
+
+### Infrastructure candidate decision (as of 2026-10-14)
+- DigitalOcean Basic 2 GiB/1 vCPU: $12/mo base, 2,000 GiB transfer allowance; leaves $8 before taxes, backup or overage. Less desirable for CPU-heavy operation.
+- DigitalOcean Basic 2 GiB/2 vCPU: $18/mo base, 3,000 GiB transfer; leaves just $2 margin before extras. Not a safe all-in <$20 guarantee.
+- Hetzner CX33 Europe: $9.99/mo base after June 15 2026 price update, excluding IPv4 and tax; more CPU and RAM, but latency to São Paulo Supabase and clients remains unmeasured. Also not hard-capped against traffic overages.
+- Supplier cloud cost alerts are **not spend caps**. Need commercial quote or external enforced control for the non-negotiable $20 all-in budget. Double-running with Vercel adds migration-month costs.
+- No actual VPS, separate Supabase database or test customer journey is provisioned, so a production migration is **NOT approved**. Next gate must involve authorized account provisioning (potential cost), sandbox keys, live-like order/PDV/print/WhatsApp mocks, comparison of p95 and CPU peak versus the Vercel control, and tested rollback.
+
+**Recommendation: do not cut over yet.** This document closes the reproducible CI + offline stress investigation; it does **not** close the hosting migration.
