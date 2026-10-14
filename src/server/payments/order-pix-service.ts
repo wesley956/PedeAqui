@@ -297,7 +297,15 @@ export class OrderPixService {
       const projected = publicProjection(existing as ChargeRow);
       return projected.status === "paid" ? projected : { ...projected, status: "paid" };
     }
-    if (existing && existing.status === "pending" && existing.provider_order_id) return publicProjection(existing as ChargeRow);
+    if (existing && existing.status === "pending" && existing.provider_order_id) {
+      if (existing.provider === "pagbank" && !existing.qr_code_base64
+        && (!existing.last_reconciled_at || Date.now() - new Date(existing.last_reconciled_at).getTime() > 60_000)) {
+        // Recover an optional image for the same intent, never create another charge.
+        try { return await this.reconcile(order.store_id, existing.provider_order_id, "pagbank", { includeQrImage: true }); }
+        catch { return publicProjection(existing as ChargeRow); }
+      }
+      return publicProjection(existing as ChargeRow);
+    }
     if (existing && existing.status === "paid") return publicProjection(existing as ChargeRow);
 
     let email: string | null = null;
@@ -368,9 +376,9 @@ export class OrderPixService {
     }
   }
 
-  static async reconcile(storeId: string, providerOrderId: string, providerKey: OrderPaymentProviderKey = "mercado_pago"): Promise<PublicPixPayment | null> {
+  static async reconcile(storeId: string, providerOrderId: string, providerKey: OrderPaymentProviderKey = "mercado_pago", options?: { includeQrImage?: boolean }): Promise<PublicPixPayment | null> {
     const admin = createAdminClient();
-    const remote = await withProvider(storeId, providerKey, (provider) => provider.getOrder(providerOrderId));
+    const remote = await withProvider(storeId, providerKey, (provider) => options?.includeQrImage ? provider.getOrder(providerOrderId, options) : provider.getOrder(providerOrderId));
 
     const { data: direct, error: directError } = await admin.from("order_payment_provider_charges")
       .select("*")

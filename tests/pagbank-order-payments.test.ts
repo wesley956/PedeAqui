@@ -152,6 +152,30 @@ describe("PagBank: criação e consulta", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
+  it.each(["aW1hZ2Vt", '"aW1hZ2Vt"', "data:image/png;base64,aW1hZ2Vt"])("recovers the image of an existing order without creating another charge: %s", async (image) => {
+    const calls: string[] = [];
+    const fetcher = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input); calls.push(url);
+      return url.includes("/orders/") ? jsonResponse(200, pagBankOrder()) : new Response(image);
+    }) as unknown as typeof fetch;
+    const provider = new PagBankOrderProvider("token", "test", { fetcher });
+    expect((await provider.getOrder("ORDE_1234ABCD", { includeQrImage: true })).qrCodeBase64).toBe("aW1hZ2Vt");
+    expect(calls).toEqual(["https://sandbox.api.pagseguro.com/orders/ORDE_1234ABCD", "https://sandbox.api.pagseguro.com/qrcode/QRCO_1/base64"]);
+    expect(vi.mocked(fetcher).mock.calls.every(([, init]) => init?.method === "GET")).toBe(true);
+  });
+
+  it("falls back to authenticated PNG bytes when the base64 endpoint is unavailable", async () => {
+    const png = Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10, 1, 2, 3]);
+    const fetcher = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes("/orders/")) return jsonResponse(200, pagBankOrder());
+      if (url.endsWith("/base64")) return new Response(null, { status: 406 });
+      return new Response(png, { headers: { "content-type": "image/png" } });
+    }) as unknown as typeof fetch;
+    const result = await new PagBankOrderProvider("token", "test", { fetcher }).getOrder("ORDE_1234ABCD", { includeQrImage: true });
+    expect(result.qrCodeBase64).toBe(Buffer.from(png).toString("base64"));
+  });
+
   it("não chama o PagBank sem CPF válido", async () => {
     const fetcher = vi.fn() as unknown as typeof fetch;
     const provider = new PagBankOrderProvider("token-loja", "production", { fetcher });

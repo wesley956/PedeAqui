@@ -201,20 +201,30 @@ export class PagBankOrderProvider implements OrderPaymentProvider {
     });
     const body = await parseResponse(response);
     const order = mapPagBankOrder(body);
-    return { ...order, qrCodeBase64: await this.fetchBase64(base64Link(body)) };
+    return { ...order, qrCodeBase64: await this.fetchQrImage(body) };
   }
 
-  async getOrder(providerOrderId: string): Promise<OnlinePixProviderOrder> {
+  async getOrder(providerOrderId: string, options: { includeQrImage?: boolean } = {}): Promise<OnlinePixProviderOrder> {
     const response = await this.fetcher(`${this.base}/orders/${encodeURIComponent(providerOrderId)}`, {
       method: "GET",
       headers: this.headers(),
       cache: "no-store",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-    return mapPagBankOrder(await parseResponse(response));
+    const body = await parseResponse(response);
+    const order = mapPagBankOrder(body);
+    return options.includeQrImage ? { ...order, qrCodeBase64: await this.fetchQrImage(body) } : order;
   }
 
-  /** A imagem do QR é opcional: se falhar, o cliente ainda tem o Pix Copia e Cola. */
+  private async fetchQrImage(body: unknown) {
+    const image = await this.fetchBase64(base64Link(body));
+    if (image) return image;
+    const parsed = orderSchema.safeParse(body);
+    const png = parsed.success ? parsed.data.qr_codes[0]?.links.find((link) => link.rel.toUpperCase() === "QRCODE.PNG")?.href : null;
+    return this.fetchBase64(png ?? null);
+  }
+
+  /** Recover the provider image without exposing its authenticated URL to the browser. */
   private async fetchBase64(href: string | null) {
     if (!href) return null;
     try {
@@ -222,15 +232,29 @@ export class PagBankOrderProvider implements OrderPaymentProvider {
       if (url.origin !== this.base || url.username || url.password) return null;
       const response = await this.fetcher(url.toString(), {
         method: "GET",
-        headers: this.headers({ accept: "text/plain" }),
+        headers: this.headers({ accept: "image/png, text/plain, application/json" }),
         redirect: "error",
         cache: "no-store",
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
-      if (!response.ok) return null;
-      const text = (await response.text()).trim();
-      return /^[A-Za-z0-9+/=]+$/.test(text) && text.length < 200_000 ? text : null;
+      if (!response.ok) {
+        console.warn("pagbank_qr_image_unavailable", { status: response.status });
+        return null;
+      }
+      const bytes = Buffer.from(await response.arrayBuffer());
+      if (bytes.length > 200_000) return null;
+      if (bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) return bytes.toString("base64");
+      let text = bytes.toString("utf8").trim();
+      try {
+        const decoded: unknown = JSON.parse(text);
+        if (typeof decoded === "string") text = decoded;
+      } catch { /* Plain base64 is also supported. */ }
+      text = text.replace(/^data:image\/png;base64,/i, "").replace(/\s/g, "");
+      if (/^[A-Za-z0-9+/=]+$/.test(text) && text.length < 200_000) return text;
+      console.warn("pagbank_qr_image_format_unavailable", { contentType: response.headers.get("content-type"), bytes: bytes.length });
+      return null;
     } catch {
+      console.warn("pagbank_qr_image_request_failed");
       return null;
     }
   }

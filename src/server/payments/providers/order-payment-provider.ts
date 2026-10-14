@@ -35,5 +35,5 @@ export type OrderPaymentProviderKind = "mercado_pago" | "pagbank";
 export interface OrderPaymentProvider {
   readonly key: OrderPaymentProviderKind;
   createPixCharge(input: OnlinePixChargeRequest): Promise<OnlinePixProviderOrder>;
-  getOrder(providerOrderId: string): Promise<OnlinePixProviderOrder>;
+  getOrder(providerOrderId: string, options?: { includeQrImage?: boolean }): Promise<OnlinePixProviderOrder>;
 }
