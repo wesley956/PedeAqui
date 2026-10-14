@@ -581,3 +581,55 @@
 .suggestionRuleRow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,2fr) minmax(100px,140px);gap:12px;align-items:end;padding:12px 0;border-top:1px solid var(--border-default)}
 .suggestionRuleRow>*,.suggestionRow>*{min-width:0}.sectionCopy h2{margin:0;font-size:var(--font-size-lg)}.sectionCopy{display:grid;gap:8px}.suggestionRuleRow input{max-width:100%}
 @media(max-width:640px){.suggestionRuleRow{grid-template-columns:minmax(0,1fr)}.suggestionSourceControls{grid-template-columns:minmax(0,1fr)}.promotionProductPrice{flex-basis:100%}.suggestionRuleRow input,.suggestionSourceControls select{font-size:var(--font-size-md)}.promotionFormActions button{width:100%}}
+/* Subpáginas no padrão da lista de Produtos: cabeçalho com ação, lista em linhas, interruptor, Editar e Ações. */
+.headerActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.primaryAction,.secondaryAction{min-height:42px;padding:0 var(--space-4);display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius-lg);font:inherit;font-weight:var(--font-weight-bold);cursor:pointer}
+.primaryAction{border:0;background:var(--accent);color:var(--text-on-brand);box-shadow:var(--shadow-sm)}
+.primaryAction:hover{background:var(--accent-strong)}
+.secondaryAction{border:1px solid var(--border-default);background:var(--surface-1);color:var(--text-primary)}
+.secondaryAction:hover{background:var(--surface-2)}
+.primaryAction:focus-visible,.secondaryAction:focus-visible,.rowButton:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.createPanel{display:grid;gap:12px;padding:16px;border-color:color-mix(in srgb,var(--accent) 35%,var(--border-default))}
+.createPanel>h3{margin:0;font-size:var(--font-size-md)}
+.createPanel .editBody{padding-top:0;border-top:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:16px;padding:12px 16px;border-bottom:1px solid var(--border-default)}
+.row:last-child{border-bottom:0}
+.rowMain{min-width:0;display:grid;gap:6px}
+.rowAside{white-space:nowrap}
+.rowActions{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.rowButton{min-height:44px;padding:0 12px;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--surface-1);color:var(--text-primary);font:inherit;font-size:var(--font-size-support);cursor:pointer}
+.rowButton[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+.rowEditor{grid-column:1/-1;padding:12px 0 4px;border-top:1px dashed var(--border-default)}
+.rowEditor .editBody{padding-top:0;border-top:0}
+.rowCompact{padding:8px 16px 8px 32px;background:color-mix(in srgb,var(--surface-2) 45%,transparent)}
+.rowCompact .rowMain{gap:2px;font-size:var(--font-size-sm)}
+.rowMenuBody{width:280px}
+.menuForm{display:grid;gap:8px}
+.menuForm+.menuForm{padding-top:8px;border-top:1px solid var(--border-default)}
+.menuForm>strong{font-size:var(--font-size-sm)}
+.checkRow{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center}
+.groupList{display:grid;gap:12px}
+.groupCard{min-width:0}
+.subEmpty{margin:0;padding:10px 16px 12px 32px;color:var(--text-secondary);font-size:var(--font-size-support)}
+.optionPrice{color:var(--text-secondary);font-size:var(--font-size-sm)}
+.sectionCard{display:grid;gap:12px;padding:16px}
+.sectionCardHeader{display:grid;gap:4px}
+.sectionCardHeader h3{margin:0;font-size:var(--font-size-md)}
+.sectionCard .productList .suggestionRuleRow,.sectionCard .productList .suggestionRow{padding:12px 16px;border-top:0;border-bottom:1px solid var(--border-default)}
+.sectionCard .productList .suggestionRuleRow:last-child,.sectionCard .productList .suggestionRow:last-child{border-bottom:0}
+.createPanel .productList .promotionProduct{display:grid;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border-default)}
+.createPanel .productList .promotionProduct:last-child{border-bottom:0}
+.createPanel .productList .promotionProduct:has(input[name="productId"]:checked){background:color-mix(in srgb,var(--accent) 6%,var(--surface-1))}
+.promotionPriceBlock{display:grid;justify-items:end;gap:2px}
+@media(max-width:640px){
+  .header{flex-direction:column;align-items:stretch}
+  .headerActions{justify-content:stretch}
+  .headerActions>button{flex:1}
+  .row{grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:12px}
+  .rowActions{grid-column:1/-1;justify-content:space-between}
+  .rowAside{grid-column:2;grid-row:1}
+  .rowCompact{padding:8px 12px 8px 24px}
+  .rowMenuBody{width:min(280px,calc(100vw - 48px))}
+  .subEmpty{padding-left:24px}
+}
+.createPanel[hidden],.rowEditor[hidden]{display:none}

@@ -6,6 +6,7 @@ import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-for
 import { removePromotionAction, savePromotionAction } from "@/features/promotions/actions";
 import { ProductService } from "@/server/catalog/product-service";
 import { PromotionService } from "@/server/promotions/promotion-service";
+import { CatalogRow, CatalogSectionHeader } from "@/features/catalog/catalog-list";
 import styles from "../catalog-management.module.css";
 
 const days = [
@@ -41,41 +42,21 @@ export default async function PromotionsPage() {
   const campaigns = [...groups.entries()];
   const activeCount = campaigns.filter(([, rows]) => rows.some((row) => row.active)).length;
 
-  return <section className={styles.page}>
-    <header className={styles.header}>
-      <div className={styles.headerCopy}>
-        <h2>Promoções</h2>
-        <p className="muted">Crie campanhas com vários produtos e defina dias, horários e períodos diferentes para cada item.</p>
-      </div>
-    </header>
-
-    <div className={styles.summary} aria-label="Resumo das promoções">
-      <span><strong>{campaigns.length}</strong> promoções</span>
-      <span><strong>{activeCount}</strong> ativas</span>
-      <span><strong>{eligibleProducts.length}</strong> produtos disponíveis</span>
-    </div>
-
-    <details className={styles.createDetails}>
-      <summary>Nova promoção</summary>
+  const newPromotionForm = (
     <ResilientMutationForm action={savePromotionAction} successReset className={styles.editBody}>
-      <div className={styles.promotionFormHeader}>
-        <div>
-          <p className={styles.formHint}>Selecione os produtos e preencha a programação dos itens marcados. Cada produto pode ter um preço e um período diferente.</p>
-        </div>
-        <span className={styles.metaChip}>Programação por produto</span>
-      </div>
+      <p className={styles.formHint}>Selecione os produtos e preencha a programação dos itens marcados. Cada produto pode ter um preço e um período diferente.</p>
 
       <Input id="promotion-name" label="Nome da promoção" name="campaignName" maxLength={80} placeholder="Ex.: Promoção da semana" />
 
-      <div className={styles.promotionSectionHeader}>
+      <div className={styles.sectionCardHeader}>
         <div>
-          <h2>Produtos da promoção</h2>
+          <h3>Produtos da promoção</h3>
           <p className={styles.formHint}>{eligibleProducts.length === 0 ? "Cadastre e ative um produto antes de criar uma promoção." : "Marque os produtos desejados e informe o preço promocional."}</p>
         </div>
       </div>
 
-      <div className={styles.managementList}>
-        {eligibleProducts.map((product) => <article key={product.id} className={`card ${styles.managementCard} ${styles.promotionProduct}`}>
+      <div className={styles.productList} role="list">
+        {eligibleProducts.map((product) => <article key={product.id} className={styles.promotionProduct} role="listitem">
           <div className={styles.managementTop}>
             <div className={styles.productMain}>
               <div className={styles.productTitleRow}>
@@ -123,68 +104,76 @@ export default async function PromotionsPage() {
         <Button type="submit" disabled={eligibleProducts.length === 0}>Criar promoção</Button>
       </div>
     </ResilientMutationForm>
-    </details>
+  );
 
-    <div className={styles.promotionSectionHeader}>
-      <div>
-        <h2>Promoções cadastradas</h2>
-        <p className="muted">Dentro de cada campanha, cada produto mostra sua própria programação.</p>
-      </div>
+  return <section className={styles.page}>
+    <CatalogSectionHeader
+      title="Promoções"
+      description="Crie campanhas com vários produtos e defina dias, horários e períodos diferentes para cada item."
+      actions={[{ id: "nova-promocao", label: "Nova promoção", content: newPromotionForm }]}
+    />
+
+    <div className={styles.summary} aria-label="Resumo das promoções">
+      <span><strong>{campaigns.length}</strong> promoções</span>
+      <span><strong>{activeCount}</strong> ativas</span>
+      <span><strong>{eligibleProducts.length}</strong> produtos disponíveis</span>
     </div>
 
     {campaigns.length === 0 ? <article className={`card ${styles.empty}`}>
       <h2>Nenhuma promoção cadastrada</h2>
-      <p className="muted">Abra Nova promoção para selecionar produtos e definir a programação.</p>
-    </article> : <div className={styles.managementList}>
+      <p className="muted">Toque em Nova promoção para escolher os produtos e definir a programação.</p>
+    </article> : <div className={styles.groupList}>
       {campaigns.map(([groupId, rows]) => {
         const first = rows[0];
         if (!first) return null;
         const active = rows.some((row) => row.active);
-        return <article className={`card ${styles.managementCard} ${styles.promotionCard}`} key={groupId}>
-          <div className={styles.managementTop}>
-            <div className={styles.productMain}>
-              <div className={styles.productTitleRow}>
-                <span className={styles.productName}>{first.campaign_name || first.label || "Promoção"}</span>
-                <SemanticStatus tone={active ? "success" : "neutral"} icon={active ? "✓" : "○"} label={active ? "Ativa" : "Desativada"} />
-              </div>
-              <div className={styles.productMeta}>
-                <span className={styles.metaChip}>{rows.length} {rows.length === 1 ? "produto" : "produtos"}</span>
-                {first.label ? <span className={styles.metaChip}>{first.label}</span> : null}
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.managementList}>
+        const name = first.campaign_name || first.label || "Promoção";
+        return <section className={styles.groupCard} key={groupId} aria-label={`Promoção ${name}`}>
+          <div className={styles.productList} role="list">
+            <CatalogRow
+              main={<>
+                <div className={styles.productTitleRow}>
+                  <span className={styles.productName}>{name}</span>
+                  <SemanticStatus tone={active ? "success" : "neutral"} icon={active ? "✓" : "○"} label={active ? "Ativa" : "Desativada"} />
+                </div>
+                <div className={styles.productMeta}>
+                  <span className={styles.metaChip}>{rows.length} {rows.length === 1 ? "produto" : "produtos"}</span>
+                  {first.label ? <span className={styles.metaChip}>{first.label}</span> : null}
+                  <span className={styles.metaChip}>Em sobreposição, vale o menor preço ativo</span>
+                </div>
+              </>}
+              menuLabel={`Ações da promoção ${name}`}
+              menu={
+                <ResilientMutationForm action={removePromotionAction} successReset={false} className={styles.menuForm}>
+                  <input type="hidden" name="promotionGroupId" value={groupId} />
+                  <ConfirmSubmitButton tone="secondary" size="md" confirmation={`Remover a promoção ${name}? Os preços normais dos produtos serão preservados.`}>Remover promoção</ConfirmSubmitButton>
+                </ResilientMutationForm>
+              }
+            />
             {rows.map((promotion) => {
               const product = productMap.get(promotion.product_id);
               const startDate = dateLabel(promotion.starts_on);
               const endDate = dateLabel(promotion.ends_on);
               const schedule = `${time(promotion.starts_at) || "Dia inteiro"}${promotion.ends_at ? ` – ${time(promotion.ends_at)}` : ""}`;
-              return <div key={promotion.id} className={`${styles.managementTop} ${styles.promotionScheduleRow}`}>
-                <div className={styles.productMain}>
-                  <strong>{product?.name ?? "Produto removido"}</strong>
+              return <CatalogRow
+                key={promotion.id}
+                compact
+                main={<>
+                  <span>{product?.name ?? "Produto removido"}</span>
                   <div className={styles.productMeta}>
                     <span className={styles.metaChip}>{weekdayLabel(promotion.weekdays) || "Sem dias"}</span>
                     <span className={styles.metaChip}>{schedule}</span>
                     {(startDate || endDate) ? <span className={styles.metaChip}>{startDate ?? "Sem início"} → {endDate ?? "Sem fim"}</span> : null}
                   </div>
-                </div>
-                <div className={styles.promotionPriceBlock}>
+                </>}
+                aside={<span className={styles.promotionPriceBlock}>
                   {product ? <span className={styles.promotionOldPrice}>{money(product.price_cents)}</span> : null}
                   <strong>{money(promotion.promotional_price_cents)}</strong>
-                </div>
-              </div>;
+                </span>}
+              />;
             })}
           </div>
-
-          <div className={styles.managementActions}>
-            <span className="muted">Cada produto segue sua própria programação. Em sobreposição, vale o menor preço ativo.</span>
-            <ResilientMutationForm action={removePromotionAction} successReset={false}>
-              <input type="hidden" name="promotionGroupId" value={groupId} />
-              <ConfirmSubmitButton tone="secondary" size="md" confirmation={`Remover a promoção ${first.campaign_name || first.label || "selecionada"}? Os preços normais dos produtos serão preservados.`}>Remover promoção</ConfirmSubmitButton>
-            </ResilientMutationForm>
-          </div>
-        </article>;
+        </section>;
       })}
     </div>}
   </section>;
