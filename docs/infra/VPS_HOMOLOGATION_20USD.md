@@ -85,3 +85,12 @@ Aggregate 7,000 requests completed in ~26.1 seconds across six sequential stages
 - Workflow adds `npx vitest run tests/vps-domain-stress.test.ts` as a blocking gate before build. Current GitHub Actions run: #38526243953, pending at last check.
 - **Scope**: no database write, no queues, no real checkout HTTP requests, no third-party services. This confirms correctness under many calls to pure rules, NOT multi-restaurant load, latency or transactional safety.
 - Hard production gate remains an isolated Supabase environment with synthetic stores, payment sandboxes, fake WhatsApp and fake print agents; require explicit spend and resource approval to provision any test infrastructure.
+
+## Performance acceptance — 2026-10-14
+Priority: speed for customer menu, checkout, PDV and order status, not merely ability to boot. The existing 7k-request localhost result (up to 398 ms p95, 80 concurrent) is a nonproduction HTTP microbenchmark and should **not** be used to predict user-facing latency across the internet or database round-trips.
+
+- The VPS workflow now samples `docker stats` each second during synthetic stress and reports maximum **sampled** RAM and CPU percentages. It stops when sampled memory reaches 90% of the 1.5 GiB container limit or benchmark fails. Measurements do not capture sub-second peaks or VMs' host resources.
+- New workflow run #38527368899; results pending at the time this file was committed.
+- For operational acceptance, capture and compare **the same** representative browser, mobile and PDV workflows against Vercel and candidate VPS, with regional RTT and test-only Supabase. Record p50/p95/p99, endpoint TTFB, actual action confirmation times, server RAM peaks, DB roundtrips, queues and failures.
+- Suggested **provisional** targets (not measured): p95 menu <=1.5s, PDV/status <=1s, checkout <=2s, no material regression against current production equivalent. Agree targets using real baselines before approving cutover.
+- Do not launch heavy requests against production, payment providers, WhatsApp, or live customer Supabase. Separate budget for any staging project/server.
