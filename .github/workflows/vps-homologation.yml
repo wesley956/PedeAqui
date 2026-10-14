@@ -11,6 +11,8 @@ on:
       - 'package.json'
       - 'next.config.ts'
       - 'src/**'
+      - 'scripts/infra/vps-health-benchmark.mjs'
+      - 'scripts/infra/vps-health-benchmark.mjs'
       - '.github/workflows/vps-homologation.yml'
   pull_request:
     branches:
@@ -79,6 +81,7 @@ jobs:
           for attempt in $(seq 1 30); do
             if docker exec "$container_id" node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))"; then
               echo "BOOT_SMOKE_OK: isolated application health endpoint returned 200"
+              docker exec "$container_id" node scripts/infra/vps-health-benchmark.mjs
               docker stats --no-stream --format 'name={{.Name}} mem={{.MemUsage}} cpu={{.CPUPerc}}' "$container_id"
               exit 0
             fi
