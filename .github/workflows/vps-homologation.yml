@@ -56,7 +56,7 @@ jobs:
           docker compose -f compose.vps-homolog.yml config --quiet
           rm .env.vps
       - name: Install dependencies (temporary until reviewed lockfile)
-        run: npm install --no-audit --no-fund
+        run: npm install --legacy-peer-deps --no-audit --no-fund
       - name: Check routes
         run: npm run check:routes
       - name: Typecheck
