@@ -6,6 +6,7 @@ const stages = [
   { concurrency: 10, perPath: 500 },
   { concurrency: 40, perPath: 1000 },
   { concurrency: 80, perPath: 2000 },
+  { concurrency: 160, perPath: 4000 },
 ];
 const paths = ['/api/health', '/politica-de-privacidade'];
 const timeout = 8000;
