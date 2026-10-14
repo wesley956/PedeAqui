@@ -69,6 +69,12 @@ jobs:
         run: npm run typecheck
       - name: Stress checkout and state-machine rules (150k deterministic iterations)
         run: npx vitest run tests/vps-domain-stress.test.ts
+      - name: Repeated multistore isolation, concurrency and checkout contracts
+        run: |
+          for pass in 1 2 3; do
+            echo "MULTISTORE_CONTRACT_PASS=${pass}/3"
+            npx vitest run tests/access-isolation-contracts.test.ts tests/concurrency-contracts.test.ts tests/e2e-context-journeys.test.ts tests/printing-simple-setup.test.ts
+          done
       - name: Production build (synthetic public config; no secrets)
         run: npm run build
       - name: Docker image build (no deploy, no push)
