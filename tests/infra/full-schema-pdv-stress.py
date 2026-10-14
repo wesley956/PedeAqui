@@ -64,7 +64,7 @@ with psycopg.connect(DSN, autocommit=True) as c:
             except psycopg.Error: pass
             else: raise AssertionError(f'accepted invalid sale: {kind}')
         assert c.execute('select count(*) from public.orders where store_id=%s',(ids[2],)).fetchone()[0] == SALES
-        assert c.execute('select count(*) from public.idempotency_keys where store_id=%s and idempotency_key like \'invalid-%\'',(ids[2],)).fetchone()[0] == 0, 'failed transaction leaked key'
+        assert c.execute('select count(*) from public.idempotency_keys where store_id=%s and idempotency_key like %s',(ids[2],'invalid-%')).fetchone()[0] == 0, 'failed transaction leaked key'
         assert c.execute('select count(*) from public.print_jobs where store_id=%s',(ids[2],)).fetchone()[0] == SALES
 print('FULL_SCHEMA_INVALID_SALES_ROLLBACK_OK',flush=True)
 
