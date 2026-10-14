@@ -13,6 +13,7 @@ on:
       - 'src/**'
       - 'scripts/infra/vps-health-benchmark.mjs'
       - 'scripts/infra/vps-heavy-stress.mjs'
+      - 'scripts/infra/vps-staging-safety-guard.mjs'
       - 'tests/vps-domain-stress.test.ts'
       - '.github/workflows/vps-homologation.yml'
   pull_request:
@@ -27,6 +28,7 @@ on:
       - 'src/**'
       - 'scripts/infra/vps-health-benchmark.mjs'
       - 'scripts/infra/vps-heavy-stress.mjs'
+      - 'scripts/infra/vps-staging-safety-guard.mjs'
       - 'tests/vps-domain-stress.test.ts'
       - '.github/workflows/vps-homologation.yml'
   workflow_dispatch:
@@ -61,6 +63,14 @@ jobs:
           touch .env.vps
           docker compose -f compose.vps-homolog.yml config --quiet
           rm .env.vps
+      - name: Guard against production DB credentials in synthetic stress
+        run: |
+          node scripts/infra/vps-staging-safety-guard.mjs
+          if NEXT_PUBLIC_SUPABASE_URL=https://idyjinpeijyqcejnunwm.supabase.co node scripts/infra/vps-staging-safety-guard.mjs; then
+            echo "SAFETY_TEST_FAILED: production project was not rejected"
+            exit 1
+          fi
+          echo "SAFETY_NEGATIVE_TEST_OK: real PedeAqui project denied"
       - name: Install dependencies (temporary until reviewed lockfile)
         run: npm install --legacy-peer-deps --no-audit --no-fund
       - name: Check routes
