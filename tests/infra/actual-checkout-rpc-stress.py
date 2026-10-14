@@ -7,7 +7,7 @@ import uuid
 import psycopg
 
 dsn=os.getenv("ISOLATED_PG_DSN","")
-if not dsn.startswith("postgresql://sandbox:sandbox@127.0.0.1:5432/isolated"):
+if not dsn == "postgresql://sandbox:sandbox@127.0.0.1:5432/original_rpc":
     raise SystemExit("DISALLOWED_DATABASE: refusing non-local fixture")
 original=pathlib.Path("supabase/sql/21_order_access_token.sql").read_text()
 assert original.count("create or replace function public.create_order_from_checkout_internal(")>=1
