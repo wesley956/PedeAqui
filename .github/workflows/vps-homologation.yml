@@ -12,7 +12,6 @@ on:
       - 'next.config.ts'
       - 'src/**'
       - 'scripts/infra/vps-health-benchmark.mjs'
-      - 'scripts/infra/vps-health-benchmark.mjs'
       - '.github/workflows/vps-homologation.yml'
   pull_request:
     branches:
@@ -24,6 +23,7 @@ on:
       - 'package.json'
       - 'next.config.ts'
       - 'src/**'
+      - 'scripts/infra/vps-health-benchmark.mjs'
       - '.github/workflows/vps-homologation.yml'
   workflow_dispatch:
 
