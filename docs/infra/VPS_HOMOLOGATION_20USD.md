@@ -54,3 +54,28 @@ Environment-dependent Next.js compile-time public variables may require dedicate
 - No local Docker engine, remote VPS, representative traffic data, or isolated test database has been provisioned as part of this change; **no performance or successful container build is claimed**.
 - Existing `/api/health` only checks environment key presence; do not treat it as real readiness or full system health. Check Supabase access and dependencies separately.
 - Protect testing from production side effects. The staging Compose is loopback-bound and has **no cron schedule**. When ultimately switching hosts, ensure Vercel cron is disabled before enabling the new scheduler.
+
+## Heavy synthetic HTTP test verified — GitHub run 38525400698 (2026-10-14)
+Run completed with **success**. Container configured with a 1.5 GiB memory limit and 0.9 vCPU. No external network, database, payment or WhatsApp services were exercised.
+
+| Concurrency | Endpoint | Requests | HTTP / network errors | p95 | Requests/sec |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 10 | /api/health | 500 | 0 | 95ms | 215 |
+| 10 | /politica-de-privacidade | 500 | 0 | 88ms | 201 |
+| 40 | /api/health | 1,000 | 0 | 214ms | 279 |
+| 40 | /politica-de-privacidade | 1,000 | 0 | 268ms | 232 |
+| 80 | /api/health | 2,000 | 0 | 342ms | 345 |
+| 80 | /politica-de-privacidade | 2,000 | 0 | 398ms | 263 |
+
+Aggregate 7,000 requests completed in ~26.1 seconds across six sequential stages; this is **not** sustained full-store transaction throughput. `docker stats` showed **151.3 MiB** before the staged stress and **192.9 MiB** after. These are snapshots, *not peak resident memory*; the reported CPU snapshots (~0.01%) were taken after the load and should not be treated as CPU utilization during stress. CI runner hardware and localhost latency do not model real VPS networking.
+
+### Next real integration load gate — NOT YET RUN
+1. Use a dedicated Supabase test project with separate organization/store IDs, login accounts, storage and RLS. No live data copy without anonymization and authorization.
+2. Disable all real side effects: WhatsApp, PagBank/other payment webhooks, production fiscal endpoints, production emails, real printers, scheduled jobs and other third parties. Use mocks or sandbox credentials.
+3. Provision an isolated test host and record CPU/RAM *peaks* every 1s, process restarts/OOM, database connections and request traces. Configure staging host name and TLS only after ensuring sandbox isolation.
+4. Reproduce operational flows with synthetic stores: menu/category search, cart add/update/delete, delivery/pickup, cash change, order submission, PDV payment, order status transitions, KDS, table and dispatch operations, print enqueue/claim/ack via a synthetic PrintAgent.
+5. Progressive throughput tests at 5/10/25/50 simultaneous workflows with controlled ramp-up and capped order volume. Capture per-flow failures, duplicated orders, unexpected charges, p50/p95/p99, peak process memory, worker queue lag and DB utilization.
+6. Use a clear safety stop: any external side effect, real customer data modification, unbounded queue, high error rate, unexpected duplicate, or resource exhaustion pauses the test automatically. Do not interpret simple endpoint metrics as proof that the above flows passed.
+7. Validate restore, provider contract and billing hard-cap protection before any switch. Preserve Vercel until explicit production cutover approval.
+
+**Deployment remains blocked** pending real integration proof, all-in price and user approval.
