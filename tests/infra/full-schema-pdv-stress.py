@@ -1,5 +1,5 @@
 """Real PDV/payment/print RPCs against disposable full-schema Supabase only."""
-import concurrent.futures, json, os, pathlib, time, uuid
+import concurrent.futures, hashlib, json, os, pathlib, time, uuid
 import psycopg
 from psycopg.types.json import Jsonb
 DSN = os.environ.get('ISOLATED_PG_DSN', '')
@@ -15,6 +15,8 @@ with psycopg.connect(DSN, autocommit=True) as c:
         ids = [str(uuid.uuid4()) for _ in base]
         sql = setup
         for old, new in zip(base, ids): sql = sql.replace(old, new)
+        sql = sql.replace("repeat('e',64)", "'" + hashlib.sha256(ids[5].encode()).hexdigest() + "'")
+        sql = sql.replace("repeat('f',64)", "'" + hashlib.sha256(ids[6].encode()).hexdigest() + "'")
         sql = sql.replace('quality-pdv@example.invalid', f'stress-{ids[0]}@example.invalid').replace("'quality-pdv'", f"'stress-{ids[2]}'")
         with c.transaction():
             c.execute(sql)
