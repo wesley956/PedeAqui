@@ -12,6 +12,17 @@ on:
       - 'next.config.ts'
       - 'src/**'
       - '.github/workflows/vps-homologation.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Dockerfile.vps'
+      - 'compose.vps-homolog.yml'
+      - '.dockerignore'
+      - 'package.json'
+      - 'next.config.ts'
+      - 'src/**'
+      - '.github/workflows/vps-homologation.yml'
   workflow_dispatch:
 
 permissions:
