@@ -15,6 +15,7 @@ on:
       - 'scripts/infra/vps-heavy-stress.mjs'
       - 'scripts/infra/vps-staging-safety-guard.mjs'
       - 'tests/vps-domain-stress.test.ts'
+      - 'tests/infra/**'
       - '.github/workflows/vps-homologation.yml'
   pull_request:
     branches:
@@ -30,6 +31,7 @@ on:
       - 'scripts/infra/vps-heavy-stress.mjs'
       - 'scripts/infra/vps-staging-safety-guard.mjs'
       - 'tests/vps-domain-stress.test.ts'
+      - 'tests/infra/**'
       - '.github/workflows/vps-homologation.yml'
   workflow_dispatch:
 
@@ -140,3 +142,34 @@ jobs:
           done
           echo "BOOT_SMOKE_FAILED: health endpoint did not become ready"
           exit 1
+
+  postgres-transaction-fixture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sandbox
+          POSTGRES_PASSWORD: sandbox
+          POSTGRES_DB: isolated
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sandbox -d isolated"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - name: Checkout isolated transaction harness
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install Python PostgreSQL adapter
+        run: python -m pip install "psycopg[binary]==3.2.10"
+      - name: Create disposable PostgreSQL fixture
+        env:
+          PGPASSWORD: sandbox
+        run: psql -h 127.0.0.1 -U sandbox -d isolated -v ON_ERROR_STOP=1 -f tests/infra/isolated-postgres-concurrency.sql
+      - name: Load test real PostgreSQL concurrency only
+        env:
+          ISOLATED_PG_DSN: postgresql://sandbox:sandbox@127.0.0.1:5432/isolated
+        run: python tests/infra/isolated-postgres-concurrency.py
