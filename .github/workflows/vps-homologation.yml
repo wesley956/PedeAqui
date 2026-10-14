@@ -96,7 +96,28 @@ jobs:
               docker exec "$container_id" node scripts/infra/vps-health-benchmark.mjs
               echo "STRESS_BASELINE:"
               docker stats --no-stream --format 'name={{.Name}} mem={{.MemUsage}} cpu={{.CPUPerc}}' "$container_id"
+              echo "STRESS_MONITOR_START"
+              (
+                while true; do
+                  docker stats --no-stream --format '{{.MemPerc}} {{.CPUPerc}}' "$container_id" |
+                    awk '{gsub(/%/, "", $1); gsub(/%/, "", $2); if (NF >= 2) print $1, $2}'
+                  sleep 1
+                done
+              ) > /tmp/vps-stress-metrics.txt &
+              monitor_pid=$!
+              set +e
               docker exec "$container_id" node scripts/infra/vps-heavy-stress.mjs
+              stress_exit=$?
+              set -e
+              kill "$monitor_pid" 2>/dev/null || true
+              wait "$monitor_pid" 2>/dev/null || true
+              awk 'BEGIN {mem=0;cpu=0;samples=0}
+                   NF==2 {samples++; if ($1>mem) mem=$1; if ($2>cpu) cpu=$2}
+                   END {printf "STRESS_PEAK_SAMPLED mem_percent=%.2f cpu_percent=%.2f samples=%d\\n",mem,cpu,samples; if(samples<3)exit 1; if(mem>=90)exit 1}' /tmp/vps-stress-metrics.txt
+              if [ "$stress_exit" -ne 0 ]; then
+                echo "STRESS_GATE_FAILED: benchmark exited with $stress_exit"
+                exit "$stress_exit"
+              fi
               echo "STRESS_AFTER:"
               docker stats --no-stream --format 'name={{.Name}} mem={{.MemUsage}} cpu={{.CPUPerc}}' "$container_id"
               exit 0
