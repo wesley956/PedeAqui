@@ -67,3 +67,26 @@ jobs:
         run: docker build -f Dockerfile.vps -t pedeaqui-vps-homolog:ci .
       - name: Inspect image size
         run: docker image inspect pedeaqui-vps-homolog:ci --format 'image_size_bytes={{.Size}}'
+      - name: Isolated container startup smoke test (network disabled)
+        run: |
+          set -euo pipefail
+          container_id="$(docker run -d --network none --memory 1536m --cpus 0.9 \
+            -e NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
+            -e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=homologation-placeholder-not-a-real-key \
+            -e APP_URL=http://127.0.0.1:3000 \
+            pedeaqui-vps-homolog:ci)"
+          trap 'docker logs "$container_id" --tail 60 || true; docker rm -f "$container_id" >/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if docker exec "$container_id" node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))"; then
+              echo "BOOT_SMOKE_OK: isolated application health endpoint returned 200"
+              docker stats --no-stream --format 'name={{.Name}} mem={{.MemUsage}} cpu={{.CPUPerc}}' "$container_id"
+              exit 0
+            fi
+            if [ "$(docker inspect --format '{{.State.Running}}' "$container_id")" != "true" ]; then
+              echo "BOOT_SMOKE_FAILED: container exited"
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "BOOT_SMOKE_FAILED: health endpoint did not become ready"
+          exit 1
