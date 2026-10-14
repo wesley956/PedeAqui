@@ -1,0 +1,58 @@
+name: VPS homologation checks (no deploy)
+
+on:
+  push:
+    branches:
+      - infra/vps-homologation-20usd
+    paths:
+      - 'Dockerfile.vps'
+      - 'compose.vps-homolog.yml'
+      - '.dockerignore'
+      - 'package.json'
+      - 'next.config.ts'
+      - 'src/**'
+      - '.github/workflows/vps-homologation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vps-homologation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co'
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'homologation-placeholder-not-a-real-key'
+      APP_URL: 'http://127.0.0.1:3000'
+    steps:
+      - name: Checkout candidate branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Docker Compose syntax (no service starts)
+        run: |
+          touch .env.vps
+          docker compose -f compose.vps-homolog.yml config --quiet
+          rm .env.vps
+      - name: Install dependencies (temporary until reviewed lockfile)
+        run: npm install --no-audit --no-fund
+      - name: Check routes
+        run: npm run check:routes
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production build (synthetic public config; no secrets)
+        run: npm run build
+      - name: Docker image build (no deploy, no push)
+        run: docker build -f Dockerfile.vps -t pedeaqui-vps-homolog:ci .
+      - name: Inspect image size
+        run: docker image inspect pedeaqui-vps-homolog:ci --format 'image_size_bytes={{.Size}}'
