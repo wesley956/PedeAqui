@@ -1,0 +1,190 @@
+name: VPS homologation checks (no deploy)
+
+on:
+  push:
+    branches:
+      - infra/vps-homologation-20usd
+    paths:
+      - 'Dockerfile.vps'
+      - 'compose.vps-homolog.yml'
+      - '.dockerignore'
+      - 'package.json'
+      - 'next.config.ts'
+      - 'src/**'
+      - 'scripts/infra/vps-health-benchmark.mjs'
+      - 'scripts/infra/vps-heavy-stress.mjs'
+      - 'scripts/infra/vps-staging-safety-guard.mjs'
+      - 'tests/vps-domain-stress.test.ts'
+      - 'tests/infra/**'
+      - 'supabase/sql/21_order_access_token.sql'
+      - '.github/workflows/vps-homologation.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Dockerfile.vps'
+      - 'compose.vps-homolog.yml'
+      - '.dockerignore'
+      - 'package.json'
+      - 'next.config.ts'
+      - 'src/**'
+      - 'scripts/infra/vps-health-benchmark.mjs'
+      - 'scripts/infra/vps-heavy-stress.mjs'
+      - 'scripts/infra/vps-staging-safety-guard.mjs'
+      - 'tests/vps-domain-stress.test.ts'
+      - 'tests/infra/**'
+      - '.github/workflows/vps-homologation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vps-homologation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        cpu: [0.9, 1.8]
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co'
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'homologation-placeholder-not-a-real-key'
+      APP_URL: 'http://127.0.0.1:3000'
+    steps:
+      - name: Checkout candidate branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Docker Compose syntax (no service starts)
+        run: |
+          touch .env.vps
+          docker compose -f compose.vps-homolog.yml config --quiet
+          rm .env.vps
+      - name: Guard against production DB credentials in synthetic stress
+        run: |
+          node scripts/infra/vps-staging-safety-guard.mjs
+          if NEXT_PUBLIC_SUPABASE_URL=https://idyjinpeijyqcejnunwm.supabase.co node scripts/infra/vps-staging-safety-guard.mjs; then
+            echo "SAFETY_TEST_FAILED: production project was not rejected"
+            exit 1
+          fi
+          echo "SAFETY_NEGATIVE_TEST_OK: real PedeAqui project denied"
+      - name: Install dependencies (temporary until reviewed lockfile)
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+      - name: Check routes
+        run: npm run check:routes
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Stress checkout and state-machine rules (150k deterministic iterations)
+        run: npx vitest run tests/vps-domain-stress.test.ts
+      - name: Repeated multistore isolation, concurrency and checkout contracts
+        run: |
+          for pass in 1 2 3; do
+            echo "MULTISTORE_CONTRACT_PASS=${pass}/3"
+            npx vitest run tests/access-isolation-contracts.test.ts tests/concurrency-contracts.test.ts tests/e2e-context-journeys.test.ts tests/printing-simple-setup.test.ts
+          done
+      - name: Production build (synthetic public config; no secrets)
+        run: npm run build
+      - name: Docker image build (no deploy, no push)
+        run: docker build -f Dockerfile.vps -t pedeaqui-vps-homolog:ci .
+      - name: Inspect image size
+        run: docker image inspect pedeaqui-vps-homolog:ci --format 'image_size_bytes={{.Size}}'
+      - name: Isolated container startup smoke test (network disabled)
+        run: |
+          set -euo pipefail
+          echo "STRESS_RESOURCE_LIMIT cpu=${{ matrix.cpu }} memory_mib=1536 generator_inside_container=true"
+          container_id="$(docker run -d --network none --memory 1536m --cpus '${{ matrix.cpu }}' \
+            -e NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
+            -e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=homologation-placeholder-not-a-real-key \
+            -e APP_URL=http://127.0.0.1:3000 \
+            pedeaqui-vps-homolog:ci)"
+          trap 'docker logs "$container_id" --tail 60 || true; docker rm -f "$container_id" >/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if docker exec "$container_id" node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))"; then
+              echo "BOOT_SMOKE_OK: isolated application health endpoint returned 200"
+              docker exec "$container_id" node scripts/infra/vps-health-benchmark.mjs
+              echo "STRESS_BASELINE:"
+              docker stats --no-stream --format 'name={{.Name}} mem={{.MemUsage}} cpu={{.CPUPerc}}' "$container_id"
+              echo "STRESS_MONITOR_START"
+              (
+                while true; do
+                  docker stats --no-stream --format '{{.MemPerc}} {{.CPUPerc}}' "$container_id" |
+                    awk '{gsub(/%/, "", $1); gsub(/%/, "", $2); if (NF >= 2) print $1, $2}'
+                  sleep 1
+                done
+              ) > /tmp/vps-stress-metrics.txt &
+              monitor_pid=$!
+              set +e
+              docker exec "$container_id" node scripts/infra/vps-heavy-stress.mjs
+              stress_exit=$?
+              set -e
+              kill "$monitor_pid" 2>/dev/null || true
+              wait "$monitor_pid" 2>/dev/null || true
+              awk 'BEGIN {mem=0;cpu=0;samples=0}
+                   NF==2 {samples++; if ($1>mem) mem=$1; if ($2>cpu) cpu=$2}
+                   END {printf "STRESS_PEAK_SAMPLED mem_percent=%.2f cpu_percent=%.2f samples=%d\\n",mem,cpu,samples; if(samples<3)exit 1; if(mem>=90)exit 1}' /tmp/vps-stress-metrics.txt
+              if [ "$stress_exit" -ne 0 ]; then
+                echo "STRESS_GATE_FAILED: benchmark exited with $stress_exit"
+                exit "$stress_exit"
+              fi
+              echo "STRESS_AFTER:"
+              docker stats --no-stream --format 'name={{.Name}} mem={{.MemUsage}} cpu={{.CPUPerc}}' "$container_id"
+              exit 0
+            fi
+            if [ "$(docker inspect --format '{{.State.Running}}' "$container_id")" != "true" ]; then
+              echo "BOOT_SMOKE_FAILED: container exited"
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "BOOT_SMOKE_FAILED: health endpoint did not become ready"
+          exit 1
+
+  postgres-transaction-fixture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sandbox
+          POSTGRES_PASSWORD: sandbox
+          POSTGRES_DB: isolated
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sandbox -d isolated"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - name: Checkout isolated transaction harness
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install Python PostgreSQL adapter
+        run: python -m pip install "psycopg[binary]==3.2.10"
+      - name: Create disposable PostgreSQL fixture
+        env:
+          PGPASSWORD: sandbox
+        run: psql -h 127.0.0.1 -U sandbox -d isolated -v ON_ERROR_STOP=1 -f tests/infra/isolated-postgres-concurrency.sql
+      - name: Load test real PostgreSQL concurrency only
+        env:
+          ISOLATED_PG_DSN: postgresql://sandbox:sandbox@127.0.0.1:5432/isolated
+        run: python tests/infra/isolated-postgres-concurrency.py
+      - name: Run actual checkout RPC from versioned SQL in separate disposable DB
+        env:
+          PGPASSWORD: sandbox
+          ISOLATED_PG_DSN: postgresql://sandbox:sandbox@127.0.0.1:5432/isolated
+        run: |
+          createdb -h 127.0.0.1 -U sandbox -O sandbox original_rpc
+          psql -h 127.0.0.1 -U sandbox -d original_rpc -v ON_ERROR_STOP=1 -f tests/infra/actual-checkout-minimal-fixture.sql
+          ISOLATED_PG_DSN=postgresql://sandbox:sandbox@127.0.0.1:5432/original_rpc python tests/infra/actual-checkout-rpc-stress.py
+

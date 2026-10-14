@@ -130,4 +130,7 @@ done
 # This disposable stack is destroyed by cleanup; never points to a hosted project.
 python3 scripts/run-tenant-http-isolation.py
 
+# VPS gate: original PDV, payment and print RPCs with all canonical triggers.
+ISOLATED_PG_DSN="${local_db_url}" python3 tests/infra/full-schema-pdv-stress.py
+
 echo "ISOLATED_CHAOS_RESULT=passed"

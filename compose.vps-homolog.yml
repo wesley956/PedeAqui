@@ -1,0 +1,27 @@
+name: pedeaqui-vps-homolog
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.vps
+    restart: unless-stopped
+    env_file:
+      - .env.vps
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+    ports:
+      - "127.0.0.1:3000:3000"
+    mem_limit: 1536m
+    cpus: 0.9
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    init: true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

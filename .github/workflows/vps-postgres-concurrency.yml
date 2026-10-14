@@ -1,0 +1,46 @@
+name: Local PostgreSQL Concurrency CI
+
+on:
+  push:
+    branches:
+      - infra/vps-homologation-20usd
+    paths:
+      - 'tests/infra/**'
+      - '.github/workflows/vps-postgres-concurrency.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sandbox
+          POSTGRES_PASSWORD: sandbox
+          POSTGRES_DB: isolated
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sandbox -d isolated"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare PostgreSQL client
+        run: python -m pip install "psycopg[binary]==3.2.10"
+      - name: Load fixture database
+        env:
+          PGPASSWORD: sandbox
+        run: psql -h 127.0.0.1 -U sandbox -d isolated -v ON_ERROR_STOP=1 -f tests/infra/isolated-postgres-concurrency.sql
+      - name: Run concurrent tests
+        env:
+          ISOLATED_PG_DSN: postgresql://sandbox:sandbox@127.0.0.1:5432/isolated
+        run: python tests/infra/isolated-postgres-concurrency.py
