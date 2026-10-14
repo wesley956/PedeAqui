@@ -159,3 +159,17 @@ Results from actual database transaction logs:
 - All database data lived on a temporary GitHub job database. No real store or production data touched.
 
 **CRITICAL scope:** This is an independently written SQL **model** reflecting selected PedeAqui constraints and locking strategies, **NOT the production Supabase schema, original checkout RPC, actual PDV implementation, RLS, PrintAgent HTTP route, nor real web checkout/browser flow**. The local 14.9ms is NOT a customer checkout latency estimate; network, storage, auth, browser, business code and Pix/WhatsApp omitted. The migration remains **NO-GO**, pending exact production SQL migration bootstrapping in an isolated full test database, real authenticated API calls with fixtures, and regional VPS benchmarks.
+
+## First original PedeAqui checkout RPC transaction stress — VERIFIED 2026-10-14
+
+GitHub Actions run **38531604704**, job **postgres-transaction-fixture** completed **success**. This run loads directly from tracked source `supabase/sql/21_order_access_token.sql` the full definition of **`public.create_order_from_checkout_internal(uuid,text,text)`**, no rewritten substitute, in disposable PostgreSQL 16 database `original_rpc`.
+
+To satisfy the function's references, the new `tests/infra/actual-checkout-minimal-fixture.sql` creates limited fixture tables with the needed columns (not the full production Supabase schema or RLS). Synthetic dataset and `tests/infra/actual-checkout-rpc-stress.py`:
+- 8 synthetic stores, 25 unique carts per store, 3 concurrent attempts per cart, **600 actual checkout RPC invocations** (24 worker threads).
+- **200 unique orders** and exactly **200 created:true** plus **400 created:false retries**, no erroneous duplicates or unexpected errors.
+- **200 domain events**, per-store sequence uniqueness verified; a cross-store token was rejected as expected.
+- **p95 142.0ms**, elapsed **2.27s**, measured within disposable CI runner, no Supabase networking.
+- Prior minimal independent model also reran: **960 calls, 320 orders**, p95 **22.3ms**, **320 unique print claims** with 16 workers.
+- Negative denial is expected to emit a database ERROR log; it is not a failure.
+
+**Interpretation:** the checked-in original checkout RPC's locking and retry semantics passed under bounded concurrent load using fixture tables. Does NOT test real production tables, row-level security, HTTP client, Next.js application, browser, PG row triggers, Supabase auth, Pix, printer agent or user-facing performance. Full operational VPS migration remains NO-GO without safe integration staging and region-to-database latency measurements.
