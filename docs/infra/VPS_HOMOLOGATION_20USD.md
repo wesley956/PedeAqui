@@ -46,3 +46,11 @@ Environment-dependent Next.js compile-time public variables may require dedicate
 - `vercel.json` schedules `/api/internal/order-notifications` each minute, with `CRON_SECRET`; route processes batches up to 25 notifications.
 - Repo webhook uses Node.js crypto and Next.js `after()`; validate task-completion lifecycle on VPS.
 - Supabase reference in legacy README may be stale. Validate authoritative active project separately, without exposing secrets.
+
+## Audit addendum — 2026-10-14
+- The repository has **no** `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock` or Bun lockfile in the default branch. Initial `npm ci` Docker build would fail. Draft Dockerfile now runs `npm install` solely to enable experimentation; before production, generate/review a committed lockfile and switch to `npm ci`.
+- Current DigitalOcean Basic 2 GiB/1 vCPU is advertised at $12/month with 2,000 GiB included; 2 GiB/2 vCPUs is $18/month. Outbound excess is $0.01/GiB, and spend alerts **do not stop usage or charges**. These are not hard-bounded monthly totals.
+- Hetzner European CX33 pricing after June 15, 2026 is advertised at $9.99/month **excluding IPv4 and taxes**, with more RAM/vCPUs than the 2 GiB DigitalOcean candidate. Verify CPU shared-resource performance, actual region latency, network limits and legal tax/addons before selecting; quoted base costs alone are insufficient.
+- No local Docker engine, remote VPS, representative traffic data, or isolated test database has been provisioned as part of this change; **no performance or successful container build is claimed**.
+- Existing `/api/health` only checks environment key presence; do not treat it as real readiness or full system health. Check Supabase access and dependencies separately.
+- Protect testing from production side effects. The staging Compose is loopback-bound and has **no cron schedule**. When ultimately switching hosts, ensure Vercel cron is disabled before enabling the new scheduler.
