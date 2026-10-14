@@ -1,5 +1,7 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
+import { normalizeAppUrl } from "@/lib/app-url";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveExternalPaymentPolicy } from "@/server/payments/external-payment-policy";
 import {
@@ -9,12 +11,23 @@ import {
 import {
   OrderPaymentProviderConfigService,
   type OrderPaymentProviderHealthErrorCode,
+  type OrderPaymentProviderKey,
 } from "@/server/payments/order-payment-provider-config-service";
+import {
+  forceRefreshPagBankCredentials,
+  getUsablePagBankCredentials,
+} from "@/server/payments/pagbank-credential-service";
 import {
   MercadoPagoOrderProvider,
   MercadoPagoProviderHttpError,
 } from "@/server/payments/providers/mercado-pago-order-provider";
-import type { OnlinePixProviderOrder } from "@/server/payments/providers/order-payment-provider";
+import type { OnlinePixProviderOrder, OrderPaymentProvider } from "@/server/payments/providers/order-payment-provider";
+import {
+  PagBankOrderProvider,
+  PagBankProviderHttpError,
+  isValidCpf,
+  onlyDigits,
+} from "@/server/payments/providers/pagbank-order-provider";
 
 type ChargeRow = {
   id: string;
@@ -22,7 +35,7 @@ type ChargeRow = {
   store_id: string;
   order_id: string;
   payment_id: string;
-  provider: "mercado_pago";
+  provider: OrderPaymentProviderKey;
   attempt: number;
   status: "creating" | "pending" | "paid" | "expired" | "canceled" | "failed";
   amount_cents: number | string;
@@ -40,7 +53,8 @@ type ChargeRow = {
 };
 
 export type PublicPixPayment = {
-  status: "preparing" | "waiting" | "paid" | "expired" | "unavailable";
+  /** needs_document: o PagBank exige o CPF do cliente antes de gerar o QR Code. */
+  status: "preparing" | "waiting" | "paid" | "expired" | "unavailable" | "needs_document";
   amountCents: number;
   qrCode: string | null;
   qrCodeBase64: string | null;
@@ -82,7 +96,21 @@ function assertProviderMatches(charge: ChargeRow, remote: OnlinePixProviderOrder
   if (remote.currency !== charge.currency) throw new Error("PIX provider currency mismatch");
 }
 
-function providerHealthErrorCode(error: unknown): OrderPaymentProviderHealthErrorCode {
+export class PixPayerDocumentError extends Error {
+  constructor() {
+    super("O PagBank recusou o CPF informado");
+    this.name = "PixPayerDocumentError";
+  }
+}
+
+function providerHealthErrorCode(error: unknown, providerKey: OrderPaymentProviderKey = "mercado_pago"): OrderPaymentProviderHealthErrorCode {
+  if (providerKey === "pagbank") {
+    if (error instanceof PagBankProviderHttpError) {
+      if (error.status === 401 || error.status === 403) return "pagbank_auth_failed";
+      if (error.status === 429 || error.status >= 500) return "pagbank_provider_unavailable";
+    }
+    return "pagbank_request_failed";
+  }
   if (error instanceof MercadoPagoProviderHttpError) {
     if (error.status === 401 || error.status === 403) return "mercado_pago_auth_failed";
     if (error.status === 429 || error.status >= 500) return "mercado_pago_provider_unavailable";
@@ -90,15 +118,15 @@ function providerHealthErrorCode(error: unknown): OrderPaymentProviderHealthErro
   return "mercado_pago_request_failed";
 }
 
-async function recordHealthy(storeId: string) {
-  await OrderPaymentProviderConfigService.recordHealth(storeId, { status: "healthy" }).catch(() => undefined);
+async function recordHealthy(storeId: string, providerKey: OrderPaymentProviderKey = "mercado_pago") {
+  await OrderPaymentProviderConfigService.recordHealth(storeId, { status: "healthy" }, providerKey).catch(() => undefined);
 }
 
-async function recordProviderError(storeId: string, error: unknown, override?: OrderPaymentProviderHealthErrorCode) {
+async function recordProviderError(storeId: string, error: unknown, override?: OrderPaymentProviderHealthErrorCode, providerKey: OrderPaymentProviderKey = "mercado_pago") {
   await OrderPaymentProviderConfigService.recordHealth(storeId, {
     status: "error",
-    errorCode: override ?? providerHealthErrorCode(error),
-  }).catch(() => undefined);
+    errorCode: override ?? providerHealthErrorCode(error, providerKey),
+  }, providerKey).catch(() => undefined);
 }
 
 async function withMercadoPagoProvider<T>(
@@ -136,6 +164,56 @@ async function withMercadoPagoProvider<T>(
   }
 }
 
+function pagBankNotificationUrl(storeId: string, secret: string) {
+  const base = normalizeAppUrl(process.env.APP_URL, "https://www.pedeaqui.pp.ua");
+  return `${base}/api/webhooks/payments/pagbank/${storeId}?token=${encodeURIComponent(secret)}`;
+}
+
+async function withPagBankProvider<T>(
+  storeId: string,
+  operation: (provider: OrderPaymentProvider) => Promise<T>,
+): Promise<T> {
+  const credentials = await getUsablePagBankCredentials(storeId);
+  const notificationUrl = pagBankNotificationUrl(storeId, credentials.webhook_secret);
+  try {
+    const result = await operation(new PagBankOrderProvider(credentials.access_token, credentials.environment, { notificationUrl }));
+    await recordHealthy(storeId, "pagbank");
+    return result;
+  } catch (error) {
+    const authRejected = error instanceof PagBankProviderHttpError && (error.status === 401 || error.status === 403);
+    if (!authRejected) {
+      if (!(error instanceof PagBankProviderHttpError && error.parameter?.startsWith("customer."))) await recordProviderError(storeId, error, undefined, "pagbank");
+      throw error;
+    }
+
+    let refreshed;
+    try {
+      refreshed = await forceRefreshPagBankCredentials(storeId);
+    } catch (refreshError) {
+      await recordProviderError(storeId, refreshError, "pagbank_auth_failed", "pagbank");
+      throw refreshError;
+    }
+
+    try {
+      const result = await operation(new PagBankOrderProvider(refreshed.access_token, refreshed.environment, { notificationUrl }));
+      await recordHealthy(storeId, "pagbank");
+      return result;
+    } catch (retryError) {
+      await recordProviderError(storeId, retryError, undefined, "pagbank");
+      throw retryError;
+    }
+  }
+}
+
+function withProvider<T>(
+  storeId: string,
+  providerKey: OrderPaymentProviderKey,
+  operation: (provider: OrderPaymentProvider) => Promise<T>,
+): Promise<T> {
+  if (providerKey === "pagbank") return withPagBankProvider(storeId, operation);
+  return withMercadoPagoProvider(storeId, operation);
+}
+
 async function updateFromProvider(charge: ChargeRow, remote: OnlinePixProviderOrder) {
   assertProviderMatches(charge, remote);
   const admin = createAdminClient();
@@ -159,9 +237,10 @@ async function updateFromProvider(charge: ChargeRow, remote: OnlinePixProviderOr
     status: nextStatus,
     provider_order_id: remote.providerOrderId,
     provider_payment_id: remote.providerPaymentId,
-    qr_code: remote.qrCode,
-    qr_code_base64: remote.qrCodeBase64,
-    ticket_url: remote.ticketUrl,
+    // A consulta do PagBank não traz a imagem do QR: mantém a que já foi entregue ao cliente.
+    qr_code: remote.qrCode ?? charge.qr_code,
+    qr_code_base64: remote.qrCodeBase64 ?? charge.qr_code_base64,
+    ticket_url: remote.ticketUrl ?? charge.ticket_url,
     expires_at: safeExpiry(remote.expiresAt),
     last_reconciled_at: now,
     last_error_code: null,
@@ -173,10 +252,10 @@ async function updateFromProvider(charge: ChargeRow, remote: OnlinePixProviderOr
 }
 
 export class OrderPixService {
-  static async ensureForOrder(orderId: string): Promise<PublicPixPayment | null> {
+  static async ensureForOrder(orderId: string, options: { payerTaxId?: string | null } = {}): Promise<PublicPixPayment | null> {
     const admin = createAdminClient();
     const { data: order, error: orderError } = await admin.from("orders")
-      .select("id, organization_id, store_id, source_cart_id, payment_method_snapshot, payment_status, total_cents")
+      .select("id, organization_id, store_id, source_cart_id, payment_method_snapshot, payment_status, total_cents, customer_name_snapshot")
       .eq("id", orderId)
       .maybeSingle();
     if (orderError) throw orderError;
@@ -191,8 +270,8 @@ export class OrderPixService {
     if (externalPaymentError) throw externalPaymentError;
     if (!resolveExternalPaymentPolicy(externalPayment).allowsOnlinePix) return null;
 
-    const ready = await OrderPaymentProviderConfigService.isOnlinePixReady(order.organization_id, order.store_id);
-    if (!ready) return null;
+    const providerKey = await OrderPaymentProviderConfigService.activeProvider(order.organization_id, order.store_id);
+    if (!providerKey) return null;
 
     const { data: payment, error: paymentError } = await admin.from("payments")
       .select("id, status, amount_cents")
@@ -218,7 +297,15 @@ export class OrderPixService {
       const projected = publicProjection(existing as ChargeRow);
       return projected.status === "paid" ? projected : { ...projected, status: "paid" };
     }
-    if (existing && existing.status === "pending" && existing.provider_order_id) return publicProjection(existing as ChargeRow);
+    if (existing && existing.status === "pending" && existing.provider_order_id) {
+      if (existing.provider === "pagbank" && !existing.qr_code_base64
+        && (!existing.last_reconciled_at || Date.now() - new Date(existing.last_reconciled_at).getTime() > 60_000)) {
+        // Recover an optional image for the same intent, never create another charge.
+        try { return await this.reconcile(order.store_id, existing.provider_order_id, "pagbank", { includeQrImage: true }); }
+        catch { return publicProjection(existing as ChargeRow); }
+      }
+      return publicProjection(existing as ChargeRow);
+    }
     if (existing && existing.status === "paid") return publicProjection(existing as ChargeRow);
 
     let email: string | null = null;
@@ -234,13 +321,31 @@ export class OrderPixService {
     }
     if (!email) throw new Error("E-mail do cliente é obrigatório para gerar o PIX online");
 
+    // O PagBank exige o CPF do pagador. Ele vem do formulário da página do pedido,
+    // segue só para o PagBank e não é gravado no PedeAqui.
+    const payerTaxId = onlyDigits(options.payerTaxId);
+    if (providerKey === "pagbank" && !isValidCpf(payerTaxId)) {
+      return { status: "needs_document", amountCents: Number(payment.amount_cents), qrCode: null, qrCodeBase64: null, ticketUrl: null, expiresAt: null };
+    }
+
     const { data: reserved, error: reserveError } = await admin.rpc("order_payment_provider_reserve_charge_internal", {
       p_payment_id: payment.id,
-      p_provider: "mercado_pago",
+      p_provider: providerKey,
     });
     if (reserveError) throw reserveError;
-    const charge = reserved as ChargeRow;
+    let charge = reserved as ChargeRow;
     if (charge.status === "pending" && charge.provider_order_id) return publicProjection(charge);
+    if (charge.provider !== providerKey && !charge.provider_order_id) {
+      // A unidade trocou de provedor antes de a cobrança anterior chegar a ele.
+      const { data: moved, error: moveError } = await admin.from("order_payment_provider_charges")
+        .update({ provider: providerKey, updated_at: new Date().toISOString() })
+        .eq("id", charge.id)
+        .is("provider_order_id", null)
+        .select("*")
+        .single();
+      if (moveError) throw moveError;
+      charge = moved as ChargeRow;
+    }
 
     const request = {
       amountCents: Number(charge.amount_cents),
@@ -248,30 +353,37 @@ export class OrderPixService {
       externalReference: charge.external_reference,
       idempotencyKey: charge.idempotency_key,
       payerEmail: email,
+      payerName: order.customer_name_snapshot ?? null,
+      payerTaxId: charge.provider === "pagbank" ? payerTaxId : null,
     };
+    if (charge.provider === "pagbank") {
+      // Um CPF corrigido precisa de outra chave: a mesma chave devolveria a recusa anterior.
+      request.idempotencyKey = `${charge.idempotency_key}-${createHash("sha256").update(payerTaxId).digest("hex").slice(0, 12)}`;
+    }
 
     try {
-      // If an OAuth token is rejected, withMercadoPagoProvider refreshes it once
+      // If an OAuth token is rejected, the provider wrapper refreshes it once
       // and retries this exact request, preserving the idempotency key.
-      const remote = await withMercadoPagoProvider(order.store_id, (provider) => provider.createPixCharge(request));
+      const remote = await withProvider(order.store_id, charge.provider, (provider) => provider.createPixCharge(request));
       return publicProjection(await updateFromProvider(charge, remote));
     } catch (error) {
       await admin.from("order_payment_provider_charges").update({
         last_error_code: "provider_request_failed",
         updated_at: new Date().toISOString(),
       }).eq("id", charge.id);
+      if (error instanceof PagBankProviderHttpError && error.parameter?.startsWith("customer.tax_id")) throw new PixPayerDocumentError();
       throw error;
     }
   }
 
-  static async reconcile(storeId: string, providerOrderId: string): Promise<PublicPixPayment | null> {
+  static async reconcile(storeId: string, providerOrderId: string, providerKey: OrderPaymentProviderKey = "mercado_pago", options?: { includeQrImage?: boolean }): Promise<PublicPixPayment | null> {
     const admin = createAdminClient();
-    const remote = await withMercadoPagoProvider(storeId, (provider) => provider.getOrder(providerOrderId));
+    const remote = await withProvider(storeId, providerKey, (provider) => options?.includeQrImage ? provider.getOrder(providerOrderId, options) : provider.getOrder(providerOrderId));
 
     const { data: direct, error: directError } = await admin.from("order_payment_provider_charges")
       .select("*")
       .eq("store_id", storeId)
-      .eq("provider", "mercado_pago")
+      .eq("provider", providerKey)
       .eq("provider_order_id", providerOrderId)
       .maybeSingle();
     if (directError) throw directError;
@@ -281,7 +393,7 @@ export class OrderPixService {
       const { data: referenced, error: referenceError } = await admin.from("order_payment_provider_charges")
         .select("*")
         .eq("store_id", storeId)
-        .eq("provider", "mercado_pago")
+        .eq("provider", providerKey)
         .eq("external_reference", remote.externalReference)
         .maybeSingle();
       if (referenceError) throw referenceError;
