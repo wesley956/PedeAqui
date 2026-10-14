@@ -79,3 +79,9 @@ Aggregate 7,000 requests completed in ~26.1 seconds across six sequential stages
 7. Validate restore, provider contract and billing hard-cap protection before any switch. Preserve Vercel until explicit production cutover approval.
 
 **Deployment remains blocked** pending real integration proof, all-in price and user approval.
+
+## Domain-rule stress gate (created 2026-10-14; result pending)
+- New `tests/vps-domain-stress.test.ts` exercises 150,000 deterministic CPU-only validations: 50k successful delivery/pickup checkout reviews, 50k rejection cases (inadequate cash/change, closed store, invalid delivery quote), and 50k order/payment/production transition checks.
+- Workflow adds `npx vitest run tests/vps-domain-stress.test.ts` as a blocking gate before build. Current GitHub Actions run: #38526243953, pending at last check.
+- **Scope**: no database write, no queues, no real checkout HTTP requests, no third-party services. This confirms correctness under many calls to pure rules, NOT multi-restaurant load, latency or transactional safety.
+- Hard production gate remains an isolated Supabase environment with synthetic stores, payment sandboxes, fake WhatsApp and fake print agents; require explicit spend and resource approval to provision any test infrastructure.
