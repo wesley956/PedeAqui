@@ -119,3 +119,18 @@ Aggregate: 7k sequential-stage requests, ~27.0 seconds, **0 errors**.
 - No actual VPS, separate Supabase database or test customer journey is provisioned, so a production migration is **NOT approved**. Next gate must involve authorized account provisioning (potential cost), sandbox keys, live-like order/PDV/print/WhatsApp mocks, comparison of p95 and CPU peak versus the Vercel control, and tested rollback.
 
 **Recommendation: do not cut over yet.** This document closes the reproducible CI + offline stress investigation; it does **not** close the hosting migration.
+
+## Verified 15k HTTP heavy stress — 2026-10-14
+
+GitHub Actions `VPS homologation checks (no deploy)` run **38528620514**: **SUCCESS**. The test uses the same Docker container (0.9 CPU, 1.5 GiB RAM), no external network, dummy config; endpoints are health and public legal page, **not** business transactions.
+
+| Concurrent | Requests per endpoint | Health p95 | Legal page p95 | Errors |
+| ---: | ---: | ---: | ---: | ---: |
+| 10 | 500 | 102 ms | 84 ms | 0 |
+| 40 | 1,000 | 238 ms | 240 ms | 0 |
+| 80 | 2,000 | 354 ms | 400 ms | 0 |
+| 160 | 4,000 | 521 ms | 698 ms | 0 |
+
+Total **15,000 HTTP requests, 0 request errors** over sequential stages lasting **48,023 ms** (not a sustained full-rate benchmark). Docker image size **750,214,748 bytes**. Maximum sampled RAM **21.74%** of 1.5 GiB (~334MiB) and Docker CPU **91.84%** (close to a CPU core), across **19 sampled points**. Note sampled maximum, not necessarily instantaneous peak, and CPU percentages are not fractions of the 0.9 vCPU allocation.
+
+**Decision:** Synthetic HTTP and domain CI gate **passed**. Still **NO-GO** for migrating production until representative checkout, PDV, printing and multi-store concurrency run against a dedicated staging database and the end-to-end VPS-to-Supabase RTT is measured; no hard US$20 all-in supplier quote is verified. Must not use production database or customers for heavy load.
