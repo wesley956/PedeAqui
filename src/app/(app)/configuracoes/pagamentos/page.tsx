@@ -9,15 +9,18 @@ import {
   addCustomPaymentMethodAction,
   archiveCustomPaymentMethodAction,
   disconnectMercadoPagoOAuthAction,
+  disconnectPagBankAction,
   renameCustomPaymentMethodAction,
   saveOnlinePixProviderAction,
   savePaymentMethodsAction,
   toggleCustomPaymentMethodAction,
   toggleOnlinePixProviderAction,
+  togglePagBankAction,
 } from "@/features/payments/actions";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
 import { isMercadoPagoOAuthConfigured } from "@/server/payments/providers/mercado-pago-oauth";
+import { isPagBankConnectConfigured } from "@/server/payments/providers/pagbank-connect";
 import { StorePaymentMethodService } from "@/server/payments/store-payment-method-service";
 import { PageHeader } from "@/components/ui/page-header";
 
@@ -35,6 +38,15 @@ const mercadoPagoStatusMessages: Record<string, string> = {
   not_authorized: "Sua sessão não tem permissão para gerenciar os pagamentos desta unidade.",
   store_required: "Selecione uma unidade antes de conectar o Mercado Pago.",
   setup_required: "O servidor ainda não reconheceu todas as configurações necessárias do Mercado Pago.",
+};
+
+const pagBankStatusMessages: Record<string, string> = {
+  connected: "PagBank conectado. O Pix continua desligado até você ativá-lo nesta unidade.",
+  authorization_denied: "A autorização foi cancelada no PagBank. Você pode tentar conectar novamente.",
+  oauth_error: "Não foi possível concluir a conexão com o PagBank. Tente novamente.",
+  not_authorized: "Sua sessão não tem permissão para gerenciar os pagamentos desta unidade.",
+  store_required: "Selecione uma unidade antes de conectar o PagBank.",
+  setup_required: "O servidor ainda não tem as configurações do PagBank Connect.",
 };
 
 type PaymentSettingsPageProps = {
@@ -62,12 +74,20 @@ export default async function PaymentSettingsPage({ searchParams }: PaymentSetti
   const mercadoPagoMessage = mercadoPagoStatus ? mercadoPagoStatusMessages[mercadoPagoStatus] : null;
   const statusText = !config?.credentialsConfigured ? "Ainda não conectado" : config.enabled ? "Conectado e Pix ativo" : "Conectado, Pix desativado";
   const accountLabel = config?.providerAccountId ? `Conta Mercado Pago ••••${config.providerAccountId.slice(-4)}` : "Conta Mercado Pago conectada";
+  const pagbank = providerResult.pagbank;
+  const pagBankConnected = Boolean(pagbank?.credentialsConfigured && !pagbank.revokedAt);
+  const pagBankAvailable = isPagBankConnectConfigured();
+  const pagBankStatusParam = params.pagbank;
+  const pagBankStatus = Array.isArray(pagBankStatusParam) ? pagBankStatusParam[0] : pagBankStatusParam;
+  const pagBankMessage = pagBankStatus ? pagBankStatusMessages[pagBankStatus] : null;
+  const pagBankStatusText = !pagBankConnected ? "Ainda não conectado" : pagbank?.enabled ? "Conectado e Pix ativo" : "Conectado, Pix desativado";
 
   return (
     <section className={styles.page}>
       <PageHeader title="Formas de pagamento" description="Defina as opções do cliente e conecte o Pix online da unidade." />
 
       {mercadoPagoMessage ? <div role={mercadoPagoStatus === "connected" ? "status" : "alert"} className="card" style={{ padding: 14 }}>{mercadoPagoMessage}</div> : null}
+      {pagBankMessage ? <div role={pagBankStatus === "connected" ? "status" : "alert"} className="card" style={{ padding: 14 }}>{pagBankMessage}</div> : null}
 
       <form action={savePaymentMethodsAction} aria-label="Formas aceitas" className={styles.form}>
         <div>
@@ -162,6 +182,37 @@ export default async function PaymentSettingsPage({ searchParams }: PaymentSetti
             </form>
           </FormDisclosure>
         ) : null}
+      </div>
+
+      <div className={styles.card}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Pix online</p><h2 style={{ margin: "4px 0", fontSize: "var(--font-size-lg)" }}>PagBank</h2><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Alternativa ao Mercado Pago. Só um dos dois recebe o Pix por vez: ativar um desativa o outro.</p></div>
+          <strong style={{ fontSize: "var(--font-size-support)" }}>{pagBankStatusText}</strong>
+        </div>
+
+        {pagBankConnected ? (
+          <>
+            <div style={{ padding: 14, borderRadius: "var(--radius-lg)", background: "var(--surface-2)", border: "1px solid var(--border)", display: "grid", gap: 5 }}>
+              <strong>Conta PagBank conectada</strong>
+              <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>{pagbank?.environment === "production" ? "Ambiente de produção." : "Ambiente de testes (sandbox): nenhum dinheiro real é movimentado."} Credenciais ficam somente no servidor.</span>
+              {pagbank?.authorizedAt ? <span className="muted" style={{ fontSize: "var(--font-size-support)" }}>Autorizada em {new Date(pagbank.authorizedAt).toLocaleString("pt-BR")}</span> : null}
+            </div>
+            <form action={togglePagBankAction} style={{ display: "grid", gap: 12 }}>
+              <label style={{ display: "flex", justifyContent: "space-between", gap: 14, alignItems: "center", padding: 14, border: "1px solid var(--border)", borderRadius: "var(--radius-lg)" }}>
+                <div><strong>Receber Pix pelo PagBank</strong><div className="muted" style={{ fontSize: "var(--font-size-support)", marginTop: 3 }}>O cliente informa o CPF na página do pedido, porque o PagBank exige. O CPF não fica salvo no PedeAqui.</div></div>
+                <input type="checkbox" name="enabled" defaultChecked={pagbank?.enabled ?? false} />
+              </label>
+              <div><Button type="submit">Salvar ativação do PagBank</Button></div>
+            </form>
+            {pagbank?.healthStatus === "error" ? <p style={{ margin: 0 }}>A última tentativa com o PagBank falhou. O Pix online fica isolado; dinheiro e cartões não dependem desta integração.</p> : null}
+            <form action={disconnectPagBankAction}><ConfirmSubmitButton tone="secondary" size="md" confirmation="Desconectar o PagBank desta unidade?">Desconectar PagBank</ConfirmSubmitButton></form>
+          </>
+        ) : (
+          <div style={{ display: "grid", gap: 10 }}>
+            <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>O restaurante autoriza o PedeAqui na conta PagBank dele. O dinheiro cai direto nessa conta e o PedeAqui confirma o pagamento sozinho.</p>
+            {pagBankAvailable ? <a href="/api/integrations/pagbank/oauth/start" className={`${buttonStyles.button} ${buttonStyles.primary} ${buttonStyles.md}`} style={{ width: "fit-content" }}>Conectar PagBank</a> : <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>A aplicação PagBank do PedeAqui ainda precisa ser cadastrada e configurada no servidor para liberar este botão.</p>}
+          </div>
+        )}
       </div>
     </section>
   );

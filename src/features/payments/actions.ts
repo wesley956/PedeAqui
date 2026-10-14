@@ -69,6 +69,16 @@ export async function disconnectMercadoPagoOAuthAction() {
   refreshPaymentSettings();
 }
 
+export async function togglePagBankAction(formData: FormData) {
+  await OrderPaymentProviderConfigService.setPagBankEnabledCurrentStore(formData.get("enabled") === "on");
+  refreshPaymentSettings();
+}
+
+export async function disconnectPagBankAction() {
+  await OrderPaymentProviderConfigService.disconnectPagBankCurrentStore();
+  refreshPaymentSettings();
+}
+
 function refreshPaymentSettings() {
   revalidatePath("/configuracoes/pagamentos");
   revalidatePath("/m/[slug]/checkout", "page");

@@ -75,6 +75,9 @@ Este adendo preserva o baseline congelado de 22/08/2026 e registra superfícies 
 - `/api/print-agent/job-style` — endpoint autenticado e restrito ao job atribuído ao Print Agent para recuperar o espaçamento entre linhas preservado no próprio job de impressão.
 - `/api/integrations/mercado-pago/oauth/start` — inicia a autorização OAuth do Mercado Pago para a unidade autenticada, usando state e PKCE; conectar a conta não habilita Pix automaticamente.
 - `/api/integrations/mercado-pago/oauth/callback` — valida o retorno OAuth, reconfirma organização/unidade e persiste as credenciais somente no servidor/Vault, mantendo o Pix desativado até ativação explícita.
+- `/api/integrations/pagbank/oauth/start` — inicia a autorização do PagBank Connect para a unidade autenticada, com state assinado em cookie; conectar não ativa o Pix.
+- `/api/integrations/pagbank/oauth/callback` — valida o state, reconfirma organização/unidade e guarda os tokens do PagBank somente no Vault, com o Pix desativado.
+- `/api/webhooks/payments/pagbank/[storeId]` — recebe notificações de pedidos Pix do PagBank. Exige o token aleatório da unidade na URL e sempre reconsulta o pedido no PagBank antes de dar baixa.
 - `/api/internal/payment-reconciliation` — job interno autenticado que reconcilia em lote limitado apenas cobranças Mercado Pago pendentes e atrasadas de unidades com Pix online habilitado, recuperando notificações perdidas sem expor credenciais ou payload bruto do provedor.
 - `/api/internal/subscription-renewals` — job interno autenticado de renovação das assinaturas PedeAqui. É invocado pelo scheduler do Supabase e não depende de Vercel Cron.
 - `/api/internal/ifood-order-intake` — job interno autenticado para polling, inbox durável, importação canônica e ACK de pedidos iFood. O scheduler de 30 segundos nasce pausado e nenhuma chamada ao iFood ocorre sem capability explicitamente habilitada.
