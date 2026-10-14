@@ -147,3 +147,15 @@ Safety implementation: `scripts/infra/vps-staging-safety-guard.mjs` rejects conf
 - Disable schedulers/cron; stub Pix/PagBank, Meta WhatsApp/webhooks, delivery and PrintAgent integrations.
 - Add proof that staging cannot resolve any production domain/endpoint; validate tenant RLS with real SQL, concurrent duplicate checkout and PDV, order queue delivery and printer claim/ack on isolated replicas.
 - Test cancellation/resume at CPU throttle, cold start, fail/restart, backup/restore, and 95th percentile latency as seen from a Brazilian probe before production deployment is eligible.
+
+## Real isolated PostgreSQL transaction test — 2026-10-14
+GitHub Actions run **38530849701**, job `postgres-transaction-fixture` **SUCCESS**. The CI runner started a **disposable PostgreSQL 16 database** with test credentials, loaded `tests/infra/isolated-postgres-concurrency.sql`, and executed Python `tests/infra/isolated-postgres-concurrency.py` using psycopg.
+
+Results from actual database transaction logs:
+- **960** concurrent checkout attempts across **8 fictitious stores**, **320** unique expected orders, **32** workers, **0** errors, local p95 **14.9ms** and ~0.24s test execution.
+- Repeated checkouts with same idempotency keys returned the same order ID rather than creating duplicates. Unique order sequence constraints checked.
+- **320** queued print jobs uniquely claimed by **16** parallel workers using PostgreSQL `FOR UPDATE SKIP LOCKED`, **0 duplicated/lost**, ~0.11s.
+- Cross-store checkout was denied by the fixture.
+- All database data lived on a temporary GitHub job database. No real store or production data touched.
+
+**CRITICAL scope:** This is an independently written SQL **model** reflecting selected PedeAqui constraints and locking strategies, **NOT the production Supabase schema, original checkout RPC, actual PDV implementation, RLS, PrintAgent HTTP route, nor real web checkout/browser flow**. The local 14.9ms is NOT a customer checkout latency estimate; network, storage, auth, browser, business code and Pix/WhatsApp omitted. The migration remains **NO-GO**, pending exact production SQL migration bootstrapping in an isolated full test database, real authenticated API calls with fixtures, and regional VPS benchmarks.
