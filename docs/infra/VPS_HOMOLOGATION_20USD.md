@@ -134,3 +134,16 @@ GitHub Actions `VPS homologation checks (no deploy)` run **38528620514**: **SUCC
 Total **15,000 HTTP requests, 0 request errors** over sequential stages lasting **48,023 ms** (not a sustained full-rate benchmark). Docker image size **750,214,748 bytes**. Maximum sampled RAM **21.74%** of 1.5 GiB (~334MiB) and Docker CPU **91.84%** (close to a CPU core), across **19 sampled points**. Note sampled maximum, not necessarily instantaneous peak, and CPU percentages are not fractions of the 0.9 vCPU allocation.
 
 **Decision:** Synthetic HTTP and domain CI gate **passed**. Still **NO-GO** for migrating production until representative checkout, PDV, printing and multi-store concurrency run against a dedicated staging database and the end-to-end VPS-to-Supabase RTT is measured; no hard US$20 all-in supplier quote is verified. Must not use production database or customers for heavy load.
+
+## Isolated database discovery — 2026-10-14
+
+Read-only Supabase project enumeration for the connected account returned **one project**: `idyjinpeijyqcejnunwm` (region `sa-east-1`, `ACTIVE_HEALTHY`). This is the known live PedeAqui production project. **No independent staging Supabase project is available** in this connected account. Production database is absolutely excluded from any heavy test or artificial order insertion.
+
+Safety implementation: `scripts/infra/vps-staging-safety-guard.mjs` rejects configured production project URLs, any database connection URL and any known privileged/integration env secrets in **offline synthetic CI**. GitHub workflow has a negative test that sets the production URL and requires this guard to fail. The guard complements `--network none`, but it is not a universal secret scanner.
+
+**Operational integrated stress BLOCKED, rather than completed**:
+- Need user-approved independent staging environment and confirmation of price/entitlement; cannot create a potentially chargeable Supabase project simply to run a benchmark.
+- Clone schema/migrations into staging without customer rows or user accounts, use independent auth keys and synthetic store fixtures.
+- Disable schedulers/cron; stub Pix/PagBank, Meta WhatsApp/webhooks, delivery and PrintAgent integrations.
+- Add proof that staging cannot resolve any production domain/endpoint; validate tenant RLS with real SQL, concurrent duplicate checkout and PDV, order queue delivery and printer claim/ack on isolated replicas.
+- Test cancellation/resume at CPU throttle, cold start, fail/restart, backup/restore, and 95th percentile latency as seen from a Brazilian probe before production deployment is eligible.
