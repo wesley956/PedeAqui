@@ -47,6 +47,10 @@ jobs:
   static-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        cpu: [0.9, 1.8]
     env:
       NEXT_TELEMETRY_DISABLED: '1'
       NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co'
@@ -97,7 +101,8 @@ jobs:
       - name: Isolated container startup smoke test (network disabled)
         run: |
           set -euo pipefail
-          container_id="$(docker run -d --network none --memory 1536m --cpus 0.9 \
+          echo "STRESS_RESOURCE_LIMIT cpu=${{ matrix.cpu }} memory_mib=1536 generator_inside_container=true"
+          container_id="$(docker run -d --network none --memory 1536m --cpus '${{ matrix.cpu }}' \
             -e NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
             -e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=homologation-placeholder-not-a-real-key \
             -e APP_URL=http://127.0.0.1:3000 \
