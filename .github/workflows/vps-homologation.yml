@@ -13,6 +13,7 @@ on:
       - 'src/**'
       - 'scripts/infra/vps-health-benchmark.mjs'
       - 'scripts/infra/vps-heavy-stress.mjs'
+      - 'tests/vps-domain-stress.test.ts'
       - '.github/workflows/vps-homologation.yml'
   pull_request:
     branches:
@@ -26,6 +27,7 @@ on:
       - 'src/**'
       - 'scripts/infra/vps-health-benchmark.mjs'
       - 'scripts/infra/vps-heavy-stress.mjs'
+      - 'tests/vps-domain-stress.test.ts'
       - '.github/workflows/vps-homologation.yml'
   workflow_dispatch:
 
@@ -65,6 +67,8 @@ jobs:
         run: npm run check:routes
       - name: Typecheck
         run: npm run typecheck
+      - name: Stress checkout and state-machine rules (150k deterministic iterations)
+        run: npx vitest run tests/vps-domain-stress.test.ts
       - name: Production build (synthetic public config; no secrets)
         run: npm run build
       - name: Docker image build (no deploy, no push)
