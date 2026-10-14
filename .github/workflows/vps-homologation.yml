@@ -16,6 +16,7 @@ on:
       - 'scripts/infra/vps-staging-safety-guard.mjs'
       - 'tests/vps-domain-stress.test.ts'
       - 'tests/infra/**'
+      - 'supabase/sql/21_order_access_token.sql'
       - '.github/workflows/vps-homologation.yml'
   pull_request:
     branches:
@@ -173,3 +174,12 @@ jobs:
         env:
           ISOLATED_PG_DSN: postgresql://sandbox:sandbox@127.0.0.1:5432/isolated
         run: python tests/infra/isolated-postgres-concurrency.py
+      - name: Run actual checkout RPC from versioned SQL in separate disposable DB
+        env:
+          PGPASSWORD: sandbox
+          ISOLATED_PG_DSN: postgresql://sandbox:sandbox@127.0.0.1:5432/isolated
+        run: |
+          createdb -h 127.0.0.1 -U sandbox -O sandbox original_rpc
+          psql -h 127.0.0.1 -U sandbox -d original_rpc -v ON_ERROR_STOP=1 -f tests/infra/actual-checkout-minimal-fixture.sql
+          ISOLATED_PG_DSN=postgresql://sandbox:sandbox@127.0.0.1:5432/original_rpc python tests/infra/actual-checkout-rpc-stress.py
+
