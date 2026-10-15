@@ -204,8 +204,10 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, p
     <div className={styles.activeGrid} data-mode="custom">
       {stages.map((stage) => {
         const stageOrders = orders.filter((order) => visibleStage(order, config) === stage);
-        return <section key={stage} className={styles.lane} data-bucket={stage} aria-label={`${title}: ${workflowStageLabels[stage]}`}>
-          <header className={styles.laneHeader}><strong>{workflowStageLabels[stage]}</strong><span className={styles.laneCount}>{stageOrders.length}</span></header>
+        if (stage === "new" && config.receptionMode === "auto_prepare" && stageOrders.length === 0) return null;
+        const stageLabel = stage === "new" && config.receptionMode === "auto_prepare" ? "Aguardando" : workflowStageLabels[stage];
+        return <section key={stage} className={styles.lane} data-bucket={stage} aria-label={`${title}: ${stageLabel}`}>
+          <header className={styles.laneHeader}><strong>{stageLabel}</strong><span className={styles.laneCount}>{stageOrders.length}</span></header>
           <div className={styles.laneBody}>{stageOrders.map((order) => <Card
             key={order.id}
             order={order}
@@ -253,7 +255,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
     onInsert: (row) => {
       if (seen.current.has(row.id)) return;
       seen.current.add(row.id);
-      if (row.order_status === "pending_confirmation") {
+      if (row.order_status === "pending_confirmation" || (config.receptionMode === "auto_prepare" && row.order_status === "confirmed")) {
         setNotice(`Novo pedido #${row.display_number ?? ""} recebido.`);
         void notifyNewOrder();
       }
