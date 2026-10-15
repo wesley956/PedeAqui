@@ -5,6 +5,7 @@ import {
   customWorkflowConfigSchema,
   selectedStagesFromForm,
   workflowModeSchema,
+  receptionModeSchema,
 } from "@/features/orders/workflow-config";
 import { OrderWorkflowSettingsService } from "@/server/orders/order-workflow-settings-service";
 
@@ -17,7 +18,7 @@ export async function saveOrderWorkflowSettingsAction(formData: FormData) {
   });
 
   await OrderWorkflowSettingsService.save(
-    { mode, custom },
+    { mode, custom, receptionMode: receptionModeSchema.parse(String(formData.get("receptionMode") ?? "manual")) },
     {
       source: "user_action",
       reason: "workflow_settings_form",

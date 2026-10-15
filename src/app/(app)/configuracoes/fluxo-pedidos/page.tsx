@@ -8,6 +8,6 @@ export default async function OrderWorkflowSettingsPage() {
 
   return <section className={styles.page}>
     <PageHeader title="Fluxo de pedidos" description="Escolha quantas etapas aparecem para a equipe. No modo personalizado, entrega e retirada podem ter checkpoints diferentes sem alterar as regras internas do pedido." />
-    <OrderWorkflowSettingsForm mode={settings.mode} custom={settings.custom} />
+    <OrderWorkflowSettingsForm mode={settings.mode} custom={settings.custom} receptionMode={settings.receptionMode} />
   </section>;
 }

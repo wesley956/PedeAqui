@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+export const receptionModeSchema = z.enum(["manual", "auto_accept", "auto_prepare"]);
+export type ReceptionMode = z.infer<typeof receptionModeSchema>;
+
 export const workflowModeSchema = z.enum(["standard", "simplified", "custom"]);
 export type OrderWorkflowMode = z.infer<typeof workflowModeSchema>;
 
@@ -46,6 +49,8 @@ export const customWorkflowConfigSchema = z.object({
   delivery: z.array(deliveryStageSchema).min(2).max(deliveryWorkflowStages.length).superRefine(orderedUnique(deliveryWorkflowStages)),
   pickup: z.array(pickupStageSchema).min(2).max(pickupWorkflowStages.length).superRefine(orderedUnique(pickupWorkflowStages)),
   quickFinish: z.boolean().default(false),
+  receptionMode: receptionModeSchema.optional(),
+  autoPrepareFrom: z.string().datetime().nullable().optional(),
 });
 
 export type CustomWorkflowConfig = z.infer<typeof customWorkflowConfigSchema>;
