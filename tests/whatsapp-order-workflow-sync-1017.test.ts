@@ -173,3 +173,14 @@ describe("#1017 shared dispatch and persistence contracts", () => {
     expect(capabilities.delivered.state).toBe("enabled");
   });
 });
+
+describe("automatic preparation waiting states", () => {
+  it("does not display accepted but unstarted orders as preparing", () => {
+    const order = { fulfillmentType: "pickup", orderStatus: "confirmed", productionStatus: "pending_confirmation", fulfillmentStatus: "pending" };
+    const settings = { orders_workflow_mode: "custom", orders_custom_workflow: { delivery: ["new", "preparing", "ready", "delivering", "finished"], pickup: ["new", "preparing", "ready", "awaiting_pickup", "finished"], receptionMode: "auto_prepare" } };
+    expect(visibleWorkflowStage(order, settings)).toBe("new");
+    expect(visibleWorkflowStage({ ...order, productionStatus: "queued" }, settings)).toBe("new");
+    expect(visibleWorkflowStage({ ...order, productionStatus: "preparing" }, settings)).toBe("preparing");
+    expect(visibleWorkflowStage({ ...order, orderStatus: "completed" }, settings)).toBe("finished");
+  });
+});

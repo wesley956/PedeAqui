@@ -45,13 +45,13 @@ function money(cents: number | string) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(cents) / 100);
 }
 
-function rawStage(order: OrderManagerRow): WorkflowStage {
+function rawStage(order: OrderManagerRow, config: CustomWorkflowConfig): WorkflowStage {
   return rawWorkflowStage({
     fulfillmentType: order.fulfillment_type,
     orderStatus: order.order_status,
     productionStatus: order.production_status,
     fulfillmentStatus: order.fulfillment_status,
-  });
+  }, { automaticPreparation: config.receptionMode === "auto_prepare" });
 }
 
 function visibleStage(order: OrderManagerRow, config: CustomWorkflowConfig) {
@@ -146,7 +146,7 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
     ? formatStoreDateTime(external.recommendedPreparationAt, timeZone, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
     : null;
 
-  return <article className={styles.orderCard} data-channel={external?.provider ?? "pedeaqui"} data-bucket={rawStage(order)} data-selected={selected || undefined} data-late={isOrderAttentionLate(order, now) || undefined}>
+  return <article className={styles.orderCard} data-channel={external?.provider ?? "pedeaqui"} data-bucket={rawStage(order, config)} data-selected={selected || undefined} data-late={isOrderAttentionLate(order, now) || undefined}>
     {bulkSelectable ? <label className={styles.bulkSelection} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: "var(--font-size-xs)", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>
       <input
         type="checkbox"
@@ -166,7 +166,7 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
         <Tag>{channelBadge}</Tag>
         {external ? <Tag>{externalSyncLabel(external.syncStatus)}</Tag> : null}
       </div>
-      <span className={styles.metaText}>{modality} · {paymentStatusLabels[order.payment_status] ?? order.payment_status} · {workflowStageLabels[rawStage(order)]}</span>
+      <span className={styles.metaText}>{modality} · {paymentStatusLabels[order.payment_status] ?? order.payment_status} · {workflowStageLabels[rawStage(order, config)]}</span>
       {external?.externalDisplayId ? <Tag>Cód. {external.externalDisplayId}</Tag> : null}
       {external ? <Tag>{externalPaymentLabel(external)}</Tag> : null}
       {logisticsLabel ? <Tag>{logisticsLabel}</Tag> : null}
@@ -178,7 +178,7 @@ function Card({ order, now, config, manualDeliveryMode, paymentPolicy, timeZone,
     <details className={styles.cardMore}>
       <summary>Mais</summary>
       <div className={styles.cardMoreBody}>
-        <div className={styles.stateLine}>Etapa operacional: {workflowStageLabels[rawStage(order)]}</div>
+        <div className={styles.stateLine}>Etapa operacional: {workflowStageLabels[rawStage(order, config)]}</div>
         {external ? <div className={styles.stateLine}>Origem: {channelBadge}{external.externalDisplayId ? ` · código ${external.externalDisplayId}` : ""} · {externalSyncLabel(external.syncStatus)}</div> : null}
         <Link href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.detailsLink}>Ver pedido</Link>
       </div>
@@ -296,7 +296,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
   const allEligibleSelected = boundedEligibleIds.length > 0 && boundedEligibleIds.every((id) => selectedIds.has(id));
 
   const previewOrder = orders.find((order) => order.id === previewId && isOperationalOrder(order));
-  const attentionOrders = sortOrdersForAttention(filtered.filter((order) => isOperationalOrder(order) && (stageFilter === "all" || rawStage(order) === stageFilter)));
+  const attentionOrders = sortOrdersForAttention(filtered.filter((order) => isOperationalOrder(order) && (stageFilter === "all" || rawStage(order, config) === stageFilter)));
   const activeStages = ["new", "preparing", "ready", "delivering", "awaiting_pickup"] as const;
 
   const toggleBulkSelection = (orderId: string, selected: boolean) => {
@@ -352,7 +352,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
     <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} bulkPending={bulkPending} onBulkToggle={toggleBulkSelection} /></> : <>
       <div className={styles.stageFilters} role="group" aria-label="Filtrar etapa">
         <Button type="button" tone="secondary" aria-pressed={stageFilter === "all"} onClick={() => setStageFilter("all")}>Todos {filtered.length}</Button>
-        {activeStages.map((stage) => <Button key={stage} type="button" tone="secondary" aria-pressed={stageFilter === stage} onClick={() => setStageFilter(stage)}>{workflowStageLabels[stage]} {filtered.filter((order) => rawStage(order) === stage).length}</Button>)}
+        {activeStages.map((stage) => <Button key={stage} type="button" tone="secondary" aria-pressed={stageFilter === stage} onClick={() => setStageFilter(stage)}>{workflowStageLabels[stage]} {filtered.filter((order) => rawStage(order, config) === stage).length}</Button>)}
       </div>
       <div className={styles.attentionWorkspace} data-preview={Boolean(previewOrder)}>
         <div className={styles.attentionRows} data-view={view} aria-label={view === "queue" ? "Fila de próximas ações" : "Lista de pedidos"}>
@@ -369,7 +369,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
                 <Link href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.tableDetails}>Detalhes completos</Link>
               </th>
               <td>{order.fulfillment_type === "delivery" ? "Entrega" : order.fulfillment_type === "pickup" ? "Retirada" : "No local"}</td>
-              <td>{workflowStageLabels[rawStage(order)]}</td><td className={styles.elapsed}>{elapsedLabel(order.created_at, now)}</td><td className={styles.total}>{money(order.total_cents)}</td>
+              <td>{workflowStageLabels[rawStage(order, config)]}</td><td className={styles.elapsed}>{elapsedLabel(order.created_at, now)}</td><td className={styles.total}>{money(order.total_cents)}</td>
               <td>{nextAction(order, manualDeliveryMode, paymentPolicy, config) ?? <Link href={`/pedidos/${order.id}`} className={styles.detailsLink}>Ver detalhes</Link>}</td>
             </tr>)}</tbody>
           </table> : null}
