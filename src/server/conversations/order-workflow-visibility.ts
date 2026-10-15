@@ -83,9 +83,10 @@ export function visibleWorkflowStages(input: {
   return isDelivery(input.fulfillmentType) ? deliveryWorkflowStages : pickupWorkflowStages;
 }
 
-export function rawWorkflowStage(order: OrderStateSnapshot): WorkflowStage {
+export function rawWorkflowStage(order: OrderStateSnapshot, options: { automaticPreparation?: boolean } = {}): WorkflowStage {
   if (["completed", "canceled", "rejected"].includes(order.orderStatus)) return "finished";
   if (order.orderStatus === "pending_confirmation") return "new";
+  if (options.automaticPreparation && ["pending_confirmation", "queued"].includes(order.productionStatus)) return "new";
   if (["pending_confirmation", "queued", "preparing"].includes(order.productionStatus)) return "preparing";
   if (isDelivery(order.fulfillmentType)) {
     if (["assigned", "picked_up", "out_for_delivery"].includes(order.fulfillmentStatus)) return "delivering";
@@ -103,7 +104,7 @@ export function visibleWorkflowStage(
   settings: PersistedOrderWorkflowSettings,
 ): WorkflowStage {
   const workflow = resolveWorkflowSettings(settings);
-  const raw = rawWorkflowStage(order);
+  const raw = rawWorkflowStage(order, { automaticPreparation: workflow.custom.receptionMode === "auto_prepare" });
   const selected = visibleWorkflowStages({ ...workflow, fulfillmentType: order.fulfillmentType });
   if (isDelivery(order.fulfillmentType)) {
     return foldStageToVisible(
