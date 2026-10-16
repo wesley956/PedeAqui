@@ -44,8 +44,8 @@ jobs:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           if [ -z "${SUPABASE_DB_URL:-}" ]; then
-            echo "DB_DRIFT: comparação remota ignorada; secret SUPABASE_DB_URL não configurado."
-            exit 0
+            echo "::error::DB_DRIFT: secret SUPABASE_DB_URL é obrigatório para validar o histórico remoto de produção."
+            exit 1
           fi
           sudo apt-get update -qq
           sudo apt-get install -y -qq postgresql-client >/dev/null
