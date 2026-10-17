@@ -28,6 +28,7 @@ export type ExpressCheckoutProps = {
   closedMessage: string | null;
   allowDelivery: boolean;
   allowPickup: boolean;
+  allowScheduling?: boolean;
   deliveryEta: string;
   useNeighborhoods: boolean;
   neighborhoods: Array<{ id: string; neighborhoodName: string; city: string; state: string; feeCents: number; minimumOrderCents: number | null }>;
@@ -82,7 +83,7 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
   const initialMode = defaults.fulfillment ?? (props.allowDelivery ? "delivery" : "pickup");
   const [mode, setMode] = useState<"delivery" | "pickup">(initialMode);
   const [savedChoice, setSavedChoice] = useState<string>(props.savedAddresses.length > 0 && !defaults.street ? String(props.savedAddresses[0]?.index ?? "new") : "new");
-  const [when, setWhen] = useState<"asap" | "scheduled">(defaults.scheduledLocal ? "scheduled" : "asap");
+  const [when, setWhen] = useState<"asap" | "scheduled">(props.allowScheduling !== false && defaults.scheduledLocal ? "scheduled" : "asap");
   const [payment, setPayment] = useState<string | null>(defaults.paymentValue);
   const errorRef = useRef<HTMLElement | null>(null);
   const restoreDraftRef = useRef<(() => void) | null>(null);
@@ -190,7 +191,7 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
     }} ref={formRef} id="checkout-expresso" action={submitExpressCheckoutAction} className={styles.expressForm}>
       <input type="hidden" name="storeSlug" value={props.slug} />
       <input type="hidden" name="fulfillmentType" value={mode} />
-      <input type="hidden" name="when" value={when} />
+      <input type="hidden" name="when" value={props.allowScheduling === false ? "asap" : when} />
       <input type="hidden" name="expectedTotalCents" value={knownTotal ?? ""} />
 
       {block("itens", `Itens · ${itemCount}`, <>
@@ -318,13 +319,13 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
           />
         ))}
 
-      {block("quando", "Quando", <>
+      {props.allowScheduling !== false ? block("quando", "Quando", <>
         <div className={styles.seg} role="group" aria-label="Quando">
           <button type="button" aria-pressed={when === "asap"} onClick={() => setWhen("asap")}><strong>Agora</strong><span>{mode === "delivery" ? props.deliveryEta : "Assim que ficar pronto"}</span></button>
           <button type="button" aria-pressed={when === "scheduled"} onClick={() => setWhen("scheduled")}><strong>Agendar</strong><span>Escolha dia e hora</span></button>
         </div>
         {when === "scheduled" ? <Field label="Data e hora" name="localDateTime" type="datetime-local" defaultValue={defaults.scheduledLocal} required /> : null}
-      </>)}
+      </>) : null}
 
       {props.benefits ? block("cupom", "Cupom", <>
         <div className={styles.couponRow}>

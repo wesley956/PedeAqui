@@ -48,4 +48,19 @@ begin
   if not exists(select 1 from public.orders where id=v_id and order_status='confirmed' and production_status='pending_confirmation') then raise exception 'accept-only started prep'; end if;
 end $test$;
 select 'PASS: cash, delivery, idempotency, old, scheduled, external, pending Pix, paid Pix, manual, accept-only' as result;
+update public.store_menu_settings set allow_scheduling=false where store_id='5d4fb9e0-0d27-457a-ad0a-d86ed8816810';
+do $test$
+declare v_id uuid; v_rejected boolean:=false;
+begin
+ begin
+   v_id:=pg_temp.auto_order('cash','digital_menu',now(),now()+interval '1 day');
+ exception when raise_exception then
+   if sqlerrm not like '%somente pedidos para agora%' then raise; end if;
+   v_rejected:=true;
+ end;
+ if not v_rejected then raise exception 'disabled schedule accepted'; end if;
+ v_id:=pg_temp.auto_order();
+ if not exists(select 1 from public.orders where id=v_id and scheduled_for is null and order_status='confirmed') then raise exception 'immediate order failed'; end if;
+end $test$;
+select 'PASS: original 10 scenarios and disabled scheduling policy, no persistent test orders' as result;
 rollback;

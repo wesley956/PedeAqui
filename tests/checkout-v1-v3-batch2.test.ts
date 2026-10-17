@@ -34,8 +34,10 @@ describe("checkout V1+V3 batch 2", () => {
     expect(page).toContain("cart.total_cents");
   });
 
-  it("exposes existing scheduling without introducing a mandatory stage", () => {
-    expect(page).toContain('<input type="hidden" name="when" value={when} />');
+  it("exposes scheduling only when the store allows it without adding a mandatory stage", () => {
+    expect(page).toContain('<input type="hidden" name="when" value={props.allowScheduling === false ? "asap" : when} />');
+    expect(page).toContain('allowScheduling={data.allowScheduling}');
+    expect(page).toContain('props.allowScheduling !== false ? block("quando"');
     expect(page).toContain("<strong>Agora</strong>");
     expect(page).toContain("<strong>Agendar</strong>");
     expect(page).toContain('name="localDateTime" type="datetime-local"');

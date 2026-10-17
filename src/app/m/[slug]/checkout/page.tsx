@@ -29,6 +29,7 @@ const errorMessages: Record<string, string> = {
   cart_empty: "Seu carrinho está vazio.", invalid_phone: "Informe um WhatsApp válido.", invalid_identity: "Confira seu nome, WhatsApp e e-mail.",
   invalid_fulfillment: "Escolha entrega ou retirada.", invalid_address: "Confira rua, número e selecione um bairro atendido.",
   invalid_payment: "Escolha uma forma de pagamento válida.", invalid_schedule: "Escolha um horário válido entre 15 minutos e 7 dias a partir de agora.",
+  scheduling_disabled: "Esta loja recebe somente pedidos para agora. Confira os dados e confirme novamente.",
   pickup_disabled: "Retirada não está disponível nesta loja.", delivery_disabled: "Entrega não está disponível nesta loja.",
   delivery_not_selected: "Escolha entrega antes de informar o endereço.", delivery_minimum: "O pedido ainda não atingiu o mínimo exigido para este bairro.",
   neighborhood_not_served: "Selecione um bairro atendido pela loja.", payment_unavailable: "A forma de pagamento selecionada não está disponível.",
@@ -128,6 +129,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
             closedMessage={closedMessage}
             allowDelivery={deliveryAllowed}
             allowPickup={menu.settings.allow_pickup}
+            allowScheduling={data.allowScheduling}
             deliveryEta={`${menu.delivery.estimated_min_minutes}–${menu.delivery.estimated_max_minutes} min`}
             useNeighborhoods={useRegisteredNeighborhoods}
             neighborhoods={deliveryNeighborhoods}
