@@ -96,19 +96,27 @@ export class CheckoutService {
     }));
   }
 
+  private static async schedulingAllowed(store: StoreRef) {
+    const { data, error } = await createAdminClient().from("store_menu_settings")
+      .select("allow_scheduling").eq("organization_id", store.organization_id).eq("store_id", store.id).maybeSingle();
+    if (error) throw error;
+    return data?.allow_scheduling ?? true;
+  }
+
   static async load(storeSlug: string, token: string, recognitionToken: string | null = null) {
     const cartResult = await this.requireCart(storeSlug, token);
     const admin = createAdminClient();
-    const [session, methods, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled] = await Promise.all([
+    const [session, methods, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled, allowScheduling] = await Promise.all([
       this.getSession(admin, cartResult.cart.id),
       StorePaymentMethodService.listForStore(cartResult.store.organization_id, cartResult.store.id),
       PublicMenuService.getMenu(storeSlug),
       CustomerRecognitionService.resolve(cartResult.store.organization_id, cartResult.store.id, recognitionToken),
       this.listDeliveryNeighborhoods(admin, cartResult.store),
       StoreModuleStateService.isEnabled(cartResult.store.organization_id, cartResult.store.id, "growth"),
+      this.schedulingAllowed(cartResult.store),
     ]);
     if (!menu) throw new CheckoutError("menu_unavailable", "Cardápio indisponível");
-    return { ...cartResult, session, paymentMethods: methods, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled };
+    return { ...cartResult, session, paymentMethods: methods, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled, allowScheduling };
   }
 
   static async saveIdentity(storeSlug: string, token: string, input: CheckoutIdentityInput) {
@@ -150,6 +158,9 @@ export class CheckoutService {
     const cartResult = await this.requireCart(storeSlug, token);
     let scheduledFor: string | null = null;
     if (values.mode === "scheduled") {
+      if (!await this.schedulingAllowed(cartResult.store)) {
+        throw new CheckoutError("scheduling_disabled", "Esta loja recebe somente pedidos para agora. Atualize a página para continuar.");
+      }
       try {
         const timezone = cartResult.store.timezone || "America/Sao_Paulo";
         scheduledFor = assertScheduledWindow(zonedLocalDateTimeToUtc(values.localDateTime, timezone)).toISOString();

@@ -31,7 +31,7 @@ describe("public cart and checkout readiness [PA-DIAG-026-030]", () => {
   });
 
   it("loads independent checkout data concurrently and resolves module state server-side", () => {
-    expect(checkoutService).toContain("const [session, methods, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled] = await Promise.all");
+    expect(checkoutService).toContain("const [session, methods, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled, allowScheduling] = await Promise.all");
     expect(checkoutService).toContain("const [cartResult, menu] = await Promise.all");
     expect(checkoutService).toContain("StoreModuleStateService.isEnabled");
     expect(checkoutPage).toContain("const data = await CheckoutService.load");
