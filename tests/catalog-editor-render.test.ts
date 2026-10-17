@@ -98,8 +98,8 @@ describe("catalog editors preserve independent payloads and accessible repeated 
     const availability = forms(html, "setModifierActiveFormAction");
     // Cada opção tem o interruptor (todos os grupos) e a ação "só neste grupo" no menu.
     expect(availability).toHaveLength(4);
-    expect(availability.filter((form) => /name="allMatching" value="on"/.test(form))).toHaveLength(2);
-    expect(availability.filter((form) => /name="allMatching" value="off"/.test(form))).toHaveLength(2);
+    expect(availability.filter((form) => /name="allMatching" value="on"/.test(form ?? ""))).toHaveLength(2);
+    expect(availability.filter((form) => /name="allMatching" value="off"/.test(form ?? ""))).toHaveLength(2);
     for (const form of forms(html, "updateModifierFormAction")) expect(form).toContain('value="1,25"');
     exportVisualFixture("modifiers", html);
   });
