@@ -16,6 +16,7 @@ import {
 } from "@/features/orders/external-order-presentation";
 import { resolveOrderManagerRealtimeAction } from "@/features/orders/order-realtime-actions";
 import { useOrderAlert } from "@/features/orders/use-order-alert";
+import { useOrderViewPreference } from "@/features/orders/order-view-preference";
 import { useRememberedOrderSearch } from "@/features/orders/order-navigation-memory";
 import { OperationalRealtimeBadge, useOperationalRealtime } from "@/features/operations/use-operational-realtime";
 import {
@@ -127,8 +128,9 @@ export function primaryActionForOrder(order: OrderManagerRow, workflowMode: Boar
   return null;
 }
 
-export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode = "standard", manualDeliveryMode = false, paymentPolicy = null, timeZone }: {
+export function OrderManagerBoard({ storeId, viewPreferenceKey, orders: initialOrders, workflowMode = "standard", manualDeliveryMode = false, paymentPolicy = null, timeZone }: {
   storeId: string;
+  viewPreferenceKey?: string;
   orders: OrderManagerRow[];
   workflowMode?: BoardWorkflowMode;
   manualDeliveryMode?: boolean;
@@ -136,7 +138,7 @@ export function OrderManagerBoard({ storeId, orders: initialOrders, workflowMode
   timeZone: string;
 }) {
   const [query, setQuery] = useState("");
-  const [view, setView] = useState<"queue" | "list" | "board">("queue");
+  const [view, setView] = useOrderViewPreference(viewPreferenceKey ?? `orders:view:v1:${storeId}`);
   const [stage, setStage] = useState<OperationalOrderBucket | "all">("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
