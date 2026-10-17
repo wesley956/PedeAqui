@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { NavigationIcon } from "@/components/ui/navigation-icon";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
 import type { ExperienceMode } from "@/modules/user-experience";
 import type { NavigationGroup, NavigationPriority } from "./navigation-model";
 
@@ -40,6 +40,27 @@ function NavigationLink({ item, compact, pathname }: { item: ShellNavigationItem
 
 type SecondarySection = { key: string; title: string; items: readonly ShellNavigationItem[] };
 
+// Preferência "grupo aberto/fechado" guardada por navegador. Sem armazenamento, o grupo começa recolhido.
+const NAVIGATION_GROUPS_EVENT = "pedeaqui:navigation-groups";
+
+function subscribeNavigationGroups(onChange: () => void) {
+  window.addEventListener(NAVIGATION_GROUPS_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(NAVIGATION_GROUPS_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function readGroupExpanded(storageKey: string) {
+  try { return window.localStorage.getItem(storageKey) === "open"; } catch { return false; }
+}
+
+function writeGroupExpanded(storageKey: string, expanded: boolean) {
+  try { window.localStorage.setItem(storageKey, expanded ? "open" : "closed"); } catch { /* sem persistência */ }
+  window.dispatchEvent(new Event(NAVIGATION_GROUPS_EVENT));
+}
+
 /**
  * Sidebar em três grupos sempre visíveis: o que a função usa todo dia ("Principal"), as áreas de
  * gestão e a conta/ajustes. Os grupos secundários podem ser recolhidos, mas abrem sozinhos quando a
@@ -49,15 +70,8 @@ type SecondarySection = { key: string; title: string; items: readonly ShellNavig
 function NavigationSection({ section, compact, pathname }: { section: SecondarySection; compact: boolean; pathname: string }) {
   const hasActive = section.items.some((item) => isActive(pathname, item.href));
   const storageKey = `pedeaqui.nav.${section.key}`;
-  const [expanded, setExpanded] = useState(false);
-  useEffect(() => {
-    try { setExpanded(window.localStorage.getItem(storageKey) === "open"); } catch { /* armazenamento indisponível: começa recolhido */ }
-  }, [storageKey]);
-  const toggle = () => setExpanded((value) => {
-    const next = !value;
-    try { window.localStorage.setItem(storageKey, next ? "open" : "closed"); } catch { /* sem persistência */ }
-    return next;
-  });
+  const expanded = useSyncExternalStore(subscribeNavigationGroups, () => readGroupExpanded(storageKey), () => false);
+  const toggle = () => writeGroupExpanded(storageKey, !expanded);
   const open = compact || hasActive || expanded;
   const titleId = `nav-group-${section.key}`;
   const linksId = `nav-group-links-${section.key}`;
