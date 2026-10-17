@@ -154,7 +154,7 @@ export const MODULE_CATALOG: Record<ModuleKey, ModuleDefinition> = {
     kind: "optional", canDisable: true, supportedBusinessTypes: COMMERCE_BUSINESS_TYPES, entitlementFeatureKey: null,
   },
   scale: {
-    key: "scale", defaultLabel: "Escala", description: "Organização de escalas da equipe.", group: "administration",
+    key: "scale", defaultLabel: "Plano e expansão", description: "Plano contratado, várias unidades e marca própria.", group: "administration",
     routes: ["/escala"], permissionsAny: [PERMISSIONS.SCALE_VIEW], dependencies: [], incompatibleWith: [],
     kind: "optional", canDisable: true, supportedBusinessTypes: COMMERCE_BUSINESS_TYPES, entitlementFeatureKey: null,
   },

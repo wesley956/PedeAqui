@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { NavigationIcon } from "@/components/ui/navigation-icon";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { ExperienceMode } from "@/modules/user-experience";
 import type { NavigationGroup, NavigationPriority } from "./navigation-model";
 
@@ -38,15 +38,56 @@ function NavigationLink({ item, compact, pathname }: { item: ShellNavigationItem
   );
 }
 
+type SecondarySection = { key: string; title: string; items: readonly ShellNavigationItem[] };
+
+/**
+ * Sidebar em três grupos sempre visíveis: o que a função usa todo dia ("Principal"), as áreas de
+ * gestão e a conta/ajustes. Os grupos secundários podem ser recolhidos, mas abrem sozinhos quando a
+ * página atual está dentro deles. Não existe mais a gaveta única "Mais ferramentas" no menu lateral:
+ * a página /mais-ferramentas continua existindo para o celular e para links antigos.
+ */
+function NavigationSection({ section, compact, pathname }: { section: SecondarySection; compact: boolean; pathname: string }) {
+  const hasActive = section.items.some((item) => isActive(pathname, item.href));
+  const storageKey = `pedeaqui.nav.${section.key}`;
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    try { setExpanded(window.localStorage.getItem(storageKey) === "open"); } catch { /* armazenamento indisponível: começa recolhido */ }
+  }, [storageKey]);
+  const toggle = () => setExpanded((value) => {
+    const next = !value;
+    try { window.localStorage.setItem(storageKey, next ? "open" : "closed"); } catch { /* sem persistência */ }
+    return next;
+  });
+  const open = compact || hasActive || expanded;
+  const titleId = `nav-group-${section.key}`;
+  const linksId = `nav-group-links-${section.key}`;
+  return (
+    <section className="nav-group" aria-labelledby={titleId}>
+      <h2 className="nav-group-title">
+        <button type="button" id={titleId} className="nav-group-toggle" aria-expanded={open} aria-controls={linksId} onClick={toggle}>
+          <span>{section.title}</span>
+          <span aria-hidden="true" className="nav-group-chevron">{open ? "\u2212" : "+"}</span>
+        </button>
+      </h2>
+      <div className="nav-group-links" id={linksId} data-collapsed={open ? "false" : "true"}>
+        {section.items.map((item) => <NavigationLink key={item.key} item={item} compact={compact} pathname={pathname} />)}
+      </div>
+    </section>
+  );
+}
+
 export function DesktopNavigation({ items, experienceMode = "standard", children }: { items: readonly ShellNavigationItem[]; experienceMode?: ExperienceMode; children?: ReactNode }) {
   const pathname = usePathname();
   const [compact, setCompact] = useState(false);
   const visible = items.filter((item) => item.priority !== "hidden");
   const preferredPrimary = visible.filter((item) => item.easyPrimary);
-  const primary = preferredPrimary.length > 0 ? preferredPrimary : visible.filter((item) => item.priority === "primary").slice(0, 6);
+  const primary = preferredPrimary.length > 0 ? preferredPrimary : visible.filter((item) => item.priority === "primary").slice(0, 8);
   const primaryKeys = new Set(primary.map((item) => item.key));
-  const more = visible.filter((item) => !primaryKeys.has(item.key));
-  const moreActive = pathname === "/mais-ferramentas" || more.some((item) => isActive(pathname, item.href));
+  const rest = visible.filter((item) => !primaryKeys.has(item.key));
+  const sections: SecondarySection[] = [
+    { key: "management", title: "Gestão", items: rest.filter((item) => item.group !== "administration") },
+    { key: "account", title: "Conta e ajustes", items: rest.filter((item) => item.group === "administration") },
+  ].filter((section) => section.items.length > 0);
 
   return (
     <div className="desktop-navigation" data-compact={compact ? "true" : "false"} data-experience={experienceMode}>
@@ -67,17 +108,7 @@ export function DesktopNavigation({ items, experienceMode = "standard", children
             {primary.map((item) => <NavigationLink key={item.key} item={item} compact={compact} pathname={pathname} />)}
           </div>
         </section>
-        {more.length > 0 ? (
-          <section className="nav-group" aria-labelledby="nav-group-more">
-            <h2 className="nav-group-title" id="nav-group-more">Organização</h2>
-            <div className="nav-group-links">
-              <Link href="/mais-ferramentas" className="app-nav-link" aria-current={moreActive ? "page" : undefined} aria-label={compact ? "Mais ferramentas" : undefined} title={compact ? "Mais ferramentas" : undefined}>
-                <span className="nav-link-marker" aria-hidden><NavigationIcon name="more" /></span>
-                <span className="nav-link-label">Mais ferramentas</span>
-              </Link>
-            </div>
-          </section>
-        ) : null}
+        {sections.map((section) => <NavigationSection key={section.key} section={section} compact={compact} pathname={pathname} />)}
       </nav>
     </div>
   );

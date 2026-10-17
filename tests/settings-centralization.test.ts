@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 const page = readFileSync("src/app/(app)/configuracoes/page.tsx", "utf8");
 describe("central settings hub", () => {
   it("groups settings by owner responsibilities", () => {
-    for (const group of ["Minha loja", "Pedidos e atendimento", "Pagamentos", "Entrega e retirada", "WhatsApp", "Impressão automática", "Equipe e acessos"]) expect(page).toContain(group);
+    for (const group of ["Minha loja", "Pedidos e atendimento", "Pagamentos", "Entrega e retirada", "WhatsApp", "Impressão automática", "Equipe e plano", "Cardápio"]) expect(page).toContain(group);
   });
   it("keeps existing configuration routes as the unique destinations", () => {
     for (const href of ["/configuracoes/cardapio", "/configuracoes/horarios", "/configuracoes/entrega", "/configuracoes/pagamentos", "/configuracoes/conversas", "/configuracoes/impressoes", "/configuracoes/impressoes/formato"]) expect(page).toContain(href);

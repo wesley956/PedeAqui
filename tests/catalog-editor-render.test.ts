@@ -85,7 +85,7 @@ describe("catalog editors preserve independent payloads and accessible repeated 
     exportVisualFixture("categories", html);
   });
   it("retains equal-split rules and matching-name availability even in collapsed option editors", async () => {
-    const html = renderToStaticMarkup(await ModifiersPage());
+    const html = renderToStaticMarkup(await ModifiersPage({ searchParams: Promise.resolve({}) }));
     idsAreUnique(html);
     const edits = forms(html, "updateModifierGroupFormAction");
     expect(edits).toHaveLength(2);
@@ -96,10 +96,18 @@ describe("catalog editors preserve independent payloads and accessible repeated 
       for (const name of ["minSelection", "maxSelection", "required", "active"]) expect(form).toContain(`name="${name}"`);
     }
     const availability = forms(html, "setModifierActiveFormAction");
-    expect(availability).toHaveLength(2);
-    for (const form of availability) expect(form).toMatch(/name="allMatching"[^>]*checked=""/);
+    // Cada opção tem o interruptor (todos os grupos) e a ação "só neste grupo" no menu.
+    expect(availability).toHaveLength(4);
+    expect(availability.filter((form) => /name="allMatching" value="on"/.test(form))).toHaveLength(2);
+    expect(availability.filter((form) => /name="allMatching" value="off"/.test(form))).toHaveLength(2);
     for (const form of forms(html, "updateModifierFormAction")) expect(form).toContain('value="1,25"');
     exportVisualFixture("modifiers", html);
+  });
+  it("finds a flavor by name and opens only the groups that contain it", async () => {
+    const html = renderToStaticMarkup(await ModifiersPage({ searchParams: Promise.resolve({ q: "option-b" }) }));
+    expect(html).toContain("Opção option-b");
+    expect(html).not.toContain("Opção option-a");
+    expect(forms(html, "updateModifierGroupFormAction")).toHaveLength(1);
   });
   it("keeps product changes, advanced values and group links in independently targeted forms", async () => {
     const html = renderToStaticMarkup(await EditProductPage({ params: Promise.resolve({ id: "product-a" }) }));

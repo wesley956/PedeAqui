@@ -41,7 +41,7 @@ export function SettingsHubClient({ areas, canManageResources }: { areas: readon
   return <>
     <label className={styles.search}>
       <span aria-hidden>⌕</span>
-      <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="O que você quer configurar? Ex.: bairro, Pix, horário, WhatsApp..." />
+      <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="O que você quer fazer? Ex.: pausar sabor, bairro, Pix, horário..." />
     </label>
 
     <section className={styles.section} aria-labelledby="settings-main-title">
@@ -52,7 +52,7 @@ export function SettingsHubClient({ areas, canManageResources }: { areas: readon
           <div className={styles.areaCopy}><strong>{area.title}</strong><span>{area.description}</span></div>
           <div className={styles.areaLinks}>{area.items.map((item) => item.available ? <Link href={item.href} key={item.href}>{item.title}<span aria-hidden>→</span></Link> : <div className={styles.unavailableRow} key={item.href}><span>{item.title}<small>Recurso não ativo</small></span>{canManageResources && item.activationHref ? <Link href={item.activationHref}>Ativar</Link> : <em>Indisponível</em>}</div>)}</div>
         </article>)}
-        {!normalized && canManageResources ? <Link href="/configuracoes/modulos" className={`${styles.areaCard} ${styles.featuredCard}`}>
+        {(!normalized || normalize("recursos modulos ativar funcoes funcionalidades").includes(normalized)) && canManageResources ? <Link href="/configuracoes/modulos" className={`${styles.areaCard} ${styles.featuredCard}`}>
           <span className={styles.areaIcon} aria-hidden>✨</span>
           <div className={styles.areaCopy}><strong>Recursos do PedeAqui</strong><span>Ative novas funções somente quando seu negócio precisar.</span></div>
           <em className={styles.featuredAction}>Gerenciar recursos →</em>

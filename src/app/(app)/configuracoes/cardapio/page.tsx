@@ -3,7 +3,8 @@ import { Input, Checkbox } from "@/components/ui/form-controls";
 import { FormDisclosure } from "@/components/ui/form-disclosure";
 import styles from "../settings-form.module.css";
 import { ImageUploadField } from "@/components/media/image-upload-field";
-import { pauseOrdersAction, resumeOrdersAction, saveMenuSettingsAction } from "@/features/menu/actions";
+import Link from "next/link";
+import { saveMenuSettingsAction } from "@/features/menu/actions";
 import { StoreMenuService } from "@/server/menu/store-menu-service";
 import { formatCents } from "@/server/catalog/money";
 import { PageHeader } from "@/components/ui/page-header";
@@ -13,24 +14,17 @@ export default async function MenuSettingsPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader title="Cardápio digital" description="Identidade, canais e disponibilidade pública da unidade atual." />
+      <PageHeader title="Aparência do cardápio" description="Logo, capa, cor, publicação e pedido mínimo do cardápio digital. Para pausar um produto ou sabor, use Cardápio no menu." />
 
       <article className={styles.card}>
         <div className={styles.rowTop}>
           <div>
             <strong>Recebimento de pedidos</strong>
             <p className="muted" style={{ margin: "4px 0 0" }}>
-              {settings.accepting_orders ? "Recebendo normalmente" : `Pausado${settings.pause_reason ? ` — ${settings.pause_reason}` : ""}`}
+              {settings.accepting_orders ? "Recebendo normalmente" : `Pausado${settings.pause_reason ? ` — ${settings.pause_reason}` : ""}`}. Para pausar ou retomar, use o nome da loja no topo da tela.
             </p>
           </div>
-          {settings.accepting_orders ? (
-            <form action={pauseOrdersAction} style={{ display: "flex", gap: 8, alignItems: "end", flexWrap: "wrap" }}>
-              <Input label="Motivo da pausa" name="reason" placeholder="Ex.: muita demanda" />
-              <Button tone="secondary" type="submit">Pausar pedidos</Button>
-            </form>
-          ) : (
-            <form action={resumeOrdersAction}><Button type="submit">Retomar pedidos</Button></form>
-          )}
+          <Link href="/operacao">Abrir e fechar o dia</Link>
         </div>
       </article>
 

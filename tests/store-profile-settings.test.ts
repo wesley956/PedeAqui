@@ -41,7 +41,7 @@ describe("store profile settings", () => {
     expect(hub).toContain('href: "/configuracoes/loja"');
     expect(hub).toContain('href: "/configuracoes/cardapio"');
     expect(hub).toContain('title: "Dados da loja"');
-    expect(hub).toContain('title: "Cardápio e identidade"');
+    expect(hub).toContain('title: "Aparência do cardápio"');
   });
 
   it("updates only the active tenant store and records the change", () => {

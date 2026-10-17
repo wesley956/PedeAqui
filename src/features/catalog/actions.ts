@@ -254,7 +254,7 @@ export async function setProductAvailabilityFormAction(formData: FormData) {
     await ProductService.setAvailability(productId, availability);
     revalidatePath("/cardapio/produtos");
     revalidatePath(`/cardapio/produtos/${productId}`);
-    return { ok: true, message: availability === "available" ? "Produto reativado no cardápio." : "Produto pausado no cardápio." };
+    return { ok: true, message: availability === "available" ? "Produto reativado no cardápio." : availability === "sold_out" ? "Produto marcado como esgotado." : "Produto ocultado do cardápio." };
   } catch (error) {
     logCatalogMutationFailure("set_product_availability", error);
     return { ok: false, message: "Não foi possível alterar a disponibilidade do produto." };
