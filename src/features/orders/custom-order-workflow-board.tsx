@@ -18,6 +18,7 @@ import { resolveOrderManagerRealtimeAction } from "@/features/orders/order-realt
 import { BULK_SELECTION_LIMIT, selectBulkOrders, toggleBulkOrder } from "@/features/orders/bulk-selection";
 import { elapsedLabel, isOrderAttentionLate, sortOrdersForAttention, type OrderManagerRow } from "@/features/orders/manager-model";
 import { useOrderAlert } from "@/features/orders/use-order-alert";
+import { useOrderViewPreference } from "@/features/orders/order-view-preference";
 import { useRememberedOrderSearch } from "@/features/orders/order-navigation-memory";
 import { OperationalRealtimeBadge, useOperationalRealtime } from "@/features/operations/use-operational-realtime";
 import type { PaymentCompletionPolicy } from "@/modules/payment-completion-policy";
@@ -227,8 +228,9 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, p
   </section>;
 }
 
-export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, config, manualDeliveryMode = false, paymentPolicy = null, timeZone }: {
+export function CustomOrderWorkflowBoard({ storeId, viewPreferenceKey, orders: initialOrders, config, manualDeliveryMode = false, paymentPolicy = null, timeZone }: {
   storeId: string;
+  viewPreferenceKey?: string;
   orders: OrderManagerRow[];
   config: CustomWorkflowConfig;
   manualDeliveryMode?: boolean;
@@ -236,7 +238,7 @@ export function CustomOrderWorkflowBoard({ storeId, orders: initialOrders, confi
   timeZone: string;
 }) {
   const [query, setQuery] = useState("");
-  const [view, setView] = useState<"queue" | "list" | "board">("queue");
+  const [view, setView] = useOrderViewPreference(viewPreferenceKey ?? `orders:view:v1:${storeId}`);
   const [stageFilter, setStageFilter] = useState<WorkflowStage | "all">("all");
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
