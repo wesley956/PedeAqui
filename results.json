@@ -1,0 +1,2578 @@
+[
+ {
+  "device": "android-360",
+  "area": "panel",
+  "label": "login",
+  "url": "http://127.0.0.1:3000/login",
+  "status": 200,
+  "loadMs": 827,
+  "finalUrl": "/login",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 1028,
+  "screens": 1.4,
+  "title": "Entrar | PedeAqui",
+  "h1": "Entre para cuidar dos pedidos sem perder tempo procurando informação.",
+  "overflowing": [],
+  "interactiveCount": 14,
+  "smallTargets": 9,
+  "tinyTargets": 6,
+  "smallTargetExamples": [
+   {
+    "el": "a.login-commercial-module__nM1Gza__backLin \"← Voltar para o site\"",
+    "w": 154,
+    "h": 21
+   },
+   {
+    "el": "a \"Esqueci a senha\"",
+    "w": 332,
+    "h": 21
+   },
+   {
+    "el": "a \"Criar conta\"",
+    "w": 332,
+    "h": 21
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 105,
+    "h": 38
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
+    "w": 105,
+    "h": 38
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
+    "w": 105,
+    "h": 38
+   },
+   {
+    "el": "a \"Informações legais\"",
+    "w": 113,
+    "h": 18
+   },
+   {
+    "el": "a \"Privacidade\"",
+    "w": 70,
+    "h": 18
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 525,
+  "shot": "shots/android-360__panel__login.jpg",
+  "axe": [],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "guia-primeiros-passos",
+  "shot": "shots/android-360__state__guia-primeiros-passos.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2843,
+  "screens": 3.8,
+  "title": "PedeAqui",
+  "h1": "Início",
+  "overflowing": [],
+  "interactiveCount": 57,
+  "smallTargets": 23,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.new-user-guide-module__a1T_Va__backdrop \"ASSISTENTE DE PRIMEIROS PASSOS × Vamos deixar sua \"",
+    "top": 0,
+    "h": 740,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 1534,
+  "bodyTextLength": 2674
+ },
+ {
+  "device": "android-360",
+  "area": "panel",
+  "label": "/pedidos/[id]",
+  "error": "nenhum link encontrado na lista"
+ },
+ {
+  "device": "android-360",
+  "area": "panel",
+  "label": "/cardapio/produtos/[id]",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/b3da3510-e365-489b-84ee-9dfe941441b0",
+  "status": 200,
+  "loadMs": 1139,
+  "finalUrl": "/cardapio/produtos/b3da3510-e365-489b-84ee-9dfe941441b0",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2203,
+  "screens": 3,
+  "title": "PedeAqui",
+  "h1": "Cardápio",
+  "overflowing": [],
+  "interactiveCount": 65,
+  "smallTargets": 26,
+  "tinyTargets": 1,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 1082,
+  "shot": "shots/android-360__panel__cardapio-produtos-id.jpg",
+  "axe": [],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "panel",
+  "label": "/clientes/[id]",
+  "url": "http://127.0.0.1:3000/clientes/6f5bce7f-37ac-43ec-960f-ca63e93f9712",
+  "status": 200,
+  "loadMs": 987,
+  "finalUrl": "/clientes/6f5bce7f-37ac-43ec-960f-ca63e93f9712",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 1700,
+  "screens": 2.3,
+  "title": "PedeAqui",
+  "h1": "Ana Souza",
+  "overflowing": [],
+  "interactiveCount": 55,
+  "smallTargets": 26,
+  "tinyTargets": 2,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 739,
+  "shot": "shots/android-360__panel__clientes-id.jpg",
+  "axe": [
+   {
+    "id": "color-contrast",
+    "impact": "serious",
+    "nodes": 1,
+    "example": ".customers-module__XLXBTq__orderLink"
+   }
+  ],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "panel",
+  "label": "/salao/[tableId]",
+  "url": "http://127.0.0.1:3000/salao/63187fed-a97a-4c2a-a580-12c51a9c8a6a",
+  "status": 200,
+  "loadMs": 988,
+  "finalUrl": "/salao/63187fed-a97a-4c2a-a580-12c51a9c8a6a",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 1141,
+  "screens": 1.5,
+  "title": "PedeAqui",
+  "h1": "Mesa 1",
+  "overflowing": [],
+  "interactiveCount": 48,
+  "smallTargets": 18,
+  "tinyTargets": 1,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 398,
+  "shot": "shots/android-360__panel__salao-tableId.jpg",
+  "axe": [],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "menu-mais-aberto",
+  "shot": "shots/android-360__state__menu-mais-aberto.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2843,
+  "screens": 3.8,
+  "title": "PedeAqui",
+  "h1": "Início",
+  "overflowing": [],
+  "interactiveCount": 48,
+  "smallTargets": 14,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel \"GESTÃO Conversas Salão Caixa Financeiro Produção E\"",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 1615
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "menu-loja-aberto",
+  "shot": "shots/android-360__state__menu-loja-aberto.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2843,
+  "screens": 3.8,
+  "title": "PedeAqui",
+  "h1": "Início",
+  "overflowing": [],
+  "interactiveCount": 48,
+  "smallTargets": 14,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary \"Recebendo pedidos\"",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Modo Movimento\"",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Abrir e fechar o dia\"",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ Salgados da Vila Unidade ativa \"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 1483
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "menu-conta-aberto",
+  "shot": "shots/android-360__state__menu-conta-aberto.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2843,
+  "screens": 3.8,
+  "title": "PedeAqui",
+  "h1": "Início",
+  "overflowing": [],
+  "interactiveCount": 48,
+  "smallTargets": 14,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ dono.teste@example.com Modo f\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 1436
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "pedidos-menu-acoes",
+  "shot": "shots/android-360__state__pedidos-menu-acoes.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 888,
+  "screens": 1.2,
+  "title": "PedeAqui",
+  "h1": "Pedidos",
+  "overflowing": [],
+  "interactiveCount": 64,
+  "smallTargets": 17,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.order-manager-module__7JwvSq__workflowHe",
+    "top": 228,
+    "h": 145,
+    "pos": "fixed"
+   },
+   {
+    "el": "dialog.mobile-order-list-module__myj9ea__sheet \"Pedido 1\"",
+    "top": 360,
+    "h": 380,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 1319,
+  "bodyTextLength": 640
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "pedidos-aba-em-preparo",
+  "shot": "shots/android-360__state__pedidos-aba-em-preparo.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 1496,
+  "screens": 2,
+  "title": "PedeAqui",
+  "h1": "Pedidos",
+  "overflowing": [],
+  "interactiveCount": 70,
+  "smallTargets": 16,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.order-manager-module__7JwvSq__workflowHe",
+    "top": 228,
+    "h": 145,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 939,
+  "bodyTextLength": 907
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "disponibilidade-busca-calabresa",
+  "shot": "shots/android-360__state__disponibilidade-busca-calabresa.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 823,
+  "screens": 1.1,
+  "title": "PedeAqui",
+  "h1": "Cardápio",
+  "overflowing": [],
+  "interactiveCount": 54,
+  "smallTargets": 18,
+  "tinyTargets": 3,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 601
+ },
+ {
+  "device": "android-360",
+  "area": "public-local",
+  "label": "menu",
+  "url": "http://127.0.0.1:3000/m/salgados-da-vila",
+  "status": 200,
+  "loadMs": 744,
+  "finalUrl": "/m/salgados-da-vila",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2105,
+  "screens": 2.8,
+  "title": "PedeAqui",
+  "h1": "Salgados da Vila",
+  "overflowing": [],
+  "interactiveCount": 52,
+  "smallTargets": 6,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 81,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 95,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 72,
+    "h": 38
+   },
+   {
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "div.menu-browser-module__iXn8xq__categories \"Categorias\"",
+    "top": 149,
+    "h": 55,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 1433,
+  "shot": "shots/android-360__public-local__menu.jpg",
+  "axe": [],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "local-produto-sabores",
+  "shot": "shots/android-360__state__local-produto-sabores.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2105,
+  "screens": 2.8,
+  "title": "PedeAqui",
+  "h1": "Salgados da Vila",
+  "overflowing": [],
+  "interactiveCount": 70,
+  "smallTargets": 20,
+  "tinyTargets": 1,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 81,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 95,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 72,
+    "h": 38
+   },
+   {
+    "el": "button.product-sheet-module__Q3sqVW__close \"Fechar\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "input.modifier-group-selector-module__6gW5vG__",
+    "w": 1,
+    "h": 1
+   },
+   {
+    "el": "button \"Remover opção Coxinha\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "dialog.product-sheet-module__Q3sqVW__overlay \"Montar item\"",
+    "top": 0,
+    "h": 740,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.product-purchase-bar-module__T89RBG__bar \"Quantidade e adicionar\"",
+    "top": 663,
+    "h": 77,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 740,
+  "bodyTextLength": 1882
+ },
+ {
+  "device": "android-360",
+  "area": "diag",
+  "label": "fieldset-width",
+  "diag": {
+   "vw": 360,
+   "chain": [
+    {
+     "tag": "fieldset",
+     "cls": "modifier-group-selector-module__6gW5vG__group",
+     "left": 0,
+     "right": 360,
+     "width": 360,
+     "minW": "0px",
+     "minIS": "0px",
+     "display": "grid",
+     "ovx": "visible",
+     "pad": "16px/16px",
+     "gtc": "none"
+    },
+    {
+     "tag": "div",
+     "cls": "public-product-module__HYGMVW__stepBlock",
+     "left": 0,
+     "right": 360,
+     "width": 360,
+     "minW": "0px",
+     "minIS": "0px",
+     "display": "grid",
+     "ovx": "visible",
+     "pad": "0px/0px",
+     "gtc": "360px"
+    },
+    {
+     "tag": "form",
+     "cls": "public-product-module__HYGMVW__form public-product-module__H",
+     "left": 0,
+     "right": 360,
+     "width": 360,
+     "minW": "0px",
+     "minIS": "0px",
+     "display": "grid",
+     "ovx": "visible",
+     "pad": "0px/0px",
+     "gtc": "360px"
+    },
+    {
+     "tag": "div",
+     "cls": "product-sheet-module__Q3sqVW__sheet",
+     "left": 0,
+     "right": 360,
+     "width": 360,
+     "minW": "auto",
+     "minIS": "auto",
+     "display": "block",
+     "ovx": "auto",
+     "pad": "0px/0px",
+     "gtc": "none"
+    },
+    {
+     "tag": "dialog",
+     "cls": "product-sheet-module__Q3sqVW__overlay",
+     "left": 0,
+     "right": 360,
+     "width": 360,
+     "minW": "0px",
+     "minIS": "0px",
+     "display": "flex",
+     "ovx": "auto",
+     "pad": "0px/0px",
+     "gtc": "none"
+    },
+    {
+     "tag": "div",
+     "cls": "",
+     "left": 0,
+     "right": 0,
+     "width": 0,
+     "minW": "0px",
+     "minIS": "0px",
+     "display": "contents",
+     "ovx": "visible",
+     "pad": "0px/0px",
+     "gtc": "none"
+    },
+    {
+     "tag": "body",
+     "cls": "",
+     "left": 0,
+     "right": 360,
+     "width": 360,
+     "minW": "0px",
+     "minIS": "0px",
+     "display": "block",
+     "ovx": "hidden",
+     "pad": "0px/0px",
+     "gtc": "none"
+    }
+   ],
+   "wide": [
+    {
+     "tag": "div",
+     "cls": "modifier-group-selector-module__6gW5vG__heading",
+     "text": "Escolha os sabores · 30 unidadesA quanti",
+     "right": 344,
+     "width": 328,
+     "ws": "normal"
+    },
+    {
+     "tag": "span",
+     "cls": "modifier-group-selector-module__6gW5vG__required",
+     "text": "Obrigatório",
+     "right": 344,
+     "width": 92,
+     "ws": "normal"
+    },
+    {
+     "tag": "div",
+     "cls": "modifier-group-selector-module__6gW5vG__rule",
+     "text": "Use + para adicionar e − para remover op",
+     "right": 344,
+     "width": 328,
+     "ws": "normal"
+    },
+    {
+     "tag": "div",
+     "cls": "modifier-group-selector-module__6gW5vG__options",
+     "text": "Coxinha−0+Kibe−0+Bolinha de queijo−0+Pre",
+     "right": 344,
+     "width": 328,
+     "ws": "normal"
+    },
+    {
+     "tag": "div",
+     "cls": "modifier-group-selector-module__6gW5vG__option",
+     "text": "Coxinha−0+",
+     "right": 344,
+     "width": 328,
+     "ws": "normal"
+    },
+    {
+     "tag": "div",
+     "cls": "modifier-group-selector-module__6gW5vG__stepper",
+     "text": "−0+",
+     "right": 344,
+     "width": 124,
+     "ws": "normal"
+    },
+    {
+     "tag": "div",
+     "cls": "modifier-group-selector-module__6gW5vG__option",
+     "text": "Kibe−0+",
+     "right": 344,
+     "width": 328,
+     "ws": "normal"
+    },
+    {
+     "tag": "div",
+     "cls": "modifier-group-selector-module__6gW5vG__stepper",
+     "text": "−0+",
+     "right": 344,
+     "width": 124,
+     "ws": "normal"
+    },
+    {
+     "tag": "div",
+     "cls": "modifier-group-selector-module__6gW5vG__option",
+     "text": "Bolinha de queijo−0+",
+     "right": 344,
+     "width": 328,
+     "ws": "normal"
+    },
+    {
+     "tag": "div",
+     "cls": "modifier-group-selector-module__6gW5vG__stepper",
+     "text": "−0+",
+     "right": 344,
+     "width": 124,
+     "ws": "normal"
+    }
+   ],
+   "formKids": [
+    {
+     "tag": "input",
+     "cls": "",
+     "width": 0,
+     "scrollW": 0
+    },
+    {
+     "tag": "input",
+     "cls": "",
+     "width": 0,
+     "scrollW": 0
+    },
+    {
+     "tag": "input",
+     "cls": "",
+     "width": 0,
+     "scrollW": 0
+    },
+    {
+     "tag": "article",
+     "cls": "public-product-module__HYGMVW__productCard",
+     "width": 360,
+     "scrollW": 360
+    },
+    {
+     "tag": "div",
+     "cls": "public-product-module__HYGMVW__stepBlock",
+     "width": 360,
+     "scrollW": 360
+    },
+    {
+     "tag": "section",
+     "cls": "public-product-module__HYGMVW__finalSection",
+     "width": 360,
+     "scrollW": 360
+    },
+    {
+     "tag": "div",
+     "cls": "product-purchase-bar-module__T89RBG__bar product-p",
+     "width": 360,
+     "scrollW": 360
+    }
+   ]
+  }
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "local-produto-sabores-rolado",
+  "shot": "shots/android-360__state__local-produto-sabores-rolado.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2105,
+  "screens": 2.8,
+  "title": "PedeAqui",
+  "h1": "Salgados da Vila",
+  "overflowing": [],
+  "interactiveCount": 70,
+  "smallTargets": 20,
+  "tinyTargets": 1,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 81,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 95,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 72,
+    "h": 38
+   },
+   {
+    "el": "button.product-sheet-module__Q3sqVW__close \"Fechar\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "input.modifier-group-selector-module__6gW5vG__",
+    "w": 1,
+    "h": 1
+   },
+   {
+    "el": "button \"Remover opção Coxinha\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "dialog.product-sheet-module__Q3sqVW__overlay \"Montar item\"",
+    "top": 0,
+    "h": 740,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.product-purchase-bar-module__T89RBG__bar \"Quantidade e adicionar\"",
+    "top": 663,
+    "h": 77,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 740,
+  "bodyTextLength": 1882
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "local-carrinho",
+  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: /adicionar/i }).first()\n    - locator resolved to <button type=\"submit\" class=\"menu-browser-module__iXn8x"
+ },
+ {
+  "device": "android-360",
+  "area": "public-prod",
+  "label": "/",
+  "url": "https://pedeaqui.pp.ua/",
+  "status": 200,
+  "loadMs": 3849,
+  "finalUrl": "/",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 6821,
+  "screens": 9.2,
+  "title": "Pedidos próprios, operação organizada",
+  "h1": "Seu cliente pede. O PedeAqui organiza.",
+  "overflowing": [],
+  "interactiveCount": 26,
+  "smallTargets": 15,
+  "tinyTargets": 7,
+  "smallTargetExamples": [
+   {
+    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
+    "w": 116,
+    "h": 40
+   },
+   {
+    "el": "a.marketing-module__snxi8q__primaryButton \"Começar agora\"",
+    "w": 122,
+    "h": 40
+   },
+   {
+    "el": "a.marketing-module__snxi8q__mobileLoginLin \"Entrar\"",
+    "w": 66,
+    "h": 36
+   },
+   {
+    "el": "a \"Como funciona\"",
+    "w": 129,
+    "h": 36
+   },
+   {
+    "el": "a \"Pedidos\"",
+    "w": 78,
+    "h": 36
+   },
+   {
+    "el": "a \"Entrega\"",
+    "w": 78,
+    "h": 36
+   },
+   {
+    "el": "a \"Recursos\"",
+    "w": 87,
+    "h": 36
+   },
+   {
+    "el": "a \"Planos\"",
+    "w": 69,
+    "h": 36
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.marketing-module__snxi8q__header \"Começar agora Entrar Como funciona Pedidos Entrega\"",
+    "top": 0,
+    "h": 115,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 3229,
+  "shot": "shots/android-360__public-prod__home.jpg",
+  "axe": [
+   {
+    "id": "color-contrast",
+    "impact": "serious",
+    "nodes": 9,
+    "example": ".marketing-module__snxi8q__headerActions > .marketing-module__snxi8q__primaryButton[href$=\"cadastro\"]"
+   }
+  ],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "public-prod",
+  "label": "/login",
+  "url": "https://pedeaqui.pp.ua/login",
+  "status": 200,
+  "loadMs": 1418,
+  "finalUrl": "/login",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 1028,
+  "screens": 1.4,
+  "title": "Entrar | PedeAqui",
+  "h1": "Entre para cuidar dos pedidos sem perder tempo procurando informação.",
+  "overflowing": [],
+  "interactiveCount": 14,
+  "smallTargets": 9,
+  "tinyTargets": 6,
+  "smallTargetExamples": [
+   {
+    "el": "a.login-commercial-module__nM1Gza__backLin \"← Voltar para o site\"",
+    "w": 154,
+    "h": 21
+   },
+   {
+    "el": "a \"Esqueci a senha\"",
+    "w": 332,
+    "h": 21
+   },
+   {
+    "el": "a \"Criar conta\"",
+    "w": 332,
+    "h": 21
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 105,
+    "h": 38
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
+    "w": 105,
+    "h": 38
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
+    "w": 105,
+    "h": 38
+   },
+   {
+    "el": "a \"Informações legais\"",
+    "w": 113,
+    "h": 18
+   },
+   {
+    "el": "a \"Privacidade\"",
+    "w": 70,
+    "h": 18
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 525,
+  "shot": "shots/android-360__public-prod__login.jpg",
+  "axe": [],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "public-prod",
+  "label": "/cadastro",
+  "url": "https://pedeaqui.pp.ua/cadastro",
+  "status": 200,
+  "loadMs": 2555,
+  "finalUrl": "/cadastro",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 901,
+  "screens": 1.2,
+  "title": "PedeAqui",
+  "h1": "Criar conta",
+  "overflowing": [],
+  "interactiveCount": 10,
+  "smallTargets": 7,
+  "tinyTargets": 4,
+  "smallTargetExamples": [
+   {
+    "el": "a.auth-flow-module__Y0Aw2a__link \"Essencial — R$ 89,90/mês\"",
+    "w": 294,
+    "h": 24
+   },
+   {
+    "el": "a.auth-flow-module__Y0Aw2a__link \"Profissional — R$ 129,90/mês\"",
+    "w": 294,
+    "h": 24
+   },
+   {
+    "el": "a.auth-flow-module__Y0Aw2a__link \"Completo — R$ 179,90/mês\"",
+    "w": 294,
+    "h": 24
+   },
+   {
+    "el": "a.auth-flow-module__Y0Aw2a__link \"Entrar\"",
+    "w": 43,
+    "h": 16
+   },
+   {
+    "el": "a \"Informações legais\"",
+    "w": 113,
+    "h": 18
+   },
+   {
+    "el": "a \"Privacidade\"",
+    "w": 70,
+    "h": 18
+   },
+   {
+    "el": "a \"Termos de Uso\"",
+    "w": 88,
+    "h": 18
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 497,
+  "shot": "shots/android-360__public-prod__cadastro.jpg",
+  "axe": [],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "public-prod",
+  "label": "/planos",
+  "url": "https://pedeaqui.pp.ua/planos",
+  "status": 200,
+  "loadMs": 2445,
+  "finalUrl": "/planos",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 7683,
+  "screens": 10.4,
+  "title": "Planos e preços | PedeAqui",
+  "h1": "Escolha seu plano. Teste por 15 dias grátis.",
+  "overflowing": [],
+  "interactiveCount": 23,
+  "smallTargets": 15,
+  "tinyTargets": 7,
+  "smallTargetExamples": [
+   {
+    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
+    "w": 116,
+    "h": 40
+   },
+   {
+    "el": "a.marketing-module__snxi8q__primaryButton \"Começar agora\"",
+    "w": 122,
+    "h": 40
+   },
+   {
+    "el": "a.marketing-module__snxi8q__mobileLoginLin \"Entrar\"",
+    "w": 66,
+    "h": 36
+   },
+   {
+    "el": "a \"Como funciona\"",
+    "w": 129,
+    "h": 36
+   },
+   {
+    "el": "a \"Pedidos\"",
+    "w": 78,
+    "h": 36
+   },
+   {
+    "el": "a \"Entrega\"",
+    "w": 78,
+    "h": 36
+   },
+   {
+    "el": "a \"Recursos\"",
+    "w": 87,
+    "h": 36
+   },
+   {
+    "el": "a \"Planos\"",
+    "w": 69,
+    "h": 36
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.marketing-module__snxi8q__header \"Começar agora Entrar Como funciona Pedidos Entrega\"",
+    "top": 0,
+    "h": 115,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 3356,
+  "shot": "shots/android-360__public-prod__planos.jpg",
+  "axe": [
+   {
+    "id": "color-contrast",
+    "impact": "serious",
+    "nodes": 18,
+    "example": ".marketing-module__snxi8q__headerActions > .marketing-module__snxi8q__primaryButton[href$=\"cadastro\"]"
+   }
+  ],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "public-prod",
+  "label": "/recursos",
+  "url": "https://pedeaqui.pp.ua/recursos",
+  "status": 200,
+  "loadMs": 2460,
+  "finalUrl": "/recursos",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 8556,
+  "screens": 11.6,
+  "title": "Recursos | PedeAqui",
+  "h1": "Veja o PedeAqui pelo que ele resolve na rotina.",
+  "overflowing": [],
+  "interactiveCount": 20,
+  "smallTargets": 15,
+  "tinyTargets": 7,
+  "smallTargetExamples": [
+   {
+    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
+    "w": 116,
+    "h": 40
+   },
+   {
+    "el": "a.marketing-module__snxi8q__primaryButton \"Começar agora\"",
+    "w": 122,
+    "h": 40
+   },
+   {
+    "el": "a.marketing-module__snxi8q__mobileLoginLin \"Entrar\"",
+    "w": 66,
+    "h": 36
+   },
+   {
+    "el": "a \"Como funciona\"",
+    "w": 129,
+    "h": 36
+   },
+   {
+    "el": "a \"Pedidos\"",
+    "w": 78,
+    "h": 36
+   },
+   {
+    "el": "a \"Entrega\"",
+    "w": 78,
+    "h": 36
+   },
+   {
+    "el": "a \"Recursos\"",
+    "w": 87,
+    "h": 36
+   },
+   {
+    "el": "a \"Planos\"",
+    "w": 69,
+    "h": 36
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.marketing-module__snxi8q__header \"Começar agora Entrar Como funciona Pedidos Entrega\"",
+    "top": 0,
+    "h": 115,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 4238,
+  "shot": "shots/android-360__public-prod__recursos.jpg",
+  "axe": [
+   {
+    "id": "color-contrast",
+    "impact": "serious",
+    "nodes": 23,
+    "example": ".marketing-module__snxi8q__primaryButton[href$=\"cadastro\"]"
+   }
+  ],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "public-prod",
+  "label": "/m/dona-maria-salgados-e-porcoes",
+  "url": "https://pedeaqui.pp.ua/m/dona-maria-salgados-e-porcoes",
+  "status": 200,
+  "loadMs": 2100,
+  "finalUrl": "/m/dona-maria-salgados-e-porcoes",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2925,
+  "screens": 4,
+  "title": "PedeAqui",
+  "h1": "Dona Maria Salgados e Pasteis",
+  "overflowing": [],
+  "interactiveCount": 68,
+  "smallTargets": 6,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 81,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 95,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Mini churros\"",
+    "w": 119,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "div.menu-browser-module__iXn8xq__categories \"Categorias\"",
+    "top": 171,
+    "h": 55,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 1956,
+  "shot": "shots/android-360__public-prod__m-dona-maria-salgados-e-porcoes.jpg",
+  "axe": [],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "public-prod",
+  "label": "/m/dom-burger",
+  "url": "https://pedeaqui.pp.ua/m/dom-burger",
+  "status": 200,
+  "loadMs": 2691,
+  "finalUrl": "/m/dom-burger",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 3338,
+  "screens": 4.5,
+  "title": "PedeAqui",
+  "h1": "Dom Burger",
+  "overflowing": [],
+  "interactiveCount": 83,
+  "smallTargets": 6,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Hambúrgueres\"",
+    "w": 137,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Baguetes\"",
+    "w": 97,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Porções\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 72,
+    "h": 38
+   },
+   {
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "div.menu-browser-module__iXn8xq__categories \"Categorias\"",
+    "top": 174,
+    "h": 55,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 2148,
+  "shot": "shots/android-360__public-prod__m-dom-burger.jpg",
+  "axe": [],
+  "consoleErrors": [
+   "Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+   "Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+   "Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+   "Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+   "Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+   "Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+  ]
+ },
+ {
+  "device": "android-360",
+  "area": "public-prod",
+  "label": "/m/santa-rita",
+  "url": "https://pedeaqui.pp.ua/m/santa-rita",
+  "status": 200,
+  "loadMs": 1970,
+  "finalUrl": "/m/santa-rita",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2509,
+  "screens": 3.4,
+  "title": "PedeAqui",
+  "h1": "Santa Rita Açaí & Sorvetes",
+  "overflowing": [],
+  "interactiveCount": 44,
+  "smallTargets": 6,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Açaí Pronto\"",
+    "w": 113,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Monte seu Açaí\"",
+    "w": 140,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Sorvetes\"",
+    "w": 93,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Complementos Avulsos\"",
+    "w": 198,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "div.menu-browser-module__iXn8xq__categories \"Categorias\"",
+    "top": 197,
+    "h": 55,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 1507,
+  "shot": "shots/android-360__public-prod__m-santa-rita.jpg",
+  "axe": [],
+  "consoleErrors": []
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "dona-maria-salgados-e-porcoes-rolado",
+  "shot": "shots/android-360__state__dona-maria-salgados-e-porcoes-rolado.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2815,
+  "screens": 3.8,
+  "title": "PedeAqui",
+  "h1": "Dona Maria Salgados e Pasteis",
+  "overflowing": [],
+  "interactiveCount": 68,
+  "smallTargets": 6,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 81,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 95,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Mini churros\"",
+    "w": 119,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 2092
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "dona-maria-salgados-e-porcoes-produto-aberto",
+  "shot": "shots/android-360__state__dona-maria-salgados-e-porcoes-produto-aberto.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2815,
+  "screens": 3.8,
+  "title": "PedeAqui",
+  "h1": "Dona Maria Salgados e Pasteis",
+  "overflowing": [],
+  "interactiveCount": 95,
+  "smallTargets": 22,
+  "tinyTargets": 2,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 81,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 95,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Mini churros\"",
+    "w": 119,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.product-sheet-module__Q3sqVW__close \"Fechar\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "input.modifier-group-selector-module__6gW5vG__",
+    "w": 1,
+    "h": 1
+   },
+   {
+    "el": "button \"Remover opção Coxinha\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "div.menu-browser-module__iXn8xq__categories \"Categorias\"",
+    "top": 171,
+    "h": 55,
+    "pos": "sticky"
+   },
+   {
+    "el": "dialog.product-sheet-module__Q3sqVW__overlay \"Montar item\"",
+    "top": 0,
+    "h": 740,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.product-purchase-bar-module__T89RBG__bar \"Quantidade e adicionar\"",
+    "top": 663,
+    "h": 77,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 740,
+  "bodyTextLength": 3175
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "dona-maria-salgados-e-porcoes-produto-rolado",
+  "shot": "shots/android-360__state__dona-maria-salgados-e-porcoes-produto-rolado.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2815,
+  "screens": 3.8,
+  "title": "PedeAqui",
+  "h1": "Dona Maria Salgados e Pasteis",
+  "overflowing": [],
+  "interactiveCount": 95,
+  "smallTargets": 22,
+  "tinyTargets": 2,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 81,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 95,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Mini churros\"",
+    "w": 119,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.product-sheet-module__Q3sqVW__close \"Fechar\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "input.modifier-group-selector-module__6gW5vG__",
+    "w": 1,
+    "h": 1
+   },
+   {
+    "el": "button \"Remover opção Coxinha\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "dialog.product-sheet-module__Q3sqVW__overlay \"Montar item\"",
+    "top": 0,
+    "h": 740,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.product-purchase-bar-module__T89RBG__bar \"Quantidade e adicionar\"",
+    "top": 663,
+    "h": 77,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 740,
+  "bodyTextLength": 3311
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "dom-burger-rolado",
+  "shot": "shots/android-360__state__dom-burger-rolado.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 3175,
+  "screens": 4.3,
+  "title": "PedeAqui",
+  "h1": "Dom Burger",
+  "overflowing": [],
+  "interactiveCount": 83,
+  "smallTargets": 6,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Hambúrgueres\"",
+    "w": 137,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Baguetes\"",
+    "w": 97,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Porções\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 72,
+    "h": 38
+   },
+   {
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 2635
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "dom-burger-produto-aberto",
+  "shot": "shots/android-360__state__dom-burger-produto-aberto.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 3175,
+  "screens": 4.3,
+  "title": "PedeAqui",
+  "h1": "Dom Burger",
+  "overflowing": [],
+  "interactiveCount": 102,
+  "smallTargets": 21,
+  "tinyTargets": 14,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Hambúrgueres\"",
+    "w": 137,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Baguetes\"",
+    "w": 97,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Porções\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 72,
+    "h": 38
+   },
+   {
+    "el": "button.product-sheet-module__Q3sqVW__close \"Fechar\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "input \"modifier_3ef9bd79-a1ee-439a-a038-a41ba41261ff\"",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "el": "input \"modifier_3ef9bd79-a1ee-439a-a038-a41ba41261ff\"",
+    "w": 22,
+    "h": 22
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "div.menu-browser-module__iXn8xq__categories \"Categorias\"",
+    "top": 174,
+    "h": 55,
+    "pos": "sticky"
+   },
+   {
+    "el": "dialog.product-sheet-module__Q3sqVW__overlay \"Montar item\"",
+    "top": 0,
+    "h": 740,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.product-purchase-bar-module__T89RBG__bar \"Quantidade e adicionar\"",
+    "top": 663,
+    "h": 77,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 740,
+  "bodyTextLength": 2785
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "dom-burger-produto-rolado",
+  "shot": "shots/android-360__state__dom-burger-produto-rolado.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 3175,
+  "screens": 4.3,
+  "title": "PedeAqui",
+  "h1": "Dom Burger",
+  "overflowing": [],
+  "interactiveCount": 102,
+  "smallTargets": 21,
+  "tinyTargets": 14,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Hambúrgueres\"",
+    "w": 137,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Baguetes\"",
+    "w": 97,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Porções\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 72,
+    "h": 38
+   },
+   {
+    "el": "button.product-sheet-module__Q3sqVW__close \"Fechar\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "input \"modifier_3ef9bd79-a1ee-439a-a038-a41ba41261ff\"",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "el": "input \"modifier_3ef9bd79-a1ee-439a-a038-a41ba41261ff\"",
+    "w": 22,
+    "h": 22
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "dialog.product-sheet-module__Q3sqVW__overlay \"Montar item\"",
+    "top": 0,
+    "h": 740,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.product-purchase-bar-module__T89RBG__bar \"Quantidade e adicionar\"",
+    "top": 663,
+    "h": 77,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 740,
+  "bodyTextLength": 3157
+ }
+]

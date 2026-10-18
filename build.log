@@ -1,0 +1,190 @@
+
+> pedeaqui@0.1.0 build
+> next build
+
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+▲ Next.js 16.2.12 (Turbopack)
+- Experiments (use with caution):
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 14.6s
+  Running TypeScript ...
+
+  We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+  The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+  	- include was updated to add '.next/dev/types/**/*.ts'
+
+  Finished TypeScript in 38.4s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/114) ...
+  Generating static pages using 3 workers (28/114) 
+  Generating static pages using 3 workers (56/114) 
+  Generating static pages using 3 workers (85/114) 
+✓ Generating static pages using 3 workers (114/114) in 730ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /acesso-entregador
+├ ƒ /acesso-negado
+├ ƒ /api/conversations/[conversationId]/media/[mediaId]
+├ ƒ /api/conversations/[conversationId]/messages
+├ ƒ /api/health
+├ ƒ /api/integrations/mercado-pago/oauth/callback
+├ ƒ /api/integrations/mercado-pago/oauth/start
+├ ƒ /api/integrations/pagbank/oauth/callback
+├ ƒ /api/integrations/pagbank/oauth/start
+├ ƒ /api/internal/campaign-messages
+├ ƒ /api/internal/conversation-auto-close
+├ ƒ /api/internal/ifood-order-intake
+├ ƒ /api/internal/order-notifications
+├ ƒ /api/internal/payment-reconciliation
+├ ƒ /api/internal/route-retention
+├ ƒ /api/internal/subscription-renewals
+├ ƒ /api/order-alert/events
+├ ƒ /api/order-alert/presence
+├ ƒ /api/print-agent/ack
+├ ƒ /api/print-agent/claim
+├ ƒ /api/print-agent/config
+├ ƒ /api/print-agent/fail
+├ ƒ /api/print-agent/heartbeat
+├ ƒ /api/print-agent/job-style
+├ ƒ /api/print-agent/order-alerts
+├ ƒ /api/product-experience/events
+├ ƒ /api/webhooks/billing/[providerKey]
+├ ƒ /api/webhooks/fiscal/[integrationId]
+├ ƒ /api/webhooks/payments/mercado-pago/[storeId]
+├ ƒ /api/webhooks/payments/pagbank/[storeId]
+├ ƒ /api/webhooks/subscription-billing/mercado-pago
+├ ƒ /api/webhooks/whatsapp
+├ ƒ /assinatura
+├ ƒ /assinatura/contrato
+├ ƒ /assinatura/contrato/comprovante
+├ ƒ /auth/callback
+├ ƒ /cadastro
+├ ƒ /caixa
+├ ƒ /cardapio/adicionais
+├ ƒ /cardapio/categorias
+├ ƒ /cardapio/disponibilidade
+├ ƒ /cardapio/produtos
+├ ƒ /cardapio/produtos/[id]
+├ ƒ /cardapio/produtos/novo
+├ ƒ /cardapio/promocoes
+├ ƒ /cardapio/sugestoes
+├ ƒ /clientes
+├ ƒ /clientes/[id]
+├ ○ /como-funciona
+├ ƒ /compras
+├ ƒ /configuracoes
+├ ƒ /configuracoes/caixa
+├ ƒ /configuracoes/cardapio
+├ ƒ /configuracoes/conversas
+├ ƒ /configuracoes/entrega
+├ ƒ /configuracoes/entregadores
+├ ƒ /configuracoes/fluxo-pedidos
+├ ƒ /configuracoes/horarios
+├ ƒ /configuracoes/impressoes
+├ ƒ /configuracoes/impressoes/formato
+├ ƒ /configuracoes/impressoes/gerenciar
+├ ƒ /configuracoes/integracoes
+├ ƒ /configuracoes/loja
+├ ƒ /configuracoes/modulos
+├ ƒ /configuracoes/operacao
+├ ƒ /configuracoes/pagamentos
+├ ƒ /configuracoes/salao
+├ ƒ /conversas
+├ ƒ /convite
+├ ƒ /crescimento
+├ ƒ /crescimento/campanhas
+├ ƒ /dashboard
+├ ○ /empresa
+├ ○ /entrega-e-fidelizacao
+├ ƒ /entregador
+├ ƒ /entregas
+├ ƒ /equipe
+├ ƒ /escala
+├ ƒ /estoque
+├ ƒ /estoque/fichas
+├ ƒ /financeiro
+├ ƒ /fiscal
+├ ƒ /fornecedores
+├ ƒ /login
+├ ƒ /m/[slug]
+├ ƒ /m/[slug]/(.)produto/[id]
+├ ƒ /m/[slug]/[...rest]
+├ ƒ /m/[slug]/carrinho
+├ ƒ /m/[slug]/checkout
+├ ƒ /m/[slug]/pedido/[id]
+├ ƒ /m/[slug]/pedido/[id]/acesso
+├ ƒ /m/[slug]/produto/[id]
+├ ƒ /mais-ferramentas
+├ ƒ /mesa/[code]
+├ ƒ /meu-menu
+├ ƒ /movimento
+├ ƒ /nova-senha
+├ ƒ /onboarding
+├ ƒ /operacao
+├ ƒ /pdv
+├ ƒ /pedidos
+├ ○ /pedidos-e-atendimento
+├ ƒ /pedidos/[id]
+├ ƒ /pedidos/historico
+├ ƒ /planos
+├ ƒ /platform
+├ ƒ /platform/alertas
+├ ƒ /platform/apresentacao
+├ ƒ /platform/assinaturas
+├ ƒ /platform/auditoria
+├ ƒ /platform/comercial
+├ ƒ /platform/comunicacao
+├ ƒ /platform/configuracoes
+├ ƒ /platform/demo
+├ ƒ /platform/empresas/[organizationId]
+├ ƒ /platform/empresas/[organizationId]/unidades/[storeId]
+├ ƒ /platform/equipe
+├ ƒ /platform/financeiro
+├ ƒ /platform/fundadores
+├ ƒ /platform/incidentes
+├ ƒ /platform/integracoes
+├ ƒ /platform/integridade
+├ ƒ /platform/novo-restaurante
+├ ƒ /platform/onboarding
+├ ƒ /platform/operacao
+├ ƒ /platform/operacao/pedidos/[orderId]
+├ ƒ /platform/operacao/praticidade
+├ ƒ /platform/pendencias
+├ ƒ /platform/privacidade
+├ ƒ /platform/produto
+├ ƒ /platform/restaurantes/[storeId]
+├ ƒ /platform/suporte
+├ ƒ /platform/suporte/modo
+├ ƒ /platform/unidades/[storeId]
+├ ƒ /platform/unidades/[storeId]/configuracao-operacional
+├ ƒ /platform/unidades/[storeId]/whatsapp
+├ ƒ /platform/unidades/[storeId]/whatsapp/notificacoes
+├ ○ /politica-de-privacidade
+├ ƒ /primeiro-acesso-entregador
+├ ○ /privacidade
+├ ƒ /producao
+├ ƒ /recuperar-senha
+├ ƒ /recurso-indisponivel
+├ ○ /recursos
+├ ƒ /salao
+├ ƒ /salao/[tableId]
+├ ○ /termos-de-uso
+└ ƒ /vasilhames
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

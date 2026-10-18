@@ -1,0 +1,38 @@
+A new version of Supabase CLI is available: v2.121.0 (currently installed v2.84.2)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
+SEED_IDS {"user":"8a687c57-b647-42de-8d77-1376ec13704b","org":"17c757a8-6bd3-4fce-9421-0ec9e6513ae5","store":"6ccf3c62-4221-49e4-ab8d-f50b41165414"}
+              set_config              |              set_config              |              set_config              
+--------------------------------------+--------------------------------------+--------------------------------------
+ 17c757a8-6bd3-4fce-9421-0ec9e6513ae5 | 6ccf3c62-4221-49e4-ab8d-f50b41165414 | 8a687c57-b647-42de-8d77-1376ec13704b
+(1 row)
+
+DO
+DO
+DO
+DO
+DO
+DO
+DO
+DO
+DO
+                        ?column?                        
+--------------------------------------------------------
+ SEED_SUMMARY products=16 groups=9 orders=10 modules=21
+(1 row)
+
+curl: (7) Failed to connect to 127.0.0.1 port 3000 after 0 ms: Couldn't connect to server
+android-360 panel login → 200 /login overflow=no small=9 
+android-360 logged in → http://127.0.0.1:3000/dashboard
+android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/b3da3510-e365-489b-84ee-9dfe941441b0 overflow=no small=26 
+android-360 panel /clientes/[id] → 200 /clientes/6f5bce7f-37ac-43ec-960f-ca63e93f9712 overflow=no small=26 
+android-360 panel /salao/[tableId] → 200 /salao/63187fed-a97a-4c2a-a580-12c51a9c8a6a overflow=no small=18 
+android-360 public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
+android-360 public-prod / → 200 / overflow=no small=15 
+android-360 public-prod /login → 200 /login overflow=no small=9 
+android-360 public-prod /cadastro → 200 /cadastro overflow=no small=7 
+android-360 public-prod /planos → 200 /planos overflow=no small=15 
+android-360 public-prod /recursos → 200 /recursos overflow=no small=15 
+android-360 public-prod /m/dona-maria-salgados-e-porcoes → 200 /m/dona-maria-salgados-e-porcoes overflow=no small=6 
+android-360 public-prod /m/dom-burger → 200 /m/dom-burger overflow=no small=6 
+android-360 public-prod /m/santa-rita → 200 /m/santa-rita overflow=no small=6 
+MOBILE_AUDIT_DONE entries=31

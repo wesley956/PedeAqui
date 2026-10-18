@@ -1,0 +1,15 @@
+android-360 panel login → 200 /login overflow=no small=9 
+android-360 logged in → http://127.0.0.1:3000/dashboard
+android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/b3da3510-e365-489b-84ee-9dfe941441b0 overflow=no small=26 
+android-360 panel /clientes/[id] → 200 /clientes/6f5bce7f-37ac-43ec-960f-ca63e93f9712 overflow=no small=26 
+android-360 panel /salao/[tableId] → 200 /salao/63187fed-a97a-4c2a-a580-12c51a9c8a6a overflow=no small=18 
+android-360 public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
+android-360 public-prod / → 200 / overflow=no small=15 
+android-360 public-prod /login → 200 /login overflow=no small=9 
+android-360 public-prod /cadastro → 200 /cadastro overflow=no small=7 
+android-360 public-prod /planos → 200 /planos overflow=no small=15 
+android-360 public-prod /recursos → 200 /recursos overflow=no small=15 
+android-360 public-prod /m/dona-maria-salgados-e-porcoes → 200 /m/dona-maria-salgados-e-porcoes overflow=no small=6 
+android-360 public-prod /m/dom-burger → 200 /m/dom-burger overflow=no small=6 
+android-360 public-prod /m/santa-rita → 200 /m/santa-rita overflow=no small=6 
+MOBILE_AUDIT_DONE entries=31
