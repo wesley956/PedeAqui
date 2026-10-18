@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef } from "react";
+import { scrollActiveIntoView } from "./scroll-active-into-view";
 import styles from "./page-tabs.module.css";
 
 export type PageTab = { key: string; label: string; href: string; count?: number | null };
@@ -8,8 +12,10 @@ export type PageTab = { key: string; label: string; href: string; count?: number
  * então funciona sem JavaScript, pode ser favoritada e o botão voltar do navegador respeita a aba.
  */
 export function PageTabs({ tabs, active, label }: { tabs: readonly PageTab[]; active: string; label: string }) {
+  const navRef = useRef<HTMLElement>(null);
+  useEffect(() => { scrollActiveIntoView(navRef.current); }, [active]);
   return (
-    <nav className={styles.tabs} aria-label={label}>
+    <nav ref={navRef} className={styles.tabs} aria-label={label}>
       {tabs.map((tab) => (
         <Link key={tab.key} href={tab.href} className={styles.tab} aria-current={tab.key === active ? "page" : undefined}>
           {tab.label}

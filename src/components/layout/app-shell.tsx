@@ -39,13 +39,13 @@ export function AppShell({ children, email, branding, navigationItems, operation
           </DesktopNavigation>
         </aside>
         <div className="app-main">
-          <OperationTopbar email={email} data={operationHeader} storeId={storeId} experienceMode={experienceMode} driverOnly={driverOnly} customerMessages={customerMessages} canSearchCatalog={navigationItems.some((item) => item.key === "catalog")} />
+          <OperationTopbar email={email} data={operationHeader} storeId={storeId} experienceMode={experienceMode} driverOnly={driverOnly} customerMessages={customerMessages} canSearchCatalog={navigationItems.some((item) => item.key === "catalog")} hasGuide={guideSteps.length > 0} />
           <CustomerMessageBanner messages={customerMessages.messages} />
           {storeId && humanAttentionAlert ? <HumanAttentionAlert storeId={storeId} alert={humanAttentionAlert} /> : null}
           <main id="main-content" className="app-content" tabIndex={-1}>{children}</main>
           {!branding.hidePedeAquiBranding && !usesPlatformDefault ? <footer className="platform-footer" aria-label="Tecnologia PedeAqui"><span>Tecnologia</span><PedeAquiLogo size="xs" decorative /></footer> : null}
         </div>
-        <MobileNavigation items={navigationItems} contexts={operationalContexts} experienceMode={experienceMode} />
+        <MobileNavigation items={navigationItems} contexts={operationalContexts} experienceMode={experienceMode} hasGuide={guideSteps.length > 0} />
         <NewUserGuide initialStatus={userGuide.status} initialStep={userGuide.currentStep} autoOpen={userGuide.autoOpen} steps={guideSteps} />
       </div>
     </OrderAlertProvider>
