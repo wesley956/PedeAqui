@@ -1,0 +1,50 @@
+name: Mobile Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["qa/mobile-audit"]
+
+permissions:
+  contents: write
+
+jobs:
+  mobile-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.84.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: |
+          npm install --legacy-peer-deps --no-audit --no-fund
+          npm install --no-save --legacy-peer-deps --no-audit --no-fund playwright@1.55.0 @axe-core/playwright@4.10.2
+          npx playwright install --with-deps chromium webkit
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client >/dev/null
+
+      - name: Run mobile audit
+        run: bash scripts/mobile-audit/run.sh
+
+      - name: Publish evidence to branch
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          [ -d mobile-audit-out ] || exit 0
+          dest="$(mktemp -d)"
+          cp -r mobile-audit-out/. "$dest/"
+          cd "$dest"
+          git init -q -b qa/mobile-audit-evidence
+          git config user.name "mobile-audit"
+          git config user.email "mobile-audit@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Mobile audit evidence ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" qa/mobile-audit-evidence
