@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OrdersTabs } from "@/features/orders/orders-tabs";
 import type { OrderManagerRow } from "@/features/orders/manager-model";
 import { MovementMode } from "@/features/operations/movement-mode";
 import { isManualDeliveryMode } from "@/modules/manual-delivery";
@@ -17,6 +18,7 @@ export default async function MovementPage() {
   const operationalOrders = (ordersData.orders as OrderManagerRow[]).filter((order) => !isFlexiblePaymentQueue(paymentPolicy) || !isDeliveredWithPaymentPending(order));
   return <section className={styles.page}>
     <header><div><h1>Modo Movimento</h1><span>Uma fila, uma próxima ação por pendência. O PedeAqui organiza; sua equipe executa.</span></div><Link href="/pedidos">Ver quadro completo</Link></header>
+    <OrdersTabs active="fila" />
     <MovementMode storeId={ordersData.context.storeId} initialOrders={operationalOrders} workflowMode={ordersData.workflowMode} manualDeliveryMode={isManualDeliveryMode(modules.enabledModuleKeys, ordersData.deliveryOperationLevel)} paymentPolicy={paymentPolicy} healthIssues={health.issues.filter((issue) => issue.severity === "P0" || issue.severity === "P1")} />
   </section>;
 }

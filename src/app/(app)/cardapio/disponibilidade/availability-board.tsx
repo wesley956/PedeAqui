@@ -44,6 +44,8 @@ export function AvailabilityBoard({ products, flavors, initialQuery, initialFilt
   const [filter, setFilter] = useState<Filter>(initialFilter);
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ key: string; result: AvailabilityResult } | null>(null);
+  // Na maioria das vezes "acabou" vale só para hoje: por padrão o item volta sozinho às 00:00.
+  const [untilTomorrow, setUntilTomorrow] = useState(true);
   const [isPending, startTransition] = useTransition();
 
   const normalizedQuery = normalize(query);
@@ -79,9 +81,9 @@ export function AvailabilityBoard({ products, flavors, initialQuery, initialFilt
     // Ligado → desliga. Desligado ou parcialmente pausado → liga em todos os grupos.
     const turnOn = entry.state !== "on";
     if (entry.kind === "product") {
-      run(entry, () => setProductAvailabilityAction({ productId: entry.id, availability: turnOn ? "available" : "sold_out" }));
+      run(entry, () => setProductAvailabilityAction({ productId: entry.id, availability: turnOn ? "available" : "sold_out", untilTomorrow }));
     } else {
-      run(entry, () => setFlavorAvailabilityAction({ modifierId: entry.id, active: turnOn, markBlockedProductsSoldOut }));
+      run(entry, () => setFlavorAvailabilityAction({ modifierId: entry.id, active: turnOn, markBlockedProductsSoldOut, untilTomorrow }));
     }
   }
 
@@ -110,6 +112,11 @@ export function AvailabilityBoard({ products, flavors, initialQuery, initialFilt
           ))}
         </div>
       </div>
+
+      <label className={styles.untilTomorrow}>
+        <input type="checkbox" checked={untilTomorrow} onChange={(event) => setUntilTomorrow(event.target.checked)} />
+        <span><strong>Voltar sozinho amanhã às 00:00</strong> — o que você desligar agora volta a ficar à venda no dia seguinte. Desmarque para deixar pausado até você reativar.</span>
+      </label>
 
       <p className={styles.hint}>Desligue quando algo acabar. Produto desligado aparece como esgotado no cardápio; sabor desligado some das escolhas em todos os produtos.</p>
 

@@ -56,7 +56,7 @@ export class ModifierService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     let query = admin.from("modifiers")
-      .select("id, modifier_group_id, name, price_cents, sort_order, active, created_at, updated_at")
+      .select("id, modifier_group_id, name, price_cents, sort_order, active, paused_until, created_at, updated_at")
       .eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null);
     if (groupId) query = query.eq("modifier_group_id", uuidSchema.parse(groupId));
     const { data, error } = await query.order("sort_order").order("name");
@@ -220,7 +220,7 @@ export class ModifierService {
     await AuditService.record(context, { action: "modifier.deleted", entityType: "modifier", entityId: id, before, after: { ...before, active: false, deleted_at: deletedAt } });
   }
 
-  static async setModifierActive(modifierId: string, active: boolean, scope: "single" | "matching_name" = "single", options: { markBlockedProductsSoldOut?: boolean } = {}) {
+  static async setModifierActive(modifierId: string, active: boolean, scope: "single" | "matching_name" = "single", options: { markBlockedProductsSoldOut?: boolean; pausedUntil?: string | null } = {}) {
     const id = uuidSchema.parse(modifierId);
     const context = await authorize(PERMISSIONS.PRODUCTS_EDIT);
     const storeId = requireStoreId(context.storeId);
@@ -279,7 +279,7 @@ export class ModifierService {
           if (!options.markBlockedProductsSoldOut) throw new ModifierPauseBlockedError(blockers);
           const productIds = [...new Set(blockers.flatMap((blocker) => blocker.products.map((product) => product.id)))];
           const { data: soldOut, error: soldOutError } = await admin.from("products")
-            .update({ availability: "sold_out", active: true, updated_by: context.userId, updated_at: new Date().toISOString() })
+            .update({ availability: "sold_out", active: true, ...(options.pausedUntil !== undefined ? { paused_until: options.pausedUntil } : {}), updated_by: context.userId, updated_at: new Date().toISOString() })
             .in("id", productIds).eq("organization_id", context.organizationId).eq("store_id", storeId)
             .select("id, active, availability");
           if (soldOutError) throw soldOutError;
@@ -289,7 +289,8 @@ export class ModifierService {
     }
 
     const before = affected.map(({ id: itemId, modifier_group_id, name, active: currentActive }) => ({ id: itemId, modifier_group_id, name, active: currentActive }));
-    const { data: after, error } = await admin.from("modifiers").update({ active, updated_by: context.userId, updated_at: new Date().toISOString() }).in("id", affectedIds).eq("organization_id", context.organizationId).eq("store_id", storeId).select("id, modifier_group_id, name, active");
+    const schedule = options.pausedUntil !== undefined ? { paused_until: active ? null : options.pausedUntil } : {};
+    const { data: after, error } = await admin.from("modifiers").update({ active, ...schedule, updated_by: context.userId, updated_at: new Date().toISOString() }).in("id", affectedIds).eq("organization_id", context.organizationId).eq("store_id", storeId).select("id, modifier_group_id, name, active");
     if (error) throw error;
     await AuditService.record(context, { action: "modifier.availability_changed", entityType: "modifier", entityId: id, before, after: { items: after, scope, affectedCount: affectedIds.length } });
     await EventService.enqueue(context, { type: "modifier.availability_changed", entityType: "modifier", entityId: id, payload: { active, scope, affected_count: affectedIds.length } });

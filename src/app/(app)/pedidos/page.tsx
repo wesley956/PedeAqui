@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OrdersTabs } from "@/features/orders/orders-tabs";
 import { CustomOrderWorkflowBoard } from "@/features/orders/custom-order-workflow-board";
 import { Alert } from "@/components/ui/feedback";
 import { OrderManagerBoard } from "@/features/orders/order-manager-board";
@@ -98,6 +99,8 @@ export default async function OrdersPage() {
           <Link href="/pedidos/historico" className={styles.detailsLink}>Ver histórico</Link>
         </div>
       </header>
+
+      <OrdersTabs active="quadro" />
 
       {finalFulfillment.length > 0 ? <Alert
         tone={readyToReconcile.length > 0 ? "warning" : "info"}

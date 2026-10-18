@@ -4,3 +4,5 @@
 .moduleOff{padding:var(--space-4);border-radius:var(--radius-lg);background:var(--state-success-surface)}.moduleOff p{margin:var(--space-1) 0 0}.preview{border-color:var(--accent);background:var(--state-success-surface)}.preview p{margin:0}.readOnly{color:var(--state-warning-text)}
 .related h2,.related p{margin:0}.related>div{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}.related a{display:grid;gap:var(--space-1);padding:var(--space-4);border:var(--border-width) solid var(--border-default);border-radius:var(--radius-lg);color:var(--text-primary)}.related a span{color:var(--text-secondary);font-size:var(--font-size-sm)}
 @media(max-width:600px){.page{gap:var(--space-4)}.form fieldset,.preview,.related{padding:var(--space-4)}.related>div{grid-template-columns:1fr}.choice{padding:var(--space-3)}}
+
+.advancedWorkflow { margin-top: var(--space-4); }

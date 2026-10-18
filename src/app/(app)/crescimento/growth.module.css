@@ -583,3 +583,7 @@
     padding: 0 12px 12px;
   }
 }
+
+/* Abas do crescimento */
+.hint { margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm); }
+.hint a { color: var(--text-primary); text-decoration: underline; }

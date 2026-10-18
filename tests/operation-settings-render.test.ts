@@ -63,7 +63,11 @@ describe("operation settings retain isolated saves and mounted configuration fie
     const html=renderToStaticMarkup(await PaymentSettingsPage({searchParams:Promise.resolve({})}));
     expect(form(html,"Formas aceitas")).not.toContain('name="accessToken"');
     expect(form(html,"Adicionar forma personalizada")).toContain('name="name"');
-    for(const name of ["environment","accessToken","webhookSecret","enabled"]) expect(form(html,"Configuração manual do Pix")).toContain(`name="${name}"`);
+    // Pagamentos em duas abas: a configuração manual do Pix fica na aba "Pix online".
+    expect(html).not.toContain('name="accessToken"');
+    const online=renderToStaticMarkup(await PaymentSettingsPage({searchParams:Promise.resolve({aba:"online"})}));
+    for(const name of ["environment","accessToken","webhookSecret","enabled"]) expect(form(online,"Configuração manual do Pix")).toContain(`name="${name}"`);
+    expect(online).not.toContain('aria-label="Formas aceitas"');
     for(const id of ["custom-a","custom-b"]) expect(html).toContain(`name="id" value="${id}"`);
     expect(form(html,"Renomear Benefício de teste")).toContain('value="Benefício de teste"');
     const ids=[...html.matchAll(/\sid="([^"]+)"/g)].map(m=>m[1]);expect(new Set(ids).size).toBe(ids.length);

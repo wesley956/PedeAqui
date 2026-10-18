@@ -11,8 +11,10 @@ import styles from "./finance-panel.module.css";
 import { OrderActionForm } from "@/features/orders/order-action-form";
 import { PageHeader } from "@/components/ui/page-header";
 import { CashflowChart } from "@/features/finance/cashflow-chart";
+import { PageTabs } from "@/components/ui/page-tabs";
 
-type SearchParams = Promise<{ from?: string; to?: string }>;
+type SearchParams = Promise<{ from?: string; to?: string; aba?: string }>;
+type FinanceTab = "resumo" | "receber-pagar" | "lancamentos" | "contas";
 type Account = { id: string; name: string; account_type: string; system_key: string | null; balance_cents: number | string };
 type Report = { period: { from: string; to: string; today: string; timezone: string }; accounts: Account[]; obligations: { receivable_open_cents: number | string; payable_open_cents: number | string; receivable_overdue_cents: number | string; payable_overdue_cents: number | string; open_count: number | string }; dre: { gross_revenue: number | string; deductions: number | string; delivery_revenue: number | string; cogs: number | string; operating_expense: number | string; other_revenue: number | string; other_expense: number | string; net_result: number | string }; cashflow: { net_realized_cents: number | string; daily: Array<{ day: string; net_cents: number | string }> } };
 type ExternalChannelSummary = {
@@ -43,9 +45,29 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
   const accounts = data.accounts as Account[];
   const open = data.obligations.filter((ob) => ob.status === "open" || ob.status === "partially_settled");
   const externalChannels = data.externalChannelSummary as ExternalChannelSummary[];
+  const tab: FinanceTab = query.aba === "receber-pagar" || query.aba === "lancamentos" || query.aba === "contas" ? query.aba : "resumo";
+  // As abas mantêm o período escolhido.
+  const tabHref = (key: FinanceTab) => {
+    const params = new URLSearchParams();
+    if (key !== "resumo") params.set("aba", key);
+    if (query.from) params.set("from", query.from);
+    if (query.to) params.set("to", query.to);
+    const search = params.toString();
+    return search ? `/financeiro?${search}` : "/financeiro";
+  };
+  const pendingCount = open.length + data.pendingDeliveryPayments.length;
 
   return <section className={styles.page}>
     <PageHeader title="Financeiro" description="Acompanhe receitas, despesas, valores a receber, contas a pagar e o resultado do negócio." actions={<><Link href="/caixa" className={styles.link}>Caixa</Link><Link href="/compras" className={styles.link}>Compras</Link><Link href="/dashboard" className={styles.link}>Início →</Link></>} />
+
+    <PageTabs label="Seções do financeiro" active={tab} tabs={[
+      { key: "resumo", label: "Visão geral", href: tabHref("resumo") },
+      { key: "receber-pagar", label: "A receber e a pagar", href: tabHref("receber-pagar"), count: pendingCount },
+      { key: "lancamentos", label: "Lançamentos", href: tabHref("lancamentos") },
+      { key: "contas", label: "Contas e cadastros", href: tabHref("contas") },
+    ]} />
+
+    {tab === "resumo" ? <>
 
     {data.canReports && report ? <>
       <form method="get" className={`card ${styles.period}`}><Input label="De" name="from" type="date" defaultValue={data.period.from} /><Input label="Até" name="to" type="date" defaultValue={data.period.to} /><Button type="submit">Aplicar período</Button><span className={styles.periodHint}>Resultados pelo período selecionado · {data.store.timezone}</span></form>
@@ -72,18 +94,27 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
       </div>}
       <p className="muted">Comissão, custo logístico e repasse só aparecem quando o provider os fornece de forma explícita. Ausência desses campos nunca é estimada a partir do preço do cardápio PedeAqui.</p>
     </article>
+    </> : null}
 
-    <div><div className={styles.headerCopy}><h2>Contas</h2><p className="muted">Veja o saldo atual de cada conta financeira.</p></div><div className={styles.accounts}>{accounts.map((account) => <article key={account.id} className={`card ${styles.account}`}><span className={styles.metricLabel}>{accountTypeLabel(account.account_type)}</span><strong>{account.name}</strong><strong className={`${styles.accountBalance} ${Number(account.balance_cents) < 0 ? styles.negative : ""}`}>{brl(account.balance_cents)}</strong>{account.system_key ? <span className={styles.meta}>Conta do sistema</span> : null}</article>)}</div></div>
 
+    {tab === "receber-pagar" ? <>
     <article className={`card ${styles.card}`}><div><h2>Contas a receber e a pagar</h2><p className="muted">Acompanhe compromissos em aberto e registre liquidações quando permitido.</p></div>{open.length === 0 ? <p className="muted">Nenhuma obrigação em aberto.</p> : <div className={styles.obligations}>{open.map((ob) => <div key={ob.id} className={styles.entry}><div className={styles.entryTop}><div><strong>{ob.description}</strong><div className={styles.meta}>{sourceLabel(ob.source_type)} · competência {date(ob.competence_date)} · vencimento {date(ob.due_date)}</div></div><div className={styles.entrySide}><strong className={ob.direction === "in" ? styles.income : styles.expense}>{ob.direction === "in" ? "A receber" : "A pagar"} · {brl(ob.open_cents)}</strong><div className={styles.meta}>{statusLabel[ob.status] ?? ob.status} · principal {brl(ob.principal_cents)} · liquidado {brl(ob.settled_cents)}</div></div></div>{data.canSettle && ob.source_type !== "order" ? <details className={styles.details}><summary>Registrar liquidação</summary><div className={styles.detailBody}><SettleObligationForm obligationId={ob.id} openCents={ob.open_cents} accounts={accounts} /></div></details> : null}{data.canManage && ob.source_type === "manual" && Number(ob.settled_cents) === 0 ? <details className={styles.details}><summary>Cancelar lançamento manual</summary><div className={styles.detailBody}><CancelManualFinanceForm obligationId={ob.id} /></div></details> : null}</div>)}</div>}</article>
 
     <article className={`card ${styles.card}`}><div><h2>Entregas com pagamento pendente</h2><p className="muted">A entrega já terminou, mas o valor ainda não recebeu baixa. Confirmar aqui registra o pagamento e conclui o pedido.</p></div>{data.pendingDeliveryPayments.length === 0 ? <p className="muted">Nenhuma entrega aguardando pagamento.</p> : <div className={styles.obligations}>{data.pendingDeliveryPayments.map((order) => <div key={order.id} className={styles.entry}><div className={styles.entryTop}><div><strong>Pedido #{order.display_number} · {order.customer_name_snapshot}</strong><div className={styles.meta}>{order.payment_method_snapshot || "Forma não informada"} · entregue em {new Date(order.updated_at).toLocaleString("pt-BR")}</div></div><strong className={styles.income}>{brl(order.total_cents)}</strong></div>{data.canSettle ? <OrderActionForm orderId={order.id} intent="mark_paid_and_complete" label="Confirmar recebimento" confirmPayment compact /> : <p className="muted">Seu perfil não pode dar baixa neste pagamento.</p>}</div>)}</div>}</article>
+    </> : null}
 
-    {(data.canManage || data.canSettle) ? <div className={styles.actionGrid}>{data.canManage ? <article className={`card ${styles.card}`}><h2>Novo lançamento</h2><p className="muted">Registre uma receita ou despesa e informe a data correspondente.</p><ManualFinanceEntryForm categories={data.categories} accounts={accounts} today={data.period.today} canSettle={data.canSettle} /></article> : null}{data.canSettle ? <article className={`card ${styles.card}`}><h2>Transferir entre contas</h2><p className="muted">Mova valores entre suas contas financeiras sem registrar receita ou despesa.</p><FinanceTransferForm accounts={accounts} /></article> : null}{data.canManage ? <article className={`card ${styles.card}`}><h2>Cadastros financeiros</h2><details className={styles.details}><summary>Criar conta</summary><div className={styles.detailBody}><FinanceAccountForm /></div></details><details className={styles.details}><summary>Criar categoria</summary><div className={styles.detailBody}><FinanceCategoryForm categories={data.categories} /></div></details></article> : null}</div> : null}
 
-    {data.canManage && data.suppliers.some((supplier) => supplier.config?.active) ? <article className={`card ${styles.card}`}><div><h2>Prazo de fornecedores</h2><p className="muted">Defina o prazo usado para novos pedidos de compra de cada fornecedor.</p></div><div className={styles.supplierGrid}>{data.suppliers.filter((supplier) => supplier.config?.active).map((supplier) => <div key={supplier.id} className={styles.supplier}><strong>{supplier.name}</strong><SupplierPaymentTermForm supplierId={supplier.id} days={supplier.config?.payment_term_days ?? 0} /></div>)}</div></article> : null}
 
+    {tab === "lancamentos" ? <>
+    {(data.canManage || data.canSettle) ? <div className={styles.actionGrid}>{data.canManage ? <article className={`card ${styles.card}`}><h2>Novo lançamento</h2><p className="muted">Registre uma receita ou despesa e informe a data correspondente.</p><ManualFinanceEntryForm categories={data.categories} accounts={accounts} today={data.period.today} canSettle={data.canSettle} /></article> : null}{data.canSettle ? <article className={`card ${styles.card}`}><h2>Transferir entre contas</h2><p className="muted">Mova valores entre suas contas financeiras sem registrar receita ou despesa.</p><FinanceTransferForm accounts={accounts} /></article> : null}</div> : null}
     <article className={`card ${styles.card}`}><div><h2>Histórico financeiro</h2><p className="muted">Veja os movimentos já registrados. Quando há estorno, o histórico anterior continua preservado.</p></div>{data.transactions.length === 0 ? <p className="muted">Sem movimentos financeiros.</p> : <div className={styles.transactions}>{data.transactions.slice(0, 80).map((tx) => <div key={tx.id} className={styles.entry}><div className={styles.entryTop}><span><strong>{tx.description || tx.transaction_type}</strong><span className={styles.meta}> · {tx.source_type || "financeiro"} · {new Date(tx.occurred_at).toLocaleString("pt-BR")}</span></span><strong className={tx.effect_sign < 0 ? styles.negative : tx.direction === "in" ? styles.income : styles.expense}>{tx.effect_sign < 0 ? "estorno " : ""}{tx.direction === "in" ? "+" : "−"}{brl(tx.amount_cents)}</strong></div>{data.canSettle && tx.transaction_type === "settlement" && (tx.source_type === "manual_settlement" || tx.source_type === "manual") ? <details className={styles.details}><summary>Estornar liquidação manual</summary><div className={styles.detailBody}><ReverseSettlementForm transactionId={tx.id} /></div></details> : null}</div>)}</div>}</article>
+    </> : null}
+
+    {tab === "contas" ? <>
+    <div><div className={styles.headerCopy}><h2>Contas</h2><p className="muted">Veja o saldo atual de cada conta financeira.</p></div><div className={styles.accounts}>{accounts.map((account) => <article key={account.id} className={`card ${styles.account}`}><span className={styles.metricLabel}>{accountTypeLabel(account.account_type)}</span><strong>{account.name}</strong><strong className={`${styles.accountBalance} ${Number(account.balance_cents) < 0 ? styles.negative : ""}`}>{brl(account.balance_cents)}</strong>{account.system_key ? <span className={styles.meta}>Conta do sistema</span> : null}</article>)}</div></div>
+    {data.canManage ? <div className={styles.actionGrid}>{data.canManage ? <article className={`card ${styles.card}`}><h2>Cadastros financeiros</h2><details className={styles.details}><summary>Criar conta</summary><div className={styles.detailBody}><FinanceAccountForm /></div></details><details className={styles.details}><summary>Criar categoria</summary><div className={styles.detailBody}><FinanceCategoryForm categories={data.categories} /></div></details></article> : null}</div> : null}
+    {data.canManage && data.suppliers.some((supplier) => supplier.config?.active) ? <article className={`card ${styles.card}`}><div><h2>Prazo de fornecedores</h2><p className="muted">Defina o prazo usado para novos pedidos de compra de cada fornecedor.</p></div><div className={styles.supplierGrid}>{data.suppliers.filter((supplier) => supplier.config?.active).map((supplier) => <div key={supplier.id} className={styles.supplier}><strong>{supplier.name}</strong><SupplierPaymentTermForm supplierId={supplier.id} days={supplier.config?.payment_term_days ?? 0} /></div>)}</div></article> : null}
+    </> : null}
   </section>;
 }
 

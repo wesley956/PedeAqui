@@ -24,7 +24,7 @@ export class ProductService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
     const { data, error } = await admin.from("products")
-      .select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, sort_order, active, availability, created_at, updated_at")
+      .select("id, category_id, name, description, image_url, price_cents, promotional_price_cents, cost_cents, sku, barcode, preparation_time_minutes, sort_order, active, availability, paused_until, created_at, updated_at")
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
       .is("deleted_at", null)
@@ -133,7 +133,8 @@ export class ProductService {
     return after;
   }
 
-  static async setAvailability(productId: string, requested: ProductAvailability) {
+  /** `pausedUntil`: quando informado, grava a hora em que o produto volta sozinho (null = sem volta automática). */
+  static async setAvailability(productId: string, requested: ProductAvailability, options: { pausedUntil?: string | null } = {}) {
     const id = uuidSchema.parse(productId);
     const availability = productAvailabilitySchema.parse(requested);
     const context = await authorize(PERMISSIONS.PRODUCTS_EDIT);
@@ -145,7 +146,13 @@ export class ProductService {
 
     const active = availability !== "inactive";
     const { data: after, error } = await admin.from("products")
-      .update({ active, availability, updated_by: context.userId, updated_at: new Date().toISOString() })
+      .update({
+        active,
+        availability,
+        ...(options.pausedUntil !== undefined ? { paused_until: availability === "sold_out" ? options.pausedUntil : null } : {}),
+        updated_by: context.userId,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", id).eq("organization_id", context.organizationId).eq("store_id", storeId)
       .select("id, active, availability").single();
     if (error) throw error;
