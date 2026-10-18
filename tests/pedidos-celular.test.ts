@@ -31,7 +31,8 @@ describe("pedidos no celular", () => {
       soundLabel: "Som ativado",
       onToggleSound: () => undefined,
     }));
-    for (const label of ["Novos", "Em preparo", "Prontos", "Todos", "#10", "João Pedro", "R$ 34,90", "Retirada", "Dinheiro · a receber", "3 min", "1× Caixa com 50 salgados", "Aceitar pedido", "Mais ações do pedido 10"]) expect(html).toContain(label);
+    expect(html).toMatch(/R\$\s34,90/);
+    for (const label of ["Novos", "Em preparo", "Prontos", "Todos", "#10", "João Pedro", "Retirada", "Dinheiro · a receber", "3 min", "1× Caixa com 50 salgados", "Aceitar pedido", "Mais ações do pedido 10"]) expect(html).toContain(label);
     // Abre em "Novos" quando há pedido esperando: o pedido em preparo não aparece até trocar de aba.
     expect(html).not.toContain("Isabela");
   });
