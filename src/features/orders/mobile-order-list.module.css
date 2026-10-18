@@ -50,9 +50,16 @@
 .sheetItems { list-style: none; margin: 0; padding: var(--space-3); display: grid; gap: var(--space-2); border-radius: var(--radius-lg); background: var(--surface-2); font-size: var(--font-size-sm); }
 .sheetItems li { display: grid; gap: 2px; }
 .sheetItems small { color: var(--text-secondary); font-size: var(--font-size-sm); padding-left: 1.6em; }
-.sheetGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.sheetGrid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
 .sheetGrid > * { min-width: 0; }
 .sheetGrid button[type="submit"] { width: 100% !important; min-height: 44px !important; }
 .sheetGrid details { grid-column: 1 / -1; }
 .close { min-height: 44px; border: 0; background: transparent; color: var(--text-secondary); font: inherit; font-weight: var(--font-weight-semibold); cursor: pointer; }
 .visuallyHidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Só o pedido novo (esperando aceite) fica em laranja; as outras etapas usam o botão escuro, como na proposta. */
+.primary:not([data-urgent]) button[type="submit"], .sheetPrimary:not([data-urgent]) button[type="submit"] { background: var(--text-primary) !important; color: var(--surface-0) !important; border-color: var(--text-primary) !important; }
+/* "Recusar pedido" no ⋯ com cara de botão, em vermelho. */
+.sheetGrid details > summary { min-height: 44px; display: flex; align-items: center; justify-content: center; border: var(--border-width) solid var(--state-danger); border-radius: var(--radius-md); color: var(--state-danger-text, var(--state-danger)); font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); list-style: none; cursor: pointer; }
+.sheetGrid details > summary::-webkit-details-marker { display: none; }
+.sheetGrid details[open] > summary { margin-bottom: var(--space-2); }

@@ -191,4 +191,5 @@
   .board > :not(.mobileOrders):not(.noticeSlot) { display: none !important; }
   .mobileOrders { display: block; }
   .recentFinalized { display: none; }
+  .noticeSlot:empty { display: none !important; }
 }
