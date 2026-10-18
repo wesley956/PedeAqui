@@ -315,7 +315,7 @@ export function CustomOrderWorkflowBoard({ storeId, viewPreferenceKey, orders: i
     <div className={styles.toolbar}>
       <div className={styles.search}><Input label="Buscar pedido" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Número, cliente, canal ou código externo" /></div>
       <Button type="button" tone="secondary" onClick={() => void toggle()} aria-pressed={soundEnabled}>{primaryLabel}</Button>
-      <Button type="button" tone="secondary" onClick={() => void test()}>Testar som</Button>
+      <Button type="button" tone="secondary" data-test-sound onClick={() => void test()}>Testar som</Button>
       {bulkEligibleOrders.length > 0 ? <Button type="button" tone="secondary" disabled={bulkPending} onClick={toggleAllEligible}>
         {allEligibleSelected ? "Desmarcar elegíveis" : `Selecionar elegíveis (${Math.min(bulkEligibleOrders.length, BULK_SELECTION_LIMIT)})`}
       </Button> : null}

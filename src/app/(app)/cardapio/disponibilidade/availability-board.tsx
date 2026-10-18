@@ -113,12 +113,10 @@ export function AvailabilityBoard({ products, flavors, initialQuery, initialFilt
         </div>
       </div>
 
-      <label className={styles.untilTomorrow}>
+      <label className={styles.untilTomorrow} title="O que você desligar agora volta a ficar à venda no dia seguinte. Desmarque para deixar pausado até você reativar.">
         <input type="checkbox" checked={untilTomorrow} onChange={(event) => setUntilTomorrow(event.target.checked)} />
-        <span><strong>Voltar sozinho amanhã às 00:00</strong> — o que você desligar agora volta a ficar à venda no dia seguinte. Desmarque para deixar pausado até você reativar.</span>
+        <span><strong>Voltar sozinho amanhã às 00:00</strong><span className={styles.untilTomorrowHint}> — desmarque para deixar pausado até você reativar.</span></span>
       </label>
-
-      <p className={styles.hint}>Desligue quando algo acabar. Produto desligado aparece como esgotado no cardápio; sabor desligado some das escolhas em todos os produtos.</p>
 
       {total === 0 ? (
         <div className={styles.empty}>
@@ -139,6 +137,7 @@ export function AvailabilityBoard({ products, flavors, initialQuery, initialFilt
         </Section>
       ) : null}
 
+      <p className={styles.hint}>Desligue quando algo acabar. Produto desligado aparece como esgotado no cardápio; sabor desligado some das escolhas em todos os produtos.</p>
       <p className={styles.footerLinks}>Para mudar preço, foto ou montar grupos: <Link href="/cardapio/produtos">Produtos</Link> · <Link href="/cardapio/adicionais">Sabores e Adicionais</Link></p>
     </section>
   );
