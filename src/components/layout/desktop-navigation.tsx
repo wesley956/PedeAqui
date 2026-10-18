@@ -5,7 +5,7 @@ import { NavigationIcon } from "@/components/ui/navigation-icon";
 import { usePathname } from "next/navigation";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import type { ExperienceMode } from "@/modules/user-experience";
-import type { NavigationGroup, NavigationPriority } from "./navigation-model";
+import { pinnedNavigationItems, type NavigationGroup, type NavigationPriority } from "./navigation-model";
 
 export type ShellNavigationItem = {
   key: string;
@@ -14,6 +14,8 @@ export type ShellNavigationItem = {
   group: NavigationGroup;
   priority: NavigationPriority;
   easyPrimary?: boolean;
+  /** Posição escolhida pelo usuário em "Personalizar menu"; ausente/null = item não fixado. */
+  pinnedOrder?: number | null;
 };
 
 
@@ -94,8 +96,10 @@ export function DesktopNavigation({ items, experienceMode = "standard", children
   const pathname = usePathname();
   const [compact, setCompact] = useState(false);
   const visible = items.filter((item) => item.priority !== "hidden");
+  // Ordem de decisão do grupo Principal: o que o usuário fixou > modo fácil > padrão da função.
+  const pinned = pinnedNavigationItems(visible);
   const preferredPrimary = visible.filter((item) => item.easyPrimary);
-  const primary = preferredPrimary.length > 0 ? preferredPrimary : visible.filter((item) => item.priority === "primary").slice(0, 8);
+  const primary = pinned.length > 0 ? pinned : preferredPrimary.length > 0 ? preferredPrimary : visible.filter((item) => item.priority === "primary").slice(0, 8);
   const primaryKeys = new Set(primary.map((item) => item.key));
   const rest = visible.filter((item) => !primaryKeys.has(item.key));
   const sections: SecondarySection[] = [
@@ -123,6 +127,10 @@ export function DesktopNavigation({ items, experienceMode = "standard", children
           </div>
         </section>
         {sections.map((section) => <NavigationSection key={section.key} section={section} compact={compact} pathname={pathname} />)}
+        <Link href="/meu-menu" className="app-nav-link nav-customize-link" aria-current={pathname === "/meu-menu" ? "page" : undefined} aria-label={compact ? "Personalizar menu" : undefined} title="Escolher e ordenar os itens do menu">
+          <span className="nav-link-marker" aria-hidden><NavigationIcon name="pin" /></span>
+          <span className="nav-link-label">Personalizar menu</span>
+        </Link>
       </nav>
     </div>
   );

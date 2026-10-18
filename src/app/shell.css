@@ -38,6 +38,7 @@
 .nav-group-toggle:hover { color: var(--text-primary); }
 .nav-group-toggle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-sm); }
 .nav-group-chevron { font-size: var(--font-size-sm); }
+.nav-customize-link { margin-top: var(--space-2); border-top: var(--border-width) solid var(--border-default); border-radius: 0 0 var(--radius-md) var(--radius-md); font-size: var(--font-size-sm); }
 .app-nav-link { min-height: var(--control-height-sm); display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); color: var(--text-secondary); }
 .app-nav-link:hover { background: var(--surface-2); color: var(--text-primary); }
 .app-nav-link[aria-current="page"] { background: var(--surface-2); color: var(--text-primary); box-shadow: inset 3px 0 0 var(--accent); }

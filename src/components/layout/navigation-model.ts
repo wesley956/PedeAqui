@@ -119,3 +119,28 @@ export function contextualNavigationWithModuleRbac(
     return decision ? canNavigateToModule(decision) : true;
   });
 }
+
+/** Quantos itens o usuário pode fixar no grupo "Principal" do menu. */
+export const NAVIGATION_PIN_LIMIT = 12;
+
+/**
+ * Limpa a lista de itens fixados pelo usuário: mantém só chaves que ele pode ver agora,
+ * sem repetição, na ordem escolhida e dentro do limite. Lista vazia = usar o padrão da função.
+ */
+export function sanitizeNavigationPins(raw: unknown, allowedKeys: ReadonlySet<string>, limit = NAVIGATION_PIN_LIMIT): string[] {
+  if (!Array.isArray(raw)) return [];
+  const pins: string[] = [];
+  for (const value of raw) {
+    if (typeof value !== "string" || !allowedKeys.has(value) || pins.includes(value)) continue;
+    pins.push(value);
+    if (pins.length === limit) break;
+  }
+  return pins;
+}
+
+/** Itens fixados pelo usuário, na ordem escolhida (vazio quando ele usa o menu padrão). */
+export function pinnedNavigationItems<T extends { pinnedOrder?: number | null }>(items: readonly T[]): T[] {
+  return items
+    .filter((item) => typeof item.pinnedOrder === "number")
+    .sort((a, b) => (a.pinnedOrder ?? 0) - (b.pinnedOrder ?? 0));
+}

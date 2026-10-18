@@ -4,7 +4,7 @@ import Link from "next/link";
 import { NavigationIcon } from "@/components/ui/navigation-icon";
 import { usePathname } from "next/navigation";
 import type { ExperienceMode } from "@/modules/user-experience";
-import type { OperationalContext } from "./navigation-model";
+import { pinnedNavigationItems, type OperationalContext } from "./navigation-model";
 import type { ShellNavigationItem } from "./desktop-navigation";
 
 const preferredOrder: Record<OperationalContext, readonly string[]> = {
@@ -39,6 +39,13 @@ export function selectMobileNavigation(
   experienceMode: ExperienceMode = "standard",
 ) {
   const visible = items.filter((item) => item.priority !== "hidden");
+  const pinned = pinnedNavigationItems(visible);
+  if (pinned.length > 0) {
+    // O usuário escolheu o menu: os primeiros itens fixados vão para a barra inferior, na ordem dele.
+    const selected = pinned.slice(0, limit);
+    const selectedKeys = new Set(selected.map((item) => item.key));
+    return { selected, more: visible.filter((item) => !selectedKeys.has(item.key)) };
+  }
   if (experienceMode === "easy") {
     const selected = visible.filter((item) => item.easyPrimary).slice(0, limit);
     const selectedKeys = new Set(selected.map((item) => item.key));
@@ -78,6 +85,7 @@ export function MobileNavigation({ items, contexts, experienceMode = "standard" 
       })}
       {more.length > 0 ? <details className="mobile-more"><summary aria-label="Abrir mais opções" aria-current={moreActive ? "page" : undefined}><span className="mobile-nav-icon" aria-hidden><NavigationIcon name="more" /></span><span>Mais</span></summary><div className="mobile-more-panel">
         <Link href="/mais-ferramentas" aria-current={pathname === "/mais-ferramentas" ? "page" : undefined}>Todas as ferramentas</Link>
+        <Link href="/meu-menu" aria-current={pathname === "/meu-menu" ? "page" : undefined}>Personalizar menu</Link>
         {more.map((item) => {
           const active = isActive(pathname, item.href);
           return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}>{item.label}</Link>;
