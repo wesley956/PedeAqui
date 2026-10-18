@@ -66,7 +66,7 @@ export default async function NewProductPage() {
           <SelectField label="Disponibilidade inicial" name="availability" defaultValue="available">
             <option value="available">Disponível</option>
             <option value="sold_out">Esgotado</option>
-            <option value="inactive">Inativo</option>
+            <option value="inactive">Oculto do cardápio</option>
           </SelectField>
           <Checkbox label="Produto ativo no catálogo" name="active" defaultChecked hint="Desative somente quando o item não deve participar da operação." />
         </section>

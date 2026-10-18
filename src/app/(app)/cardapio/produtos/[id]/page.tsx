@@ -67,7 +67,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           <SelectField label="Situação" name="availability" defaultValue={product.availability}>
             <option value="available">Disponível</option>
             <option value="sold_out">Esgotado</option>
-            <option value="inactive">Inativo</option>
+            <option value="inactive">Oculto do cardápio</option>
           </SelectField>
           <Checkbox label="Produto ativo no catálogo" name="active" defaultChecked={product.active} />
         </section>

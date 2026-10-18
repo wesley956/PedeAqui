@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
-import { Checkbox, Input, MoneyInput, QuantityInput, SelectField } from "@/components/ui/form-controls";
+import Link from "next/link";
+import { Checkbox, Input, MoneyInput, QuantityInput, SearchInput, SelectField } from "@/components/ui/form-controls";
 import { ModifierService } from "@/server/catalog/modifier-service";
 import {
   createModifierFormAction,
@@ -14,6 +15,7 @@ import {
 } from "@/features/catalog/actions";
 import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import { formatCents } from "@/server/catalog/money";
+import { normalizedCatalogName } from "@/server/catalog/catalog-name";
 import { CatalogRow, CatalogSectionHeader, CatalogSubList } from "@/features/catalog/catalog-list";
 import { CatalogSwitch } from "@/features/catalog/catalog-switch";
 import styles from "../catalog-management.module.css";
@@ -34,12 +36,36 @@ function DistributionTotalField({ id, defaultValue }: { id: string; defaultValue
   return <QuantityInput id={id} label="Total a distribuir (divisão igual)" name="distributionTotal" min={1} max={100} defaultValue={defaultValue ?? ""} hint="Só no modo de divisão igual. Ex.: 50 para uma caixa com 50 unidades." />;
 }
 
-export default async function ModifiersPage() {
-  const [groups, modifiers] = await Promise.all([
+type ModifiersPageProps = {
+  searchParams: Promise<{ q?: string }>;
+};
+
+export default async function ModifiersPage({ searchParams }: ModifiersPageProps) {
+  const [groups, modifiers, params] = await Promise.all([
     ModifierService.listGroups(),
     ModifierService.listModifiers(),
+    searchParams,
   ]);
   const activeGroups = groups.filter((group) => group.active).length;
+  const pausedOptions = modifiers.filter((modifier) => !modifier.active).length;
+
+  // O mesmo sabor costuma existir em vários grupos (caixa 25, 50, 100...). Contamos as cópias pelo
+  // nome normalizado para mostrar "em N grupos" e pausar todas de uma vez pelo interruptor.
+  const copiesByName = new Map<string, number>();
+  for (const modifier of modifiers) {
+    const key = normalizedCatalogName(modifier.name);
+    copiesByName.set(key, (copiesByName.get(key) ?? 0) + 1);
+  }
+
+  const rawQuery = (params.q ?? "").trim();
+  const query = normalizedCatalogName(rawQuery);
+  const visibleGroups = groups.flatMap((group) => {
+    const items = modifiers.filter((modifier) => modifier.modifier_group_id === group.id);
+    if (!query) return [{ group, items, matchedByOption: false }];
+    if (normalizedCatalogName(group.name).includes(query)) return [{ group, items, matchedByOption: false }];
+    const matching = items.filter((item) => normalizedCatalogName(item.name).includes(query));
+    return matching.length > 0 ? [{ group, items: matching, matchedByOption: true }] : [];
+  });
 
   const newGroupForm = (
     <ResilientMutationForm action={createModifierGroupFormAction} className={styles.editBody}>
@@ -86,8 +112,8 @@ export default async function ModifiersPage() {
   return (
     <section className={styles.page}>
       <CatalogSectionHeader
-        title="Adicionais, tamanhos e sabores"
-        description="Configure cada grupo conforme a operação do restaurante: escolha comum, quantidade manual ou divisão automática."
+        title="Sabores, tamanhos e adicionais"
+        description="Use a busca e o interruptor para pausar um sabor que acabou. Para montar o cardápio, crie grupos (ex.: “Escolha os sabores”) e as opções de cada um."
         actions={[
           { id: "novo-grupo", label: "Novo grupo", content: newGroupForm },
           { id: "nova-opcao", label: "Nova opção", secondary: true, content: newOptionForm },
@@ -98,7 +124,24 @@ export default async function ModifiersPage() {
         <span><strong>{groups.length}</strong> grupos</span>
         <span><strong>{activeGroups}</strong> ativos</span>
         <span><strong>{modifiers.length}</strong> opções</span>
+        {pausedOptions > 0 ? <span><strong>{pausedOptions}</strong> pausadas</span> : null}
       </div>
+
+      <form className={`card ${styles.filters}`} method="get" role="search" aria-label="Buscar sabor, tamanho ou adicional">
+        <SearchInput label="Buscar sabor, tamanho ou adicional" name="q" defaultValue={rawQuery} placeholder="Ex.: calabresa, grande, bacon" />
+        <div className={styles.filterActions}>
+          <Button type="submit">Buscar</Button>
+          {rawQuery ? <Link href="/cardapio/adicionais">Limpar</Link> : null}
+        </div>
+      </form>
+
+      {rawQuery && visibleGroups.length === 0 ? (
+        <article className={`card ${styles.empty}`}>
+          <h2>Nada encontrado para “{rawQuery}”</h2>
+          <p className="muted">Confira a grafia ou procure pelo nome do grupo.</p>
+          <Link href="/cardapio/adicionais">Ver todos os grupos</Link>
+        </article>
+      ) : null}
 
       {groups.length === 0 ? (
         <article className={`card ${styles.empty}`}>
@@ -108,8 +151,7 @@ export default async function ModifiersPage() {
       ) : null}
 
       <div className={styles.groupList}>
-        {groups.map((group) => {
-          const items = modifiers.filter((modifier) => modifier.modifier_group_id === group.id);
+        {visibleGroups.map(({ group, items, matchedByOption }) => {
           const quantityMode = group.selection_mode === "quantity_per_option";
           const equalSplitMode = group.selection_mode === "equal_split_options";
           const pricedPerUnit = quantityMode || equalSplitMode;
@@ -175,15 +217,25 @@ export default async function ModifiersPage() {
                     </ResilientMutationForm>
                   }
                 />
-                {items.length === 0 ? <p className={styles.subEmpty}>Nenhuma opção neste grupo. Use Nova opção para adicionar.</p> : <CatalogSubList count={items.length} noun={["opção", "opções"]} summary={items.map((item) => item.name).join(", ")}>{items.map((item) => (
+                {items.length === 0 ? <p className={styles.subEmpty}>Nenhuma opção neste grupo. Use Nova opção para adicionar.</p> : <CatalogSubList key={`${group.id}-${query}`} defaultOpen={matchedByOption} count={items.length} noun={["opção", "opções"]} summary={items.map((item) => item.name).join(", ")}>{items.map((item) => {
+                  const copies = copiesByName.get(normalizedCatalogName(item.name)) ?? 1;
+                  return (
                   <CatalogRow
                     key={item.id}
                     compact
                     main={<div className={styles.productTitleRow}>
                       <span>{item.name}</span>
                       {!item.active ? <span className={styles.stateBadge} data-active={false}>Pausada</span> : null}
+                      {copies > 1 ? <span className={styles.metaChip} title="O interruptor pausa ou reativa o sabor em todos esses grupos.">em {copies} grupos</span> : null}
                     </div>}
                     aside={<span className={styles.optionPrice}>{item.price_cents > 0 ? `+ ${formatCents(item.price_cents)}` : "Sem acréscimo"}{pricedPerUnit && item.price_cents > 0 ? " por unidade" : ""}</span>}
+                    toggle={<CatalogSwitch
+                      action={setModifierActiveFormAction}
+                      fields={{ modifierId: item.id, active: item.active ? "false" : "true", allMatching: "on" }}
+                      on={item.active}
+                      label="Ativa"
+                      actionLabel={`${item.active ? "Pausar opção" : "Reativar opção"}${copies > 1 ? ` em ${copies} grupos` : ""}: ${item.name}`}
+                    />}
                     editLabel={`Editar opção ${item.name}`}
                     editor={
                       <ResilientMutationForm action={updateModifierFormAction} successReset={false} className={styles.editBody}>
@@ -198,7 +250,9 @@ export default async function ModifiersPage() {
                           </SelectField>
                           <QuantityInput id={`modifier-${item.id}-order`} label="Ordem" name="sortOrder" min={0} defaultValue={item.sort_order} />
                         </div>
-                        <Checkbox id={`modifier-${item.id}-active`} name="active" label="Ativo" defaultChecked={item.active} />
+                        {/* A disponibilidade não muda por aqui: o interruptor da linha pausa o sabor em todos os grupos e protege grupos obrigatórios. */}
+                        {item.active ? <input type="hidden" name="active" value="on" /> : null}
+                        <p className={styles.formHint}>Para pausar ou reativar, use o interruptor ao lado do nome.</p>
                         <div className={styles.managementActions}><Button type="submit">Salvar opção</Button></div>
                       </ResilientMutationForm>
                     }
@@ -207,8 +261,9 @@ export default async function ModifiersPage() {
                       <ResilientMutationForm action={setModifierActiveFormAction} className={styles.menuForm}>
                         <input type="hidden" name="modifierId" value={item.id} />
                         <input type="hidden" name="active" value={item.active ? "false" : "true"} />
-                        <Checkbox id={`modifier-${item.id}-matching`} name="allMatching" label="Aplicar ao mesmo sabor em todos os grupos" defaultChecked />
-                        <Button type="submit" tone="secondary">{item.active ? "Pausar opção" : "Reativar opção"}</Button>
+                        <input type="hidden" name="allMatching" value="off" />
+                        <p className={styles.formHint}>Aplicar ao mesmo sabor em todos os grupos: use o interruptor. Aqui a mudança vale só para “{group.name}”.</p>
+                        <Button type="submit" tone="secondary">{item.active ? "Pausar opção só neste grupo" : "Reativar opção só neste grupo"}</Button>
                       </ResilientMutationForm>
                       <ResilientMutationForm action={removeModifierAction} className={styles.menuForm}>
                         <input type="hidden" name="modifierId" value={item.id} />
@@ -216,7 +271,8 @@ export default async function ModifiersPage() {
                       </ResilientMutationForm>
                     </>}
                   />
-                ))}</CatalogSubList>}
+                  );
+                })}</CatalogSubList>}
               </div>
             </section>
           );

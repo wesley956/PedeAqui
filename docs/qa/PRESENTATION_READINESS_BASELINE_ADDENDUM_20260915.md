@@ -16,3 +16,7 @@ Este adendo preserva os baselines históricos e registra superfícies adicionada
 - `/m/[slug]/@sheet/produto/[id]` — rota interceptada que abre a montagem do produto como gaveta por cima do cardápio (ou do checkout, ao editar um item). Reaproveita a mesma montagem e as mesmas ações de `/m/[slug]/produto/[id]`, que continua existindo quando o link é aberto direto.
 - `/m/[slug]/@sheet` — mantém a gaveta fechada no cardápio, inclusive depois de adicionar um item.
 - `/m/[slug]/@sheet/[...rest]` — mantém a gaveta fechada no carrinho, no checkout e no acompanhamento do pedido.
+
+## Painel — menu personalizável
+
+- `/meu-menu` — cada usuário escolhe quais itens ficam no grupo "Principal" do menu lateral e arrasta para definir a ordem (setas para toque e teclado). Salva por usuário e unidade em `user_store_preferences.navigation_pins`, aceita só itens que o usuário já pode ver por RBAC e módulos, e "Restaurar padrão" volta ao menu da função.

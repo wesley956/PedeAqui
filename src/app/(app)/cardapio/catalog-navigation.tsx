@@ -8,7 +8,7 @@ import styles from "./catalog-management.module.css";
 const links = [
   { label: "Produtos", href: "/cardapio/produtos", hint: "Itens, preços e disponibilidade", icon: "catalog" },
   { label: "Categorias", href: "/cardapio/categorias", hint: "Organização do cardápio", icon: "platform" },
-  { label: "Adicionais", href: "/cardapio/adicionais", hint: "Opções e complementos", icon: "settings" },
+  { label: "Sabores e Adicionais", href: "/cardapio/adicionais", hint: "Sabores, tamanhos e complementos", icon: "settings" },
   { label: "Sugestões", href: "/cardapio/sugestoes", hint: "Itens para acompanhar", icon: "growth" },
   { label: "Promoções", href: "/cardapio/promocoes", hint: "Ofertas por dia e horário", icon: "purchases" },
 ] as const;

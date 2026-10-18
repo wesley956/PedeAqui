@@ -15,7 +15,7 @@ import styles from "../catalog-management.module.css";
 const labels = {
   available: "Disponível",
   sold_out: "Esgotado",
-  inactive: "Pausado",
+  inactive: "Oculto",
 } as const;
 
 const statusPresentation = {
@@ -56,7 +56,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <header className={styles.header}>
         <div className={styles.headerCopy}>
           <h2>Produtos</h2>
-          <p className="muted">Encontre itens rapidamente e altere a disponibilidade sem abrir o cadastro completo.</p>
+          <p className="muted">Desligue o interruptor quando um item acabar: ele aparece como esgotado no cardápio e volta com um toque.</p>
         </div>
         <Link href="/cardapio/produtos/novo" className={styles.primaryLink}>Novo produto</Link>
       </header>
@@ -67,7 +67,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           <option value="all">Todas</option>
           <option value="available">Disponíveis</option>
           <option value="sold_out">Esgotados</option>
-          <option value="inactive">Inativos</option>
+          <option value="inactive">Ocultos</option>
         </SelectField>
         <SelectField label="Categoria" name="category" defaultValue={category}>
           <option value="all">Todas as categorias</option>
@@ -114,17 +114,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   {product.description ? <p className={styles.productDescription}>{product.description}</p> : null}
                   <div className={styles.productMeta}>
                     <span className={styles.metaChip}>{categoryNames.get(product.category_id ?? "") ?? "Sem categoria"}</span>
-                    <span className={styles.metaChip}>{product.sku ? `SKU ${product.sku}` : "Sem SKU"}</span>
-                    {product.image_url ? <span className={styles.metaChip}>Imagem cadastrada</span> : null}
-                    <span className={styles.metaChip}>Ordem {product.sort_order}</span>
+                    {product.sku ? <span className={styles.metaChip}>SKU {product.sku}</span> : null}
                   </div>
                 </div>
                 <div className={styles.productPrice}>{formatCents(product.promotional_price_cents ?? product.price_cents)}</div>
                 <div className={styles.productActions}>
                   <ResilientMutationForm action={setProductAvailabilityFormAction} className={styles.quickAvailabilityForm}>
                     <input type="hidden" name="productId" value={product.id} />
-                    <input type="hidden" name="availability" value={product.availability === "available" ? "inactive" : "available"} />
-                    <Button type="submit" tone="secondary" role="switch" aria-checked={product.availability === "available"} aria-label={`${product.availability === "available" ? "Pausar produto" : "Reativar produto"}: ${product.name}`} className={styles.availabilitySwitch}>
+                    {/* Desligar marca "Esgotado": o produto continua visível no cardápio, mas não pode ser pedido. Ocultar fica no menu Ações. */}
+                    <input type="hidden" name="availability" value={product.availability === "available" ? "sold_out" : "available"} />
+                    <Button type="submit" tone="secondary" role="switch" aria-checked={product.availability === "available"} aria-label={`${product.availability === "available" ? "Pausar produto (marcar como esgotado)" : "Reativar produto"}: ${product.name}`} className={styles.availabilitySwitch}>
                       <span className={styles.switchTrack} aria-hidden="true" />Disponível
                     </Button>
                   </ResilientMutationForm>
@@ -132,6 +131,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     <summary aria-label={`Ações do produto ${product.name}`}><NavigationIcon name="more" />Ações</summary>
                     <div className={styles.productMenuBody}>
                       <Link href={`/cardapio/produtos/${product.id}`}>Editar</Link>
+                      {product.availability !== "inactive" ? <ResilientMutationForm action={setProductAvailabilityFormAction}><input type="hidden" name="productId" value={product.id} /><input type="hidden" name="availability" value="inactive" /><Button type="submit" tone="secondary">Ocultar do cardápio</Button></ResilientMutationForm> : null}
                       <form action={duplicateProductAction}><input type="hidden" name="productId" value={product.id} /><Button type="submit" tone="secondary">Duplicar</Button></form>
                       <ResilientMutationForm action={removeProductAction}><input type="hidden" name="productId" value={product.id} /><ConfirmSubmitButton tone="secondary" confirmation="Remover este produto do catálogo? Pedidos e histórico serão preservados.">Remover</ConfirmSubmitButton></ResilientMutationForm>
                     </div>

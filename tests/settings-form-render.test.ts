@@ -123,7 +123,8 @@ describe("settings editors preserve the existing server form contracts", () => {
     const form = labeledForm(html, "Aparência e publicação do cardápio");
     for (const name of ["primaryColor", "minimumOrder", "logoFile", "coverFile", "removeLogo", "removeCover", "active", "showSearch", "showCategories", "showProductImages", "allowDelivery", "allowPickup"]) expect(form).toContain(`name="${name}"`);
     expect(form).not.toContain('name="reason"');
-    expect(html).toContain("Pausar pedidos");
+    expect(html).not.toContain("Pausar pedidos");
+    expect(html).toContain("Abrir e fechar o dia");
     exportFixture("menu-settings", html);
   });
   it("retains driver identities, idempotency keys and access controls with readable labels", async () => {

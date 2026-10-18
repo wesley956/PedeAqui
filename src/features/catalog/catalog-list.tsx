@@ -86,8 +86,8 @@ export function CatalogRow({ main, aside, toggle, editor, editLabel, menu, menuL
 }
 
 /** Opções de um grupo: fechadas mostram só o resumo ("Chocolate, Morango, Flocos…"), abertas mostram as linhas. */
-export function CatalogSubList({ count, summary, noun, children }: { count: number; summary: string; noun: [string, string]; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
+export function CatalogSubList({ count, summary, noun, children, defaultOpen = false }: { count: number; summary: string; noun: [string, string]; children: ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   const label = count === 1 ? `1 ${noun[0]}` : `${count} ${noun[1]}`;
   return (
     <>

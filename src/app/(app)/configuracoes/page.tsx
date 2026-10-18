@@ -17,7 +17,9 @@ type SettingDefinition = {
 
 const definitions = {
   store: { title: "Dados da loja", description: "Nome, telefone, e-mail e endereço.", href: "/configuracoes/loja", permissions: [PERMISSIONS.STORES_VIEW], keywords: ["nome", "telefone", "endereco", "cidade", "estado"] },
-  catalog: { title: "Cardápio e identidade", description: "Logo, capa, cor, publicação e pedido mínimo.", href: "/configuracoes/cardapio", permissions: [PERMISSIONS.STORES_VIEW], keywords: ["logo", "capa", "cor", "cardapio", "pedido minimo"], moduleKey: "catalog" },
+  catalog: { title: "Aparência do cardápio", description: "Logo, capa, cor, publicação e pedido mínimo.", href: "/configuracoes/cardapio", permissions: [PERMISSIONS.STORES_VIEW], keywords: ["logo", "capa", "cor", "cardapio", "pedido minimo", "aparencia", "publicar"], moduleKey: "catalog" },
+  products: { title: "Produtos e disponibilidade", description: "Marcar como esgotado, preços, fotos e cadastro de itens.", href: "/cardapio/produtos", permissions: [PERMISSIONS.PRODUCTS_VIEW], keywords: ["produto", "item", "esgotado", "acabou", "pausar", "desativar", "preco", "foto"], moduleKey: "catalog" },
+  modifiers: { title: "Sabores, tamanhos e adicionais", description: "Pausar um sabor que acabou ou montar as escolhas do cliente.", href: "/cardapio/adicionais", permissions: [PERMISSIONS.PRODUCTS_VIEW], keywords: ["sabor", "sabores", "tamanho", "adicional", "complemento", "borda", "acabou", "pausar", "desativar", "esgotado", "opcao"], moduleKey: "catalog" },
   hours: { title: "Horários", description: "Períodos de funcionamento da unidade.", href: "/configuracoes/horarios", permissions: [PERMISSIONS.STORES_VIEW], keywords: ["horario", "abre", "fecha", "funcionamento"] },
   flow: { title: "Fluxo de pedidos", description: "Etapas de produção, entrega e retirada.", href: "/configuracoes/fluxo-pedidos", permissions: [PERMISSIONS.STORES_VIEW], keywords: ["pedido", "fluxo", "producao", "retirada", "prazo"] },
   operation: { title: "Como meu restaurante trabalha", description: "Configuração guiada para deixar a rotina mais simples.", href: "/configuracoes/operacao", permissions: [PERMISSIONS.STORES_VIEW], keywords: ["pratico", "simples", "operacao", "aceite", "equipe", "movimento"] },
@@ -52,17 +54,18 @@ export default async function SettingsPage() {
 
   const teamItems: SettingsHubItem[] = access.items
     .filter((item) => item.key === "team" || item.key === "scale")
-    .map((item) => ({ title: item.label, description: item.key === "team" ? "Funcionários, funções e permissões." : "Organização da escala da equipe.", href: item.href, available: true, activationHref: null, keywords: item.key === "team" ? ["equipe", "funcionario", "usuario", "permissao", "acesso"] : ["escala", "horario", "equipe"] }));
+    .map((item) => ({ title: item.label, description: item.key === "team" ? "Funcionários, funções e permissões." : "Plano contratado, várias unidades e marca própria.", href: item.href, available: true, activationHref: null, keywords: item.key === "team" ? ["equipe", "funcionario", "usuario", "permissao", "acesso"] : ["plano", "unidades", "filial", "expansao", "marca propria", "dominio", "escala"] }));
 
   const areas: SettingsHubArea[] = [
-    { key: "store", icon: "store", title: "Minha loja", description: "Identidade, dados e funcionamento do estabelecimento.", items: [resolve(definitions.store), resolve(definitions.catalog), resolve(definitions.hours)].filter((item): item is SettingsHubItem => Boolean(item)) },
+    { key: "menu", icon: "catalog", title: "Cardápio", description: "O que está à venda hoje e como o cliente escolhe.", items: [resolve(definitions.products), resolve(definitions.modifiers), resolve(definitions.catalog)].filter((item): item is SettingsHubItem => Boolean(item)) },
+    { key: "store", icon: "store", title: "Minha loja", description: "Identidade, dados e funcionamento do estabelecimento.", items: [resolve(definitions.store), resolve(definitions.hours)].filter((item): item is SettingsHubItem => Boolean(item)) },
     { key: "orders", icon: "orders", title: "Pedidos e atendimento", description: "Como os pedidos entram, avançam e são atendidos.", items: [resolve(definitions.operation), resolve(definitions.flow), resolve(definitions.dining), resolve(definitions.cash)].filter((item): item is SettingsHubItem => Boolean(item)) },
     { key: "payments", icon: "payments", title: "Pagamentos", description: "Defina como seus clientes podem pagar.", items: [resolve(definitions.payments)].filter((item): item is SettingsHubItem => Boolean(item)) },
     { key: "delivery", icon: "deliveries", title: "Entrega e retirada", description: "Bairros, taxas, prazo e equipe de entrega.", items: [resolve(definitions.delivery), resolve(definitions.drivers)].filter((item): item is SettingsHubItem => Boolean(item)) },
     { key: "whatsapp", icon: "conversations", title: "WhatsApp", description: "Conexão, atendimento e mensagens da unidade.", items: [resolve(definitions.whatsapp)].filter((item): item is SettingsHubItem => Boolean(item)) },
     { key: "integrations", icon: "integrations", title: "Integrações", description: "Canais de venda externos e conexões da unidade.", items: [resolve(definitions.integrations)].filter((item): item is SettingsHubItem => Boolean(item)) },
     { key: "printing", icon: "printing", title: "Impressão automática", description: "Conexão, vias, conteúdo e acompanhamento da impressão.", items: [resolve(definitions.printing), resolve(definitions.printFormat)].filter((item): item is SettingsHubItem => Boolean(item)) },
-    { key: "team", icon: "team", title: "Equipe e acessos", description: "Pessoas, funções, permissões e escalas.", items: teamItems },
+    { key: "team", icon: "team", title: "Equipe e plano", description: "Pessoas, funções, permissões, plano e unidades.", items: teamItems },
   ].filter((area) => area.items.length > 0);
 
   return <section className={styles.root}>

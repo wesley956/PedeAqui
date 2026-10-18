@@ -40,7 +40,7 @@ export function OperationTopbar({ email, data, storeId, experienceMode = "standa
             {!storeStatus && !cashLabel ? <span>Operação disponível</span> : null}
           </div>
           {data.receiving ? <ReceivingControl state={data.receiving} /> : null}
-          {!driverOnly ? <div className="app-operation-panel-links"><Link className="app-operation-link" href="/movimento">Modo Movimento</Link><Link className="app-operation-link" href="/operacao">Abrir/fechar</Link></div> : null}
+          {!driverOnly ? <div className="app-operation-panel-links"><Link className="app-operation-link" href="/movimento">Modo Movimento</Link><Link className="app-operation-link" href="/operacao">Abrir e fechar o dia</Link></div> : null}
         </div>
       </details>
       <div className="app-topbar-actions">

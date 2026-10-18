@@ -5,6 +5,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { EventService } from "@/server/events/event-service";
+import { normalizedCatalogName } from "@/server/catalog/catalog-name";
 import {
   modifierGroupInputSchema,
   modifierInputSchema,
@@ -17,10 +18,6 @@ import {
 function requireStoreId(storeId: string | null): string {
   if (!storeId) throw new Error("An active store is required for catalog operations");
   return storeId;
-}
-
-function normalizedCatalogName(value: string): string {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLocaleLowerCase("pt-BR");
 }
 
 export class ModifierService {
@@ -234,7 +231,7 @@ export class ModifierService {
         const remaining = (storeModifiers ?? []).filter((item) => item.modifier_group_id === group.id && item.active && !affectedIdSet.has(item.id)).length;
         const requiredChoices = group.selection_mode === "quantity_per_option" ? 1 : Number(group.min_selection);
         if (remaining < requiredChoices) {
-          throw new Error(`Não é possível pausar esta opção: o grupo obrigatório “${group.name}” ficaria sem escolhas suficientes.`);
+          throw new Error(`Não é possível pausar esta opção: o grupo obrigatório “${group.name}” ficaria sem escolhas suficientes. Pause o produto em Produtos (Esgotado) ou ative outra opção desse grupo antes.`);
         }
       }
     }

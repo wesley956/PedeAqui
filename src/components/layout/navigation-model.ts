@@ -38,10 +38,10 @@ export const SYSTEM_ROLE_CONTEXTS: Record<string, readonly OperationalContext[]>
 export const NAVIGATION_MODULES = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", group: "management", permissions: [PERMISSIONS.DASHBOARD_VIEW], authorization: "organization" },
   { key: "orders", label: "Pedidos", href: "/pedidos", group: "operation", permissions: [PERMISSIONS.ORDERS_VIEW], authorization: "organization" },
+  { key: "catalog", label: "Cardápio", href: "/cardapio/produtos", group: "operation", permissions: [PERMISSIONS.PRODUCTS_VIEW], authorization: "organization" },
+  { key: "pdv", label: "PDV", href: "/pdv", group: "operation", permissions: [PERMISSIONS.ORDERS_CREATE], authorization: "organization" },
   { key: "conversations", label: "Conversas", href: "/conversas", group: "relationship", permissions: [PERMISSIONS.CONVERSATIONS_VIEW], authorization: "organization" },
   { key: "dining", label: "Salão", href: "/salao", group: "operation", permissions: [PERMISSIONS.DINING_VIEW, PERMISSIONS.ORDERS_VIEW], authorization: "organization" },
-  { key: "catalog", label: "Cardápio", href: "/cardapio/produtos", group: "administration", permissions: [PERMISSIONS.PRODUCTS_VIEW], authorization: "organization" },
-  { key: "pdv", label: "PDV", href: "/pdv", group: "operation", permissions: [PERMISSIONS.ORDERS_CREATE], authorization: "organization" },
   { key: "cash", label: "Caixa", href: "/caixa", group: "operation", permissions: [PERMISSIONS.CASH_VIEW, PERMISSIONS.CASH_OPEN], authorization: "organization" },
   { key: "finance", label: "Financeiro", href: "/financeiro", group: "management", permissions: [PERMISSIONS.FINANCE_VIEW, PERMISSIONS.REPORTS_VIEW], authorization: "organization" },
   { key: "fiscal", label: "Fiscal", href: "/fiscal", group: "administration", permissions: [PERMISSIONS.FISCAL_VIEW], authorization: "organization" },
@@ -54,7 +54,7 @@ export const NAVIGATION_MODULES = [
   { key: "purchases", label: "Compras", href: "/compras", group: "supplies", permissions: [PERMISSIONS.PURCHASES_VIEW], authorization: "organization" },
   { key: "customers", label: "Clientes", href: "/clientes", group: "relationship", permissions: [PERMISSIONS.CUSTOMERS_VIEW], authorization: "organization" },
   { key: "growth", label: "Crescimento", href: "/crescimento", group: "relationship", permissions: [PERMISSIONS.GROWTH_VIEW], authorization: "organization" },
-  { key: "scale", label: "Escala", href: "/escala", group: "administration", permissions: [PERMISSIONS.SCALE_VIEW], authorization: "organization" },
+  { key: "scale", label: "Plano e expansão", href: "/escala", group: "administration", permissions: [PERMISSIONS.SCALE_VIEW], authorization: "organization" },
   { key: "team", label: "Equipe", href: "/equipe", group: "administration", permissions: [PERMISSIONS.TEAM_VIEW], authorization: "organization" },
   { key: "subscription", label: "Minha assinatura", href: "/assinatura", group: "administration", permissions: [PERMISSIONS.SUBSCRIPTION_VIEW], authorization: "organization" },
   { key: "settings", label: "Configurações", href: "/configuracoes", group: "administration", permissions: [PERMISSIONS.ORGANIZATION_MANAGE, PERMISSIONS.STORES_VIEW, PERMISSIONS.PRINTING_VIEW, PERMISSIONS.INTEGRATIONS_VIEW, PERMISSIONS.BRANDING_VIEW, PERMISSIONS.SUBSCRIPTION_VIEW], authorization: "organization" },
@@ -66,7 +66,7 @@ const S = "secondary" as const;
 const H = "hidden" as const;
 
 export const CONTEXT_MODULE_PRIORITY: Record<OperationalContext, Record<string, NavigationPriority>> = {
-  management: { dashboard:P, orders:P, cash:P, finance:P, inventory:S, gas_containers:S, catalog:S, customers:S, growth:S, fiscal:S, purchases:S, team:S, conversations:S, dining:S, pdv:S, production:S, deliveries:S, driver:H, suppliers:S, scale:S, subscription:S, settings:S, platform:H },
+  management: { dashboard:P, orders:P, catalog:P, pdv:P, conversations:P, deliveries:P, cash:S, finance:S, inventory:S, gas_containers:S, customers:S, growth:S, fiscal:S, purchases:S, team:S, dining:S, production:S, driver:H, suppliers:S, scale:S, subscription:S, settings:S, platform:H },
   manager: { orders:P, dining:P, production:P, deliveries:P, dashboard:S, cash:S, pdv:S, conversations:S, inventory:S, gas_containers:S, team:S, customers:S, catalog:S, finance:S, fiscal:H, purchases:S, suppliers:H, growth:H, driver:H, scale:S, subscription:S, settings:S, platform:H },
   cashier: { pdv:P, cash:P, orders:P, customers:S, conversations:S, dining:S, dashboard:S, catalog:H, finance:H, fiscal:H, production:H, deliveries:H, driver:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, growth:H, scale:H, team:H, subscription:H, settings:H, platform:H },
   service: { conversations:P, orders:P, customers:P, pdv:S, deliveries:S, catalog:S, dashboard:S, dining:S, cash:H, finance:H, fiscal:H, production:H, driver:H, inventory:H, gas_containers:H, suppliers:H, purchases:H, growth:H, scale:H, team:H, subscription:H, settings:H, platform:H },
@@ -118,4 +118,29 @@ export function contextualNavigationWithModuleRbac(
     const decision = moduleDecisions[module.key];
     return decision ? canNavigateToModule(decision) : true;
   });
+}
+
+/** Quantos itens o usuário pode fixar no grupo "Principal" do menu. */
+export const NAVIGATION_PIN_LIMIT = 12;
+
+/**
+ * Limpa a lista de itens fixados pelo usuário: mantém só chaves que ele pode ver agora,
+ * sem repetição, na ordem escolhida e dentro do limite. Lista vazia = usar o padrão da função.
+ */
+export function sanitizeNavigationPins(raw: unknown, allowedKeys: ReadonlySet<string>, limit = NAVIGATION_PIN_LIMIT): string[] {
+  if (!Array.isArray(raw)) return [];
+  const pins: string[] = [];
+  for (const value of raw) {
+    if (typeof value !== "string" || !allowedKeys.has(value) || pins.includes(value)) continue;
+    pins.push(value);
+    if (pins.length === limit) break;
+  }
+  return pins;
+}
+
+/** Itens fixados pelo usuário, na ordem escolhida (vazio quando ele usa o menu padrão). */
+export function pinnedNavigationItems<T extends { pinnedOrder?: number | null }>(items: readonly T[]): T[] {
+  return items
+    .filter((item) => typeof item.pinnedOrder === "number")
+    .sort((a, b) => (a.pinnedOrder ?? 0) - (b.pinnedOrder ?? 0));
 }
