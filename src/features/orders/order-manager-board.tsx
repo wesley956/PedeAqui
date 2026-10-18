@@ -36,6 +36,7 @@ import { paymentMethodLabels } from "@/server/checkout/schemas";
 import { orderStatusLabels, productionStatusLabels } from "@/server/orders/state-machines";
 import type { PaymentCompletionPolicy } from "@/modules/payment-completion-policy";
 import { OrderPreview } from "./order-preview";
+import { MobileOrderList, type MobileOrderEntry } from "./mobile-order-list";
 import styles from "./order-manager.module.css";
 
 const activeBuckets = ["new", "preparing", "ready", "queued"] as const satisfies readonly OperationalOrderBucket[];
@@ -214,6 +215,32 @@ export function OrderManagerBoard({ storeId, viewPreferenceKey, orders: initialO
   const attentionOrders = sortOrdersForAttention(filtered.filter((order) => deriveOperationalBucket(order) !== "history" && (stage === "all" || deriveOperationalBucket(order) === stage)));
   const selectedOrder = orders.find((order) => order.id === selectedId && isOperationalOrder(order));
 
+  // Celular: a mesma fila, em cartões compactos por etapa (Novos / Em preparo / Prontos).
+  const mobileEntries: MobileOrderEntry[] = sortOrdersForAttention(filtered.filter((order) => deriveOperationalBucket(order) !== "history")).map((order) => {
+    const bucket = deriveOperationalBucket(order);
+    const action = primaryActionForOrder(order, workflowMode, manualDeliveryMode, paymentPolicy);
+    const canMarkPaidSecondary = ["ready", "not_required"].includes(order.production_status)
+      && order.payment_status === "pending"
+      && ["delivered", "picked_up_by_customer", "served", "not_required"].includes(order.fulfillment_status)
+      && action?.intent !== "mark_paid";
+    return {
+      order,
+      tab: bucket === "new" ? "novos" : bucket === "ready" ? "prontos" : "preparo",
+      late: isOrderAttentionLate(order, now),
+      urgent: bucket === "new",
+      action: action
+        ? <OrderActionForm orderId={order.id} intent={action.intent} label={action.label} tone={action.tone} confirmPayment={action.confirmPayment} compact />
+        : shouldContinueInDeliveryCenter(order, manualDeliveryMode) ? <Link href="/entregas" className={styles.deliveryAction}>Atualizar entrega</Link> : null,
+      extraActions: <>
+        {canMarkPaidSecondary ? <OrderActionForm orderId={order.id} intent="mark_paid" label="Marcar como pago" tone="secondary" compact /> : null}
+        {order.order_status === "pending_confirmation" ? <details className={styles.rejectDetails}>
+          <summary className={styles.rejectSummary}>Recusar pedido</summary>
+          <div className={styles.rejectBody}><OrderActionForm orderId={order.id} intent="reject" label="Confirmar recusa" tone="danger" reasonLabel="Motivo" reasonPlaceholder="Ex.: item indisponível" compact /></div>
+        </details> : null}
+      </>,
+    };
+  });
+
   const simplifiedColumns = [
     { key: "start", label: "Iniciar", orders: [...grouped.new, ...grouped.queued, ...grouped.preparing] },
     { key: "ready", label: "Pronto", orders: simplifiedReady },
@@ -251,6 +278,10 @@ export function OrderManagerBoard({ storeId, viewPreferenceKey, orders: initialO
 
       <div className={styles.noticeSlot} aria-live="polite">
         {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}
+      </div>
+
+      <div className={styles.mobileOrders}>
+        <MobileOrderList entries={mobileEntries} tabs={[{ key: "novos", label: "Novos" }, { key: "preparo", label: "Em preparo" }, { key: "prontos", label: "Prontos" }]} now={now} query={query} onQueryChange={setQuery} soundEnabled={soundEnabled} soundLabel={primaryLabel} onToggleSound={() => void toggle()} />
       </div>
 
       {view !== "board" ? <>

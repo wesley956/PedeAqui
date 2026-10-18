@@ -3,7 +3,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
-import type { OrderManagerRow } from "@/features/orders/manager-model";
+import type { OrderItemPreview, OrderManagerRow } from "@/features/orders/manager-model";
 import { sanitizeExternalOrderPresentation } from "@/features/orders/external-order-presentation";
 
 const managerSelect = "id, display_number, channel, fulfillment_type, order_status, payment_status, payment_method_snapshot, production_status, fulfillment_status, customer_name_snapshot, total_cents, scheduled_for, created_at, updated_at";
@@ -56,7 +56,43 @@ export class OrderPresentationService {
       externalByOrderId.set(orderId, external);
     }
 
-    return rows.map((row) => ({ ...row, external: externalByOrderId.get(row.id) ?? null }));
+    const itemsByOrderId = await this.loadItemPreviews(admin, context.organizationId, storeId, orderIds);
+    return rows.map((row) => ({ ...row, external: externalByOrderId.get(row.id) ?? null, items_preview: itemsByOrderId.get(row.id) ?? [] }));
+  }
+
+  /** Itens e opções de cada pedido, em lotes, para a lista compacta do celular. */
+  private static async loadItemPreviews(admin: ReturnType<typeof createAdminClient>, organizationId: string, storeId: string, orderIds: string[]) {
+    const items: Array<{ id: string; order_id: string; product_name_snapshot: string; quantity: number; note: string | null }> = [];
+    for (const batch of chunks(orderIds, externalBatchSize)) {
+      const { data, error } = await admin.from("order_items")
+        .select("id, order_id, product_name_snapshot, quantity, note")
+        .eq("organization_id", organizationId)
+        .eq("store_id", storeId)
+        .in("order_id", batch)
+        .order("created_at");
+      if (error) throw error;
+      items.push(...((data ?? []) as typeof items));
+    }
+    const optionsByItem = new Map<string, string[]>();
+    for (const batch of chunks(items.map((item) => item.id), externalBatchSize)) {
+      const { data, error } = await admin.from("order_item_modifiers")
+        .select("order_item_id, modifier_name_snapshot, quantity")
+        .eq("organization_id", organizationId)
+        .eq("store_id", storeId)
+        .in("order_item_id", batch)
+        .order("created_at");
+      if (error) throw error;
+      for (const row of (data ?? []) as Array<{ order_item_id: string; modifier_name_snapshot: string; quantity: number | null }>) {
+        const label = row.quantity && row.quantity > 1 ? `${row.modifier_name_snapshot} ${row.quantity}` : row.modifier_name_snapshot;
+        optionsByItem.set(row.order_item_id, [...(optionsByItem.get(row.order_item_id) ?? []), label]);
+      }
+    }
+    const byOrder = new Map<string, OrderItemPreview[]>();
+    for (const item of items) {
+      const preview: OrderItemPreview = { name: item.product_name_snapshot, quantity: item.quantity, options: optionsByItem.get(item.id) ?? [], note: item.note };
+      byOrder.set(item.order_id, [...(byOrder.get(item.order_id) ?? []), preview]);
+    }
+    return byOrder;
   }
 
   static async getManagerRow(orderId: string): Promise<OrderManagerRow | null> {

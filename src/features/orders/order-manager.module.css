@@ -184,3 +184,12 @@
   .stageFilters::-webkit-scrollbar { display: none; }
   .stageFilters > button { flex: 0 0 auto; white-space: nowrap; }
 }
+
+/* Celular: a lista compacta por etapa substitui busca, filtros, fila, quadro e histórico do quadro completo. */
+.mobileOrders { display: none; }
+@media (max-width: 640px) {
+  .board > :not(.mobileOrders):not(.noticeSlot) { display: none !important; }
+  .mobileOrders { display: block; }
+  .recentFinalized { display: none; }
+  .noticeSlot:empty { display: none !important; }
+}
