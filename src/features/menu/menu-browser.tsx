@@ -28,6 +28,8 @@ export function MenuBrowser({ menu, canOrder, productOptions, quickLines = {}, a
   allowQuickAdd?: boolean;
 }) {
   const [query, setQuery] = useState("");
+  const [productLimits, setProductLimits] = useState<Record<string, number>>({});
+
   const deferredQuery = useDeferredValue(query);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
@@ -76,6 +78,56 @@ export function MenuBrowser({ menu, canOrder, productOptions, quickLines = {}, a
     const button = categoriesRef.current.querySelector<HTMLElement>(`[data-category="${currentCategory}"]`);
     if (button) categoriesRef.current.scrollTo({ left: button.offsetLeft - 12, behavior: "smooth" });
   }, [currentCategory]);
+
+  // Mantém o retorno ao produto mesmo quando ele está além do lote inicial.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    function revealHashProduct() {
+      const hash = window.location.hash;
+      const match = /^#produto-([0-9a-f-]{36})$/i.exec(hash);
+      if (!match) return;
+      for (const category of menu.categories) {
+        const index = category.products.findIndex(product => product.id === match[1]);
+        if (index < 0) continue;
+        setProductLimits(current => ({
+          ...current,
+          [category.id]: Math.max(current[category.id] ?? 24, index + 1),
+        }));
+        timer = setTimeout(() => {
+          document.getElementById(`produto-${match[1]}`)?.scrollIntoView({
+            block: "center",
+          });
+        }, 100);
+        break;
+      }
+    }
+    revealHashProduct();
+    window.addEventListener("hashchange", revealHashProduct);
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener("hashchange", revealHashProduct);
+    };
+  }, [menu.categories]);
+
+  // Carrega outro lote perto do fim; o botão também funciona sem observer.
+  useEffect(() => {
+    if (normalize(deferredQuery) || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const id = entry.target.getAttribute("data-menu-load");
+        const category = filtered.find(item => item.id === id);
+        if (!id || !category) continue;
+        observer.unobserve(entry.target);
+        setProductLimits(current => ({
+          ...current,
+          [id]: Math.min(category.products.length, (current[id] ?? 24) + 24),
+        }));
+      }
+    }, { rootMargin: "400px 0px" });
+    document.querySelectorAll("[data-menu-load]").forEach(item => observer.observe(item));
+    return () => observer.disconnect();
+  }, [filtered, deferredQuery, productLimits]);
 
   function goToCategory(id: string) {
     setActiveCategory(id);
@@ -138,7 +190,10 @@ export function MenuBrowser({ menu, canOrder, productOptions, quickLines = {}, a
                 {category.description ? <p>{category.description}</p> : null}
               </div>
               <div className={styles.products}>
-                {category.products.map((product) => (
+                {(normalize(deferredQuery)
+                  ? category.products
+                  : category.products.slice(0, productLimits[category.id] ?? 24)
+                ).map((product) => (
                   <PublicProductCard
                     key={product.id}
                     product={product}
@@ -151,6 +206,20 @@ export function MenuBrowser({ menu, canOrder, productOptions, quickLines = {}, a
                   />
                 ))}
               </div>
+              {!normalize(deferredQuery) && category.products.length > (productLimits[category.id] ?? 24) ? (
+                <button
+                  type="button"
+                  data-menu-load={category.id}
+                  className={styles.categoryButton}
+                  aria-label={`Carregar mais produtos de ${category.name}`}
+                  onClick={() => setProductLimits(current => ({
+                    ...current,
+                    [category.id]: Math.min(category.products.length, (current[category.id] ?? 24) + 24),
+                  }))}
+                >
+                  Carregar mais produtos
+                </button>
+              ) : null}
             </section>
           ))}
         </>
