@@ -160,23 +160,46 @@ for (const device of DEVICES) {
       } catch (error) { results.push({ device: device.key, area: "panel", label: name, error: String(error.message).slice(0, 200) }); }
     }
 
-    // Estados de navegação: menu inferior / "Mais" / busca no topo.
+    // Estados de navegação: "Mais", menu da loja, menu da conta.
+    const openState = async (route, selector, name) => {
+      try {
+        await page.goto(`${panelBase}${route}`, { waitUntil: "load" });
+        await page.waitForTimeout(600);
+        const target = page.locator(selector).first();
+        if (!(await target.count())) { results.push({ device: device.key, area: "state", label: name, error: `não encontrado: ${selector}` }); return; }
+        await target.click(); await page.waitForTimeout(700);
+        await shotState(page, device, name);
+      } catch (error) { results.push({ device: device.key, area: "state", label: name, error: String(error.message).slice(0, 200) }); }
+    };
+    await openState("/dashboard", ".mobile-more > summary", "menu-mais-aberto");
+    await openState("/dashboard", ".app-operation-menu > summary", "menu-loja-aberto");
+    await openState("/dashboard", ".app-account-menu > summary", "menu-conta-aberto");
     try {
-      await page.goto(`${panelBase}/dashboard`, { waitUntil: "load" });
+      await page.goto(`${panelBase}/cardapio/disponibilidade?q=calabresa`, { waitUntil: "load" });
+      await page.locator('input[type="search"]').first().fill("calabresa").catch(() => {});
       await page.waitForTimeout(600);
-      const more = page.getByRole("button", { name: /mais|menu/i }).first();
-      if (await more.count()) { await more.click(); await page.waitForTimeout(700); await shotState(page, device, "menu-mais-aberto"); await page.keyboard.press("Escape"); }
-      const search = page.getByRole("button", { name: /buscar/i }).first();
-      if (await search.count()) { await search.click(); await page.waitForTimeout(700); await shotState(page, device, "busca-aberta"); await page.keyboard.press("Escape"); }
-    } catch (error) { results.push({ device: device.key, area: "state", label: "nav", error: String(error.message).slice(0, 200) }); }
+      await shotState(page, device, "disponibilidade-busca-calabresa");
+    } catch (error) { results.push({ device: device.key, area: "state", label: "disponibilidade-busca", error: String(error.message).slice(0, 200) }); }
 
-    // Fluxo do cardápio público local (loja fictícia com sabores).
+    // Fluxo do cliente na loja fictícia local (pode criar carrinho: banco descartável).
     await audit(page, device, "public-local", "menu", `${panelBase}/m/salgados-da-vila`);
     try {
-      await page.getByText("Caixa com 30 salgados").first().click();
-      await page.waitForTimeout(1200);
+      await page.locator('a[href*="/produto/"]', { hasText: "Caixa com 30 salgados" }).first().click();
+      await page.waitForTimeout(1500);
       await shotState(page, device, "local-produto-sabores");
+      await page.evaluate(() => window.scrollBy(0, 700)); await page.waitForTimeout(400);
+      await shotState(page, device, "local-produto-sabores-rolado");
     } catch (error) { results.push({ device: device.key, area: "state", label: "local-produto", error: String(error.message).slice(0, 200) }); }
+    try {
+      await page.goto(`${panelBase}/m/salgados-da-vila`, { waitUntil: "load" });
+      await page.locator('a[href*="/produto/"]', { hasText: "Coca-Cola 2L" }).first().click();
+      await page.waitForTimeout(1500);
+      await page.getByRole("button", { name: /adicionar/i }).first().click();
+      await page.waitForTimeout(1500);
+      await shotState(page, device, "local-depois-de-adicionar");
+      await audit(page, device, "public-local", "carrinho", `${panelBase}/m/salgados-da-vila/carrinho`);
+      await audit(page, device, "public-local", "checkout", `${panelBase}/m/salgados-da-vila/checkout`);
+    } catch (error) { results.push({ device: device.key, area: "state", label: "local-carrinho", error: String(error.message).slice(0, 200) }); }
     await context.close();
   }
 
@@ -189,13 +212,13 @@ for (const device of DEVICES) {
       try {
         await page.goto(`${publicBase}/m/${slug}`, { waitUntil: "load" });
         await page.waitForTimeout(1200);
-        await page.mouse.wheel(0, 900); await page.waitForTimeout(600);
+        await page.evaluate(() => window.scrollBy(0, 900)); await page.waitForTimeout(600);
         await shotState(page, device, `${slug}-rolado`);
         const card = page.locator('a[href*="/produto/"]').first();
         if (await card.count()) {
           await card.click(); await page.waitForTimeout(1500);
           await shotState(page, device, `${slug}-produto-aberto`);
-          await page.mouse.wheel(0, 700); await page.waitForTimeout(500);
+          await page.evaluate(() => window.scrollBy(0, 700)); await page.waitForTimeout(500);
           await shotState(page, device, `${slug}-produto-rolado`);
         }
       } catch (error) { results.push({ device: device.key, area: "state", label: `${slug}-flow`, error: String(error.message).slice(0, 200) }); }

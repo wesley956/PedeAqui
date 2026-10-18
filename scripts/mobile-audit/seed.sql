@@ -67,7 +67,7 @@ begin
     (o,s,c_beb,'Água sem gás 500 ml',null,350,true,'available',40),
     (o,s,c_doce,'Copo com 12 mini churros','Recheados com doce de leite.',1699,true,'available',10),
     (o,s,c_doce,'Caixa com 30 mini churros','Recheados com doce de leite. Nome propositalmente longo para testar quebra de linha no celular',2500,true,'available',20),
-    (o,s,c_doce,'Brigadeiro gourmet',null,450,false,'hidden',30);
+    (o,s,c_doce,'Brigadeiro gourmet',null,450,false,'inactive',30);
 exception when others then raise warning 'SEED catalog failed: %', sqlerrm;
 end $$;
 
