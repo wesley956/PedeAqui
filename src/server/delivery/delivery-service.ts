@@ -106,6 +106,56 @@ export class DeliveryService {
     return data;
   }
 
+  /**
+   * Cadastro em lote: cria os bairros que ainda não existem e atualiza a taxa dos que já existem
+   * (mesmo bairro, cidade e UF). Nada é apagado.
+   */
+  static async upsertNeighborhoodsBulk(input: { city: string; state: string; rows: Array<{ name: string; feeCents: number }> }) {
+    const parsed = input.rows.map((row) => deliveryNeighborhoodInputSchema.parse({ neighborhoodName: row.name, city: input.city, state: input.state, feeCents: row.feeCents, minimumOrderCents: null, additionalMinutes: 0, active: true }));
+    const context = await authorize(PERMISSIONS.DELIVERY_MANAGE);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const { data: current, error: currentError } = await admin.from("delivery_neighborhoods")
+      .select("id, neighborhood_key, fee_cents")
+      .eq("organization_id", context.organizationId).eq("store_id", storeId).is("deleted_at", null);
+    if (currentError) throw currentError;
+    const existing = new Map((current ?? []).map((row) => [row.neighborhood_key as string, row]));
+
+    const toInsert = parsed.filter((values) => !existing.has(neighborhoodKey(values.neighborhoodName, values.city, values.state))).map((values) => ({
+      organization_id: context.organizationId,
+      store_id: storeId,
+      neighborhood_name: values.neighborhoodName,
+      neighborhood_key: neighborhoodKey(values.neighborhoodName, values.city, values.state),
+      city: values.city,
+      state: values.state,
+      fee_cents: values.feeCents,
+      minimum_order_cents: null,
+      additional_minutes: 0,
+      active: true,
+      created_by: context.userId,
+      updated_by: context.userId,
+    }));
+    const toUpdate = parsed.flatMap((values) => {
+      const row = existing.get(neighborhoodKey(values.neighborhoodName, values.city, values.state));
+      return row && Number(row.fee_cents) !== values.feeCents ? [{ id: row.id as string, feeCents: values.feeCents }] : [];
+    });
+
+    if (toInsert.length > 0) {
+      const { error } = await admin.from("delivery_neighborhoods").insert(toInsert);
+      if (error) throw error;
+    }
+    for (const row of toUpdate) {
+      const { error } = await admin.from("delivery_neighborhoods").update({ fee_cents: row.feeCents, updated_by: context.userId, updated_at: new Date().toISOString() })
+        .eq("id", row.id).eq("organization_id", context.organizationId).eq("store_id", storeId);
+      if (error) throw error;
+    }
+    if (toInsert.length > 0 || toUpdate.length > 0) {
+      await AuditService.record(context, { action: "delivery.neighborhoods_bulk_saved", entityType: "store", entityId: storeId, after: { created: toInsert.map((row) => row.neighborhood_name), updated: toUpdate.length, city: input.city, state: input.state } });
+      await EventService.enqueue(context, { type: "delivery.neighborhood_changed", entityType: "store", entityId: storeId, payload: { created: toInsert.length, updated: toUpdate.length } });
+    }
+    return { created: toInsert.length, updated: toUpdate.length, unchanged: parsed.length - toInsert.length - toUpdate.length };
+  }
+
   static async updateNeighborhood(neighborhoodId: string, input: Omit<DeliveryNeighborhoodInput, "active">) {
     const id = uuidSchema.parse(neighborhoodId);
     const values = deliveryNeighborhoodInputSchema.parse({ ...input, active: true });

@@ -122,6 +122,12 @@ describe("catalog editors preserve independent payloads and accessible repeated 
     expect(link).toContain('name="sortOrder"');
     expect(link).not.toContain('name="price"');
     expect(forms(html, "unlinkModifierGroupAction")[0]).toContain('name="modifierGroupId" value="group-a"');
+    expect(product).not.toContain('name="active"');
+    // As opções do grupo vinculado aparecem com interruptor que vale para o mesmo sabor em todos os grupos.
+    const optionSwitches = forms(html, "setModifierActiveFormAction");
+    expect(optionSwitches).toHaveLength(1);
+    expect(optionSwitches[0]).toContain('name="modifierId" value="option-a"');
+    expect(optionSwitches[0]).toContain('name="allMatching" value="on"');
     exportVisualFixture("product-edit", html);
   });
   it("retains the new-product fields and default availability", async () => {
@@ -129,7 +135,10 @@ describe("catalog editors preserve independent payloads and accessible repeated 
     idsAreUnique(html);
     const [form] = forms(html, "createProductFormAction");
     expect(form).toContain('value="available" selected=""');
-    for (const name of ["name", "description", "categoryId", "price", "promotionalPrice", "cost", "sku", "barcode", "imageFile", "availability", "active"]) expect(form).toContain(`name="${name}"`);
+    for (const name of ["name", "description", "categoryId", "price", "promotionalPrice", "cost", "sku", "barcode", "imageFile", "availability"]) expect(form).toContain(`name="${name}"`);
+    // Situação única (sem a caixa "Produto ativo") e escolhas do cliente já no cadastro.
+    expect(form).not.toContain('name="active"');
+    expect(form).toContain('name="modifierGroupIds" value="group-a"');
     exportVisualFixture("product-new", html);
   });
   it("preserves individual promotional schedules and campaign-scoped removal", async () => {

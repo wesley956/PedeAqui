@@ -20,6 +20,24 @@ function requireStoreId(storeId: string | null): string {
   return storeId;
 }
 
+export type ModifierPauseBlocker = {
+  groupId: string;
+  groupName: string;
+  products: Array<{ id: string; name: string }>;
+};
+
+/**
+ * Pausar o sabor deixaria grupos obrigatórios sem escolhas suficientes em produtos que estão à venda.
+ * A mensagem continua a mesma de antes; `blockers` permite à tela oferecer "marcar esses produtos como esgotados".
+ */
+export class ModifierPauseBlockedError extends Error {
+  constructor(readonly blockers: ModifierPauseBlocker[]) {
+    const first = blockers[0];
+    super(`Não é possível pausar esta opção: o grupo obrigatório “${first?.groupName ?? ""}” ficaria sem escolhas suficientes. Pause o produto em Produtos (Esgotado) ou ative outra opção desse grupo antes.`);
+    this.name = "ModifierPauseBlockedError";
+  }
+}
+
 export class ModifierService {
   static async listGroups() {
     const context = await authorize(PERMISSIONS.PRODUCTS_VIEW);
@@ -202,7 +220,7 @@ export class ModifierService {
     await AuditService.record(context, { action: "modifier.deleted", entityType: "modifier", entityId: id, before, after: { ...before, active: false, deleted_at: deletedAt } });
   }
 
-  static async setModifierActive(modifierId: string, active: boolean, scope: "single" | "matching_name" = "single") {
+  static async setModifierActive(modifierId: string, active: boolean, scope: "single" | "matching_name" = "single", options: { markBlockedProductsSoldOut?: boolean } = {}) {
     const id = uuidSchema.parse(modifierId);
     const context = await authorize(PERMISSIONS.PRODUCTS_EDIT);
     const storeId = requireStoreId(context.storeId);
@@ -226,12 +244,46 @@ export class ModifierService {
         .select("id, name, min_selection, selection_mode, active")
         .eq("organization_id", context.organizationId).eq("store_id", storeId).in("id", affectedGroupIds).is("deleted_at", null);
       if (groupsError) throw groupsError;
-      for (const group of groups ?? []) {
-        if (!group.active || Number(group.min_selection) === 0) continue;
+      const shortGroups = (groups ?? []).filter((group) => {
+        if (!group.active || Number(group.min_selection) === 0) return false;
         const remaining = (storeModifiers ?? []).filter((item) => item.modifier_group_id === group.id && item.active && !affectedIdSet.has(item.id)).length;
         const requiredChoices = group.selection_mode === "quantity_per_option" ? 1 : Number(group.min_selection);
-        if (remaining < requiredChoices) {
-          throw new Error(`Não é possível pausar esta opção: o grupo obrigatório “${group.name}” ficaria sem escolhas suficientes. Pause o produto em Produtos (Esgotado) ou ative outra opção desse grupo antes.`);
+        return remaining < requiredChoices;
+      });
+      if (shortGroups.length > 0) {
+        // Só bloqueia quando algum produto à venda usa o grupo: grupo sem produto à venda não prejudica o cliente.
+        const { data: links, error: linksError } = await admin.from("product_modifier_groups")
+          .select("product_id, modifier_group_id")
+          .eq("organization_id", context.organizationId).eq("store_id", storeId)
+          .in("modifier_group_id", shortGroups.map((group) => group.id));
+        if (linksError) throw linksError;
+        const linkedProductIds = [...new Set((links ?? []).map((link) => link.product_id))];
+        const sellingById = new Map<string, string>();
+        if (linkedProductIds.length > 0) {
+          const { data: sellingProducts, error: sellingError } = await admin.from("products")
+            .select("id, name")
+            .eq("organization_id", context.organizationId).eq("store_id", storeId).in("id", linkedProductIds)
+            .eq("active", true).eq("availability", "available").is("deleted_at", null);
+          if (sellingError) throw sellingError;
+          for (const product of sellingProducts ?? []) sellingById.set(String(product.id), String(product.name));
+        }
+        const blockers: ModifierPauseBlocker[] = shortGroups.map((group) => ({
+          groupId: group.id,
+          groupName: group.name,
+          products: (links ?? []).flatMap((link) => {
+            const name = link.modifier_group_id === group.id ? sellingById.get(String(link.product_id)) : undefined;
+            return name === undefined ? [] : [{ id: String(link.product_id), name }];
+          }),
+        })).filter((blocker) => blocker.products.length > 0);
+        if (blockers.length > 0) {
+          if (!options.markBlockedProductsSoldOut) throw new ModifierPauseBlockedError(blockers);
+          const productIds = [...new Set(blockers.flatMap((blocker) => blocker.products.map((product) => product.id)))];
+          const { data: soldOut, error: soldOutError } = await admin.from("products")
+            .update({ availability: "sold_out", active: true, updated_by: context.userId, updated_at: new Date().toISOString() })
+            .in("id", productIds).eq("organization_id", context.organizationId).eq("store_id", storeId)
+            .select("id, active, availability");
+          if (soldOutError) throw soldOutError;
+          await AuditService.record(context, { action: "product.availability_changed", entityType: "modifier", entityId: id, before: { productIds }, after: { items: soldOut, reason: "modifier_paused" } });
         }
       }
     }
@@ -261,6 +313,17 @@ export class ModifierService {
     await AuditService.record(context, { action: "product.modifier_group_linked", entityType: "product", entityId: values.productId, after: data });
     await EventService.enqueue(context, { type: "product.modifier_group_linked", entityType: "product", entityId: values.productId, payload: { modifier_group_id: values.modifierGroupId } });
     return data;
+  }
+
+  /** Todos os vínculos produto ↔ grupo da unidade (para a tela de disponibilidade). */
+  static async listAllProductGroupLinks() {
+    const context = await authorize(PERMISSIONS.PRODUCTS_VIEW);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+    const { data, error } = await admin.from("product_modifier_groups").select("product_id, modifier_group_id, sort_order")
+      .eq("organization_id", context.organizationId).eq("store_id", storeId).order("sort_order");
+    if (error) throw error;
+    return data ?? [];
   }
 
   static async listProductGroupLinks(productId: string) {

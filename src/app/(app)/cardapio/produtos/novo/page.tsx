@@ -10,12 +10,13 @@ import {
 } from "@/components/ui/form-controls";
 import { ImageUploadField } from "@/components/media/image-upload-field";
 import { CategoryService } from "@/server/catalog/category-service";
+import { ModifierService } from "@/server/catalog/modifier-service";
 import { createProductFormAction } from "@/features/catalog/actions";
 import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import styles from "./product-editor.module.css";
 
 export default async function NewProductPage() {
-  const categories = await CategoryService.list();
+  const [categories, groups] = await Promise.all([CategoryService.list(), ModifierService.listGroups()]);
 
   return (
     <section className={styles.page}>
@@ -63,24 +64,29 @@ export default async function NewProductPage() {
             <h2 id="produto-disponibilidade">Disponibilidade</h2>
             <p className="muted">Defina como o item deve entrar no catálogo. Depois, a disponibilidade pode ser alterada diretamente na lista de produtos.</p>
           </div>
-          <SelectField label="Disponibilidade inicial" name="availability" defaultValue="available">
-            <option value="available">Disponível</option>
+          <SelectField label="Situação" name="availability" defaultValue="available" hint="Esgotado aparece no cardápio, mas não pode ser pedido. Oculto não aparece.">
+            <option value="available">À venda</option>
             <option value="sold_out">Esgotado</option>
             <option value="inactive">Oculto do cardápio</option>
           </SelectField>
-          <Checkbox label="Produto ativo no catálogo" name="active" defaultChecked hint="Desative somente quando o item não deve participar da operação." />
         </section>
 
         <section className={`card ${styles.section}`} aria-labelledby="produto-adicionais">
           <div className={styles.sectionHeader}>
-            <h2 id="produto-adicionais">Adicionais e opções</h2>
-            <p className="muted">Grupos de adicionais são compartilhados entre produtos e continuam sendo administrados na área própria.</p>
+            <h2 id="produto-adicionais">Escolhas do cliente</h2>
+            <p className="muted">Marque os grupos que o cliente escolhe neste produto (sabores, tamanhos, adicionais). A ordem segue a da lista.</p>
           </div>
-          <div className={styles.helperCard}>
-            <strong>Vincule adicionais depois de salvar o produto.</strong>
-            <p>Isso evita interromper o cadastro básico e mantém as regras existentes de grupos e opções.</p>
-            <Link href="/cardapio/adicionais">Abrir gestão de adicionais</Link>
-          </div>
+          {groups.length === 0 ? (
+            <div className={styles.helperCard}>
+              <strong>Nenhum grupo de escolhas criado ainda.</strong>
+              <p>Crie grupos como “Escolha os sabores” e depois vincule a este produto.</p>
+              <Link href="/cardapio/adicionais">Criar sabores e adicionais</Link>
+            </div>
+          ) : (
+            <div className={styles.choiceList}>
+              {groups.map((group) => <Checkbox key={group.id} id={`new-product-group-${group.id}`} name="modifierGroupIds" value={group.id} label={group.name} hint={group.required ? "Obrigatório" : "Opcional"} />)}
+            </div>
+          )}
         </section>
 
         <details className={styles.details}>

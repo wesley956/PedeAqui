@@ -58,6 +58,7 @@ function categoryInput(formData: FormData, imageUrl: string | null) {
 function productInput(formData: FormData, imageUrl: string | null) {
   const promotional = formData.get("promotionalPrice");
   const cost = formData.get("cost");
+  const availability = productAvailabilitySchema.parse(formData.get("availability") ?? "available");
   return {
     categoryId: optionalString(formData.get("categoryId")),
     name: String(formData.get("name") ?? ""),
@@ -70,8 +71,9 @@ function productInput(formData: FormData, imageUrl: string | null) {
     barcode: optionalString(formData.get("barcode")),
     preparationTimeMinutes: integer(formData.get("preparationTimeMinutes")),
     sortOrder: integer(formData.get("sortOrder")),
-    active: formData.get("active") === "on",
-    availability: productAvailabilitySchema.parse(formData.get("availability") ?? "available"),
+    // Situação única na tela: "Oculto" desativa o produto; sem o campo antigo "active", ele segue a situação.
+    active: formData.has("active") ? formData.get("active") === "on" : availability !== "inactive",
+    availability,
   };
 }
 
@@ -193,7 +195,10 @@ export async function createProductAction(formData: FormData) {
   let uploaded: CatalogImageUpload | null = null;
   try {
     uploaded = await uploadNewCatalogImage(formData.get("imageFile"), "product");
-    await ProductService.create(productInput(formData, uploaded?.publicUrl ?? null));
+    const created = await ProductService.create(productInput(formData, uploaded?.publicUrl ?? null));
+    // Escolhas do cliente (sabores, tamanhos, adicionais) já marcadas no cadastro, na ordem da tela.
+    const groupIds = [...new Set(formData.getAll("modifierGroupIds").map(String).filter(Boolean))];
+    for (const [index, groupId] of groupIds.entries()) await ModifierService.linkGroupToProduct(created.id, groupId, index);
   } catch (error) {
     await rollbackCatalogImage(uploaded);
     throw error;

@@ -112,3 +112,31 @@ export async function removeStoreHourAction(formData: FormData) {
   await StoreMenuService.removeHour(String(formData.get("hourId") ?? ""));
   revalidateMenu();
 }
+
+/**
+ * Grade de horários: recebe a semana inteira (JSON em "periods") e salva de uma vez.
+ * Fechamento igual ou antes da abertura significa "fecha no dia seguinte" (ex.: 18:00 → 02:00).
+ */
+export async function saveStoreWeekAction(formData: FormData) {
+  try {
+    const raw = JSON.parse(String(formData.get("periods") ?? "[]")) as unknown;
+    if (!Array.isArray(raw)) throw new Error("invalid periods");
+    const periods = raw.map((item, index) => {
+      const period = item as { weekday?: unknown; opensAt?: unknown; closesAt?: unknown };
+      const opensAt = String(period.opensAt ?? "");
+      const closesAt = String(period.closesAt ?? "");
+      return { weekday: Number(period.weekday), opensAt, closesAt, closesNextDay: closesAt < opensAt, sortOrder: index, active: true };
+    });
+    if (periods.some((period) => period.opensAt === period.closesAt)) {
+      return { ok: false, message: "Abertura e fechamento não podem ser no mesmo horário." };
+    }
+    await StoreMenuService.replaceWeek(periods);
+    revalidateMenu();
+    return { ok: true, message: periods.length === 0 ? "Horários salvos: a loja ficará fechada até você cadastrar um período." : "Horários da semana salvos." };
+  } catch (error) {
+    const message = error instanceof Error && error.message === "Store hours overlap"
+      ? "Há períodos que se sobrepõem no mesmo dia (ou com a madrugada do dia anterior). Ajuste e salve de novo."
+      : "Não foi possível salvar os horários. Confira se todos os campos estão preenchidos.";
+    return { ok: false, message };
+  }
+}

@@ -3,7 +3,8 @@ import { Input, Checkbox, SelectField } from "@/components/ui/form-controls";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 import styles from "../settings-form.module.css";
 import { createDeliveryNeighborhoodAction, removeDeliveryNeighborhoodAction, saveDeliverySettingsAction, toggleDeliveryNeighborhoodAction } from "@/features/delivery/actions";
-import { updateDeliveryNeighborhoodAction } from "@/features/delivery/neighborhood-actions";
+import { bulkDeliveryNeighborhoodsAction, updateDeliveryNeighborhoodAction } from "@/features/delivery/neighborhood-actions";
+import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import { saveDriverHistoryVisibilityAction } from "@/features/delivery/driver-history-actions";
 import { DeliveryService } from "@/server/delivery/delivery-service";
 import { DriverHistoryPolicyService } from "@/server/delivery/driver-history-policy-service";
@@ -16,6 +17,17 @@ export default async function DeliverySettingsPage() {
     DeliveryService.listNeighborhoods(),
     DriverHistoryPolicyService.get(),
   ]);
+  // Cidade/UF mais usadas nos bairros já cadastrados: ponto de partida do cadastro em lote.
+  const cityCount = new Map<string, { city: string; state: string; count: number }>();
+  for (const row of neighborhoods) {
+    const key = `${row.city}|${row.state}`;
+    const entry = cityCount.get(key) ?? { city: row.city, state: row.state, count: 0 };
+    entry.count += 1;
+    cityCount.set(key, entry);
+  }
+  const mostUsed = [...cityCount.values()].sort((a, b) => b.count - a.count)[0];
+  const defaultCity = mostUsed?.city ?? "";
+  const defaultState = mostUsed?.state ?? "";
 
   return (
     <section className={styles.page}>
@@ -66,6 +78,22 @@ export default async function DeliverySettingsPage() {
       </details>
 
       <div>
+        <details className={styles.details} open={neighborhoods.length === 0}>
+          <summary>Adicionar vários bairros de uma vez</summary>
+          <ResilientMutationForm action={bulkDeliveryNeighborhoodsAction} className={styles.form}>
+            <p className={styles.meta}>Cole uma linha por bairro, com a taxa no fim. Bairros que já existem têm só a taxa atualizada; nenhum bairro é apagado.</p>
+            <div className={styles.grid}>
+              <Input id="bulk-neighborhood-city" label="Cidade" name="city" defaultValue={defaultCity} required />
+              <Input id="bulk-neighborhood-state" label="UF" name="state" maxLength={2} placeholder="SP" defaultValue={defaultState} required />
+            </div>
+            <label className={styles.bulkLabel} htmlFor="bulk-neighborhood-list">
+              <span>Bairros e taxas</span>
+              <textarea id="bulk-neighborhood-list" name="list" rows={8} className={styles.bulkTextarea} placeholder={"Centro; 5,00\nJardim América; 7,00\nVila Nova; 6,50"} required />
+            </label>
+            <div><Button type="submit" loadingLabel="Salvando bairros…">Salvar lista de bairros</Button></div>
+          </ResilientMutationForm>
+        </details>
+
         <details className={styles.details}>
           <summary>Adicionar bairro</summary>
         <form action={createDeliveryNeighborhoodAction} className={styles.form} aria-label="Adicionar bairro">
