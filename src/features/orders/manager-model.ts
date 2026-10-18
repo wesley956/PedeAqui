@@ -18,7 +18,17 @@ export type OrderManagerRow = {
   created_at: string;
   updated_at: string;
   external?: ExternalOrderPresentation | null;
+  /** Itens do pedido para a lista do celular (nome, quantidade, opções escolhidas e observação). */
+  items_preview?: OrderItemPreview[] | null;
 };
+
+export type OrderItemPreview = { name: string; quantity: number; options: string[]; note: string | null };
+
+/** "2× Coca-Cola 2L · 1× Caixa com 30 salgados" */
+export function orderItemsSummary(items: readonly OrderItemPreview[] | null | undefined) {
+  if (!items || items.length === 0) return null;
+  return items.map((item) => `${item.quantity}× ${item.name}`).join(" · ");
+}
 
 export type OrderLane = "new" | "confirmed" | "preparing" | "ready" | "finished";
 export type OperationalOrderBucket = "new" | "preparing" | "ready" | "queued" | "history";
