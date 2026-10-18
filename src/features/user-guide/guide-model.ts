@@ -1,4 +1,3 @@
-import { businessVocabulary } from "@/modules/business-vocabulary";
 import type { BusinessType } from "@/modules/module-catalog";
 
 export const USER_GUIDE_KEY = "pedeaqui_smart_onboarding_v2";
@@ -199,7 +198,6 @@ export function buildUserGuideSteps(
   readiness: GuideReadiness = emptyReadiness,
 ): UserGuideStep[] {
   const byKey = new Map(items.map((item) => [item.key, item]));
-  const vocabulary = businessVocabulary(businessType);
   const isOwner = roleKeys.includes("owner");
   const setup = isOwner ? ownerSetupSteps(byKey, businessType, readiness) : operationalSteps(byKey, roleKeys, businessType);
 
@@ -208,8 +206,8 @@ export function buildUserGuideSteps(
       id: "welcome",
       title: isOwner ? "Vamos deixar sua operação pronta" : "Seu guia de trabalho no PedeAqui",
       description: isOwner
-        ? `O PedeAqui verifica o que já existe nesta ${vocabulary.unitLabel} e marca sozinho o que está pronto. Você só precisa cuidar das pendências.`
-        : `Este guia mostra somente o que importa para a sua função nesta ${vocabulary.unitLabel}. Você pode abrir cada área e voltar aqui quando quiser.`,
+        ? "O PedeAqui verifica o que você já configurou e marca sozinho o que está pronto. Você só precisa cuidar das pendências."
+        : "Este guia mostra somente o que importa para a sua função. Você pode abrir cada área e voltar aqui quando quiser.",
       state: "info",
     },
     ...setup,

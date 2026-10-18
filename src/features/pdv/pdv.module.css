@@ -63,3 +63,5 @@
   .checkoutBar[data-expanded="false"][data-has-cash="true"] .checkoutChange{display:flex;grid-column:1/-1;grid-row:2;align-items:center;justify-content:space-between;gap:var(--space-2)}
   .checkoutBar[data-expanded="false"][data-has-cash="true"] .checkoutError{grid-row:3}
 }
+/* Cards de produto estreitos (2 por linha no celular): nada sai pela borda; preço e ação quebram em duas linhas. */
+.productCard{min-width:0;overflow:hidden}.productCard .productHeading>span{min-width:0;max-width:100%}.productCard .productName,.productCard .productDescription{overflow-wrap:break-word}.productCard .rowBetween{flex-wrap:wrap;row-gap:2px;column-gap:var(--space-2)}
