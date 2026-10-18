@@ -647,3 +647,9 @@
   .nav::-webkit-scrollbar { display: none; }
   .navLink { flex: 0 0 auto; justify-content: flex-start; min-height: 44px; padding: 6px 12px 6px 8px; scroll-snap-align: start; white-space: nowrap; }
 }
+
+/* Sabores e Adicionais no celular: cada grupo mostra nome, regra e opções; a explicação repetida some. */
+@media (max-width: 640px) {
+  .groupRuleHint, .orderChip { display: none; }
+  .groupDescription { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+}

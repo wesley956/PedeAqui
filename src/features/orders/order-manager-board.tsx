@@ -235,7 +235,7 @@ export function OrderManagerBoard({ storeId, viewPreferenceKey, orders: initialO
         <Button type="button" tone="secondary" onClick={() => void toggle()} aria-pressed={soundEnabled}>
           {primaryLabel}
         </Button>
-        <Button type="button" tone="secondary" onClick={() => void test()}>
+        <Button type="button" tone="secondary" data-test-sound onClick={() => void test()}>
           Testar som
         </Button>
         <div className={styles.toolbarMeta}>

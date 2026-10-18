@@ -168,15 +168,15 @@ export default async function ModifiersPage({ searchParams }: ModifiersPageProps
                       <span className={styles.productName}>{group.name}</span>
                       <span className={styles.stateBadge} data-active={group.active}>{group.active ? "Ativo" : "Pausado"}</span>
                     </div>
-                    {group.description ? <p className={styles.productDescription}>{group.description}</p> : null}
+                    {group.description ? <p className={`${styles.productDescription} ${styles.groupDescription}`}>{group.description}</p> : null}
                     <div className={styles.productMeta}>
                       <span className={styles.metaChip}>{group.required ? "Obrigatório" : "Opcional"}</span>
                       <span className={styles.metaChip}>{rule}</span>
                       <span className={styles.metaChip}>{items.length === 1 ? "1 opção" : `${items.length} opções`}</span>
-                      <span className={styles.metaChip}>Ordem {group.sort_order}</span>
+                      <span className={`${styles.metaChip} ${styles.orderChip}`}>Ordem {group.sort_order}</span>
                     </div>
-                    {quantityMode ? <p className={styles.formHint}>O máximo é um teto. Quando mínimo e máximo são iguais, o cliente precisa completar exatamente essa quantidade. Caso contrário, pode continuar assim que o mínimo estiver atendido.</p> : null}
-                    {equalSplitMode ? <p className={styles.formHint}>O cliente escolhe entre o mínimo e o máximo de opções; o total configurado é repartido igualmente entre elas.</p> : null}
+                    {quantityMode ? <p className={`${styles.formHint} ${styles.groupRuleHint}`}>O máximo é um teto. Quando mínimo e máximo são iguais, o cliente precisa completar exatamente essa quantidade. Caso contrário, pode continuar assim que o mínimo estiver atendido.</p> : null}
+                    {equalSplitMode ? <p className={`${styles.formHint} ${styles.groupRuleHint}`}>O cliente escolhe entre o mínimo e o máximo de opções; o total configurado é repartido igualmente entre elas.</p> : null}
                   </>}
                   toggle={<CatalogSwitch
                     action={setModifierGroupActiveFormAction}
