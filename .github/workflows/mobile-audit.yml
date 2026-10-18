@@ -31,7 +31,16 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client >/dev/null
 
       - name: Run mobile audit
-        run: bash scripts/mobile-audit/run.sh
+        shell: bash
+        run: |
+          mkdir -p mobile-audit-out
+          set -o pipefail
+          bash scripts/mobile-audit/run.sh 2>&1 | tee mobile-audit-out/run.log || {
+            # Os logs do Actions não são acessíveis de fora; o final do log vai como anotação.
+            msg="$(tail -c 3500 mobile-audit-out/run.log | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"
+            echo "::error title=mobile-audit-run::${msg}"
+            exit 1
+          }
 
       - name: Publish evidence to branch
         if: always()
@@ -47,4 +56,7 @@ jobs:
           git config user.email "mobile-audit@users.noreply.github.com"
           git add -A
           git commit -q -m "Mobile audit evidence ${GITHUB_SHA}"
-          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" qa/mobile-audit-evidence
+          if ! out="$(git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" qa/mobile-audit-evidence 2>&1)"; then
+            echo "::error title=mobile-audit-publish::$(echo "$out" | tail -c 1500 | awk '{printf "%s%%0A", $0}')"
+            exit 1
+          fi
