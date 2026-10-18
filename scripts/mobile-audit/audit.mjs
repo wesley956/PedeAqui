@@ -193,6 +193,8 @@ for (const device of (process.env.QUICK ? DEVICES.slice(0, 1) : DEVICES)) {
       await shotState(page, device, "local-produto-sabores");
       // Diagnóstico de largura: cada ancestral do grupo de sabores e o filho mais largo de cada um.
       const diag = await page.evaluate(() => {
+        const form = document.querySelector("dialog form");
+        const formKids = form ? [...form.children].map((el) => { const r = el.getBoundingClientRect(); return { tag: el.tagName.toLowerCase(), cls: String(el.className).slice(0, 50), width: Math.round(r.width), scrollW: el.scrollWidth }; }) : [];
         const group = document.querySelector("fieldset");
         if (!group) return null;
         const chain = [];
@@ -201,7 +203,7 @@ for (const device of (process.env.QUICK ? DEVICES.slice(0, 1) : DEVICES)) {
           chain.push({ tag: el.tagName.toLowerCase(), cls: String(el.className).slice(0, 60), left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width), minW: cs.minWidth, minIS: cs.minInlineSize, display: cs.display, ovx: cs.overflowX, pad: `${cs.paddingLeft}/${cs.paddingRight}`, gtc: cs.gridTemplateColumns.slice(0, 60) });
         }
         const wide = [...group.querySelectorAll("*")].map((el) => { const r = el.getBoundingClientRect(); return { tag: el.tagName.toLowerCase(), cls: String(el.className).slice(0, 50), text: (el.textContent || "").trim().slice(0, 40), right: Math.round(r.right), width: Math.round(r.width), ws: getComputedStyle(el).whiteSpace }; }).sort((a, b) => b.right - a.right).slice(0, 10);
-        return { vw: window.innerWidth, chain, wide };
+        return { vw: window.innerWidth, chain, wide, formKids };
       });
       results.push({ device: device.key, area: "diag", label: "fieldset-width", diag });
       await page.evaluate(() => window.scrollBy(0, 700)); await page.waitForTimeout(400);
