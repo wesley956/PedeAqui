@@ -96,7 +96,6 @@ export default async function OrdersPage() {
             </div>
           </details>
           <span className={styles.activeBadge}>{activeCount} ativo(s)</span>
-          <Link href="/pedidos/historico" className={styles.detailsLink}>Ver histórico</Link>
         </div>
       </header>
 

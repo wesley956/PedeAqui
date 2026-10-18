@@ -172,3 +172,15 @@
 .attentionRows .bulkSelection { grid-column:1;grid-row:3; }
 .ordersTable input[type="checkbox"] { accent-color:var(--accent);width:18px;height:18px; }
 @media(max-width:640px) { .attentionRows .bulkSelection { grid-row:auto; } }
+
+/* Celular: a primeira tela mostra pedidos, não controles. O histórico já é uma aba; "Testar som" fica para o computador. */
+@media (max-width: 640px) {
+  .headerActions { width: auto; }
+  .activeBadge { flex: 0 0 auto; }
+  .toolbar { gap: var(--space-2); align-items: center; padding: var(--space-2); }
+  .toolbar [data-test-sound], .toolbarMeta { display: none; }
+  .viewSwitch { width: auto; flex-wrap: nowrap; margin-left: auto; }
+  .stageFilters { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: var(--space-2); scrollbar-width: none; }
+  .stageFilters::-webkit-scrollbar { display: none; }
+  .stageFilters > button { flex: 0 0 auto; white-space: nowrap; }
+}
