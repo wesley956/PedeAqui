@@ -6,6 +6,7 @@ import { OrderDeliveryAttributionService } from "@/server/delivery/order-deliver
 import { OrderHistoryService } from "@/server/orders/order-history-service";
 import { OrderListPosition } from "@/features/orders/order-navigation-memory";
 import { PageHeader } from "@/components/ui/page-header";
+import { OrdersTabs } from "@/features/orders/orders-tabs";
 
 const statusLabels: Record<string, string> = {
   completed: "Finalizado",
@@ -66,6 +67,7 @@ export default async function OrderHistoryPage({
     <section className={styles.page}>
       <OrderListPosition storageKey="orders:history" />
       <PageHeader title="Histórico de pedidos" description="Finalizados, cancelados e recusados ficam aqui e não ocupam o quadro da operação." actions={<Link href="/pedidos" className={styles.detailsLink}>← Voltar para pedidos ativos</Link>} />
+      <OrdersTabs active="historico" />
 
       <OrderHistoryFilters search={search} period={period} selectedDate={selectedDate} />
       <p className={styles.pageHint}>O período considera a data de criação do pedido no horário da loja ({timeZone}). O valor vendido soma somente pedidos finalizados.</p>

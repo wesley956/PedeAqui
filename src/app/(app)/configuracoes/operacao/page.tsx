@@ -5,15 +5,22 @@ import { NavigationAccessService } from "@/server/access/navigation-access-servi
 import { OperationalSettingsService } from "@/server/stores/operational-settings-service";
 import styles from "./operacao-config.module.css";
 import { PageHeader } from "@/components/ui/page-header";
+import { FormDisclosure } from "@/components/ui/form-disclosure";
+import { OrderWorkflowSettingsForm } from "@/features/orders/order-workflow-settings-form";
+import { OrderWorkflowSettingsService } from "@/server/orders/order-workflow-settings-service";
 
 export default async function OperationalSetupPage() {
-  const [access, current] = await Promise.all([NavigationAccessService.load(), OperationalSettingsService.loadCurrent()]);
+  const [access, current, workflow] = await Promise.all([NavigationAccessService.load(), OperationalSettingsService.loadCurrent(), OrderWorkflowSettingsService.get()]);
   const deliveryAvailable = access.moduleAvailability.deliveries.available;
   const driverAvailable = access.moduleAvailability.driver.available;
   const canManage = access.permissionKeys.includes(PERMISSIONS.STORES_MANAGE);
   return <section className={styles.page}>
     <PageHeader title="Como seu restaurante trabalha?" description="Responda pensando no horário de maior movimento. Você verá o impacto antes de salvar." />
     <GuidedSetupForm settings={current.settings} deliveryAvailable={deliveryAvailable} driverAvailable={driverAvailable} canManage={canManage} />
+    {/* Antes era outra tela ("Fluxo de pedidos"); fica aqui, recolhido, para quem quer ajustar etapa por etapa. */}
+    <FormDisclosure summary="Ajustar etapa por etapa (avançado)" className={styles.advancedWorkflow}>
+      <OrderWorkflowSettingsForm mode={workflow.settings.mode} custom={workflow.settings.custom} receptionMode={workflow.settings.receptionMode} />
+    </FormDisclosure>
     <section className={styles.related}><h2>Complete quando fizer sentido</h2><p>Estas configurações continuam independentes e respeitam seus módulos.</p><div>
       <Link href="/configuracoes/pagamentos"><strong>Pagamentos</strong><span>Escolha formas e confirmação.</span></Link>
       <Link href="/configuracoes/impressoes"><strong>Impressão</strong><span>Conexão, fila e contingência.</span></Link>

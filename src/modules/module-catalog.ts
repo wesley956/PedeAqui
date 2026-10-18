@@ -172,19 +172,23 @@ export const MODULE_CATALOG: Record<ModuleKey, ModuleDefinition> = {
 
 export const CORE_MODULE_KEYS = MODULE_KEYS.filter((key) => MODULE_CATALOG[key].kind === "core");
 
+// Retaguarda (estoque, compras, fornecedores, fiscal) fica desligada nas lojas novas: quase ninguém usa no início
+// e só aumenta o menu. O lojista liga em Configurações → Recursos do PedeAqui quando precisar.
+const BACK_OFFICE_MODULES: readonly ModuleKey[] = ["inventory", "suppliers", "purchases", "fiscal"];
+
 const PROFILE_PRESETS: Record<BusinessType, Record<Exclude<ModulePreset, "custom">, readonly ModuleKey[]>> = {
   restaurant: {
     essential: ["pdv", "cash", "production", "deliveries"],
-    complete: MODULE_KEYS.filter((key) => MODULE_CATALOG[key].supportedBusinessTypes.includes("restaurant")),
+    complete: MODULE_KEYS.filter((key) => !BACK_OFFICE_MODULES.includes(key) && MODULE_CATALOG[key].supportedBusinessTypes.includes("restaurant")),
   },
   gas: {
     essential: ["pdv", "deliveries", "driver"],
     // Vasilhames é um add-on explícito: o perfil Completo não ativa um módulo comercial pago sem confirmação.
-    complete: MODULE_KEYS.filter((key) => key !== "gas_containers" && MODULE_CATALOG[key].supportedBusinessTypes.includes("gas")),
+    complete: MODULE_KEYS.filter((key) => key !== "gas_containers" && !BACK_OFFICE_MODULES.includes(key) && MODULE_CATALOG[key].supportedBusinessTypes.includes("gas")),
   },
   generic_commerce: {
     essential: ["pdv"],
-    complete: MODULE_KEYS.filter((key) => MODULE_CATALOG[key].supportedBusinessTypes.includes("generic_commerce")),
+    complete: MODULE_KEYS.filter((key) => !BACK_OFFICE_MODULES.includes(key) && MODULE_CATALOG[key].supportedBusinessTypes.includes("generic_commerce")),
   },
 };
 

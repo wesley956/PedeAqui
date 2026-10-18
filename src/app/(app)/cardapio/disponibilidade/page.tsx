@@ -34,7 +34,8 @@ export default async function AvailabilityPage({ searchParams }: AvailabilityPag
 
   const productEntries: AvailabilityEntry[] = products.map((product): AvailabilityEntry => {
     const state = product.availability === "available" ? "on" : "off";
-    const statusLabel = product.availability === "available" ? "À venda" : product.availability === "sold_out" ? "Esgotado" : "Oculto";
+    const returnsTomorrow = product.availability === "sold_out" && Boolean(product.paused_until);
+    const statusLabel = product.availability === "available" ? "À venda" : product.availability === "sold_out" ? (returnsTomorrow ? "Esgotado · volta amanhã" : "Esgotado") : "Oculto";
     const category = categoryNames.get(product.category_id ?? "") ?? "Sem categoria";
     return {
       kind: "product",
@@ -60,13 +61,14 @@ export default async function AvailabilityPage({ searchParams }: AvailabilityPag
     const where = copies.length === 1 ? groupList[0] : `em ${copies.length} grupos`;
     const usage = productCount === 0 ? "em nenhum produto" : productCount === 1 ? "usado em 1 produto" : `usado em ${productCount} produtos`;
     const state = activeCount === copies.length ? "on" : activeCount === 0 ? "off" : "partial";
+    const returnsTomorrow = copies.some((copy) => !copy.active && Boolean(copy.paused_until));
     return {
       kind: "flavor",
       id: first.id,
       name: first.name,
       detail: `Sabor/opção · ${where} · ${usage}`,
       state,
-      statusLabel: state === "on" ? "Ativo" : state === "off" ? "Pausado" : `Pausado em ${copies.length - activeCount} de ${copies.length} grupos`,
+      statusLabel: state === "on" ? "Ativo" : state === "off" ? (returnsTomorrow ? "Pausado · volta amanhã" : "Pausado") : `Pausado em ${copies.length - activeCount} de ${copies.length} grupos`,
       searchText: normalizedCatalogName(`${first.name} ${groupList.join(" ")} ${key}`),
     };
   });

@@ -10,15 +10,16 @@ describe("growth commercial workspace [335]", () => {
     expect(page).toContain("Faça seus clientes voltarem");
     expect(page.indexOf("GrowthObjectiveWizard")).toBeLessThan(page.indexOf('aria-label="Resumo de crescimento"'));
     for (const outcome of ["Fidelizar clientes", "Trazer clientes de volta", "Criar uma promoção", "Aumentar a frequência", "Enviar campanha ou anúncio", "Premiar melhores clientes", "Acompanhar resultados"]) expect(wizard).toContain(outcome);
-    for (const target of ["#fidelidade", "#cupons", "#clientes", "#campanhas", "#automacoes"]) expect(page).toContain(target);
+    // Cada área virou uma aba (link com ?aba=), em vez de âncoras dentro de um "Modo avançado".
+    for (const key of ["fidelidade", "cupons", "clientes", "campanhas", "automacoes"]) expect(page).toContain(`key: "${key}"`);
+    expect(page).toContain("<PageTabs");
     expect(page).toContain('aria-label="Resumo de crescimento"');
   });
 
   it("keeps creation forms collapsed until the restaurant asks for them", () => {
     for (const summary of ["Editar regras de fidelidade", "Criar novo cupom", "Criar grupo personalizado", "Criar campanha", "Criar automação"]) expect(page).toContain(`<summary>${summary}</summary>`);
     expect(page.match(/<details/g)?.length).toBeGreaterThanOrEqual(5);
-    expect(page).toContain("Modo avançado");
-    expect(page).not.toContain('<details className={styles.advanced} open>');
+    expect(page).not.toContain("Modo avançado");
   });
 
   it("preserves every existing growth action and field contract", () => {

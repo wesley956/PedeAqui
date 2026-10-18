@@ -23,10 +23,11 @@ import { isMercadoPagoOAuthConfigured } from "@/server/payments/providers/mercad
 import { isPagBankConnectConfigured } from "@/server/payments/providers/pagbank-connect";
 import { StorePaymentMethodService } from "@/server/payments/store-payment-method-service";
 import { PageHeader } from "@/components/ui/page-header";
+import { PageTabs } from "@/components/ui/page-tabs";
 
 const paymentHints: Record<string, string> = {
   cash: "O cliente pode informar se precisa de troco.",
-  pix: "No cardápio público, o Pix só aparece quando o Pix online abaixo estiver configurado e ativo.",
+  pix: "No cardápio público, o Pix só aparece quando o Pix online (aba ao lado) estiver conectado e ativo.",
   credit_card: "O cliente pode escolher cartão de crédito para pagar conforme a operação da unidade.",
   debit_card: "O cliente pode escolher cartão de débito para pagar conforme a operação da unidade.",
 };
@@ -81,14 +82,24 @@ export default async function PaymentSettingsPage({ searchParams }: PaymentSetti
   const pagBankStatus = Array.isArray(pagBankStatusParam) ? pagBankStatusParam[0] : pagBankStatusParam;
   const pagBankMessage = pagBankStatus ? pagBankStatusMessages[pagBankStatus] : null;
   const pagBankStatusText = !pagBankConnected ? "Ainda não conectado" : pagbank?.enabled ? "Conectado e Pix ativo" : "Conectado, Pix desativado";
+  // Duas abas: o que o cliente pode usar (dia a dia) e a conexão do Pix online (feita uma vez).
+  const tabParam = Array.isArray(params.aba) ? params.aba[0] : params.aba;
+  const tab = tabParam === "online" || mercadoPagoStatus || pagBankStatus ? "online" : "formas";
+  const onlineActive = Boolean((oauthConnected && config?.enabled) || (pagBankConnected && pagbank?.enabled));
 
   return (
     <section className={styles.page}>
       <PageHeader title="Formas de pagamento" description="Defina as opções do cliente e conecte o Pix online da unidade." />
 
+      <PageTabs label="Seções de pagamento" active={tab} tabs={[
+        { key: "formas", label: "Formas aceitas", href: "/configuracoes/pagamentos" },
+        { key: "online", label: onlineActive ? "Pix online · ativo" : "Pix online", href: "/configuracoes/pagamentos?aba=online" },
+      ]} />
+
       {mercadoPagoMessage ? <div role={mercadoPagoStatus === "connected" ? "status" : "alert"} className="card" style={{ padding: 14 }}>{mercadoPagoMessage}</div> : null}
       {pagBankMessage ? <div role={pagBankStatus === "connected" ? "status" : "alert"} className="card" style={{ padding: 14 }}>{pagBankMessage}</div> : null}
 
+      {tab === "formas" ? <>
       <form action={savePaymentMethodsAction} aria-label="Formas aceitas" className={styles.form}>
         <div>
           <strong>Opções aceitas pela unidade</strong>
@@ -138,6 +149,10 @@ export default async function PaymentSettingsPage({ searchParams }: PaymentSetti
         ))}
       </div>
 
+      </> : null}
+
+      {tab === "online" ? <>
+      <p className="muted" style={{ margin: 0 }}>Conecte uma conta para o cliente pagar Pix pelo cardápio e o pedido ser confirmado sozinho. Basta uma das duas. Dinheiro e cartões não dependem disso.</p>
       <div className={styles.card}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
           <div><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Pix online</p><h2 style={{ margin: "4px 0", fontSize: "var(--font-size-lg)" }}>Mercado Pago</h2><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>A conta do restaurante recebe o pagamento. O PedeAqui gera o QR e confirma pelo webhook.</p></div>
@@ -214,6 +229,7 @@ export default async function PaymentSettingsPage({ searchParams }: PaymentSetti
           </div>
         )}
       </div>
+      </> : null}
     </section>
   );
 }
