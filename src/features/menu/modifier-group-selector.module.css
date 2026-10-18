@@ -1,4 +1,4 @@
-.group{margin:0;padding:var(--space-4);border:var(--border-width) solid var(--border-default);border-radius:var(--radius-xl);background:var(--surface-1);color:var(--text-primary);display:grid;gap:var(--space-3)}
+.group{min-width:0;margin:0;padding:var(--space-4);border:var(--border-width) solid var(--border-default);border-radius:var(--radius-xl);background:var(--surface-1);color:var(--text-primary);display:grid;gap:var(--space-3)}
 .heading{display:flex;justify-content:space-between;gap:var(--space-3);align-items:start}
 .heading legend{font-size:var(--font-size-lg);font-weight:var(--font-weight-bold);color:var(--text-primary)}
 .heading p{margin:var(--space-1) 0 0;color:var(--text-secondary);font-size:var(--font-size-sm)}

@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
+import { FallbackImage } from "@/components/ui/fallback-image";
 import styles from "./public-brand.module.css";
 
 function channelToLinear(channel: number) {
@@ -58,8 +59,9 @@ export function publicStoreThemeVars(primaryColor: string) {
 
 export function RestaurantBrand({ name, logoUrl, primaryColor, children }: { name: string; logoUrl: string | null; primaryColor: string; children?: ReactNode }) {
   const initial = name.trim().charAt(0).toLocaleUpperCase("pt-BR") || "R";
+  const fallback = <div className={styles.fallback} aria-label={`Identidade ${name}`}>{initial}</div>;
   return <div className={styles.restaurantBrand} style={restaurantBrandVars(primaryColor)}>
-    {logoUrl ? <img src={logoUrl} alt={`Logo ${name}`} className={styles.logo} width={74} height={74} /> : <div className={styles.fallback} aria-label={`Identidade ${name}`}>{initial}</div>}
+    {logoUrl ? <FallbackImage src={logoUrl} alt={`Logo ${name}`} className={styles.logo} width={74} height={74} fallback={fallback} /> : fallback}
     <div className={styles.copy}><h1 className={styles.name}>{name}</h1>{children}</div>
   </div>;
 }

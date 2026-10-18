@@ -46,7 +46,7 @@ export default async function DeliverySettingsPage() {
           </SelectField>
           <Input label="Taxa padrão" name="defaultFee" inputMode="decimal" defaultValue={(settings.default_fee_cents / 100).toFixed(2).replace(".", ",")} />
           <Input label="Frete grátis acima de" name="freeDeliveryOver" inputMode="decimal" defaultValue={settings.free_delivery_over_cents === null ? "" : (settings.free_delivery_over_cents / 100).toFixed(2).replace(".", ",")} />
-          <div role="note" className={styles.note}>
+          <div role="note" className={styles.note} style={{ display: "grid", gap: "var(--space-1)" }}>
             <strong style={{ fontSize: "var(--font-size-sm)" }}>Cobertura validada por bairro</strong>
             <span className={styles.meta}>Cadastre os bairros atendidos para definir a cobertura e evitar pedidos fora da área de entrega.</span>
           </div>

@@ -41,8 +41,8 @@
 .handle { color: var(--text-secondary); letter-spacing: -2px; user-select: none; }
 .position { min-width: 1.5em; color: var(--text-secondary); font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); text-align: right; }
 .icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-sm); background: var(--surface-2); color: var(--text-primary); flex: 0 0 auto; }
-.label { flex: 1 1 auto; min-width: 0; font-weight: var(--font-weight-semibold); overflow-wrap: anywhere; }
-.rowActions { display: flex; align-items: center; gap: var(--space-1); flex: 0 0 auto; }
+.label { flex: 1 1 0; min-width: 9ch; font-weight: var(--font-weight-semibold); overflow-wrap: break-word; }
+.rowActions { display: flex; align-items: center; gap: var(--space-1); flex: 0 0 auto; margin-left: auto; }
 
 .iconButton,
 .textButton {
@@ -77,6 +77,8 @@
 
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; }
+  /* No celular o nome nunca é espremido: se faltar espaço, os botões descem para a linha de baixo. */
+  .row { flex-wrap: wrap; row-gap: var(--space-2); }
   .footer { position: sticky; bottom: calc(72px + env(safe-area-inset-bottom)); padding: var(--space-3); border-radius: var(--radius-lg); background: var(--surface-1); border: var(--border-width) solid var(--border-default); }
 }
 

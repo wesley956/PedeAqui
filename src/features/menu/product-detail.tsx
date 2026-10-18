@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FallbackImage } from "@/components/ui/fallback-image";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { addToCartAction } from "@/features/cart/actions";
@@ -101,8 +102,7 @@ export async function ProductDetail({ slug, id, query, presentation }: { slug: s
       <article className={styles.productCard}>
         {product.image_url ? (
           // Catalog uploads are pre-sized WebP files; raw rendering preserves arbitrary legacy HTTPS URLs.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.image_url} alt={product.name} width={720} height={360} fetchPriority="high" decoding="async" className={styles.productImage} />
+          <FallbackImage src={product.image_url} alt={product.name} width={720} height={360} fetchPriority="high" decoding="async" className={styles.productImage} fallback={<ProductImageFallback className={styles.productPlaceholder} />} />
         ) : <ProductImageFallback className={styles.productPlaceholder} />}
         <div className={styles.productInfo}>
           <div className={styles.productTop}>
@@ -131,7 +131,7 @@ export async function ProductDetail({ slug, id, query, presentation }: { slug: s
         <ModifierGroupSelector group={group} disabled={orderUnavailable} complementTargetId={index === product.modifier_groups.length - 1 ? complementTargetId : `grupo-${product.modifier_groups[index + 1]?.id}`} nextGroupName={product.modifier_groups[index + 1]?.name} initialSelections={initialSelections} />
       </div>)}
 
-      {complements.length > 0 ? <div className={styles.stepBlock}>
+      {complements.length > 0 ? <div className={`${styles.stepBlock} ${styles.complementBlock}`}>
         <ComplementCategorySection categories={complements} storeSlug={store.slug} businessType={businessType} disabled={orderUnavailable} />
       </div> : null}
 
