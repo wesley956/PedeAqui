@@ -8,5 +8,10 @@
 .sheetForm .productTitle{font-size:var(--font-size-xl)}
 .sheetForm .productPrice{font-size:var(--font-size-md);color:var(--text-primary)}
 .sheetForm .stepBlock{gap:0}
+/* Filhos do grid nunca ficam mais largos que a tela (campos de formulário não encolhem sozinhos). */
+.stepBlock{min-width:0}.stepBlock>*{min-width:0}
+/* A coluna do formulário nunca cresce além da tela por causa do conteúdo mais largo (era 373 px numa tela de 360). */
+.form{grid-template-columns:minmax(0,1fr)}.form>*{min-width:0}
+.sheetForm .complementBlock{padding:14px 16px;border-top:8px solid var(--surface-2)}
 .sheetForm .finalSection{border:0;border-top:8px solid var(--surface-2);border-radius:0;box-shadow:none;padding:14px 16px}
 .sheetForm>[role=alert],.sheetForm>[role=status]{margin:12px 16px 0}

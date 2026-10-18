@@ -166,7 +166,7 @@ export function NewUserGuide({
                       <span className={styles.stateLabel}>{step.state === "done" ? "Pronto" : step.state === "todo" ? "Pendente" : "Conhecer"}</span>
                     </div>
                     <p>{step.description}</p>
-                    {step.completionLabel ? <small>{step.completionLabel}</small> : null}
+                    {step.completionLabel && step.state === "done" ? <small>{step.completionLabel}</small> : null}
                   </div>
                   {step.href ? (
                     <button className={step.state === "done" ? styles.secondary : styles.taskAction} type="button" onClick={() => openTask(step, index + 1)}>

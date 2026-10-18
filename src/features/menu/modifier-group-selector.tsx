@@ -89,7 +89,7 @@ function EqualSplitModifierGroup({ group, disabled, complementTargetId, nextGrou
     <GroupHeading group={group} />
     <div className={styles.rule}>
       <strong>Use + para adicionar e − para remover opções</strong>
-      <span aria-live="polite">{selectedModifiers.length > 0 ? `${selectedModifiers.length} opção(ões) · ${total} unidades divididas automaticamente` : `O PedeAqui dividirá as ${total} unidades igualmente`}</span>
+      <span aria-live="polite">{selectedModifiers.length > 0 ? `${selectedModifiers.length} opção(ões) · ${total} unidades divididas automaticamente` : `Vamos dividir as ${total} unidades igualmente`}</span>
     </div>
     <input ref={validationInput} className={styles.validationInput} tabIndex={-1} aria-hidden="true" value={String(selectedModifiers.length)} onChange={() => undefined} />
     <div className={styles.options}>{group.modifiers.map((modifier) => {

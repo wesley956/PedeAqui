@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { FallbackImage } from "@/components/ui/fallback-image";
 import { useFormStatus } from "react-dom";
 import { addToCartAction, removeCartItemAction, updateCartQuantityAction } from "@/features/cart/actions";
 import type { PublicMenu } from "@/server/menu/schemas";
@@ -78,8 +79,7 @@ export function PublicProductCard({ product, storeSlug, showImage, canOrder, opt
     {showImage ? <Link href={href} scroll={false} className={styles.productMedia} tabIndex={-1} aria-hidden>
       {product.image_url
         // Catalog uploads are pre-sized WebP files; raw rendering preserves arbitrary legacy HTTPS URLs.
-        // eslint-disable-next-line @next/next/no-img-element
-        ? <img src={product.image_url} alt="" width={88} height={88} loading="lazy" decoding="async" className={styles.image} />
+        ? <FallbackImage src={product.image_url} alt="" width={88} height={88} loading="lazy" decoding="async" className={styles.image} fallback={<ProductImageFallback className={styles.image} />} />
         : <ProductImageFallback className={styles.image} />}
     </Link> : null}
     <Link href={href} scroll={false} className={styles.productCopy} aria-label={`${product.name}, ${soldOut ? "esgotado" : `${fromPrice ? "a partir de " : ""}${money(displayPrice)}`}`}>
