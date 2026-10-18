@@ -41,6 +41,9 @@ export NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="${LOCAL_ANON_KEY}"
 export SUPABASE_SERVICE_ROLE_KEY="${LOCAL_SERVICE_KEY}"
 export APP_URL="http://127.0.0.1:3000"
 export LOGIN_GUARD_SECRET="mobile-audit-local-only"
+# Só nesta cópia do CI: a política de segurança libera o Supabase local (http/ws em 127.0.0.1).
+sed -i 's|"connect-src '"'"'self'"'"' https: wss:"|"connect-src '"'"'self'"'"' https: wss: http://127.0.0.1:54321 ws://127.0.0.1:54321"|' next.config.ts
+grep -q "ws://127.0.0.1:54321" next.config.ts || { echo "CSP_PATCH_FAILED"; exit 1; }
 npm run build > mobile-audit-out/build.log 2>&1 || { tail -80 mobile-audit-out/build.log; exit 1; }
 nohup npm run start -- --hostname 127.0.0.1 --port 3000 > mobile-audit-out/app.log 2>&1 &
 for i in $(seq 1 60); do curl -fsS -o /dev/null http://127.0.0.1:3000/login && break; sleep 2; done

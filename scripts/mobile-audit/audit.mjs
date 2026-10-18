@@ -143,6 +143,10 @@ for (const device of DEVICES) {
       await page.fill('input[name="password"]', password);
       await Promise.all([page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 30000 }), page.click('button[type="submit"]')]);
       console.log(`${device.key} logged in → ${page.url()}`);
+      await page.waitForTimeout(1200);
+      await shotState(page, device, "guia-primeiros-passos");
+      const close = page.getByRole("button", { name: "Fechar guia" });
+      if (await close.count()) { await close.click(); await page.waitForTimeout(800); }
     } catch (error) {
       results.push({ device: device.key, area: "panel", label: "login-failed", error: String(error.message).slice(0, 300) });
       await shotState(page, device, "login-failed");
