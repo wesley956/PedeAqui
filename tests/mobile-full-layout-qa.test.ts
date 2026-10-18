@@ -13,7 +13,7 @@ describe("full mobile layout QA [314]", () => {
     expect(shell).toContain(".app-sidebar { display: none; }");
     expect(shell).toContain(".mobile-nav { position: fixed;");
     expect(mobile).toContain("limit = 4");
-    expect(mobile).toContain("<details className=\"mobile-more\">");
+    expect(mobile).toContain("<details className=\"mobile-more\"");
     expect(mobile).toContain("Mais");
   });
 

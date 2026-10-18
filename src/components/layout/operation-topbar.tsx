@@ -9,6 +9,7 @@ import { ThemeSelector } from "@/components/theme/theme-selector";
 import { OperationalHealthIndicator } from "@/features/operations/operational-health-indicator";
 import Link from "next/link";
 import { ReceivingControl } from "@/features/operations/receiving-control";
+import { OpenGuideButton } from "@/features/user-guide/open-guide-button";
 
 function storeStatusLabel(status: string | null) {
   if (status === "active") return "Unidade ativa";
@@ -16,7 +17,7 @@ function storeStatusLabel(status: string | null) {
   return null;
 }
 
-export function OperationTopbar({ email, data, storeId, experienceMode = "standard", driverOnly = false, customerMessages, canSearchCatalog = false }: { email: string | null; data: OperationHeaderData; storeId: string | null; experienceMode?: ExperienceMode; driverOnly?: boolean; customerMessages: CustomerPanelMessageState; canSearchCatalog?: boolean }) {
+export function OperationTopbar({ email, data, storeId, experienceMode = "standard", driverOnly = false, customerMessages, canSearchCatalog = false, hasGuide = false }: { email: string | null; data: OperationHeaderData; storeId: string | null; experienceMode?: ExperienceMode; driverOnly?: boolean; customerMessages: CustomerPanelMessageState; canSearchCatalog?: boolean; hasGuide?: boolean }) {
   const storeLabel = data.storeName ?? "Operação";
   const storeStatus = storeStatusLabel(data.storeStatus);
   const cashLabel = data.cashStatus === "open"
@@ -60,6 +61,7 @@ export function OperationTopbar({ email, data, storeId, experienceMode = "standa
                 {experienceMode === "easy" ? "Modo padrão" : "Modo fácil"}
               </Button>
             </form>
+            {hasGuide ? <OpenGuideButton className="app-account-guide" /> : null}
             <ThemeSelector compact />
             <form action={signOutAction}><Button tone="secondary" type="submit">Sair</Button></form>
           </div>

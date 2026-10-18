@@ -25,9 +25,11 @@ describe("catalog management UI", () => {
     expect(productsPage).not.toContain("supabase");
   });
 
-  it("keeps a responsive catalog navigation without horizontal scrolling", () => {
+  it("keeps a responsive catalog navigation: grid on wider screens, one scrolling row of tabs on phones", () => {
     expect(styles).toContain("@media (max-width: 640px)");
     expect(styles).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
-    expect(styles).not.toContain("overflow-x: auto");
+    // Só a linha de abas rola para o lado; o resto da página continua sem rolagem horizontal.
+    expect(styles.match(/overflow-x: auto/g)?.length).toBe(1);
+    expect(styles).toContain(".nav { display: flex; flex-wrap: nowrap; overflow-x: auto;");
   });
 });

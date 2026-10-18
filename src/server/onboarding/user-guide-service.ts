@@ -26,7 +26,8 @@ export class UserGuideService {
     return {
       status,
       currentStep: Math.max(0, Number(data.current_step) || 0),
-      autoOpen: status === "in_progress" || status === "not_started",
+      // Abre sozinho só na primeira vez; depois o guia fica no menu da conta (e no "Mais", no celular).
+      autoOpen: status === "not_started",
     };
   }
 }

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { NavigationIcon } from "@/components/ui/navigation-icon";
 import { usePathname } from "next/navigation";
+import { useRef } from "react";
+import { OPEN_GUIDE_EVENT } from "@/features/user-guide/guide-events";
 import type { ExperienceMode } from "@/modules/user-experience";
 import { pinnedNavigationItems, type OperationalContext } from "./navigation-model";
 import type { ShellNavigationItem } from "./desktop-navigation";
@@ -72,10 +74,16 @@ export function selectMobileNavigation(
   return { selected, more: visible.filter((item) => !selectedKeys.has(item.key)) };
 }
 
-export function MobileNavigation({ items, contexts, experienceMode = "standard" }: { items: readonly ShellNavigationItem[]; contexts: readonly OperationalContext[]; experienceMode?: ExperienceMode }) {
+export function MobileNavigation({ items, contexts, experienceMode = "standard", hasGuide = false }: { items: readonly ShellNavigationItem[]; contexts: readonly OperationalContext[]; experienceMode?: ExperienceMode; hasGuide?: boolean }) {
   const pathname = usePathname();
+  const moreRef = useRef<HTMLDetailsElement>(null);
   const { selected, more } = selectMobileNavigation(items, contexts, 4, experienceMode);
   const moreActive = pathname === "/mais-ferramentas" || more.some((item) => isActive(pathname, item.href));
+  const closeMore = () => { if (moreRef.current) moreRef.current.open = false; };
+  const sections = [
+    { key: "management", title: "Gestão", items: more.filter((item) => item.group !== "administration") },
+    { key: "account", title: "Conta e ajustes", items: more.filter((item) => item.group === "administration") },
+  ].filter((section) => section.items.length > 0);
 
   return (
     <nav className="mobile-nav" aria-label="Navegação principal mobile" data-experience={experienceMode}>
@@ -83,13 +91,21 @@ export function MobileNavigation({ items, contexts, experienceMode = "standard" 
         const active = isActive(pathname, item.href);
         return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}><span className="mobile-nav-icon" aria-hidden><NavigationIcon name={item.key} /></span><span>{mobileLabel(item, contexts)}</span></Link>;
       })}
-      {more.length > 0 ? <details className="mobile-more"><summary aria-label="Abrir mais opções" aria-current={moreActive ? "page" : undefined}><span className="mobile-nav-icon" aria-hidden><NavigationIcon name="more" /></span><span>Mais</span></summary><div className="mobile-more-panel">
-        <Link href="/mais-ferramentas" aria-current={pathname === "/mais-ferramentas" ? "page" : undefined}>Todas as ferramentas</Link>
-        <Link href="/meu-menu" aria-current={pathname === "/meu-menu" ? "page" : undefined}>Personalizar menu</Link>
-        {more.map((item) => {
-          const active = isActive(pathname, item.href);
-          return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}>{item.label}</Link>;
-        })}
+      {more.length > 0 ? <details className="mobile-more" ref={moreRef}><summary aria-label="Abrir mais opções" aria-current={moreActive ? "page" : undefined}><span className="mobile-nav-icon" aria-hidden><NavigationIcon name="more" /></span><span>Mais</span></summary><div className="mobile-more-panel" onClick={(event) => { if ((event.target as HTMLElement).closest("a,button")) closeMore(); }}>
+        {sections.map((section) => <section key={section.key} className="mobile-more-section" aria-label={section.title}>
+          <h2 className="mobile-more-title">{section.title}</h2>
+          <div className="mobile-more-grid">
+            {section.items.map((item) => {
+              const active = isActive(pathname, item.href);
+              return <Link key={item.key} href={item.href} aria-current={active ? "page" : undefined}><span className="mobile-more-icon" aria-hidden><NavigationIcon name={item.key} /></span><span>{item.label}</span></Link>;
+            })}
+          </div>
+        </section>)}
+        <div className="mobile-more-footer">
+          <Link href="/mais-ferramentas" aria-current={pathname === "/mais-ferramentas" ? "page" : undefined}>Todas as ferramentas</Link>
+          <Link href="/meu-menu" aria-current={pathname === "/meu-menu" ? "page" : undefined}>Personalizar menu</Link>
+          {hasGuide ? <button type="button" onClick={() => window.dispatchEvent(new Event(OPEN_GUIDE_EVENT))}>Guia de primeiros passos</button> : null}
+        </div>
       </div></details> : null}
     </nav>
   );

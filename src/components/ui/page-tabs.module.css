@@ -18,5 +18,8 @@
 .count { min-width: 20px; padding: 0 6px; border-radius: var(--radius-pill); background: var(--accent); color: var(--text-on-brand); font-size: var(--font-size-xs); text-align: center; }
 
 @media (max-width: 640px) {
-  .tab { flex: 1 1 auto; justify-content: center; padding: 0 var(--space-2); }
+  /* Uma linha só, rolando para o lado: as abas não quebram em 2 ou 3 linhas no celular. */
+  .tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: 0 0 auto; white-space: nowrap; padding: 0 var(--space-3); }
 }

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { NavigationIcon } from "@/components/ui/navigation-icon";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { scrollActiveIntoView } from "@/components/ui/scroll-active-into-view";
 import styles from "./catalog-management.module.css";
 
 const links = [
@@ -16,7 +18,9 @@ const links = [
 
 export function CatalogNavigation() {
   const pathname = usePathname();
-  return <nav className={styles.nav} aria-label="Gestão do cardápio">
+  const navRef = useRef<HTMLElement>(null);
+  useEffect(() => { scrollActiveIntoView(navRef.current); }, [pathname]);
+  return <nav ref={navRef} className={styles.nav} aria-label="Gestão do cardápio">
     {links.map(({ label, href, hint, icon }) => {
       const active = pathname === href || pathname.startsWith(`${href}/`);
       return <Link key={href} href={href} className={styles.navLink} aria-current={active ? "page" : undefined}>
