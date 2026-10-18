@@ -509,11 +509,6 @@
 @media (max-width: 640px) {
   .shell, .page { gap: var(--space-4); }
   .catalogHeader h1 { font-size: var(--font-size-3xl); }
-  /* Celular: as 6 seções viram uma linha de abas que rola para o lado (antes eram 4 linhas, ~40% da tela). */
-  .nav { display: flex; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding: 4px; gap: 4px; -webkit-overflow-scrolling: touch; }
-  .nav::-webkit-scrollbar { display: none; }
-  .navLink { flex: 0 0 auto; min-height: 44px; padding: 6px 12px 6px 6px; scroll-snap-align: start; white-space: nowrap; }
-  .navIcon { width: 30px; height: 30px; }
   .navHint { display: none; }
   .filters { grid-template-columns: 1fr; padding: var(--space-3); }
   .filterActions { grid-column: auto; }
@@ -644,3 +639,11 @@
 .subToggleSummary{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-secondary);font-size:var(--font-size-support)}
 .subToggle[aria-expanded="true"]{border-bottom:1px solid var(--border-default)}
 @media(max-width:640px){.subToggle{padding-left:24px;flex-wrap:wrap;gap:2px 10px}.subToggleSummary{white-space:normal}}
+
+/* Celular: as 6 seções viram uma linha de abas que rola para o lado (antes eram 4 linhas, ~40% da tela).
+   Fica no fim do arquivo para vencer as regras compactas acima. */
+@media (max-width: 640px) {
+  .nav { display: flex; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding: 4px; gap: 4px; -webkit-overflow-scrolling: touch; }
+  .nav::-webkit-scrollbar { display: none; }
+  .navLink { flex: 0 0 auto; justify-content: flex-start; min-height: 44px; padding: 6px 12px 6px 8px; scroll-snap-align: start; white-space: nowrap; }
+}

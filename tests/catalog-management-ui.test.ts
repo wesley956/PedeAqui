@@ -30,6 +30,6 @@ describe("catalog management UI", () => {
     expect(styles).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
     // Só a linha de abas rola para o lado; o resto da página continua sem rolagem horizontal.
     expect(styles.match(/overflow-x: auto/g)?.length).toBe(1);
-    expect(styles).toContain(".nav { display: flex; overflow-x: auto;");
+    expect(styles).toContain(".nav { display: flex; flex-wrap: nowrap; overflow-x: auto;");
   });
 });

@@ -34,7 +34,7 @@ describe("moldura do painel no celular (Fase B)", () => {
 
   it("keeps page tabs and the catalog menu on a single scrolling row", () => {
     expect(read("src/components/ui/page-tabs.module.css")).toContain(".tabs { flex-wrap: nowrap; overflow-x: auto;");
-    expect(read("src/app/(app)/cardapio/catalog-management.module.css")).toContain(".nav { display: flex; overflow-x: auto;");
+    expect(read("src/app/(app)/cardapio/catalog-management.module.css")).toContain(".nav { display: flex; flex-wrap: nowrap; overflow-x: auto;");
     expect(read("src/components/ui/page-tabs.tsx")).toContain("scrollActiveIntoView(navRef.current)");
     expect(read("src/app/(app)/cardapio/catalog-navigation.tsx")).toContain("scrollActiveIntoView(navRef.current)");
   });
