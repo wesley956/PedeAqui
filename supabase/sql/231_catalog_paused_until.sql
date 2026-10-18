@@ -21,12 +21,10 @@ end $$;
 revoke all on function private.clear_product_paused_until() from public, anon, authenticated;
 revoke all on function private.clear_modifier_paused_until() from public, anon, authenticated;
 
-drop trigger if exists products_clear_paused_until on public.products;
-create trigger products_clear_paused_until before update of availability, paused_until on public.products
+create or replace trigger products_clear_paused_until before update of availability, paused_until on public.products
   for each row execute function private.clear_product_paused_until();
 
-drop trigger if exists modifiers_clear_paused_until on public.modifiers;
-create trigger modifiers_clear_paused_until before update of active, paused_until on public.modifiers
+create or replace trigger modifiers_clear_paused_until before update of active, paused_until on public.modifiers
   for each row execute function private.clear_modifier_paused_until();
 
 -- Reativa o que passou da hora. Só mexe em itens ainda pausados e não removidos.
@@ -56,6 +54,5 @@ revoke all on function private.reactivate_scheduled_catalog_items() from public,
 create index if not exists products_paused_until_idx on public.products (paused_until) where paused_until is not null and deleted_at is null;
 create index if not exists modifiers_paused_until_idx on public.modifiers (paused_until) where paused_until is not null and deleted_at is null;
 
-select cron.unschedule('pedeaqui-catalog-reactivation')
-where exists (select 1 from cron.job where jobname = 'pedeaqui-catalog-reactivation');
+-- cron.schedule com nome atualiza o job se ele já existir.
 select cron.schedule('pedeaqui-catalog-reactivation', '*/5 * * * *', 'select private.reactivate_scheduled_catalog_items();');
