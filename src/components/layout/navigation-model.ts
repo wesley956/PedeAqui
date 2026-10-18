@@ -38,7 +38,7 @@ export const SYSTEM_ROLE_CONTEXTS: Record<string, readonly OperationalContext[]>
 export const NAVIGATION_MODULES = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", group: "management", permissions: [PERMISSIONS.DASHBOARD_VIEW], authorization: "organization" },
   { key: "orders", label: "Pedidos", href: "/pedidos", group: "operation", permissions: [PERMISSIONS.ORDERS_VIEW], authorization: "organization" },
-  { key: "catalog", label: "Cardápio", href: "/cardapio/produtos", group: "operation", permissions: [PERMISSIONS.PRODUCTS_VIEW], authorization: "organization" },
+  { key: "catalog", label: "Cardápio", href: "/cardapio/disponibilidade", group: "operation", permissions: [PERMISSIONS.PRODUCTS_VIEW], authorization: "organization" },
   { key: "pdv", label: "PDV", href: "/pdv", group: "operation", permissions: [PERMISSIONS.ORDERS_CREATE], authorization: "organization" },
   { key: "conversations", label: "Conversas", href: "/conversas", group: "relationship", permissions: [PERMISSIONS.CONVERSATIONS_VIEW], authorization: "organization" },
   { key: "dining", label: "Salão", href: "/salao", group: "operation", permissions: [PERMISSIONS.DINING_VIEW, PERMISSIONS.ORDERS_VIEW], authorization: "organization" },

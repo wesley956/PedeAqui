@@ -8,7 +8,7 @@ function compact(path: string) { return source(path).replace(/\s+/g, ""); }
 describe("mobile UX contracts", () => {
   it("keeps every primary module represented in the canonical navigation model", () => {
     const navigation = source("src/components/layout/navigation-model.ts");
-    for (const href of ["/dashboard", "/pedidos", "/cardapio/produtos", "/pdv", "/producao", "/clientes", "/equipe", "/configuracoes"]) expect(navigation).toContain(`href: "${href}"`);
+    for (const href of ["/dashboard", "/pedidos", "/cardapio/disponibilidade", "/pdv", "/producao", "/clientes", "/equipe", "/configuracoes"]) expect(navigation).toContain(`href: "${href}"`);
   });
   it("keeps mobile navigation short instead of horizontally scrolling every module", () => {
     const mobile = source("src/components/layout/mobile-navigation.tsx"); const css = source("src/app/shell.css");

@@ -20,3 +20,7 @@ Este adendo preserva os baselines históricos e registra superfícies adicionada
 ## Painel — menu personalizável
 
 - `/meu-menu` — cada usuário escolhe quais itens ficam no grupo "Principal" do menu lateral e arrasta para definir a ordem (setas para toque e teclado). Salva por usuário e unidade em `user_store_preferences.navigation_pins`, aceita só itens que o usuário já pode ver por RBAC e módulos, e "Restaurar padrão" volta ao menu da função.
+
+## Painel — Fase 2 da reorganização
+
+- `/cardapio/disponibilidade` — aba padrão do Cardápio: uma busca para produtos, sabores e adicionais. Sabores com o mesmo nome em vários grupos aparecem uma vez e o interruptor vale para todos; quando a pausa deixaria produtos à venda sem escolhas suficientes, a tela lista esses produtos e oferece marcá-los como esgotados. Produtos desligados viram "Esgotado". Atalho "Buscar item" na barra superior.

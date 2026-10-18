@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import styles from "./catalog-management.module.css";
 
 const links = [
+  { label: "Disponibilidade", href: "/cardapio/disponibilidade", hint: "Ligar e desligar o que acabou", icon: "pin" },
   { label: "Produtos", href: "/cardapio/produtos", hint: "Itens, preços e disponibilidade", icon: "catalog" },
   { label: "Categorias", href: "/cardapio/categorias", hint: "Organização do cardápio", icon: "platform" },
   { label: "Sabores e Adicionais", href: "/cardapio/adicionais", hint: "Sabores, tamanhos e complementos", icon: "settings" },

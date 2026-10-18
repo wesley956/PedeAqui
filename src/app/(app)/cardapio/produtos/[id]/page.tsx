@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Checkbox, Input, MoneyInput, QuantityInput, SelectField, Textarea } from "@/components/ui/form-controls";
+import { Input, MoneyInput, QuantityInput, SelectField, Textarea } from "@/components/ui/form-controls";
 import { ImageUploadField } from "@/components/media/image-upload-field";
 import { ResilientMutationForm } from "@/features/catalog/resilient-mutation-form";
 import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
-import { linkModifierGroupAction, unlinkModifierGroupAction, updateProductFormAction } from "@/features/catalog/actions";
+import { linkModifierGroupAction, setModifierActiveFormAction, unlinkModifierGroupAction, updateProductFormAction } from "@/features/catalog/actions";
+import { CatalogSwitch } from "@/features/catalog/catalog-switch";
+import { formatCents } from "@/server/catalog/money";
 import { CategoryService } from "@/server/catalog/category-service";
 import { ModifierService } from "@/server/catalog/modifier-service";
 import { ProductService } from "@/server/catalog/product-service";
@@ -16,11 +18,12 @@ function moneyValue(cents: number | null) {
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [product, categories, modifierGroups, modifierGroupLinks] = await Promise.all([
+  const [product, categories, modifierGroups, modifierGroupLinks, modifiers] = await Promise.all([
     ProductService.get(id),
     CategoryService.list(),
     ModifierService.listGroups(),
     ModifierService.listProductGroupLinks(id),
+    ModifierService.listModifiers(),
   ]);
   const linkedGroups = modifierGroupLinks.map((link) => ({
     ...link,
@@ -64,12 +67,11 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
         <section className={`card ${styles.section}`}>
           <h2>Disponibilidade</h2>
-          <SelectField label="Situação" name="availability" defaultValue={product.availability}>
-            <option value="available">Disponível</option>
+          <SelectField label="Situação" name="availability" defaultValue={product.active ? product.availability : "inactive"} hint="Esgotado aparece no cardápio, mas não pode ser pedido. Oculto não aparece.">
+            <option value="available">À venda</option>
             <option value="sold_out">Esgotado</option>
             <option value="inactive">Oculto do cardápio</option>
           </SelectField>
-          <Checkbox label="Produto ativo no catálogo" name="active" defaultChecked={product.active} />
         </section>
 
         <details className={styles.details}>
@@ -120,12 +122,27 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         <div style={{ display: "grid", gap: 10 }}>
           {linkedGroups.length === 0 ? <span className="muted">Nenhum grupo vinculado.</span> : linkedGroups.map((link) => (
             <div key={link.modifier_group_id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-              <span><strong>{link.group?.name ?? "Grupo indisponível"}</strong> <span className="muted">· ordem {link.sort_order}</span></span>
+              <span><strong>{link.group?.name ?? "Grupo indisponível"}</strong> <span className="muted">· ordem {link.sort_order}{link.group?.required ? " · obrigatório" : ""}</span></span>
               <ResilientMutationForm action={unlinkModifierGroupAction}>
                 <input type="hidden" name="productId" value={product.id} />
                 <input type="hidden" name="modifierGroupId" value={link.modifier_group_id} />
                 <ConfirmSubmitButton confirmation="Desvincular este grupo do produto? O grupo continuará disponível para outros produtos.">Desvincular</ConfirmSubmitButton>
               </ResilientMutationForm>
+              {/* Opções do grupo visíveis aqui: pausar um sabor sem sair do produto (vale para todos os grupos com o mesmo sabor). */}
+              <ul className={styles.optionList} aria-label={`Opções de ${link.group?.name ?? "grupo"}`}>
+                {modifiers.filter((modifier) => modifier.modifier_group_id === link.modifier_group_id).map((modifier) => (
+                  <li key={modifier.id} className={styles.optionRow} data-active={modifier.active}>
+                    <span>{modifier.name}{modifier.price_cents > 0 ? <span className="muted"> · + {formatCents(modifier.price_cents)}</span> : null}</span>
+                    <CatalogSwitch
+                      action={setModifierActiveFormAction}
+                      fields={{ modifierId: modifier.id, active: modifier.active ? "false" : "true", allMatching: "on" }}
+                      on={modifier.active}
+                      label={modifier.active ? "Ativa" : "Pausada"}
+                      actionLabel={`${modifier.active ? "Pausar opção" : "Reativar opção"}: ${modifier.name}`}
+                    />
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>

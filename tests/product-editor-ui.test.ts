@@ -7,7 +7,7 @@ const styles = readFileSync("src/app/(app)/cardapio/produtos/novo/product-editor
 
 describe("product editor UI", () => {
   it("keeps the common product fields in explicit sections", () => {
-    for (const label of ["Informações básicas", "Preço", "Imagem", "Disponibilidade", "Adicionais e opções"]) {
+    for (const label of ["Informações básicas", "Preço", "Imagem", "Disponibilidade", "Escolhas do cliente"]) {
       expect(page).toContain(label);
     }
   });
@@ -23,9 +23,11 @@ describe("product editor UI", () => {
   it("preserves the authoritative create mutation behind the resilient form and commercial field contract", () => {
     expect(page).toContain("createProductFormAction");
     expect(actions).toContain("await createProductAction(formData)");
-    for (const name of ["name", "description", "categoryId", "price", "promotionalPrice", "cost", "imageFile", "availability", "active", "preparationTimeMinutes"]) {
+    for (const name of ["name", "description", "categoryId", "price", "promotionalPrice", "cost", "imageFile", "availability", "preparationTimeMinutes", "modifierGroupIds"]) {
       expect(page).toContain(`name="${name}"`);
     }
+    // Situação única: "Oculto" substitui a antiga caixa "Produto ativo".
+    expect(page).not.toContain('name="active"');
     expect(page).not.toContain('name="imageUrl"');
   });
 

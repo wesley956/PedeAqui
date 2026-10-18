@@ -37,13 +37,14 @@ vi.mock("@/server/cash/cash-service", () => ({ CashService: { loadDashboard: vi.
 vi.mock("@/server/delivery/delivery-service", () => ({ DeliveryService: { getSettings: vi.fn(async () => fixtures.settings), listNeighborhoods: vi.fn(async () => fixtures.empty ? [] : fixtures.neighborhoods) } }));
 vi.mock("@/server/delivery/driver-history-policy-service", () => ({ DriverHistoryPolicyService: { get: vi.fn(async () => false) } }));
 vi.mock("@/features/stores/actions", () => ({ saveStoreProfileAction: vi.fn() }));
-vi.mock("@/features/menu/actions", () => ({ addStoreHourAction: vi.fn(), removeStoreHourAction: vi.fn(), pauseOrdersAction: vi.fn(), resumeOrdersAction: vi.fn(), saveMenuSettingsAction: vi.fn() }));
+vi.mock("@/features/menu/actions", () => ({ addStoreHourAction: vi.fn(), removeStoreHourAction: vi.fn(), pauseOrdersAction: vi.fn(), resumeOrdersAction: vi.fn(), saveMenuSettingsAction: vi.fn(), saveStoreWeekAction: vi.fn() }));
 vi.mock("@/features/delivery/actions", () => ({ createDeliveryNeighborhoodAction: vi.fn(), removeDeliveryNeighborhoodAction: vi.fn(), saveDeliverySettingsAction: vi.fn(), toggleDeliveryNeighborhoodAction: vi.fn(), createDriverAction: vi.fn(), updateDriverAction: vi.fn(), createDriverMobileAccessAction: vi.fn(), deliveryOperationAction: vi.fn() }));
 vi.mock("@/features/delivery/delivery-confirmation-actions", () => ({ confirmDeliveryWithPaymentAction: vi.fn() }));
 vi.mock("@/features/dining/actions", () => ({ createDiningTableAction: vi.fn() }));
 vi.mock("@/features/cash/actions", () => ({ createCashRegisterAction: vi.fn(), updateCashRegisterAction: vi.fn() }));
-vi.mock("@/features/delivery/neighborhood-actions", () => ({ updateDeliveryNeighborhoodAction: vi.fn() }));
+vi.mock("@/features/delivery/neighborhood-actions", () => ({ updateDeliveryNeighborhoodAction: vi.fn(), bulkDeliveryNeighborhoodsAction: vi.fn() }));
 vi.mock("@/features/delivery/driver-history-actions", () => ({ saveDriverHistoryVisibilityAction: vi.fn() }));
+vi.mock("@/features/catalog/resilient-mutation-form", async () => { const { createElement } = await import("react"); return { ResilientMutationForm: ({ children, className }: { children: unknown; className?: string }) => createElement("form", { className }, children as never) }; });
 
 function idsAreUnique(html: string) {
   const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
@@ -75,13 +76,16 @@ describe("settings editors preserve the existing server form contracts", () => {
     expect(html).toContain('href="/m/loja-de-teste"');
     exportFixture("store-profile", html);
   });
-  it("retains explicit overnight scheduling and targeted period removal", async () => {
+  it("shows the whole week as an editable grid, including overnight periods", async () => {
     const html = renderToStaticMarkup(await StoreHoursPage());
-    idsAreUnique(html);
-    const form = labeledForm(html, "Adicionar período");
-    for (const name of ["weekday", "opensAt", "closesAt", "sortOrder", "closesNextDay"]) expect(form).toContain(`name="${name}"`);
-    expect(html).toContain("21:00 → 01:00 (+1 dia)");
-    expect(html).toContain('name="hourId" value="hour-a"');
+    for (const day of ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"]) expect(html).toContain(`aria-label="${day}"`);
+    expect(html).toContain('value="21:00"');
+    expect(html).toContain('value="01:00"');
+    expect(html).toContain("(+1 dia)");
+    expect(html).toContain("Copiar para todos os dias");
+    expect(html).toContain('name="periods"');
+    expect(html).toContain("&quot;weekday&quot;:5,&quot;opensAt&quot;:&quot;21:00&quot;,&quot;closesAt&quot;:&quot;01:00&quot;");
+    expect(html).toContain("Salvar horários");
     exportFixture("store-hours", html);
   });
   it("preserves disabled delivery and neighborhoods while keeping the history policy independent", async () => {
@@ -92,6 +96,9 @@ describe("settings editors preserve the existing server form contracts", () => {
     expect(form).toContain('value="5,00"');
     expect(form).not.toMatch(/<input(?=[^>]*name="enabled")(?=[^>]*checked="")[^>]*>/);
     expect(form).not.toContain('name="driverHistoryVisible"');
+    expect(html).toContain("Adicionar vários bairros de uma vez");
+    expect(html).toContain('name="list"');
+    expect(html).toMatch(/id="bulk-neighborhood-city"[^>]*value="Nova Odessa"|value="Nova Odessa"[^>]*id="bulk-neighborhood-city"/);
     const policy = labeledForm(html, "Histórico do entregador");
     expect(policy).toContain('name="driverHistoryVisible"');
     expect(policy).not.toContain('name="feeMode"');
@@ -115,7 +122,8 @@ describe("settings editors preserve the existing server form contracts", () => {
     expect(labeledForm(delivery, "Adicionar bairro")).toContain('name="fee"');
     const hours = renderToStaticMarkup(await StoreHoursPage());
     expect(hours).toContain("Nenhum horário cadastrado");
-    expect(labeledForm(hours, "Adicionar período")).toContain('name="opensAt"');
+    expect(hours).toContain("Nenhum dia aberto");
+    expect(hours).toContain("Salvar horários");
   });
   it("keeps menu publication independent from pause and retains original image fields", async () => {
     const html = renderToStaticMarkup(await MenuSettingsPage());

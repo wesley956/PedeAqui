@@ -166,6 +166,62 @@ export class StoreMenuService {
     return data;
   }
 
+  /**
+   * Salva a semana inteira de uma vez (grade de horários). Insere primeiro os períodos novos e só depois
+   * remove os que saíram, para a loja nunca ficar sem horário no meio da operação.
+   */
+  static async replaceWeek(inputs: StoreHourInput[]) {
+    const periods = inputs.map((input) => storeHourInputSchema.parse(input));
+    assertNoScheduleOverlap(periods);
+    const context = await authorize(PERMISSIONS.STORES_MANAGE);
+    const storeId = requireStoreId(context.storeId);
+    const admin = createAdminClient();
+
+    const { data: current, error: currentError } = await admin.from("store_hours")
+      .select("id, weekday, opens_at, closes_at, closes_next_day")
+      .eq("organization_id", context.organizationId).eq("store_id", storeId);
+    if (currentError) throw currentError;
+
+    const keyOf = (weekday: number, opensAt: string, closesAt: string, closesNextDay: boolean) => `${weekday}|${opensAt.slice(0, 5)}|${closesAt.slice(0, 5)}|${closesNextDay}`;
+    const wanted = new Map(periods.map((period) => [keyOf(period.weekday, period.opensAt, period.closesAt, period.closesNextDay), period]));
+    const existing = new Map((current ?? []).map((row) => [keyOf(row.weekday, row.opens_at, row.closes_at, row.closes_next_day), row]));
+
+    const toInsert = [...wanted.entries()].filter(([key]) => !existing.has(key)).map(([, period]) => ({
+      organization_id: context.organizationId,
+      store_id: storeId,
+      weekday: period.weekday,
+      opens_at: period.opensAt,
+      closes_at: period.closesAt,
+      closes_next_day: period.closesNextDay,
+      sort_order: period.sortOrder,
+      active: true,
+    }));
+    const toRemove = [...existing.entries()].filter(([key]) => !wanted.has(key)).map(([, row]) => row);
+
+    if (toInsert.length > 0) {
+      const { error } = await admin.from("store_hours").insert(toInsert);
+      if (error) throw error;
+    }
+    // Períodos mantidos voltam a ficar ativos (a grade mostra só o que vale).
+    const keptIds = [...existing.entries()].filter(([key]) => wanted.has(key)).map(([, row]) => row.id);
+    if (keptIds.length > 0) {
+      const { error } = await admin.from("store_hours").update({ active: true }).in("id", keptIds)
+        .eq("organization_id", context.organizationId).eq("store_id", storeId);
+      if (error) throw error;
+    }
+    if (toRemove.length > 0) {
+      const { error } = await admin.from("store_hours").delete().in("id", toRemove.map((row) => row.id))
+        .eq("organization_id", context.organizationId).eq("store_id", storeId);
+      if (error) throw error;
+    }
+
+    if (toInsert.length > 0 || toRemove.length > 0) {
+      await AuditService.record(context, { action: "store.hours_week_saved", entityType: "store", entityId: storeId, before: { periods: current ?? [] }, after: { periods: [...wanted.values()], added: toInsert.length, removed: toRemove.length } });
+      await EventService.enqueue(context, { type: "store.hours_changed", entityType: "store", entityId: storeId, payload: { added: toInsert.length, removed: toRemove.length } });
+    }
+    return { added: toInsert.length, removed: toRemove.length };
+  }
+
   static async removeHour(hourId: string) {
     const id = uuidSchema.parse(hourId);
     const context = await authorize(PERMISSIONS.STORES_MANAGE);

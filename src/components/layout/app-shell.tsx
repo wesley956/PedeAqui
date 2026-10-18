@@ -39,7 +39,7 @@ export function AppShell({ children, email, branding, navigationItems, operation
           </DesktopNavigation>
         </aside>
         <div className="app-main">
-          <OperationTopbar email={email} data={operationHeader} storeId={storeId} experienceMode={experienceMode} driverOnly={driverOnly} customerMessages={customerMessages} />
+          <OperationTopbar email={email} data={operationHeader} storeId={storeId} experienceMode={experienceMode} driverOnly={driverOnly} customerMessages={customerMessages} canSearchCatalog={navigationItems.some((item) => item.key === "catalog")} />
           <CustomerMessageBanner messages={customerMessages.messages} />
           {storeId && humanAttentionAlert ? <HumanAttentionAlert storeId={storeId} alert={humanAttentionAlert} /> : null}
           <main id="main-content" className="app-content" tabIndex={-1}>{children}</main>
