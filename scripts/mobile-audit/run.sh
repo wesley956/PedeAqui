@@ -9,21 +9,20 @@ parked="$(mktemp -d)"
 mv supabase/migrations "${parked}/migrations"
 [[ -f supabase/config.toml ]] && mv supabase/config.toml "${parked}/config.toml"
 supabase init --force >/dev/null
-supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor
+supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor >/dev/null 2>&1
 psql "$db" -X -q -v ON_ERROR_STOP=1 -c "create extension if not exists pg_cron with schema extensions" >/dev/null
 
 while IFS= read -r f; do
-  psql "$db" -X -q -v ON_ERROR_STOP=1 -f "supabase/sql/$f" >/dev/null || { echo "SCHEMA_FAIL $f"; exit 1; }
+  psql "$db" -X -q -v ON_ERROR_STOP=1 -f "supabase/sql/$f" >/dev/null 2>&1 || { echo "SCHEMA_FAIL $f"; exit 1; }
 done < <(find supabase/sql -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC_ALL=C sort -t_ -k1,1n -k2,2)
 
-# Deltas de produção ainda não incorporados ao schema canônico: aplica cada um isolado; os que já existem falham e são ignorados.
-applied=0; skipped=0
-for f in $(ls "${parked}/migrations" | LC_ALL=C sort); do
-  if psql "$db" -X -q -v ON_ERROR_STOP=1 --single-transaction -f "${parked}/migrations/$f" >/dev/null 2>&1; then applied=$((applied+1)); else skipped=$((skipped+1)); fi
+# Mesmos deltas de produção que o teste isolado reaplica (os demais já estão no schema canônico;
+# reaplicar todos sobrescreveria funções novas com versões antigas).
+for f in 20260915155500_int11_order_creation_channel.sql 20260916150000_wpp04_inbox_pagination.sql 20260917214500_wpp07_atomic_human_claim.sql; do
+  psql "$db" -X -q -v ON_ERROR_STOP=1 --single-transaction -f "${parked}/migrations/$f" >/dev/null 2>&1 || echo "MIGRATION_SKIPPED $f"
 done
-echo "MIGRATIONS_REPLAY applied=${applied} skipped=${skipped}"
 
-eval "$(supabase status -o env | sed 's/^/export LOCAL_/')"
+eval "$(supabase status -o env 2>/dev/null | sed 's/^/export LOCAL_/')"
 export LOCAL_SUPABASE_URL="${LOCAL_API_URL}"
 export LOCAL_ANON_KEY="${LOCAL_ANON_KEY:-${LOCAL_PUBLISHABLE_KEY:-}}"
 export LOCAL_SERVICE_KEY="${LOCAL_SERVICE_ROLE_KEY:-${LOCAL_SECRET_KEY:-}}"
