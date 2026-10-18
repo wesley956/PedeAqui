@@ -18,7 +18,7 @@ done < <(find supabase/sql -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC
 
 # Mesmos deltas de produção que o teste isolado reaplica (os demais já estão no schema canônico;
 # reaplicar todos sobrescreveria funções novas com versões antigas).
-for f in 20260910162000_scheduled_product_promotions.sql 20260911180613_promotion_campaigns_v2.sql 20260912003740_whatsapp_direct_orders.sql 20260915155500_int11_order_creation_channel.sql 20260916150000_wpp04_inbox_pagination.sql 20260917214500_wpp07_atomic_human_claim.sql 20260924064200_saas_06_private_promotion_schedule_rpc.sql; do
+for f in 20260910162000_scheduled_product_promotions.sql 20260911180613_promotion_campaigns_v2.sql 20260912003740_whatsapp_direct_orders.sql 20260912051915_whatsapp_bot_presentation_settings.sql 20260915155500_int11_order_creation_channel.sql 20260916150000_wpp04_inbox_pagination.sql 20260917214500_wpp07_atomic_human_claim.sql 20260924064200_saas_06_private_promotion_schedule_rpc.sql; do
   psql "$db" -X -q -v ON_ERROR_STOP=1 --single-transaction -f "${parked}/migrations/$f" >/dev/null 2>&1 || echo "MIGRATION_SKIPPED $f"
 done
 
