@@ -15,6 +15,7 @@ describe("consertos do celular (Fase A)", () => {
     expect(read("src/features/menu/modifier-group-selector.module.css")).toContain(".group{min-width:0;");
     const productCss = read("src/app/m/[slug]/produto/[id]/public-product.module.css");
     expect(productCss).toContain(".stepBlock>*{min-width:0}");
+    expect(productCss).toContain(".form{grid-template-columns:minmax(0,1fr)}");
     expect(productCss).toContain(".sheetForm .complementBlock{padding:14px 16px;");
     expect(read("src/features/menu/product-detail.tsx")).toContain("styles.complementBlock");
   });
