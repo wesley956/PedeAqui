@@ -29,6 +29,7 @@ import {
 } from "@/features/orders/workflow-config";
 import { rawWorkflowStage, visibleWorkflowStage } from "@/server/conversations/order-workflow-visibility";
 import { OrderPreview } from "./order-preview";
+import { MobileOrderList, type MobileOrderEntry } from "./mobile-order-list";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
 import styles from "./order-manager.module.css";
 
@@ -301,6 +302,28 @@ export function CustomOrderWorkflowBoard({ storeId, viewPreferenceKey, orders: i
   const attentionOrders = sortOrdersForAttention(filtered.filter((order) => isOperationalOrder(order) && (stageFilter === "all" || rawStage(order, config) === stageFilter)));
   const activeStages = ["new", "preparing", "ready", "delivering", "awaiting_pickup"] as const;
 
+  // Celular: os mesmos pedidos em cartões compactos por etapa do fluxo da loja.
+  const mobileEntries: MobileOrderEntry[] = sortOrdersForAttention(filtered.filter(isOperationalOrder)).map((order) => {
+    const stage = rawStage(order, config);
+    return {
+      order,
+      tab: stage === "new" ? "novos" : stage === "preparing" ? "preparo" : stage === "delivering" ? "entrega" : "prontos",
+      late: isOrderAttentionLate(order, now),
+      urgent: stage === "new",
+      action: nextAction(order, manualDeliveryMode, paymentPolicy, config),
+      extraActions: order.order_status === "pending_confirmation" ? <details className={styles.rejectDetails}>
+        <summary className={styles.rejectSummary}>Recusar pedido</summary>
+        <div className={styles.rejectBody}><OrderActionForm orderId={order.id} intent="reject" label="Confirmar recusa" tone="danger" reasonLabel="Motivo" reasonPlaceholder="Ex.: item indisponível" compact /></div>
+      </details> : null,
+    };
+  });
+  const mobileTabs = [
+    { key: "novos", label: config.receptionMode === "auto_prepare" ? "Aguardando" : "Novos" },
+    { key: "preparo", label: "Em preparo" },
+    { key: "prontos", label: "Prontos" },
+    ...(mobileEntries.some((entry) => entry.tab === "entrega") || config.delivery.includes("delivering") ? [{ key: "entrega", label: "Em entrega" }] : []),
+  ];
+
   const toggleBulkSelection = (orderId: string, selected: boolean) => {
     if (bulkPending) return;
     setSelectedIds((current) => toggleBulkOrder(current, bulkEligibleIds, orderId, selected));
@@ -349,6 +372,9 @@ export function CustomOrderWorkflowBoard({ storeId, viewPreferenceKey, orders: i
     </Alert> : bulkState.error ? <Alert tone="warning" title="Não foi possível finalizar o lote">{bulkState.error}</Alert> : null}
     <div className={styles.noticeSlot} aria-live="polite">
       {notice ? <Alert tone="warning" title={notice} action={<Button type="button" tone="secondary" size="sm" onClick={() => setNotice(null)}>Dispensar</Button>}>A fila foi atualizada em tempo real.</Alert> : null}
+    </div>
+    <div className={styles.mobileOrders}>
+      <MobileOrderList entries={mobileEntries} tabs={mobileTabs} now={now} query={query} onQueryChange={setQuery} soundEnabled={soundEnabled} soundLabel={primaryLabel} onToggleSound={() => void toggle()} />
     </div>
     {view === "board" ? <>    <FlowSection title="Entrega" stages={config.delivery} orders={deliveryOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} bulkPending={bulkPending} onBulkToggle={toggleBulkSelection} />
     <FlowSection title="Retirada e atendimento" stages={config.pickup} orders={pickupOrders} config={config} now={now} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} selectedIds={selectedIds} bulkPending={bulkPending} onBulkToggle={toggleBulkSelection} /></> : <>
