@@ -178,6 +178,13 @@ for (const device of (process.env.QUICK ? DEVICES.slice(0, 1) : DEVICES)) {
     await openState("/dashboard", ".mobile-more > summary", "menu-mais-aberto");
     await openState("/dashboard", ".app-operation-menu > summary", "menu-loja-aberto");
     await openState("/dashboard", ".app-account-menu > summary", "menu-conta-aberto");
+    await openState("/pedidos", 'button[aria-label^="Mais ações do pedido"]', "pedidos-menu-acoes");
+    try {
+      await page.goto(`${panelBase}/pedidos`, { waitUntil: "load" });
+      await page.getByRole("button", { name: /^Em preparo/ }).first().click();
+      await page.waitForTimeout(500);
+      await shotState(page, device, "pedidos-aba-em-preparo");
+    } catch (error) { results.push({ device: device.key, area: "state", label: "pedidos-aba", error: String(error.message).slice(0, 200) }); }
     try {
       await page.goto(`${panelBase}/cardapio/disponibilidade?q=calabresa`, { waitUntil: "load" });
       await page.locator('input[type="search"]').first().fill("calabresa").catch(() => {});
