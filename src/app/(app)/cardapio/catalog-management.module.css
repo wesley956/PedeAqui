@@ -509,9 +509,11 @@
 @media (max-width: 640px) {
   .shell, .page { gap: var(--space-4); }
   .catalogHeader h1 { font-size: var(--font-size-3xl); }
-  .nav { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 6px; gap: 6px; }
-  .navLink { min-height: 58px; padding: 8px; }
-  .navIcon { width: 32px; height: 32px; }
+  /* Celular: as 6 seções viram uma linha de abas que rola para o lado (antes eram 4 linhas, ~40% da tela). */
+  .nav { display: flex; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding: 4px; gap: 4px; -webkit-overflow-scrolling: touch; }
+  .nav::-webkit-scrollbar { display: none; }
+  .navLink { flex: 0 0 auto; min-height: 44px; padding: 6px 12px 6px 6px; scroll-snap-align: start; white-space: nowrap; }
+  .navIcon { width: 30px; height: 30px; }
   .navHint { display: none; }
   .filters { grid-template-columns: 1fr; padding: var(--space-3); }
   .filterActions { grid-column: auto; }

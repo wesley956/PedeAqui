@@ -6,6 +6,7 @@ import { saveUserGuideProgressAction } from "@/features/user-guide/actions";
 import { guideProgress, type UserGuideStatus, type UserGuideStep } from "@/features/user-guide/guide-model";
 import styles from "./new-user-guide.module.css";
 import { NavigationIcon } from "@/components/ui/navigation-icon";
+import { OPEN_GUIDE_EVENT } from "@/features/user-guide/guide-events";
 
 export function NewUserGuide({
   initialStatus,
@@ -52,6 +53,13 @@ export function NewUserGuide({
     // The first persistence only marks the automatic run as started.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoOpen]);
+
+  useEffect(() => {
+    // No celular não há botão flutuante: o guia abre pelo menu da conta ou pelo "Mais".
+    const openFromMenu = () => setOpen(true);
+    window.addEventListener(OPEN_GUIDE_EVENT, openFromMenu);
+    return () => window.removeEventListener(OPEN_GUIDE_EVENT, openFromMenu);
+  }, []);
 
   useEffect(() => {
     if (!open) return;

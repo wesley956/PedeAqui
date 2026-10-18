@@ -65,7 +65,7 @@ describe("automatic new-user guide", () => {
     expect(actions).toContain("requireAuthenticatedUser()");
     expect(actions).toContain("user_id: user.id");
     expect(actions).not.toContain("input.userId");
-    expect(service).toContain('status === "in_progress" || status === "not_started"');
+    expect(service).toContain('autoOpen: status === "not_started"');
   });
 
   it("mounts globally, reads real readiness and remains manually reopenable", () => {

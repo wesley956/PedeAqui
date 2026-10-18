@@ -59,3 +59,48 @@
     display: none;
   }
 }
+
+/* ---- Fase B do celular ---- */
+@media (max-width: 900px) {
+  /* Sem botão flutuante do guia: ele cobria botões ("Aceitar pedido", campos, "Ações").
+     O guia abre pelo menu da conta e pelo "Mais". */
+  .app-shell button[aria-label="Abrir assistente do PedeAqui"] { display: none; }
+
+  /* "Mais" abre como folha de baixo para cima, com grupos e ícones. */
+  .app-shell .mobile-more-panel {
+    position: fixed;
+    left: var(--space-2);
+    right: var(--space-2);
+    bottom: calc(var(--mobile-nav-height) + var(--space-2) + env(safe-area-inset-bottom));
+    width: auto;
+    max-height: min(74dvh, 620px);
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-xl);
+  }
+  .app-shell .mobile-more-title { margin: 0 0 var(--space-1); color: var(--text-secondary); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); letter-spacing: .06em; text-transform: uppercase; }
+  .app-shell .mobile-more-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-1); }
+  .app-shell .mobile-more-panel .mobile-more-grid a { min-height: 48px; gap: var(--space-2); padding: var(--space-2); color: var(--text-primary); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-md); }
+  .app-shell .mobile-more-icon { display: grid; place-items: center; width: 28px; height: 28px; flex: 0 0 28px; border-radius: var(--radius-sm); background: var(--surface-2); color: var(--text-secondary); }
+  .app-shell .mobile-more-grid a[aria-current="page"] .mobile-more-icon { background: var(--accent); color: var(--text-on-brand); }
+  .app-shell .mobile-more-footer { display: flex; flex-wrap: wrap; gap: var(--space-1); padding-top: var(--space-2); border-top: var(--border-width) solid var(--border-default); }
+  .app-shell .mobile-more-footer a,
+  .app-shell .mobile-more-footer button { min-height: 44px; display: inline-flex; align-items: center; padding: 0 var(--space-3); border: 0; border-radius: var(--radius-md); background: transparent; color: var(--text-secondary); font: inherit; font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); cursor: pointer; }
+  .app-shell .mobile-more-footer button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+}
+
+@media (max-width: 640px) {
+  /* Topo: o nome da loja ganha espaço; "Buscar item" fica só com a lupa. */
+  .app-topbar-compact .app-item-search { width: 44px; min-height: 44px; padding: 0; justify-content: center; }
+  .app-topbar-compact .app-item-search .app-movement-label { display: none; }
+  .app-topbar-compact .app-item-search > span[aria-hidden] { font-size: var(--font-size-lg); }
+  /* Indicador de saúde só aparece quando há algo a resolver. */
+  .app-topbar-compact .operational-health[data-severity="healthy"],
+  .app-topbar-compact .operational-health[data-severity="P3"] { display: none; }
+  /* Alvos de toque de 44 px no topo. */
+  .app-topbar-compact .app-topbar-actions > details > summary { min-width: 44px; min-height: 44px; }
+}
+
+.app-account-guide { width: 100%; min-height: 44px; border: var(--border-width) solid var(--border-default); border-radius: var(--radius-md); background: var(--surface-1); color: var(--text-primary); font: inherit; font-weight: var(--font-weight-semibold); cursor: pointer; }
+.app-account-guide:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
