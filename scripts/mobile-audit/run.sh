@@ -50,3 +50,6 @@ for i in $(seq 1 60); do curl -fsS -o /dev/null http://127.0.0.1:3000/login && b
 
 PANEL_BASE="http://127.0.0.1:3000" PUBLIC_BASE="https://pedeaqui.pp.ua" node scripts/mobile-audit/audit.mjs 2>&1 | tee mobile-audit-out/audit.log
 grep -iE "error|warn" mobile-audit-out/app.log | head -200 > mobile-audit-out/app-errors.log || true
+
+# Fotos que apontam para o projeto antigo do Supabase: o servidor ainda responde?
+curl -sS -o /dev/null -w "%{http_code}\n" --max-time 20 "https://zsbsczjhiujnhdznrzck.supabase.co/storage/v1/object/public/catalog-media/6f282251-4f23-4a27-877d-d4a61220269c/a7ee30dc-3bad-4ebd-9fcc-c71cdc76574b/product/06bd939e-814f-40df-af1e-45aa18e8969e.webp" > mobile-audit-out/old-image-check.txt 2>&1 || true
