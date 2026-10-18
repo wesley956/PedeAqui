@@ -32,6 +32,8 @@ jobs:
 
       - name: Run mobile audit
         shell: bash
+        env:
+          QUICK: ${{ contains(github.event.head_commit.message, '[quick]') && '1' || '' }}
         run: |
           mkdir -p mobile-audit-out
           set -o pipefail

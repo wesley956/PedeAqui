@@ -130,7 +130,7 @@ async function shotState(page, device, name) {
   results.push({ device: device.key, area: "state", label: name, shot: `shots/${base}.jpg`, ...(await measure(page).catch(() => ({}))) });
 }
 
-for (const device of DEVICES) {
+for (const device of (process.env.QUICK ? DEVICES.slice(0, 1) : DEVICES)) {
   const browser = await device.browser.launch();
 
   // ---------- Painel (local, loja fictícia) ----------
@@ -152,7 +152,7 @@ for (const device of DEVICES) {
       await shotState(page, device, "login-failed");
     }
 
-    for (const route of PANEL_ROUTES) await audit(page, device, "panel", route, `${panelBase}${route}`);
+    if (!process.env.QUICK) for (const route of PANEL_ROUTES) await audit(page, device, "panel", route, `${panelBase}${route}`);
 
     // Páginas com id: pega o primeiro link da lista.
     for (const [list, pattern, name] of [["/pedidos/historico", /^\/pedidos\/[0-9a-f-]{36}$/, "/pedidos/[id]"], ["/cardapio/produtos", /^\/cardapio\/produtos\/[0-9a-f-]{36}$/, "/cardapio/produtos/[id]"], ["/clientes", /^\/clientes\/[0-9a-f-]{36}$/, "/clientes/[id]"], ["/salao", /^\/salao\/[0-9a-f-]{36}$/, "/salao/[tableId]"]]) {
@@ -191,6 +191,19 @@ for (const device of DEVICES) {
       await page.locator('a[href*="/produto/"]', { hasText: "Caixa com 30 salgados" }).first().click();
       await page.waitForTimeout(1500);
       await shotState(page, device, "local-produto-sabores");
+      // Diagnóstico de largura: cada ancestral do grupo de sabores e o filho mais largo de cada um.
+      const diag = await page.evaluate(() => {
+        const group = document.querySelector("fieldset");
+        if (!group) return null;
+        const chain = [];
+        for (let el = group; el && el !== document.documentElement; el = el.parentElement) {
+          const r = el.getBoundingClientRect(); const cs = getComputedStyle(el);
+          chain.push({ tag: el.tagName.toLowerCase(), cls: String(el.className).slice(0, 60), left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width), minW: cs.minWidth, minIS: cs.minInlineSize, display: cs.display, ovx: cs.overflowX, pad: `${cs.paddingLeft}/${cs.paddingRight}`, gtc: cs.gridTemplateColumns.slice(0, 60) });
+        }
+        const wide = [...group.querySelectorAll("*")].map((el) => { const r = el.getBoundingClientRect(); return { tag: el.tagName.toLowerCase(), cls: String(el.className).slice(0, 50), text: (el.textContent || "").trim().slice(0, 40), right: Math.round(r.right), width: Math.round(r.width), ws: getComputedStyle(el).whiteSpace }; }).sort((a, b) => b.right - a.right).slice(0, 10);
+        return { vw: window.innerWidth, chain, wide };
+      });
+      results.push({ device: device.key, area: "diag", label: "fieldset-width", diag });
       await page.evaluate(() => window.scrollBy(0, 700)); await page.waitForTimeout(400);
       await shotState(page, device, "local-produto-sabores-rolado");
     } catch (error) { results.push({ device: device.key, area: "state", label: "local-produto", error: String(error.message).slice(0, 200) }); }

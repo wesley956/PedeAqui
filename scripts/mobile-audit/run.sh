@@ -48,7 +48,7 @@ npm run build > mobile-audit-out/build.log 2>&1 || { tail -80 mobile-audit-out/b
 nohup npm run start -- --hostname 127.0.0.1 --port 3000 > mobile-audit-out/app.log 2>&1 &
 for i in $(seq 1 60); do curl -fsS -o /dev/null http://127.0.0.1:3000/login && break; sleep 2; done
 
-PANEL_BASE="http://127.0.0.1:3000" PUBLIC_BASE="https://pedeaqui.pp.ua" node scripts/mobile-audit/audit.mjs 2>&1 | tee mobile-audit-out/audit.log
+QUICK="${QUICK:-}" PANEL_BASE="http://127.0.0.1:3000" PUBLIC_BASE="https://pedeaqui.pp.ua" node scripts/mobile-audit/audit.mjs 2>&1 | tee mobile-audit-out/audit.log
 grep -iE "error|warn" mobile-audit-out/app.log | head -200 > mobile-audit-out/app-errors.log || true
 
 # Fotos que apontam para o projeto antigo do Supabase: o servidor ainda responde?
