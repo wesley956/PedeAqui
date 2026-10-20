@@ -16,6 +16,9 @@ type Entry<T> = { value: T; expiresAt: number };
 export class TtlCache<T> {
   private readonly entries = new Map<string, Entry<T>>();
   private readonly inflight = new Map<string, Promise<T>>();
+  private readonly generations = new Map<string, number>();
+  private generation(key: string) { return this.generations.get(key) ?? 0; }
+  private bump(key: string) { this.generations.set(key, this.generation(key) + 1); }
 
   constructor(private readonly ttlMs: number, private readonly maxEntries = 2000) {}
 
@@ -43,16 +46,19 @@ export class TtlCache<T> {
   }
 
   delete(key: string) {
+    this.bump(key);
     this.entries.delete(key);
+    this.inflight.delete(key);
   }
 
   deleteWhere(predicate: (value: T, key: string) => boolean) {
     for (const [key, entry] of this.entries) {
-      if (predicate(entry.value, key)) this.entries.delete(key);
+      if (predicate(entry.value, key)) this.delete(key);
     }
   }
 
   clear() {
+    for (const key of new Set([...this.entries.keys(), ...this.inflight.keys()])) this.bump(key);
     this.entries.clear();
     this.inflight.clear();
   }
@@ -63,12 +69,16 @@ export class TtlCache<T> {
     if (cached !== undefined) return cached;
     const pending = this.inflight.get(key);
     if (pending) return pending;
+    const generation = this.generation(key);
     const promise = load()
       .then((value) => {
-        if (shouldCache(value)) this.set(key, value);
+        // Uma resposta iniciada antes de uma invalidação não pode ressuscitar dados obsoletos.
+        if (generation === this.generation(key) && shouldCache(value)) this.set(key, value);
         return value;
       })
-      .finally(() => this.inflight.delete(key));
+      .finally(() => {
+        if (this.inflight.get(key) === promise) this.inflight.delete(key);
+      });
     this.inflight.set(key, promise);
     return promise;
   }
