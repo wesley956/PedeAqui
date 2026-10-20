@@ -70,7 +70,8 @@ export class TtlCache<T> {
     const pending = this.inflight.get(key);
     if (pending) return pending;
     const generation = this.generation(key);
-    const promise = load()
+    let promise: Promise<T>;
+    promise = load()
       .then((value) => {
         // Uma resposta iniciada antes de uma invalidação não pode ressuscitar dados obsoletos.
         if (generation === this.generation(key) && shouldCache(value)) this.set(key, value);
