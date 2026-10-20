@@ -1,0 +1,12 @@
+.git
+.github
+.vercel
+.next
+node_modules
+coverage
+.env
+.env.*
+*.env
+*.log
+*.pem
+*.key
