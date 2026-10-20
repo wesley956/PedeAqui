@@ -6,6 +6,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { sanitizeExternalOrderPresentation } from "@/features/orders/external-order-presentation";
+import { agentAuthCacheTtlMs, TtlCache } from "@/server/printing/agent-request-cache";
 import { hashPrintAgentToken } from "@/server/printing/agent-token";
 import { prependExternalPrintIdentity, withExternalPrintIdentity } from "@/server/printing/external-print-presentation";
 import { renderPrintDocument, resolveOrderPrintPreferences, type PrintDocumentType } from "@/server/printing/templates";
@@ -31,17 +32,32 @@ type AuthenticatedAgent = {
   name: string;
 };
 
+// Chave = hash do token (nunca o token em si). Só respostas válidas entram no cache:
+// token inválido continua sendo checado no banco a cada requisição.
+const authenticatedAgentCache = new TtlCache<AuthenticatedAgent | null>(agentAuthCacheTtlMs);
+
+export function invalidatePrintAgentAuthCache(agentId?: string) {
+  if (!agentId) {
+    authenticatedAgentCache.clear();
+    return;
+  }
+  authenticatedAgentCache.deleteWhere((agent) => agent?.id === agentId);
+}
+
 export class PrintQueueService {
   static async authenticateAgent(rawToken: string): Promise<AuthenticatedAgent | null> {
     if (rawToken.length < 20 || rawToken.length > 200) return null;
-    const admin = createAdminClient();
-    const { data, error } = await admin.from("print_agents")
-      .select("id, organization_id, store_id, name")
-      .eq("token_hash", hashPrintAgentToken(rawToken))
-      .eq("active", true)
-      .maybeSingle();
-    if (error) throw error;
-    return data;
+    const tokenHash = hashPrintAgentToken(rawToken);
+    return authenticatedAgentCache.getOrLoad(tokenHash, async () => {
+      const admin = createAdminClient();
+      const { data, error } = await admin.from("print_agents")
+        .select("id, organization_id, store_id, name")
+        .eq("token_hash", tokenHash)
+        .eq("active", true)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    }, (agent) => agent !== null);
   }
 
   static async claim(agent: AuthenticatedAgent, limit = 5) {
