@@ -3,10 +3,14 @@ import "server-only";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { AccessContext } from "@/server/access/context";
+import { orderAlertStatusCacheTtlMs, TtlCache } from "@/server/printing/agent-request-cache";
 
 const browserIdSchema = z.string().uuid();
 const cursorSchema = z.string().regex(/^\d+$/);
 const panelPresenceTtlMs = 90_000;
+// Presença do painel e preferência de som mudam raramente; o agente consulta a cada ~6s.
+// Os eventos de pedido novo NÃO passam por este cache.
+const agentStatusCache = new TtlCache<{ panelActive: boolean; nativeEnabled: boolean }>(orderAlertStatusCacheTtlMs);
 
 export type NativeOrderAlertAgentContext = {
   organization_id: string;
@@ -44,9 +48,18 @@ export class OrderAlertBackupService {
         last_seen_at: now,
       }, { onConflict: "store_id,browser_id" });
     if (error) throw error;
+    // O painel mudou de estado: o agente passa a enxergar isso no próximo poll.
+    agentStatusCache.delete(`${context.organizationId}:${context.storeId}`);
   }
 
   static async statusForAgent(agent: NativeOrderAlertAgentContext) {
+    return agentStatusCache.getOrLoad(
+      `${agent.organization_id}:${agent.store_id}`,
+      () => this.loadStatusForAgent(agent),
+    );
+  }
+
+  private static async loadStatusForAgent(agent: NativeOrderAlertAgentContext) {
     const admin = createAdminClient();
     const cutoff = new Date(Date.now() - panelPresenceTtlMs).toISOString();
 

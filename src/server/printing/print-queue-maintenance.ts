@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { exhaustedJobsSweepIntervalMs, KeyedThrottle } from "@/server/printing/agent-request-cache";
 
 type AgentScope = {
   id: string;
@@ -15,6 +16,23 @@ type CandidateJob = {
   max_attempts: number;
   lease_expires_at: string | null;
 };
+
+const exhaustedJobsSweepThrottle = new KeyedThrottle(exhaustedJobsSweepIntervalMs);
+
+/**
+ * Versão usada no loop de claim do Print Agent: a limpeza de trabalhos que já
+ * esgotaram as tentativas não precisa rodar a cada 5s. Rodar 1x por minuto por
+ * agente mantém o mesmo resultado para o restaurante e corta 2 consultas por poll.
+ */
+export async function closeExhaustedPrintJobsThrottled(agent: AgentScope) {
+  if (!exhaustedJobsSweepThrottle.shouldRun(agent.id)) return 0;
+  try {
+    return await closeExhaustedPrintJobs(agent);
+  } catch (error) {
+    exhaustedJobsSweepThrottle.reset(agent.id); // tenta de novo no próximo poll
+    throw error;
+  }
+}
 
 export async function closeExhaustedPrintJobs(agent: AgentScope) {
   const admin = createAdminClient();

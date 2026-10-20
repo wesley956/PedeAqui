@@ -7,6 +7,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { derivePrintAgentToken, hashPrintAgentToken } from "@/server/printing/agent-token";
+import { invalidatePrintAgentAuthCache } from "@/server/printing/print-queue-service";
 
 const intentKey = z.string().trim().min(8).max(240);
 const createCredentialResult = z.object({
@@ -89,6 +90,8 @@ export class PrintAgentAdminService {
     });
     if (error) throw error;
     const result = reconnectCredentialResult.parse(data);
+    // O token antigo deixa de valer imediatamente, sem esperar o cache de autenticação expirar.
+    invalidatePrintAgentAuthCache(result.id);
 
     if (result.rotated && !result.replayed) {
       await AuditService.record(context, {
