@@ -96,3 +96,27 @@ describe("contratos das rotas do Print Agent", () => {
     expect(pollEvents).not.toContain("Cache");
   });
 });
+
+
+describe("invalidação durante consultas em andamento", () => {
+  it("não recacheia resposta antiga após delete e permite nova consulta", async () => {
+    const cache = new TtlCache<string>(60_000);
+    let resolveOld!: (value: string) => void;
+    const old = cache.getOrLoad("token", () => new Promise<string>((resolve) => { resolveOld = resolve; }));
+    cache.delete("token");
+    expect(await cache.getOrLoad("token", async () => "novo")).toBe("novo");
+    resolveOld("antigo");
+    expect(await old).toBe("antigo");
+    expect(cache.get("token")).toBe("novo");
+  });
+
+  it("clear impede resposta pendente de repovoar o cache", async () => {
+    const cache = new TtlCache<string>(60_000);
+    let resolveOld!: (value: string) => void;
+    const old = cache.getOrLoad("token", () => new Promise<string>((resolve) => { resolveOld = resolve; }));
+    cache.clear();
+    resolveOld("antigo");
+    await old;
+    expect(cache.get("token")).toBeUndefined();
+  });
+});
