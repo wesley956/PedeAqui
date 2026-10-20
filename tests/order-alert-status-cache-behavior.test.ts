@@ -21,8 +21,8 @@ let number = 0;
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(0); state.panel = false; state.sound = true; state.reads = 0; state.eventReads = 0; state.error = null; agent = { organization_id: "org", store_id: `store-${++number}` }; });
 afterEach(() => vi.useRealTimers());
 it("reuses presence reads but continues fetching new order events on every poll", async () => {
-  expect((await OrderAlertBackupService.pollForAgent(agent, "0")).orders[0].id).toBe("1");
-  expect((await OrderAlertBackupService.pollForAgent(agent, "1")).orders[0].id).toBe("2");
+  expect((await OrderAlertBackupService.pollForAgent(agent, "0")).orders[0]?.id).toBe("1");
+  expect((await OrderAlertBackupService.pollForAgent(agent, "1")).orders[0]?.id).toBe("2");
   expect(state.reads).toBe(2);
   expect(state.eventReads).toBe(2);
 });
