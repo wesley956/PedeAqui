@@ -90,6 +90,7 @@ jobs:
           node --check print-agent/src/spool.mjs
           node --check print-agent/src/escpos.mjs
           node --check print-agent/src/system-print.mjs
+          node --check print-agent/src/order-alert.mjs
 
       - name: Build
         run: npm run build

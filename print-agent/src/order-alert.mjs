@@ -107,22 +107,48 @@ async function playNativeAlert(apiUrl) {
   }
 }
 
+let lastCheckAt = 0;
+let playing = false;
+
+/** Cursor atual dos alertas, enviado no poll combinado (`/api/print-agent/poll`). */
+export function nativeOrderAlertCursor() {
+  return cursor;
+}
+
+/** Momento (ms) da última resposta de alertas recebida por qualquer caminho. */
+export function lastNativeOrderAlertCheckAt() {
+  return lastCheckAt;
+}
+
+/**
+ * Trata uma resposta de alertas (do poll combinado ou da rota legada).
+ * Atualiza o cursor na hora e toca o som em segundo plano, para nunca atrasar a impressão.
+ */
+export function handleNativeOrderAlertResult(result, apiUrl) {
+  if (!result || typeof result !== "object") return;
+  if (typeof result?.cursor === "string") cursor = result.cursor;
+  lastCheckAt = Date.now();
+  const orders = Array.isArray(result?.orders) ? result.orders : [];
+  if (!result?.nativeEnabled || result?.panelActive || orders.length === 0) return;
+
+  const labels = orders
+    .map((order) => Number.isFinite(Number(order?.displayNumber)) ? `#${Number(order.displayNumber)}` : null)
+    .filter(Boolean)
+    .slice(0, 5)
+    .join(", ");
+  console.log(`native new-order alert${labels ? ` ${labels}` : ""}`);
+  if (playing) return; // já está tocando; o próximo pedido toca no próximo ciclo
+  playing = true;
+  void playNativeAlert(apiUrl).finally(() => { playing = false; });
+}
+
+/** Caminho legado (rota própria). Usado quando o poll combinado não está disponível ou atrasou. */
 export async function pollNativeOrderAlerts({ apiUrl, post }) {
   if (!nativeOrderAlertSupported() || pollRunning) return;
   pollRunning = true;
   try {
     const result = await post("/api/print-agent/order-alerts", { cursor });
-    if (typeof result?.cursor === "string") cursor = result.cursor;
-    const orders = Array.isArray(result?.orders) ? result.orders : [];
-    if (!result?.nativeEnabled || result?.panelActive || orders.length === 0) return;
-
-    const labels = orders
-      .map((order) => Number.isFinite(Number(order?.displayNumber)) ? `#${Number(order.displayNumber)}` : null)
-      .filter(Boolean)
-      .slice(0, 5)
-      .join(", ");
-    console.log(`native new-order alert${labels ? ` ${labels}` : ""}`);
-    await playNativeAlert(apiUrl);
+    handleNativeOrderAlertResult(result, apiUrl);
   } catch (error) {
     console.error("native order alert poll failed", error);
   } finally {
