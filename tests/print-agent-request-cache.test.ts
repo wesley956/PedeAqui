@@ -86,7 +86,7 @@ describe("contratos das rotas do Print Agent", () => {
 
   it("autenticação do agente usa cache e reconectar invalida o token antigo", () => {
     expect(read("src/server/printing/print-queue-service.ts")).toContain("authenticatedAgentCache.getOrLoad(tokenHash");
-    expect(read("src/server/printing/print-agent-admin-service.ts")).toContain("invalidatePrintAgentAuthCache(result.id)");
+    expect(read("src/server/printing/print-agent-admin-service.ts")).toContain("invalidatePrintAgentAuthCache()");
   });
 
   it("eventos de pedido novo continuam sem cache; só o status do painel é cacheado", () => {
