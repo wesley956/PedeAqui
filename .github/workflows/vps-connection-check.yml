@@ -1,0 +1,33 @@
+name: VPS connection check
+
+on:
+  push:
+    branches: [infra/vps-auto-deploy-20261020-002244]
+    paths: [.github/workflows/vps-connection-check.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  connection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production-vps
+    steps:
+      - name: Verify SSH access and deployment prerequisites
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test -n "$VPS_HOST" && test -n "$SSH_KEY" && test -n "$KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          trap 'rm -f ~/.ssh/pedeaqui ~/.ssh/known_hosts' EXIT
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/pedeaqui
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/pedeaqui ~/.ssh/known_hosts
+          ssh-keygen -y -P '' -f ~/.ssh/pedeaqui > /dev/null
+          ssh -i ~/.ssh/pedeaqui -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=20 -o StrictHostKeyChecking=yes \
+            "root@$VPS_HOST" \
+            'test -x /opt/pedeaqui/bin/deploy-vps.sh && test -d /opt/pedeaqui/incoming && test -s /opt/pedeaqui/production.env && docker inspect pedeaqui-production-ready --format "{{.State.Status}}" && nginx -t && echo VPS_SSH_OK'
