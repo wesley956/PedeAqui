@@ -117,7 +117,7 @@ function projectMethod(option: StorePaymentMethodOption): PaymentMethodProjectio
   return {
     id: option.method,
     method: option.method,
-    label: paymentMethodLabels[option.method],
+    label: option.label ?? paymentMethodLabels[option.method],
     custom: false,
   };
 }

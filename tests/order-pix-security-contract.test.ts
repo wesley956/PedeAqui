@@ -46,7 +46,7 @@ describe("online Pix security contracts [327-328]", () => {
   it("only exposes Pix in checkout after an online provider is configured", () => {
     const methods = read("src/server/payments/store-payment-method-service.ts");
     const checkout = read("src/server/checkout/checkout-service.ts");
-    expect(methods).toContain("OrderPaymentProviderConfigService.isOnlinePixReady");
+    expect(methods).toContain("OrderPaymentProviderConfigService.activeProvider");
     expect(methods).toContain("item.enabled && onlinePixReady");
     expect(checkout).toContain("pix_email_required");
     expect(checkout).toContain("!session.customer_email");

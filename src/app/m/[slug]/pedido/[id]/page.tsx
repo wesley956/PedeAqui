@@ -104,7 +104,12 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
       </header>
 
       {pixPayment ? <section className={`card ${styles.card} ${styles.pixCard}`}>
-        {pixPayment.status === "paid" || order.payment_status === "paid" ? <><h2>Pix confirmado ✓</h2><p className="muted">O pagamento de {money(pixPayment.amountCents)} já foi confirmado automaticamente.</p></>
+        {pixPayment.status === "paid" || order.payment_status === "paid" ? <><h2>Pagamento confirmado ✓</h2><p className="muted">O pagamento de {money(pixPayment.amountCents)} já foi confirmado automaticamente.</p></>
+          : pixPayment.status === "waiting" && pixPayment.checkoutUrl ? <>
+            <h2>Pague com Pix ou cartão</h2>
+            <p className="muted">Valor do pedido: <strong>{money(pixPayment.amountCents)}</strong>. Você será direcionado à InfinitePay para pagar. Esta página confirma o pagamento automaticamente.</p>
+            <a href={pixPayment.checkoutUrl} className={styles.whatsappCta} rel="noreferrer">Pagar na InfinitePay</a>
+          </> : pixPayment.checkoutUrl === null && pixPayment.status === "expired" ? <><h2>O prazo para pagar terminou</h2><p className="muted">Fale com a loja para verificar o pagamento deste pedido.</p></>
           : pixPayment.status === "waiting" && pixPayment.qrCode ? <>
             <div><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-xs)" }}>PAGAMENTO PIX</p><h2 style={{ margin: "4px 0" }}>Escaneie o QR Code</h2><p className="muted" style={{ margin: 0 }}>Valor exato: <strong>{money(pixPayment.amountCents)}</strong></p></div>
             {pixPayment.qrCodeBase64 ? <Image src={`data:image/png;base64,${pixPayment.qrCodeBase64}`} alt="QR Code Pix do pedido" width={240} height={240} unoptimized style={{ maxWidth: "100%", height: "auto", borderRadius: "var(--radius-lg)" }} /> : null}
@@ -114,8 +119,8 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
             <div><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-xs)" }}>PAGAMENTO PIX</p><h2 style={{ margin: "4px 0" }}>Falta só o CPF</h2><p className="muted" style={{ margin: 0 }}>Valor: <strong>{money(pixPayment.amountCents)}</strong></p></div>
             <p className="muted">Informe o CPF de quem vai pagar para gerar o Pix. Se o código anterior venceu, informe novamente para gerar outro para este mesmo pedido.</p>
             <PixDocumentForm slug={slug} orderId={order.id} />
-          </> : pixPayment.status === "unavailable" ? <><h2>Pix temporariamente indisponível</h2><p className="muted">Seu pedido foi registrado. Esta página tentará gerar o Pix novamente sem duplicar a cobrança.</p></>
-            : <><h2>Preparando seu Pix…</h2><p className="muted">Aguarde a atualização automática desta página. Não é necessário refazer o pedido.</p></>}
+          </> : pixPayment.status === "unavailable" ? <><h2>Pagamento temporariamente indisponível</h2><p className="muted">Seu pedido foi registrado. Aguarde a atualização ou fale com a loja para verificar o pagamento.</p></>
+            : <><h2>{pixPayment.checkoutUrl === null ? "Preparando o pagamento…" : "Preparando seu Pix…"}</h2><p className="muted">Aguarde a atualização automática desta página. Não é necessário refazer o pedido.</p></>}
       </section> : null}
 
       {!terminal && whatsappFollow.available ? <section className={`card ${styles.card} ${styles.whatsappCard}`}>
@@ -168,7 +173,7 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
               {Number(order.discount_cents) > 0 ? <Summary label="Descontos" value={`− ${money(Number(order.discount_cents))}`} /> : null}
               <Summary label="Entrega" value={Number(order.delivery_fee_cents) > 0 ? money(Number(order.delivery_fee_cents)) : fulfillmentType === "delivery" ? "Grátis" : "Não aplicável"} />
               <Summary label="Total" value={money(Number(order.total_cents))} strong />
-              <Summary label="Pagamento" value={paymentMethodLabels[order.payment_method_snapshot as keyof typeof paymentMethodLabels] ?? order.payment_method_snapshot} />
+              <Summary label="Pagamento" value={pixPayment?.checkoutUrl !== undefined && order.payment_status !== "paid" ? "Pix ou cartão online" : paymentMethodLabels[order.payment_method_snapshot as keyof typeof paymentMethodLabels] ?? order.payment_method_snapshot} />
               <Summary label="Quando" value={scheduledLabel ?? "Assim que possível"} />
               {order.cash_change_for_cents ? <Summary label="Troco para" value={money(Number(order.cash_change_for_cents))} /> : null}
             </div>

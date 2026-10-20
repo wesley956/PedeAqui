@@ -24,3 +24,8 @@ Este adendo preserva os baselines históricos e registra superfícies adicionada
 ## Painel — Fase 2 da reorganização
 
 - `/cardapio/disponibilidade` — aba padrão do Cardápio: uma busca para produtos, sabores e adicionais. Sabores com o mesmo nome em vários grupos aparecem uma vez e o interruptor vale para todos; quando a pausa deixaria produtos à venda sem escolhas suficientes, a tela lista esses produtos e oferece marcá-los como esgotados. Produtos desligados viram "Esgotado". Atalho "Buscar item" na barra superior.
+
+## Pagamentos — InfinitePay (20/10/2026)
+
+- `/api/webhooks/payments/infinitepay/[storeId]` — notificação com token privado por unidade, hash do payload e consulta autenticada à InfinitePay antes de confirmar o pagamento.
+- `/m/[slug]/pedido/[id]/infinitepay/retorno` — retorno do checkout; exige cookie de acesso ao pedido e confere referência, unidade e valor na API. A URL de retorno sozinha não confirma pagamento.

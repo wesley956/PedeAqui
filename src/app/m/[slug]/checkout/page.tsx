@@ -172,8 +172,9 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
             paymentMethods={enabledMethods.map((item) => ({
               value: item.method === "custom" && item.customPaymentMethodId ? `custom:${item.customPaymentMethodId}` : item.method,
               method: item.method,
-              label: item.method === "custom" ? item.label ?? paymentMethodLabels.custom : paymentMethodLabels[item.method],
-              help: paymentMethodHelp[item.method],
+              label: item.label ?? paymentMethodLabels[item.method],
+              hostedCheckout: item.hostedCheckout,
+              help: item.help ?? paymentMethodHelp[item.method],
             }))}
             benefits={growthEnabled && benefits ? {
               couponCode: couponDraft,

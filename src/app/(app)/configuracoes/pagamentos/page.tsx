@@ -10,6 +10,8 @@ import {
   archiveCustomPaymentMethodAction,
   disconnectMercadoPagoOAuthAction,
   disconnectPagBankAction,
+  disconnectInfinitePayAction,
+  toggleInfinitePayAction,
   renameCustomPaymentMethodAction,
   saveOnlinePixProviderAction,
   savePaymentMethodsAction,
@@ -17,6 +19,7 @@ import {
   toggleOnlinePixProviderAction,
   togglePagBankAction,
 } from "@/features/payments/actions";
+import { InfinitePayConnectionForm } from "@/features/payments/infinitepay-connection-form";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
 import { isMercadoPagoOAuthConfigured } from "@/server/payments/providers/mercado-pago-oauth";
@@ -75,6 +78,8 @@ export default async function PaymentSettingsPage({ searchParams }: PaymentSetti
   const mercadoPagoMessage = mercadoPagoStatus ? mercadoPagoStatusMessages[mercadoPagoStatus] : null;
   const statusText = !config?.credentialsConfigured ? "Ainda não conectado" : config.enabled ? "Conectado e Pix ativo" : "Conectado, Pix desativado";
   const accountLabel = config?.providerAccountId ? `Conta Mercado Pago ••••${config.providerAccountId.slice(-4)}` : "Conta Mercado Pago conectada";
+  const infinitepay = providerResult.infinitepay;
+  const infinitePayConnected = Boolean(infinitepay?.credentialsConfigured && !infinitepay.revokedAt);
   const pagbank = providerResult.pagbank;
   const pagBankConnected = Boolean(pagbank?.credentialsConfigured && !pagbank.revokedAt);
   const pagBankAvailable = isPagBankConnectConfigured();
@@ -85,15 +90,15 @@ export default async function PaymentSettingsPage({ searchParams }: PaymentSetti
   // Duas abas: o que o cliente pode usar (dia a dia) e a conexão do Pix online (feita uma vez).
   const tabParam = Array.isArray(params.aba) ? params.aba[0] : params.aba;
   const tab = tabParam === "online" || mercadoPagoStatus || pagBankStatus ? "online" : "formas";
-  const onlineActive = Boolean((oauthConnected && config?.enabled) || (pagBankConnected && pagbank?.enabled));
+  const onlineActive = Boolean((config?.credentialsConfigured && config?.enabled) || (pagBankConnected && pagbank?.enabled) || (infinitePayConnected && infinitepay?.enabled));
 
   return (
     <section className={styles.page}>
-      <PageHeader title="Formas de pagamento" description="Defina as opções do cliente e conecte o Pix online da unidade." />
+      <PageHeader title="Formas de pagamento" description="Defina as opções do cliente e conecte o pagamento online da unidade." />
 
       <PageTabs label="Seções de pagamento" active={tab} tabs={[
         { key: "formas", label: "Formas aceitas", href: "/configuracoes/pagamentos" },
-        { key: "online", label: onlineActive ? "Pix online · ativo" : "Pix online", href: "/configuracoes/pagamentos?aba=online" },
+        { key: "online", label: onlineActive ? "Pagamento online · ativo" : "Pagamento online", href: "/configuracoes/pagamentos?aba=online" },
       ]} />
 
       {mercadoPagoMessage ? <div role={mercadoPagoStatus === "connected" ? "status" : "alert"} className="card" style={{ padding: 14 }}>{mercadoPagoMessage}</div> : null}
@@ -152,7 +157,7 @@ export default async function PaymentSettingsPage({ searchParams }: PaymentSetti
       </> : null}
 
       {tab === "online" ? <>
-      <p className="muted" style={{ margin: 0 }}>Conecte uma conta para o cliente pagar Pix pelo cardápio e o pedido ser confirmado sozinho. Basta uma das duas. Dinheiro e cartões não dependem disso.</p>
+      <p className="muted" style={{ margin: 0 }}>Conecte uma conta para receber pelo cardápio com confirmação automática. Escolha um provedor ativo por unidade. A InfinitePay oferece Pix e cartão no checkout online.</p>
       <div className={styles.card}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
           <div><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Pix online</p><h2 style={{ margin: "4px 0", fontSize: "var(--font-size-lg)" }}>Mercado Pago</h2><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>A conta do restaurante recebe o pagamento. O PedeAqui gera o QR e confirma pelo webhook.</p></div>
@@ -201,7 +206,7 @@ export default async function PaymentSettingsPage({ searchParams }: PaymentSetti
 
       <div className={styles.card}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Pix online</p><h2 style={{ margin: "4px 0", fontSize: "var(--font-size-lg)" }}>PagBank</h2><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Alternativa ao Mercado Pago. Só um dos dois recebe o Pix por vez: ativar um desativa o outro.</p></div>
+          <div><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Pix online</p><h2 style={{ margin: "4px 0", fontSize: "var(--font-size-lg)" }}>PagBank</h2><p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Receba Pix pelo PagBank. Ativar um provedor desativa os demais nesta unidade.</p></div>
           <strong style={{ fontSize: "var(--font-size-support)" }}>{pagBankStatusText}</strong>
         </div>
 
@@ -228,6 +233,23 @@ export default async function PaymentSettingsPage({ searchParams }: PaymentSetti
             {pagBankAvailable ? <a href="/api/integrations/pagbank/oauth/start" className={`${buttonStyles.button} ${buttonStyles.primary} ${buttonStyles.md}`} style={{ width: "fit-content" }}>Conectar PagBank</a> : <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>A aplicação PagBank do PedeAqui ainda precisa ser cadastrada e configurada no servidor para liberar este botão.</p>}
           </div>
         )}
+      </div>
+      <div className={styles.card}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <div><h2 style={{ margin: "4px 0", fontSize: "var(--font-size-lg)" }}>InfinitePay</h2><p className="muted" style={{ margin: 0 }}>Receba Pix ou cartão de crédito na conta InfinitePay da loja. O cliente paga em uma página segura e o pedido é atualizado automaticamente.</p></div>
+          <strong>{!infinitePayConnected ? "Ainda não conectada" : infinitepay?.enabled ? "Conectada e ativa" : "Conectada, desativada"}</strong>
+        </div>
+        <p className="muted" style={{ margin: 0 }}>No aplicativo InfinitePay, abra Vendas → Checkout → Configurações. Habilite o Checkout Integrado e crie uma chave de integração para o PedeAqui.</p>
+        <InfinitePayConnectionForm handle={infinitepay?.providerAccountId ?? null} configured={Boolean(infinitepay?.credentialsConfigured)} />
+        {infinitePayConnected ? <>
+          <form action={toggleInfinitePayAction} style={{ display: "grid", gap: 12 }}>
+            <label className={styles.checkLabel}><input type="checkbox" name="enabled" defaultChecked={infinitepay?.enabled ?? false} />Receber online pela InfinitePay</label>
+            <p className="muted" style={{ margin: 0 }}>Ao ativar, o cliente poderá escolher Pix ou cartão online. As opções de cartão na entrega e dinheiro continuam disponíveis conforme suas formas aceitas.</p>
+            <div><Button type="submit">Salvar ativação da InfinitePay</Button></div>
+          </form>
+          {infinitepay?.healthStatus === "error" ? <p role="alert">A última tentativa falhou. Confira sua conexão InfinitePay antes de receber novos pagamentos.</p> : null}
+          <form action={disconnectInfinitePayAction}><ConfirmSubmitButton tone="secondary" size="md" confirmation="Desconectar a InfinitePay desta unidade?">Desconectar InfinitePay</ConfirmSubmitButton></form>
+        </> : null}
       </div>
       </> : null}
     </section>

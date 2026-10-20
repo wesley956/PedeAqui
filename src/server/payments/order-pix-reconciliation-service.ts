@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
+import { InfinitePayCheckoutService } from "@/server/payments/infinitepay-checkout-service";
 import { OrderPixService } from "@/server/payments/order-pix-service";
 
 const STALE_AFTER_MS = 2 * 60 * 1000;
@@ -23,11 +24,39 @@ export class OrderPixReconciliationService {
   static async runBatch(): Promise<PixReconciliationResult> {
     const mercadoPago = await this.runMercadoPagoBatch();
     const pagBank = await this.runPagBankBatch();
+    const infinitePay = await this.runInfinitePayBatch();
     return {
-      scanned: mercadoPago.scanned + pagBank.scanned,
-      reconciled: mercadoPago.reconciled + pagBank.reconciled,
-      failed: mercadoPago.failed + pagBank.failed,
+      scanned: mercadoPago.scanned + pagBank.scanned + infinitePay.scanned,
+      reconciled: mercadoPago.reconciled + pagBank.reconciled + infinitePay.reconciled,
+      failed: mercadoPago.failed + pagBank.failed + infinitePay.failed,
     };
+  }
+
+  /** The API needs transaction and invoice IDs, learned from a verified callback/return. */
+  static async runInfinitePayBatch(): Promise<PixReconciliationResult> {
+    const admin = createAdminClient();
+    const cutoff = new Date(Date.now() - STALE_AFTER_MS).toISOString();
+    const { data, error } = await admin.from("order_payment_provider_charges")
+      .select("id, store_id, external_reference, provider_order_id, provider_payment_id")
+      .eq("provider", "infinitepay").eq("status", "pending")
+      .not("provider_order_id", "is", null).not("provider_payment_id", "is", null)
+      .or(`last_reconciled_at.is.null,last_reconciled_at.lt.${cutoff}`)
+      .order("updated_at", { ascending: true }).limit(MAX_BATCH);
+    if (error) throw error;
+    let reconciled = 0;
+    let failed = 0;
+    for (const charge of data ?? []) {
+      try {
+        await InfinitePayCheckoutService.reconcile(charge.store_id, {
+          order_nsu: charge.external_reference, transaction_nsu: charge.provider_payment_id!, invoice_slug: charge.provider_order_id!,
+        });
+        reconciled += 1;
+      } catch {
+        failed += 1;
+        await admin.from("order_payment_provider_charges").update({ last_reconciled_at: new Date().toISOString(), last_error_code: "reconciliation_failed" }).eq("id", charge.id);
+      }
+    }
+    return { scanned: (data ?? []).length, reconciled, failed };
   }
 
   /** PagBank: mesma regra do Mercado Pago, para cobranças pendentes que não receberam notificação. */

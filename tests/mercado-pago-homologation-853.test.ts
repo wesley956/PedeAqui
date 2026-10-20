@@ -84,7 +84,8 @@ describe("#853 Mercado Pago automated homologation gate", () => {
     expect(methods).toContain('item.method === "pix"');
     expect(methods).toContain("item.enabled && onlinePixReady");
     expect(methods).toContain(": item);");
-    expect(config).toContain("config?.enabled && config.credentialsConfigured && !config.revokedAt");
+    expect(config).toContain('.eq("enabled", true).is("revoked_at", null)');
+    expect(config).toContain('.not("access_token_secret_id", "is", null).not("webhook_secret_id", "is", null)');
   });
 
   it("requires all OAuth server-side configuration before reporting configured", () => {

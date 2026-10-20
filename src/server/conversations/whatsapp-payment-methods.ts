@@ -25,7 +25,7 @@ const aliases: Record<Exclude<PaymentMethod, "custom">, string[]> = {
 
 function optionLabel(option: WhatsAppPaymentOption) {
   if (option.method === "custom") return option.label?.trim() || paymentMethodLabels.custom;
-  return paymentMethodLabels[option.method];
+  return option.label?.trim() || paymentMethodLabels[option.method];
 }
 
 export function enabledWhatsAppPaymentOptions(options: WhatsAppPaymentOption[]) {

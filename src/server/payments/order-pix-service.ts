@@ -21,6 +21,8 @@ import {
   MercadoPagoOrderProvider,
   MercadoPagoProviderHttpError,
 } from "@/server/payments/providers/mercado-pago-order-provider";
+import { InfinitePayCheckoutService } from "@/server/payments/infinitepay-checkout-service";
+import { safeInfinitePayCheckoutUrl } from "@/server/payments/providers/infinitepay-checkout-provider";
 import type { OnlinePixProviderOrder, OrderPaymentProvider } from "@/server/payments/providers/order-payment-provider";
 import {
   PagBankOrderProvider,
@@ -29,7 +31,7 @@ import {
   onlyDigits,
 } from "@/server/payments/providers/pagbank-order-provider";
 
-type ChargeRow = {
+export type ChargeRow = {
   id: string;
   organization_id: string;
   store_id: string;
@@ -50,6 +52,7 @@ type ChargeRow = {
   expires_at: string | null;
   last_reconciled_at: string | null;
   last_error_code: string | null;
+  checkout_creation_started_at?: string | null;
 };
 
 export type PublicPixPayment = {
@@ -59,6 +62,7 @@ export type PublicPixPayment = {
   qrCode: string | null;
   qrCodeBase64: string | null;
   ticketUrl: string | null;
+  checkoutUrl?: string | null;
   expiresAt: string | null;
 };
 
@@ -69,11 +73,16 @@ function publicProjection(charge: ChargeRow): PublicPixPayment {
       ? "expired"
       : charge.status === "failed"
         ? "unavailable"
-        : charge.status === "pending" && charge.qr_code
+        : charge.status === "pending" && (charge.qr_code || (charge.provider === "infinitepay" && charge.ticket_url))
           ? "waiting"
           : "preparing";
+  const checkout = charge.provider === "infinitepay";
+  const expiredCheckout = checkout && charge.status === "pending" && charge.expires_at && new Date(charge.expires_at).getTime() <= Date.now();
+  const creationUncertain = checkout && charge.status === "creating" && charge.checkout_creation_started_at
+    && Date.now() - new Date(charge.checkout_creation_started_at).getTime() > 20_000;
   return {
-    status,
+    status: creationUncertain ? "unavailable" : expiredCheckout ? "expired" : status,
+    ...(checkout ? { checkoutUrl: charge.ticket_url && charge.status === "pending" && !expiredCheckout ? safeInfinitePayCheckoutUrl(charge.ticket_url) : null } : {}),
     amountCents: Number(charge.amount_cents),
     qrCode: charge.qr_code,
     qrCodeBase64: charge.qr_code_base64,
@@ -210,6 +219,7 @@ function withProvider<T>(
   providerKey: OrderPaymentProviderKey,
   operation: (provider: OrderPaymentProvider) => Promise<T>,
 ): Promise<T> {
+  if (providerKey === "infinitepay") throw new Error("InfinitePay requires checkout transaction identifiers");
   if (providerKey === "pagbank") return withPagBankProvider(storeId, operation);
   return withMercadoPagoProvider(storeId, operation);
 }
@@ -255,11 +265,11 @@ export class OrderPixService {
   static async ensureForOrder(orderId: string, options: { payerTaxId?: string | null } = {}): Promise<PublicPixPayment | null> {
     const admin = createAdminClient();
     const { data: order, error: orderError } = await admin.from("orders")
-      .select("id, organization_id, store_id, source_cart_id, payment_method_snapshot, payment_status, total_cents, customer_name_snapshot")
+      .select("id, organization_id, store_id, source_cart_id, payment_method_snapshot, payment_status, order_status, total_cents, customer_name_snapshot")
       .eq("id", orderId)
       .maybeSingle();
     if (orderError) throw orderError;
-    if (!order || order.payment_method_snapshot !== "pix") return null;
+    if (!order || order.payment_method_snapshot !== "pix" || ["canceled", "rejected"].includes(order.order_status)) return null;
 
     const { data: externalPayment, error: externalPaymentError } = await admin.from("external_orders")
       .select("provider, payment_owner")
@@ -269,9 +279,6 @@ export class OrderPixService {
       .maybeSingle();
     if (externalPaymentError) throw externalPaymentError;
     if (!resolveExternalPaymentPolicy(externalPayment).allowsOnlinePix) return null;
-
-    const providerKey = await OrderPaymentProviderConfigService.activeProvider(order.organization_id, order.store_id);
-    if (!providerKey) return null;
 
     const { data: payment, error: paymentError } = await admin.from("payments")
       .select("id, status, amount_cents")
@@ -297,7 +304,7 @@ export class OrderPixService {
       const projected = publicProjection(existing as ChargeRow);
       return projected.status === "paid" ? projected : { ...projected, status: "paid" };
     }
-    if (existing && existing.status === "pending" && existing.provider_order_id) {
+    if (existing && existing.status === "pending" && (existing.provider_order_id || (existing.provider === "infinitepay" && existing.ticket_url))) {
       if (existing.provider === "pagbank" && !existing.qr_code_base64
         && (!existing.last_reconciled_at || Date.now() - new Date(existing.last_reconciled_at).getTime() > 60_000)) {
         // Recover an optional image for the same intent, never create another charge.
@@ -307,6 +314,10 @@ export class OrderPixService {
       return publicProjection(existing as ChargeRow);
     }
     if (existing && existing.status === "paid") return publicProjection(existing as ChargeRow);
+
+    if (existing?.provider === "infinitepay" && existing.status === "creating" && existing.checkout_creation_started_at) return publicProjection(existing as ChargeRow);
+    const providerKey = await OrderPaymentProviderConfigService.activeProvider(order.organization_id, order.store_id);
+    if (!providerKey) return null;
 
     let email: string | null = null;
     if (order.source_cart_id) {
@@ -334,13 +345,16 @@ export class OrderPixService {
     });
     if (reserveError) throw reserveError;
     let charge = reserved as ChargeRow;
-    if (charge.status === "pending" && charge.provider_order_id) return publicProjection(charge);
+    if (charge.status === "pending" && (charge.provider_order_id || (charge.provider === "infinitepay" && charge.ticket_url))) return publicProjection(charge);
+    if (charge.provider === "infinitepay" && charge.checkout_creation_started_at) return publicProjection(charge);
     if (charge.provider !== providerKey && !charge.provider_order_id) {
       // A unidade trocou de provedor antes de a cobrança anterior chegar a ele.
       const { data: moved, error: moveError } = await admin.from("order_payment_provider_charges")
         .update({ provider: providerKey, updated_at: new Date().toISOString() })
         .eq("id", charge.id)
         .is("provider_order_id", null)
+        .is("checkout_creation_started_at", null)
+        .eq("provider", charge.provider)
         .select("*")
         .single();
       if (moveError) throw moveError;
@@ -364,13 +378,18 @@ export class OrderPixService {
     try {
       // If an OAuth token is rejected, the provider wrapper refreshes it once
       // and retries this exact request, preserving the idempotency key.
+      if (charge.provider === "infinitepay") {
+        return publicProjection(await InfinitePayCheckoutService.create(charge, { email, name: order.customer_name_snapshot }));
+      }
       const remote = await withProvider(order.store_id, charge.provider, (provider) => provider.createPixCharge(request));
       return publicProjection(await updateFromProvider(charge, remote));
     } catch (error) {
-      await admin.from("order_payment_provider_charges").update({
-        last_error_code: "provider_request_failed",
-        updated_at: new Date().toISOString(),
-      }).eq("id", charge.id);
+      if (charge.provider !== "infinitepay") {
+        await admin.from("order_payment_provider_charges").update({
+          last_error_code: "provider_request_failed",
+          updated_at: new Date().toISOString(),
+        }).eq("id", charge.id);
+      }
       if (error instanceof PagBankProviderHttpError && error.parameter?.startsWith("customer.tax_id")) throw new PixPayerDocumentError();
       throw error;
     }

@@ -20,6 +20,8 @@ export type StorePaymentMethodOption = {
   sortOrder: number;
   customPaymentMethodId?: string;
   label?: string;
+  help?: string;
+  hostedCheckout?: boolean;
 };
 
 const reservedNames = new Set([
@@ -82,13 +84,16 @@ export class StorePaymentMethodService {
   // Public checkout availability. PIX is only offered when its online provider
   // is explicitly enabled and both server-side secrets are configured.
   static async listForStore(organizationId: string, storeId: string): Promise<StorePaymentMethodOption[]> {
-    const [methods, customMethods, onlinePixReady] = await Promise.all([
+    const [methods, customMethods, onlineProvider] = await Promise.all([
       this.listConfiguredForStore(organizationId, storeId),
       this.listCustomForStore(organizationId, storeId),
-      OrderPaymentProviderConfigService.isOnlinePixReady(organizationId, storeId),
+      OrderPaymentProviderConfigService.activeProvider(organizationId, storeId),
     ]);
+    const onlinePixReady = Boolean(onlineProvider);
     const standard: StorePaymentMethodOption[] = methods.map((item) => item.method === "pix"
-      ? { ...item, enabled: item.enabled && onlinePixReady }
+      ? { ...item, enabled: item.enabled && onlinePixReady, ...(onlineProvider === "infinitepay" ? {
+          label: "Pix ou cartão online", help: "Pague na InfinitePay. A confirmação é automática.", hostedCheckout: true,
+        } : {}) }
       : item);
     const custom: StorePaymentMethodOption[] = customMethods.map((item) => ({
       method: "custom",

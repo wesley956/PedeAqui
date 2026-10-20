@@ -16,7 +16,7 @@ import automationStyles from "@/features/conversations/automation-settings.modul
 import printStyles from "@/app/(app)/configuracoes/impressoes/printing.module.css";
 import formatStyles from "@/app/(app)/configuracoes/impressoes/formato/format.module.css";
 
-const fixture = vi.hoisted(() => ({ connected: false, empty: false, manage: true }));
+const fixture = vi.hoisted(() => ({ connected: false, infinitePay: false, empty: false, manage: true }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("next/headers", () => ({ headers: async () => new Map([["host", "teste.example.com"]]) }));
 vi.mock("@/server/access/authorize", () => ({ authorize: vi.fn(async () => ({ storeId: "store-test" })) }));
@@ -25,9 +25,9 @@ vi.mock("@/server/payments/store-payment-method-service", () => ({ StorePaymentM
   listCurrentStore: async () => [{ method: "cash", enabled: true }, { method: "pix", enabled: false }],
   listCustomCurrentStore: async () => fixture.empty ? [] : [{ id: "custom-a", name: "Benefício de teste", enabled: false }, { id: "custom-b", name: "Voucher de teste", enabled: true }],
 } }));
-vi.mock("@/server/payments/order-payment-provider-config-service", () => ({ OrderPaymentProviderConfigService: { getCurrentStore: async () => ({ context: { storeId: "store-test" }, config: fixture.connected ? { connectionMode: "oauth", credentialsConfigured: true, enabled: false, providerAccountId: "fake-1234", healthStatus: "healthy" } : null }) } }));
+vi.mock("@/server/payments/order-payment-provider-config-service", () => ({ OrderPaymentProviderConfigService: { getCurrentStore: async () => ({ context: { storeId: "store-test" }, infinitepay: fixture.infinitePay ? { credentialsConfigured: true, enabled: false, providerAccountId: "dona-maria", healthStatus: "unknown" } : null, config: fixture.connected ? { connectionMode: "oauth", credentialsConfigured: true, enabled: false, providerAccountId: "fake-1234", healthStatus: "healthy" } : null }) } }));
 vi.mock("@/server/payments/providers/mercado-pago-oauth", () => ({ isMercadoPagoOAuthConfigured: () => true }));
-vi.mock("@/features/payments/actions", () => ({ addCustomPaymentMethodAction: vi.fn(), archiveCustomPaymentMethodAction: vi.fn(), disconnectMercadoPagoOAuthAction: vi.fn(), renameCustomPaymentMethodAction: vi.fn(), saveOnlinePixProviderAction: vi.fn(), savePaymentMethodsAction: vi.fn(), toggleCustomPaymentMethodAction: vi.fn(), toggleOnlinePixProviderAction: vi.fn() }));
+vi.mock("@/features/payments/actions", () => ({ addCustomPaymentMethodAction: vi.fn(), archiveCustomPaymentMethodAction: vi.fn(), disconnectMercadoPagoOAuthAction: vi.fn(), renameCustomPaymentMethodAction: vi.fn(), saveOnlinePixProviderAction: vi.fn(), savePaymentMethodsAction: vi.fn(), saveInfinitePayAction: vi.fn(), toggleInfinitePayAction: vi.fn(), disconnectInfinitePayAction: vi.fn(), toggleCustomPaymentMethodAction: vi.fn(), toggleOnlinePixProviderAction: vi.fn() }));
 vi.mock("@/server/conversations/settings-service", () => ({ ConversationSettingsService: { load: async () => ({ whatsapp_phone_number_id: fixture.connected ? "fake-number" : null, access_token_secret_ref: "fake-ref", app_secret_secret_ref: "fake-ref", whatsapp_enabled: false, order_notification_template_name: "fake_template", order_notification_template_language: "pt_BR", default_bot_enabled: true, bot_auto_close_minutes: 35, human_auto_close_minutes: 65, handoff_message: "Texto de teste preservado" }) } }));
 vi.mock("@/server/conversations/meta-embedded-signup-service", () => ({ MetaEmbeddedSignupService: { publicConfig: () => ({ ready: false }), currentStatus: async () => ({ connection_status: "disconnected", onboarding_status: "not_started", whatsapp_enabled: false, connection_mode: "cloud_api", display_phone_number: null }) } }));
 vi.mock("@/features/conversations/meta-embedded-signup-actions", () => ({ completeWhatsAppEmbeddedSignupAction: vi.fn(), disconnectWhatsAppAction: vi.fn(), getWhatsAppEmbeddedSignupBrowserConfigAction: vi.fn(), startWhatsAppEmbeddedSignupAction: vi.fn() }));
@@ -58,7 +58,7 @@ function exportFixture(name: string, html: string) {
   mkdirSync(dir,{recursive:true});writeFileSync(`${dir}/${name}.html`,`<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${css}body{margin:0;padding:16px}main{max-width:1100px;margin:auto}</style><main>${html}</main></html>`);
 }
 describe("operation settings retain isolated saves and mounted configuration fields", () => {
-  afterEach(() => { fixture.connected=false;fixture.empty=false;fixture.manage=true; });
+  afterEach(() => { fixture.connected=false;fixture.infinitePay=false;fixture.empty=false;fixture.manage=true; });
   it("keeps payment names, activation, archive and manual credentials in independent forms",async () => {
     const html=renderToStaticMarkup(await PaymentSettingsPage({searchParams:Promise.resolve({})}));
     expect(form(html,"Formas aceitas")).not.toContain('name="accessToken"');
@@ -78,6 +78,18 @@ describe("operation settings retain isolated saves and mounted configuration fie
     expect(html).toContain("Conectado, Pix desativado");expect(html).not.toContain('name="accessToken"');expect(html).toContain("Salvar ativação do Pix");
     expect(forms(html).find(f => f.body.includes("Salvar ativação do Pix"))!.body).not.toMatch(/<input(?=[^>]*name="enabled")(?=[^>]*checked="")[^>]*>/);
     exportFixture("payments-oauth",html);
+  });
+  it("keeps InfinitePay connection separate from activation without exposing any stored API key", async () => {
+    fixture.infinitePay=true;
+    const html=renderToStaticMarkup(await PaymentSettingsPage({ searchParams: Promise.resolve({ aba: "online" }) }));
+    const connection=form(html,"Conectar InfinitePay");
+    expect(connection).toContain('name="handle"');
+    expect(connection).toContain('value="dona-maria"');
+    expect(connection).toContain('type="password"');
+    expect(connection).not.toContain('name="enabled"');
+    expect(html).toContain("Conectada, desativada");
+    expect(forms(html).find(f => f.body.includes("Salvar ativação da InfinitePay"))!.body).not.toMatch(/<input(?=[^>]*name="enabled")(?=[^>]*checked="")[^>]*>/);
+    exportFixture("payments-infinitepay", html);
   });
   it("keeps all WhatsApp groups inside the original single preferences form",async () => {
     fixture.connected=true;const html=renderToStaticMarkup(await ConversationSettingsPage());const body=form(html,"Preferências do WhatsApp");

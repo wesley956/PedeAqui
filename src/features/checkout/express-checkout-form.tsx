@@ -55,7 +55,7 @@ export type ExpressCheckoutProps = {
   };
   items: Array<{ id: string; productId: string; name: string; imageUrl: string | null; quantity: number; lineTotalCents: number; details: string; editable: boolean }>;
   savedAddresses: Array<{ index: number; label: string; line: string }>;
-  paymentMethods: Array<{ value: string; method: PaymentMethod; label: string; help: string }>;
+  paymentMethods: Array<{ value: string; method: PaymentMethod; label: string; help: string; hostedCheckout?: boolean }>;
   benefits: null | {
     couponCode: string;
     cashbackEnabled: boolean;
@@ -139,9 +139,10 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
   const shownTotal = knownTotal ?? totals.subtotalCents - totals.discountCents;
   const itemCount = props.items.reduce((sum, item) => sum + item.quantity, 0);
   const pixSelected = payment === "pix";
-  const confirmLabel = pixSelected ? "Confirmar e pagar com Pix" : "Confirmar pedido";
+  const hostedCheckout = pixSelected && props.paymentMethods.some((item) => item.method === "pix" && item.hostedCheckout);
+  const confirmLabel = hostedCheckout ? "Confirmar e pagar online" : pixSelected ? "Confirmar e pagar com Pix" : "Confirmar pedido";
   // Nome acessível com o valor, ex.: "Confirmar pedido · R$ 45,00".
-  const confirmName = pixSelected ? `Confirmar e pagar com Pix · ${money(shownTotal)}` : `Confirmar pedido · ${money(shownTotal)}`;
+  const confirmName = hostedCheckout ? `Confirmar e pagar online · ${money(shownTotal)}` : pixSelected ? `Confirmar e pagar com Pix · ${money(shownTotal)}` : `Confirmar pedido · ${money(shownTotal)}`;
 
   const block = (id: ExpressBlock, title: ReactNode, body: ReactNode, extra?: ReactNode) => {
     const failed = error?.block === id;
