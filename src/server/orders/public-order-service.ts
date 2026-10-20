@@ -113,6 +113,9 @@ export class PublicOrderService {
         pixPayment = await OrderPixService.getExistingForOrder(id);
         if (!pixPayment && order.payment_status !== "paid") pixPayment = { status: "unavailable", amountCents: Number(order.total_cents), qrCode: null, qrCodeBase64: null, ticketUrl: null, expiresAt: null };
       }
+    } else if (order.payment_status === "paid" && order.payment_method_snapshot === "credit_card") {
+      // InfinitePay can settle the hosted checkout with credit instead of Pix.
+      pixPayment = await OrderPixService.getExistingForOrder(id);
     }
 
     const items = itemsResult.data ?? [];

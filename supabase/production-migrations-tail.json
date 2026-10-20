@@ -472,6 +472,70 @@
     [
       "20261002055804",
       "subscription_whatsapp_delivery_ledger"
+    ],
+    [
+      "20261004005737",
+      "pedeaqui_recovery_schema"
+    ],
+    [
+      "20261004005816",
+      "pedeaqui_recovery_quarantine"
+    ],
+    [
+      "20261004010715",
+      "pedeaqui_recovery_security"
+    ],
+    [
+      "20261004011503",
+      "pedeaqui_recovery_realtime"
+    ],
+    [
+      "20261004011551",
+      "pedeaqui_recovery_private_usage"
+    ],
+    [
+      "20261004011603",
+      "pedeaqui_recovery_view_security"
+    ],
+    [
+      "20261004045008",
+      "diagnostic_pin_whatsapp_embed_trigger_search_path"
+    ],
+    [
+      "20261007231438",
+      "custom_payment_finance_account"
+    ],
+    [
+      "20261010071418",
+      "pdv_fulfillment_consistency"
+    ],
+    [
+      "20261010072147",
+      "ensure_order_quick_finish_atomic"
+    ],
+    [
+      "20261013080000",
+      "pagbank_order_payments"
+    ],
+    [
+      "20261015094235",
+      "order_auto_preparation"
+    ],
+    [
+      "20261017185000",
+      "store_checkout_scheduling_policy"
+    ],
+    [
+      "20261018002954",
+      "user_navigation_pins"
+    ],
+    [
+      "20261018060443",
+      "catalog_paused_until"
+    ],
+    [
+      "20261020214527",
+      "infinitepay_order_checkout"
     ]
   ]
 }

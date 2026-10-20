@@ -11,7 +11,7 @@ export function asksAboutPixPayment(text: string | null | undefined) {
 
 function optionLabel(option: WhatsAppPaymentOption) {
   if (option.method === "custom") return option.label?.trim() || paymentMethodLabels.custom;
-  return paymentMethodLabels[option.method];
+  return option.label?.trim() || paymentMethodLabels[option.method];
 }
 
 export function canonicalPaymentGuidanceMessage(options: WhatsAppPaymentOption[], text?: string | null) {

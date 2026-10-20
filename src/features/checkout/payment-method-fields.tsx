@@ -9,6 +9,7 @@ type Method = {
   method: PaymentMethod;
   label: string;
   help: string;
+  hostedCheckout?: boolean;
 };
 
 type Props = {
@@ -105,7 +106,7 @@ export function PaymentMethodFields({
               </label>
               {selection === item.value && selected?.method === "pix" ? (
                 <label className={fieldClassName}>
-                  <span>E-mail para o comprovante do Pix</span>
+                  <span>{selected.hostedCheckout ? "E-mail para o comprovante" : "E-mail para o comprovante do Pix"}</span>
                   <input className={inputClassName} type="email" name="email" autoComplete="email" inputMode="email" defaultValue={pixEmail ?? ""} required placeholder="voce@email.com" />
                 </label>
               ) : null}

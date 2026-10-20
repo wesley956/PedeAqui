@@ -1,11 +1,12 @@
 import "server-only";
 
 import { z } from "zod";
+import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 
-export const orderPaymentProviderSchema = z.enum(["mercado_pago", "pagbank"]);
+export const orderPaymentProviderSchema = z.enum(["mercado_pago", "pagbank", "infinitepay"]);
 export type OrderPaymentProviderKey = z.infer<typeof orderPaymentProviderSchema>;
 
 const environmentSchema = z.enum(["test", "production"]);
@@ -17,6 +18,9 @@ const healthErrorCodeSchema = z.enum([
   "pagbank_auth_failed",
   "pagbank_provider_unavailable",
   "pagbank_request_failed",
+  "infinitepay_auth_failed",
+  "infinitepay_provider_unavailable",
+  "infinitepay_request_failed",
   "reconciliation_failed",
 ]);
 export type OrderPaymentProviderHealthErrorCode = z.infer<typeof healthErrorCodeSchema>;
@@ -87,20 +91,23 @@ export class OrderPaymentProviderConfigService {
   static async getCurrentStore() {
     const context = await authorize(PERMISSIONS.PAYMENTS_MANAGE);
     if (!context.storeId) throw new Error("An active store is required");
-    const [config, pagbank] = await Promise.all([
+    const [config, pagbank, infinitepay] = await Promise.all([
       this.getForStore(context.organizationId, context.storeId),
       this.getForStore(context.organizationId, context.storeId, "pagbank"),
+      this.getForStore(context.organizationId, context.storeId, "infinitepay"),
     ]);
-    return { context, config, pagbank };
+    return { context, config, pagbank, infinitepay };
   }
 
   /** Provedor de Pix online ativo na unidade. Só um fica ativo por vez (índice único no banco). */
   static async activeProvider(organizationId: string, storeId: string): Promise<OrderPaymentProviderKey | null> {
-    for (const provider of orderPaymentProviderSchema.options) {
-      const config = await this.getForStore(organizationId, storeId, provider);
-      if (config?.enabled && config.credentialsConfigured && !config.revokedAt) return provider;
-    }
-    return null;
+    const { data, error } = await createAdminClient().from("order_payment_provider_configs")
+      .select("provider").eq("organization_id", organizationId).eq("store_id", storeId)
+      .eq("enabled", true).is("revoked_at", null)
+      .not("access_token_secret_id", "is", null).not("webhook_secret_id", "is", null)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? orderPaymentProviderSchema.parse(data.provider) : null;
   }
 
   static async isOnlinePixReady(organizationId: string, storeId: string) {
@@ -140,6 +147,35 @@ export class OrderPaymentProviderConfigService {
     const { context, pagbank } = await this.getCurrentStore();
     if (!pagbank?.credentialsConfigured) throw new Error("PagBank is not connected");
     return this.setEnabled(context.storeId!, "pagbank", enabled);
+  }
+
+  static async configureInfinitePayCurrentStore(input: { handle: string; apiKey?: string }) {
+    const context = await authorize(PERMISSIONS.PAYMENTS_MANAGE);
+    if (!context.storeId) throw new Error("An active store is required");
+    const handle = z.string().trim().regex(/^[a-zA-Z0-9._-]{1,100}$/).parse(input.handle.trim().replace(/^\$/, ""));
+    const apiKey = input.apiKey?.trim() || null;
+    if (apiKey) z.string().startsWith("inchk_").min(12).max(500).parse(apiKey);
+    const admin = createAdminClient();
+    const { error } = await admin.rpc("order_payment_provider_infinitepay_configure_internal", {
+      p_store_id: context.storeId,
+      p_handle: handle,
+      p_api_key: apiKey,
+      p_webhook_secret: randomBytes(32).toString("hex"),
+    });
+    if (error) throw error;
+  }
+
+  static async setInfinitePayEnabledCurrentStore(enabled: boolean) {
+    const { context, infinitepay } = await this.getCurrentStore();
+    if (!infinitepay?.credentialsConfigured || infinitepay.revokedAt) throw new Error("InfinitePay is not connected");
+    return this.setEnabled(context.storeId!, "infinitepay", enabled);
+  }
+
+  static async disconnectInfinitePayCurrentStore() {
+    const context = await authorize(PERMISSIONS.PAYMENTS_MANAGE);
+    if (!context.storeId) throw new Error("An active store is required");
+    const { error } = await createAdminClient().rpc("order_payment_provider_infinitepay_disconnect_internal", { p_store_id: context.storeId });
+    if (error) throw error;
   }
 
   /** Ativar um provedor desativa o outro na mesma unidade. */

@@ -79,6 +79,29 @@ export async function disconnectPagBankAction() {
   refreshPaymentSettings();
 }
 
+export async function saveInfinitePayAction(_state: { error: string | null; saved: boolean }, formData: FormData) {
+  try {
+    await OrderPaymentProviderConfigService.configureInfinitePayCurrentStore({
+      handle: String(formData.get("handle") ?? ""),
+      apiKey: String(formData.get("apiKey") ?? ""),
+    });
+    refreshPaymentSettings();
+    return { error: null, saved: true };
+  } catch {
+    return { error: "Não foi possível salvar. Confira a InfiniteTag e a chave. Para trocar de conta, resolva antes as cobranças pendentes da conta anterior.", saved: false };
+  }
+}
+
+export async function toggleInfinitePayAction(formData: FormData) {
+  await OrderPaymentProviderConfigService.setInfinitePayEnabledCurrentStore(formData.get("enabled") === "on");
+  refreshPaymentSettings();
+}
+
+export async function disconnectInfinitePayAction() {
+  await OrderPaymentProviderConfigService.disconnectInfinitePayCurrentStore();
+  refreshPaymentSettings();
+}
+
 function refreshPaymentSettings() {
   revalidatePath("/configuracoes/pagamentos");
   revalidatePath("/m/[slug]/checkout", "page");
