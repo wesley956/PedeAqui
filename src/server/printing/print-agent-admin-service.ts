@@ -91,7 +91,8 @@ export class PrintAgentAdminService {
     if (error) throw error;
     const result = reconnectCredentialResult.parse(data);
     // O token antigo deixa de valer imediatamente, sem esperar o cache de autenticação expirar.
-    invalidatePrintAgentAuthCache(result.id);
+    // Limpa também autenticações ainda em andamento, cujo agentId não é conhecido antes da resposta.
+    invalidatePrintAgentAuthCache();
 
     if (result.rotated && !result.replayed) {
       await AuditService.record(context, {
