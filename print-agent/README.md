@@ -69,10 +69,13 @@ O token é uma credencial específica do agente. **Nunca** configure `SUPABASE_S
 
 Variáveis opcionais:
 
-- `PEDEAQUI_PRINT_POLL_MS` (padrão 2000)
-- `PEDEAQUI_PRINT_HEARTBEAT_MS` (padrão 15000)
+- `PEDEAQUI_PRINT_POLL_MS` (padrão 5000)
+- `PEDEAQUI_PRINT_HEARTBEAT_MS` (padrão 60000)
+- `PEDEAQUI_NATIVE_ORDER_ALERT_POLL_MS` (padrão 6000; só é usado como rede de segurança dos alertas)
 - `PEDEAQUI_PRINT_UPDATE_CHECK_MS` (padrão 6 horas)
 - `PEDEAQUI_PRINT_SPOOL` (diretório do spool)
+
+A partir da 0.7.3, cada ciclo faz **uma única chamada** a `/api/print-agent/poll`, que devolve os trabalhos de impressão e (no Windows) os alertas de pedido novo. Se o servidor ainda não tiver essa rota (404), o agente volta sozinho para `/claim` + `/order-alerts` e tenta de novo após 30 minutos. A rota antiga de alertas também é usada se o poll combinado ficar sem resposta por mais de 2 ciclos (por exemplo, durante uma impressão longa ou spool bloqueado).
 
 O heartbeat consulta `/api/print-agent/config`, testa as impressoras atribuídas, descobre as impressoras instaladas no Windows e reporta `online`/`offline`. Bluetooth continua fora do transporte atual e permanece como capacidade futura, sem simular teste de hardware.
 

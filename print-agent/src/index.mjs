@@ -1,5 +1,11 @@
 import { printNetwork, probeNetwork } from "./escpos.mjs";
-import { nativeOrderAlertSupported, pollNativeOrderAlerts } from "./order-alert.mjs";
+import {
+  handleNativeOrderAlertResult,
+  lastNativeOrderAlertCheckAt,
+  nativeOrderAlertCursor,
+  nativeOrderAlertSupported,
+  pollNativeOrderAlerts,
+} from "./order-alert.mjs";
 import { listSystemPrinters, printSystem, probeSystem } from "./system-print.mjs";
 import { listSpool, removeSpool, saveSpool } from "./spool.mjs";
 
@@ -12,7 +18,7 @@ const requestTimeoutMs = Math.max(3000, Number(process.env.PEDEAQUI_PRINT_REQUES
 const updateCheckMs = Math.max(60000, Number(process.env.PEDEAQUI_PRINT_UPDATE_CHECK_MS || 6 * 60 * 60 * 1000));
 const watchdogEnabled = process.env.PEDEAQUI_AGENT_WATCHDOG === "1";
 const remoteManifestUrl = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent/manifest.json";
-const version = "0.7.2";
+const version = "0.7.3";
 const printers = new Map();
 const deliveryFailures = new Map();
 const deliveryFailureHoldMs = 5 * 60 * 1000;
@@ -24,6 +30,10 @@ let lastUpdateCheckAt = 0;
 let lastDiscoveryAt = 0;
 let discoveredPrinters = [];
 let inMemoryPrintedUnacked = null;
+// Poll combinado (impressão + alertas numa chamada). Se o servidor ainda não tiver a rota
+// (404), volta para as rotas antigas e tenta de novo mais tarde.
+const combinedPollRetryMs = 30 * 60 * 1000;
+let combinedPollUnavailableUntil = 0;
 
 if (!apiUrl || !token) {
   console.error("PEDEAQUI_URL and PEDEAQUI_PRINT_AGENT_TOKEN are required");
@@ -60,8 +70,48 @@ async function post(path, body = {}) {
     signal: AbortSignal.timeout(requestTimeoutMs),
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(`${path}: ${response.status} ${data?.error || "request failed"}`);
+  if (!response.ok) {
+    const error = new Error(`${path}: ${response.status} ${data?.error || "request failed"}`);
+    error.status = response.status;
+    throw error;
+  }
   return data;
+}
+
+function combinedPollAvailable() {
+  return Date.now() >= combinedPollUnavailableUntil;
+}
+
+/**
+ * Uma única chamada por ciclo: trabalhos de impressão + (no Windows) alertas de pedido novo.
+ * Retorna os trabalhos. Cai para `/claim` se o servidor ainda não conhecer `/poll`.
+ */
+async function claimJobs() {
+  if (combinedPollAvailable()) {
+    try {
+      const body = { limit: 5 };
+      if (nativeOrderAlertSupported()) body.alerts = { cursor: nativeOrderAlertCursor() };
+      const { jobs = [], alerts = null } = await post("/api/print-agent/poll", body);
+      if (alerts) handleNativeOrderAlertResult(alerts, apiUrl);
+      return jobs;
+    } catch (error) {
+      if (error?.status !== 404 && error?.status !== 405) throw error;
+      combinedPollUnavailableUntil = Date.now() + combinedPollRetryMs;
+      console.log("combined poll unavailable on server; using legacy claim + order-alerts");
+    }
+  }
+  const { jobs = [] } = await post("/api/print-agent/claim", { limit: 5 });
+  return jobs;
+}
+
+/**
+ * Rede de segurança dos alertas: só chama a rota antiga se o poll combinado não trouxe
+ * alertas recentemente (servidor antigo, impressão longa em andamento, spool bloqueado).
+ */
+function pollAlertsIfStale() {
+  if (!nativeOrderAlertSupported()) return;
+  if (combinedPollAvailable() && Date.now() - lastNativeOrderAlertCheckAt() < orderAlertPollMs * 2) return;
+  void pollNativeOrderAlerts({ apiUrl, post });
 }
 
 async function acknowledge(jobId) { await post("/api/print-agent/ack", { jobId }); }
@@ -309,6 +359,7 @@ async function heartbeat() {
         isolatedWindowsJobCleanup: process.platform === "win32",
         nativeOrderAlerts: nativeOrderAlertSupported(),
         nativeOrderAlertAudio: nativeOrderAlertSupported() ? "pedeaqui-pedido.mp3" : null,
+        combinedPoll: true,
         watchdog: watchdogEnabled,
         selfUpdate: watchdogEnabled,
         accessibleTextSize: true,
@@ -328,9 +379,8 @@ async function heartbeat() {
 async function loop() {
   void heartbeat();
   void checkForUpdate(true);
-  void pollNativeOrderAlerts({ apiUrl, post });
   setInterval(() => void heartbeat(), heartbeatMs).unref();
-  setInterval(() => void pollNativeOrderAlerts({ apiUrl, post }), orderAlertPollMs).unref();
+  setInterval(pollAlertsIfStale, orderAlertPollMs).unref();
 
   for (;;) {
     const spoolReady = await recoverSpool().catch((error) => {
@@ -343,7 +393,7 @@ async function loop() {
     }
 
     try {
-      const { jobs = [] } = await post("/api/print-agent/claim", { limit: 5 });
+      const jobs = await claimJobs();
       for (const job of jobs) {
         await deliver(job);
         if (inMemoryPrintedUnacked) break;
