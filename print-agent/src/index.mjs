@@ -1,3 +1,4 @@
+import { createAgentApiClient } from "./api-client.mjs";
 import { resolveJobLineSpacing } from "./job-style.mjs";
 import { printNetwork, probeNetwork } from "./escpos.mjs";
 import { nativeOrderAlertSupported, pollNativeOrderAlerts } from "./order-alert.mjs";
@@ -52,17 +53,7 @@ function errorMessage(error) {
   return (error instanceof Error ? error.message : String(error)).slice(0, 2000);
 }
 
-async function post(path, body = {}) {
-  const response = await fetch(`${apiUrl}${path}`, {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(requestTimeoutMs),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(`${path}: ${response.status} ${data?.error || "request failed"}`);
-  return data;
-}
+const post = createAgentApiClient({ apiUrl, token, timeoutMs: requestTimeoutMs });
 
 async function acknowledge(jobId) { await post("/api/print-agent/ack", { jobId }); }
 async function fail(jobId, error) { await post("/api/print-agent/fail", { jobId, error: String(error).slice(0, 2000) }); }
