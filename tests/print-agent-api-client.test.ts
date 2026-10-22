@@ -26,7 +26,7 @@ describe("Print Agent credential rejection backoff", () => {
       expect(await post(`/api/print-agent/${endpoint}`, { jobId: "job" })).toEqual({ ok: true });
     }
     expect(fetcher).toHaveBeenCalledTimes(4);
-    expect(fetcher.mock.calls[2][1]).toMatchObject({ method: "POST", body: '{"jobId":"job"}', headers: { authorization: "Bearer test-token" } });
+    expect(fetcher.mock.calls[2]?.[1]).toMatchObject({ method: "POST", body: '{"jobId":"job"}', headers: { authorization: "Bearer test-token" } });
   });
 
   it("does not repeat a failed write automatically or turn network/500 errors into credential rejection", async () => {
