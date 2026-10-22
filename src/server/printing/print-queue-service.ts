@@ -7,6 +7,7 @@ import { PERMISSIONS } from "@/server/access/permissions";
 import { AuditService } from "@/server/audit/audit-service";
 import { sanitizeExternalOrderPresentation } from "@/features/orders/external-order-presentation";
 import { agentAuthCacheTtlMs, TtlCache } from "@/server/printing/agent-request-cache";
+import { printLineSpacingSchema } from "@/server/printing/print-line-spacing-service";
 import { hashPrintAgentToken } from "@/server/printing/agent-token";
 import { prependExternalPrintIdentity, withExternalPrintIdentity } from "@/server/printing/external-print-presentation";
 import { renderPrintDocument, resolveOrderPrintPreferences, type PrintDocumentType } from "@/server/printing/templates";
@@ -146,6 +147,7 @@ export class PrintQueueService {
           documentType: String(job.document_type),
           renderedContent: rendered,
           textSize: jobTextSize,
+          lineSpacing: printLineSpacingSchema.catch("normal").parse(job.line_spacing),
           printer: {
             id: printer.id,
             name: printer.name,
