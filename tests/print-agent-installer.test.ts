@@ -64,7 +64,7 @@ describe.skipIf(process.platform !== "win32")("Windows installation regressions"
       const repair = spawnSync("cmd.exe", ["/d", "/c", script], { encoding: "utf8" });
       expect(repair.status, repair.stderr).toBe(0);
       const inspect = spawnSync("powershell.exe", ["-NoProfile", "-Command",
-        '$acl=Get-Acl -LiteralPath $env:PEDEAQUI_TEST_FILE; if ($acl.AreAccessRulesProtected -or -not @($acl.Access | Where-Object {$_.IsInherited}).Count) {exit 1}',
+        '$acl=[System.IO.File]::GetAccessControl($env:PEDEAQUI_TEST_FILE); if ($acl.AreAccessRulesProtected -or -not @($acl.Access | Where-Object {$_.IsInherited}).Count) {exit 1}',
       ], { encoding: "utf8", env: { ...process.env, PEDEAQUI_TEST_FILE: file } });
       expect(inspect.status, inspect.stderr).toBe(0);
       expect(spawnSync("cmd.exe", ["/d", "/c", file]).status).toBe(0);
