@@ -1,0 +1,32 @@
+name: Print Agent Windows
+
+on:
+  pull_request:
+    paths:
+      - 'print-agent/**'
+      - 'src/features/printing/**'
+      - 'tests/print-agent-installer.test.ts'
+      - '.github/workflows/print-agent-windows.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'print-agent/**'
+      - 'src/features/printing/**'
+      - 'tests/print-agent-installer.test.ts'
+      - '.github/workflows/print-agent-windows.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  installer:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - run: npx --no-install vitest run tests/print-agent-installer.test.ts

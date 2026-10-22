@@ -1,11 +1,13 @@
 {
-  "version": "0.7.2",
+  "version": "0.7.3",
   "files": [
     "src/index.mjs",
     "src/escpos.mjs",
     "src/system-print.mjs",
     "src/spool.mjs",
     "src/order-alert.mjs",
+    "src/job-style.mjs",
+    "src/api-client.mjs",
     "src/updater.mjs",
     "manifest.json",
     "package.json"

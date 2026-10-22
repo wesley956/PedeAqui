@@ -75,7 +75,8 @@ describe("simple printing setup", () => {
 
   it("replays Print Agent creation/reconnect by a fresh server-seeded intent without storing plaintext credentials", () => {
     const wrapper = read("src/features/printing/agent-token-creator.tsx");
-    const creator = read("src/features/printing/agent-token-creator-client.tsx");
+    const creator = read("src/features/printing/agent-token-creator-client.tsx")
+      + read("src/features/printing/assisted-installer.ts");
     const actions = read("src/features/printing/actions.ts");
     const admin = read("src/server/printing/print-agent-admin-service.ts");
     const migration = read("supabase/sql/185_print_agent_credential_idempotency.sql");
@@ -110,7 +111,8 @@ describe("simple printing setup", () => {
   });
 
   it("installs the current protected boot task with startup fallback and validates the first server communication", () => {
-    const creator = read("src/features/printing/agent-token-creator-client.tsx");
+    const creator = read("src/features/printing/agent-token-creator-client.tsx")
+      + read("src/features/printing/assisted-installer.ts");
     expect(creator).toContain('schtasks.exe /Create /TN "PedeAqui Impressao"');
     expect(creator).toContain("/SC ONSTART /RU SYSTEM /RL HIGHEST /F");
     expect(creator).toContain("*S-1-5-18:(OI)(CI)F");

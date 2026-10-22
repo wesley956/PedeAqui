@@ -1,3 +1,5 @@
+import { createAgentApiClient } from "./api-client.mjs";
+import { resolveJobLineSpacing } from "./job-style.mjs";
 import { printNetwork, probeNetwork } from "./escpos.mjs";
 import { nativeOrderAlertSupported, pollNativeOrderAlerts } from "./order-alert.mjs";
 import { listSystemPrinters, printSystem, probeSystem } from "./system-print.mjs";
@@ -12,11 +14,10 @@ const requestTimeoutMs = Math.max(3000, Number(process.env.PEDEAQUI_PRINT_REQUES
 const updateCheckMs = Math.max(60000, Number(process.env.PEDEAQUI_PRINT_UPDATE_CHECK_MS || 6 * 60 * 60 * 1000));
 const watchdogEnabled = process.env.PEDEAQUI_AGENT_WATCHDOG === "1";
 const remoteManifestUrl = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent/manifest.json";
-const version = "0.7.2";
+const version = "0.7.3";
 const printers = new Map();
 const deliveryFailures = new Map();
 const deliveryFailureHoldMs = 5 * 60 * 1000;
-const lineSpacingValues = new Set(["compact", "normal", "comfortable", "wide"]);
 let heartbeatRunning = false;
 let updateCheckRunning = false;
 let updateRequested = false;
@@ -52,31 +53,10 @@ function errorMessage(error) {
   return (error instanceof Error ? error.message : String(error)).slice(0, 2000);
 }
 
-async function post(path, body = {}) {
-  const response = await fetch(`${apiUrl}${path}`, {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(requestTimeoutMs),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(`${path}: ${response.status} ${data?.error || "request failed"}`);
-  return data;
-}
+const post = createAgentApiClient({ apiUrl, token, timeoutMs: requestTimeoutMs });
 
 async function acknowledge(jobId) { await post("/api/print-agent/ack", { jobId }); }
 async function fail(jobId, error) { await post("/api/print-agent/fail", { jobId, error: String(error).slice(0, 2000) }); }
-
-async function lineSpacingForJob(jobId) {
-  try {
-    const data = await post("/api/print-agent/job-style", { jobId });
-    const value = String(data?.lineSpacing || "normal");
-    return lineSpacingValues.has(value) ? value : "normal";
-  } catch (error) {
-    console.error("job line spacing lookup failed; using normal spacing", jobId, error);
-    return "normal";
-  }
-}
 
 function withLineSpacingIntent(content, lineSpacing) {
   return `@@PEDEAQUI_LINE_SPACING=${lineSpacing}@@\n${content}`;
@@ -168,7 +148,7 @@ async function deliver(job) {
   printers.set(printer.id, { id: printer.id, status: "online", error: null });
 
   try {
-    const lineSpacing = await lineSpacingForJob(job.id);
+    const lineSpacing = await resolveJobLineSpacing(job, post);
     const styledContent = withLineSpacingIntent(job.renderedContent, lineSpacing);
     await saveSpool(job, "claimed");
     await saveSpool(job, "printing");

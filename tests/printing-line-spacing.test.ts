@@ -50,7 +50,7 @@ describe("configurable print line spacing", () => {
     const agent = read("print-agent/src/index.mjs");
     const escpos = read("print-agent/src/escpos.mjs");
 
-    expect(agent).toContain('post("/api/print-agent/job-style", { jobId })');
+    expect(agent).toContain("resolveJobLineSpacing(job, post)");
     expect(agent).toContain("configurableLineSpacing: true");
     expect(agent).toContain("withLineSpacingIntent(job.renderedContent, lineSpacing)");
     expect(escpos).toContain("0x1b,0x33,lineSpacingByte(styled.lineSpacing, textSize)");
