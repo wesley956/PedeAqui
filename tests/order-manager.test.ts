@@ -61,11 +61,11 @@ describe("order manager timing", () => {
     expect(elapsedLabel(created, Date.parse("2026-08-10T21:25:00.000Z"))).toBe("1h 25m");
   });
 
-  it("treats 30 minutes as a visual attention threshold only for active orders", () => {
+  it("treats 60 minutes as a visual attention threshold only for active orders", () => {
     const created = "2026-08-10T20:00:00.000Z";
-    const beforeThreshold = Date.parse("2026-08-10T20:29:59.000Z");
-    const atThreshold = Date.parse("2026-08-10T20:30:00.000Z");
-    expect(ORDER_ATTENTION_MINUTES).toBe(30);
+    const beforeThreshold = Date.parse("2026-08-10T20:59:59.000Z");
+    const atThreshold = Date.parse("2026-08-10T21:00:00.000Z");
+    expect(ORDER_ATTENTION_MINUTES).toBe(60);
     expect(isOrderAttentionLate(order({ created_at: created }), beforeThreshold)).toBe(false);
     expect(isOrderAttentionLate(order({ created_at: created }), atThreshold)).toBe(true);
     expect(isOrderAttentionLate(order({ created_at: created, order_status: "completed" }), atThreshold)).toBe(false);
@@ -81,7 +81,7 @@ describe("operational order buckets", () => {
   });
 
   it("keeps an old order in its operational bucket and marks lateness independently", () => {
-    const lateNow = Date.parse("2026-08-10T20:31:00.000Z");
+    const lateNow = Date.parse("2026-08-10T21:01:00.000Z");
     const preparing = order({ order_status: "confirmed", production_status: "preparing" });
     expect(deriveOperationalBucket(preparing)).toBe("preparing");
     expect(isOrderAttentionLate(preparing, lateNow)).toBe(true);
