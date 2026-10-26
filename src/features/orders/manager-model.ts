@@ -33,7 +33,7 @@ export function orderItemsSummary(items: readonly OrderItemPreview[] | null | un
 export type OrderLane = "new" | "confirmed" | "preparing" | "ready" | "finished";
 export type OperationalOrderBucket = "new" | "preparing" | "ready" | "queued" | "history";
 
-export const ORDER_ATTENTION_MINUTES = 30;
+export const ORDER_ATTENTION_MINUTES = 60;
 
 export const orderLaneLabels: Record<OrderLane, string> = {
   new: "Novos",
@@ -73,6 +73,16 @@ export function elapsedLabel(createdAt: string, now = Date.now()) {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return minutes ? `${hours}h ${minutes}m` : `${hours}h`;
+}
+
+/** The 60-minute operational deadline is measured from the server-created order timestamp. */
+export function orderCountdownLabel(createdAt: string, now = Date.now(), limitMinutes = ORDER_ATTENTION_MINUTES) {
+  const created = Date.parse(createdAt);
+  if (!Number.isFinite(created)) return "Prazo indisponível";
+  const remainingMs = created + limitMinutes * 60_000 - now;
+  if (remainingMs <= 0) return "Atrasado";
+  const seconds = Math.ceil(remainingMs / 1_000);
+  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
 export function isOrderAttentionLate(order: Pick<OrderManagerRow, "order_status" | "created_at">, now = Date.now(), thresholdMinutes = ORDER_ATTENTION_MINUTES) {

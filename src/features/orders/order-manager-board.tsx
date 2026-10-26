@@ -24,7 +24,7 @@ import {
   completionBlockers,
   deriveOperationalBucket,
   deriveOrderLane,
-  elapsedLabel,
+  orderCountdownLabel,
   sortOrdersForAttention,
   isOrderAttentionLate,
   operationalBucketLabels,
@@ -164,7 +164,7 @@ export function OrderManagerBoard({ storeId, viewPreferenceKey, orders: initialO
   });
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 15_000);
+    const timer = window.setInterval(() => setNow(Date.now()), 1_000);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -391,7 +391,7 @@ function OrderCard({ order, now, bucket, workflowMode, manualDeliveryMode, payme
         </div>
         <div className={styles.moneyTime}>
           <span className={styles.total}>{money(order.total_cents)}</span>
-          <span className={styles.elapsed}>{elapsedLabel(order.created_at, now)}</span>
+          <span className={styles.elapsed}>{isOperationalOrder(order) ? orderCountdownLabel(order.created_at, now) : "Encerrado"}</span>
         </div>
       </div>
 
@@ -460,7 +460,7 @@ function OrderTableRow({ order, now, workflowMode, manualDeliveryMode, paymentPo
     <th scope="row"><Button type="button" tone="ghost" size="sm" onClick={onPreview} aria-label={`Ver resumo do pedido ${order.display_number}`} aria-pressed={selected}>#{order.display_number}</Button><span className={styles.tableCustomer}>{order.customer_name_snapshot}</span><span className={styles.metaText}>{paymentLabels[order.payment_status] ?? order.payment_status} · {order.payment_method_snapshot ? paymentMethodLabels[order.payment_method_snapshot as keyof typeof paymentMethodLabels] ?? order.payment_method_snapshot : orderChannelBadgeLabel(order.channel, order.external)}</span><Link href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.tableDetails}>Detalhes completos</Link></th>
     <td>{fulfillmentTypeLabel(order.fulfillment_type)}</td>
     <td><StatusBadge status={status.status} label={status.label} /></td>
-    <td className={styles.elapsed}>{elapsedLabel(order.created_at, now)}</td>
+    <td className={styles.elapsed}>{isOperationalOrder(order) ? orderCountdownLabel(order.created_at, now) : "Encerrado"}</td>
     <td className={styles.total}>{money(order.total_cents)}</td>
     <td>{action ? <OrderActionForm orderId={order.id} intent={action.intent} label={action.label} tone={action.tone} confirmPayment={action.confirmPayment} compact /> : shouldContinueInDeliveryCenter(order, manualDeliveryMode) ? <Link href="/entregas" className={styles.detailsLink}>Atualizar entrega</Link> : <Link href={{ pathname: `/pedidos/${order.id}`, query: { from: "/pedidos" } }} className={styles.detailsLink}>Ver detalhes</Link>}</td>
   </tr>;
