@@ -41,26 +41,46 @@ type FacebookSdk = {
   login(callback: (response: FacebookLoginResponse) => void, options: Record<string, unknown>): void;
 };
 
-declare global { interface Window { FB?: FacebookSdk; } }
+declare global { interface Window { FB?: FacebookSdk; fbAsyncInit?: () => void; } }
 let sdkPromise: Promise<FacebookSdk> | null = null;
 
 function loadFacebookSdk(appId: string, version: string) {
-  if (window.FB) {
-    window.FB.init({ appId, cookie: true, xfbml: false, version });
-    return Promise.resolve(window.FB);
-  }
   if (sdkPromise) return sdkPromise;
+  // Do not treat window.FB existence alone as proof that the SDK is ready.
+  // Meta's documented async initialization callback runs when SDK bootstrapping completes.
   sdkPromise = new Promise<FacebookSdk>((resolve, reject) => {
     const existing = document.getElementById("facebook-jssdk") as HTMLScriptElement | null;
+    let settled = false;
+    const timeout = window.setTimeout(() => fail(), 15000);
     const fail = () => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
       sdkPromise = null;
-      reject(new Error("Não foi possível carregar a conexão segura do WhatsApp."));
+      reject(new Error("Não foi possível inicializar a conexão segura do WhatsApp."));
     };
     const finish = () => {
-      if (!window.FB) return fail();
-      window.FB.init({ appId, cookie: true, xfbml: false, version });
-      resolve(window.FB);
+      if (settled) return;
+      const sdk = window.FB;
+      if (!sdk?.init || !sdk?.login) return fail();
+      try {
+        sdk.init({ appId, cookie: true, xfbml: false, version });
+      } catch {
+        return fail();
+      }
+      settled = true;
+      window.clearTimeout(timeout);
+      resolve(sdk);
     };
+    const previousAsyncInit = window.fbAsyncInit;
+    window.fbAsyncInit = () => {
+      try { previousAsyncInit?.(); } finally { finish(); }
+    };
+    // Existing preloaded SDK may have executed its callback already.
+    if (window.FB?.init && existing) {
+      finish();
+      return;
+    }
     if (existing) {
       existing.addEventListener("load", finish, { once: true });
       existing.addEventListener("error", fail, { once: true });
@@ -70,7 +90,6 @@ function loadFacebookSdk(appId: string, version: string) {
     script.id = "facebook-jssdk";
     script.src = "https://connect.facebook.net/pt_BR/sdk.js";
     script.async = true;
-    script.defer = true;
     script.crossOrigin = "anonymous";
     script.addEventListener("load", finish, { once: true });
     script.addEventListener("error", fail, { once: true });
@@ -210,7 +229,17 @@ export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Stat
       setMessage("Não foi possível inicializar a conexão com a Meta. Atualize a página e tente novamente.");
       return;
     }
-    const codePromise = loginWithEmbeddedSignup(fb, configId, mode, browserConfig.sessionInfoVersion);
+    // FB.login may throw synchronously (SDK internal state not ready).
+    // Convert that into a handled rejection and never start a server session
+    // when the popup could not even be launched.
+    let codePromise: Promise<string>;
+    try {
+      codePromise = loginWithEmbeddedSignup(fb, configId, mode, browserConfig.sessionInfoVersion);
+    } catch {
+      controller.abort();
+      setMessage("A Meta não conseguiu iniciar a autorização. Atualize a página e tente novamente.");
+      return;
+    }
     const sessionPromise = startWhatsAppEmbeddedSignupAction(mode);
 
     startTransition(async () => {
