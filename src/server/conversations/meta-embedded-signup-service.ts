@@ -1,4 +1,5 @@
 import "server-only";
+import { metaNumericId } from "@/server/conversations/meta-signup-config";
 
 import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
@@ -173,11 +174,12 @@ export type EmbeddedSignupPublicConfig = {
 
 export class MetaEmbeddedSignupService {
   static publicConfig(): EmbeddedSignupPublicConfig {
-    const appId = process.env.META_APP_ID?.trim() || null;
-    const configId = process.env.META_EMBEDDED_SIGNUP_CONFIG_ID?.trim() || null;
+    const appId = metaNumericId(process.env.META_APP_ID);
+    const configId = metaNumericId(process.env.META_EMBEDDED_SIGNUP_CONFIG_ID);
     const graphVersion = process.env.WHATSAPP_GRAPH_API_VERSION?.trim() || null;
     const ready = Boolean(
-      appId && configId && graphVersion
+      appId && configId && graphVersion && /^v[0-9]+\.0$/.test(graphVersion)
+      && (!process.env.META_EMBEDDED_SIGNUP_COEXISTENCE_CONFIG_ID || metaNumericId(process.env.META_EMBEDDED_SIGNUP_COEXISTENCE_CONFIG_ID))
       && process.env.META_BUSINESS_ID?.trim()
       && process.env.META_SYSTEM_USER_ID?.trim()
       && process.env.META_SYSTEM_USER_ACCESS_TOKEN?.trim()
