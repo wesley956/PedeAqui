@@ -16,6 +16,7 @@ export const WHATSAPP_OPERATIONAL_ISSUE_CODES = [
   "ingest_failure_recent",
   "outbound_pending",
   "outbound_failed_recent",
+  "meta_billing_action_required",
   "media_processing_backlog",
   "media_failed_recent",
   "history_sync_error",
@@ -37,6 +38,7 @@ export type WhatsAppOperationalHealthClassificationInput = {
   lastStateSyncErrorKind: string | null;
   outboundPending: number;
   outboundFailedRecent: number;
+  metaBillingFailedRecent?: number;
   mediaPending: number;
   mediaFailedRecent: number;
 };
@@ -93,6 +95,7 @@ export function classifyWhatsAppOperationalHealth(
   }
   if (input.outboundPending > 0) issues.push("outbound_pending");
   if (input.outboundFailedRecent > 0) issues.push("outbound_failed_recent");
+  if ((input.metaBillingFailedRecent ?? 0) > 0) issues.push("meta_billing_action_required");
   if (input.mediaPending > 0) issues.push("media_processing_backlog");
   if (input.mediaFailedRecent > 0) issues.push("media_failed_recent");
   if (input.lastHistoryErrorKind) issues.push("history_sync_error");
@@ -102,7 +105,7 @@ export function classifyWhatsAppOperationalHealth(
     return { state: "provider_unavailable", issues };
   }
 
-  if (connectionActionRequired
+  if ((input.metaBillingFailedRecent ?? 0) > 0 || connectionActionRequired
     || (coexistence && needsSubscriptionAction(input.subscriptionStatus))
     || (coexistence && needsSubscriptionAction(input.appWebhookStatus))) {
     return { state: "action_required", issues };

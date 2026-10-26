@@ -134,6 +134,7 @@ export class WhatsAppOperationalHealthService {
       mediaPendingResult,
       mediaFailedResult,
       waitingAgentResult,
+      metaBillingFailedResult,
     ] = await Promise.all([
       admin.from("store_conversation_settings")
         .select("whatsapp_enabled,connection_status,connection_mode,onboarding_status,quality_rating,connected_at,last_health_check_at,last_connection_error_kind")
@@ -189,6 +190,14 @@ export class WhatsAppOperationalHealthService {
         .eq("organization_id", context.organizationId)
         .eq("store_id", storeId)
         .eq("status", "waiting_agent"),
+      admin.from("messages")
+        .select("id", { count: "exact", head: true })
+        .eq("organization_id", context.organizationId)
+        .eq("store_id", storeId)
+        .eq("direction", "outbound")
+        .eq("delivery_status", "failed")
+        .eq("error_code", "131042")
+        .gte("created_at", recentSince),
     ]);
 
     const errors = [
@@ -201,6 +210,7 @@ export class WhatsAppOperationalHealthService {
       mediaPendingResult.error,
       mediaFailedResult.error,
       waitingAgentResult.error,
+      metaBillingFailedResult.error,
     ].filter(Boolean);
     if (errors.length > 0) throw errors[0];
 
@@ -223,6 +233,7 @@ export class WhatsAppOperationalHealthService {
       lastStateSyncErrorKind: observability?.last_state_sync_error_kind ?? null,
       outboundPending: safeCount(outboundPendingResult.count),
       outboundFailedRecent: safeCount(outboundFailedResult.count),
+      metaBillingFailedRecent: safeCount(metaBillingFailedResult.count),
       mediaPending: safeCount(mediaPendingResult.count),
       mediaFailedRecent,
     }, now);

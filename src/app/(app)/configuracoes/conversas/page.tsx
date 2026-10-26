@@ -51,6 +51,7 @@ const HEALTH_ISSUE_LABELS: Record<WhatsAppOperationalIssueCode, string> = {
   ingest_failure_recent: "Houve uma falha recente ao processar evento recebido.",
   outbound_pending: "Existem mensagens de saída ainda pendentes.",
   outbound_failed_recent: "Houve falha recente em mensagem de saída.",
+  meta_billing_action_required: "A Meta recusou envio por elegibilidade de cobrança (131042). Confira a conta e a forma de pagamento no WhatsApp Manager; reconectar o número não resolve esta recusa.",
   media_processing_backlog: "Existem mídias ainda aguardando processamento.",
   media_failed_recent: "Houve falha recente no processamento de mídia.",
   history_sync_error: "O último processamento de histórico registrou erro.",

@@ -5,9 +5,10 @@ import { normalizeComparablePhone } from "@/server/conversations/order-recipient
 import { projectOrderNotification, projectOrderTrackingState } from "@/server/conversations/order-tracking-projection";
 import { isExplicitMenuNavigation } from "@/server/conversations/whatsapp-navigation";
 import { isNaturalTrackingQuestion, resolveNaturalPixSpeech } from "@/server/conversations/whatsapp-contextual-language";
+import { asksStoreLocation, catalogAvailabilityQuery, needsWhatsAppServiceRecovery } from "@/server/conversations/whatsapp-service-recovery";
 
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
-export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "benefit_handoff" | "hours" | "payment" | "delivery" | "price" | "order_start" | "benefits" | "cashback" | "points" | "coupons" | "promotions" | "unknown";
+export type WhatsAppBotIntent = "menu" | "menu_link" | "track_start" | "track_code" | "handoff" | "benefit_handoff" | "hours" | "payment" | "delivery" | "price" | "location" | "order_start" | "benefits" | "cashback" | "points" | "coupons" | "promotions" | "unknown";
 
 const menuWords = new Set([
   "menu",
@@ -181,12 +182,14 @@ export function trackingCodeFromInput(value: string | null | undefined) {
 export function resolveWhatsAppBotIntent(value: string | null | undefined, step: WhatsAppBotStep): WhatsAppBotIntent {
   const normalized = semanticBotInput(normalizeBotInput(value));
   const trackingCode = trackingCodeFromInput(normalized);
+  if (needsWhatsAppServiceRecovery(normalized)) return "handoff";
   if (isExplicitMenuNavigation(normalized)) return "menu";
   if (step === "awaiting_tracking_code" && trackingCode !== null) return "track_code";
   if (step === "menu" && trackingCode !== null && hasExplicitTrackingContext(normalized)) return "track_code";
   if (step === "awaiting_tracking_code" && ["menu", "inicio", "iniciar", "ver opcoes", "bot_menu_open"].includes(normalized)) return "menu";
   if (step === "awaiting_tracking_code" && menuWords.has(normalized)) return "track_start";
   if (menuWords.has(normalized)) return "menu";
+  if (asksStoreLocation(normalized)) return "location";
   if (/\b(?:quero|queria|me ve)\s+(?:uma?\s+)?(?:caixa\s+(?:de|com)\s+)?\d+\s+(?:salgado|salgados)\b/.test(normalized)) return "order_start";
   if (containsAny(normalized, orderStartWords)) return "order_start";
   if (containsAny(normalized, benefitHandoffWords)) return "benefit_handoff";
@@ -202,6 +205,7 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
   if (containsAny(normalized, paymentWords) || resolveNaturalPixSpeech(normalized)) return "payment";
   if (containsAny(normalized, deliveryWords)) return "delivery";
   if (priceProductQueryFromInput(normalized)) return "price";
+  if (catalogAvailabilityQuery(normalized)) return "price";
   return "unknown";
 }
 

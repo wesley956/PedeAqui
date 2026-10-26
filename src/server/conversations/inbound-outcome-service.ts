@@ -57,6 +57,7 @@ export class InboundOutcomeService {
       .eq("store_id", inbound.store_id)
       .eq("conversation_id", inbound.conversation_id)
       .eq("direction", "outbound")
+      .neq("delivery_status", "failed")
       .gte("created_at", inbound.created_at)
       .order("created_at", { ascending: true })
       .limit(1)

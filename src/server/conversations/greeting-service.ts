@@ -30,6 +30,8 @@ import type { LegacyIntelligenceObserver } from "@/server/conversations/legacy-i
 import type { UnifiedRouterTool } from "@/server/intelligence/unified-router";
 import { createIntelligenceContext } from "@/server/intelligence/context";
 import { IntelligenceCatalogAdapter, type CatalogSearchResult } from "@/server/intelligence/catalog-adapter";
+import { catalogAvailabilityQuery } from "@/server/conversations/whatsapp-service-recovery";
+import { normalizeBotInput } from "@/server/conversations/bot-menu";
 
 type IngestResult = {
   conversation_id?: string;
@@ -262,7 +264,7 @@ export class ConversationGreetingService {
         .eq("id", conversation.contact_id)
         .maybeSingle(),
       admin.from("stores")
-        .select("name, slug, status, timezone, business_type")
+        .select("name, slug, status, timezone, business_type, street, number, complement, district, city, state")
         .eq("organization_id", conversation.organization_id)
         .eq("id", conversation.store_id)
         .maybeSingle(),
@@ -355,7 +357,23 @@ export class ConversationGreetingService {
       && session.step === "awaiting_tracking_code"
       ? "awaiting_tracking_code"
       : "menu";
-    const intent = resolveWhatsAppBotIntent(inbound.body, activeStep);
+    let intent = resolveWhatsAppBotIntent(inbound.body, activeStep);
+    if (intent === "unknown" && settings.unknown_intent_message?.trim()) {
+      // Bound the lookup and scope it to this store/conversation. A second unresolved
+      // request after a recent fallback belongs to the team, not another menu loop.
+      const { data: recentReplies, error: repliesError } = await admin.from("messages")
+        .select("body")
+        .eq("organization_id", conversation.organization_id)
+        .eq("store_id", conversation.store_id)
+        .eq("conversation_id", conversation.id)
+        .eq("direction", "outbound")
+        .eq("sender_type", "bot")
+        .gte("created_at", new Date(Date.now() - 10 * 60 * 1000).toISOString())
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (repliesError) throw repliesError;
+      if (recentReplies?.some((reply) => reply.body?.startsWith(settings.unknown_intent_message.trim()))) intent = "handoff";
+    }
     observe?.({ intent, tool: legacyToolForIntent(intent) });
 
     if (!canUseMenu || !store?.name || !store.slug) {
@@ -434,6 +452,14 @@ export class ConversationGreetingService {
 
     const responseKey = `auto:menu:${ingest.message_id}`;
 
+    if (intent === "location") {
+      const address = [store.street, store.number, store.complement, store.district, store.city, store.state].filter(Boolean).join(", ");
+      await sendBotText(botContext, address
+        ? `Localização cadastrada de ${store.name}: ${address}.\n\nCardápio: ${menuUrl}`
+        : `O endereço desta loja ainda não está cadastrado. Escreva “falar com atendente” para confirmar com a equipe.\n\nCardápio: ${menuUrl}`, responseKey);
+      return;
+    }
+
     if (intent === "handoff" || intent === "benefit_handoff") {
       await sendBotText(botContext, settings.handoff_message, responseKey);
       await admin.rpc("conversation_request_human_attention_internal", {
@@ -477,7 +503,7 @@ export class ConversationGreetingService {
     }
 
     if (intent === "price") {
-      const query = priceProductQueryFromInput(inbound.body);
+      const query = priceProductQueryFromInput(inbound.body) ?? catalogAvailabilityQuery(normalizeBotInput(inbound.body));
       if (!query) {
         await sendBotText(botContext, `Me diga qual produto você quer consultar, por exemplo: “quanto custa o pastel?”\n\nCardápio: ${menuUrl}`, responseKey);
         await updateBotSession(conversation.id, "menu", ingest.message_id);
