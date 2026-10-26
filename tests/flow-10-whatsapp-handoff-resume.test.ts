@@ -98,7 +98,10 @@ describe("FLOW-10 B10/D12 human handoff and safe resume", () => {
     mocks.createAdminClient.mockReturnValue(admin);
   });
 
-  it("B10 saves the exact checkout context before moving the conversation to waiting_agent", async () => {
+  it.each(["quero falar com atendente", "Meu pedido não chegou", "O site não funciona", "Quero encomendar 50 salgados para domingo"])("B10 preserves checkout before handoff: %s", async (body) => {
+    const client = mocks.createAdminClient.mock.results[0]?.value ?? mocks.createAdminClient();
+    const originalFrom = client.from;
+    client.from = (table: string) => table === "messages" ? singleRow({ body, content_type: "text" }) : originalFrom(table);
     const observe = vi.fn();
     const handled = await WhatsAppDirectOrderOrchestrator.afterInbound({
       conversation_id: "conversation-technical",

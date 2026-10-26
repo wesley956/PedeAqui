@@ -124,6 +124,17 @@ function extractBody(message: UnknownRecord, type: string) {
 
 function messageMetadata(message: UnknownRecord, rawType: string) {
   const metadata: Record<string, string | number | boolean | null> = { whatsapp_type: rawType };
+  // Keep bounded attribution only. Never persist the complete provider payload,
+  // media URLs or arbitrary quoted text as trusted conversation instructions.
+  const referral = record(message.referral);
+  if (referral) {
+    metadata.referral_source_id = text(referral.source_id)?.slice(0, 200) ?? null;
+    metadata.referral_source_type = text(referral.source_type)?.slice(0, 40) ?? null;
+    metadata.referral_headline = text(referral.headline)?.slice(0, 240) ?? null;
+    metadata.referral_body = text(referral.body)?.slice(0, 1000) ?? null;
+  }
+  const context = record(message.context);
+  if (context) metadata.reply_to_external_message_id = text(context.id)?.slice(0, 240) ?? null;
   if (rawType === "image" || rawType === "audio" || rawType === "video" || rawType === "document") {
     const media = record(message[rawType]);
     metadata.media_id = text(media?.id);

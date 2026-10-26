@@ -24,6 +24,14 @@ const standaloneAcknowledgements = new Set([
   "grata",
   "tchau",
   "ate mais",
+  "muito bom",
+  "muito boa",
+  "adorei",
+  "estava otimo",
+  "estava otima",
+  "ja retirei",
+  "ja busquei",
+  "ja jantei",
 ]);
 
 /**

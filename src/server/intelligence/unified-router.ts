@@ -92,6 +92,7 @@ const POLICIES: Record<UnifiedRouterIntent, IntentPolicy> = {
   handoff: { tool: "human_handoff", capability: null, authority: null },
   benefit_handoff: { tool: "human_handoff", capability: null, authority: null },
   hours: { tool: "conversation_info", capability: "canAutoReply", authority: null },
+  location: { tool: "conversation_info", capability: "canAutoReply", authority: null },
   payment: { tool: "conversation_info", capability: "canAutoReply", authority: null },
   delivery: { tool: "conversation_info", capability: "canAutoReply", authority: null },
   price: { tool: "catalog", capability: "canSearchCatalog", authority: null },
@@ -106,6 +107,7 @@ const POLICIES: Record<UnifiedRouterIntent, IntentPolicy> = {
 };
 
 const ACTIVE_ORDER_ESCAPE_INTENTS = new Set<WhatsAppBotIntent>([
+  "location",
   "menu",
   "menu_link",
   "payment",

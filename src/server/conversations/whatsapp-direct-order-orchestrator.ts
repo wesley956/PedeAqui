@@ -243,11 +243,14 @@ export class WhatsAppDirectOrderOrchestrator {
     }
 
     const intent = resolveWhatsAppBotIntent(inbound.body, "menu");
+    // The greeting service answers official location without changing the order session.
+    if (intent === "location") return false;
     const naturalOrder = looksLikeWhatsAppOrderItems(inbound.body);
-    const savedAddressQuestion = asksAboutSavedAddress(inbound.body);
-    const trackingNumberHelp = asksForTrackingNumberHelp(inbound.body);
+    const savedAddressQuestion = intent !== "handoff" && asksAboutSavedAddress(inbound.body);
+    const trackingNumberHelp = intent !== "handoff" && asksForTrackingNumberHelp(inbound.body);
     const closedGreetingCandidate = !activeOrderStep && intent === "menu";
     if (!settings.whatsapp_orders_enabled && !closedGreetingCandidate) return false;
+    if (!activeOrderStep && intent === "handoff") return false;
     if (!activeOrderStep && intent !== "menu" && intent !== "order_start" && !naturalOrder && !savedAddressQuestion && !trackingNumberHelp) return false;
 
     const sendBase = {
@@ -343,7 +346,7 @@ export class WhatsAppDirectOrderOrchestrator {
       return true;
     }
 
-    if (activeOrderStep && (wantsHuman(inbound.body) || intent === "benefit_handoff")) {
+    if (activeOrderStep && (wantsHuman(inbound.body) || intent === "handoff" || intent === "benefit_handoff")) {
       await sendBotText({
         ...sendBase,
         body: `Vou pausar a automação para o atendimento humano, mas mantive a montagem do seu pedido salva. ${settings.handoff_message}`,
