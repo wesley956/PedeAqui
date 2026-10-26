@@ -1,0 +1,47 @@
+name: Meta signup VPS recovery
+on:
+  push:
+    branches: [fix/meta-sdk-readiness-20261026]
+    paths: [.github/workflows/meta-signup-recovery.yml]
+permissions:
+  contents: read
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production-vps
+    steps:
+      - name: Recover repair verification and inspect production
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test -n "$VPS_HOST" && test -n "$SSH_KEY" && test -n "$KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          trap 'rm -f ~/.ssh/pedeaqui ~/.ssh/known_hosts' EXIT
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/pedeaqui
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/pedeaqui ~/.ssh/known_hosts
+          ssh -i ~/.ssh/pedeaqui -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=20 -o StrictHostKeyChecking=yes "root@$VPS_HOST" 'python3 -' <<'PY'
+          import os, signal
+          from pathlib import Path
+          for p in Path("/proc").iterdir():
+              if not p.name.isdigit():
+                  continue
+              try:
+                  cmd = (p / "cmdline").read_bytes().decode(errors="replace")
+                  cwd = os.readlink(p / "cwd")
+                  if cwd == "/opt/pedeaqui/validation/meta-signup-repair" and ("node_modules/.bin/tsc" in cmd or "eslint/bin/eslint" in cmd) and (p / "comm").read_text().strip() == "node":
+                      os.kill(int(p.name), signal.SIGTERM)
+                      print("Stopped own verification process", p.name)
+              except (OSError, ProcessLookupError):
+                  pass
+          r = Path("/opt/pedeaqui/validation/meta-signup-repair")
+          for name in ["build.exit", "build.log", "lint.log"]:
+              p = r / name
+              if p.exists():
+                  print(name, p.read_text()[-3000:])
+          PY
+          ssh -i ~/.ssh/pedeaqui -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=20 -o StrictHostKeyChecking=yes "root@$VPS_HOST" 'docker ps --format "{{.Names}} {{.Status}} {{.Ports}}"; curl -fsS --max-time 10 http://127.0.0.1:3011/api/health; free -m'
