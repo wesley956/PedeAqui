@@ -25,7 +25,7 @@ export function encodeEscPos(text: string) {
     Buffer.from([ESC, 0x74, 0x02]), // CP850 on common ESC/POS implementations
     Buffer.from([ESC, 0x61, 0x00]), // left align
     encodeCp850(text),
-    Buffer.from([0x0a, 0x0a]),
+    Buffer.from([ESC, 0x64, 0x06]), // feed 6 lines beyond the last receipt content before cutting
     Buffer.from([GS, 0x56, 0x00]), // full cut
   ]);
 }
