@@ -25,7 +25,7 @@ describe("INT-EVOL-02 safe return and non-actionable acknowledgements", () => {
   it("suppresses greeting/fallback before intent routing for a standalone acknowledgement", () => {
     const source = read("src/server/conversations/greeting-service.ts");
     const acknowledgementAt = source.indexOf("isWhatsAppNonActionableAcknowledgement(inbound.body)");
-    const intentAt = source.indexOf("const intent = resolveWhatsAppBotIntent");
+    const intentAt = source.indexOf("let intent = resolveWhatsAppBotIntent");
     expect(acknowledgementAt).toBeGreaterThan(-1);
     expect(intentAt).toBeGreaterThan(acknowledgementAt);
     expect(source).toContain('observe?.({ intent: "acknowledgement", tool: "conversation_info" })');
