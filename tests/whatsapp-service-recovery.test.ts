@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { normalizeBotInput, resolveWhatsAppBotIntent } from "@/server/conversations/bot-menu";
-import { catalogAvailabilityQuery } from "@/server/conversations/whatsapp-service-recovery";
+import { asksStoreLocation, catalogAvailabilityQuery } from "@/server/conversations/whatsapp-service-recovery";
 import { isWhatsAppNonActionableAcknowledgement } from "@/server/conversations/whatsapp-non-actionable";
 import { parseWhatsAppWebhook } from "@/server/conversations/whatsapp-webhook";
 import { classifyWhatsAppOperationalHealth } from "@/server/conversations/whatsapp-operational-health-model";
@@ -26,6 +26,11 @@ describe("WhatsApp recovery from real conversation patterns", () => {
     expect(catalogAvailabilityQuery(normalizeBotInput("Tem kibe assado hoje?"))).toBe("kibe assado");
     expect(catalogAvailabilityQuery("tem vaga de emprego")).toBeNull();
     expect(catalogAvailabilityQuery("tem entrega")).toBeNull();
+  });
+  it("keeps a saved customer address separate from store location", () => {
+    expect(asksStoreLocation(normalizeBotInput("Qual endereço está salvo aí?"))).toBe(false);
+    expect(asksStoreLocation(normalizeBotInput("Qual o meu endereço?"))).toBe(false);
+    expect(asksStoreLocation(normalizeBotInput("Qual o endereço da loja?"))).toBe(true);
   });
   it("ignores standalone praise but keeps a question accompanying praise", () => {
     expect(isWhatsAppNonActionableAcknowledgement("Muito bom!")).toBe(true);

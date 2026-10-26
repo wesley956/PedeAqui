@@ -16,6 +16,8 @@ export function catalogAvailabilityQuery(normalized: string): string | null {
 }
 
 export function asksStoreLocation(normalized: string): boolean {
+  // A customer's saved delivery address is private customer context, not store location.
+  if (/\b(?:meu|minha|salvo|salva|cadastrado|cadastrada|guardado|registrado)\b/.test(normalized)) return false;
   return /\b(?:onde voces ficam|onde fica a loja|onde fica o restaurante|qual o endereco|qual endereco|qual a localizacao|qual cidade|em que cidade|em qual cidade|manda a localizacao|localizacao da loja)\b/.test(normalized)
     || /^(?:endereco|localizacao)$/.test(normalized);
 }
