@@ -229,17 +229,8 @@ export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Stat
       setMessage("Não foi possível inicializar a conexão com a Meta. Atualize a página e tente novamente.");
       return;
     }
-    // FB.login may throw synchronously (SDK internal state not ready).
-    // Convert that into a handled rejection and never start a server session
-    // when the popup could not even be launched.
-    let codePromise: Promise<string>;
-    try {
-      codePromise = loginWithEmbeddedSignup(fb, configId, mode, browserConfig.sessionInfoVersion);
-    } catch {
-      controller.abort();
-      setMessage("A Meta não conseguiu iniciar a autorização. Atualize a página e tente novamente.");
-      return;
-    }
+    // The login promise rejects if the SDK throws synchronously.
+    const codePromise = loginWithEmbeddedSignup(fb, configId, mode, browserConfig.sessionInfoVersion);
     const sessionPromise = startWhatsAppEmbeddedSignupAction(mode);
 
     startTransition(async () => {
