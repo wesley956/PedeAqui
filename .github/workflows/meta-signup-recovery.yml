@@ -24,7 +24,8 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/pedeaqui
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/pedeaqui ~/.ssh/known_hosts
-          ssh -i ~/.ssh/pedeaqui -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=20 -o StrictHostKeyChecking=yes "root@$VPS_HOST" 'python3 -' <<'PY'
+          ssh -i ~/.ssh/pedeaqui -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=20 -o ServerAliveInterval=5 -o ServerAliveCountMax=2 -o StrictHostKeyChecking=yes "root@$VPS_HOST" 'if [ "$(docker inspect 573e112c3e46 --format "{{json .Config.Cmd}}" 2>/dev/null)" = "[\"/bin/sh\",\"-c\",\"npm run build\"]" ]; then timeout 30 docker stop --time 5 573e112c3e46; fi'
+          ssh -i ~/.ssh/pedeaqui -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=20 -o ServerAliveInterval=5 -o ServerAliveCountMax=2 -o StrictHostKeyChecking=yes "root@$VPS_HOST" 'python3 -' <<'PY'
           import os, signal
           from pathlib import Path
           for p in Path("/proc").iterdir():
