@@ -1,5 +1,6 @@
 "use server";
 
+import { metaNumericId, metaSessionInfoVersion } from "@/server/conversations/meta-signup-config";
 import { revalidatePath } from "next/cache";
 import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
@@ -13,9 +14,9 @@ export async function getWhatsAppEmbeddedSignupBrowserConfigAction() {
     ready: config.ready,
     appId: config.appId,
     configId: config.configId,
-    coexistenceConfigId: process.env.META_EMBEDDED_SIGNUP_COEXISTENCE_CONFIG_ID?.trim() || config.configId,
+    coexistenceConfigId: metaNumericId(process.env.META_EMBEDDED_SIGNUP_COEXISTENCE_CONFIG_ID) || config.configId,
     graphVersion: config.graphVersion,
-    sessionInfoVersion: process.env.META_EMBEDDED_SIGNUP_SESSION_INFO_VERSION?.trim() || "3",
+    sessionInfoVersion: metaSessionInfoVersion(process.env.META_EMBEDDED_SIGNUP_SESSION_INFO_VERSION),
   };
 }
 
