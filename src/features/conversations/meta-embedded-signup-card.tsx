@@ -200,6 +200,16 @@ export function MetaEmbeddedSignupCard({ status, platformReady }: { status: Stat
 
     // FB.login must be invoked directly from the user's click. Do not await a
     // Server Action before this call or browsers/Meta can lose the popup gesture.
+    // A third-party SDK or a stale window.FB can replace/reset initialization
+    // after the preload. Reinitialize synchronously on the user gesture before
+    // invoking FB.login, so the Meta popup receives an initialized SDK.
+    try {
+      fb.init({ appId: browserConfig.appId, cookie: true, xfbml: false, version: browserConfig.graphVersion });
+    } catch {
+      controller.abort();
+      setMessage("Não foi possível inicializar a conexão com a Meta. Atualize a página e tente novamente.");
+      return;
+    }
     const codePromise = loginWithEmbeddedSignup(fb, configId, mode, browserConfig.sessionInfoVersion);
     const sessionPromise = startWhatsAppEmbeddedSignupAction(mode);
 
