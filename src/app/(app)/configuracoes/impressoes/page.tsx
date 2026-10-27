@@ -2,6 +2,7 @@ import { FormDisclosure } from "@/components/ui/form-disclosure";
 import settingsStyles from "../settings-form.module.css";
 import Link from "next/link";
 import { AgentReconnectInstaller, AgentTokenCreator } from "@/features/printing/agent-token-creator";
+import { PrintingDiagnosticDownload } from "@/features/printing/agent-token-creator-client";
 import {
   cancelPrintJobAction,
   createPrinterAction,
@@ -148,6 +149,13 @@ export default async function PrintingSettingsPage({
           <SetupCheck number="3" title="Funcionando" done={printingReady} />
         </div>
       </header>
+
+      <article className={`card ${styles.card}`}>
+        <h2>Se um pedido não imprimir</h2>
+        <p>Confira o pedido no painel para a cozinha continuar o atendimento. Na Epson, confira papel e energia; no computador, confira a internet.</p>
+        <p>Se a impressão estiver aguardando, o pedido já está salvo. Evite refazer a compra ou reimprimir antes de conferir se alguma via saiu.</p>
+        <PrintingDiagnosticDownload />
+      </article>
 
       {params.setup === "printer_ready" ? (
         <div className={styles.successBanner} role="status">

@@ -6,6 +6,7 @@ on:
       - 'print-agent/**'
       - 'src/features/printing/**'
       - 'tests/print-agent-installer.test.ts'
+      - 'tests/printing-windows-diagnostic-1291.test.ts'
       - '.github/workflows/print-agent-windows.yml'
   push:
     branches: [main]
@@ -13,6 +14,7 @@ on:
       - 'print-agent/**'
       - 'src/features/printing/**'
       - 'tests/print-agent-installer.test.ts'
+      - 'tests/printing-windows-diagnostic-1291.test.ts'
       - '.github/workflows/print-agent-windows.yml'
 
 permissions:
@@ -29,4 +31,4 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --legacy-peer-deps --no-audit --no-fund
-      - run: npx --no-install vitest run tests/print-agent-installer.test.ts
+      - run: npx --no-install vitest run tests/print-agent-installer.test.ts tests/printing-windows-diagnostic-1291.test.ts

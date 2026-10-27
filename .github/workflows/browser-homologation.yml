@@ -7,6 +7,7 @@ on:
       - "src/**"
       - "tests/**"
       - "scripts/browser-homologation.mjs"
+      - "scripts/browser-order-print-reliability.mjs"
       - ".github/workflows/browser-homologation.yml"
 
 permissions:
@@ -44,6 +45,9 @@ jobs:
 
       - name: Build exact PR for production
         run: npm run build
+
+      - name: Verify isolated checkout and printing recovery UI
+        run: node scripts/browser-order-print-reliability.mjs
 
       - name: Start exact production build locally
         shell: bash

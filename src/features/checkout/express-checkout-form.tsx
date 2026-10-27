@@ -140,9 +140,9 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
   const itemCount = props.items.reduce((sum, item) => sum + item.quantity, 0);
   const pixSelected = payment === "pix";
   const hostedCheckout = pixSelected && props.paymentMethods.some((item) => item.method === "pix" && item.hostedCheckout);
-  const confirmLabel = hostedCheckout ? "Confirmar e pagar online" : pixSelected ? "Confirmar e pagar com Pix" : "Confirmar pedido";
+  const confirmLabel = knownTotal === null ? "Calcular total e revisar" : hostedCheckout ? "Confirmar e pagar online" : pixSelected ? "Confirmar e pagar com Pix" : "Confirmar pedido";
   // Nome acessível com o valor, ex.: "Confirmar pedido · R$ 45,00".
-  const confirmName = hostedCheckout ? `Confirmar e pagar online · ${money(shownTotal)}` : pixSelected ? `Confirmar e pagar com Pix · ${money(shownTotal)}` : `Confirmar pedido · ${money(shownTotal)}`;
+  const confirmName = knownTotal === null ? "Calcular total e revisar antes de enviar" : hostedCheckout ? `Confirmar e pagar online · ${money(shownTotal)}` : pixSelected ? `Confirmar e pagar com Pix · ${money(shownTotal)}` : `Confirmar pedido · ${money(shownTotal)}`;
 
   const block = (id: ExpressBlock, title: ReactNode, body: ReactNode, extra?: ReactNode) => {
     const failed = error?.block === id;
@@ -351,7 +351,7 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
           {totals.discountCents > 0 ? <div className={styles.discount}><span>Desconto</span><span>− {money(totals.discountCents)}</span></div> : null}
           <div className={styles.totalLine}><span>Total</span><span>{money(shownTotal)}</span></div>
         </div>
-        {knownTotal === null && mode === "delivery" ? <p className={styles.optionalHint}>Ao tocar em Confirmar, calculamos a entrega e mostramos o total final antes de enviar.</p> : null}
+        {knownTotal === null ? <p className={styles.optionalHint}>Seu pedido ainda não foi enviado. Primeiro calculamos o total; depois você confere os valores e confirma o pedido.</p> : null}
       </section>
 
       <footer className={styles.expressFooter}>

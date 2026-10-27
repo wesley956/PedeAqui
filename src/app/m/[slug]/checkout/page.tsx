@@ -6,7 +6,9 @@ import { paymentMethodHelp } from "@/features/checkout/final-order-options";
 import { ScrollToActiveStage } from "@/features/checkout/scroll-to-active-stage";
 import { StoreOrderStatus } from "@/features/menu/store-order-status";
 import { cartCookieName } from "@/server/cart/cart-token";
-import { CheckoutService } from "@/server/checkout/checkout-service";
+import { CheckoutError, CheckoutService } from "@/server/checkout/checkout-service";
+import { OrderService } from "@/server/orders/order-service";
+import { recoverCheckoutOrderAction } from "@/features/orders/actions";
 import { paymentMethodLabels } from "@/server/checkout/schemas";
 import { customerRecognitionCookieName } from "@/server/customers/recognition-token";
 import { GrowthService } from "@/server/growth/growth-service";
@@ -37,7 +39,7 @@ const errorMessages: Record<string, string> = {
   checkout_not_ready: "Não foi possível confirmar o pedido. Confira o motivo abaixo e faça o ajuste necessário.", benefit_invalid: "Não foi possível aplicar esses benefícios. Confira o cupom e tente novamente.",
   benefit_unavailable: "Benefícios não estão disponíveis nesta loja.", saved_address_invalid: "Este endereço salvo não está mais disponível.",
   recognition_required: "Por segurança, informe o endereço novamente neste dispositivo.", identity_required: "Confirme seu nome e WhatsApp antes de reutilizar um endereço.",
-  total_updated: "Calculamos a entrega. Confira o total e toque em Confirmar pedido.",
+  total_updated: "O total foi atualizado. Seu pedido ainda não foi enviado. Confira os valores e toque em Confirmar pedido para concluir.",
 };
 
 export default async function CheckoutPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ erro?: string }> }) {
@@ -48,7 +50,27 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
   if (!token) redirect(`/m/${slug}/carrinho`);
 
   const recognitionToken = cookieStore.get(customerRecognitionCookieName(slug))?.value ?? null;
-  const data = await CheckoutService.load(slug, token, recognitionToken);
+  let data;
+  try {
+    data = await CheckoutService.load(slug, token, recognitionToken);
+  } catch (error) {
+    if (error instanceof CheckoutError && error.code === "cart_empty") {
+      const existing = await OrderService.recoverFromCheckout(slug, token);
+      if (existing) return (
+        <main className={styles.root}>
+          <section className={styles.block} aria-labelledby="pedido-recuperado">
+            <h1 id="pedido-recuperado">Pedido #{existing.display_number} recebido</h1>
+            <p>Seu pedido já foi registrado. Não é necessário enviar novamente.</p>
+            <form action={recoverCheckoutOrderAction}>
+              <input type="hidden" name="storeSlug" value={slug} />
+              <button type="submit" className={styles.confirmButton}>Abrir acompanhamento</button>
+            </form>
+          </section>
+        </main>
+      );
+    }
+    throw error;
+  }
   const benefits = data.growthEnabled ? await GrowthService.loadCheckoutBenefits(slug, token) : null;
   const { cart, session, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled } = data;
   const reviewAfterFailure = query.erro === "checkout_not_ready" ? await CheckoutService.review(slug, token) : null;

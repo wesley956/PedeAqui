@@ -87,10 +87,15 @@ export class OrderService {
     return { order_id: order.id, display_number: Number(order.display_number), created: false };
   }
 
-  static async createFromCheckout(storeSlug: string, token: string, channel: OrderCreationChannel = "digital_menu") {
-    const accessToken = deriveOrderAccessToken(token);
+  static async recoverFromCheckout(storeSlug: string, token: string) {
     const existing = await this.findExistingByCartToken(storeSlug, token);
-    if (existing) return { ...existing, accessToken };
+    return existing ? { ...existing, accessToken: deriveOrderAccessToken(token) } : null;
+  }
+
+  static async createFromCheckout(storeSlug: string, token: string, channel: OrderCreationChannel = "digital_menu") {
+    const existing = await this.recoverFromCheckout(storeSlug, token);
+    if (existing) return existing;
+    const accessToken = deriveOrderAccessToken(token);
 
     const reviewed = await CheckoutService.review(storeSlug, token);
     if (!reviewed.review.ready) {
