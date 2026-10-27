@@ -24,6 +24,7 @@ const templateLanguageSchema = z.string().trim().regex(/^[a-z]{2}_[A-Z]{2}$/);
 const customTemplatesSchema = z.partialRecord(z.enum(ORDER_NOTIFICATION_TYPES), z.string().trim().min(1).max(1000)).default({});
 
 const settingsSchema = z.object({
+  botOnlyWhenOpen: z.boolean().optional(),
   whatsappEnabled: z.boolean(), phoneNumberId: z.string().trim().min(1).max(120).nullable(), businessAccountId: z.string().trim().min(1).max(120).nullable(),
   accessTokenSecretRef: z.string().trim().regex(/^[A-Z][A-Z0-9_]{2,100}$/).nullable(), appSecretSecretRef: z.string().trim().regex(/^[A-Z][A-Z0-9_]{2,100}$/).nullable(),
   botEnabled: z.boolean(), aiEnabled: z.boolean(), whatsappOrdersEnabled: z.boolean(), greetingEnabled: z.boolean(), greetingTemplate: z.string().trim(), greetingFallbackMessage: z.string().trim(),
@@ -124,7 +125,7 @@ async function inspectMetaAppSubscription(
   }
 }
 
-const settingsSelect = "whatsapp_enabled, provider, whatsapp_phone_number_id, whatsapp_business_account_id, access_token_secret_ref, app_secret_secret_ref, default_bot_enabled, ai_enabled, whatsapp_orders_enabled, greeting_enabled, greeting_template, greeting_fallback_message, bot_menu_mode, bot_display_name, handoff_message, unknown_intent_message, conversation_auto_close_enabled, bot_auto_close_minutes, human_auto_close_minutes, keep_open_while_order_active, send_auto_close_message, auto_close_message, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, notify_order_canceled, order_notification_custom_templates, order_notification_template_name, order_notification_template_language";
+const settingsSelect = "whatsapp_enabled, provider, whatsapp_phone_number_id, whatsapp_business_account_id, access_token_secret_ref, app_secret_secret_ref, default_bot_enabled, bot_only_when_open, ai_enabled, whatsapp_orders_enabled, greeting_enabled, greeting_template, greeting_fallback_message, bot_menu_mode, bot_display_name, handoff_message, unknown_intent_message, conversation_auto_close_enabled, bot_auto_close_minutes, human_auto_close_minutes, keep_open_while_order_active, send_auto_close_message, auto_close_message, order_notifications_enabled, order_notification_preset, notify_order_received, notify_order_confirmed, notify_production_preparing, notify_payment_paid, notify_pickup_ready, notify_pickup_completed, notify_out_for_delivery, notify_delivered, notify_order_canceled, order_notification_custom_templates, order_notification_template_name, order_notification_template_language";
 
 export class ConversationSettingsService {
   static async load() {
@@ -194,7 +195,7 @@ export class ConversationSettingsService {
     const admin = createAdminClient();
     const row = {
       organization_id: context.organizationId, store_id: storeId, whatsapp_enabled: values.whatsappEnabled, provider: "meta_cloud", whatsapp_phone_number_id: values.phoneNumberId, whatsapp_business_account_id: values.businessAccountId,
-      access_token_secret_ref: values.accessTokenSecretRef, app_secret_secret_ref: values.appSecretSecretRef, default_bot_enabled: values.botEnabled, ai_enabled: values.aiEnabled, whatsapp_orders_enabled: values.whatsappOrdersEnabled, greeting_enabled: values.greetingEnabled,
+      access_token_secret_ref: values.accessTokenSecretRef, app_secret_secret_ref: values.appSecretSecretRef, default_bot_enabled: values.botEnabled, bot_only_when_open: values.botOnlyWhenOpen ?? false, ai_enabled: values.aiEnabled, whatsapp_orders_enabled: values.whatsappOrdersEnabled, greeting_enabled: values.greetingEnabled,
       greeting_template: values.greetingTemplate || DEFAULT_WHATSAPP_GREETING, greeting_fallback_message: values.greetingFallbackMessage || DEFAULT_WHATSAPP_GREETING_FALLBACK,
       bot_menu_mode: values.botMenuMode, bot_display_name: values.botDisplayName, handoff_message: values.handoffMessage || DEFAULT_WHATSAPP_HANDOFF_MESSAGE, unknown_intent_message: values.unknownMessage || DEFAULT_WHATSAPP_UNKNOWN_MESSAGE,
       conversation_auto_close_enabled: values.conversationAutoCloseEnabled, bot_auto_close_minutes: values.botAutoCloseMinutes, human_auto_close_minutes: values.humanAutoCloseMinutes,
@@ -210,7 +211,7 @@ export class ConversationSettingsService {
     if (error) throw error;
     await AuditService.record(context, { action: "conversations.settings_updated", entityType: "store_conversation_settings", entityId: storeId, after: {
       whatsapp_enabled: data.whatsapp_enabled, provider: data.provider, whatsapp_phone_number_id: data.whatsapp_phone_number_id, whatsapp_business_account_id: data.whatsapp_business_account_id,
-      access_token_secret_ref: data.access_token_secret_ref, app_secret_secret_ref: data.app_secret_secret_ref, default_bot_enabled: data.default_bot_enabled, ai_enabled: data.ai_enabled, whatsapp_orders_enabled: data.whatsapp_orders_enabled, greeting_enabled: data.greeting_enabled,
+      access_token_secret_ref: data.access_token_secret_ref, app_secret_secret_ref: data.app_secret_secret_ref, default_bot_enabled: data.default_bot_enabled, bot_only_when_open: data.bot_only_when_open, ai_enabled: data.ai_enabled, whatsapp_orders_enabled: data.whatsapp_orders_enabled, greeting_enabled: data.greeting_enabled,
       order_notifications_enabled: data.order_notifications_enabled, order_notification_preset: data.order_notification_preset, notify_order_received: data.notify_order_received,
       notify_order_confirmed: data.notify_order_confirmed, notify_production_preparing: data.notify_production_preparing, notify_payment_paid: data.notify_payment_paid,
       notify_pickup_ready: data.notify_pickup_ready, notify_pickup_completed: data.notify_pickup_completed, notify_out_for_delivery: data.notify_out_for_delivery,

@@ -8,7 +8,10 @@ const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
   sendText: vi.fn(),
   recordFailure: vi.fn(),
+  canSend: vi.fn(),
 }));
+
+vi.mock("@/server/conversations/automation-hours-service", () => ({ WhatsAppAutomationHoursService: { canSend: mocks.canSend } }));
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => ({ rpc: mocks.rpc }) }));
 vi.mock("@/server/conversations/provider", () => ({
@@ -35,6 +38,7 @@ describe("conversation auto close [1018]", () => {
     mocks.rpc.mockReset();
     mocks.sendText.mockReset();
     mocks.recordFailure.mockReset();
+    mocks.canSend.mockReset().mockResolvedValue(true);
   });
 
   it("accepts restaurant-defined timeouts only inside the safe range", () => {
@@ -147,6 +151,23 @@ describe("conversation auto close [1018]", () => {
       p_message_id: "m-2",
       p_status: "failed",
     }));
+  });
+
+  it("closes silently outside opening hours without sending the optional final message", async () => {
+    mocks.canSend.mockResolvedValue(false);
+    mocks.rpc
+      .mockResolvedValueOnce({ data: [{ conversation_id: "c-closed", expected_version: 1 }], error: null })
+      .mockResolvedValueOnce({ data: {
+        closed: true, conversation_id: "c-closed", organization_id: "org-1", store_id: "store-1",
+        message_id: "m-closed", message_body: "Até logo", recipient: "5511999999999",
+        phone_number_id: "phone-1", access_token_secret_ref: "WA_TOKEN",
+      }, error: null })
+      .mockResolvedValueOnce({ data: {}, error: null });
+    const result = await runConversationAutoCloseWorker();
+    expect(result).toMatchObject({ closed: 1, messagesSent: 0, messageFailures: 0 });
+    expect(mocks.canSend).toHaveBeenCalledWith({ organizationId: "org-1", storeId: "store-1" });
+    expect(mocks.sendText).not.toHaveBeenCalled();
+    expect(mocks.rpc).toHaveBeenCalledWith("conversation_mark_outbound_result_internal", expect.objectContaining({ p_message_id: "m-closed", p_status: "failed", p_error_code: "outside_open_hours" }));
   });
 
   it("registers a protected five-minute scheduler job", () => {
