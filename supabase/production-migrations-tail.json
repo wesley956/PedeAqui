@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-02",
+  "capturedAt": "2026-10-26",
   "migrations": [
     [
       "20260823090844",
@@ -536,6 +536,10 @@
     [
       "20261020214527",
       "infinitepay_order_checkout"
+    ],
+    [
+      "20261027001910",
+      "whatsapp_bot_open_hours"
     ]
   ]
 }
