@@ -1,4 +1,5 @@
 import "server-only";
+import { WhatsAppAutomationHoursService } from "@/server/conversations/automation-hours-service";
 
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -68,6 +69,17 @@ export async function runConversationAutoCloseWorker(input?: { limit?: number })
 
     if (!result.message_id || !result.message_body || !result.recipient || !result.phone_number_id || !result.access_token_secret_ref) continue;
     try {
+      if (!result.organization_id || !result.store_id || !await WhatsAppAutomationHoursService.canSend({ organizationId: result.organization_id, storeId: result.store_id })) {
+        const { error: silenceError } = await admin.rpc("conversation_mark_outbound_result_internal", {
+          p_message_id: result.message_id,
+          p_external_message_id: null,
+          p_status: "failed",
+          p_error_code: "outside_open_hours",
+          p_error_message: "Encerramento sem aviso: restaurante fechado ou pausado.",
+        });
+        if (silenceError) throw silenceError;
+        continue;
+      }
       const provider = new WhatsAppCloudProvider(resolveWhatsAppAccessToken(result.access_token_secret_ref));
       const sent = await provider.sendText({
         phoneNumberId: result.phone_number_id,

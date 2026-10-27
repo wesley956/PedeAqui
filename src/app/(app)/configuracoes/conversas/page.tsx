@@ -239,6 +239,8 @@ export default async function ConversationSettingsPage() {
 
         <Card className={styles.card}>
           <h2 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>Atendimento automático</h2>
+          <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="botOnlyWhenOpen" defaultChecked={Boolean(settings?.bot_only_when_open)} /><span>Atender somente enquanto o restaurante estiver aberto</span></label>
+          <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>Segue os dias e horários cadastrados e a pausa manual da loja. Fora desse período, o robô fica em silêncio, sem saudação, aviso de loja fechada ou notificações automáticas. Você pode usar o mesmo número normalmente.</p>
           <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="botEnabled" defaultChecked={settings?.default_bot_enabled ?? true} /><span>Responder automaticamente quando não houver atendente</span></label>
           <label style={{ display: "flex", gap: 9, alignItems: "center" }}><input type="checkbox" name="aiEnabled" defaultChecked={Boolean(settings?.ai_enabled)} /><span>Usar o assistente inteligente nas conversas</span></label>
           <p className="muted" style={{ margin: 0, fontSize: "var(--font-size-support)" }}>O assistente só utiliza as funções autorizadas do PedeAqui e respeita o acesso configurado para esta unidade.</p>

@@ -115,6 +115,7 @@ export async function saveConversationSettingsAction(formData: FormData) {
     accessTokenSecretRef: current?.access_token_secret_ref ?? null,
     appSecretSecretRef: current?.app_secret_secret_ref ?? null,
     botEnabled: checked(formData, "botEnabled"),
+    botOnlyWhenOpen: checked(formData, "botOnlyWhenOpen"),
     aiEnabled: checked(formData, "aiEnabled"),
     whatsappOrdersEnabled: checked(formData, "whatsappOrdersEnabled"),
     greetingEnabled: connectionConfigured ? checked(formData, "greetingEnabled") : Boolean(current?.greeting_enabled),

@@ -1,4 +1,5 @@
 import "server-only";
+import { WhatsAppAutomationHoursService } from "@/server/conversations/automation-hours-service";
 
 import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -275,6 +276,10 @@ async function processOne(job: QueueRow, workerId: string) {
   }
 
   const appUrl = process.env.APP_URL;
+  if (!await WhatsAppAutomationHoursService.canSend({ organizationId: job.organization_id, storeId: job.store_id })) {
+    await finish({ notificationId: job.id, workerId, status: "skipped", errorCode: "outside_open_hours", errorMessage: "Envio automático silenciado porque o restaurante está fechado ou pausado." });
+    return "skipped" as const;
+  }
   if (!appUrl) {
     await finish({ notificationId: job.id, workerId, status: "failed", errorCode: "app_url_missing", errorMessage: "Endereço público do PedeAqui não configurado.", retryAfterSeconds: 1800 });
     return "failed" as const;

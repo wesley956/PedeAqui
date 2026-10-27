@@ -5,6 +5,7 @@ import { ConversationMediaService } from "@/server/conversations/conversation-me
 import { WhatsAppCoexistenceObservability } from "@/server/conversations/coexistence-observability";
 import { WhatsAppCoexistenceService } from "@/server/conversations/coexistence-service";
 import { ConversationGreetingService } from "@/server/conversations/greeting-service";
+import { WhatsAppAutomationHoursService } from "@/server/conversations/automation-hours-service";
 import { InboundOutcomeService } from "@/server/conversations/inbound-outcome-service";
 import type { LegacyIntelligenceDecision } from "@/server/conversations/legacy-intelligence-observation";
 import { WhatsAppDirectOrderOrchestrator } from "@/server/conversations/whatsapp-direct-order-orchestrator";
@@ -85,6 +86,13 @@ export async function POST(request: Request) {
       const result = await ConversationService.ingestWhatsAppEvent(event);
       processed += 1;
       if (event.kind === "message") {
+        // Persist inbound normally, but do not respond, hand off, or replay it later.
+        try {
+          if (!await WhatsAppAutomationHoursService.canReply(result, event.providerTimestamp)) continue;
+        } catch (error) {
+          recordFailure("whatsapp.automation_hours.failed", error, { requestId: requestContext.requestId });
+          continue; // Keep silent if opening hours cannot be verified.
+        }
         let shadowPreparation: IntelligenceShadowPreparation | null = null;
         try {
           shadowPreparation = await UnifiedIntelligenceRouterShadow.afterInbound(result, requestContext.requestId);
