@@ -3,6 +3,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { logger } from "@/server/observability/logger";
 import { OrderPaymentProviderConfigService } from "@/server/payments/order-payment-provider-config-service";
+import { mercadoPagoOAuthAppUrl } from "@/server/payments/mercado-pago-oauth-navigation";
 import {
   exchangeMercadoPagoAuthorizationCode,
   mercadoPagoWebhookSecret,
@@ -13,12 +14,13 @@ const OAUTH_COOKIE = "pedeaqui_mp_oauth";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  let status = "oauth_error";
+  let status = "session_invalid";
+  let stage = "validate_session";
 
   try {
     if (url.searchParams.get("error")) {
       status = "authorization_denied";
-      return redirectWithClearedCookie(request, status);
+      return redirectWithClearedCookie(status);
     }
 
     const code = url.searchParams.get("code");
@@ -30,19 +32,26 @@ export async function GET(request: Request) {
     const oauthSession = readMercadoPagoOAuthSession(cookieValue);
     if (oauthSession.state !== state) throw new Error("Mercado Pago OAuth state mismatch");
 
+    status = "not_authorized";
+    stage = "authorize_store";
     const context = await authorize(PERMISSIONS.PAYMENTS_MANAGE);
+    status = "context_changed";
     if (!context.storeId
       || context.storeId !== oauthSession.storeId
       || context.organizationId !== oauthSession.organizationId) {
       throw new Error("Mercado Pago OAuth tenant context changed");
     }
 
+    status = "token_exchange_failed";
+    stage = "exchange_token";
     const token = await exchangeMercadoPagoAuthorizationCode({
       code,
       verifier: oauthSession.verifier,
     });
     const accessTokenExpiresAt = new Date(Date.now() + token.expires_in * 1000).toISOString();
 
+    status = "connection_save_failed";
+    stage = "save_connection";
     await OrderPaymentProviderConfigService.connectOAuthCurrentStore({
       environment: token.live_mode ? "production" : "test",
       accessToken: token.access_token,
@@ -54,15 +63,16 @@ export async function GET(request: Request) {
     status = "connected";
   } catch (error) {
     logger.warn("mercado_pago_oauth_callback_failed", {
+      stage,
       errorType: error instanceof Error ? error.name : "unknown",
     });
   }
 
-  return redirectWithClearedCookie(request, status);
+  return redirectWithClearedCookie(status);
 }
 
-function redirectWithClearedCookie(request: Request, status: string) {
-  const response = NextResponse.redirect(new URL(`/configuracoes/pagamentos?mercado_pago=${encodeURIComponent(status)}`, request.url));
+function redirectWithClearedCookie(status: string) {
+  const response = NextResponse.redirect(mercadoPagoOAuthAppUrl(`/configuracoes/pagamentos?mercado_pago=${encodeURIComponent(status)}`));
   response.cookies.set(OAUTH_COOKIE, "", {
     httpOnly: true,
     sameSite: "lax",

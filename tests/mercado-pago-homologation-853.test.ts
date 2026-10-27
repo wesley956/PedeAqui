@@ -133,7 +133,7 @@ describe("#853 Mercado Pago automated homologation gate", () => {
     const callback = read("src/app/api/integrations/mercado-pago/oauth/callback/route.ts");
     expect(callback).toContain("oauthSession.state !== state");
     expect(callback).toContain("Mercado Pago OAuth state mismatch");
-    expect(callback).toContain("return redirectWithClearedCookie(request, status)");
+    expect(callback).toContain("return redirectWithClearedCookie(status)");
     expect(callback).toContain('response.cookies.set(OAUTH_COOKIE, "",');
     expect(callback).toContain("maxAge: 0");
   });
