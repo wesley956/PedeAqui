@@ -2,6 +2,7 @@
 
 import { useActionState, useId } from "react";
 import { assistedInstaller } from "@/features/printing/assisted-installer";
+import { windowsPrintingDiagnostic } from "@/features/printing/windows-diagnostic";
 import { Input } from "@/components/ui/form-controls";
 import { useRouter } from "next/navigation";
 import {
@@ -27,6 +28,22 @@ function downloadAssistedInstaller(token: string) {
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
+}
+
+export function PrintingDiagnosticDownload() {
+  const download = () => {
+    const blob = new Blob([windowsPrintingDiagnostic(window.location.origin)], { type: "application/x-msdos-program;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Diagnosticar-PedeAqui-Impressao.cmd";
+    document.body.appendChild(link);
+    link.click(); link.remove(); URL.revokeObjectURL(url);
+  };
+  return <div style={{ display: "grid", gap: 8 }}>
+    <button type="button" onClick={download} style={secondaryButtonStyle}>Baixar diagnóstico do computador</button>
+    <p className="muted">Execute no computador ligado à impressora e envie o resumo ao suporte. Apenas consulta o programa, o Windows e a conexão; não imprime, não reinstala e não altera a chave.</p>
+  </div>;
 }
 
 function InstallerCard({ state }: { state: AgentCreationState }) {

@@ -13,6 +13,7 @@ export type OperationHeaderData = {
   cashStatus: "open" | "closed" | null;
   cashRegisterName: string | null;
   health: OperationalHealthSnapshot;
+  canMonitorPrinting?: boolean;
   receiving: {
     accepting: boolean;
     reason: string | null;
@@ -27,6 +28,7 @@ export class OperationHeaderService {
     const { context, permissionKeys } = access;
     const supabase = await createClient();
     const healthPromise = OperationalHealthService.load(access);
+    const canMonitorPrinting = permissionKeys.includes(PERMISSIONS.PRINTING_VIEW);
     let storeName: string | null = null;
     let storeStatus: string | null = null;
     let receiving: OperationHeaderData["receiving"] = null;
@@ -56,7 +58,7 @@ export class OperationHeaderService {
     }
 
     if (!context.storeId || !permissionKeys.includes(PERMISSIONS.CASH_VIEW)) {
-      return { storeName, storeStatus, cashStatus: null, cashRegisterName: null, health: await healthPromise, receiving };
+      return { storeName, storeStatus, cashStatus: null, cashRegisterName: null, health: await healthPromise, receiving, canMonitorPrinting };
     }
 
     await authorize(PERMISSIONS.CASH_VIEW, context);
@@ -73,7 +75,7 @@ export class OperationHeaderService {
       .maybeSingle();
     if (sessionError) throw sessionError;
 
-    if (!session) return { storeName, storeStatus, cashStatus: "closed", cashRegisterName: null, health: await healthPromise, receiving };
+    if (!session) return { storeName, storeStatus, cashStatus: "closed", cashRegisterName: null, health: await healthPromise, receiving, canMonitorPrinting };
 
     const { data: register, error: registerError } = await admin
       .from("cash_registers")
@@ -84,6 +86,6 @@ export class OperationHeaderService {
       .maybeSingle();
     if (registerError) throw registerError;
 
-    return { storeName, storeStatus, cashStatus: "open", cashRegisterName: register?.name ?? null, health: await healthPromise, receiving };
+    return { storeName, storeStatus, cashStatus: "open", cashRegisterName: register?.name ?? null, health: await healthPromise, receiving, canMonitorPrinting };
   }
 }

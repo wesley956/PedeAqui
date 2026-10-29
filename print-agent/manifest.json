@@ -1,15 +1,32 @@
 {
-  "version": "0.7.3",
+  "version": "0.8.0",
   "files": [
-    "src/index.mjs",
     "src/escpos.mjs",
     "src/system-print.mjs",
     "src/spool.mjs",
     "src/order-alert.mjs",
     "src/job-style.mjs",
     "src/api-client.mjs",
+    "src/diagnostic-collector.mjs",
+    "src/diagnostics.mjs",
+    "src/updater-core.mjs",
+    "src/index.mjs",
     "src/updater.mjs",
     "manifest.json",
     "package.json"
-  ]
+  ],
+  "sha256": {
+    "src/escpos.mjs": "35d8d852141008426bc13124b5270efde3ca426d8915060c60a3737460528f49",
+    "src/system-print.mjs": "98e26933bc11fe7ab4ca87339549c17f20c6788cab3bec9c1144e91054bd4261",
+    "src/spool.mjs": "748025bc2e368a741b0652d9e6057e824b963d2b1cc8e62bfe405e508a9387c1",
+    "src/order-alert.mjs": "8fd5f300c82c743437a1f1adc9bd6964eb6b28b4f7f97f0be8112067bf9024f9",
+    "src/job-style.mjs": "e0032a51006405e1ddccb94112aee202bbaddeffd8c2d2746c87b6ada91518f5",
+    "src/api-client.mjs": "4a11bbff1fe02c7887a1763cd2940ab95d4020e08e3f93126476f39d3832f888",
+    "src/diagnostic-collector.mjs": "75442c4399e6aac81c43abb6ea28f141a4b78373c92679f0ac7e3798e96660a5",
+    "src/diagnostics.mjs": "9e3aee0d1009100eb74956263517b244803f9e6ff4d2f2a8216aea57b4f871ca",
+    "src/updater-core.mjs": "4959a19fc0bc1be34f1c326432c2964e0270185a3102ad2a8ca5ede65d926b99",
+    "src/index.mjs": "b377f28d4deaaa6fd2127a615bc453803052b5e085a0260e281147bd7bb3f9cc",
+    "src/updater.mjs": "47b6bc99f5aa88b8bd7c1066d146d12af2fbb17dc29ceaec7b913f78ff4cb521",
+    "package.json": "3c1ed4ec35301d5d941ddfabedb628041d5bcf14d325d44d1e090cb99279a9a2"
+  }
 }

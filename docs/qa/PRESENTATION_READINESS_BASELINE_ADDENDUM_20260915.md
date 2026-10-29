@@ -29,8 +29,11 @@ Este adendo preserva os baselines históricos e registra superfícies adicionada
 
 - `/api/webhooks/payments/infinitepay/[storeId]` — notificação com token privado por unidade, hash do payload e consulta autenticada à InfinitePay antes de confirmar o pagamento.
 - `/m/[slug]/pedido/[id]/infinitepay/retorno` — retorno do checkout; exige cookie de acesso ao pedido e confere referência, unidade e valor na API. A URL de retorno sozinha não confirma pagamento.
+# Acompanhamento de confiabilidade — 27/10/2026
+
+- `/api/printing/health`: leitura autenticada de heartbeat, destinos e documentos pendentes da organização/unidade selecionada; exige `printing.view`, resposta privada sem cache, sem claim, reimpressão ou alteração de pedidos. Referência: #1291. A existência da rota não certifica homologação física da Epson.
+
 # Acompanhamento de pedidos — atualização de 29/10/2026
 
 - `/m/[slug]/meus-pedidos`: lista os últimos cinco pedidos autorizados neste navegador, com número, status e acesso ao acompanhamento.
 - `/m/[slug]/pedido-atual`: valida o histórico HttpOnly e o token individual do pedido antes de restaurar o cookie de acompanhamento e redirecionar para a URL limpa. Sem credencial válida, retorna à lista; não consulta pedidos por telefone.
-

@@ -9,6 +9,8 @@ import { cartCookieName } from "@/server/cart/cart-token";
 import { parseMoneyToCents } from "@/server/catalog/money";
 import { CheckoutError, CheckoutService } from "@/server/checkout/checkout-service";
 import { customerRecognitionCookieName } from "@/server/customers/recognition-token";
+import { recoverCheckoutOrderAction } from "@/features/orders/actions";
+import { logger } from "@/server/observability/logger";
 
 function text(formData: FormData, name: string) {
   const value = formData.get(name);
@@ -84,10 +86,13 @@ async function saveParts(formData: FormData, mode: "strict" | "draft") {
     ? { mode: "scheduled", localDateTime: text(formData, "localDateTime") }
     : { mode: "asap" }));
 
-  for (const step of steps) {
+  for (const [stepIndex, step] of steps.entries()) {
     try {
       await step();
     } catch (error) {
+      const diagnostic = { storeSlug, stepIndex, code: error instanceof CheckoutError ? error.code : "unexpected_failure" };
+      if (error instanceof CheckoutError) logger.info("checkout_express_validation_failed", diagnostic);
+      else logger.warn("checkout_express_step_failed", diagnostic);
       if (!(error instanceof CheckoutError)) throw error;
       if (mode === "strict") back(storeSlug, error.code);
     }
@@ -101,11 +106,12 @@ async function saveParts(formData: FormData, mode: "strict" | "draft") {
  * volta para a tela com o total atualizado em vez de confirmar.
  */
 export async function submitExpressCheckoutAction(formData: FormData) {
+  await recoverCheckoutOrderAction(formData);
   const { storeSlug, token, recognitionToken } = await saveParts(formData, "strict");
   // O cliente confirma o valor que viu. Se a entrega mudou o total, mostra o novo total antes de confirmar.
   const current = await CheckoutService.load(storeSlug, token, recognitionToken);
   const expected = Number(text(formData, "expectedTotalCents"));
-  if (!Number.isFinite(expected) || expected !== Number(current.cart.total_cents)) back(storeSlug, "total_updated");
+  if (!text(formData, "expectedTotalCents") || !Number.isSafeInteger(expected) || expected < 0 || expected !== Number(current.cart.total_cents)) back(storeSlug, "total_updated");
   await confirmCheckoutOrderAction(formData);
 }
 

@@ -185,13 +185,21 @@ export class PrintQueueService {
   static async heartbeat(agent: AuthenticatedAgent, input: unknown) {
     const values = heartbeatSchema.parse(input);
     const admin = createAdminClient();
-    const { error } = await admin.rpc("print_agent_heartbeat_internal", {
+    const args = {
       p_agent_id: agent.id,
       p_version: values.version ?? null,
       p_capabilities: values.capabilities,
       p_printers: values.printers,
-    });
+    };
+    if (values.capabilities.onDemandDiagnostics === true) {
+      const result = await admin.rpc("print_agent_heartbeat_diagnostic_internal", args);
+      if (!result.error) return result.data as { ok: true; diagnostic: { id: string; expiresAt: string } | null };
+      // A staggered schema rollout must never stop printing or heartbeat.
+      // Fail closed for diagnostics while preserving the legacy liveness path.
+    }
+    const { error } = await admin.rpc("print_agent_heartbeat_internal", args);
     if (error) throw error;
+    return { ok: true, diagnostic: null };
   }
 
   static async listCurrent(limit = 100) {

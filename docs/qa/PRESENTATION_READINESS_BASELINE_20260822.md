@@ -100,7 +100,7 @@ O gap inicial de `team` foi encerrado no lote PA-DIAG-011–015 com a criação 
 
 `/api/health`, `/api/internal/order-notifications`, `/api/internal/campaign-messages`, `/api/internal/route-retention`, `/api/print-agent/ack`,
 `/api/print-agent/claim`, `/api/print-agent/config`, `/api/print-agent/fail`,
-`/api/print-agent/heartbeat`, `/api/webhooks/billing/[providerKey]`,
+`/api/print-agent/heartbeat`, `/api/print-agent/diagnostics/result`, `/api/webhooks/billing/[providerKey]`,
 `/api/webhooks/fiscal/[integrationId]`,
 `/api/webhooks/payments/mercado-pago/[storeId]`, `/api/webhooks/whatsapp`.
 

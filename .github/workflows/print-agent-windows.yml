@@ -6,6 +6,7 @@ on:
       - 'print-agent/**'
       - 'src/features/printing/**'
       - 'tests/print-agent-installer.test.ts'
+      - 'tests/printing-windows-diagnostic-1291.test.ts'
       - '.github/workflows/print-agent-windows.yml'
   push:
     branches: [main]
@@ -13,6 +14,7 @@ on:
       - 'print-agent/**'
       - 'src/features/printing/**'
       - 'tests/print-agent-installer.test.ts'
+      - 'tests/printing-windows-diagnostic-1291.test.ts'
       - '.github/workflows/print-agent-windows.yml'
 
 permissions:
@@ -29,4 +31,27 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --legacy-peer-deps --no-audit --no-fund
-      - run: npx --no-install vitest run tests/print-agent-installer.test.ts
+      - run: npx --no-install vitest run tests/print-agent-installer.test.ts tests/printing-windows-diagnostic-1291.test.ts tests/print-agent-on-demand-diagnostics.test.ts tests/print-agent-updater-recovery.test.ts
+      - name: Run isolated notebook pilot on Windows
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $fixture = Join-Path $env:RUNNER_TEMP 'pedeaqui-pilot-package'
+          New-Item -ItemType Directory -Force -Path $fixture | Out-Null
+          Copy-Item -Path 'print-agent' -Destination $fixture -Recurse
+          Copy-Item 'print-agent/pilot/Preparar-Piloto.ps1' $fixture
+          New-Item -ItemType Directory -Force -Path (Join-Path $fixture 'tools') | Out-Null
+          $node = (Get-Command node.exe).Source
+          Copy-Item $node (Join-Path $fixture 'tools/node.exe')
+          @{sha256=(Get-FileHash -Algorithm SHA256 $node).Hash.ToLowerInvariant()} | ConvertTo-Json | Set-Content (Join-Path $fixture 'tools/runtime.json')
+          $env:LOCALAPPDATA = Join-Path $fixture 'isolated-localappdata'
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File (Join-Path $fixture 'Preparar-Piloto.ps1')
+          $result = $LASTEXITCODE
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          Copy-Item (Join-Path $fixture 'Relatorio-Piloto-PedeAqui.json') 'artifacts/pilot-windows.json'
+          if ($result -ne 0) { exit $result }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: print-agent-windows-pilot
+          path: artifacts/pilot-windows.json

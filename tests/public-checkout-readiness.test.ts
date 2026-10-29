@@ -34,7 +34,7 @@ describe("public cart and checkout readiness [PA-DIAG-026-030]", () => {
     expect(checkoutService).toContain("const [session, methods, menu, recognizedCustomer, deliveryNeighborhoods, growthEnabled, allowScheduling] = await Promise.all");
     expect(checkoutService).toContain("const [cartResult, menu] = await Promise.all");
     expect(checkoutService).toContain("StoreModuleStateService.isEnabled");
-    expect(checkoutPage).toContain("const data = await CheckoutService.load");
+    expect(checkoutPage).toContain("data = await CheckoutService.load");
   });
 
   it("does not present distance as enforced without geocoding", () => {

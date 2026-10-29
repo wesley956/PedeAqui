@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { PrintAgentAdminService } from "@/server/printing/print-agent-admin-service";
+import { PrintAgentDiagnosticService } from "@/server/printing/print-agent-diagnostic-service";
 import { PrintConfigService } from "@/server/printing/print-config-service";
 import { PrintLineSpacingService } from "@/server/printing/print-line-spacing-service";
 import { PrintQueueService } from "@/server/printing/print-queue-service";
@@ -18,6 +19,22 @@ function refresh() {
   revalidatePath("/configuracoes");
   revalidatePath("/configuracoes/impressoes");
   revalidatePath("/configuracoes/impressoes/formato");
+}
+
+export async function requestAgentDiagnosticAction(formData: FormData) {
+  let result = "requested";
+  try { await PrintAgentDiagnosticService.request(text(formData, "agentId"), text(formData, "intentKey")); }
+  catch { result = "unavailable"; }
+  refresh();
+  redirect(`/configuracoes/impressoes?diagnostic=${result}`);
+}
+
+export async function cancelAgentDiagnosticAction(formData: FormData) {
+  let result = "cancelled";
+  try { await PrintAgentDiagnosticService.cancel(text(formData, "requestId")); }
+  catch { result = "unavailable"; }
+  refresh();
+  redirect(`/configuracoes/impressoes?diagnostic=${result}`);
 }
 
 export async function createPrintStationAction(formData: FormData) {

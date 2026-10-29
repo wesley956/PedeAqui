@@ -16,7 +16,11 @@ export function createAgentApiClient({ apiUrl, token, timeoutMs, fetcher = fetch
       unauthorizedUntil = Math.max(unauthorizedUntil, now() + 60_000);
     }
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(`${path}: ${response.status} ${data?.error || "request failed"}`);
+    if (!response.ok) {
+      const error = new Error(`${path}: ${response.status} ${data?.error || "request failed"}`);
+      error.status = response.status;
+      throw error;
+    }
     return data;
   };
 }

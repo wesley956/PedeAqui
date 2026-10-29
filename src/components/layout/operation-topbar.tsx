@@ -47,7 +47,7 @@ export function OperationTopbar({ email, data, storeId, experienceMode = "standa
       <div className="app-topbar-actions">
         {canSearchCatalog && !driverOnly ? <Link className="app-operation-link app-item-search" href="/cardapio/disponibilidade?buscar=1" aria-label="Buscar item para pausar ou reativar" title="Buscar produto ou sabor para pausar"><span aria-hidden="true">⌕</span><span className="app-movement-label">Buscar item</span></Link> : null}
         {!driverOnly ? <Link className="app-operation-link app-movement-shortcut" href="/movimento" aria-label="Modo Movimento" title="Modo Movimento"><span aria-hidden="true">↗</span><span className="app-movement-label">Modo Movimento</span></Link> : null}
-        <OperationalHealthIndicator storeId={storeId} snapshot={data.health} />
+        <OperationalHealthIndicator storeId={storeId} snapshot={data.health} canMonitorPrinting={data.canMonitorPrinting === true && data.health.printingConfigured} />
         <CustomerMessageNotifications state={customerMessages} />
         <details className="app-account-menu">
           <summary aria-label="Conta e preferências" title="Conta e preferências">

@@ -59,8 +59,32 @@ export async function createOrderFromCheckoutAction(formData: FormData) {
   if (!token) redirect(`/m/${storeSlug}/carrinho`);
 
   const result = await OrderService.createFromCheckout(storeSlug, token);
+  await finishCheckoutOrder(storeSlug, result);
+}
+
+/** Recover an existing order without saving or submitting the converted cart again. */
+export async function recoverCheckoutOrderAction(formData: FormData) {
+  const storeSlug = String(formData.get("storeSlug") ?? "");
+  if (!/^[a-z0-9][a-z0-9-]{1,62}$/.test(storeSlug)) redirect("/");
+  const token = (await cookies()).get(cartCookieName(storeSlug))?.value;
+  if (!token) return;
+  const result = await OrderService.recoverFromCheckout(storeSlug, token);
+  if (result) await finishCheckoutOrder(storeSlug, result);
+}
+
+async function finishCheckoutOrder(storeSlug: string, result: { order_id: string; accessToken: string }) {
+  const cookieStore = await cookies();
+  const cartCookie = cartCookieName(storeSlug);
   cookieStore.set(recentOrdersCookieName(storeSlug), rememberRecentOrder(cookieStore.get(recentOrdersCookieName(storeSlug))?.value, { orderId: result.order_id, accessToken: result.accessToken }), recentOrdersCookieOptions(storeSlug));
-  await OrderNotificationContextService.capture(result.order_id, result.accessToken);
+  try {
+    await OrderNotificationContextService.capture(result.order_id, result.accessToken);
+  } catch (error) {
+    // A transport failure after commit must not hide a successfully created order.
+    logger.warn("checkout_notification_context_failed", {
+      orderId: result.order_id,
+      errorType: error instanceof Error ? error.name : "unknown",
+    });
+  }
   scheduleOrderWhatsAppNotifications("checkout.order_created", result.order_id);
   scheduleOrderPixCharge(result.order_id);
   cookieStore.set(orderCookieName(storeSlug, result.order_id), result.accessToken, {

@@ -1,4 +1,5 @@
 import { createAgentApiClient } from "./api-client.mjs";
+import { createDiagnosticController } from "./diagnostics.mjs";
 import { resolveJobLineSpacing } from "./job-style.mjs";
 import { printNetwork, probeNetwork } from "./escpos.mjs";
 import { nativeOrderAlertSupported, pollNativeOrderAlerts } from "./order-alert.mjs";
@@ -14,11 +15,12 @@ const requestTimeoutMs = Math.max(3000, Number(process.env.PEDEAQUI_PRINT_REQUES
 const updateCheckMs = Math.max(60000, Number(process.env.PEDEAQUI_PRINT_UPDATE_CHECK_MS || 6 * 60 * 60 * 1000));
 const watchdogEnabled = process.env.PEDEAQUI_AGENT_WATCHDOG === "1";
 const remoteManifestUrl = "https://raw.githubusercontent.com/wesley956/PedeAqui/main/print-agent/manifest.json";
-const version = "0.7.3";
+const version = "0.8.0";
 const printers = new Map();
 const deliveryFailures = new Map();
 const deliveryFailureHoldMs = 5 * 60 * 1000;
 let heartbeatRunning = false;
+let healthRefreshRunning = false;
 let updateCheckRunning = false;
 let updateRequested = false;
 let lastUpdateCheckAt = 0;
@@ -54,6 +56,7 @@ function errorMessage(error) {
 }
 
 const post = createAgentApiClient({ apiUrl, token, timeoutMs: requestTimeoutMs });
+const diagnostics = createDiagnosticController({ apiUrl, token, post, version });
 
 async function acknowledge(jobId) { await post("/api/print-agent/ack", { jobId }); }
 async function fail(jobId, error) { await post("/api/print-agent/fail", { jobId, error: String(error).slice(0, 2000) }); }
@@ -269,8 +272,14 @@ async function heartbeat() {
   if (heartbeatRunning) return;
   heartbeatRunning = true;
   try {
-    await Promise.all([refreshPrinterHealth(), refreshDiscovery()]);
-    await post("/api/print-agent/heartbeat", {
+    // A stuck printer probe must not prevent delivery of a support request.
+    if (!healthRefreshRunning) {
+      healthRefreshRunning = true;
+      void Promise.all([refreshPrinterHealth(), refreshDiscovery()])
+        .catch(() => console.error("printer health refresh failed"))
+        .finally(() => { healthRefreshRunning = false; });
+    }
+    const response = await post("/api/print-agent/heartbeat", {
       version,
       capabilities: {
         networkEscPos: true,
@@ -291,12 +300,14 @@ async function heartbeat() {
         nativeOrderAlertAudio: nativeOrderAlertSupported() ? "pedeaqui-pedido.mp3" : null,
         watchdog: watchdogEnabled,
         selfUpdate: watchdogEnabled,
+        onDemandDiagnostics: true,
         accessibleTextSize: true,
         configurableLineSpacing: true,
         paperWidthsMm: [58, 80],
       },
       printers: [...printers.values()],
     });
+    void diagnostics.handle(response.diagnostic).catch(() => console.error("diagnostic dispatch failed"));
     void checkForUpdate();
   } catch (error) {
     console.error("heartbeat failed", error);
@@ -332,7 +343,7 @@ async function loop() {
       console.error("claim failed", error);
     }
 
-    if (updateRequested && watchdogEnabled && !inMemoryPrintedUnacked) {
+    if (updateRequested && watchdogEnabled && !inMemoryPrintedUnacked && !diagnostics.busy) {
       console.log("Restarting Print Agent so the watchdog can install the available update.");
       process.exit(75);
     }
