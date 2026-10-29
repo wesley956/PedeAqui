@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PedeAquiLogo } from "@/components/brand/pedeaqui-brand";
 import { PublicCartBar } from "@/features/cart/public-cart-bar";
@@ -8,6 +9,8 @@ import { StoreInformationSheet } from "@/features/menu/store-information-sheet";
 import { cartCookieName } from "@/server/cart/cart-token";
 import { PublicCartQuickLinesService, type PublicCartQuickLine } from "@/server/cart/public-cart-quick-lines-service";
 import { PublicMenuService } from "@/server/menu/public-menu-service";
+import { loadRecentPublicOrders, recentOrderStatus } from "@/server/orders/recent-public-orders-service";
+import { recentOrdersCookieName } from "@/server/orders/recent-order-token";
 import styles from "./public-menu.module.css";
 
 // Keep the public menu fresh while allowing Vercel to serve repeated anonymous
@@ -22,6 +25,9 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
   const menu = await PublicMenuService.getMenu(slug);
   if (!menu) notFound();
   const cartToken = (await cookies()).get(cartCookieName(menu.store.slug))?.value ?? null;
+  const recentCookie = (await cookies()).get(recentOrdersCookieName(menu.store.slug))?.value;
+  const recentOrders = await loadRecentPublicOrders(menu.store.slug, recentCookie).catch(() => []);
+  const recentOrder = recentOrders.find(({ order }) => !["completed", "canceled", "rejected"].includes(order.order_status)) ?? recentOrders[0];
   let quickLines: Record<string, PublicCartQuickLine> = {};
   try {
     quickLines = await PublicCartQuickLinesService.get(menu.store.slug, cartToken);
@@ -68,6 +74,8 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
           tiktok_url: menu.store.tiktok_url,
         }} hours={menu.hours} serviceFacts={serviceFacts} />
       </header>
+      <nav className={styles.orderNavigation} aria-label="Acompanhar compra"><Link href={`/m/${menu.store.slug}/meus-pedidos`}>Meus pedidos</Link></nav>
+      {recentOrder ? <Link className={styles.recentOrder} href={`/m/${menu.store.slug}/pedido-atual?id=${recentOrder.order.id}`} prefetch={false}><div><strong>Seu pedido #{recentOrder.order.display_number}</strong><span>{recentOrderStatus(recentOrder.order)}</span></div><strong>Acompanhar pedido →</strong></Link> : null}
       {closedNotice ? <div className={styles.closedNotice} role="status">{closedNotice}</div> : null}
       <div className={styles.content}>
         <MenuBrowser menu={{

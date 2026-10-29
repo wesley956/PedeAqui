@@ -12,6 +12,7 @@ import { CustomerRecognitionService } from "@/server/customers/recognition-servi
 import { CUSTOMER_RECOGNITION_MAX_AGE_SECONDS, customerRecognitionCookieName } from "@/server/customers/recognition-token";
 import { IfoodOrderLifecycleService } from "@/server/integrations/providers/ifood/ifood-order-lifecycle-service";
 import { orderCookieName } from "@/server/orders/order-token";
+import { recentOrdersCookieName, recentOrdersCookieOptions, rememberRecentOrder } from "@/server/orders/recent-order-token";
 import { routeOrderManagerLifecycle } from "@/server/orders/order-manager-lifecycle-router";
 import { OrderQuickFinishService } from "@/server/orders/order-quick-finish-service";
 import { OrderService } from "@/server/orders/order-service";
@@ -74,6 +75,7 @@ export async function recoverCheckoutOrderAction(formData: FormData) {
 async function finishCheckoutOrder(storeSlug: string, result: { order_id: string; accessToken: string }) {
   const cookieStore = await cookies();
   const cartCookie = cartCookieName(storeSlug);
+  cookieStore.set(recentOrdersCookieName(storeSlug), rememberRecentOrder(cookieStore.get(recentOrdersCookieName(storeSlug))?.value, { orderId: result.order_id, accessToken: result.accessToken }), recentOrdersCookieOptions(storeSlug));
   try {
     await OrderNotificationContextService.capture(result.order_id, result.accessToken);
   } catch (error) {

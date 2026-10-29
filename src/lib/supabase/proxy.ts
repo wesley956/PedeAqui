@@ -15,6 +15,11 @@ function getSafeReturnPath(value: string | null) {
 export async function updateSession(request: NextRequest, forwardedHeaders = new Headers(request.headers)) {
   const nextResponse = () => NextResponse.next({ request: { headers: forwardedHeaders } });
   let response = nextResponse();
+  const redirectWithCookies = (destination: URL) => {
+    const redirect = NextResponse.redirect(destination);
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
+  };
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   const pathname = request.nextUrl.pathname;
@@ -27,7 +32,7 @@ export async function updateSession(request: NextRequest, forwardedHeaders = new
       loginUrl.search = "";
       loginUrl.searchParams.set("error", "auth_unavailable");
       loginUrl.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
-      return NextResponse.redirect(loginUrl);
+      return redirectWithCookies(loginUrl);
     }
     return response;
   }
@@ -38,7 +43,11 @@ export async function updateSession(request: NextRequest, forwardedHeaders = new
         getAll() { return request.cookies.getAll(); },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          // Server Components must receive the refreshed session as well.
+          forwardedHeaders.set("cookie", request.headers.get("cookie") ?? "");
+          const previousCookies = response.cookies.getAll();
           response = nextResponse();
+          previousCookies.forEach((cookie) => response.cookies.set(cookie));
           cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
         },
       },
@@ -51,11 +60,11 @@ export async function updateSession(request: NextRequest, forwardedHeaders = new
       loginUrl.pathname = "/login";
       loginUrl.search = "";
       loginUrl.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
-      return NextResponse.redirect(loginUrl);
+      return redirectWithCookies(loginUrl);
     }
     if (isAuthenticated && pathname === "/login") {
       const returnPath = getSafeReturnPath(request.nextUrl.searchParams.get("next"));
-      return NextResponse.redirect(new URL(returnPath, request.url));
+      return redirectWithCookies(new URL(returnPath, request.url));
     }
     return response;
   } catch {
@@ -65,7 +74,7 @@ export async function updateSession(request: NextRequest, forwardedHeaders = new
       loginUrl.search = "";
       loginUrl.searchParams.set("error", "auth_unavailable");
       loginUrl.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
-      return NextResponse.redirect(loginUrl);
+      return redirectWithCookies(loginUrl);
     }
     return response;
   }

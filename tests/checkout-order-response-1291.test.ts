@@ -15,8 +15,9 @@ vi.mock("@/server/payments/order-pix-dispatch", () => ({ scheduleOrderPixCharge:
 vi.mock("@/server/customers/recognition-service", () => ({ CustomerRecognitionService: { issueFromOrder: mocks.recognition } }));
 vi.mock("@/server/observability/logger", () => ({ logger: { warn: mocks.warn } }));
 import { createOrderFromCheckoutAction, recoverCheckoutOrderAction } from "@/features/orders/actions";
+import { readRecentOrders, recentOrdersCookieName } from "@/server/orders/recent-order-token";
 
-const result = { order_id: "76000000-0000-4000-8000-000000000004", display_number: 203, accessToken: "private-tracking-token" };
+const result = { order_id: "76000000-0000-4000-8000-000000000004", display_number: 203, accessToken: "private-tracking-token-for-isolated-fixture" };
 function form(slug = "loja-teste") { const value = new FormData(); value.set("storeSlug", slug); return value; }
 
 describe("successful order response is independent of notification transport (#1291)", () => {
@@ -32,11 +33,15 @@ describe("successful order response is independent of notification transport (#1
     expect(mocks.warn).toHaveBeenCalledWith("checkout_notification_context_failed", { orderId: result.order_id, errorType: "Error" });
     expect(JSON.stringify(mocks.warn.mock.calls)).not.toContain("sensitive transport details");
     expect(mocks.notify).toHaveBeenCalledTimes(1);
+    const recent = mocks.setCookie.mock.calls.find(call => call[0] === recentOrdersCookieName("loja-teste"));
+    expect(readRecentOrders(recent?.[1])).toEqual([{ orderId: result.order_id, accessToken: result.accessToken }]);
   });
   it("recovers an existing order using the opaque cart credential without creating another", async () => {
     await expect(recoverCheckoutOrderAction(form())).rejects.toThrow(`redirect:/m/loja-teste/pedido/${result.order_id}`);
     expect(mocks.recover).toHaveBeenCalledWith("loja-teste", "opaque-cart-token");
     expect(mocks.create).not.toHaveBeenCalled();
+    const recent = mocks.setCookie.mock.calls.find(call => call[0] === recentOrdersCookieName("loja-teste"));
+    expect(readRecentOrders(recent?.[1])).toEqual([{ orderId: result.order_id, accessToken: result.accessToken }]);
   });
   it("does not create or issue tracking access when no order exists", async () => {
     mocks.recover.mockResolvedValue(null);

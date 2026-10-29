@@ -23,6 +23,12 @@ const results = [];
 let localReport = null;
 let child = null;
 let api, printer;
+// Closing the pilot must not leave its isolated worker running in the background.
+process.on("exit", () => { if (child && child.exitCode === null && child.signalCode === null) child.kill(); });
+for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) process.once(signal, () => {
+  if (child && child.exitCode === null && child.signalCode === null) child.kill();
+  process.exit(130);
+});
 const sockets = new Set();
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function until(check, ms = 20000) {
@@ -135,7 +141,7 @@ try {
       PEDEAQUI_PRINT_POLL_MS: "1000", PEDEAQUI_NATIVE_ORDER_ALERTS: "0", PEDEAQUI_AGENT_WATCHDOG: "0",
     } });
   };
-  const stop = async () => { const current = child; child = null; if (current && current.exitCode === null) { const ended = once(current, "exit"); current.kill(); await ended; } };
+  const stop = async () => { const current = child; child = null; if (current && current.exitCode === null && current.signalCode === null) { const ended = once(current, "exit"); current.kill(); await ended; } };
   launch(); await until(() => ackAccepted === 1 && receipts.length === 2); await stop();
   launch(); await wait(1500); await stop();
   assert.equal(receipts.length, 2); assert.equal(ackCount, 2);
@@ -144,7 +150,7 @@ try {
   results.push({ test: "pilot_execution", passed: false, code: "pilot_step_failed" });
   process.exitCode = 1;
 } finally {
-  if (child && child.exitCode === null) { const ended = once(child, "exit"); child.kill(); await ended.catch(() => {}); }
+  if (child && child.exitCode === null && child.signalCode === null) { const ended = once(child, "exit"); child.kill(); await ended.catch(() => {}); }
   for (const socket of sockets) socket.destroy();
   if (printer) await new Promise(resolve => printer.close(resolve));
   if (api) { api.closeAllConnections(); await new Promise(resolve => api.close(resolve)); }

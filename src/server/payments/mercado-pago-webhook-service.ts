@@ -25,7 +25,21 @@ export async function processMercadoPagoOrderWebhook(input: {
   const dataId = input.dataId?.trim();
   if (!dataId) throw new MercadoPagoWebhookAuthError("Mercado Pago webhook signed data id is missing");
 
-  const credentials = await OrderPaymentProviderConfigService.credentials(input.storeId, "mercado_pago");
+  // The provider app may retain a webhook URL registered for a different store.
+  // Resolve only a canonical, locally linked order ID; never route by body user_id
+  // or external_reference. Signature and provider ownership checks still apply.
+  const admin = createAdminClient();
+  const { data: linkedCharge, error: linkedChargeError } = await admin.from("order_payment_provider_charges")
+    .select("organization_id, store_id")
+    .eq("provider", "mercado_pago")
+    .eq("provider_order_id", dataId)
+    .maybeSingle();
+  if (linkedChargeError) throw linkedChargeError;
+  const targetStoreId = linkedCharge?.store_id ?? input.storeId;
+  const credentials = await OrderPaymentProviderConfigService.credentials(targetStoreId, "mercado_pago");
+  if (linkedCharge && (credentials?.store_id !== linkedCharge.store_id || credentials?.organization_id !== linkedCharge.organization_id)) {
+    throw new MercadoPagoWebhookAuthError("Mercado Pago webhook charge scope does not match credentials");
+  }
   if (!credentials?.enabled || !credentials.webhook_secret) throw new Error("Mercado Pago webhook is not configured");
 
   const xSignature = input.headers.get("x-signature");
@@ -43,7 +57,7 @@ export async function processMercadoPagoOrderWebhook(input: {
   // pertence ao ledger de mensalidades, reconcilia a assinatura; caso contrário, segue
   // o fluxo normal do PIX do pedido do restaurante sem alterar seu comportamento.
   const billingSource = await PlatformBillingSourceService.configuration();
-  if (billingSource.sourceStoreId === input.storeId && billingSource.credentialsReady) {
+  if (billingSource.sourceStoreId === credentials.store_id && billingSource.credentialsReady) {
     const subscriptionBilling = await SubscriptionPixBillingService.reconcileByProviderResource(dataId);
     if (subscriptionBilling.matched) {
       return {
@@ -68,7 +82,6 @@ export async function processMercadoPagoOrderWebhook(input: {
     ? webhook.action
     : "order.notification";
 
-  const admin = createAdminClient();
   const payloadHash = createHash("sha256").update(input.rawBody).digest("hex");
   const eventRow = {
     organization_id: credentials.organization_id,
