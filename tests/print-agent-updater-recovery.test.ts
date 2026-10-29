@@ -29,7 +29,7 @@ describe("recoverable Print Agent update", () => {
     const root = path.resolve("print-agent");
     const manifest = JSON.parse(await readFile(path.join(root, "manifest.json"), "utf8"));
     for (const file of manifest.files as string[]) {
-      if (file !== "manifest.json") expect(createHash("sha256").update(await readFile(path.join(root, file))).digest("hex")).toBe(manifest.sha256[file]);
+      if (file !== "manifest.json") expect(createHash("sha256").update(await readFile(path.join(root, file))).digest("hex"), file).toBe(manifest.sha256[file]);
     }
   });
   it("validates all downloads before activation and updates the version last", async () => {

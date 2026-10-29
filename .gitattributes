@@ -1,0 +1,5 @@
+# Release hashes cover exact downloaded bytes, including on Windows checkouts.
+print-agent/src/*.mjs text eol=lf
+print-agent/pilot/*.mjs text eol=lf
+print-agent/package.json text eol=lf
+print-agent/manifest.json text eol=lf
