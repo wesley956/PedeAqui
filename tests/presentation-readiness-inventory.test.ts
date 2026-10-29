@@ -32,7 +32,7 @@ function routeFor(file: string) {
 describe("presentation readiness inventory PA-DIAG-001..005", () => {
   it("keeps every current page and route handler in the checked-in inventory", () => {
     const appFiles = walk(path.join(root, "src/app"))
-      .filter((file) => /\/(page\.tsx|route\.ts)$/.test(file));
+      .filter((file) => /\/(page\.tsx|route\.ts)$/.test(file.replaceAll(path.sep, "/")));
 
     expect(appFiles.length).toBeGreaterThan(0);
     for (const file of appFiles) {
