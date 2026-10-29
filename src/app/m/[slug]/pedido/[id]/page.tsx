@@ -181,7 +181,8 @@ export default async function PublicOrderPage({ params }: { params: Promise<{ sl
         </div>
       </details>
 
-      <div className={styles.actions}><Link href={`/m/${slug}`} className={styles.cta}>{terminal ? "Fazer novo pedido" : `Voltar ao ${vocabulary.catalogLabel.toLowerCase()}`}</Link>{storeContactHref ? <a href={storeContactHref} className={`${styles.cta} ${styles.ctaSecondary}`} target={storeContactHref.startsWith("https://") ? "_blank" : undefined} rel="noopener noreferrer">Falar com a loja</a> : <span className={`${styles.cta} ${styles.ctaSecondary}`}>{terminal ? "Pedido finalizado" : "Acompanhamento ativo"}</span>}</div>
+      <p>Para voltar a este acompanhamento, abra Meus pedidos no cardápio deste navegador.</p>
+      <div className={styles.actions}><Link href={`/m/${slug}/meus-pedidos`} className={`${styles.cta} ${styles.ctaSecondary}`}>Meus pedidos</Link><Link href={`/m/${slug}`} className={styles.cta}>{terminal ? "Fazer novo pedido" : `Voltar ao ${vocabulary.catalogLabel.toLowerCase()}`}</Link>{storeContactHref ? <a href={storeContactHref} className={`${styles.cta} ${styles.ctaSecondary}`} target={storeContactHref.startsWith("https://") ? "_blank" : undefined} rel="noopener noreferrer">Falar com a loja</a> : <span className={`${styles.cta} ${styles.ctaSecondary}`}>{terminal ? "Pedido finalizado" : "Acompanhamento ativo"}</span>}</div>
     </div>
   </main>;
 }

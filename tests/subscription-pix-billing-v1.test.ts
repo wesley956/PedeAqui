@@ -62,7 +62,7 @@ describe("customer subscription and PIX billing v1", () => {
     const route = read("src/app/api/webhooks/payments/mercado-pago/[storeId]/route.ts");
     expect(service).toContain("PlatformBillingSourceService.configuration()");
     expect(service).toContain("SubscriptionPixBillingService.reconcileByProviderResource(dataId)");
-    expect(service).toContain("billingSource.sourceStoreId === input.storeId");
+    expect(service).toContain("billingSource.sourceStoreId === credentials.store_id");
     expect(service).toContain("OrderPixService.reconcile(credentials.store_id, dataId)");
     expect(service).toContain("subscriptionBilling: true");
     expect(service).toContain("subscriptionBilling: false");

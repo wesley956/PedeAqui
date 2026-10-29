@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { orderCookieName } from "@/server/orders/order-token";
+import { recentOrdersCookieName, recentOrdersCookieOptions, rememberRecentOrder } from "@/server/orders/recent-order-token";
+import { cookies } from "next/headers";
 import { PublicOrderService } from "@/server/orders/public-order-service";
 
 export async function GET(
@@ -25,6 +27,8 @@ export async function GET(
 
   const cleanUrl = new URL(`/m/${encodeURIComponent(slug)}/pedido/${encodeURIComponent(id)}`, request.url);
   const response = NextResponse.redirect(cleanUrl, 303);
+  const recent = (await cookies()).get(recentOrdersCookieName(slug))?.value;
+  response.cookies.set(recentOrdersCookieName(slug), rememberRecentOrder(recent, { orderId: id, accessToken: token }), recentOrdersCookieOptions(slug));
   response.headers.set("Cache-Control", "no-store");
   response.headers.set("Referrer-Policy", "no-referrer");
   response.cookies.set(orderCookieName(slug, id), token, {
