@@ -1,0 +1,29 @@
+name: Print Agent Diagnostics
+on:
+  pull_request:
+    paths:
+      - 'print-agent/**'
+      - 'src/features/printing/**'
+      - 'src/server/printing/**'
+      - 'src/app/api/print-agent/**'
+      - 'supabase/**'
+      - 'tests/print-agent-*.test.ts'
+      - 'scripts/*print-agent*'
+      - '.github/workflows/print-agent-diagnostics.yml'
+permissions:
+  contents: read
+jobs:
+  diagnostic-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - run: npm install --prefix /tmp/diagnostic-db --no-audit --no-fund @electric-sql/pglite@0.5.13
+      - run: node scripts/test-print-agent-diagnostic-db.mjs
+        env:
+          PEDEAQUI_PGLITE_MODULE: /tmp/diagnostic-db/node_modules/@electric-sql/pglite/dist/index.js
+      - run: npx --no-install vitest run tests/print-agent-on-demand-diagnostics.test.ts tests/print-agent-updater-recovery.test.ts tests/print-agent-diagnostic-access.test.ts tests/print-agent-live-recovery-1291.test.ts

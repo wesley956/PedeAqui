@@ -1,5 +1,8 @@
 # Dona Maria — confiabilidade de compra e impressão
 
+## Atualização de escopo em 29/10/2026
+O diagnóstico sob demanda, atualização 0.8.0, piloto isolado no notebook do Wesley e os limites de distribuição estão registrados em [print-agent-diagnostics-on-demand-20261029.md](print-agent-diagnostics-on-demand-20261029.md). As seções abaixo documentam a preparação anterior de 27/10; afirmações de “sem migração/sem alteração de runtime” referem-se àquele lote anterior.
+
 Referência: #1291. Investigação iniciada em 27/10/2026, horários de Brasília. Baseline: `dec10c3b58189488e9a74a82d996f71928a0bdfa`.
 
 ## Resultado e limites

@@ -38,7 +38,7 @@ vi.mock("@/server/conversations/whatsapp-operational-health-service", () => ({ W
 vi.mock("@/features/orders/workflow-settings-actions", () => ({ saveOrderWorkflowSettingsAction: vi.fn() }));
 vi.mock("@/server/orders/order-workflow-settings-service", () => ({ OrderWorkflowSettingsService: { get: async () => ({ settings: { mode: "custom", custom: { delivery: ["new", "ready", "finished"], pickup: ["new", "finished"], quickFinish: false } } }) } }));
 vi.mock("@/server/printing/print-line-spacing-service", () => ({ PrintLineSpacingService: { get: async () => "comfortable" } }));
-vi.mock("@/features/printing/actions", () => ({ createPrintAgentAction: vi.fn(), reconnectPrintAgentAction: vi.fn(), cancelPrintJobAction: vi.fn(), createPrinterAction: vi.fn(), createPrintStationAction: vi.fn(), enqueuePrinterTestAction: vi.fn(), linkProductStationAction: vi.fn(), linkStationPrinterAction: vi.fn(), quickSetupDetectedPrinterAction: vi.fn(), reprintJobAction: vi.fn(), retryPrintJobAction: vi.fn(), saveOrderPrintPreferencesAction: vi.fn(), updatePrinterCopiesAction: vi.fn() }));
+vi.mock("@/features/printing/actions", () => ({ requestAgentDiagnosticAction: vi.fn(), cancelAgentDiagnosticAction: vi.fn(), createPrintAgentAction: vi.fn(), reconnectPrintAgentAction: vi.fn(), cancelPrintJobAction: vi.fn(), createPrinterAction: vi.fn(), createPrintStationAction: vi.fn(), enqueuePrinterTestAction: vi.fn(), linkProductStationAction: vi.fn(), linkStationPrinterAction: vi.fn(), quickSetupDetectedPrinterAction: vi.fn(), reprintJobAction: vi.fn(), retryPrintJobAction: vi.fn(), saveOrderPrintPreferencesAction: vi.fn(), updatePrinterCopiesAction: vi.fn() }));
 vi.mock("@/features/printing/connection-actions", () => ({ setPrinterActiveAction: vi.fn(), unlinkPrinterAction: vi.fn() }));
 vi.mock("@/features/printing/agent-actions", () => ({ createPrintAgentTokenAction: vi.fn(), createPrintAgentReconnectTokenAction: vi.fn() }));
 vi.mock("@/server/printing/print-config-service", () => ({ PrintConfigService: { snapshot: async () => ({
@@ -47,6 +47,7 @@ vi.mock("@/server/printing/print-config-service", () => ({ PrintConfigService: {
   stations: fixture.empty ? [] : [{ id: "station-a", name: "Cozinha de teste", kind: "production", active: true }],
   stationPrinters: fixture.empty ? [] : [{ station_id: "station-a", printer_id: "printer-a", priority: 100, copies: 3, active: true }], productStations: [], products: [{ id: "product-a", name: "Produto de teste" }], categories: [], printPreferences: resolveOrderPrintPreferences(null),
 }) } }));
+vi.mock("@/server/printing/print-agent-diagnostic-service", () => ({ PrintAgentDiagnosticService: { list: async () => [] } }));
 vi.mock("@/server/printing/print-monitor-service", () => ({ PrintMonitorService: { current: async () => ({ jobs: fixture.empty ? [] : [{ id: "job-a", status: "failed", display_number: 128, document_type: "kitchen", station_id: "station-a", printer_id: "printer-a", copies: 2, last_error: "fake" }] }) } }));
 
 function forms(html: string) { return [...html.matchAll(/<form([^>]*)>(.*?)<\/form>/gs)].map(m => ({ attributes: m[1]!, body: m[2]! })); }

@@ -3,6 +3,7 @@ import settingsStyles from "../settings-form.module.css";
 import Link from "next/link";
 import { AgentReconnectInstaller, AgentTokenCreator } from "@/features/printing/agent-token-creator";
 import { PrintingDiagnosticDownload } from "@/features/printing/agent-token-creator-client";
+import { loadRemotePrintingDiagnostics, RemotePrintingDiagnostics } from "@/features/printing/remote-diagnostics";
 import {
   cancelPrintJobAction,
   createPrinterAction,
@@ -96,12 +97,13 @@ function isVirtualPrinter(name: string) {
 export default async function PrintingSettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ setup?: string; test?: string }>;
+  searchParams: Promise<{ setup?: string; test?: string; diagnostic?: string }>;
 }) {
   const params = await searchParams;
-  const [config, monitor] = await Promise.all([
+  const [config, monitor, diagnosticSnapshot] = await Promise.all([
     PrintConfigService.snapshot(),
     PrintMonitorService.current(100),
+    loadRemotePrintingDiagnostics(),
   ]);
   const stationMap = new Map(config.stations.map((item) => [item.id, item.name]));
   const printerMap = new Map(config.printers.map((item) => [item.id, item.name]));
@@ -155,6 +157,10 @@ export default async function PrintingSettingsPage({
         <p>Confira o pedido no painel para a cozinha continuar o atendimento. Na Epson, confira papel e energia; no computador, confira a internet.</p>
         <p>Se a impressão estiver aguardando, o pedido já está salvo. Evite refazer a compra ou reimprimir antes de conferir se alguma via saiu.</p>
         <PrintingDiagnosticDownload />
+        {params.diagnostic === "requested" ? <p role="status">Solicitação registrada. Atualize os resultados depois que o computador se comunicar.</p> : null}
+        {params.diagnostic === "cancelled" ? <p role="status">Solicitação cancelada. Uma coleta já iniciada no computador pode terminar localmente.</p> : null}
+        {params.diagnostic === "unavailable" ? <p role="alert">Não foi possível registrar a ação. Confira sua permissão e aguarde um minuto antes de tentar novamente.</p> : null}
+        <RemotePrintingDiagnostics agents={config.agents} snapshot={diagnosticSnapshot} />
       </article>
 
       {params.setup === "printer_ready" ? (

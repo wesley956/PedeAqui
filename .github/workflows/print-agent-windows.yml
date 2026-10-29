@@ -31,4 +31,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --legacy-peer-deps --no-audit --no-fund
-      - run: npx --no-install vitest run tests/print-agent-installer.test.ts tests/printing-windows-diagnostic-1291.test.ts
+      - run: npx --no-install vitest run tests/print-agent-installer.test.ts tests/printing-windows-diagnostic-1291.test.ts tests/print-agent-on-demand-diagnostics.test.ts tests/print-agent-updater-recovery.test.ts
+      - name: Run isolated notebook pilot on Windows
+        run: node print-agent/pilot/pilot.mjs
+        env:
+          PEDEAQUI_PILOT_OUTPUT: artifacts/pilot-windows.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: print-agent-windows-pilot
+          path: artifacts/pilot-windows.json

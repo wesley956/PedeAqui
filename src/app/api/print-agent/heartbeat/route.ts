@@ -7,6 +7,6 @@ export async function POST(request: Request) {
   if (!agent) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await request.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "invalid_request" }, { status: 400 });
-  await PrintQueueService.heartbeat(agent, body);
-  return NextResponse.json({ ok: true });
+  const result = await PrintQueueService.heartbeat(agent, body);
+  return NextResponse.json(result, { headers: { "Cache-Control": "private, no-store" } });
 }
