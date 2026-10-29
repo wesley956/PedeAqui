@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-26",
+  "capturedAt": "2026-10-29",
   "migrations": [
     [
       "20260823090844",
@@ -540,6 +540,10 @@
     [
       "20261027001910",
       "whatsapp_bot_open_hours"
+    ],
+    [
+      "20261029161546",
+      "print_agent_on_demand_diagnostics"
     ]
   ]
 }
