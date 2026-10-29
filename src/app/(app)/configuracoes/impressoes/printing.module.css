@@ -2,3 +2,10 @@
 .hero h1{font-size:var(--font-size-2xl);line-height:1.3}.card h2,.stepHead h2{font-size:var(--font-size-lg);line-height:1.4}.root{font-size:var(--font-size-sm);min-width:0}.root p{line-height:1.5}.root strong,.itemMain,.printerCard{overflow-wrap:anywhere;min-width:0}.input{width:100%;min-width:0;font-size:var(--font-size-sm)}.input:focus-visible,.primary:focus-visible,.secondary:focus-visible,.danger:focus-visible,.root summary:focus-visible,.secondaryLink:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}.inlineDetails summary,.advanced>summary{min-height:44px}.status{font-size:var(--font-size-support)}.eyebrow{color:var(--text-secondary);text-transform:none;letter-spacing:normal;font-weight:var(--font-weight-semibold)}.heroReady{border-color:var(--state-success);background:var(--surface-1)}.root small{font-size:var(--font-size-support)}@media(max-width:640px){.input{font-size:var(--font-size-md)}.hero,.card{padding:12px}}
 
 .root h2{font-size:var(--font-size-lg);line-height:1.4}
+
+/* PrintAgent: keep computer identity readable above connection controls. */
+.computerRow{grid-template-columns:minmax(0,1fr);gap:12px;background:var(--surface-1)}
+.computerRow .itemMain{min-width:0;overflow-wrap:break-word}
+.computerRow .status{flex-wrap:wrap;overflow-wrap:break-word}
+.computerRow > :not(.itemMain){min-width:0;width:100%;padding-top:12px;border-top:1px solid var(--border)}
+.computerRow button{max-width:100%;white-space:normal}
