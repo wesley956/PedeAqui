@@ -1,4 +1,5 @@
 import "server-only";
+import { effectiveMetaSignupStatus } from "@/features/conversations/meta-signup-status";
 import { metaNumericId } from "@/server/conversations/meta-signup-config";
 
 import { createHash, randomBytes } from "node:crypto";
@@ -209,6 +210,21 @@ export class MetaEmbeddedSignupService {
     };
 
     const status = { ...data } as typeof data & { connection_mode: WhatsAppConnectionMode };
+    // A canceled popup never calls complete(); derive the display from the latest
+    // store-scoped session instead of leaving an expired attempt awaiting forever.
+    if (status.onboarding_status === "awaiting_meta") {
+      const { data: latestSession, error: latestSessionError } = await admin
+        .from("whatsapp_embedded_signup_sessions")
+        .select("status, expires_at")
+        .eq("organization_id", context.organizationId)
+        .eq("store_id", storeId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latestSessionError) throw latestSessionError;
+      status.onboarding_status = effectiveMetaSignupStatus(latestSession);
+    }
+
     const lastHealth = status.last_health_check_at ? Date.parse(status.last_health_check_at) : 0;
     const shouldCheck = status.whatsapp_enabled && status.connection_status === "connected"
       && Boolean(status.whatsapp_phone_number_id && status.access_token_secret_ref)
