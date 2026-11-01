@@ -30,11 +30,39 @@ jobs:
         with:
           ref: ${{ env.DEPLOY_SHA }}
           persist-credentials: false
+          fetch-depth: 2
+
+      - name: Skip deployment for documentation and test-only commits
+        id: change_gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          # Fail open for unknown history: preserve deployment on all ambiguous changes.
+          if ! git rev-parse "${DEPLOY_SHA}^" >/dev/null 2>&1; then
+            echo "No parent commit available; preserving deployment."
+            exit 0
+          fi
+          mapfile -d '' files < <(git diff --name-only -z "${DEPLOY_SHA}^" "$DEPLOY_SHA")
+          if (( ${#files[@]} == 0 )); then
+            echo "No changed files; preserving deployment."
+            exit 0
+          fi
+          for file in "${files[@]}"; do
+            case "$file" in
+              tests/*|docs/*|.github/*|README.md|CONTRIBUTING.md) ;;
+              *) echo "Runtime-affecting or unknown change: $file"; exit 0 ;;
+            esac
+          done
+          echo "Only tests, docs or GitHub automation changed; skipping VPS deployment."
+          echo "should_deploy=false" >> "$GITHUB_OUTPUT"
 
       - name: Build production image
+        if: steps.change_gate.outputs.should_deploy == 'true'
         run: docker build -f Dockerfile.production -t "pedeaqui-production:$DEPLOY_SHA" .
 
       - name: Skip superseded commits
+        if: steps.change_gate.outputs.should_deploy == 'true'
         id: freshness
         env:
           GH_TOKEN: ${{ github.token }}
@@ -48,7 +76,7 @@ jobs:
           fi
 
       - name: Prepare SSH credentials
-        if: steps.freshness.outputs.current == 'true'
+        if: steps.change_gate.outputs.should_deploy == 'true' && steps.freshness.outputs.current == 'true'
         env:
           SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
@@ -61,7 +89,7 @@ jobs:
           chmod 600 ~/.ssh/pedeaqui ~/.ssh/known_hosts
 
       - name: Transfer and deploy image
-        if: steps.freshness.outputs.current == 'true'
+        if: steps.change_gate.outputs.should_deploy == 'true' && steps.freshness.outputs.current == 'true'
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
         run: |
