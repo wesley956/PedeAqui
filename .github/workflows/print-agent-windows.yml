@@ -5,7 +5,9 @@ on:
     paths:
       - 'print-agent/**'
       - 'src/features/printing/**'
-      - 'tests/print-agent-installer.test.ts'
+      - 'tests/print-agent-*.test.ts'
+      - 'tests/printing-safety-*.test.ts'
+      - 'tests/printing-simple-setup.test.ts'
       - 'tests/printing-windows-diagnostic-1291.test.ts'
       - '.github/workflows/print-agent-windows.yml'
   push:
@@ -13,7 +15,9 @@ on:
     paths:
       - 'print-agent/**'
       - 'src/features/printing/**'
-      - 'tests/print-agent-installer.test.ts'
+      - 'tests/print-agent-*.test.ts'
+      - 'tests/printing-safety-*.test.ts'
+      - 'tests/printing-simple-setup.test.ts'
       - 'tests/printing-windows-diagnostic-1291.test.ts'
       - '.github/workflows/print-agent-windows.yml'
 
@@ -31,7 +35,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --legacy-peer-deps --no-audit --no-fund
-      - run: npx --no-install vitest run tests/print-agent-installer.test.ts tests/printing-windows-diagnostic-1291.test.ts tests/print-agent-on-demand-diagnostics.test.ts tests/print-agent-updater-recovery.test.ts
+      - run: npx --no-install vitest run tests/print-agent-installer.test.ts tests/printing-windows-diagnostic-1291.test.ts tests/print-agent-on-demand-diagnostics.test.ts tests/print-agent-updater-recovery.test.ts tests/print-agent-api-client.test.ts tests/printing-safety-poll-1291.test.ts tests/printing-simple-setup.test.ts
       - name: Run isolated notebook pilot on Windows
         shell: pwsh
         run: |
