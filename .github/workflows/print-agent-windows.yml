@@ -15,7 +15,9 @@ on:
     paths:
       - 'print-agent/**'
       - 'src/features/printing/**'
-      - 'tests/print-agent-installer.test.ts'
+      - 'tests/print-agent-*.test.ts'
+      - 'tests/printing-safety-*.test.ts'
+      - 'tests/printing-simple-setup.test.ts'
       - 'tests/printing-windows-diagnostic-1291.test.ts'
       - '.github/workflows/print-agent-windows.yml'
 
