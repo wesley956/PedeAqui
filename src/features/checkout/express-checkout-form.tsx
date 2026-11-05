@@ -70,7 +70,6 @@ export type ExpressCheckoutProps = {
   minimumOrderCents: number;
   minimumMissingCents: number;
   error: { block: ExpressBlock; message: string } | null;
-  deliveryHelp?: { href: string; label: string } | null;
 };
 
 /**
@@ -157,13 +156,6 @@ export function ExpressCheckoutForm(props: ExpressCheckoutProps) {
         <h2 id={`titulo-${id}`} className={styles.blockTitle}>{title}{extra}</h2>
         {body}
         {failed && error ? <p className={styles.errorText} role="alert">{error.message}</p> : null}
-        {failed && id === "receber" && props.deliveryHelp ? (
-          <p className={styles.infoBox}>
-            Fale com a loja para confirmar o endereço e o valor da entrega.
-            {" "}
-            <a href={props.deliveryHelp.href} target="_blank" rel="noopener noreferrer">{props.deliveryHelp.label}</a>
-          </p>
-        ) : null}
       </section>
     );
   };
