@@ -127,6 +127,17 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
     invalid_schedule: "quando", benefit_invalid: "cupom", benefit_unavailable: "cupom", total_updated: "resumo", delivery_fee_changed: "resumo", delivery_route_unavailable: "receber",
   };
   const blockForError = query.erro ? errorBlock[query.erro] ?? null : null;
+  const contactDigits = String(menu.store.public_whatsapp || menu.store.phone || "").replace(/\D/g, "");
+  const contactNumber = contactDigits.length >= 10 && contactDigits.length <= 11
+    ? `55${contactDigits}` : /^55\d{10,11}$/.test(contactDigits) ? contactDigits : null;
+  const deliveryHelp = query.erro === "delivery_route_unavailable" && contactNumber
+    ? {
+      href: menu.store.public_whatsapp
+        ? `https://wa.me/${contactNumber}?text=${encodeURIComponent("Olá! Não consegui calcular a entrega no cardápio. Podem me ajudar a confirmar o endereço e a taxa?")}`
+        : `tel:+${contactNumber}`,
+      label: menu.store.public_whatsapp ? "Confirmar entrega pelo WhatsApp" : "Ligar para confirmar a entrega",
+    }
+    : null;
   const formError = blockForError && displayErrorMessage ? { block: blockForError, message: displayErrorMessage } : null;
   const topError = formError ? null : displayErrorMessage;
   const returningName = recognizedCustomer?.customer.name ? recognizedCustomer.customer.name.trim().split(/\s+/)[0] ?? null : null;
@@ -220,6 +231,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
             minimumOrderCents={minimumOrderCents}
             minimumMissingCents={missingMinimumCents}
             error={formError}
+            deliveryHelp={deliveryHelp}
           />
         </div>
       </div>
