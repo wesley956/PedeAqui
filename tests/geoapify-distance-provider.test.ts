@@ -24,7 +24,7 @@ describe("Geoapify road distance staging adapter", () => {
     const meters = await queryGeoapifyRoadMeters(address, { apiKey: "test-key", fetcher });
     expect(meters).toBe(2416);
     expect(fetcher).toHaveBeenCalledTimes(2);
-    const routingUrl = fetcher.mock.calls[1][0] as URL;
+    const routingUrl = fetcher.mock.calls[1]?.[0] as URL;
     expect(routingUrl.searchParams.get("mode")).toBe("drive");
   });
 
