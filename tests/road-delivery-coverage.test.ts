@@ -33,6 +33,7 @@ describe("road delivery pilot coverage", () => {
     vi.stubEnv("GEOAPIFY_PILOT_ORIGIN_LATITUDE", "-22.788276");
     vi.stubEnv("GEOAPIFY_PILOT_ORIGIN_LONGITUDE", "-47.298420");
     vi.stubEnv("GEOAPIFY_API_KEY", "fixture-key");
+    vi.stubEnv("GEOAPIFY_PILOT_NEIGHBORHOOD_FALLBACK", "false");
   });
 
   afterEach(() => vi.unstubAllEnvs());
@@ -58,6 +59,25 @@ describe("road delivery pilot coverage", () => {
   it.each(["address_unverified", "provider_timeout_or_network_error", "route_quota_unavailable"])(
     "blocks pilot delivery without a fee when the route reports %s",
     async (reason) => {
+      quoteCachedRoadDistance.mockRejectedValue(new RoadDistanceUnavailable(reason));
+      await expect(quote("pilot-store", "Centro", neighborhood)).resolves.toEqual({
+        serviceable: false, reason: "route_unavailable",
+      });
+    },
+  );
+
+  it.each([false, true])("uses the registered fee on an outage only when fallback is enabled (%s)", async (enabled) => {
+    vi.stubEnv("GEOAPIFY_PILOT_NEIGHBORHOOD_FALLBACK", String(enabled));
+    quoteCachedRoadDistance.mockRejectedValue(new RoadDistanceUnavailable("provider_timeout_or_network_error", true));
+    await expect(quote("pilot-store", "Centro", neighborhood)).resolves.toMatchObject(
+      enabled ? { serviceable: true, feeCents: 500 } : { serviceable: false, reason: "route_unavailable" },
+    );
+  });
+
+  it.each(["address_unverified", "route_invalid_or_out_of_range", "route_quota_unavailable"])(
+    "keeps blocking delivery for %s even with fallback enabled",
+    async (reason) => {
+      vi.stubEnv("GEOAPIFY_PILOT_NEIGHBORHOOD_FALLBACK", "true");
       quoteCachedRoadDistance.mockRejectedValue(new RoadDistanceUnavailable(reason));
       await expect(quote("pilot-store", "Centro", neighborhood)).resolves.toEqual({
         serviceable: false, reason: "route_unavailable",
