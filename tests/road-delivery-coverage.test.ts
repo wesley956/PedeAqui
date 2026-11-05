@@ -74,7 +74,7 @@ describe("road delivery pilot coverage", () => {
     );
   });
 
-  it.each(["address_unverified", "route_invalid_or_out_of_range", "route_quota_unavailable"])(
+  it.each(["route_invalid_or_out_of_range", "route_quota_unavailable"])(
     "keeps blocking delivery for %s even with fallback enabled",
     async (reason) => {
       vi.stubEnv("GEOAPIFY_PILOT_NEIGHBORHOOD_FALLBACK", "true");
@@ -84,6 +84,24 @@ describe("road delivery pilot coverage", () => {
       });
     },
   );
+
+  it.each([false, true])("uses the registered fee for an unverified address only with fallback enabled (%s)", async (enabled) => {
+    vi.stubEnv("GEOAPIFY_PILOT_NEIGHBORHOOD_FALLBACK", String(enabled));
+    quoteCachedRoadDistance.mockRejectedValue(new RoadDistanceUnavailable("address_unverified"));
+    await expect(quote("pilot-store", "Centro", neighborhood)).resolves.toEqual(
+      enabled
+        ? { serviceable: true, feeCents: 500, estimatedMinMinutes: 30, estimatedMaxMinutes: 60 }
+        : { serviceable: false, reason: "route_unavailable" },
+    );
+  });
+
+  it("requires a registered neighborhood even with fallback enabled", async () => {
+    vi.stubEnv("GEOAPIFY_PILOT_NEIGHBORHOOD_FALLBACK", "true");
+    await expect(quote("pilot-store", "Bairro sem cadastro", null)).resolves.toEqual({
+      serviceable: false, reason: "neighborhood_not_served",
+    });
+    expect(quoteCachedRoadDistance).not.toHaveBeenCalled();
+  });
 
   it("keeps the neighborhood fee for stores outside the pilot", async () => {
     await expect(quote("other-store", "Centro", neighborhood)).resolves.toMatchObject({
