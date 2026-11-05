@@ -17,19 +17,25 @@ function fakeResponse(body: unknown, status = 200) {
 }
 
 describe("Geoapify road distance staging adapter", () => {
-  it("returns the driving route distance without exposing a fee", async () => {
+  it.each(["building", "amenity"])("routes to an exact %s match using structured fields", async (resultType) => {
     const fetcher = vi.fn()
-      .mockResolvedValueOnce(fakeResponse({ features: [{ properties: matchedBuilding }] }))
+      .mockResolvedValueOnce(fakeResponse({ results: [{ result_type: "city" }, { ...matchedBuilding, result_type: resultType }] }))
       .mockResolvedValueOnce(fakeResponse({ results: [{ distance: 2416 }] }));
-    const meters = await queryGeoapifyRoadMeters(address, { apiKey: "test-key", fetcher });
+    const meters = await queryGeoapifyRoadMeters({ ...address, destination: { ...address.destination, street: "R. Exemplo", postalCode: "13380-025" } }, { apiKey: "test-key", fetcher });
     expect(meters).toBe(2416);
     expect(fetcher).toHaveBeenCalledTimes(2);
+    const geocodeUrl = fetcher.mock.calls[0]?.[0] as URL;
+    expect(Object.fromEntries(geocodeUrl.searchParams)).toMatchObject({
+      street: "Rua Exemplo", housenumber: "25", city: "Nova Odessa",
+      state: "São Paulo", postcode: "13380-025", format: "json",
+    });
+    expect(geocodeUrl.searchParams.has("text")).toBe(false);
     const routingUrl = fetcher.mock.calls[1]?.[0] as URL;
     expect(routingUrl.searchParams.get("mode")).toBe("drive");
   });
 
   it("refuses low-confidence geocoding before calling routing", async () => {
-    const fetcher = vi.fn().mockResolvedValue(fakeResponse({ features: [{ properties: { ...matchedBuilding, rank: { confidence: 0.35 } } }] }));
+    const fetcher = vi.fn().mockResolvedValue(fakeResponse({ results: [{ ...matchedBuilding, rank: { confidence: 0.35 } }] }));
     await expect(queryGeoapifyRoadMeters(address, { apiKey: "test-key", fetcher }))
       .rejects.toBeInstanceOf(RoadDistanceUnavailable);
     expect(fetcher).toHaveBeenCalledTimes(1);
@@ -44,7 +50,7 @@ describe("Geoapify road distance staging adapter", () => {
     { lat: null },
   ])("rejects an unverified building match %j", async (override) => {
     const fetcher = vi.fn().mockResolvedValue(fakeResponse({
-      features: [{ properties: { ...matchedBuilding, ...override } }],
+      results: [{ ...matchedBuilding, ...override }],
     }));
     await expect(queryGeoapifyRoadMeters(address, { apiKey: "test-key", fetcher }))
       .rejects.toThrow("address_unverified");
@@ -53,7 +59,7 @@ describe("Geoapify road distance staging adapter", () => {
 
   it("fails closed when the routing provider is unavailable", async () => {
     const fetcher = vi.fn()
-      .mockResolvedValueOnce(fakeResponse({ features: [{ properties: matchedBuilding }] }))
+      .mockResolvedValueOnce(fakeResponse({ results: [matchedBuilding] }))
       .mockResolvedValueOnce(fakeResponse({}, 503));
     await expect(queryGeoapifyRoadMeters(address, { apiKey: "test-key", fetcher }))
       .rejects.toThrow("routing_http_error");
