@@ -20,7 +20,25 @@ export class RoadDistanceUnavailable extends Error {
 }
 
 type Fetcher = typeof fetch;
-type GeoFeature = { properties?: { lat?: unknown; lon?: unknown; city?: unknown; county?: unknown; state?: unknown; rank?: { confidence?: unknown } } };
+type GeoFeature = {
+  properties?: {
+    lat?: unknown;
+    lon?: unknown;
+    city?: unknown;
+    state_code?: unknown;
+    country_code?: unknown;
+    street?: unknown;
+    housenumber?: unknown;
+    result_type?: unknown;
+    rank?: { confidence?: unknown };
+  };
+};
+
+function normalizeAddressPart(value: unknown) {
+  return typeof value === "string"
+    ? value.normalize("NFD").replace(/\p{M}/gu, "").trim().replace(/\s+/g, " ").toLowerCase()
+    : "";
+}
 function validCoordinate(lat: number, lon: number) {
   return Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
 }
@@ -49,21 +67,30 @@ export async function queryGeoapifyRoadMeters(
     if (!geoResponse.ok) throw new RoadDistanceUnavailable("geocoding_http_error");
     const geo = await geoResponse.json() as { features?: GeoFeature[] };
     const p = geo.features?.[0]?.properties;
-    const lat = Number(p?.lat), lon = Number(p?.lon);
-    const confidence = Number(p?.rank?.confidence);
-    if (!validCoordinate(lat, lon) || !Number.isFinite(confidence) || confidence < 0.8) {
+    const { lat, lon, rank } = p ?? {};
+    const confidence = rank?.confidence;
+    if (
+      typeof lat !== "number" || typeof lon !== "number" || !validCoordinate(lat, lon) ||
+      typeof confidence !== "number" || !Number.isFinite(confidence) || confidence < 0.8 || confidence > 1 ||
+      p?.country_code !== "br" || p.result_type !== "building" ||
+      normalizeAddressPart(p.state_code) !== normalizeAddressPart(d.state) ||
+      normalizeAddressPart(p.city) !== normalizeAddressPart(d.city) ||
+      normalizeAddressPart(p.street) !== normalizeAddressPart(d.street) ||
+      normalizeAddressPart(p.housenumber) !== normalizeAddressPart(d.number)
+    ) {
       throw new RoadDistanceUnavailable("address_unverified");
     }
     const route = new URL("https://api.geoapify.com/v1/routing");
     route.searchParams.set("waypoints", `${input.origin.latitude},${input.origin.longitude}|${lat},${lon}`);
     route.searchParams.set("mode", "drive");
     route.searchParams.set("format", "json");
+    route.searchParams.set("units", "metric");
     route.searchParams.set("apiKey", options.apiKey);
     const routeResponse = await fetcher(route, { signal: AbortSignal.timeout(timeout), cache: "no-store" });
     if (!routeResponse.ok) throw new RoadDistanceUnavailable("routing_http_error");
     const body = await routeResponse.json() as { results?: Array<{ distance?: unknown }> };
-    const meters = Number(body.results?.[0]?.distance);
-    if (!Number.isFinite(meters) || meters <= 0 || meters > 30_000) {
+    const meters = body.results?.[0]?.distance;
+    if (typeof meters !== "number" || !Number.isFinite(meters) || meters <= 0 || meters > 30_000) {
       throw new RoadDistanceUnavailable("route_invalid_or_out_of_range");
     }
     return meters;
