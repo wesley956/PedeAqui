@@ -5,24 +5,34 @@
 - `quote-calculator.ts` aceita `default` e `neighborhood`; não existe modo persistido `distance`.
 - `CheckoutService.saveAddress` já recebe rua, número, bairro, cidade, UF e CEP, mas repassa só bairro/cidade/UF à cotação.
 - `CheckoutService.useRecognizedAddress` e o fechamento/finalização também precisam respeitar qualquer nova cotação.
-- Jack Cones: 121 destinos, `fee_mode=neighborhood`, origem Ampelio Gazzetta 2242, Bela Vista, Nova Odessa/SP; coordenadas de origem ainda nulas.
+- Jack Cones: 121 destinos, `fee_mode=neighborhood`, origem Ampelio Gazzetta 2242, Bela Vista, Nova Odessa/SP; coordenadas da entrada confirmadas em mapa: latitude -22.788276, longitude -47.298420.
 
-## Conteúdo desta PR
-1. `distance-pricing.ts`: regra pura de R$4 até 1 km + R$1 por quilômetro adicional, arredondamento para cima.
-2. `geoapify-distance-provider.ts`: adaptador server-side com geocodificação restrita ao Brasil, timeout e roteamento carro. Falhas explícitas, sem preço inventado.
-3. Testes da fórmula e dos limites. Nenhuma alteração de banco, checkout, configuração de loja ou deploy.
+## Piloto no checkout digital
 
-## Bloqueadores antes de ativar — obrigatórios
-- [ ] Confirmar coordenadas da porta da loja (não inferir do bairro), validando via mapa.
-- [ ] Criar preferência de cotação por organização/loja **desligada por padrão**, com migração, RLS e auditoria; primeiro liberar apenas no Jack em homologação.
-- [ ] Implementar cache **persistente** com hash da localização normalizada, TTL definido e retenção mínima de dados pessoais.
-- [ ] Implementar limite **global e atômico** por loja/dia (não por processo Node) para créditos/API; rate limit por cliente e proteção contra abuso.
-- [ ] Validar resultado de geocodificação por rua/número, cidade/UF e qualidade. Resultado ambiguo -> sem cotação automática.
-- [ ] Incluir limites de raio, endereço não atendido e falha explícita, sem converter falha em frete R$0 ou taxa arbitrária.
-- [ ] Na confirmação/finalização, revalidar cotação e mostrar mudanças ao cliente antes de cobrança; não confiar em taxas enviadas pelo navegador.
-- [ ] Cobrir endereço salvo, múltiplos checkouts, carrinho, frete grátis, pedidos pagos por Pix, retries, cobrança impressa e isolamento multiempresa.
-- [ ] Adicionar segredo `GEOAPIFY_API_KEY` **somente no servidor**, após providenciar chave e configurar cotas junto ao fornecedor.
-- [ ] Homologar cenários de 1,0 km, 1,01 km, indisponibilidade API, CEP inválido e alteração de endereço. Executar CI e teste real com autorização antes de produção.
+Aplicar a migração de cache e orçamento somente ao banco isolado antes da homologação.
+O checkout permanece por bairro enquanto GEOAPIFY_PILOT_STORE_ID estiver ausente.
+No ambiente isolado, definir o UUID da loja de teste, as coordenadas em
+GEOAPIFY_PILOT_ORIGIN_LATITUDE e GEOAPIFY_PILOT_ORIGIN_LONGITUDE e carregar
+GEOAPIFY_API_KEY pelo arquivo de segredo do servidor. O UUID deve pertencer ao
+cadastro da loja de teste no banco isolado.
+
+A cotação mantém a cobertura por bairro, pedido mínimo, isenção e estimativa já
+configurados. A distância substitui o preço base. A rota é armazenada por 24 horas
+com uma chave HMAC que inclui loja, origem e endereço normalizado. O orçamento
+global da instalação reserva até 200 tentativas por dia UTC, com até duas
+requisições ao provedor por tentativa. O limite do projeto no provedor deve ser
+configurado separadamente e compartilhamento da mesma chave entre instalações
+precisa entrar no cálculo de consumo.
+
+## Validação antes de liberar
+
+- Rota de referência de 2.416 m com taxa de R$ 6,00 e confirmação pelo checkout.
+- Endereço salvo, número divergente, zona não atendida e provedor indisponível.
+- Mudança de endereço ou valor antes do pagamento e confirmação em duas abas.
+- Limites de 1,0 km e 1,01 km, cache, esgotamento do orçamento e isolamento por loja.
+- Checkout Pix e recuperação de pedido existente.
+- Confirmar raio operacional do Jack e aplicar limite específico antes de liberar.
+- Validar cotas do plano e proteção contra abuso antes de expor o piloto ao público.
 
 ## Rollout e rollback
 Produção **inalterada** até concluir os bloqueadores. Ativação futura só por loja com flag configurada. Rollback desliga a flag e retorna ao modo por bairro, sem apagar os 121 destinos. Nunca ativar globalmente.
