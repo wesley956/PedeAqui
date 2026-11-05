@@ -63,7 +63,8 @@ export async function queryGeoapifyRoadMeters(
     throw new RoadDistanceUnavailable("destination_incomplete");
   }
   const fetcher = options.fetcher ?? fetch;
-  const timeout = Math.max(500, Math.min(options.timeoutMs ?? 2500, 5000));
+  const geocodingTimeout = Math.max(500, Math.min(options.timeoutMs ?? 7000, 7000));
+  const routingTimeout = Math.max(500, Math.min(options.timeoutMs ?? 2500, 5000));
   const geocode = new URL("https://api.geoapify.com/v1/geocode/search");
   geocode.search = new URLSearchParams({
     street,
@@ -78,7 +79,7 @@ export async function queryGeoapifyRoadMeters(
   }).toString();
   if (d.postalCode?.trim()) geocode.searchParams.set("postcode", d.postalCode.trim());
   try {
-    const geoResponse = await fetcher(geocode, { signal: AbortSignal.timeout(timeout), cache: "no-store" });
+    const geoResponse = await fetcher(geocode, { signal: AbortSignal.timeout(geocodingTimeout), cache: "no-store" });
     if (!geoResponse.ok) throw new RoadDistanceUnavailable("geocoding_http_error");
     const geo = await geoResponse.json() as { results?: GeoAddress[] };
     const point = geo.results?.find((p): p is GeoAddress & { lat: number; lon: number } => {
@@ -99,7 +100,7 @@ export async function queryGeoapifyRoadMeters(
     route.searchParams.set("format", "json");
     route.searchParams.set("units", "metric");
     route.searchParams.set("apiKey", options.apiKey);
-    const routeResponse = await fetcher(route, { signal: AbortSignal.timeout(timeout), cache: "no-store" });
+    const routeResponse = await fetcher(route, { signal: AbortSignal.timeout(routingTimeout), cache: "no-store" });
     if (!routeResponse.ok) throw new RoadDistanceUnavailable("routing_http_error");
     const body = await routeResponse.json() as { results?: Array<{ distance?: unknown }> };
     const meters = body.results?.[0]?.distance;
