@@ -1,5 +1,5 @@
 export type DeliveryQuote =
-  | { serviceable: false; reason: "delivery_disabled" | "neighborhood_not_served" }
+  | { serviceable: false; reason: "delivery_disabled" | "neighborhood_not_served" | "route_unavailable" }
   | { serviceable: false; reason: "minimum_order"; minimumOrderCents: number }
   | { serviceable: true; feeCents: number; estimatedMinMinutes: number; estimatedMaxMinutes: number };
 
