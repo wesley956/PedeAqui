@@ -7,7 +7,7 @@ export type RoadDistanceInput = {
 };
 
 export class RoadDistanceUnavailable extends Error {
-  constructor(reason: string) {
+  constructor(reason: string, readonly temporary = false) {
     super(reason);
     this.name = "RoadDistanceUnavailable";
   }
@@ -80,7 +80,7 @@ export async function queryGeoapifyRoadMeters(
   if (d.postalCode?.trim()) geocode.searchParams.set("postcode", d.postalCode.trim());
   try {
     const geoResponse = await fetcher(geocode, { signal: AbortSignal.timeout(geocodingTimeout), cache: "no-store" });
-    if (!geoResponse.ok) throw new RoadDistanceUnavailable("geocoding_http_error");
+    if (!geoResponse.ok) throw new RoadDistanceUnavailable("geocoding_http_error", geoResponse.status === 429 || geoResponse.status >= 500);
     const geo = await geoResponse.json() as { results?: GeoAddress[] };
     const point = geo.results?.find((p): p is GeoAddress & { lat: number; lon: number } => {
       const { lat, lon, rank } = p;
@@ -101,7 +101,7 @@ export async function queryGeoapifyRoadMeters(
     route.searchParams.set("units", "metric");
     route.searchParams.set("apiKey", options.apiKey);
     const routeResponse = await fetcher(route, { signal: AbortSignal.timeout(routingTimeout), cache: "no-store" });
-    if (!routeResponse.ok) throw new RoadDistanceUnavailable("routing_http_error");
+    if (!routeResponse.ok) throw new RoadDistanceUnavailable("routing_http_error", routeResponse.status === 429 || routeResponse.status >= 500);
     const body = await routeResponse.json() as { results?: Array<{ distance?: unknown }> };
     const meters = body.results?.[0]?.distance;
     if (typeof meters !== "number" || !Number.isFinite(meters) || meters <= 0 || meters > 30_000) {
@@ -110,6 +110,6 @@ export async function queryGeoapifyRoadMeters(
     return meters;
   } catch (error) {
     if (error instanceof RoadDistanceUnavailable) throw error;
-    throw new RoadDistanceUnavailable("provider_timeout_or_network_error");
+    throw new RoadDistanceUnavailable("provider_timeout_or_network_error", true);
   }
 }
