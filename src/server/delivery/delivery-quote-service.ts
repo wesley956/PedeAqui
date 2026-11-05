@@ -92,7 +92,8 @@ export class DeliveryQuoteService {
       return { ...quote, feeCents };
     } catch (error) {
       if (!(error instanceof RoadDistanceUnavailable)) throw error;
-      if (error.temporary && process.env.GEOAPIFY_PILOT_NEIGHBORHOOD_FALLBACK === "true" &&
+      if ((error.temporary || error.message === "address_unverified") &&
+        process.env.GEOAPIFY_PILOT_NEIGHBORHOOD_FALLBACK === "true" &&
         settings.fee_mode === "neighborhood" && neighborhood) {
         return quote;
       }
