@@ -4,6 +4,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { neighborhoodKey } from "@/server/delivery/location-key";
 import { calculateDeliveryQuote, type DeliveryQuote } from "@/server/delivery/quote-calculator";
 
+import { priceDeliveryDistanceCents } from "@/server/delivery/distance-pricing";
+import { RoadDistanceUnavailable } from "@/server/delivery/geoapify-distance-provider";
+import { quoteCachedRoadDistance } from "@/server/delivery/road-distance-cache";
+
 export type { DeliveryQuote } from "@/server/delivery/quote-calculator";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
@@ -12,6 +16,9 @@ type QuoteAddress = {
   district: string;
   city: string;
   state: string;
+  street?: string;
+  number?: string;
+  postalCode?: string | null;
 };
 
 type QuoteInput = {
@@ -19,6 +26,7 @@ type QuoteInput = {
   storeId: string;
   subtotalCents: number;
   address: QuoteAddress;
+  useRoadDistance?: boolean;
   admin?: AdminClient;
 };
 
@@ -33,6 +41,10 @@ const defaults = {
 };
 
 export class DeliveryQuoteService {
+  static usesRoadDistance(storeId: string) {
+    return process.env.GEOAPIFY_PILOT_STORE_ID === storeId;
+  }
+
   static async quote(input: QuoteInput): Promise<DeliveryQuote> {
     if (!Number.isSafeInteger(input.subtotalCents) || input.subtotalCents < 0) {
       throw new Error("Invalid delivery quote subtotal");
@@ -58,6 +70,29 @@ export class DeliveryQuoteService {
     const settings = settingsRow ?? defaults;
     const { data: neighborhood, error: neighborhoodError } = neighborhoodResult;
     if (neighborhoodError) throw neighborhoodError;
-    return calculateDeliveryQuote({ subtotalCents: input.subtotalCents, settings, neighborhood });
+    const quote = calculateDeliveryQuote({ subtotalCents: input.subtotalCents, settings, neighborhood });
+    if (!quote.serviceable || !input.useRoadDistance || !this.usesRoadDistance(input.storeId)) return quote;
+
+    const { street, number } = input.address;
+    const latitude = process.env.GEOAPIFY_PILOT_ORIGIN_LATITUDE?.trim();
+    const longitude = process.env.GEOAPIFY_PILOT_ORIGIN_LONGITUDE?.trim();
+    if (!street || !number || !latitude || !longitude ||
+      !Number.isFinite(Number(latitude)) || Math.abs(Number(latitude)) > 90 ||
+      !Number.isFinite(Number(longitude)) || Math.abs(Number(longitude)) > 180) {
+      return { serviceable: false, reason: "route_unavailable" };
+    }
+
+    try {
+      const meters = await quoteCachedRoadDistance({
+        origin: { latitude: Number(latitude), longitude: Number(longitude) },
+        destination: { ...input.address, street, number },
+      }, { admin, storeId: input.storeId, apiKey: process.env.GEOAPIFY_API_KEY ?? "" });
+      const feeCents = settings.free_delivery_over_cents !== null &&
+        input.subtotalCents >= settings.free_delivery_over_cents ? 0 : priceDeliveryDistanceCents(meters);
+      return { ...quote, feeCents };
+    } catch (error) {
+      if (!(error instanceof RoadDistanceUnavailable)) throw error;
+      return { serviceable: false, reason: "route_unavailable" };
+    }
   }
 }
