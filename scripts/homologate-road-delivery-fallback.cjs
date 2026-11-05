@@ -62,9 +62,11 @@ async function main() {
 
   scenario = "unverified";
   process.env.GEOAPIFY_PILOT_NEIGHBORHOOD_FALLBACK = "true";
-  assert.deepEqual(await DeliveryQuoteService.quote(input), { serviceable: false, reason: "route_unavailable" });
+  assert.deepEqual(await DeliveryQuoteService.quote(input), {
+    serviceable: true, feeCents: 500, estimatedMinMinutes: 30, estimatedMaxMinutes: 60,
+  });
   assert.equal(intercepted, 3, "All three provider calls must be simulated");
-  console.log("OK | endereço sem confirmação: entrega bloqueada");
+  console.log("OK | endereço sem confirmação: frete cadastrado R$ 5,00");
   console.log("Homologação da reserva concluída | 3 cenários aprovados");
 }
 
