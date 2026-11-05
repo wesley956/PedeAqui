@@ -51,7 +51,7 @@ describe("stabilization #830 controlled failure recovery", () => {
 
   it("keeps optional integrations after core order persistence and never assumes payment on timeout", () => {
     const actions = read("src/features/orders/actions.ts");
-    const created = actions.indexOf("OrderService.createFromCheckout(storeSlug, token)");
+    const created = actions.indexOf("OrderService.createFromCheckout(storeSlug, token,");
     expect(created).toBeGreaterThan(-1);
     for (const optional of [
       "OrderNotificationContextService.capture",
