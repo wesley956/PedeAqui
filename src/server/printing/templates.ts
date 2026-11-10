@@ -261,6 +261,11 @@ export function renderPrintDocument(
   if (reprint) { out.push(center("*** REIMPRESSAO ***", width)); out.push(line("*", width)); }
   const commercial = documentType !== "kitchen";
   if (commercial && payload.order.fulfillment_type === "delivery") out.push(center("PARA ENTREGA", width));
+  if (payload.order.channel === "pdv") {
+    const saleType = payload.order.fulfillment_type === "counter" ? "CONSUMIR NO LOCAL"
+      : payload.order.fulfillment_type === "pickup" ? "LEVAR EMBORA" : null;
+    if (saleType) out.push(...wrap(saleType, width).map((value) => center(value, width)));
+  }
   out.push(pair(orderTime(payload), payload.station.name, width));
   const requestedTime = scheduledTime(payload);
   if (requestedTime) out.push(clip(`Entrega prevista: ${requestedTime}`, width));
