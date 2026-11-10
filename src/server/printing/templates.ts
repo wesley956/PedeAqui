@@ -265,6 +265,8 @@ export function renderPrintDocument(
     const saleType = payload.order.fulfillment_type === "counter" ? "CONSUMIR NO LOCAL"
       : payload.order.fulfillment_type === "pickup" ? "LEVAR EMBORA" : null;
     if (saleType) out.push(...wrap(saleType, width).map((value) => center(value, width)));
+  } else if (payload.order.channel === "digital_menu" && payload.order.fulfillment_type === "pickup") {
+    out.push(center("PARA RETIRADA", width));
   }
   out.push(pair(orderTime(payload), payload.station.name, width));
   const requestedTime = scheduledTime(payload);
