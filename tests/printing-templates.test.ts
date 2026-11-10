@@ -25,6 +25,19 @@ const payload = {
 };
 
 describe("thermal print templates", () => {
+  it.each([
+    ["counter", "CONSUMIR NO LOCAL"],
+    ["pickup", "LEVAR EMBORA"],
+  ])("prints the PDV sale type for %s on the kitchen ticket and receipt", (fulfillmentType, label) => {
+    const sale = { ...payload, order: { ...payload.order, channel: "pdv", fulfillment_type: fulfillmentType } };
+    for (const type of ["kitchen", "receipt"] as const) {
+      const text = renderPrintDocument(sale, type, 58, false, { text_size: "extra_large" });
+      expect(text.split("\n").map((line) => line.trim()).join(" ")).toContain(label);
+    }
+    const onlineOrder = { ...sale, order: { ...sale.order, channel: "digital_menu" } };
+    expect(renderPrintDocument(onlineOrder, "receipt", 58)).not.toContain(label);
+  });
+
   it("keeps kitchen ticket operational and without financial/customer data", () => {
     const text = renderPrintDocument(payload, "kitchen", 80);
     expect(text).toContain("Pedido 42");
