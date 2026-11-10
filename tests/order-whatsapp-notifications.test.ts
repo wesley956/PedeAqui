@@ -228,7 +228,6 @@ describe("[329] persistence and safety contracts", () => {
     expect(accessRoute).toContain("PublicOrderService.get(slug, id, token)");
     expect(accessRoute).toContain("httpOnly: true");
     expect(accessRoute).toContain('"Referrer-Policy": "no-referrer"');
-    expect(accessRoute).toContain("NextResponse.redirect(cleanUrl, 303)");
     expect(accessRoute).not.toContain("searchParams.set");
   });
 

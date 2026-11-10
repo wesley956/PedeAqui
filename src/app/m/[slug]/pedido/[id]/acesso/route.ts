@@ -25,8 +25,9 @@ export async function GET(
     });
   }
 
-  const cleanUrl = new URL(`/m/${encodeURIComponent(slug)}/pedido/${encodeURIComponent(id)}`, request.url);
-  const response = NextResponse.redirect(cleanUrl, 303);
+  // Keep the browser on the public host even when Next.js sees the proxy's internal origin.
+  const cleanPath = `/m/${encodeURIComponent(slug)}/pedido/${encodeURIComponent(id)}`;
+  const response = new NextResponse(null, { status: 303, headers: { Location: cleanPath } });
   const recent = (await cookies()).get(recentOrdersCookieName(slug))?.value;
   response.cookies.set(recentOrdersCookieName(slug), rememberRecentOrder(recent, { orderId: id, accessToken: token }), recentOrdersCookieOptions(slug));
   response.headers.set("Cache-Control", "no-store");
