@@ -38,6 +38,13 @@ describe("thermal print templates", () => {
     expect(renderPrintDocument(onlineOrder, "receipt", 58)).not.toContain(label);
   });
 
+  it.each(["kitchen", "counter", "receipt"] as const)("identifies digital-menu pickup on the %s printout", (type) => {
+    const pickup = { ...payload, order: { ...payload.order, channel: "digital_menu", fulfillment_type: "pickup" } };
+    const text = renderPrintDocument(pickup, type, 58, false, { text_size: "extra_large" });
+    expect(text.split("\n", 1)[0]?.trim()).toBe("PARA RETIRADA");
+    expect(text).not.toContain("LEVAR EMBORA");
+  });
+
   it("keeps kitchen ticket operational and without financial/customer data", () => {
     const text = renderPrintDocument(payload, "kitchen", 80);
     expect(text).toContain("Pedido 42");
