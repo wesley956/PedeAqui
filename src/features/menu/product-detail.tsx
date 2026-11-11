@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { allowPublicItemNotes } from "@/server/menu/item-notes-policy";
 import { FallbackImage } from "@/components/ui/fallback-image";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -35,6 +36,7 @@ export async function ProductDetail({ slug, id, query, presentation }: { slug: s
   const result = await PublicMenuService.getProduct(slug, id);
   if (!result) notFound();
   const { product, store, businessType, gas, operational } = result;
+  const allowItemNotes = await allowPublicItemNotes(store.id);
   const vocabulary = businessVocabulary(businessType);
   const productLabel = vocabulary.productSingular.charAt(0).toUpperCase() + vocabulary.productSingular.slice(1);
   const price = product.promotional_price_cents ?? product.price_cents;
@@ -136,10 +138,10 @@ export async function ProductDetail({ slug, id, query, presentation }: { slug: s
       </div> : null}
 
       <section id="finalizar-item" className={styles.finalSection}>
-        <label className={styles.noteField}>
+        {allowItemNotes ? <label className={styles.noteField}>
           <strong>Alguma observação?</strong>
           <textarea name="note" maxLength={500} placeholder={notePlaceholder} defaultValue={editNote} disabled={orderUnavailable} className={styles.note} />
-        </label>
+        </label> : <p>Os produtos seguem a receita original. Não é possível retirar ou substituir ingredientes.</p>}
       </section>
 
       <ProductPurchaseBar

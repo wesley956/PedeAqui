@@ -45,6 +45,11 @@ describe("thermal print templates", () => {
     expect(text).not.toContain("LEVAR EMBORA");
   });
 
+  it.each(["kitchen", "counter", "receipt"] as const)("identifies delivery on the %s printout", (type) => {
+    const text = renderPrintDocument(payload, type, 80);
+    expect(text.split("\n", 1)[0]?.trim()).toBe("PARA ENTREGA");
+  });
+
   it("keeps kitchen ticket operational and without financial/customer data", () => {
     const text = renderPrintDocument(payload, "kitchen", 80);
     expect(text).toContain("Pedido 42");
