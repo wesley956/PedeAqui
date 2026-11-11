@@ -1,4 +1,5 @@
 import "server-only";
+import { allowPublicItemNotes } from "@/server/menu/item-notes-policy";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createCartToken, hashCartToken } from "@/server/cart/cart-token";
@@ -96,7 +97,7 @@ export class CartService {
     const token = existingToken || createCartToken();
     const tokenHash = hashCartToken(token);
     const expiresAt = new Date(Date.now() + CART_TTL_MS).toISOString();
-    const commonArgs = { p_organization_id: store.organization_id, p_store_id: store.id, p_token_hash: tokenHash, p_expires_at: expiresAt, p_product_id: product.id, p_product_name: product.name, p_product_image_url: product.imageUrl, p_unit_base_price_cents: priced.baseUnitPriceCents, p_quantity: values.quantity, p_note: values.note ?? "", p_modifiers: priced.modifiers };
+    const commonArgs = { p_organization_id: store.organization_id, p_store_id: store.id, p_token_hash: tokenHash, p_expires_at: expiresAt, p_product_id: product.id, p_product_name: product.name, p_product_image_url: product.imageUrl, p_unit_base_price_cents: priced.baseUnitPriceCents, p_quantity: values.quantity, p_note: await allowPublicItemNotes(store.id) ? values.note ?? "" : "", p_modifiers: priced.modifiers };
     const { data, error } = values.gasSaleMode ? await admin.rpc("cart_add_gas_item_internal", { ...commonArgs, p_sale_mode: values.gasSaleMode }) : await admin.rpc("cart_add_item_internal", commonArgs);
     if (error) throw error;
     return { token, store, data };
