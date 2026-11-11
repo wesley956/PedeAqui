@@ -1,4 +1,5 @@
 import "server-only";
+import { allowPublicItemNotes } from "@/server/menu/item-notes-policy";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { AddCartItemInput, GasSaleMode } from "@/server/cart/schemas";
@@ -74,7 +75,7 @@ export class CartItemEditService {
       p_product_image_url: state.product.image_url,
       p_unit_base_price_cents: priced.baseUnitPriceCents,
       p_quantity: values.quantity,
-      p_note: values.note ?? "",
+      p_note: await allowPublicItemNotes(store.id) ? values.note ?? "" : "",
       p_modifiers: priced.modifiers,
       p_sale_mode: values.gasSaleMode ?? null,
     });
