@@ -10,11 +10,12 @@ const shell = read("src/components/layout/app-shell.tsx");
 const layout = read("src/app/(app)/layout.tsx");
 
 describe("global human attention alert", () => {
-  it("counts only customer-requested human attention inside the current tenant/store", () => {
+  it("counts every waiting-agent conversation, including technical handoffs, inside the current tenant/store", () => {
     expect(service).toContain('.eq("organization_id", context.organizationId)');
     expect(service).toContain('.eq("store_id", storeId)');
     expect(service).toContain('.eq("status", "waiting_agent")');
-    expect(service).toContain('.not("human_attention_requested_at", "is", null)');
+    expect(service).not.toContain('.not("human_attention_requested_at", "is", null)');
+    expect(service).toContain('.order("last_message_at", { ascending: true, nullsFirst: false })');
     expect(service).toContain('{ count: "exact" }');
   });
 
@@ -28,6 +29,9 @@ describe("global human attention alert", () => {
   it("updates from realtime conversation changes and only loads for authorized users", () => {
     expect(alert).toContain('table: "conversations"');
     expect(alert).toContain("router.refresh()");
+    expect(alert).toContain('status === "SUBSCRIBED" && reconnecting');
+    expect(alert).toContain('document.addEventListener("visibilitychange", onVisible)');
+    expect(alert).toContain('window.addEventListener("online", onOnline)');
     expect(layout).toContain("PERMISSIONS.CONVERSATIONS_VIEW");
     expect(layout).toContain("HumanAttentionAlertService.load()");
   });

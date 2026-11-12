@@ -16,6 +16,7 @@ export function HumanAttentionAlert({ storeId, alert }: { storeId: string; alert
     if (!scope) return;
     const supabase = createClient();
     let timer: number | null = null;
+    let reconnecting = false;
     const refresh = () => {
       if (timer !== null) window.clearTimeout(timer);
       timer = window.setTimeout(() => {
@@ -27,9 +28,25 @@ export function HumanAttentionAlert({ storeId, alert }: { storeId: string; alert
     const channel = supabase
       .channel(`human-attention:${scope.storeId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "conversations", filter: scope.filter }, refresh)
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          reconnecting = true;
+        } else if (status === "SUBSCRIBED" && reconnecting) {
+          reconnecting = false;
+          refresh();
+        }
+      });
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    const onOnline = () => refresh();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("online", onOnline);
 
     return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("online", onOnline);
       if (timer !== null) window.clearTimeout(timer);
       void supabase.removeChannel(channel);
     };
