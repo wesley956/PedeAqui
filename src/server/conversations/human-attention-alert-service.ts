@@ -25,9 +25,8 @@ export class HumanAttentionAlertService {
       .eq("organization_id", context.organizationId)
       .eq("store_id", storeId)
       .eq("status", "waiting_agent")
-      .not("human_attention_requested_at", "is", null)
-      .order("last_message_at", { ascending: false, nullsFirst: false })
-      .order("opened_at", { ascending: false })
+      .order("last_message_at", { ascending: true, nullsFirst: false })
+      .order("opened_at", { ascending: true })
       .limit(1);
 
     if (error) throw error;
