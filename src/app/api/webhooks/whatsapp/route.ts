@@ -93,6 +93,25 @@ export async function POST(request: Request) {
           recordFailure("whatsapp.automation_hours.failed", error, { requestId: requestContext.requestId });
           continue; // Keep silent if opening hours cannot be verified.
         }
+        // Only resume a technical unanswered handoff when a customer explicitly
+        // starts a fresh conversation. The database checks the human lock, orders,
+        // pending sends and latest transition under a row lock.
+        if (result?.conversation_id && result?.message_id && result?.message_created !== false) {
+          try {
+            const { createAdminClient } = await import("@/lib/supabase/admin");
+            const { error: recoveryError } = await createAdminClient().rpc(
+              "conversation_recover_unanswered_bot_internal",
+              { p_conversation_id: result.conversation_id, p_inbound_message_id: result.message_id },
+            );
+            if (recoveryError) throw recoveryError;
+          } catch (error) {
+            // Fail closed: leave a waiting-agent conversation with the team.
+            recordFailure("whatsapp.bot_safe_recovery.failed", error, {
+              requestId: requestContext.requestId,
+              conversationId: result.conversation_id,
+            });
+          }
+        }
         let shadowPreparation: IntelligenceShadowPreparation | null = null;
         try {
           shadowPreparation = await UnifiedIntelligenceRouterShadow.afterInbound(result, requestContext.requestId);
