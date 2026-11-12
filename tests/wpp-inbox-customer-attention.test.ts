@@ -21,13 +21,13 @@ describe("#1155 customer-requested human attention", () => {
     expect(page).not.toContain('view: "unread"');
   });
 
-  it("uses a structured customer-attention marker instead of every waiting_agent state", () => {
+  it("preserves structured explicit handoff markers while alerting on every waiting_agent state", () => {
     expect(migration).toContain("human_attention_requested_at");
     expect(migration).toContain("human_attention_reason_code");
     expect(migration).toContain("conversation_request_human_attention_internal");
     expect(migration).toContain("conversations_clear_human_attention_request_trg");
     expect(alertService).toContain('.eq("status", "waiting_agent")');
-    expect(alertService).toContain('.not("human_attention_requested_at", "is", null)');
+    expect(alertService).not.toContain('.not("human_attention_requested_at", "is", null)');
   });
 
   it("marks explicit and benefit handoffs without turning technical pauses into customer alerts", () => {
