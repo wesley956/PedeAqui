@@ -45,7 +45,7 @@ begin
   select * into v_last_transition from public.conversation_state_history
     where conversation_id = v_conversation.id
     order by created_at desc, id desc limit 1;
-  if v_last_transition.to_state <> 'waiting_agent'
+  if v_last_transition.id is null or v_last_transition.to_state <> 'waiting_agent'
     or v_last_transition.source <> 'system'
     or v_last_transition.reason <> 'Inbound sem resposta automática; encaminhado para atendimento'
     or v_last_transition.created_at > pg_catalog.now() - interval '10 minutes'
