@@ -237,7 +237,7 @@ export default async function ConversationsPage({
                 ? "Uma resposta enviada pelo WhatsApp Business passou esta conversa para atendimento manual."
                 : "Esta conversa está em atendimento humano. O robô aguarda a retomada para responder."} As mensagens do cliente continuam chegando normalmente.</p>
               <p>{detail.conversation.status === "waiting_agent"
-                ? "Conversas aguardando atendente não são encerradas automaticamente. Assuma o atendimento ou retome o robô."
+                ? "A fila permanece aberta enquanto o cliente aguarda resposta. Com encerramento automático ativo, conversas respondidas pela equipe e inativas podem ser encerradas, preservando pedidos em andamento."
                 : "Ao terminar o atendimento, retome o robô para que ele responda às próximas mensagens."}</p>
               <form action={returnConversationToBotAction}><input type="hidden" name="conversationId" value={detail.conversation.id} /><Button type="submit">Retomar robô</Button></form>
             </div> : null}
