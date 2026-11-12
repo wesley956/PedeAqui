@@ -357,7 +357,7 @@ export class ConversationGreetingService {
       && session.step === "awaiting_tracking_code"
       ? "awaiting_tracking_code"
       : "menu";
-    let intent = resolveWhatsAppBotIntent(inbound.body, activeStep);
+    let intent = resolveWhatsAppBotIntent(inbound.body, activeStep, { allowWhatsAppOrders: Boolean(settings.whatsapp_orders_enabled) });
     if (intent === "unknown" && settings.unknown_intent_message?.trim()) {
       // Bound the lookup and scope it to this store/conversation. A second unresolved
       // request after a recent fallback belongs to the team, not another menu loop.

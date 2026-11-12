@@ -179,7 +179,7 @@ export function trackingCodeFromInput(value: string | null | undefined) {
   return matches.length === 1 ? Number(matches[0]) : null;
 }
 
-export function resolveWhatsAppBotIntent(value: string | null | undefined, step: WhatsAppBotStep): WhatsAppBotIntent {
+export function resolveWhatsAppBotIntent(value: string | null | undefined, step: WhatsAppBotStep, options: { allowWhatsAppOrders?: boolean } = {}): WhatsAppBotIntent {
   const normalized = semanticBotInput(normalizeBotInput(value));
   const trackingCode = trackingCodeFromInput(normalized);
   if (needsWhatsAppServiceRecovery(normalized)) return "handoff";
@@ -190,8 +190,11 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
   if (step === "awaiting_tracking_code" && menuWords.has(normalized)) return "track_start";
   if (menuWords.has(normalized)) return "menu";
   if (asksStoreLocation(normalized)) return "location";
-  if (/\b(?:quero|queria|me ve)\s+(?:uma?\s+)?(?:caixa\s+(?:de|com)\s+)?\d+\s+(?:salgado|salgados)\b/.test(normalized)) return "order_start";
-  if (containsAny(normalized, orderStartWords)) return "order_start";
+  // A request for the menu can also say “quero pedir”; the explicit catalog request wins.
+  if (containsAny(normalized, handoffWords)) return "handoff";
+  if (containsAny(normalized, menuLinkWords)) return "menu_link";
+  if (/\b(?:quero|queria|me ve)\s+(?:uma?\s+)?(?:caixa\s+(?:de|com)\s+)?\d+\s+(?:salgado|salgados)\b/.test(normalized)) return options.allowWhatsAppOrders === false ? "menu_link" : "order_start";
+  if (containsAny(normalized, orderStartWords)) return options.allowWhatsAppOrders === false ? "menu_link" : "order_start";
   if (containsAny(normalized, benefitHandoffWords)) return "benefit_handoff";
   if (containsAny(normalized, cashbackWords)) return "cashback";
   if (containsAny(normalized, pointsWords)) return "points";

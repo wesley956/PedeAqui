@@ -22,6 +22,31 @@ describe("WhatsApp recovery from real conversation patterns", () => {
   ])("preserves ordinary routing: %s", (body, expected) => {
     expect(resolveWhatsAppBotIntent(body, "menu")).toBe(expected);
   });
+  it.each([
+    ["Olá! Quero pedir pizza cone pronta. Pode me enviar o cardápio?", "menu_link"],
+    ["Quero comprar, manda o cardápio por favor", "menu_link"],
+    ["Jackson aonde é o local que você está trabalhando , para retirada ?", "location"],
+    ["Onde posso retirar?", "location"],
+    ["Sou a Gisele do sorteio Gostaria de saber se posso retirar hj", "handoff"],
+    ["Por favor me avisa quando estiver pronto, estou aqui no fundo", "handoff"],
+    ["Assim já vou pro portão receber o pedido", "handoff"],
+    ["Quero falar com atendente sobre meu pedido", "handoff"],
+    ["O cardápio não abre, quero pedir", "handoff"],
+    ["Meu pedido atrasou, manda o cardápio", "handoff"],
+  ])("routes actual customer language without unrelated tracking prompts: %s", (body, expected) => {
+    expect(resolveWhatsAppBotIntent(body, "menu")).toBe(expected);
+    expect(resolveWhatsAppBotIntent(body, "awaiting_tracking_code")).toBe(expected);
+  });
+  it("does not treat a customer's delivery address as a pickup location", () => {
+    expect(asksStoreLocation(normalizeBotInput("Onde está meu pedido para retirada?"))).toBe(false);
+    expect(asksStoreLocation(normalizeBotInput("Qual o meu endereço de entrega?"))).toBe(false);
+  });
+
+  it.each(["Quero fazer um pedido", "Quero pedir 20 salgados", "7"])("guides ordering to the menu only when chat ordering is disabled: %s", (body) => {
+    expect(resolveWhatsAppBotIntent(body, "menu", { allowWhatsAppOrders: false })).toBe("menu_link");
+    expect(resolveWhatsAppBotIntent(body, "menu", { allowWhatsAppOrders: true })).toBe("order_start");
+  });
+
   it("extracts only a bounded product availability query", () => {
     expect(catalogAvailabilityQuery(normalizeBotInput("Tem kibe assado hoje?"))).toBe("kibe assado");
     expect(catalogAvailabilityQuery("tem vaga de emprego")).toBeNull();
