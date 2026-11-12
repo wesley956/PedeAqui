@@ -1,6 +1,10 @@
 /** Conservative escalation: never create a second order or promise a schedule. */
 export function needsWhatsAppServiceRecovery(normalized: string): boolean {
-  return /\b(?:reclamacao|reclamar|estragado|estragada|azedo|azeda|queimado|queimada|veio errado|veio errada|faltou item|pedido incompleto|pedido atrasado|pedido esta atrasado|nao chegou meu pedido|meu pedido nao chegou|pedido nao chegou)\b/.test(normalized)
+  // Prize redemption and requests to notify someone need a person; they are not tracking-code queries.
+  return /\b(?:sorteio|premio|premiada|premiado)\b/.test(normalized)
+    || /\b(?:me avisa|me avise|me avisar|avisa pra mim|avise quando)\b/.test(normalized)
+    || /\b(?:vou|estou)\b.*\bportao\b.*\b(?:receber|esperar)\b/.test(normalized)
+    || /\b(?:reclamacao|reclamar|estragado|estragada|azedo|azeda|queimado|queimada|veio errado|veio errada|faltou item|pedido incompleto|pedido atrasado|pedido esta atrasado|nao chegou meu pedido|meu pedido nao chegou|pedido nao chegou)\b/.test(normalized)
     || /\b(?:site|cardapio|aplicativo|app|link)\b.*\b(?:nao abre|nao carrega|nao funciona|travou|travando|deu erro|com erro)\b/.test(normalized)
     || /\b(?:nao sei|nao tenho certeza|como saber)\b.*\b(?:pedido|compra)\b.*\b(?:finaliz|conclu|confirm)/.test(normalized)
     || /\b(?:agendar|encomenda|encomendar)\b/.test(normalized)
@@ -19,5 +23,6 @@ export function asksStoreLocation(normalized: string): boolean {
   // A customer's saved delivery address is private customer context, not store location.
   if (/\b(?:meu|minha|salvo|salva|cadastrado|cadastrada|guardado|registrado)\b/.test(normalized)) return false;
   return /\b(?:onde voces ficam|onde fica a loja|onde fica o restaurante|qual o endereco|qual endereco|qual a localizacao|qual cidade|em que cidade|em qual cidade|manda a localizacao|localizacao da loja)\b/.test(normalized)
+    || /\b(?:onde|aonde)\b.*\b(?:local|loja|restaurante|retirada|retirar|voces ficam|voce esta trabalhando)\b/.test(normalized)
     || /^(?:endereco|localizacao)$/.test(normalized);
 }
