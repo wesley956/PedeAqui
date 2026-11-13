@@ -37,9 +37,13 @@ describe("final PedeAqui baseline [323]", () => {
     }
   });
 
-  it("keeps README links resolvable and aligned to the canonical baseline", () => {
+  it("keeps README links resolvable and points to the current handoff while preserving history", () => {
     const readme = read("README.md");
-    expect(readme).toContain("Ciclo consolidado: **[001]–[323]**");
+    expect(readme).toContain("[001]–[323]");
+    for (const relative of ["docs/CURRENT_STATE.md", "docs/CODEX_SETUP.md", "docs/CODE_MAP.md", "AGENTS.md"]) {
+      expect(readme).toContain(`](${relative})`);
+      expect(existsSync(join(root, relative)), `${relative} should exist`).toBe(true);
+    }
     expect(readme).toContain("wesley956/PedeAqui");
     expect(readme).not.toContain("wesley956/cruz");
 

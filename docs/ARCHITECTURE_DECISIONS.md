@@ -1,6 +1,6 @@
-# Cruz — Decisões de Arquitetura
+# PedeAqui — Decisões de Arquitetura
 
-Este arquivo registra decisões que orientam a implementação. Mudanças relevantes devem ser documentadas por ADR/PR, não feitas silenciosamente.
+Este arquivo registra decisões que orientam a implementação. Mudanças relevantes devem ser documentadas por ADR/PR, não feitas silenciosamente. Versões e estrutura inicial abaixo são históricas: consulte `../package.json` e `CODE_MAP.md` para o checkout atual; `CURRENT_STATE.md` registra os ambientes observados em 11/10/2026.
 
 ## ADR-001 — Aplicação web
 
