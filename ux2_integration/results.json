@@ -5,7 +5,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 831,
+  "loadMs": 790,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -166,21 +166,21 @@
  {
   "device": "pc-1366",
   "area": "panel",
-  "label": "/entregador",
-  "url": "http://127.0.0.1:3000/entregador",
+  "label": "/dashboard",
+  "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 2738,
-  "finalUrl": "/entregador",
+  "loadMs": 915,
+  "finalUrl": "/dashboard",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
+  "docHeight": 1834,
+  "screens": 2.4,
   "title": "PedeAqui",
-  "h1": "Minhas entregas",
+  "h1": "Início",
   "overflowing": [],
-  "interactiveCount": 30,
-  "smallTargets": 20,
+  "interactiveCount": 38,
+  "smallTargets": 22,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
@@ -250,109 +250,18 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 558,
-  "shot": "shots/pc-1366__panel__entregador.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/configuracoes/conversas",
-  "url": "http://127.0.0.1:3000/configuracoes/conversas",
-  "status": 200,
-  "loadMs": 2494,
-  "finalUrl": "/configuracoes/conversas",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 2069,
-  "screens": 2.7,
-  "title": "PedeAqui",
-  "h1": "Conversas e WhatsApp",
-  "overflowing": [],
-  "interactiveCount": 94,
-  "smallTargets": 41,
-  "tinyTargets": 22,
-  "smallTargetExamples": [
-   {
-    "el": "button.sidebar-toggle \"Recolher menu\"",
-    "w": 40,
-    "h": 40
-   },
-   {
-    "el": "button.nav-group-toggle \"GESTÃO +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "button.nav-group-toggle \"CONTA E AJUSTES +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 300,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 300,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.app-sidebar \"PRINCIPAL Início Pedidos Cardápio PDV Conversas Co\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "button.new-user-guide-module__a1T_Va__trigger \"Abrir assistente do PedeAqui\"",
-    "top": 700,
-    "h": 48,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 48,
-  "bodyTextLength": 2658,
-  "shot": "shots/pc-1366__panel__configuracoes-conversas.jpg",
+  "bodyTextLength": 1838,
+  "shot": "shots/pc-1366__panel__dashboard.jpg",
   "consoleErrors": []
  },
  {
   "device": "pc-1366",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/c754ae6f-65af-4f2b-b350-afed2a337f80",
+  "url": "http://127.0.0.1:3000/pedidos/8f0c7bbc-77f9-4aba-a06d-52b17562b70a",
   "status": 200,
-  "loadMs": 3457,
-  "finalUrl": "/pedidos/c754ae6f-65af-4f2b-b350-afed2a337f80",
+  "loadMs": 1025,
+  "finalUrl": "/pedidos/8f0c7bbc-77f9-4aba-a06d-52b17562b70a",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -440,10 +349,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/a15cc70e-c9c6-456b-9594-0661cbc648a3",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/7c9732f3-4d8c-4d74-b12a-6f07953eeb27",
   "status": 200,
-  "loadMs": 2517,
-  "finalUrl": "/cardapio/produtos/a15cc70e-c9c6-456b-9594-0661cbc648a3",
+  "loadMs": 1029,
+  "finalUrl": "/cardapio/produtos/7c9732f3-4d8c-4d74-b12a-6f07953eeb27",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -537,10 +446,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/5f555251-a6ea-464d-8096-49c9e24d5e9e",
+  "url": "http://127.0.0.1:3000/clientes/7ef9b286-670b-48b3-915f-5b571d6fbcc8",
   "status": 200,
-  "loadMs": 2498,
-  "finalUrl": "/clientes/5f555251-a6ea-464d-8096-49c9e24d5e9e",
+  "loadMs": 1044,
+  "finalUrl": "/clientes/7ef9b286-670b-48b3-915f-5b571d6fbcc8",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -628,10 +537,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/e993c947-497e-4cdd-a7d1-1e821d5e8349",
+  "url": "http://127.0.0.1:3000/salao/abd4db3b-cf50-4055-a76f-fac0a1841088",
   "status": 200,
-  "loadMs": 2447,
-  "finalUrl": "/salao/e993c947-497e-4cdd-a7d1-1e821d5e8349",
+  "loadMs": 983,
+  "finalUrl": "/salao/abd4db3b-cf50-4055-a76f-fac0a1841088",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -714,12 +623,6 @@
   "bodyTextLength": 643,
   "shot": "shots/pc-1366__panel__salao-tableId.jpg",
   "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "state",
-  "label": "menu-mais-aberto",
-  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.mobile-more > summary').first()\n    - locator resolved to <summary aria-label=\"Abrir mais opções\">…</summary>\n  - attemptin"
  },
  {
   "device": "pc-1366",
@@ -896,25 +799,19 @@
  {
   "device": "pc-1366",
   "area": "state",
-  "label": "pedidos-menu-acoes",
-  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('button[aria-label^=\"Mais ações do pedido\"]').first()\n    - locator resolved to <button type=\"button\" aria-label=\"Mais ações "
- },
- {
-  "device": "pc-1366",
-  "area": "state",
   "label": "pedidos-aba-em-preparo",
   "shot": "shots/pc-1366__state__pedidos-aba-em-preparo.jpg",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 2553,
-  "screens": 3.3,
+  "docHeight": 1653,
+  "screens": 2.2,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 94,
-  "smallTargets": 81,
-  "tinyTargets": 13,
+  "interactiveCount": 65,
+  "smallTargets": 52,
+  "tinyTargets": 5,
   "smallTargetExamples": [
    {
     "el": "button.sidebar-toggle \"Recolher menu\"",
@@ -983,7 +880,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1916
+  "bodyTextLength": 1332
  },
  {
   "device": "pc-1366",
@@ -1077,7 +974,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 852,
+  "loadMs": 649,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -1360,7 +1257,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 2156,
+  "loadMs": 611,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -1407,7 +1304,7 @@
   "inputsZoomCount": 0,
   "fixed": [],
   "fixedCoverPx": 0,
-  "bodyTextLength": 329,
+  "bodyTextLength": 320,
   "shot": "shots/pc-1366__public-local__carrinho.jpg",
   "consoleErrors": []
  },
@@ -1417,7 +1314,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 3197,
+  "loadMs": 639,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -1483,9 +1380,7 @@
   "fixedCoverPx": 0,
   "bodyTextLength": 855,
   "shot": "shots/pc-1366__public-local__checkout.jpg",
-  "consoleErrors": [
-   "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <SegmentViewNode type=\"page\" pagePath=\"m/[slug]/c...\">\n      <SegmentTrieNode>\n      <CheckoutPage>\n        <main className=\"checkout-m...\">\n          <div className=\"checkout-m...\">\n            <header>\n         "
-  ]
+  "consoleErrors": []
  },
  {
   "device": "android-360",
@@ -1493,7 +1388,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 954,
+  "loadMs": 710,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -1655,21 +1550,21 @@
  {
   "device": "android-360",
   "area": "panel",
-  "label": "/entregador",
-  "url": "http://127.0.0.1:3000/entregador",
+  "label": "/dashboard",
+  "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 1287,
-  "finalUrl": "/entregador",
+  "loadMs": 743,
+  "finalUrl": "/dashboard",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 2843,
+  "screens": 3.8,
   "title": "PedeAqui",
-  "h1": "Minhas entregas",
+  "h1": "Início",
   "overflowing": [],
-  "interactiveCount": 40,
-  "smallTargets": 12,
+  "interactiveCount": 48,
+  "smallTargets": 14,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
@@ -1745,106 +1640,8 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 404,
-  "shot": "shots/android-360__panel__entregador.jpg",
-  "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/configuracoes/conversas",
-  "url": "http://127.0.0.1:3000/configuracoes/conversas",
-  "status": 200,
-  "loadMs": 1508,
-  "finalUrl": "/configuracoes/conversas",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 3070,
-  "screens": 4.1,
-  "title": "PedeAqui",
-  "h1": "Conversas e WhatsApp",
-  "overflowing": [],
-  "interactiveCount": 104,
-  "smallTargets": 33,
-  "tinyTargets": 22,
-  "smallTargetExamples": [
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 276,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 276,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 157,
-    "h": 36
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
-    "w": 302,
-    "h": 42
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "div.customer-messages-module__qEO9Fq__panel",
-    "top": 126,
-    "h": 177,
-    "pos": "fixed"
-   },
-   {
-    "el": "nav.mobile-nav \"Navegação principal mobile\"",
-    "top": 671,
-    "h": 69,
-    "pos": "fixed"
-   },
-   {
-    "el": "div.mobile-more-panel",
-    "top": 116,
-    "h": 548,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 794,
-  "bodyTextLength": 2504,
-  "shot": "shots/android-360__panel__configuracoes-conversas.jpg",
+  "bodyTextLength": 1372,
+  "shot": "shots/android-360__panel__dashboard.jpg",
   "axe": [],
   "consoleErrors": []
  },
@@ -1852,10 +1649,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/c754ae6f-65af-4f2b-b350-afed2a337f80",
+  "url": "http://127.0.0.1:3000/pedidos/8f0c7bbc-77f9-4aba-a06d-52b17562b70a",
   "status": 200,
-  "loadMs": 2149,
-  "finalUrl": "/pedidos/c754ae6f-65af-4f2b-b350-afed2a337f80",
+  "loadMs": 894,
+  "finalUrl": "/pedidos/8f0c7bbc-77f9-4aba-a06d-52b17562b70a",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -1957,10 +1754,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/a15cc70e-c9c6-456b-9594-0661cbc648a3",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/7c9732f3-4d8c-4d74-b12a-6f07953eeb27",
   "status": 200,
-  "loadMs": 1995,
-  "finalUrl": "/cardapio/produtos/a15cc70e-c9c6-456b-9594-0661cbc648a3",
+  "loadMs": 826,
+  "finalUrl": "/cardapio/produtos/7c9732f3-4d8c-4d74-b12a-6f07953eeb27",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2055,10 +1852,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/5f555251-a6ea-464d-8096-49c9e24d5e9e",
+  "url": "http://127.0.0.1:3000/clientes/7ef9b286-670b-48b3-915f-5b571d6fbcc8",
   "status": 200,
-  "loadMs": 1601,
-  "finalUrl": "/clientes/5f555251-a6ea-464d-8096-49c9e24d5e9e",
+  "loadMs": 845,
+  "finalUrl": "/clientes/7ef9b286-670b-48b3-915f-5b571d6fbcc8",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2160,10 +1957,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/e993c947-497e-4cdd-a7d1-1e821d5e8349",
+  "url": "http://127.0.0.1:3000/salao/abd4db3b-cf50-4055-a76f-fac0a1841088",
   "status": 200,
-  "loadMs": 1589,
-  "finalUrl": "/salao/e993c947-497e-4cdd-a7d1-1e821d5e8349",
+  "loadMs": 899,
+  "finalUrl": "/salao/abd4db3b-cf50-4055-a76f-fac0a1841088",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2830,7 +2627,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 928,
+  "loadMs": 629,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -3134,12 +2931,12 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 1081,
+  "loadMs": 597,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 890,
+  "docHeight": 882,
   "screens": 1.2,
   "title": "PedeAqui",
   "h1": "Seu carrinho",
@@ -3193,16 +2990,9 @@
    }
   ],
   "fixedCoverPx": 66,
-  "bodyTextLength": 329,
+  "bodyTextLength": 320,
   "shot": "shots/android-360__public-local__carrinho.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 2,
-    "example": ".cart-module__BFFSzG__rebuild"
-   }
-  ],
+  "axe": [],
   "consoleErrors": []
  },
  {
@@ -3211,7 +3001,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 1236,
+  "loadMs": 626,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
@@ -3288,16 +3078,8 @@
     "impact": "critical",
     "nodes": 1,
     "example": "input[type=\"search\"]"
-   },
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 1,
-    "example": ".checkout-module__ZQ_bta__textLink"
    }
   ],
-  "consoleErrors": [
-   "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <SegmentViewNode type=\"page\" pagePath=\"m/[slug]/c...\">\n      <SegmentTrieNode>\n      <CheckoutPage>\n        <main className=\"checkout-m...\">\n          <div className=\"checkout-m...\">\n            <header>\n         "
-  ]
+  "consoleErrors": []
  }
 ]
