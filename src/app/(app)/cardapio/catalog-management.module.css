@@ -22,7 +22,7 @@
 }
 
 .eyebrow {
-  color: var(--accent) !important;
+  color:var(--text-secondary) !important;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-extrabold);
   letter-spacing: .09em;
@@ -54,7 +54,7 @@
 }
 
 .navLink:hover {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border-default));
+  border-color: var(--border-strong);
   background: var(--surface-2);
 }
 
@@ -201,7 +201,7 @@
 }
 
 .productCard:hover {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border-default));
+  border-color: var(--border-strong);
 }
 
 .productMain {
@@ -255,7 +255,7 @@
   padding: 0 12px;
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--accent) 9%, var(--surface-1));
-  color: var(--accent);
+  color:var(--link-color);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
 }
@@ -466,7 +466,7 @@
 }
 
 .promotionCard:hover {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border-default));
+  border-color: var(--border-strong);
 }
 
 .promotionPriceBlock {
@@ -478,7 +478,7 @@
 }
 
 .promotionPriceBlock strong {
-  color: var(--accent);
+  color:var(--link-color);
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
 }
@@ -595,7 +595,7 @@
 .rowAside{white-space:nowrap}
 .rowActions{display:flex;align-items:center;justify-content:flex-end;gap:8px}
 .rowButton{min-height:44px;padding:0 12px;border:1px solid var(--border-default);border-radius:var(--radius-sm);background:var(--surface-1);color:var(--text-primary);font:inherit;font-size:var(--font-size-support);cursor:pointer}
-.rowButton[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+.rowButton[aria-expanded="true"]{border-color:var(--accent);color:var(--link-color)}
 .rowEditor{grid-column:1/-1;padding:12px 0 4px;border-top:1px dashed var(--border-default)}
 .rowEditor .editBody{padding-top:0;border-top:0}
 .rowCompact{padding:8px 16px 8px 32px;background:color-mix(in srgb,var(--surface-2) 45%,transparent)}
@@ -635,7 +635,7 @@
 .suggestionSourceControls>button{min-height:44px}
 .subToggle{width:100%;display:flex;align-items:baseline;gap:10px;min-height:44px;padding:10px 16px 10px 32px;border:0;border-top:1px solid var(--border-default);background:color-mix(in srgb,var(--surface-2) 45%,transparent);color:var(--text-primary);font:inherit;text-align:left;cursor:pointer}
 .subToggle:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
-.subToggleLabel{flex:none;color:var(--accent);font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold)}
+.subToggleLabel{flex:none;color:var(--link-color);font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold)}
 .subToggleSummary{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-secondary);font-size:var(--font-size-support)}
 .subToggle[aria-expanded="true"]{border-bottom:1px solid var(--border-default)}
 @media(max-width:640px){.subToggle{padding-left:24px;flex-wrap:wrap;gap:2px 10px}.subToggleSummary{white-space:normal}}

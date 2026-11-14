@@ -31,6 +31,8 @@
   --selected: var(--text-primary);
   --on-selected: var(--surface-0);
   --selected-surface: color-mix(in srgb, var(--text-primary) 8%, var(--surface-1));
+  /* Links e destaques de texto dentro do painel: cor do texto, com negrito/sublinhado/seta dando a pista de clique. */
+  --link-color: var(--text-primary);
 
   /* Operational states — never rely on color alone in UI copy */
   --state-success: #22c55e;

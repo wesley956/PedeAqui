@@ -85,7 +85,7 @@
 }
 
 .details summary::marker {
-  color: var(--brand-primary);
+  color:var(--link-color);
 }
 
 .detailsBody {

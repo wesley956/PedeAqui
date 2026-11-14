@@ -46,7 +46,7 @@
   font-weight: var(--font-weight-bold);
   cursor: pointer;
 }
-.action:hover { border-color: var(--accent); }
+.action:hover { border-color: var(--border-strong); }
 .action:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
 .notifications { position: relative; }

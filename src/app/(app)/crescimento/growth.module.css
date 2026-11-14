@@ -11,7 +11,7 @@
 }
 .eyebrow {
   margin: 0 0 4px;
-  color: var(--accent);
+  color:var(--text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   letter-spacing: 0.08em;
@@ -139,7 +139,7 @@
   padding: 4px 8px;
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--accent) 14%, transparent);
-  color: var(--accent);
+  color:var(--link-color);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
 }
@@ -166,7 +166,7 @@
 .details summary::after {
   content: "+";
   float: right;
-  color: var(--accent);
+  color:var(--link-color);
   font-size: var(--font-size-lg);
   line-height: 1;
 }
@@ -381,7 +381,7 @@
 }
 .objectiveCard b {
   align-self: end;
-  color: var(--accent);
+  color:var(--link-color);
   font-size: var(--font-size-xs);
 }
 .wizard {
@@ -399,7 +399,7 @@
   gap: 12px;
 }
 .wizardHeader span {
-  color: var(--accent);
+  color:var(--link-color);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
@@ -500,7 +500,7 @@
 .advanced > summary::after {
   content: "+";
   float: right;
-  color: var(--accent);
+  color:var(--link-color);
   font-size: var(--font-size-2xl);
   line-height: 1;
 }
