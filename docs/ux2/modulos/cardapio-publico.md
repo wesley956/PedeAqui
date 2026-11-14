@@ -22,3 +22,11 @@ Nada mudou em preço, carrinho, regras de pedido ou textos.
 
 ## Próximas partes
 Tela do produto (sabores e adicionais), carrinho, checkout e acompanhamento do pedido.
+
+## Parte 2 — Produto, carrinho e finalização (branch `ux2/fluxo-cliente`)
+- **Produto sem foto**: o desenho de prato ocupava metade da tela do celular antes dos sabores; virou uma faixa baixa. Preço em preto.
+- **− e +** neutros em todo o fluxo (produto, carrinho, finalização).
+- **Carrinho**: saiu o quadro "Sem foto"; total em preto; "Editar item" como link sublinhado.
+- **Finalizar pedido**: fundo sem degradê colorido; links, totais e rótulos neutros. A cor da loja fica no botão que avança e na barra de progresso.
+
+Regras de entrega, pagamento, troco e valores não foram tocadas.

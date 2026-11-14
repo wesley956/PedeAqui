@@ -108,3 +108,16 @@
 @media(prefers-reduced-motion:reduce){.expressShell *{scroll-behavior:auto}}
 .two+.help{margin:6px 0 0}
 .payGroup+.payGroup{margin-top:10px}
+
+/* ── UX2 — finalizar pedido ─────────────────────────────────────────────────────────────────
+   A cor da loja fica no botão que avança e na barra de progresso. Links, − e +, totais e
+   rótulos ficam neutros; o fundo deixa de ter o degradê colorido. */
+.root{background:var(--surface-0)}
+.stepper button{color:var(--text-primary)}
+.textLink,.itemsHeader a,.stageRowEdit,.reviewItems a,.neighborhoodChange{color:var(--text-primary);text-decoration:underline;text-underline-offset:3px}
+.total strong{color:var(--text-primary)}
+.eyebrow,.choiceMeta{color:var(--text-secondary)}
+.addMoreItems{border-color:var(--border-strong);background:var(--surface-1);color:var(--text-primary)}
+.review,.blockNotice{border-color:var(--border-default)}
+.paymentHeader,.infoBox{background:var(--surface-2)}
+.receiveChoice:hover{border-color:var(--border-strong)}

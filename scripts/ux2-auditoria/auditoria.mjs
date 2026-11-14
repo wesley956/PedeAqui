@@ -180,10 +180,11 @@ for (const device of DEVICES) {
         await shotState(page, device, name);
       } catch (error) { results.push({ device: device.key, area: "state", label: name, error: String(error.message).slice(0, 200) }); }
     };
-    await openState("/dashboard", ".mobile-more > summary", "menu-mais-aberto");
+    // Estes dois só existem no celular.
+    if (device.key !== "pc-1366") await openState("/dashboard", ".mobile-more > summary", "menu-mais-aberto");
     await openState("/dashboard", ".app-operation-menu > summary", "menu-loja-aberto");
     await openState("/dashboard", ".app-account-menu > summary", "menu-conta-aberto");
-    await openState("/pedidos", 'button[aria-label^="Mais ações do pedido"]', "pedidos-menu-acoes");
+    if (device.key !== "pc-1366") await openState("/pedidos", 'button[aria-label^="Mais ações do pedido"]', "pedidos-menu-acoes");
     try {
       await page.goto(`${panelBase}/pedidos`, { waitUntil: "load" });
       await page.getByRole("button", { name: /^Em preparo/ }).first().click();
