@@ -71,3 +71,9 @@
 .productCard:hover,.productCard:focus-visible{border-color:var(--border-strong)}
 .productCard:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
 .checkoutBar{border-top-color:var(--border-strong)}
+/* Celular, barra recolhida: aparecia "Pagamento … Alterar" sem a forma escolhida (a coluna do meio ficava com
+   largura zero). Sai o rótulo "Pagamento" e entra o que importa: "Dinheiro · Alterar". */
+@media(max-width:900px){
+  .checkoutBar[data-expanded="false"] .checkoutToggle{grid-template-columns:minmax(0,1fr) auto}
+  .checkoutBar[data-expanded="false"] .checkoutToggle>span:first-child{display:none}
+}
