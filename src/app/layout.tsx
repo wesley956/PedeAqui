@@ -23,8 +23,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body><ConnectivityGuard />{children}</body>
-      <Script id="pedeaqui-theme" strategy="beforeInteractive">{`
+      <body>
+        <ConnectivityGuard />{children}
+        {/* Dentro do <body>: fora dele o React acusa <script> como filho inválido de <html>. */}
+        <Script id="pedeaqui-theme" strategy="beforeInteractive">{`
         (() => {
           const key = "pedeaqui-theme";
           const root = document.documentElement;
@@ -43,6 +45,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           });
         })();
       `}</Script>
+      </body>
     </html>
   );
 }

@@ -193,3 +193,13 @@
   .recentFinalized { display: none; }
   .noticeSlot:empty { display: none !important; }
 }
+
+/* ── UX2 — Pedidos (computador) ─────────────────────────────────────────────────────────────
+   O laranja fica no botão da próxima ação ("Aceitar pedido"). O pedido novo continua destacado
+   pelo selo "Novo" e por uma borda mais forte, sem contorno laranja em volta do cartão. */
+.pageEyebrow { color: var(--text-secondary); }
+.activeBadge { border-color: var(--border-default); background: var(--surface-1); }
+.lane[data-bucket="new"] { border-color: var(--border-strong); }
+.lane[data-bucket="new"] .laneCount { background: var(--selected); color: var(--on-selected); }
+.orderCard[data-bucket="new"] { border-color: var(--border-strong); box-shadow: inset 3px 0 0 var(--selected); }
+.detailsLink:hover { border-color: var(--border-strong); }

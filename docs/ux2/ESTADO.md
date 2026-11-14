@@ -16,8 +16,8 @@ Atualizado em 14/11/2026. Este arquivo é a fonte para retomar o trabalho entre 
 | Inventário de funcionalidades com identificador | Não iniciado | feito por módulo, na auditoria de cada um |
 | Homologação local (script + CI) | Concluído em Linux; **não executado no Windows** | PR #1322; `HOMOLOGACAO-LOCAL.md` |
 | Passo a passo de integração | Concluído | `PASSO-A-PASSO-INTEGRACAO.md` |
-| Auditoria com prints (celular e computador) em `ux2/*` | Não iniciado | portar `audit.mjs` de `qa/mobile-audit` |
-| Fundação visual e navegação | Não iniciado | D-01 decidida |
+| Auditoria com prints (celular e computador) em `ux2/*` | Concluído | `scripts/ux2-auditoria`; prints na branch `ux2/evidencias`; 140 telas/estados percorridos, nenhuma com rolagem lateral |
+| Fundação visual e navegação | Parcialmente validado | lotes 1 e 2 integrados (PR #1323); `modulos/fundacao-visual.md` |
 
 ## Módulos
 
@@ -27,7 +27,7 @@ Legenda: Validado · Parcialmente validado · Bloqueado · Não iniciado
 | --- | --- | --- |
 | Pedidos | Não iniciado | celular redesenhado em out/2026 (#1274), sem verificação no fluxo personalizado |
 | PDV | Não iniciado | |
-| Cardápio público e checkout | Não iniciado | carrinho e finalização nunca testados no celular |
+| Cardápio público e checkout | Parcialmente validado | parte 1 (página do cardápio) integrada (PR #1324); produto, carrinho e checkout a fazer; `modulos/cardapio-publico.md` |
 | Produtos, categorias, sabores | Não iniciado | |
 | Caixa, Salão, Produção, Entregas | Não iniciado | |
 | Configurações | Não iniciado | |

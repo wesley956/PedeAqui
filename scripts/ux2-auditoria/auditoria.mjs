@@ -93,8 +93,8 @@ async function measure(page) {
 
 async function audit(page, device, area, label, url, extra) {
   const errors = [];
-  const onConsole = (m) => { if (m.type() === "error") errors.push(m.text().slice(0, 200)); };
-  const onPageError = (e) => errors.push(`pageerror: ${String(e.message).slice(0, 200)}`);
+  const onConsole = (m) => { if (m.type() === "error") errors.push(m.text().slice(0, 900)); };
+  const onPageError = (e) => errors.push(`pageerror: ${String(e.message).slice(0, 900)}`);
   page.on("console", onConsole); page.on("pageerror", onPageError);
   const started = Date.now();
   const entry = { device: device.key, area, label, url };
@@ -118,7 +118,8 @@ async function audit(page, device, area, label, url, extra) {
   } catch (error) {
     entry.error = String(error.message).slice(0, 300);
   }
-  entry.consoleErrors = errors.slice(0, 6);
+  entry.consoleErrors = errors.filter((text) => !/Cannot render a sync or defer <script>|cannot be a child of|cannot contain a nested/.test(text)).slice(0, 6);
+  entry.scriptPlacementWarning = errors.some((text) => /Cannot render a sync or defer <script>/.test(text)) || undefined;
   page.off("console", onConsole); page.off("pageerror", onPageError);
   results.push(entry);
   // Grava a cada tela: se a execução for interrompida, o que já foi feito fica guardado.

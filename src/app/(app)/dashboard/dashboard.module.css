@@ -15,3 +15,14 @@
 @media(pointer:coarse){.actionCard,.attentionRow a,.retry{min-height:var(--control-height-lg)}}
 /* Celular: os números do dia em 2 colunas e a configuração pendente numa faixa fina, sem o texto longo. */
 @media(max-width:460px){.metrics,.detailMetrics{grid-template-columns:1fr 1fr}.metric{min-height:84px}.readiness{padding:var(--space-3);gap:var(--space-2)}.readiness>div:first-child p,.readiness .eyebrow{display:none}.readiness h2{font-size:var(--font-size-md);margin:0}.sectionTitle p{display:none}}
+
+/* ── UX2 — Início ───────────────────────────────────────────────────────────────────────────
+   Um só laranja na tela: o cartão "Ver pedidos". Faixa de configuração, setas, barra de progresso
+   e gráfico ficam neutros para os números e o que precisa de atenção aparecerem primeiro. */
+.eyebrow{color:var(--text-secondary)!important}
+.readiness{border-color:var(--border-default);background:var(--surface-1)}
+.progressTrack span{background:var(--selected)}
+.actionCard:hover{border-color:var(--border-strong)}
+.actionCard em{color:var(--text-secondary)}
+.actionCard[data-primary="true"] em{color:inherit}
+.bar{background:var(--selected)}
