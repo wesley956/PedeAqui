@@ -17,7 +17,7 @@ Atualizado em 14/11/2026. Este arquivo é a fonte para retomar o trabalho entre 
 | Homologação local (script + CI) | Concluído em Linux; **não executado no Windows** | PR #1322; `HOMOLOGACAO-LOCAL.md` |
 | Passo a passo de integração | Concluído | `PASSO-A-PASSO-INTEGRACAO.md` |
 | Auditoria com prints (celular e computador) em `ux2/*` | Concluído | `scripts/ux2-auditoria`; prints na branch `ux2/evidencias`; 140 telas/estados percorridos, nenhuma com rolagem lateral |
-| Fundação visual e navegação | Parcialmente validado | lotes 1 e 2 integrados (PR #1323); `modulos/fundacao-visual.md` |
+| Fundação visual e navegação | Parcialmente validado | lotes 1–3 integrados (PRs #1323, #1326); `modulos/fundacao-visual.md` |
 
 ## Módulos
 
@@ -27,7 +27,7 @@ Legenda: Validado · Parcialmente validado · Bloqueado · Não iniciado
 | --- | --- | --- |
 | Pedidos | Não iniciado | celular redesenhado em out/2026 (#1274), sem verificação no fluxo personalizado |
 | PDV | Não iniciado | |
-| Cardápio público e checkout | Parcialmente validado | parte 1 (página do cardápio) integrada (PR #1324); produto, carrinho e checkout a fazer; `modulos/cardapio-publico.md` |
+| Cardápio público e checkout | Parcialmente validado | cardápio, produto, carrinho e finalização integrados (PRs #1324, #1327); falta ver com fotos reais e acompanhar pedido; `modulos/cardapio-publico.md` |
 | Produtos, categorias, sabores | Não iniciado | |
 | Caixa, Salão, Produção, Entregas | Não iniciado | |
 | Configurações | Não iniciado | |
@@ -48,3 +48,17 @@ Legenda: Validado · Parcialmente validado · Bloqueado · Não iniciado
 | B-03 | npm bloqueado no ambiente de trabalho | cada verificação leva ~10 min no CI | nenhuma; aceitar o ciclo |
 | B-04 | Sem sandbox de WhatsApp, gateways, iFood, fiscal e impressão | esses módulos não chegam a "Validado" | mocks e testes de contrato; validação real fica pendente |
 | B-05 | Na `main`, o check `public-browser-homologation` falha ao instalar o Playwright no `ubuntu-latest` (Ubuntu novo) | PRs para a `main` que tocam telas ficam com esse check vermelho | fixar `runs-on: ubuntu-24.04` (já feito em `ux2/*`) ou atualizar o Playwright; decisão de quem integra |
+
+
+## Registro de execução — 14/11/2026
+Integrado em `ux2/integration` (nada na `main`): #1321 documentos, #1322 homologação local, #1323 fundação visual + auditoria, #1324 cardápio do cliente, #1326 correções da auditoria + Início e Pedidos, #1327 produto/carrinho/finalização.
+
+**Por que "parcialmente validado" e não "validado":** tudo passou no CI completo e nos prints (computador 1366 px e celular 360 px) da loja fictícia, mas (1) o responsável ainda não navegou na homologação do computador dele, (2) a loja fictícia não tem fotos nem logo, (3) o tema escuro não foi fotografado.
+
+**Achados que não são visuais**
+- `/entregador` mostrava tela de erro para quem não é entregador — corrigido.
+- O esquema consolidado `supabase/sql` está atrás das migrações (18 migrações têm objetos que ele não tem). Não afeta a produção; afeta quem monta um banco do zero. A homologação local aplica essas migrações por cima.
+- `/vasilhames` em loja que não é de gás lança `ModuleUnavailableError` (tela de erro genérica) — a conferir no módulo de gás.
+- Uma falha passageira do banco local ("invalid response from upstream") apareceu 1 vez em 144 telas; não reproduziu.
+
+**Próximos, em ordem:** PDV (fluxo de venda completo), detalhe do pedido, Conversas, Cardápio (gestão), Configurações, Entregas/Salão/Produção, Gestão (financeiro, estoque, clientes), Platform, site institucional e acesso. Em todos: tema escuro e loja com fotos.
