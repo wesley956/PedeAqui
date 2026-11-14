@@ -1,0 +1,36 @@
+
+▶ Conferindo o que precisa estar instalado
+  Node 22.23.4 · Docker ok · Supabase CLI: via npx
+
+▶ Subindo o banco local (Supabase em Docker)
+
+▶ Criando as tabelas do sistema no banco local
+  234 arquivos de schema aplicados; 11 migrações extras aplicadas.
+
+▶ Criando a loja fictícia (Salgados da Vila)
+  SEED_SUMMARY products=16 groups=9 orders=10 modules=21
+
+▶ Compilando o sistema (alguns minutos)
+
+▶ Iniciando o sistema
+HOMOLOG_VERIFY /login=200 /m/salgados-da-vila=200 /dashboard=307 /api/health=200 login=200 SEED_SUMMARY products=16 groups=9 orders=10 modules=21 avisos=0
+pc-1366 panel login → 200 /login overflow=no small=12 
+pc-1366 logged in → http://127.0.0.1:3000/dashboard
+pc-1366 panel /entregador → 500 /entregador overflow=no small=1 
+pc-1366 panel /configuracoes/conversas → 200 /configuracoes/conversas overflow=no small=21 
+pc-1366 panel /pedidos/[id] → 200 /pedidos/78e7b6af-0fb6-413e-9c6d-0ca015c108b1 overflow=no small=27 
+pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/2fe1d36f-9847-427f-82de-a9b4ed477531 overflow=no small=34 
+pc-1366 panel /clientes/[id] → 200 /clientes/a1a2dff6-49f2-42ba-b256-90152ff1a118 overflow=no small=34 
+pc-1366 panel /salao/[tableId] → 200 /salao/fe3cd443-1889-418f-bdd5-b69e83d3dcd2 overflow=no small=28 
+pc-1366 public-local menu → 200 /m/salgados-da-vila overflow=no small=5 
+android-360 panel login → 200 /login overflow=no small=9 
+android-360 logged in → http://127.0.0.1:3000/dashboard
+android-360 panel /entregador → 200 /entregador overflow=no small=13 
+android-360 panel /configuracoes/conversas → 200 /configuracoes/conversas overflow=no small=13 
+android-360 panel /pedidos/[id] → 200 /pedidos/78e7b6af-0fb6-413e-9c6d-0ca015c108b1 overflow=no small=19 
+android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/2fe1d36f-9847-427f-82de-a9b4ed477531 overflow=no small=26 
+android-360 panel /clientes/[id] → 200 /clientes/a1a2dff6-49f2-42ba-b256-90152ff1a118 overflow=no small=26 
+android-360 panel /salao/[tableId] → 200 /salao/fe3cd443-1889-418f-bdd5-b69e83d3dcd2 overflow=no small=18 
+android-360 public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
+UX2_AUDIT_DONE entries=36
+HOMOLOG_APOS status=0
