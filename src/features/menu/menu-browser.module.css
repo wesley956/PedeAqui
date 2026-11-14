@@ -15,7 +15,7 @@
 .productMedia{grid-column:2;grid-row:1;justify-self:end}
 .productAction{grid-column:2;grid-row:1;align-self:end;justify-self:end;z-index:1}
 .productTextOnly .productAction{align-self:center}
-.productMedia:has(img) .image{width:96px;height:96px;border-radius:14px}
+.productMedia:has(img) .image{width:96px;height:96px;border-radius:var(--radius-lg)}
 .productMedia:has(img)+.productCopy+.productAction{margin:0 -6px -6px 0}
 .productMedia:not(:has(img)){display:none}
 .addButton{border:var(--border-width) solid var(--border-default);background:var(--surface-1);color:var(--text-primary);box-shadow:var(--shadow-sm)}
