@@ -65,3 +65,13 @@
 }
 /* Cards de produto estreitos (2 por linha no celular): nada sai pela borda; preço e ação quebram em duas linhas. */
 .productCard{min-width:0;overflow:hidden}.productCard .productHeading>span{min-width:0;max-width:100%}.productCard .productName,.productCard .productDescription{overflow-wrap:break-word}.productCard .rowBetween{flex-wrap:wrap;row-gap:2px;column-gap:var(--space-2)}
+
+/* ── UX2 — PDV ──────────────────────────────────────────────────────────────────────────────
+   O laranja fica em "Finalizar". Cartão de produto em foco e barra de pagamento usam borda neutra. */
+.productCard:hover,.productCard:focus-visible{border-color:var(--border-strong)}
+.productCard:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.checkoutBar{border-top-color:var(--border-strong)}
+/* Celular: a área que rola já termina acima do menu inferior e abaixo do topo; somar essas alturas de novo
+   deixava a barra de pagamento e o seletor de etapa flutuando no meio da tela. */
+@media(max-width:900px){.checkoutBar{bottom:0}}
+@media(max-width:820px){.mobileViewSwitcher{top:0}}

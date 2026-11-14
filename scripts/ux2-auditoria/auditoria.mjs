@@ -205,14 +205,7 @@ for (const device of DEVICES) {
       const quick = { timeout: 6000 };
       await page.goto(`${panelBase}/pdv`, { waitUntil: "load" }).catch(() => {});
       await page.waitForTimeout(900);
-      await step("pdv-com-item", () => page.locator("button", { hasText: "Coca-Cola 2L" }).first().click(quick));
-      await step("pdv-produto-opcoes", () => page.locator("button", { hasText: "Caixa com 30 salgados" }).first().click(quick));
-      await page.keyboard.press("Escape").catch(() => {});
-      await page.waitForTimeout(400);
-      if (!device.key.startsWith("pc-")) await step("pdv-venda-no-celular", () => page.locator('nav[aria-label="Etapa atual da venda"] button').nth(1).click(quick));
-      await step("pdv-pagamento-detalhes", () => page.getByRole("button", { name: /Detalhes/ }).first().click(quick));
-      // Medidas da barra de pagamento e do seletor de etapa: no celular os dois precisam ficar presos à tela.
-      const pdvLayout = await page.evaluate(() => {
+      const measurePdv = () => page.evaluate(() => {
         const describe = (element) => {
           if (!element) return null;
           const style = getComputedStyle(element); const rect = element.getBoundingClientRect();
@@ -224,9 +217,18 @@ for (const device of DEVICES) {
           }
           return { position: style.position, top: style.top, bottom: style.bottom, display: style.display, rect: [Math.round(rect.top), Math.round(rect.bottom), Math.round(rect.height)], clipping };
         };
-        return { viewport: [innerWidth, innerHeight], scrollY: Math.round(scrollY), docHeight: document.documentElement.scrollHeight, bar: describe(document.querySelector('footer[aria-label="Pagamento e finalização da venda"]')), switcher: describe(document.querySelector('nav[aria-label="Etapa atual da venda"]')) };
+        const scroller = document.querySelector('main.app-content');
+        return { viewport: [innerWidth, innerHeight], scrollY: Math.round(scrollY), contentScrollTop: scroller ? Math.round(scroller.scrollTop) : null, contentPaddingBottom: scroller ? getComputedStyle(scroller).paddingBottom : null, docHeight: document.documentElement.scrollHeight, bar: describe(document.querySelector('footer[aria-label="Pagamento e finalização da venda"]')), switcher: describe(document.querySelector('nav[aria-label="Etapa atual da venda"]')) };
       }).catch((error) => ({ error: String(error.message).slice(0, 200) }));
-      results.push({ device: device.key, area: "diag", label: "pdv-layout", pdvLayout });
+      await step("pdv-com-item", () => page.locator("button", { hasText: "Coca-Cola 2L" }).first().click(quick));
+      results.push({ device: device.key, area: "diag", label: "pdv-layout-itens", pdvLayout: await measurePdv() });
+      await step("pdv-produto-opcoes", () => page.locator("button", { hasText: "Caixa com 30 salgados" }).first().click(quick));
+      await page.keyboard.press("Escape").catch(() => {});
+      await page.waitForTimeout(400);
+      if (!device.key.startsWith("pc-")) await step("pdv-venda-no-celular", () => page.locator('nav[aria-label="Etapa atual da venda"] button').nth(1).click(quick));
+      await step("pdv-pagamento-detalhes", () => page.getByRole("button", { name: /Detalhes/ }).first().click(quick));
+      // Medidas da barra de pagamento e do seletor de etapa: no celular os dois precisam ficar presos à tela.
+      results.push({ device: device.key, area: "diag", label: "pdv-layout-venda", pdvLayout: await measurePdv() });
     }
     try {
       await page.goto(`${panelBase}/cardapio/disponibilidade?q=calabresa`, { waitUntil: "load" });
