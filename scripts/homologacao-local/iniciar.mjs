@@ -100,8 +100,9 @@ if (!state) {
   // Cada uma é aplicada isolada; as que já existem falham e são ignoradas.
   const deltas = [
     "20260910162000_scheduled_product_promotions.sql", "20260911180613_promotion_campaigns_v2.sql", "20260912003740_whatsapp_direct_orders.sql",
-    "20260912051915_whatsapp_bot_presentation_settings.sql", "20260915155500_int11_order_creation_channel.sql", "20260916150000_wpp04_inbox_pagination.sql",
-    "20260917214500_wpp07_atomic_human_claim.sql", "20260924064200_saas_06_private_promotion_schedule_rpc.sql",
+    "20260912051915_whatsapp_bot_presentation_settings.sql", "20260915155500_int11_order_creation_channel.sql", "20260916070000_wpp08_coexistence_observability.sql",
+    "20260916080000_wpp08_meta_app_webhook_diagnostics.sql", "20260916150000_wpp04_inbox_pagination.sql",
+    "20260917214500_wpp07_atomic_human_claim.sql", "20260917220000_wpp09_coexistence_history_state_sync.sql", "20260924064200_saas_06_private_promotion_schedule_rpc.sql",
     "20261111224213_public_item_notes_setting.sql", "20261112112911_waiting_queue_answered_auto_close.sql", "20261112231738_safe_unanswered_bot_recovery.sql",
   ];
   const skipped = [];

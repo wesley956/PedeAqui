@@ -33,6 +33,14 @@ async function hasPermission(permission: PermissionKey, context: Awaited<ReturnT
   }
 }
 
+/** O usuário logado não tem cadastro de entregador nesta unidade (ex.: dono abrindo a tela do entregador). */
+export class DriverNotLinkedError extends Error {
+  constructor() {
+    super("Seu usuário não está vinculado a um cadastro de entregador nesta unidade");
+    this.name = "DriverNotLinkedError";
+  }
+}
+
 export class DeliveryOperationsService {
   static async loadOperations() {
     const context = await authorize(PERMISSIONS.DELIVERY_ASSIGN);
@@ -77,7 +85,7 @@ export class DeliveryOperationsService {
       .select("id,name,phone,active,on_duty,max_active_deliveries")
       .eq("organization_id", context.organizationId).eq("store_id", storeId).eq("user_id", context.userId).is("deleted_at", null).maybeSingle();
     if (driverError) throw driverError;
-    if (!driver) throw new Error("Seu usuário não está vinculado a um cadastro de entregador nesta unidade");
+    if (!driver) throw new DriverNotLinkedError();
 
     const [deliveriesResult, settingsResult] = await Promise.all([
       admin.from("deliveries")

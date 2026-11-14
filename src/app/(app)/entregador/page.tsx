@@ -1,4 +1,6 @@
-import { DeliveryOperationsService } from "@/server/delivery/delivery-operations-service";
+import { DeliveryOperationsService, DriverNotLinkedError } from "@/server/delivery/delivery-operations-service";
+import { EmptyState } from "@/components/ui/feedback";
+import Link from "next/link";
 import { DeliveryRealtime } from "@/features/delivery/delivery-realtime";
 import { DeliverySla } from "@/features/delivery/delivery-sla";
 import { DeliveryOperationForm } from "@/features/delivery/operation-forms";
@@ -61,8 +63,19 @@ const statusLabel: Record<string, string> = {
 };
 
 export default async function DriverPage() {
-  const [data, tracking, historyVisible] = await Promise.all([
-    DeliveryOperationsService.loadDriverView(),
+  // Quem abre esta tela sem ser entregador (dono, gerente) recebe a explicação, não uma tela de erro.
+  const driverView = await DeliveryOperationsService.loadDriverView().catch((error: unknown) => {
+    if (error instanceof DriverNotLinkedError) return null;
+    throw error;
+  });
+  if (!driverView) {
+    return <>
+      <PageHeader title="Minhas entregas" description="Tela de quem faz as entregas." />
+      <EmptyState title="Você não está cadastrado como entregador nesta loja" description="Esta tela mostra as entregas de quem entra com o próprio usuário de entregador. Para acompanhar todas as entregas da loja, use Entregas. Para cadastrar um entregador, abra Configurações › Entregadores." action={<Link href="/entregas" style={{ fontWeight: 700, textDecoration: "underline" }}>Abrir Entregas</Link>} />
+    </>;
+  }
+  const data = driverView;
+  const [tracking, historyVisible] = await Promise.all([
     RouteTrackingService.loadForDriver(),
     DriverHistoryPolicyService.get(),
   ]);

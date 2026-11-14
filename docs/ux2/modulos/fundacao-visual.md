@@ -25,3 +25,9 @@ Prints antes/depois na branch `ux2/evidencias` (pastas `ux2_auditoria` = antes, 
 - **Cozinha**: filtro ativo em escuro.
 - **Cardápio › Produtos e Sabores**: "Filtrar"/"Buscar" viram botão secundário; o único laranja da tela é "Novo produto".
 - **Infra de teste**: `browser-homologation.yml` fixado em `ubuntu-24.04` (o Playwright 1.55 não instala no Ubuntu novo do `ubuntu-latest`). Vale só nas branches `ux2/*`; a `main` segue com o problema — ver B-05 em `ESTADO.md`.
+
+## Lote 3 — Correções encontradas pela auditoria (branch `ux2/correcoes-auditoria`)
+- **Minhas entregas (`/entregador`)**: dono ou gerente que abria a tela sem ser entregador via "Não foi possível concluir esta operação". Agora a tela explica que é a área do entregador e aponta para Entregas. A regra não mudou: só entregador cadastrado vê entregas ali.
+- **Aviso do React em todas as telas**: o script do tema ficava fora do `<body>`. Movido para dentro.
+- **Homologação local**: faltavam três migrações do WhatsApp (coexistência); a tela Configurações › Conversas quebrava só na homologação. Não é defeito da produção.
+- **Auditoria**: o comando de prints bloqueava a leitura da saída do servidor e o servidor travava depois de algumas telas; corrigido. O registro do servidor passa a ir junto com os prints.
