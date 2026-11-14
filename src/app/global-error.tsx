@@ -14,7 +14,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
         <main style={{ width: "min(100%, 520px)", padding: 24, borderRadius: "var(--radius-lg)", background: "#ffffff", border: "1px solid #e7e2db" }}>
           <h1 style={{ margin: "0 0 8px", fontSize: "var(--font-size-2xl)" }}>Não foi possível abrir o PedeAqui</h1>
           <p style={{ margin: "0 0 16px", color: "#66615b", lineHeight: 1.5 }}>Houve uma falha passageira. Seus dados e pedidos continuam salvos. Tente de novo em alguns segundos.</p>
-          <button type="button" onClick={reset} style={{ minHeight: 44, padding: "0 18px", border: 0, borderRadius: "var(--radius-sm)", background: "#ff6b00", color: "#1a1a1a", font: "inherit", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Tentar novamente</button>
+          <button type="button" onClick={reset} style={{ minHeight: 44, padding: "0 18px", border: 0, borderRadius: "var(--radius-sm)", background: "var(--brand-primary, orangered)", color: "#1a1a1a", font: "inherit", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Tentar novamente</button>
         </main>
       </body>
     </html>
