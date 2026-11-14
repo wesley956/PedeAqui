@@ -207,9 +207,8 @@ for (const device of DEVICES) {
     } catch (error) { results.push({ device: device.key, area: "state", label: "local-produto", error: String(error.message).slice(0, 200) }); }
     try {
       await page.goto(`${panelBase}/m/salgados-da-vila`, { waitUntil: "load" });
-      await page.locator('a[href*="/produto/"]', { hasText: "Coca-Cola 2L" }).first().click();
-      await page.waitForTimeout(1500);
-      await page.getByRole("button", { name: /adicionar/i }).first().click();
+      // Produto sem opções entra no carrinho pelo "+" da própria lista.
+      await page.locator('button[aria-label="Adicionar Coca-Cola 2L ao carrinho"]').first().click();
       await page.waitForTimeout(1500);
       await shotState(page, device, "local-depois-de-adicionar");
       await audit(page, device, "public-local", "carrinho", `${panelBase}/m/salgados-da-vila/carrinho`);

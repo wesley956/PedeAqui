@@ -26,3 +26,10 @@
   .signature{font-size:var(--font-size-xs);margin-top:18px}
 }
 @media(prefers-reduced-motion:reduce){.container{animation:none}}
+
+/* UX2 — capa na cor da loja; o cabeçalho sobe sobre ela e o botão de informações fica no canto da capa. */
+.cover{height:104px;background:var(--restaurant-primary)}
+.expressHeader{position:relative;align-items:flex-start;margin-top:-36px;padding:0 0 12px;border-bottom:0}
+.expressHeader>button{position:absolute;top:-54px;right:0;margin:0;background:var(--surface-1)}
+.orderNavigation{padding:0 0 4px}
+@media(max-width:560px){.cover{height:96px}}

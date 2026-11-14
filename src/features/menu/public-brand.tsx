@@ -57,10 +57,11 @@ export function publicStoreThemeVars(primaryColor: string) {
   } as CSSProperties;
 }
 
-export function RestaurantBrand({ name, logoUrl, primaryColor, children }: { name: string; logoUrl: string | null; primaryColor: string; children?: ReactNode }) {
+/** layout="cover": logo grande sobre a capa na cor da loja, nome embaixo (página inicial do cardápio). */
+export function RestaurantBrand({ name, logoUrl, primaryColor, children, layout = "inline" }: { name: string; logoUrl: string | null; primaryColor: string; children?: ReactNode; layout?: "inline" | "cover" }) {
   const initial = name.trim().charAt(0).toLocaleUpperCase("pt-BR") || "R";
   const fallback = <div className={styles.fallback} aria-label={`Identidade ${name}`}>{initial}</div>;
-  return <div className={styles.restaurantBrand} style={restaurantBrandVars(primaryColor)}>
+  return <div className={`${styles.restaurantBrand} ${layout === "cover" ? styles.coverLayout : ""}`} style={restaurantBrandVars(primaryColor)}>
     {logoUrl ? <FallbackImage src={logoUrl} alt={`Logo ${name}`} className={styles.logo} width={74} height={74} fallback={fallback} /> : fallback}
     <div className={styles.copy}><h1 className={styles.name}>{name}</h1>{children}</div>
   </div>;
