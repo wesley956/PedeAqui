@@ -76,4 +76,7 @@
 @media(max-width:900px){
   .checkoutBar[data-expanded="false"] .checkoutToggle{grid-template-columns:minmax(0,1fr) auto}
   .checkoutBar[data-expanded="false"] .checkoutToggle>span:first-child{display:none}
+  /* A palavra "Alterar" tomava o lugar do nome da forma de pagamento ("Din…"); vira uma setinha. */
+  .checkoutBar[data-expanded="false"] .checkoutToggleIcon{font-size:0}
+  .checkoutBar[data-expanded="false"] .checkoutToggleIcon::after{content:"▾";font-size:var(--font-size-md)}
 }
