@@ -211,6 +211,22 @@ for (const device of DEVICES) {
       await page.waitForTimeout(400);
       if (!device.key.startsWith("pc-")) await step("pdv-venda-no-celular", () => page.locator('nav[aria-label="Etapa atual da venda"] button').nth(1).click(quick));
       await step("pdv-pagamento-detalhes", () => page.getByRole("button", { name: /Detalhes/ }).first().click(quick));
+      // Medidas da barra de pagamento e do seletor de etapa: no celular os dois precisam ficar presos à tela.
+      const pdvLayout = await page.evaluate(() => {
+        const describe = (element) => {
+          if (!element) return null;
+          const style = getComputedStyle(element); const rect = element.getBoundingClientRect();
+          const clipping = []; let parent = element.parentElement;
+          while (parent && parent !== document.documentElement) {
+            const parentStyle = getComputedStyle(parent);
+            if (parentStyle.overflowY !== "visible" || parentStyle.overflowX !== "visible" || parentStyle.contain !== "none") clipping.push(`${parent.tagName.toLowerCase()}.${String(parent.className).split(" ")[0].slice(0, 40)} overflow=${parentStyle.overflowX}/${parentStyle.overflowY} h=${Math.round(parent.getBoundingClientRect().height)}`);
+            parent = parent.parentElement;
+          }
+          return { position: style.position, top: style.top, bottom: style.bottom, display: style.display, rect: [Math.round(rect.top), Math.round(rect.bottom), Math.round(rect.height)], clipping };
+        };
+        return { viewport: [innerWidth, innerHeight], scrollY: Math.round(scrollY), docHeight: document.documentElement.scrollHeight, bar: describe(document.querySelector('footer[aria-label="Pagamento e finalização da venda"]')), switcher: describe(document.querySelector('nav[aria-label="Etapa atual da venda"]')) };
+      }).catch((error) => ({ error: String(error.message).slice(0, 200) }));
+      results.push({ device: device.key, area: "diag", label: "pdv-layout", pdvLayout });
     }
     try {
       await page.goto(`${panelBase}/cardapio/disponibilidade?q=calabresa`, { waitUntil: "load" });
