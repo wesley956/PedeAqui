@@ -35,3 +35,6 @@ next-env.d.ts
 .vercel
 .env*
 !.env.vps.example
+
+# Homologação local do UX2 (banco Supabase local e estado)
+homolog-local/
