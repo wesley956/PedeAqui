@@ -10,46 +10,129 @@
 ▶ Criando a loja fictícia (Salgados da Vila)
   SEED_SUMMARY products=16 groups=9 orders=10 modules=21
 
+▶ Compilando o sistema (alguns minutos)
+
 ▶ Iniciando o sistema
 HOMOLOG_VERIFY /login=200 /m/salgados-da-vila=200 /dashboard=307 /api/health=200 login=200 SEED_SUMMARY products=16 groups=9 orders=10 modules=21 avisos=0
 pc-1366 panel login → 200 /login overflow=no small=12 
 pc-1366 logged in → http://127.0.0.1:3000/dashboard
 pc-1366 panel /dashboard → 200 /dashboard overflow=no small=22 
 pc-1366 panel /pedidos → 200 /pedidos overflow=no small=81 
+pc-1366 panel /pedidos/historico → 200 /pedidos/historico overflow=no small=29 
+pc-1366 panel /movimento → 200 /movimento overflow=no small=45 
 pc-1366 panel /pdv → 200 /pdv overflow=no small=41 
-pc-1366 panel /cardapio/produtos → 200 /cardapio/produtos overflow=no small=41 
-pc-1366 panel /cardapio/disponibilidade → 200 /cardapio/disponibilidade overflow=no small=26 
+pc-1366 panel /caixa → 200 /caixa overflow=no small=25 
+pc-1366 panel /salao → 200 /salao overflow=no small=20 
+pc-1366 panel /producao → 200 /producao overflow=no small=33 
+pc-1366 panel /entregas → 200 /entregas overflow=no small=22 
+pc-1366 panel /entregador → 200 /entregador overflow=no small=21 
 pc-1366 panel /conversas → 200 /conversas overflow=no small=19 
+pc-1366 panel /cardapio/disponibilidade → 200 /cardapio/disponibilidade overflow=no small=26 
+pc-1366 panel /cardapio/produtos → 200 /cardapio/produtos overflow=no small=41 
+pc-1366 panel /cardapio/produtos/novo → 200 /cardapio/produtos/novo overflow=no small=42 
+pc-1366 panel /cardapio/categorias → 200 /cardapio/categorias overflow=no small=30 
+pc-1366 panel /cardapio/adicionais → 200 /cardapio/adicionais overflow=no small=32 
+pc-1366 panel /cardapio/promocoes → 200 /cardapio/promocoes overflow=no small=20 
+pc-1366 panel /cardapio/sugestoes → 200 /cardapio/sugestoes overflow=no small=42 
+pc-1366 panel /clientes → 200 /clientes overflow=no small=26 
+pc-1366 panel /financeiro → 200 /financeiro overflow=no small=23 
+pc-1366 panel /financeiro?aba=lancamentos → 200 /financeiro?aba=lancamentos overflow=no small=32 
+pc-1366 panel /financeiro?aba=contas → 200 /financeiro?aba=contas overflow=no small=32 
 pc-1366 panel /crescimento → 200 /crescimento overflow=no small=20 
+pc-1366 panel /crescimento?aba=cupons → 200 /crescimento?aba=cupons overflow=no small=30 
+pc-1366 panel /crescimento/campanhas → 200 /crescimento/campanhas overflow=no small=41 
+pc-1366 panel /estoque → 200 /estoque overflow=no small=27 
+pc-1366 panel /estoque/fichas → 200 /estoque/fichas overflow=no small=27 
+pc-1366 panel /compras → 200 /compras overflow=no small=24 
+pc-1366 panel /fornecedores → 200 /fornecedores overflow=no small=29 
+pc-1366 panel /fiscal → 200 /recurso-indisponivel?module=fiscal&reason=not_in_plan overflow=no small=21 
+pc-1366 panel /vasilhames → 200 /recurso-indisponivel?module=gas_containers&reason=not_supported_by_profile overflow=no small=21 
+pc-1366 panel /equipe → 200 /equipe overflow=no small=23 
+pc-1366 panel /escala → 200 /escala overflow=no small=32 
+pc-1366 panel /operacao → 200 /operacao overflow=no small=30 
+pc-1366 panel /mais-ferramentas → 200 /mais-ferramentas overflow=no small=20 
+pc-1366 panel /meu-menu → 200 /meu-menu overflow=no small=51 
+pc-1366 panel /assinatura → 200 /assinatura overflow=no small=19 
 pc-1366 panel /configuracoes → 200 /configuracoes overflow=no small=41 
+pc-1366 panel /configuracoes/loja → 200 /configuracoes/loja overflow=no small=34 
+pc-1366 panel /configuracoes/operacao → 200 /configuracoes/operacao overflow=no small=40 
+pc-1366 panel /configuracoes/cardapio → 200 /configuracoes/cardapio overflow=no small=29 
+pc-1366 panel /configuracoes/horarios → 200 /configuracoes/horarios overflow=no small=48 
+pc-1366 panel /configuracoes/entrega → 200 /configuracoes/entrega overflow=no small=107 
+pc-1366 panel /configuracoes/entregadores → 200 /configuracoes/entregadores overflow=no small=22 
+pc-1366 panel /configuracoes/pagamentos → 200 /configuracoes/pagamentos overflow=no small=24 
+pc-1366 panel /configuracoes/impressoes → 200 /configuracoes/impressoes overflow=no small=24 
+pc-1366 panel /configuracoes/impressoes/formato → 200 /configuracoes/impressoes/formato overflow=no small=35 
+pc-1366 panel /configuracoes/impressoes/gerenciar → 200 /configuracoes/impressoes/gerenciar overflow=no small=22 
+pc-1366 panel /configuracoes/caixa → 200 /configuracoes/caixa overflow=no small=23 
+pc-1366 panel /configuracoes/salao → 200 /configuracoes/salao overflow=no small=24 
+pc-1366 panel /configuracoes/conversas → 200 /configuracoes/conversas overflow=no small=21 
+pc-1366 panel /configuracoes/integracoes → 200 /configuracoes/integracoes overflow=no small=20 
+pc-1366 panel /configuracoes/modulos → 200 /configuracoes/modulos overflow=no small=39 
 pc-1366 panel /configuracoes/fluxo-pedidos → 200 /configuracoes/fluxo-pedidos overflow=no small=25 
-pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/51b9448a-4449-4a4e-9b8e-ed51a7840412 overflow=no small=34 
-pc-1366 panel /clientes/[id] → 200 /clientes/7faecdd9-4536-4cb7-8799-32f128c7adb1 overflow=no small=34 
-pc-1366 panel /salao/[tableId] → 200 /salao/97870416-aad2-40f7-936d-28ad13a17ee5 overflow=no small=28 
+pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/d5d35946-2a5d-4f0d-bb6c-9745591cef6e overflow=no small=34 
+pc-1366 panel /clientes/[id] → 200 /clientes/9b2a4737-8dbb-4cd9-abd0-2d4cf7fdb05c overflow=no small=34 
+pc-1366 panel /salao/[tableId] → 200 /salao/12dd5f1d-63eb-4a45-8bfa-4244c54257d5 overflow=no small=28 
 pc-1366 public-local menu → 200 /m/salgados-da-vila overflow=no small=5 
 android-360 panel login → 200 /login overflow=no small=9 
 android-360 logged in → http://127.0.0.1:3000/dashboard
 android-360 panel /dashboard → 200 /dashboard overflow=no small=14 
 android-360 panel /pedidos → 200 /pedidos overflow=no small=16 
+android-360 panel /pedidos/historico → 200 /pedidos/historico overflow=no small=21 
+android-360 panel /movimento → 200 /movimento overflow=no small=37 
 android-360 panel /pdv → 200 /pdv overflow=no small=12 
-android-360 panel /cardapio/produtos → 200 /cardapio/produtos overflow=no small=32 
-android-360 panel /cardapio/disponibilidade → 200 /cardapio/disponibilidade overflow=no small=18 
+android-360 panel /caixa → 200 /caixa overflow=no small=17 
+android-360 panel /salao → 200 /salao overflow=no small=12 
+android-360 panel /producao → 200 /producao overflow=no small=18 
+android-360 panel /entregas → 200 /entregas overflow=no small=14 
+android-360 panel /entregador → 200 /entregador overflow=no small=13 
 android-360 panel /conversas → 200 /conversas overflow=no small=11 
-android-360 panel /crescimento → ERR  overflow=no small=- page.goto: Timeout 45000ms exceeded.
-Call log:
-  - navigating to "http://127.0.0.1:3000/crescimento", waiting until "load"
-
-android-360 panel /configuracoes → ERR  overflow=no small=- page.goto: Timeout 45000ms exceeded.
-Call log:
-  - navigating to "http://127.0.0.1:3000/configuracoes", waiting until "load"
-
-android-360 panel /configuracoes/fluxo-pedidos → ERR  overflow=no small=- page.goto: Timeout 45000ms exceeded.
-Call log:
-  - navigating to "http://127.0.0.1:3000/configuracoes/fluxo-pedidos", waiting until "load"
-
-android-360 public-local menu → ERR  overflow=no small=- page.goto: Timeout 45000ms exceeded.
-Call log:
-  - navigating to "http://127.0.0.1:3000/m/salgados-da-vila", waiting until "load"
-
-UX2_AUDIT_DONE entries=49
+android-360 panel /cardapio/disponibilidade → 200 /cardapio/disponibilidade overflow=no small=18 
+android-360 panel /cardapio/produtos → 200 /cardapio/produtos overflow=no small=32 
+android-360 panel /cardapio/produtos/novo → 200 /cardapio/produtos/novo overflow=no small=34 
+android-360 panel /cardapio/categorias → 200 /cardapio/categorias overflow=no small=22 
+android-360 panel /cardapio/adicionais → 200 /cardapio/adicionais overflow=no small=22 
+android-360 panel /cardapio/promocoes → 200 /cardapio/promocoes overflow=no small=12 
+android-360 panel /cardapio/sugestoes → 200 /cardapio/sugestoes overflow=no small=34 
+android-360 panel /clientes → 200 /clientes overflow=no small=18 
+android-360 panel /financeiro → 200 /financeiro overflow=no small=15 
+android-360 panel /financeiro?aba=lancamentos → 200 /financeiro?aba=lancamentos overflow=no small=24 
+android-360 panel /financeiro?aba=contas → 200 /financeiro?aba=contas overflow=no small=24 
+android-360 panel /crescimento → 200 /crescimento overflow=no small=12 
+android-360 panel /crescimento?aba=cupons → 200 /crescimento?aba=cupons overflow=no small=14 
+android-360 panel /crescimento/campanhas → 200 /crescimento/campanhas overflow=no small=24 
+android-360 panel /estoque → 200 /estoque overflow=no small=19 
+android-360 panel /estoque/fichas → 200 /estoque/fichas overflow=no small=19 
+android-360 panel /compras → 200 /compras overflow=no small=16 
+android-360 panel /fornecedores → 200 /fornecedores overflow=no small=21 
+android-360 panel /fiscal → 200 /recurso-indisponivel?module=fiscal&reason=not_in_plan overflow=no small=13 
+android-360 panel /vasilhames → 200 /recurso-indisponivel?module=gas_containers&reason=not_supported_by_profile overflow=no small=13 
+android-360 panel /equipe → 200 /equipe overflow=no small=15 
+android-360 panel /escala → 200 /escala overflow=no small=25 
+android-360 panel /operacao → 200 /operacao overflow=no small=22 
+android-360 panel /mais-ferramentas → 200 /mais-ferramentas overflow=no small=12 
+android-360 panel /meu-menu → 200 /meu-menu overflow=no small=43 
+android-360 panel /assinatura → 200 /assinatura overflow=no small=11 
+android-360 panel /configuracoes → 200 /configuracoes overflow=no small=32 
+android-360 panel /configuracoes/loja → 200 /configuracoes/loja overflow=no small=26 
+android-360 panel /configuracoes/operacao → 200 /configuracoes/operacao overflow=no small=32 
+android-360 panel /configuracoes/cardapio → 200 /configuracoes/cardapio overflow=no small=21 
+android-360 panel /configuracoes/horarios → 200 /configuracoes/horarios overflow=no small=40 
+android-360 panel /configuracoes/entrega → 200 /configuracoes/entrega overflow=no small=99 
+android-360 panel /configuracoes/entregadores → 200 /configuracoes/entregadores overflow=no small=14 
+android-360 panel /configuracoes/pagamentos → 200 /configuracoes/pagamentos overflow=no small=16 
+android-360 panel /configuracoes/impressoes → 200 /configuracoes/impressoes overflow=no small=16 
+android-360 panel /configuracoes/impressoes/formato → 200 /configuracoes/impressoes/formato overflow=no small=27 
+android-360 panel /configuracoes/impressoes/gerenciar → 200 /configuracoes/impressoes/gerenciar overflow=no small=14 
+android-360 panel /configuracoes/caixa → 200 /configuracoes/caixa overflow=no small=15 
+android-360 panel /configuracoes/salao → 200 /configuracoes/salao overflow=no small=16 
+android-360 panel /configuracoes/conversas → 200 /configuracoes/conversas overflow=no small=13 
+android-360 panel /configuracoes/integracoes → 200 /configuracoes/integracoes overflow=no small=12 
+android-360 panel /configuracoes/modulos → 200 /configuracoes/modulos overflow=no small=16 
+android-360 panel /configuracoes/fluxo-pedidos → 200 /configuracoes/fluxo-pedidos overflow=no small=17 
+android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/d5d35946-2a5d-4f0d-bb6c-9745591cef6e overflow=no small=26 
+android-360 panel /clientes/[id] → 200 /clientes/9b2a4737-8dbb-4cd9-abd0-2d4cf7fdb05c overflow=no small=26 
+android-360 panel /salao/[tableId] → 200 /salao/12dd5f1d-63eb-4a45-8bfa-4244c54257d5 overflow=no small=18 
+android-360 public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
+UX2_AUDIT_DONE entries=140
 HOMOLOG_APOS status=0
