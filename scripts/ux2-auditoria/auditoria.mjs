@@ -93,8 +93,8 @@ async function measure(page) {
 
 async function audit(page, device, area, label, url, extra) {
   const errors = [];
-  const onConsole = (m) => { if (m.type() === "error") errors.push(m.text().slice(0, 200)); };
-  const onPageError = (e) => errors.push(`pageerror: ${String(e.message).slice(0, 200)}`);
+  const onConsole = (m) => { if (m.type() === "error") errors.push(m.text().slice(0, 900)); };
+  const onPageError = (e) => errors.push(`pageerror: ${String(e.message).slice(0, 900)}`);
   page.on("console", onConsole); page.on("pageerror", onPageError);
   const started = Date.now();
   const entry = { device: device.key, area, label, url };
