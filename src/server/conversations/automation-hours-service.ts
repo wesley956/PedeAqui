@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { StoreOperationalStatusService } from "@/server/menu/store-operational-status";
+import { isWithinBotPreopenWindow } from "@/server/conversations/bot-preopen-window";
 
 type StoreScope = { organizationId: string; storeId: string };
 
@@ -41,6 +42,39 @@ export class WhatsAppAutomationHoursService {
       .maybeSingle();
     if (error) throw error;
     if (!conversation) return false;
-    return this.canSend({ organizationId: conversation.organization_id, storeId: conversation.store_id, receivedAt });
+    const scope = { organizationId: conversation.organization_id, storeId: conversation.store_id };
+    if (await this.canSend({ ...scope, receivedAt })) return true;
+
+    // The optional early bot shift is intentionally reply-only: order status
+    // notifications and checkout are still governed by the actual store hours.
+    const { data: settings, error: settingsError } = await admin.from("store_conversation_settings")
+      .select("bot_only_when_open, bot_preopen_minutes")
+      .eq("organization_id", scope.organizationId).eq("store_id", scope.storeId).maybeSingle();
+    if (settingsError) throw settingsError;
+    const minutes = Number(settings?.bot_preopen_minutes ?? 0);
+    if (!settings?.bot_only_when_open || !Number.isInteger(minutes) || minutes <= 0 || minutes > 180) return false;
+
+    const [storeResult, hoursResult] = await Promise.all([
+      admin.from("stores").select("status, timezone")
+        .eq("organization_id", scope.organizationId).eq("id", scope.storeId).maybeSingle(),
+      admin.from("store_hours").select("weekday, opens_at, active")
+        .eq("organization_id", scope.organizationId).eq("store_id", scope.storeId).eq("active", true),
+    ]);
+    if (storeResult.error) throw storeResult.error;
+    if (hoursResult.error) throw hoursResult.error;
+    if (storeResult.data?.status !== "active" || !storeResult.data.timezone) return false;
+
+    const window = (now: Date) => isWithinBotPreopenWindow({
+      now, timezone: storeResult.data!.timezone,
+      hours: hoursResult.data ?? [], minutes,
+    });
+    const now = new Date();
+    if (!window(now)) return false;
+    if (!receivedAt) return true;
+    const inbound = new Date(receivedAt);
+    // Do not answer delayed or future-dated webhook messages as if freshly received.
+    return inbound.getTime() <= now.getTime()
+      && now.getTime() - inbound.getTime() <= 5 * 60 * 1000
+      && window(inbound);
   }
 }
