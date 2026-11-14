@@ -46,7 +46,7 @@
 .seg button,.segLabel{min-height:62px;display:grid;align-content:center;gap:2px;padding:10px 12px;border:1.5px solid var(--border-default);border-radius:var(--radius-lg);background:var(--surface-1);color:var(--text-primary);font:inherit;text-align:left;cursor:pointer}
 .seg button strong,.segLabel strong{font-size:var(--font-size-md)}
 .seg button span{font-size:var(--font-size-support);color:var(--text-secondary)}
-.seg button[aria-pressed=true],.segLabelSelected{border-color:var(--brand-primary);background:color-mix(in srgb,var(--brand-primary) 10%,var(--surface-1))}
+.seg button[aria-pressed=true],.segLabelSelected{border-color:var(--selected);background:var(--selected-surface)}
 .seg button:focus-visible,.segLabel:focus-within{outline:3px solid var(--focus-ring);outline-offset:2px}
 .segLabel{position:relative;min-height:48px}
 .segLabel input{position:absolute;opacity:0;pointer-events:none}

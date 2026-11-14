@@ -26,6 +26,12 @@
   --border-strong: #4a4a4a;
   --focus-ring: var(--brand-primary);
 
+  /* Item selecionado (aba, filtro, menu, opção): escuro no tema claro, claro no tema escuro.
+     O laranja fica só para a ação principal da tela. Decisão D-01 em docs/ux2/DECISOES.md. */
+  --selected: var(--text-primary);
+  --on-selected: var(--surface-0);
+  --selected-surface: color-mix(in srgb, var(--text-primary) 8%, var(--surface-1));
+
   /* Operational states — never rely on color alone in UI copy */
   --state-success: #22c55e;
   --state-success-text: #86efac;
@@ -178,7 +184,7 @@ html { background: var(--surface-0); }
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(circle at top right, rgba(255, 107, 0, .12), transparent 30%), var(--surface-0);
+  background: var(--surface-0);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: var(--font-size-md);

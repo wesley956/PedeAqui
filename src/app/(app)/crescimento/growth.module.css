@@ -365,8 +365,8 @@
   cursor: pointer;
 }
 .objectiveCard[data-selected="true"] {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, var(--surface-2));
+  border-color: var(--selected);
+  background: var(--selected-surface);
 }
 .objectiveCard:hover,
 .objectiveCard:focus-visible {
@@ -434,8 +434,8 @@
   text-align: center;
 }
 .steps li[data-active="true"] {
-  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
-  color: var(--accent);
+  background: var(--selected-surface);
+  color: var(--selected);
 }
 .presetGrid {
   display: grid;
@@ -455,8 +455,8 @@
   cursor: pointer;
 }
 .presetGrid button[data-selected="true"] {
-  border-color: var(--accent);
-  outline: 2px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-color: var(--selected);
+  outline: 2px solid color-mix(in srgb, var(--selected) 25%, transparent);
 }
 .presetGrid span {
   color: var(--muted);

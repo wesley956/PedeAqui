@@ -110,7 +110,7 @@
 
 /* Fila C + Lista B. View state never changes the operational workflow. */
 .viewSwitch { display:flex;gap:4px;flex-wrap:wrap; }
-.viewSwitch button[aria-pressed="true"], .stageFilters button[aria-pressed="true"] { border-color:var(--accent);background:var(--surface-3); }
+.viewSwitch button[aria-pressed="true"], .stageFilters button[aria-pressed="true"] { border-color:var(--selected);background:var(--surface-3); }
 .stageFilters { display:flex;gap:8px;flex-wrap:wrap; }
 .attentionWorkspace { display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start; }
 .attentionWorkspace[data-preview="true"] { grid-template-columns:minmax(0,1fr) minmax(280px,360px); }
@@ -162,7 +162,7 @@
 .ordersTable th:nth-child(6) { width:20%; }
 .ordersTable td.total,.ordersTable td.elapsed { white-space:normal; }
 .ordersTable tbody th { font-weight:var(--font-weight-regular); }
-.ordersTable tr[data-selected="true"] { background:var(--surface-2);box-shadow:inset 3px 0 var(--accent); }
+.ordersTable tr[data-selected="true"] { background:var(--surface-2);box-shadow:inset 3px 0 var(--selected); }
 .ordersTable tr[data-late="true"] .elapsed { color:var(--state-danger-text);font-weight:var(--font-weight-semibold); }
 .tableCustomer,.ordersTable .metaText { display:block; }
 .tableCustomer { font-weight:var(--font-weight-semibold); }
