@@ -121,6 +121,8 @@ async function audit(page, device, area, label, url, extra) {
   entry.consoleErrors = errors.slice(0, 6);
   page.off("console", onConsole); page.off("pageerror", onPageError);
   results.push(entry);
+  // Grava a cada tela: se a execução for interrompida, o que já foi feito fica guardado.
+  await fs.writeFile(path.join(outDir, "results.json"), JSON.stringify(results, null, 1));
   console.log(`${entry.device} ${area} ${label} → ${entry.status ?? "ERR"} ${entry.finalUrl ?? ""} overflow=${entry.docWidth > entry.vw ? entry.docWidth : "no"} small=${entry.smallTargets ?? "-"} ${entry.error ?? ""}`);
 }
 

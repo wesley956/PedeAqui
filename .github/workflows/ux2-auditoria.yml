@@ -49,7 +49,7 @@ jobs:
           routes="$(printf '%s' "$COMMIT_MESSAGE" | sed -n 's/.*\[prints: *\([^]]*\)\].*/\1/p' | head -1)"
           export AUDIT_ROUTES="$routes"
           mkdir -p "$AUDIT_OUT"
-          node scripts/homologacao-local/iniciar.mjs --verificar 2>&1 | tee "$AUDIT_OUT/run.log" || {
+          node scripts/homologacao-local/iniciar.mjs --verificar --compilado 2>&1 | tee "$AUDIT_OUT/run.log" || {
             msg="$(tail -c 3500 "$AUDIT_OUT/run.log" | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"
             echo "::error title=ux2-auditoria::${msg}"
             exit 1
