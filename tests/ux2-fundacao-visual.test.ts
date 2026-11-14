@@ -28,7 +28,8 @@ describe("UX2 — fundação visual", () => {
       if (allowed.has(relative)) continue;
       const content = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
       for (const match of content.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-        if (selectedState.test(match[1]) && orange.test(match[2])) offenders.push(`${relative}: ${match[1].trim().replace(/\s+/g, " ").slice(0, 90)}`);
+        const selector = match[1] ?? "";
+        if (selectedState.test(selector) && orange.test(match[2] ?? "")) offenders.push(`${relative}: ${selector.trim().replace(/\s+/g, " ").slice(0, 90)}`);
       }
     }
     expect(offenders).toEqual([]);
