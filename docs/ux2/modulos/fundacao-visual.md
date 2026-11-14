@@ -17,3 +17,11 @@ Nenhuma regra de negócio, texto ou comportamento mudou: só cor.
 
 ## Evidências
 Prints antes/depois na branch `ux2/evidencias` (pastas `ux2_auditoria` = antes, `ux2_fundacao-visual` = depois).
+
+## Lote 2 — Achados dos primeiros prints
+- **Logo do menu lateral**: no tema claro a palavra "Pede" ficava branca em fundo branco (invisível). O logo agora acompanha o tema (`surface="auto"`).
+- **PDV**: categoria e forma de pagamento selecionadas em escuro; total em preto (antes laranja); "Detalhes / Dividir" como link sublinhado; o botão flutuante do guia sobe para não cobrir "Finalizar".
+- **Checkout do cliente**: opções escolhidas (entrega/retirada, pagamento, troco) em escuro.
+- **Cozinha**: filtro ativo em escuro.
+- **Cardápio › Produtos e Sabores**: "Filtrar"/"Buscar" viram botão secundário; o único laranja da tela é "Novo produto".
+- **Infra de teste**: `browser-homologation.yml` fixado em `ubuntu-24.04` (o Playwright 1.55 não instala no Ubuntu novo do `ubuntu-latest`). Vale só nas branches `ux2/*`; a `main` segue com o problema — ver B-05 em `ESTADO.md`.

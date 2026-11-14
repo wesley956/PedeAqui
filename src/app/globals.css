@@ -192,6 +192,11 @@ body {
   text-rendering: optimizeLegibility;
 }
 a { color: inherit; text-decoration: none; }
+/* Logo que acompanha o tema: mostra a versão para fundo claro ou escuro. */
+[data-brand="pedeaqui-logo-auto"] { display: inline-flex; }
+[data-brand="pedeaqui-logo-auto"] [data-brand-surface="light"] { display: none; }
+:root[data-theme="light"] [data-brand="pedeaqui-logo-auto"] [data-brand-surface="light"] { display: block; }
+:root[data-theme="light"] [data-brand="pedeaqui-logo-auto"] [data-brand-surface="dark"] { display: none; }
 button, input, select, textarea { font: inherit; }
 /* Caixas de seleção, botões de opção e barras de progresso na cor da marca, não no azul do sistema. */
 input, progress { accent-color: var(--brand-primary); }
