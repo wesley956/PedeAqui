@@ -1,4 +1,48 @@
 ▲ Next.js 16.2.12
 - Local:         http://127.0.0.1:3000
 - Network:       http://127.0.0.1:3000
-✓ Ready in 137ms
+✓ Ready in 133ms
+⨯ Error: {"message":"An invalid response was received from the upstream server"}
+    at ignore-listed frames {
+  digest: '3017939355@E394'
+}
+⨯ Error: {"message":"An invalid response was received from the upstream server"}
+    at ignore-listed frames {
+  digest: '3017939355@E394'
+}
+⨯ Error [ModuleUnavailableError]: Module unavailable: gas_containers (not_supported_by_profile)
+    at Function.require (.next/server/chunks/ssr/src_16074fm._.js:1:4947)
+    at async m.load (.next/server/chunks/ssr/_05v60d4._.js:1:2131)
+    at async h (.next/server/chunks/ssr/[root-of-the-server]__0iji05w._.js:1:2590) {
+  moduleKey: 'gas_containers',
+  reason: 'not_supported_by_profile',
+  digest: '2679374995'
+}
+⨯ Error [ModuleUnavailableError]: Module unavailable: gas_containers (not_supported_by_profile)
+    at Function.require (.next/server/chunks/ssr/src_16074fm._.js:1:4947)
+    at async m.load (.next/server/chunks/ssr/_05v60d4._.js:1:2131)
+    at async h (.next/server/chunks/ssr/[root-of-the-server]__0iji05w._.js:1:2590) {
+  moduleKey: 'gas_containers',
+  reason: 'not_supported_by_profile',
+  digest: '2679374995'
+}
+⨯ Error [ModuleUnavailableError]: Module unavailable: gas_containers (not_supported_by_profile)
+    at Function.require (.next/server/chunks/ssr/src_16074fm._.js:1:4947)
+    at async m.load (.next/server/chunks/ssr/_05v60d4._.js:1:2131)
+    at async h (.next/server/chunks/ssr/[root-of-the-server]__0iji05w._.js:1:2590) {
+  moduleKey: 'gas_containers',
+  reason: 'not_supported_by_profile',
+  digest: '2679374995'
+}
+⨯ Error: {"message":"An invalid response was received from the upstream server"}
+    at ignore-listed frames {
+  digest: '3017939355@E394'
+}
+⨯ Error [ModuleUnavailableError]: Module unavailable: gas_containers (not_supported_by_profile)
+    at Function.require (.next/server/chunks/ssr/src_16074fm._.js:1:4947)
+    at async m.load (.next/server/chunks/ssr/_05v60d4._.js:1:2131)
+    at async h (.next/server/chunks/ssr/[root-of-the-server]__0iji05w._.js:1:2590) {
+  moduleKey: 'gas_containers',
+  reason: 'not_supported_by_profile',
+  digest: '2679374995'
+}
