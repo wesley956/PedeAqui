@@ -137,6 +137,20 @@ begin
   end loop;
 end $$;
 
+-- Fotos e logo de mentira (desenhos gerados aqui mesmo, sem baixar nada): servem para conferir as telas com imagem.
+-- Bebidas ficam sem foto de propósito, para as duas situações aparecerem.
+update public.products p set image_url = 'data:image/svg+xml;base64,' || replace(encode(convert_to(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl('
+  || (abs(hashtext(p.name)) % 40 + 15) || ',70%,62%)"/><stop offset="1" stop-color="hsl(' || (abs(hashtext(p.name)) % 40 + 5) || ',65%,38%)"/></linearGradient></defs>'
+  || '<rect width="480" height="480" fill="url(#g)"/><circle cx="240" cy="250" r="150" fill="#fff" opacity=".9"/><circle cx="240" cy="250" r="112" fill="hsl('
+  || (abs(hashtext(p.name)) % 40 + 20) || ',75%,55%)"/><circle cx="200" cy="215" r="34" fill="#fff" opacity=".35"/></svg>', 'UTF8'), 'base64'), E'\n', '')
+where p.store_id = current_setting('seed.store')::uuid and p.name !~* '(coca|guaran|suco|água|agua|refri)';
+
+insert into public.store_menu_settings (organization_id, store_id, primary_color, logo_url)
+select current_setting('seed.org')::uuid, current_setting('seed.store')::uuid, '#7A2E1A', 'data:image/svg+xml;base64,' || replace(encode(convert_to(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240"><rect width="240" height="240" fill="#7A2E1A"/><circle cx="120" cy="120" r="78" fill="#F6E7C8"/><text x="120" y="150" font-family="Arial, sans-serif" font-size="84" font-weight="700" text-anchor="middle" fill="#7A2E1A">SV</text></svg>', 'UTF8'), 'base64'), E'\n', '')
+on conflict (store_id) do update set primary_color = excluded.primary_color, logo_url = excluded.logo_url;
+
 select 'SEED_SUMMARY products=' || (select count(*) from public.products where store_id = current_setting('seed.store')::uuid)
   || ' groups=' || (select count(*) from public.modifier_groups where store_id = current_setting('seed.store')::uuid)
   || ' orders=' || (select count(*) from public.orders where store_id = current_setting('seed.store')::uuid)

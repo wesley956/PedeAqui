@@ -75,7 +75,16 @@ if (args.has("--zerar")) {
   fs.rmSync(stateFile, { force: true });
 }
 if (!fs.existsSync(path.join(workdir, "supabase", "config.toml"))) run(`${supabase} init --force --workdir ${workdir}`);
-run(`${supabase} start --workdir ${workdir} -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor`);
+// O download das imagens do banco às vezes é recusado por limite do servidor de imagens: tenta de novo antes de desistir.
+{
+  const startCommand = `${supabase} start --workdir ${workdir} -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor`;
+  for (let attempt = 1; ; attempt += 1) {
+    if (run(startCommand, { allowFail: attempt < 4 }).ok) break;
+    console.log(`  Download das imagens do banco falhou (tentativa ${attempt} de 4). Aguardando para tentar de novo…`);
+    run(`${supabase} stop --workdir ${workdir}`, { allowFail: true });
+    spawnSync(process.execPath, ["-e", `setTimeout(() => {}, ${attempt * 45000})`]);
+  }
+}
 const statusEnv = Object.fromEntries(run(`${supabase} status -o env --workdir ${workdir}`).out.split("\n").map((line) => line.match(/^([A-Z_]+)="?(.*?)"?$/)).filter(Boolean).map((match) => [match[1], match[2]]));
 const anonKey = statusEnv.ANON_KEY ?? statusEnv.PUBLISHABLE_KEY;
 const serviceKey = statusEnv.SERVICE_ROLE_KEY ?? statusEnv.SECRET_KEY;

@@ -31,3 +31,9 @@ Prints antes/depois na branch `ux2/evidencias` (pastas `ux2_auditoria` = antes, 
 - **Aviso do React em todas as telas**: o script do tema ficava fora do `<body>`. Movido para dentro.
 - **Homologação local**: faltavam migrações do WhatsApp (coexistência, mídia, modelos) que não estão no esquema consolidado `supabase/sql`; a tela Configurações › Conversas quebrava só na homologação. Não é defeito da produção.
 - **Auditoria**: o comando de prints bloqueava a leitura da saída do servidor e o servidor travava depois de algumas telas; corrigido. O registro do servidor passa a ir junto com os prints.
+
+## Lote 4 — Base do celular e segunda varredura de cor (branch `ux2/pdv`)
+- **`position: sticky` voltou a funcionar no painel no celular.** `.app-content` usava `overflow-x: hidden` em telas estreitas; isso a transformava numa área de rolagem que não rola, e tudo que deveria ficar preso à tela sumia ao rolar: barra de pagamento e etapas do PDV, barras "Salvar" de formulários, cabeçalhos. Trocado por `overflow-x: clip`. Conferido com print rolado de 45 telas no celular.
+- **Texto laranja virou texto escuro** em 59 pontos do painel (links "Abrir →", totais, rótulos pequenos, setas). Novo token `--link-color`. Rótulos pequenos em maiúsculas ("SEU NEGÓCIO") ficam em cinza.
+- **Bordas laranja ao passar o mouse** viraram borda neutra forte em 11 pontos.
+- Não mexido de propósito: botões principais, foco de teclado, avisos/alertas, selos, site institucional, telas de acesso e cardápio do cliente (que usa a cor da loja).

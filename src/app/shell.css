@@ -197,7 +197,9 @@
   .app-topbar { padding: var(--space-2) var(--space-3); }
   .app-topbar-signals { gap: var(--space-1); }
   .app-topbar-signals span { padding-inline: var(--space-1); }
-  .app-content { padding: var(--space-3); overflow-x: hidden; }
+  /* "clip" corta o que vazar para os lados sem transformar o conteúdo numa área de rolagem própria. Com "hidden",
+     tudo que usa position: sticky dentro do painel (barra do PDV, abas, cabeçalhos) deixava de prender no celular. */
+  .app-content { padding: var(--space-3); overflow-x: hidden; overflow-x: clip; }
   .platform-footer { padding: 0 var(--space-3) var(--space-4); }
   .metric-grid { grid-template-columns: 1fr; }
   .theme-selector-compact .theme-selector-select { width: 44px; max-width: 44px; padding-inline: var(--space-2); color: transparent; }

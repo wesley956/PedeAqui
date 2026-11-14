@@ -64,7 +64,7 @@
 .customerIdentity { min-width: 0; }
 .customerName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .contact { color: var(--muted); font-size: var(--font-size-xs); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.openHint { color: var(--accent); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); margin-top: 5px; letter-spacing: .03em; }
+.openHint { color:var(--link-color); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); margin-top: 5px; letter-spacing: .03em; }
 .stat { text-align: right; min-width: 0; }
 .statLabel { display: block; color: var(--muted); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); letter-spacing: .05em; }
 .statValue { display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -110,7 +110,7 @@
 .addressComposer > summary span { display: grid; gap: 3px; padding-right: 28px; }
 .addressComposer > summary strong { font-size: var(--font-size-md); }
 .addressComposer > summary small { color: var(--muted); font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); }
-.addressComposer > summary::after { content: "+"; float: right; margin-top: -29px; color: var(--accent); font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); }
+.addressComposer > summary::after { content: "+"; float: right; margin-top: -29px; color:var(--link-color); font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); }
 .addressComposer[open] > summary::after { content: "−"; }
 .addressComposer > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: -3px; }
 .addressForm { display: grid; gap: 12px; padding: 14px 17px 17px; border-top: 1px solid var(--border); }
@@ -134,7 +134,7 @@
 }
 .badgeAccent { color: var(--accent); }
 .orderValue { font-weight: var(--font-weight-bold); white-space: nowrap; }
-.orderLink { color: var(--accent); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); }
+.orderLink { color:var(--link-color); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); }
 
 .formGrid { display: grid; gap: 10px; }
 .twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }

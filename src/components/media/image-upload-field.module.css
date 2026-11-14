@@ -19,7 +19,7 @@
 .ready {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  color: var(--accent);
+  color:var(--link-color);
 }
 
 .picker {

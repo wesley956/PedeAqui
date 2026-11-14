@@ -28,6 +28,11 @@ const DEVICES = [
   { key: "pc-1366", browser: chromium, options: { viewport: { width: 1366, height: 768 } } },
   // Android mais estreito comum (360px). O iPhone (WebKit) entra só na auditoria completa.
   { key: "android-360", browser: chromium, options: { ...devices["Galaxy S8"], viewport: { width: 360, height: 740 } } },
+  // Tema escuro: o painel segue o tema do aparelho quando a pessoa não escolheu um.
+  ...(process.env.AUDIT_SEM_ESCURO ? [] : [
+    { key: "pc-1366-escuro", browser: chromium, options: { viewport: { width: 1366, height: 768 }, colorScheme: "dark" } },
+    { key: "android-360-escuro", browser: chromium, options: { ...devices["Galaxy S8"], viewport: { width: 360, height: 740 }, colorScheme: "dark" } },
+  ]),
   ...(process.env.AUDIT_IPHONE ? [{ key: "iphone-390", browser: webkit, options: devices["iPhone 13"] }] : []),
 ];
 
@@ -111,6 +116,13 @@ async function audit(page, device, area, label, url, extra) {
     await page.screenshot({ path: path.join(outDir, "shots", `${base}.jpg`), type: "jpeg", quality: 70 });
     await page.screenshot({ path: path.join(outDir, "shots", `${base}__full.jpg`), type: "jpeg", quality: 55, fullPage: true }).catch(() => {});
     entry.shot = `shots/${base}.jpg`;
+    // Celular: um print com a página rolada mostra o que fica preso ao topo e ao rodapé (barras, abas) sobre o conteúdo.
+    if (device.key === "android-360" && entry.docHeight > entry.vh + 300) {
+      await page.evaluate(() => window.scrollTo(0, 520));
+      await page.waitForTimeout(350);
+      await page.screenshot({ path: path.join(outDir, "shots", `${base}__rolado.jpg`), type: "jpeg", quality: 65 }).catch(() => {});
+      await page.evaluate(() => window.scrollTo(0, 0));
+    }
     if (device.key === "android-360") {
       const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze().catch(() => null);
       entry.axe = axe ? axe.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, example: v.nodes[0]?.target?.join(" ")?.slice(0, 120) })) : null;
@@ -181,16 +193,50 @@ for (const device of DEVICES) {
       } catch (error) { results.push({ device: device.key, area: "state", label: name, error: String(error.message).slice(0, 200) }); }
     };
     // Estes dois só existem no celular.
-    if (device.key !== "pc-1366") await openState("/dashboard", ".mobile-more > summary", "menu-mais-aberto");
+    if (!device.key.startsWith("pc-")) await openState("/dashboard", ".mobile-more > summary", "menu-mais-aberto");
     await openState("/dashboard", ".app-operation-menu > summary", "menu-loja-aberto");
     await openState("/dashboard", ".app-account-menu > summary", "menu-conta-aberto");
-    if (device.key !== "pc-1366") await openState("/pedidos", 'button[aria-label^="Mais ações do pedido"]', "pedidos-menu-acoes");
+    if (!device.key.startsWith("pc-")) await openState("/pedidos", 'button[aria-label^="Mais ações do pedido"]', "pedidos-menu-acoes");
     try {
       await page.goto(`${panelBase}/pedidos`, { waitUntil: "load" });
       await page.getByRole("button", { name: /^Em preparo/ }).first().click();
       await page.waitForTimeout(500);
       await shotState(page, device, "pedidos-aba-em-preparo");
     } catch (error) { results.push({ device: device.key, area: "state", label: "pedidos-aba", error: String(error.message).slice(0, 200) }); }
+    // PDV: venda com item simples, produto com opções e pagamento detalhado. Nada é finalizado.
+    {
+      const step = async (name, action) => {
+        try { await action(); await page.waitForTimeout(600); await shotState(page, device, name); }
+        catch (error) { results.push({ device: device.key, area: "state", label: name, error: String(error.message).slice(0, 200) }); }
+      };
+      const quick = { timeout: 6000 };
+      await page.goto(`${panelBase}/pdv`, { waitUntil: "load" }).catch(() => {});
+      await page.waitForTimeout(900);
+      const measurePdv = () => page.evaluate(() => {
+        const describe = (element) => {
+          if (!element) return null;
+          const style = getComputedStyle(element); const rect = element.getBoundingClientRect();
+          const clipping = []; let parent = element.parentElement;
+          while (parent && parent !== document.documentElement) {
+            const parentStyle = getComputedStyle(parent);
+            if (parentStyle.overflowY !== "visible" || parentStyle.overflowX !== "visible" || parentStyle.contain !== "none") clipping.push(`${parent.tagName.toLowerCase()}.${String(parent.className).split(" ")[0].slice(0, 40)} overflow=${parentStyle.overflowX}/${parentStyle.overflowY} h=${Math.round(parent.getBoundingClientRect().height)}`);
+            parent = parent.parentElement;
+          }
+          return { position: style.position, top: style.top, bottom: style.bottom, display: style.display, rect: [Math.round(rect.top), Math.round(rect.bottom), Math.round(rect.height)], clipping };
+        };
+        const scroller = document.querySelector('main.app-content');
+        return { viewport: [innerWidth, innerHeight], scrollY: Math.round(scrollY), contentScrollTop: scroller ? Math.round(scroller.scrollTop) : null, contentPaddingBottom: scroller ? getComputedStyle(scroller).paddingBottom : null, docHeight: document.documentElement.scrollHeight, bar: describe(document.querySelector('footer[aria-label="Pagamento e finalização da venda"]')), switcher: describe(document.querySelector('nav[aria-label="Etapa atual da venda"]')) };
+      }).catch((error) => ({ error: String(error.message).slice(0, 200) }));
+      await step("pdv-com-item", () => page.locator("button", { hasText: "Coca-Cola 2L" }).first().click(quick));
+      results.push({ device: device.key, area: "diag", label: "pdv-layout-itens", pdvLayout: await measurePdv() });
+      await step("pdv-produto-opcoes", () => page.locator("button", { hasText: "Caixa com 30 salgados" }).first().click(quick));
+      await page.keyboard.press("Escape").catch(() => {});
+      await page.waitForTimeout(400);
+      if (!device.key.startsWith("pc-")) await step("pdv-venda-no-celular", () => page.locator('nav[aria-label="Etapa atual da venda"] button').nth(1).click(quick));
+      await step("pdv-pagamento-detalhes", () => page.getByRole("button", { name: /Detalhes/ }).first().click(quick));
+      // Medidas da barra de pagamento e do seletor de etapa: no celular os dois precisam ficar presos à tela.
+      results.push({ device: device.key, area: "diag", label: "pdv-layout-venda", pdvLayout: await measurePdv() });
+    }
     try {
       await page.goto(`${panelBase}/cardapio/disponibilidade?q=calabresa`, { waitUntil: "load" });
       await page.locator('input[type="search"]').first().fill("calabresa").catch(() => {});
