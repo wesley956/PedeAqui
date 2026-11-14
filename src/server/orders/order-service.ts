@@ -6,6 +6,7 @@ import { authorize } from "@/server/access/authorize";
 import { PERMISSIONS } from "@/server/access/permissions";
 import { hashCartToken } from "@/server/cart/cart-token";
 import { CheckoutError, CheckoutService } from "@/server/checkout/checkout-service";
+import { DeliveryQuoteService } from "@/server/delivery/delivery-quote-service";
 import { deriveOrderAccessToken, hashOrderAccessToken } from "@/server/orders/order-token";
 import {
   assertTransition,
@@ -92,23 +93,42 @@ export class OrderService {
     return existing ? { ...existing, accessToken: deriveOrderAccessToken(token) } : null;
   }
 
-  static async createFromCheckout(storeSlug: string, token: string, channel: OrderCreationChannel = "digital_menu") {
+  static async createFromCheckout(storeSlug: string, token: string, channel: OrderCreationChannel = "digital_menu", expectedTotalCents?: number) {
     const existing = await this.recoverFromCheckout(storeSlug, token);
     if (existing) return existing;
     const accessToken = deriveOrderAccessToken(token);
 
-    const reviewed = await CheckoutService.review(storeSlug, token);
+    const reviewed = channel === "whatsapp"
+      ? await CheckoutService.review(storeSlug, token, null, false)
+      : await CheckoutService.review(storeSlug, token);
     if (!reviewed.review.ready) {
       throw new CheckoutError("checkout_not_ready", reviewed.review.blockers.map((item) => item.message).join(" "));
     }
 
+    const roadDelivery = channel === "digital_menu" && reviewed.session?.fulfillment_type === "delivery"
+      && DeliveryQuoteService.usesRoadDistance(reviewed.store.id);
+    const changedQuote = () => new CheckoutError(
+      "delivery_fee_changed", "A taxa de entrega mudou. Confira o novo total e confirme novamente.",
+    );
+    if (roadDelivery && (reviewed.roadDeliveryFeeChanged || !Number.isSafeInteger(expectedTotalCents)
+      || expectedTotalCents !== Number(reviewed.cart.total_cents))) {
+      throw changedQuote();
+    }
+
     const admin = createAdminClient();
-    const { data, error } = await admin.rpc("create_order_from_checkout_internal", {
+    const args = {
       p_store_id: reviewed.store.id,
       p_token_hash: hashCartToken(token),
       p_order_access_token_hash: hashOrderAccessToken(accessToken),
-      p_channel: channel,
-    });
+    };
+    const { data, error } = roadDelivery
+      ? await admin.rpc("create_road_delivery_order_from_checkout", {
+        ...args,
+        p_expected_total_cents: expectedTotalCents,
+        p_reviewed_at: reviewed.session?.reviewed_at,
+      })
+      : await admin.rpc("create_order_from_checkout_internal", { ...args, p_channel: channel });
+    if (error?.code === "PDR01") throw changedQuote();
     if (error) throw error;
     return { ...createResultSchema.parse(data), accessToken };
   }

@@ -338,7 +338,7 @@ export class WhatsAppOrderService {
     }
     if (input.step === "order_address") {
       const address = parseAddress(input.text); if (!address) return { handled: true, body: "Não consegui entender o endereço. Envie assim:\nRua, número, bairro, cidade, UF", nextStep: "order_address", context };
-      try { const quote = await CheckoutService.saveAddress(input.storeSlug, context.cartToken, address); const options = await paymentOptions(input.organizationId, input.storeId); return { handled: true, body: `Endereço atendido. Taxa de entrega: ${money(quote.feeCents)}.\n\n${buildWhatsAppPaymentPrompt(options)}`, nextStep: "order_payment", context }; } catch (error) { if (error instanceof CheckoutError) return { handled: true, body: `${error.message}. Confira o endereço e envie novamente ou digite 3 para falar com a equipe.`, nextStep: "order_address", context }; throw error; }
+      try { const quote = await CheckoutService.saveAddress(input.storeSlug, context.cartToken, address, false); const options = await paymentOptions(input.organizationId, input.storeId); return { handled: true, body: `Endereço atendido. Taxa de entrega: ${money(quote.feeCents)}.\n\n${buildWhatsAppPaymentPrompt(options)}`, nextStep: "order_payment", context }; } catch (error) { if (error instanceof CheckoutError) return { handled: true, body: `${error.message}. Confira o endereço e envie novamente ou digite 3 para falar com a equipe.`, nextStep: "order_address", context }; throw error; }
     }
     if (input.step === "order_payment") {
       if (context.awaitingPixEmail && context.paymentMethod === "pix") {

@@ -171,12 +171,12 @@ export class CheckoutService {
     await this.upsertSession(createAdminClient(), cartResult.store, cartResult.cart.id, { scheduled_for: scheduledFor });
   }
 
-  private static quoteDelivery(admin: AdminClient, store: StoreRef, subtotalCents: number, address: CheckoutAddressInput) {
+  private static quoteDelivery(admin: AdminClient, store: StoreRef, subtotalCents: number, address: CheckoutAddressInput, useRoadDistance: boolean) {
     return DeliveryQuoteService.quote({ admin, organizationId: store.organization_id, storeId: store.id, subtotalCents,
-      address: { district: address.district, city: address.city, state: address.state } });
+      address, useRoadDistance });
   }
 
-  static async saveAddress(storeSlug: string, token: string, input: CheckoutAddressInput) {
+  static async saveAddress(storeSlug: string, token: string, input: CheckoutAddressInput, useRoadDistance = true) {
     const address = this.parseInput(checkoutAddressSchema.safeParse(input), "invalid_address", "Confira rua, número, bairro, cidade e UF");
     const cartResult = await this.requireCart(storeSlug, token);
     const admin = createAdminClient();
@@ -192,7 +192,7 @@ export class CheckoutService {
       if (!neighborhood) throw new CheckoutError("neighborhood_not_served", "Selecione um bairro atendido pela loja");
       resolvedAddress = { ...address, district: neighborhood.neighborhood_name, city: neighborhood.city, state: neighborhood.state.toUpperCase() };
     }
-    const quote = await this.quoteDelivery(admin, cartResult.store, Number(cartResult.cart.subtotal_cents), resolvedAddress);
+    const quote = await this.quoteDelivery(admin, cartResult.store, Number(cartResult.cart.subtotal_cents), resolvedAddress, useRoadDistance);
     const quoteStatus = quote.serviceable ? "valid" : "unserviceable";
     const { error } = await admin.rpc("checkout_set_fulfillment_internal", {
       p_store_id: cartResult.store.id, p_token_hash: hashCartToken(token), p_fulfillment_type: "delivery",
@@ -207,6 +207,7 @@ export class CheckoutService {
     if (!quote.serviceable) {
       if (quote.reason === "minimum_order") throw new CheckoutError("delivery_minimum", `Pedido mínimo para este bairro: R$ ${(quote.minimumOrderCents / 100).toFixed(2).replace(".", ",")}`);
       if (quote.reason === "neighborhood_not_served") throw new CheckoutError("neighborhood_not_served", "Este bairro ainda não é atendido");
+      if (quote.reason === "route_unavailable") throw new CheckoutError("delivery_route_unavailable", "Não foi possível calcular a entrega para este endereço");
       throw new CheckoutError("delivery_disabled", "Entrega indisponível no momento");
     }
     return quote;
@@ -261,10 +262,11 @@ export class CheckoutService {
     });
   }
 
-  static async review(storeSlug: string, token: string, recognitionToken: string | null = null) {
+  static async review(storeSlug: string, token: string, recognitionToken: string | null = null, useRoadDistance = true) {
     let loaded = await this.load(storeSlug, token, recognitionToken);
     const admin = createAdminClient();
     let session = loaded.session;
+    let roadDeliveryFeeChanged = false;
 
     if (session?.fulfillment_type === "delivery" && session.address_street && session.address_number && session.address_district && session.address_city && session.address_state) {
       const address = checkoutAddressSchema.parse({
@@ -272,10 +274,12 @@ export class CheckoutService {
         complement: session.address_complement, district: session.address_district, city: session.address_city,
         state: session.address_state, reference: session.address_reference,
       });
-      const quote = await this.quoteDelivery(admin, loaded.store, Number(loaded.cart.subtotal_cents), address);
+      const quote = await this.quoteDelivery(admin, loaded.store, Number(loaded.cart.subtotal_cents), address, useRoadDistance);
       const quoteStatus = quote.serviceable ? "valid" : "unserviceable";
       const fee = quote.serviceable ? quote.feeCents : 0;
       if (session.delivery_quote_status !== quoteStatus || Number(session.delivery_fee_cents) !== fee) {
+        roadDeliveryFeeChanged = useRoadDistance && DeliveryQuoteService.usesRoadDistance(loaded.store.id)
+          && Number(session.delivery_fee_cents) !== fee;
         const { error } = await admin.rpc("checkout_set_fulfillment_internal", {
           p_store_id: loaded.store.id, p_token_hash: hashCartToken(token), p_fulfillment_type: "delivery",
           p_address: { postal_code: address.postalCode, street: address.street, number: address.number,
@@ -318,6 +322,6 @@ export class CheckoutService {
       if (error) throw error;
       session = { ...session, reviewed_at: reviewedAt };
     }
-    return { ...loaded, session, review: result };
+    return { ...loaded, session, review: result, roadDeliveryFeeChanged };
   }
 }
