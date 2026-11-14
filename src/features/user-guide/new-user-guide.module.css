@@ -264,3 +264,6 @@
   .progressBar, .trigger { transition: none; }
   .trigger:hover { transform: none; }
 }
+
+/* UX2: no PDV o botão do guia sobe para não cobrir "Finalizar" na barra de pagamento. */
+:global(.app-shell:has(footer[aria-label="Pagamento e finalização da venda"])) .trigger { bottom: calc(var(--space-5) + 104px); }

@@ -74,7 +74,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           {categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </SelectField>
         <div className={styles.filterActions}>
-          <Button type="submit">Filtrar</Button>
+          <Button type="submit" tone="secondary">Filtrar</Button>
           <Link href="/cardapio/produtos">Limpar</Link>
         </div>
       </form>

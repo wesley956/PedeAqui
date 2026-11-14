@@ -16,6 +16,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".
 process.chdir(root);
 const args = new Set(process.argv.slice(2));
 const verify = args.has("--verificar");
+// --compilado: versão compilada (rápida e estável) em 127.0.0.1, para a auditoria com prints no CI. Não serve para o celular.
+const compiled = args.has("--compilado");
 const workdir = "homolog-local"; // pasta própria do Supabase local: não toca em supabase/ do projeto
 const dbContainer = `supabase_db_${workdir}`;
 const supabaseVersion = "2.84.2";
@@ -122,7 +124,7 @@ if (!state) {
 }
 
 // ---------- 4. Sistema em rede local ----------
-const host = lanAddress();
+const host = compiled ? "127.0.0.1" : lanAddress();
 const supabaseUrl = `http://${host}:54321`;
 const appUrl = `http://${host}:${appPort}`;
 const appEnv = {
@@ -139,11 +141,26 @@ const appEnv = {
 // Garante que nenhuma chave de integração externa vaze do ambiente do computador para a homologação.
 for (const key of Object.keys(appEnv)) if (/^(META_|WHATSAPP_|MERCADO_PAGO_|PAGBANK_|SUPPORT_MODE_SECRET|PUBLIC_APP_URL)/.test(key)) delete appEnv[key];
 
+let restoreConfig = () => {};
+if (compiled) {
+  // A liberação do Supabase local em next.config.ts só vale em desenvolvimento. Para compilar apontando para o banco
+  // local, o arquivo é ajustado durante a execução e restaurado no fim. Usado só em cópia descartável (CI).
+  const configFile = path.join(root, "next.config.ts");
+  const original = fs.readFileSync(configFile, "utf8");
+  const patched = original.replace("const homologHost = isDevelopment ? process.env.PEDEAQUI_HOMOLOG_HOST?.trim() : undefined;", "const homologHost = process.env.PEDEAQUI_HOMOLOG_HOST?.trim();");
+  if (patched === original) fail("Não foi possível preparar next.config.ts para a versão compilada.");
+  fs.writeFileSync(configFile, patched);
+  restoreConfig = () => fs.writeFileSync(configFile, original);
+  say("Compilando o sistema (alguns minutos)");
+  const build = spawnSync("npx next build", { shell: true, cwd: root, env: appEnv, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  if (build.status !== 0) { restoreConfig(); fail(`A compilação falhou.\n${`${build.stdout}\n${build.stderr}`.split("\n").slice(-40).join("\n")}`); }
+}
+
 say("Iniciando o sistema");
-const app = spawn(`npx next dev --hostname 0.0.0.0 --port ${appPort}`, { shell: true, env: appEnv, stdio: verify ? ["ignore", "pipe", "pipe"] : "inherit" });
+const app = spawn(compiled ? `npx next start --hostname 127.0.0.1 --port ${appPort}` : `npx next dev --hostname 0.0.0.0 --port ${appPort}`, { shell: true, env: appEnv, stdio: verify ? ["ignore", "pipe", "pipe"] : "inherit" });
 let appLog = "";
 if (verify) for (const stream of [app.stdout, app.stderr]) stream.on("data", (chunk) => { appLog += chunk; });
-const stop = () => { try { if (process.platform === "win32") spawnSync(`taskkill /pid ${app.pid} /T /F`, { shell: true }); else app.kill("SIGTERM"); } catch { /* já encerrado */ } };
+const stop = () => { restoreConfig(); try { if (process.platform === "win32") spawnSync(`taskkill /pid ${app.pid} /T /F`, { shell: true }); else app.kill("SIGTERM"); } catch { /* já encerrado */ } };
 process.on("SIGINT", () => { stop(); process.exit(0); });
 
 async function waitFor(url, seconds) {
@@ -167,9 +184,15 @@ if (verify) {
   const saved = JSON.parse(fs.readFileSync(stateFile, "utf8"));
   console.log(`HOMOLOG_VERIFY ${checks.join(" ")} login=${auth} ${saved.seedSummary} avisos=${saved.seedWarnings.length}`);
   for (const warning of saved.seedWarnings) console.log(`HOMOLOG_SEED_WARNING ${warning}`);
-  stop();
   const ok = checks[0].endsWith("=200") && checks[1].endsWith("=200") && auth === 200;
-  process.exit(ok ? 0 : 1);
+  // HOMOLOG_APOS: comando executado com o sistema no ar (ex.: auditoria com prints no CI), antes de encerrar.
+  let afterStatus = 0;
+  if (ok && process.env.HOMOLOG_APOS) {
+    afterStatus = spawnSync(process.env.HOMOLOG_APOS, { shell: true, stdio: "inherit", env: { ...process.env, PANEL_BASE: `http://127.0.0.1:${appPort}`, AUDIT_EMAIL: login.email, AUDIT_PASSWORD: login.password } }).status ?? 1;
+    console.log(`HOMOLOG_APOS status=${afterStatus}`);
+  }
+  stop();
+  process.exit(ok && afterStatus === 0 ? 0 : 1);
 }
 
 console.log(`

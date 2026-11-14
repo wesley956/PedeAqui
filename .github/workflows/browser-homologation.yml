@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   public-browser-homologation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # UX2: o Playwright 1.55 não instala dependências no Ubuntu novo do ubuntu-latest
     timeout-minutes: 30
     env:
       BASE_URL: http://127.0.0.1:3000

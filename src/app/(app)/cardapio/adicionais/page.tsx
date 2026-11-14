@@ -130,7 +130,7 @@ export default async function ModifiersPage({ searchParams }: ModifiersPageProps
       <form className={`card ${styles.filters}`} method="get" role="search" aria-label="Buscar sabor, tamanho ou adicional">
         <SearchInput label="Buscar sabor, tamanho ou adicional" name="q" defaultValue={rawQuery} placeholder="Ex.: calabresa, grande, bacon" />
         <div className={styles.filterActions}>
-          <Button type="submit">Buscar</Button>
+          <Button type="submit" tone="secondary">Buscar</Button>
           {rawQuery ? <Link href="/cardapio/adicionais">Limpar</Link> : null}
         </div>
       </form>

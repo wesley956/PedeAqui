@@ -47,3 +47,4 @@ Legenda: Validado · Parcialmente validado · Bloqueado · Não iniciado
 | B-02 | Sem acesso ao banco de produção (decisão D-03) | hipóteses que dependem de dados reais não podem ser confirmadas | investigar por código e testes |
 | B-03 | npm bloqueado no ambiente de trabalho | cada verificação leva ~10 min no CI | nenhuma; aceitar o ciclo |
 | B-04 | Sem sandbox de WhatsApp, gateways, iFood, fiscal e impressão | esses módulos não chegam a "Validado" | mocks e testes de contrato; validação real fica pendente |
+| B-05 | Na `main`, o check `public-browser-homologation` falha ao instalar o Playwright no `ubuntu-latest` (Ubuntu novo) | PRs para a `main` que tocam telas ficam com esse check vermelho | fixar `runs-on: ubuntu-24.04` (já feito em `ux2/*`) ou atualizar o Playwright; decisão de quem integra |
