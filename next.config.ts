@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 const isGitHubPages = process.env.GITHUB_PAGES === "true";
+// Homologação local (scripts/homologacao-local): só em desenvolvimento, libera o Supabase local e o acesso pela
+// rede do computador. Em produção a variável é ignorada e a política de segurança fica exatamente como está.
+const homologHost = isDevelopment ? process.env.PEDEAQUI_HOMOLOG_HOST?.trim() : undefined;
+const homologValid = homologHost && /^[a-z0-9.-]+$/i.test(homologHost) ? homologHost : undefined;
+const homologConnect = homologValid ? ` http://${homologValid}:54321 ws://${homologValid}:54321 http://127.0.0.1:54321 ws://127.0.0.1:54321` : "";
+const homologImages = homologValid ? ` http://${homologValid}:54321 http://127.0.0.1:54321` : "";
 
 export const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -22,10 +28,10 @@ export const securityHeaders = [
       "form-action 'self'",
       `script-src 'self' 'unsafe-inline' https://connect.facebook.net${isDevelopment ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
+      `img-src 'self' data: blob: https:${homologImages}`,
       "media-src 'self' https:",
       "font-src 'self' data:",
-      "connect-src 'self' https: wss:",
+      `connect-src 'self' https: wss:${homologConnect}`,
       "frame-src 'self' https://www.facebook.com https://web.facebook.com",
     ].join("; "),
   },
@@ -48,12 +54,12 @@ const nextConfig: NextConfig = {
             // The application caps each image at 4 MiB to stay below the Vercel
             // request limit; this envelope also covers multi-image local forms.
             bodySizeLimit: "16mb",
-            ...(isDevelopment ? { allowedOrigins: ["*.app.github.dev"] } : {}),
+            ...(isDevelopment ? { allowedOrigins: ["*.app.github.dev", ...(homologValid ? [`${homologValid}:3000`, homologValid] : [])] } : {}),
           },
         },
       }),
   ...(isDevelopment && !isGitHubPages
-    ? { allowedDevOrigins: ["*.app.github.dev"] }
+    ? { allowedDevOrigins: ["*.app.github.dev", ...(homologValid ? [homologValid] : [])] }
     : {}),
   ...(!isGitHubPages
     ? {

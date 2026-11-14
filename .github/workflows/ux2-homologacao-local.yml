@@ -1,0 +1,42 @@
+name: UX2 Homologacao Local
+
+# Valida o script de homologação local num ambiente descartável. Só roda em branches ux2/*; nunca publica nada.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["ux2/homologacao-local"]
+  pull_request:
+    branches: ["ux2/integration"]
+    paths:
+      - "scripts/homologacao-local/**"
+      - "supabase/**"
+      - "next.config.ts"
+      - ".github/workflows/ux2-homologacao-local.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Mesmo tipo de caminho da pasta do responsável (com espaços).
+          path: "pede aqui ux2"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Subir a homologação local e conferir
+        working-directory: "pede aqui ux2"
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/homologacao-local/iniciar.mjs --verificar 2>&1 | tee "$RUNNER_TEMP/homolog.log" || {
+            # Os logs do Actions não são acessíveis de fora; o final vai como anotação.
+            msg="$(tail -c 3500 "$RUNNER_TEMP/homolog.log" | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"
+            echo "::error title=homologacao-local::${msg}"
+            exit 1
+          }
+          echo "::notice title=homologacao-local::$(grep -E 'HOMOLOG_VERIFY|HOMOLOG_SEED_WARNING|arquivos de schema' "$RUNNER_TEMP/homolog.log" | tr '\n' ' ' | cut -c1-900)"
