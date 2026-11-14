@@ -27,7 +27,7 @@ export function isWithinBotPreopenWindow(input: {
   const localMinute = hour * 60 + minute;
   return input.hours.some((row) => {
     if (row.active === false || row.weekday !== weekday) return false;
-    const match = /^(\\d{2}):(\\d{2})(?::\\d{2})?$/.exec(row.opens_at);
+    const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(row.opens_at);
     if (!match) return false;
     const opening = Number(match[1]) * 60 + Number(match[2]);
     // Only the same local calendar day's opening; no yesterday or closed-day replies.
