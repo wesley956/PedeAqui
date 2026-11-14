@@ -116,6 +116,13 @@ async function audit(page, device, area, label, url, extra) {
     await page.screenshot({ path: path.join(outDir, "shots", `${base}.jpg`), type: "jpeg", quality: 70 });
     await page.screenshot({ path: path.join(outDir, "shots", `${base}__full.jpg`), type: "jpeg", quality: 55, fullPage: true }).catch(() => {});
     entry.shot = `shots/${base}.jpg`;
+    // Celular: um print com a página rolada mostra o que fica preso ao topo e ao rodapé (barras, abas) sobre o conteúdo.
+    if (device.key === "android-360" && entry.docHeight > entry.vh + 300) {
+      await page.evaluate(() => window.scrollTo(0, 520));
+      await page.waitForTimeout(350);
+      await page.screenshot({ path: path.join(outDir, "shots", `${base}__rolado.jpg`), type: "jpeg", quality: 65 }).catch(() => {});
+      await page.evaluate(() => window.scrollTo(0, 0));
+    }
     if (device.key === "android-360") {
       const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze().catch(() => null);
       entry.axe = axe ? axe.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, example: v.nodes[0]?.target?.join(" ")?.slice(0, 120) })) : null;
