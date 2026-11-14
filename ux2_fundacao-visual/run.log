@@ -1,0 +1,55 @@
+
+▶ Conferindo o que precisa estar instalado
+  Node 22.23.4 · Docker ok · Supabase CLI: via npx
+
+▶ Subindo o banco local (Supabase em Docker)
+
+▶ Criando as tabelas do sistema no banco local
+  234 arquivos de schema aplicados; 11 migrações extras aplicadas.
+
+▶ Criando a loja fictícia (Salgados da Vila)
+  SEED_SUMMARY products=16 groups=9 orders=10 modules=21
+
+▶ Iniciando o sistema
+HOMOLOG_VERIFY /login=200 /m/salgados-da-vila=200 /dashboard=307 /api/health=200 login=200 SEED_SUMMARY products=16 groups=9 orders=10 modules=21 avisos=0
+pc-1366 panel login → 200 /login overflow=no small=12 
+pc-1366 logged in → http://127.0.0.1:3000/dashboard
+pc-1366 panel /dashboard → 200 /dashboard overflow=no small=22 
+pc-1366 panel /pedidos → 200 /pedidos overflow=no small=81 
+pc-1366 panel /pdv → 200 /pdv overflow=no small=41 
+pc-1366 panel /cardapio/produtos → 200 /cardapio/produtos overflow=no small=41 
+pc-1366 panel /cardapio/disponibilidade → 200 /cardapio/disponibilidade overflow=no small=26 
+pc-1366 panel /conversas → 200 /conversas overflow=no small=19 
+pc-1366 panel /crescimento → 200 /crescimento overflow=no small=20 
+pc-1366 panel /configuracoes → 200 /configuracoes overflow=no small=41 
+pc-1366 panel /configuracoes/fluxo-pedidos → 200 /configuracoes/fluxo-pedidos overflow=no small=25 
+pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/51b9448a-4449-4a4e-9b8e-ed51a7840412 overflow=no small=34 
+pc-1366 panel /clientes/[id] → 200 /clientes/7faecdd9-4536-4cb7-8799-32f128c7adb1 overflow=no small=34 
+pc-1366 panel /salao/[tableId] → 200 /salao/97870416-aad2-40f7-936d-28ad13a17ee5 overflow=no small=28 
+pc-1366 public-local menu → 200 /m/salgados-da-vila overflow=no small=5 
+android-360 panel login → 200 /login overflow=no small=9 
+android-360 logged in → http://127.0.0.1:3000/dashboard
+android-360 panel /dashboard → 200 /dashboard overflow=no small=14 
+android-360 panel /pedidos → 200 /pedidos overflow=no small=16 
+android-360 panel /pdv → 200 /pdv overflow=no small=12 
+android-360 panel /cardapio/produtos → 200 /cardapio/produtos overflow=no small=32 
+android-360 panel /cardapio/disponibilidade → 200 /cardapio/disponibilidade overflow=no small=18 
+android-360 panel /conversas → 200 /conversas overflow=no small=11 
+android-360 panel /crescimento → ERR  overflow=no small=- page.goto: Timeout 45000ms exceeded.
+Call log:
+  - navigating to "http://127.0.0.1:3000/crescimento", waiting until "load"
+
+android-360 panel /configuracoes → ERR  overflow=no small=- page.goto: Timeout 45000ms exceeded.
+Call log:
+  - navigating to "http://127.0.0.1:3000/configuracoes", waiting until "load"
+
+android-360 panel /configuracoes/fluxo-pedidos → ERR  overflow=no small=- page.goto: Timeout 45000ms exceeded.
+Call log:
+  - navigating to "http://127.0.0.1:3000/configuracoes/fluxo-pedidos", waiting until "load"
+
+android-360 public-local menu → ERR  overflow=no small=- page.goto: Timeout 45000ms exceeded.
+Call log:
+  - navigating to "http://127.0.0.1:3000/m/salgados-da-vila", waiting until "load"
+
+UX2_AUDIT_DONE entries=49
+HOMOLOG_APOS status=0
