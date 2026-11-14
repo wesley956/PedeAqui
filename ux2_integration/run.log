@@ -5,34 +5,32 @@
 ▶ Subindo o banco local (Supabase em Docker)
 
 ▶ Criando as tabelas do sistema no banco local
-  234 arquivos de schema aplicados; 11 migrações extras aplicadas.
+  234 arquivos de schema aplicados; 18 migrações extras aplicadas.
 
 ▶ Criando a loja fictícia (Salgados da Vila)
   SEED_SUMMARY products=16 groups=9 orders=10 modules=21
-
-▶ Compilando o sistema (alguns minutos)
 
 ▶ Iniciando o sistema
 HOMOLOG_VERIFY /login=200 /m/salgados-da-vila=200 /dashboard=307 /api/health=200 login=200 SEED_SUMMARY products=16 groups=9 orders=10 modules=21 avisos=0
 pc-1366 panel login → 200 /login overflow=no small=12 
 pc-1366 logged in → http://127.0.0.1:3000/dashboard
-pc-1366 panel /entregador → 200 /entregador overflow=no small=21 
-pc-1366 panel /configuracoes/conversas → 200 /configuracoes/conversas overflow=no small=21 
-pc-1366 panel /pedidos/[id] → 200 /pedidos/cd0a5337-0dbd-4238-8b6d-37907c7554b7 overflow=no small=27 
-pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/fc83de4b-e44d-4fc0-938f-3e83b059e588 overflow=no small=34 
-pc-1366 panel /clientes/[id] → 200 /clientes/5f3c294c-9d84-4463-b442-39a5dd633bac overflow=no small=34 
-pc-1366 panel /salao/[tableId] → 200 /salao/1144d29e-698f-4353-a78e-9cf3bc995896 overflow=no small=28 
+pc-1366 panel /entregador → 200 /entregador overflow=no small=20 
+pc-1366 panel /configuracoes/conversas → 200 /configuracoes/conversas overflow=no small=41 
+pc-1366 panel /pedidos/[id] → 200 /pedidos/c754ae6f-65af-4f2b-b350-afed2a337f80 overflow=no small=27 
+pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/a15cc70e-c9c6-456b-9594-0661cbc648a3 overflow=no small=34 
+pc-1366 panel /clientes/[id] → 200 /clientes/5f555251-a6ea-464d-8096-49c9e24d5e9e overflow=no small=34 
+pc-1366 panel /salao/[tableId] → 200 /salao/e993c947-497e-4cdd-a7d1-1e821d5e8349 overflow=no small=28 
 pc-1366 public-local menu → 200 /m/salgados-da-vila overflow=no small=5 
 pc-1366 public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=5 
 pc-1366 public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=7 
 android-360 panel login → 200 /login overflow=no small=9 
 android-360 logged in → http://127.0.0.1:3000/dashboard
-android-360 panel /entregador → 200 /entregador overflow=no small=13 
-android-360 panel /configuracoes/conversas → 200 /configuracoes/conversas overflow=no small=13 
-android-360 panel /pedidos/[id] → 200 /pedidos/cd0a5337-0dbd-4238-8b6d-37907c7554b7 overflow=no small=19 
-android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/fc83de4b-e44d-4fc0-938f-3e83b059e588 overflow=no small=26 
-android-360 panel /clientes/[id] → 200 /clientes/5f3c294c-9d84-4463-b442-39a5dd633bac overflow=no small=26 
-android-360 panel /salao/[tableId] → 200 /salao/1144d29e-698f-4353-a78e-9cf3bc995896 overflow=no small=18 
+android-360 panel /entregador → 200 /entregador overflow=no small=12 
+android-360 panel /configuracoes/conversas → 200 /configuracoes/conversas overflow=no small=33 
+android-360 panel /pedidos/[id] → 200 /pedidos/c754ae6f-65af-4f2b-b350-afed2a337f80 overflow=no small=19 
+android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/a15cc70e-c9c6-456b-9594-0661cbc648a3 overflow=no small=26 
+android-360 panel /clientes/[id] → 200 /clientes/5f555251-a6ea-464d-8096-49c9e24d5e9e overflow=no small=26 
+android-360 panel /salao/[tableId] → 200 /salao/e993c947-497e-4cdd-a7d1-1e821d5e8349 overflow=no small=18 
 android-360 public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
 android-360 public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=6 
 android-360 public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=8 

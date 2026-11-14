@@ -5,7 +5,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 792,
+  "loadMs": 831,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -169,7 +169,7 @@
   "label": "/entregador",
   "url": "http://127.0.0.1:3000/entregador",
   "status": 200,
-  "loadMs": 809,
+  "loadMs": 2738,
   "finalUrl": "/entregador",
   "vw": 1366,
   "vh": 768,
@@ -177,10 +177,10 @@
   "docHeight": 768,
   "screens": 1,
   "title": "PedeAqui",
-  "h1": "Não foi possível concluir esta operação",
+  "h1": "Minhas entregas",
   "overflowing": [],
-  "interactiveCount": 31,
-  "smallTargets": 21,
+  "interactiveCount": 30,
+  "smallTargets": 20,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
@@ -250,12 +250,9 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 439,
+  "bodyTextLength": 558,
   "shot": "shots/pc-1366__panel__entregador.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance ",
-   "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 3399786031}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "pc-1366",
@@ -263,19 +260,19 @@
   "label": "/configuracoes/conversas",
   "url": "http://127.0.0.1:3000/configuracoes/conversas",
   "status": 200,
-  "loadMs": 790,
+  "loadMs": 2494,
   "finalUrl": "/configuracoes/conversas",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
+  "docHeight": 2069,
+  "screens": 2.7,
   "title": "PedeAqui",
-  "h1": "Não foi possível concluir esta operação",
+  "h1": "Conversas e WhatsApp",
   "overflowing": [],
-  "interactiveCount": 31,
-  "smallTargets": 21,
-  "tinyTargets": 0,
+  "interactiveCount": 94,
+  "smallTargets": 41,
+  "tinyTargets": 22,
   "smallTargetExamples": [
    {
     "el": "button.sidebar-toggle \"Recolher menu\"",
@@ -344,21 +341,18 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 439,
+  "bodyTextLength": 2658,
   "shot": "shots/pc-1366__panel__configuracoes-conversas.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance ",
-   "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 1494549915@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "pc-1366",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/cd0a5337-0dbd-4238-8b6d-37907c7554b7",
+  "url": "http://127.0.0.1:3000/pedidos/c754ae6f-65af-4f2b-b350-afed2a337f80",
   "status": 200,
-  "loadMs": 975,
-  "finalUrl": "/pedidos/cd0a5337-0dbd-4238-8b6d-37907c7554b7",
+  "loadMs": 3457,
+  "finalUrl": "/pedidos/c754ae6f-65af-4f2b-b350-afed2a337f80",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -446,10 +440,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/fc83de4b-e44d-4fc0-938f-3e83b059e588",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/a15cc70e-c9c6-456b-9594-0661cbc648a3",
   "status": 200,
-  "loadMs": 931,
-  "finalUrl": "/cardapio/produtos/fc83de4b-e44d-4fc0-938f-3e83b059e588",
+  "loadMs": 2517,
+  "finalUrl": "/cardapio/produtos/a15cc70e-c9c6-456b-9594-0661cbc648a3",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -543,10 +537,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/5f3c294c-9d84-4463-b442-39a5dd633bac",
+  "url": "http://127.0.0.1:3000/clientes/5f555251-a6ea-464d-8096-49c9e24d5e9e",
   "status": 200,
-  "loadMs": 963,
-  "finalUrl": "/clientes/5f3c294c-9d84-4463-b442-39a5dd633bac",
+  "loadMs": 2498,
+  "finalUrl": "/clientes/5f555251-a6ea-464d-8096-49c9e24d5e9e",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -634,10 +628,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/1144d29e-698f-4353-a78e-9cf3bc995896",
+  "url": "http://127.0.0.1:3000/salao/e993c947-497e-4cdd-a7d1-1e821d5e8349",
   "status": 200,
-  "loadMs": 942,
-  "finalUrl": "/salao/1144d29e-698f-4353-a78e-9cf3bc995896",
+  "loadMs": 2447,
+  "finalUrl": "/salao/e993c947-497e-4cdd-a7d1-1e821d5e8349",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -913,14 +907,14 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1653,
-  "screens": 2.2,
+  "docHeight": 2553,
+  "screens": 3.3,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 65,
-  "smallTargets": 52,
-  "tinyTargets": 5,
+  "interactiveCount": 94,
+  "smallTargets": 81,
+  "tinyTargets": 13,
   "smallTargetExamples": [
    {
     "el": "button.sidebar-toggle \"Recolher menu\"",
@@ -989,7 +983,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1332
+  "bodyTextLength": 1916
  },
  {
   "device": "pc-1366",
@@ -1083,7 +1077,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 655,
+  "loadMs": 852,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -1366,7 +1360,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 607,
+  "loadMs": 2156,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -1423,7 +1417,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 679,
+  "loadMs": 3197,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -1489,7 +1483,9 @@
   "fixedCoverPx": 0,
   "bodyTextLength": 855,
   "shot": "shots/pc-1366__public-local__checkout.jpg",
-  "consoleErrors": []
+  "consoleErrors": [
+   "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <SegmentViewNode type=\"page\" pagePath=\"m/[slug]/c...\">\n      <SegmentTrieNode>\n      <CheckoutPage>\n        <main className=\"checkout-m...\">\n          <div className=\"checkout-m...\">\n            <header>\n         "
+  ]
  },
  {
   "device": "android-360",
@@ -1497,7 +1493,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 704,
+  "loadMs": 954,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -1662,7 +1658,7 @@
   "label": "/entregador",
   "url": "http://127.0.0.1:3000/entregador",
   "status": 200,
-  "loadMs": 765,
+  "loadMs": 1287,
   "finalUrl": "/entregador",
   "vw": 360,
   "vh": 740,
@@ -1670,10 +1666,10 @@
   "docHeight": 740,
   "screens": 1,
   "title": "PedeAqui",
-  "h1": "Não foi possível concluir esta operação",
+  "h1": "Minhas entregas",
   "overflowing": [],
-  "interactiveCount": 41,
-  "smallTargets": 13,
+  "interactiveCount": 40,
+  "smallTargets": 12,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
@@ -1749,13 +1745,10 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 285,
+  "bodyTextLength": 404,
   "shot": "shots/android-360__panel__entregador.jpg",
   "axe": [],
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance ",
-   "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 3399786031}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "android-360",
@@ -1763,19 +1756,19 @@
   "label": "/configuracoes/conversas",
   "url": "http://127.0.0.1:3000/configuracoes/conversas",
   "status": 200,
-  "loadMs": 743,
+  "loadMs": 1508,
   "finalUrl": "/configuracoes/conversas",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 3070,
+  "screens": 4.1,
   "title": "PedeAqui",
-  "h1": "Não foi possível concluir esta operação",
+  "h1": "Conversas e WhatsApp",
   "overflowing": [],
-  "interactiveCount": 41,
-  "smallTargets": 13,
-  "tinyTargets": 0,
+  "interactiveCount": 104,
+  "smallTargets": 33,
+  "tinyTargets": 22,
   "smallTargetExamples": [
    {
     "el": "summary \"Operação da loja\"",
@@ -1850,22 +1843,19 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 285,
+  "bodyTextLength": 2504,
   "shot": "shots/android-360__panel__configuracoes-conversas.jpg",
   "axe": [],
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance ",
-   "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 1494549915@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "android-360",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/cd0a5337-0dbd-4238-8b6d-37907c7554b7",
+  "url": "http://127.0.0.1:3000/pedidos/c754ae6f-65af-4f2b-b350-afed2a337f80",
   "status": 200,
-  "loadMs": 953,
-  "finalUrl": "/pedidos/cd0a5337-0dbd-4238-8b6d-37907c7554b7",
+  "loadMs": 2149,
+  "finalUrl": "/pedidos/c754ae6f-65af-4f2b-b350-afed2a337f80",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -1967,10 +1957,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/fc83de4b-e44d-4fc0-938f-3e83b059e588",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/a15cc70e-c9c6-456b-9594-0661cbc648a3",
   "status": 200,
-  "loadMs": 814,
-  "finalUrl": "/cardapio/produtos/fc83de4b-e44d-4fc0-938f-3e83b059e588",
+  "loadMs": 1995,
+  "finalUrl": "/cardapio/produtos/a15cc70e-c9c6-456b-9594-0661cbc648a3",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2065,10 +2055,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/5f3c294c-9d84-4463-b442-39a5dd633bac",
+  "url": "http://127.0.0.1:3000/clientes/5f555251-a6ea-464d-8096-49c9e24d5e9e",
   "status": 200,
-  "loadMs": 841,
-  "finalUrl": "/clientes/5f3c294c-9d84-4463-b442-39a5dd633bac",
+  "loadMs": 1601,
+  "finalUrl": "/clientes/5f555251-a6ea-464d-8096-49c9e24d5e9e",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2170,10 +2160,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/1144d29e-698f-4353-a78e-9cf3bc995896",
+  "url": "http://127.0.0.1:3000/salao/e993c947-497e-4cdd-a7d1-1e821d5e8349",
   "status": 200,
-  "loadMs": 825,
-  "finalUrl": "/salao/1144d29e-698f-4353-a78e-9cf3bc995896",
+  "loadMs": 1589,
+  "finalUrl": "/salao/e993c947-497e-4cdd-a7d1-1e821d5e8349",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2840,7 +2830,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 615,
+  "loadMs": 928,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -3144,7 +3134,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 598,
+  "loadMs": 1081,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -3221,7 +3211,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 611,
+  "loadMs": 1236,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
@@ -3306,6 +3296,8 @@
     "example": ".checkout-module__ZQ_bta__textLink"
    }
   ],
-  "consoleErrors": []
+  "consoleErrors": [
+   "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <SegmentViewNode type=\"page\" pagePath=\"m/[slug]/c...\">\n      <SegmentTrieNode>\n      <CheckoutPage>\n        <main className=\"checkout-m...\">\n          <div className=\"checkout-m...\">\n            <header>\n         "
+  ]
  }
 ]
