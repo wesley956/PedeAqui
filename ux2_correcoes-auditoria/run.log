@@ -16,21 +16,23 @@ pc-1366 panel login → 200 /login overflow=no small=12
 pc-1366 logged in → http://127.0.0.1:3000/dashboard
 pc-1366 panel /entregador → 200 /entregador overflow=no small=21 
 pc-1366 panel /configuracoes/conversas → 200 /configuracoes/conversas overflow=no small=21 
-pc-1366 panel /pedidos/[id] → 200 /pedidos/108c7b55-fb65-4a77-add6-016f18aabc30 overflow=no small=27 
-pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/6af79b1a-9812-47e8-ada0-70f0cf730d4f overflow=no small=34 
-pc-1366 panel /clientes/[id] → 200 /clientes/8f88a01a-2e24-4960-91f6-903b990c3cba overflow=no small=34 
-pc-1366 panel /salao/[tableId] → 200 /salao/cf328651-f1cf-4740-bf96-a6c049fa8bba overflow=no small=28 
+pc-1366 panel /pedidos/[id] → 200 /pedidos/81a68adb-d87a-40f1-a1b4-bd3d468c8654 overflow=no small=27 
+pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/fb8ca8b2-d39e-4294-bdb1-3190fd440aca overflow=no small=34 
+pc-1366 panel /clientes/[id] → 200 /clientes/217d8138-0f53-4fd0-81d8-83130e1c21c1 overflow=no small=34 
+pc-1366 panel /salao/[tableId] → 200 /salao/9f0fe20a-3fc5-4a48-bbf5-ced60cc84910 overflow=no small=28 
 pc-1366 public-local menu → 200 /m/salgados-da-vila overflow=no small=5 
+pc-1366 public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=5 
+pc-1366 public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=7 
 android-360 panel login → 200 /login overflow=no small=9 
 android-360 logged in → http://127.0.0.1:3000/dashboard
 android-360 panel /entregador → 200 /entregador overflow=no small=13 
 android-360 panel /configuracoes/conversas → 200 /configuracoes/conversas overflow=no small=13 
-android-360 panel /pedidos/[id] → 200 /pedidos/108c7b55-fb65-4a77-add6-016f18aabc30 overflow=no small=13 
-android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/6af79b1a-9812-47e8-ada0-70f0cf730d4f overflow=no small=26 
-android-360 panel /clientes/[id] → 200 /clientes/8f88a01a-2e24-4960-91f6-903b990c3cba overflow=no small=26 
-android-360 public-local menu → ERR  overflow=no small=- page.goto: Timeout 45000ms exceeded.
-Call log:
-  - navigating to "http://127.0.0.1:3000/m/salgados-da-vila", waiting until "load"
-
-UX2_AUDIT_DONE entries=35
+android-360 panel /pedidos/[id] → 200 /pedidos/81a68adb-d87a-40f1-a1b4-bd3d468c8654 overflow=no small=19 
+android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/fb8ca8b2-d39e-4294-bdb1-3190fd440aca overflow=no small=26 
+android-360 panel /clientes/[id] → 200 /clientes/217d8138-0f53-4fd0-81d8-83130e1c21c1 overflow=no small=26 
+android-360 panel /salao/[tableId] → 200 /salao/9f0fe20a-3fc5-4a48-bbf5-ced60cc84910 overflow=no small=18 
+android-360 public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
+android-360 public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=6 
+android-360 public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=8 
+UX2_AUDIT_DONE entries=40
 HOMOLOG_APOS status=0

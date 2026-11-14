@@ -5,7 +5,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 1091,
+  "loadMs": 937,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -69,11 +69,8 @@
   "fixedCoverPx": 0,
   "bodyTextLength": 945,
   "shot": "shots/pc-1366__panel__login.jpg",
-  "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/login\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <script>\n   ",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>"
-  ]
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
  },
  {
   "device": "pc-1366",
@@ -173,7 +170,7 @@
   "label": "/entregador",
   "url": "http://127.0.0.1:3000/entregador",
   "status": 200,
-  "loadMs": 2583,
+  "loadMs": 2465,
   "finalUrl": "/entregador",
   "vw": 1366,
   "vh": 768,
@@ -257,13 +254,11 @@
   "bodyTextLength": 439,
   "shot": "shots/pc-1366__panel__entregador.jpg",
   "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/entregador\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <script",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>",
    "%o\n\n%s Error: Seu usuário não está vinculado a um cadastro de entregador nesta unidade\n    at DeliveryOperationsService.loadDriverView (about://React/Server/file:///home/runner/work/PedeAqui/PedeAqui/.next/dev/server/chunks/ssr/_0ljum52._.js?0:7573:28)\n    at  DriverPage (about://React/Server/file:///home/runner/work/PedeAqui/PedeAqui/.next/dev/server/chunks/ssr/%5Broot-of-the-server%5D__0n-jxr1._.js?1:508:46)\n    at resolveErrorDev (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:1919:105)\n    at processFullStringRow (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2434:29)\n    at processFullBinaryRow (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2393:9)\n    at processBinaryChunk (http://1",
    "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 4153850817}",
    "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 4153850817}"
-  ]
+  ],
+  "scriptPlacementWarning": true
  },
  {
   "device": "pc-1366",
@@ -271,7 +266,7 @@
   "label": "/configuracoes/conversas",
   "url": "http://127.0.0.1:3000/configuracoes/conversas",
   "status": 200,
-  "loadMs": 2198,
+  "loadMs": 2103,
   "finalUrl": "/configuracoes/conversas",
   "vw": 1366,
   "vh": 768,
@@ -355,22 +350,20 @@
   "bodyTextLength": 439,
   "shot": "shots/pc-1366__panel__configuracoes-conversas.jpg",
   "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/configura...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>",
    "%o\n\n%s Error: {code: ..., details: Null, hint: Null, message: ...}\n    at resolveErrorDev (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:1919:105)\n    at processFullStringRow (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2434:29)\n    at processFullBinaryRow (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2393:9)\n    at processBinaryChunk (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2502:221)\n    at progress (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2689:13) The above error occurred in the <ConversationSettingsPage> component. It was handled by the",
    "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 1392468554@E394}",
    "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 1392468554@E394}"
-  ]
+  ],
+  "scriptPlacementWarning": true
  },
  {
   "device": "pc-1366",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/108c7b55-fb65-4a77-add6-016f18aabc30",
+  "url": "http://127.0.0.1:3000/pedidos/81a68adb-d87a-40f1-a1b4-bd3d468c8654",
   "status": 200,
-  "loadMs": 3068,
-  "finalUrl": "/pedidos/108c7b55-fb65-4a77-add6-016f18aabc30",
+  "loadMs": 3014,
+  "finalUrl": "/pedidos/81a68adb-d87a-40f1-a1b4-bd3d468c8654",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -453,22 +446,18 @@
   "bodyTextLength": 1304,
   "shot": "shots/pc-1366__panel__pedidos-id.jpg",
   "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/pedidos\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <script>\n ",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>",
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/pedidos/1...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>"
-  ]
+   "pageerror: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  ...\n    <InnerLayoutRouter url=\"/pedidos\" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>\n      <SegmentViewNode type=\"page\" pagePath=\"(app)/pedi...\">\n        <SegmentTrieNode>\n        <Orde"
+  ],
+  "scriptPlacementWarning": true
  },
  {
   "device": "pc-1366",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/6af79b1a-9812-47e8-ada0-70f0cf730d4f",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/fb8ca8b2-d39e-4294-bdb1-3190fd440aca",
   "status": 200,
-  "loadMs": 2292,
-  "finalUrl": "/cardapio/produtos/6af79b1a-9812-47e8-ada0-70f0cf730d4f",
+  "loadMs": 2255,
+  "finalUrl": "/cardapio/produtos/fb8ca8b2-d39e-4294-bdb1-3190fd440aca",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -556,23 +545,17 @@
   "fixedCoverPx": 48,
   "bodyTextLength": 1236,
   "shot": "shots/pc-1366__panel__cardapio-produtos-id.jpg",
-  "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/cardapio/...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>",
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/cardapio/...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>"
-  ]
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
  },
  {
   "device": "pc-1366",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/8f88a01a-2e24-4960-91f6-903b990c3cba",
+  "url": "http://127.0.0.1:3000/clientes/217d8138-0f53-4fd0-81d8-83130e1c21c1",
   "status": 200,
-  "loadMs": 2220,
-  "finalUrl": "/clientes/8f88a01a-2e24-4960-91f6-903b990c3cba",
+  "loadMs": 2204,
+  "finalUrl": "/clientes/217d8138-0f53-4fd0-81d8-83130e1c21c1",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -654,23 +637,17 @@
   "fixedCoverPx": 48,
   "bodyTextLength": 984,
   "shot": "shots/pc-1366__panel__clientes-id.jpg",
-  "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/clientes\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <script>\n",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>",
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/clientes/...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>"
-  ]
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
  },
  {
   "device": "pc-1366",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/cf328651-f1cf-4740-bf96-a6c049fa8bba",
+  "url": "http://127.0.0.1:3000/salao/9f0fe20a-3fc5-4a48-bbf5-ced60cc84910",
   "status": 200,
-  "loadMs": 2256,
-  "finalUrl": "/salao/cf328651-f1cf-4740-bf96-a6c049fa8bba",
+  "loadMs": 2331,
+  "finalUrl": "/salao/9f0fe20a-3fc5-4a48-bbf5-ced60cc84910",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -752,14 +729,8 @@
   "fixedCoverPx": 48,
   "bodyTextLength": 643,
   "shot": "shots/pc-1366__panel__salao-tableId.jpg",
-  "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/salao\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <script>\n   ",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>",
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/salao/cf3...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>"
-  ]
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
  },
  {
   "device": "pc-1366",
@@ -953,14 +924,14 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 2553,
-  "screens": 3.3,
+  "docHeight": 1653,
+  "screens": 2.2,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 94,
-  "smallTargets": 81,
-  "tinyTargets": 13,
+  "interactiveCount": 65,
+  "smallTargets": 52,
+  "tinyTargets": 5,
   "smallTargetExamples": [
    {
     "el": "button.sidebar-toggle \"Recolher menu\"",
@@ -1029,7 +1000,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1916
+  "bodyTextLength": 1332
  },
  {
   "device": "pc-1366",
@@ -1123,17 +1094,17 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 933,
+  "loadMs": 912,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1577,
-  "screens": 2.1,
+  "docHeight": 1743,
+  "screens": 2.3,
   "title": "PedeAqui",
   "h1": "Salgados da Vila",
   "overflowing": [],
-  "interactiveCount": 53,
+  "interactiveCount": 38,
   "smallTargets": 5,
   "tinyTargets": 0,
   "smallTargetExamples": [
@@ -1171,7 +1142,7 @@
   "fixed": [
    {
     "el": "div.menu-browser-module__iXn8xq__categories \"Categorias\"",
-    "top": 229,
+    "top": 344,
     "h": 57,
     "pos": "sticky"
    }
@@ -1179,11 +1150,8 @@
   "fixedCoverPx": 0,
   "bodyTextLength": 1446,
   "shot": "shots/pc-1366__public-local__menu.jpg",
-  "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/m/salgado...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>"
-  ]
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
  },
  {
   "device": "pc-1366",
@@ -1193,12 +1161,12 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1577,
-  "screens": 2.1,
+  "docHeight": 1743,
+  "screens": 2.3,
   "title": "PedeAqui",
   "h1": "Salgados da Vila",
   "overflowing": [],
-  "interactiveCount": 71,
+  "interactiveCount": 56,
   "smallTargets": 7,
   "tinyTargets": 1,
   "smallTargetExamples": [
@@ -1268,12 +1236,12 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1577,
-  "screens": 2.1,
+  "docHeight": 1743,
+  "screens": 2.3,
   "title": "PedeAqui",
   "h1": "Salgados da Vila",
   "overflowing": [],
-  "interactiveCount": 71,
+  "interactiveCount": 56,
   "smallTargets": 7,
   "tinyTargets": 1,
   "smallTargetExamples": [
@@ -1338,8 +1306,206 @@
  {
   "device": "pc-1366",
   "area": "state",
-  "label": "local-carrinho",
-  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: /adicionar/i }).first()\n    - locator resolved to <button type=\"submit\" class=\"menu-browser-module__iXn8x"
+  "label": "local-depois-de-adicionar",
+  "shot": "shots/pc-1366__state__local-depois-de-adicionar.jpg",
+  "vw": 1366,
+  "vh": 768,
+  "docWidth": 1366,
+  "docHeight": 1829,
+  "screens": 2.4,
+  "title": "PedeAqui",
+  "h1": "Salgados da Vila",
+  "overflowing": [],
+  "interactiveCount": 40,
+  "smallTargets": 7,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 88,
+    "h": 40
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 83,
+    "h": 40
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 98,
+    "h": 40
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 89,
+    "h": 40
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 73,
+    "h": 40
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__stepButton \"Remover Coca-Cola 2L do carrinho\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__stepButton \"Mais um Coca-Cola 2L\"",
+    "w": 40,
+    "h": 40
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "div.public-cart-bar-module__W1GDtG__viewport \"1 Finalizar pedido Entrega em 30–60 min R$ 15,00\"",
+    "top": 682,
+    "h": 87,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 87,
+  "bodyTextLength": 1497
+ },
+ {
+  "device": "pc-1366",
+  "area": "public-local",
+  "label": "carrinho",
+  "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
+  "status": 200,
+  "loadMs": 1885,
+  "finalUrl": "/m/salgados-da-vila/carrinho",
+  "vw": 1366,
+  "vh": 768,
+  "docWidth": 1366,
+  "docHeight": 912,
+  "screens": 1.2,
+  "title": "PedeAqui",
+  "h1": "Seu carrinho",
+  "overflowing": [],
+  "interactiveCount": 7,
+  "smallTargets": 5,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "a.cart-module__BFFSzG__back \"← Continuar comprando\"",
+    "w": 214,
+    "h": 40
+   },
+   {
+    "el": "button \"Diminuir quantidade de Coca-Cola 2L\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "button \"Aumentar quantidade de Coca-Cola 2L\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "a.cart-module__BFFSzG__rebuild \"Editar item\"",
+    "w": 75,
+    "h": 40
+   },
+   {
+    "el": "button.cart-module__BFFSzG__removeButton \"Remover\"",
+    "w": 76,
+    "h": 40
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 329,
+  "shot": "shots/pc-1366__public-local__carrinho.jpg",
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
+ },
+ {
+  "device": "pc-1366",
+  "area": "public-local",
+  "label": "checkout",
+  "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
+  "status": 200,
+  "loadMs": 2692,
+  "finalUrl": "/m/salgados-da-vila/checkout",
+  "vw": 1366,
+  "vh": 768,
+  "docWidth": 1366,
+  "docHeight": 1702,
+  "screens": 2.2,
+  "title": "PedeAqui",
+  "h1": "Seu pedido",
+  "overflowing": [],
+  "interactiveCount": 22,
+  "smallTargets": 7,
+  "tinyTargets": 3,
+  "smallTargetExamples": [
+   {
+    "el": "a.checkout-module__ZQ_bta__iconButton \"Voltar ao cardápio\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "button \"Remover Coca-Cola 2L\"",
+    "w": 38,
+    "h": 38
+   },
+   {
+    "el": "button \"Aumentar Coca-Cola 2L\"",
+    "w": 38,
+    "h": 38
+   },
+   {
+    "el": "a.checkout-module__ZQ_bta__textLink \"+ Adicionar mais itens\"",
+    "w": 178,
+    "h": 29
+   },
+   {
+    "el": "input \"paymentMethod\"",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "el": "input \"paymentMethod\"",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "el": "input \"paymentMethod\"",
+    "w": 22,
+    "h": 22
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "footer.checkout-module__ZQ_bta__expressFooter \"Calcular total e revisar R$ 15,00\"",
+    "top": 689,
+    "h": 79,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 855,
+  "shot": "shots/pc-1366__public-local__checkout.jpg",
+  "consoleErrors": [
+   "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <SegmentViewNode type=\"page\" pagePath=\"m/[slug]/c...\">\n      <SegmentTrieNode>\n      <CheckoutPage>\n        <main className=\"checkout-m...\">\n          <div className=\"checkout-m...\">\n            <header>\n         "
+  ],
+  "scriptPlacementWarning": true
  },
  {
   "device": "android-360",
@@ -1347,7 +1513,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 878,
+  "loadMs": 1001,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -1412,11 +1578,8 @@
   "bodyTextLength": 525,
   "shot": "shots/android-360__panel__login.jpg",
   "axe": [],
-  "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/login\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <script>\n   ",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>"
-  ]
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
  },
  {
   "device": "android-360",
@@ -1516,7 +1679,7 @@
   "label": "/entregador",
   "url": "http://127.0.0.1:3000/entregador",
   "status": 200,
-  "loadMs": 1256,
+  "loadMs": 1244,
   "finalUrl": "/entregador",
   "vw": 360,
   "vh": 740,
@@ -1607,13 +1770,11 @@
   "shot": "shots/android-360__panel__entregador.jpg",
   "axe": [],
   "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/entregador\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <script",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>",
    "%o\n\n%s Error: Seu usuário não está vinculado a um cadastro de entregador nesta unidade\n    at DeliveryOperationsService.loadDriverView (about://React/Server/file:///home/runner/work/PedeAqui/PedeAqui/.next/dev/server/chunks/ssr/_0ljum52._.js?0:7573:28)\n    at  DriverPage (about://React/Server/file:///home/runner/work/PedeAqui/PedeAqui/.next/dev/server/chunks/ssr/%5Broot-of-the-server%5D__0n-jxr1._.js?1:508:46)\n    at resolveErrorDev (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:1919:105)\n    at processFullStringRow (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2434:29)\n    at processFullBinaryRow (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2393:9)\n    at processBinaryChunk (http://1",
    "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 4153850817}",
    "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 4153850817}"
-  ]
+  ],
+  "scriptPlacementWarning": true
  },
  {
   "device": "android-360",
@@ -1621,7 +1782,7 @@
   "label": "/configuracoes/conversas",
   "url": "http://127.0.0.1:3000/configuracoes/conversas",
   "status": 200,
-  "loadMs": 1733,
+  "loadMs": 1495,
   "finalUrl": "/configuracoes/conversas",
   "vw": 360,
   "vh": 740,
@@ -1712,33 +1873,31 @@
   "shot": "shots/android-360__panel__configuracoes-conversas.jpg",
   "axe": [],
   "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/configura...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>",
    "%o\n\n%s Error: {code: ..., details: Null, hint: Null, message: ...}\n    at resolveErrorDev (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:1919:105)\n    at processFullStringRow (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2434:29)\n    at processFullBinaryRow (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2393:9)\n    at processBinaryChunk (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2502:221)\n    at progress (http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js:2689:13) The above error occurred in the <ConversationSettingsPage> component. It was handled by the",
    "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 1392468554@E394}",
    "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 1392468554@E394}"
-  ]
+  ],
+  "scriptPlacementWarning": true
  },
  {
   "device": "android-360",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/108c7b55-fb65-4a77-add6-016f18aabc30",
+  "url": "http://127.0.0.1:3000/pedidos/81a68adb-d87a-40f1-a1b4-bd3d468c8654",
   "status": 200,
-  "loadMs": 2035,
-  "finalUrl": "/pedidos/108c7b55-fb65-4a77-add6-016f18aabc30",
+  "loadMs": 1941,
+  "finalUrl": "/pedidos/81a68adb-d87a-40f1-a1b4-bd3d468c8654",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 2570,
+  "screens": 3.5,
   "title": "PedeAqui",
-  "h1": "Não foi possível concluir esta operação",
+  "h1": "Pedido #1",
   "overflowing": [],
-  "interactiveCount": 41,
-  "smallTargets": 13,
-  "tinyTargets": 0,
+  "interactiveCount": 49,
+  "smallTargets": 19,
+  "tinyTargets": 1,
   "smallTargetExamples": [
    {
     "el": "summary \"Operação da loja\"",
@@ -1813,26 +1972,27 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 285,
+  "bodyTextLength": 1150,
   "shot": "shots/android-360__panel__pedidos-id.jpg",
-  "axe": [],
-  "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/pedidos\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <script>\n ",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>",
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/pedidos/1...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>"
-  ]
+  "axe": [
+   {
+    "id": "color-contrast",
+    "impact": "serious",
+    "nodes": 3,
+    "example": ".order-detail-module__EK8WHa__total"
+   }
+  ],
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
  },
  {
   "device": "android-360",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/6af79b1a-9812-47e8-ada0-70f0cf730d4f",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/fb8ca8b2-d39e-4294-bdb1-3190fd440aca",
   "status": 200,
-  "loadMs": 1524,
-  "finalUrl": "/cardapio/produtos/6af79b1a-9812-47e8-ada0-70f0cf730d4f",
+  "loadMs": 1548,
+  "finalUrl": "/cardapio/produtos/fb8ca8b2-d39e-4294-bdb1-3190fd440aca",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -1921,23 +2081,17 @@
   "bodyTextLength": 1082,
   "shot": "shots/android-360__panel__cardapio-produtos-id.jpg",
   "axe": [],
-  "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/cardapio/...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>",
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/cardapio/...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>"
-  ]
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
  },
  {
   "device": "android-360",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/8f88a01a-2e24-4960-91f6-903b990c3cba",
+  "url": "http://127.0.0.1:3000/clientes/217d8138-0f53-4fd0-81d8-83130e1c21c1",
   "status": 200,
-  "loadMs": 8796,
-  "finalUrl": "/clientes/8f88a01a-2e24-4960-91f6-903b990c3cba",
+  "loadMs": 1526,
+  "finalUrl": "/clientes/217d8138-0f53-4fd0-81d8-83130e1c21c1",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2033,75 +2187,1155 @@
     "example": ".customers-module__XLXBTq__orderLink"
    }
   ],
-  "consoleErrors": [
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/clientes\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <script>\n",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>",
-   "Cannot render a sync or defer <script> outside the main document without knowing its order. Try adding async=\"\" or moving it into the root <head> tag.",
-   "In HTML, %s cannot be a child of <%s>.%s\nThis will cause a hydration error.%s <script> html  \n\n  ...\n    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>\n      <AppDevOverlayErrorBoundary globalError={[...]}>\n        <ReplaySsrOnlyErrors>\n        <DevRootHTTPAccessFallbackBoundary>\n          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>\n            <HTTPAccessFallbackErrorBoundary pathname=\"/clientes/...\" notFound={<NotAllowedRootHTTPFallbackError>} ...>\n              <RedirectBoundary>\n                <RedirectErrorBoundary router={{...}}>\n                  <Head>\n                  <__next_root_layout_boundary__>\n                    <SegmentViewNode type=\"layout\" pagePath=\"layout.tsx\">\n                      <SegmentTrieNode>\n                      <link>\n                      <script>\n                      <scri",
-   "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. html <script>"
-  ]
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
  },
  {
   "device": "android-360",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"http://127.0.0.1:3000/salao\", waiting until \"load\"\n"
+  "url": "http://127.0.0.1:3000/salao/9f0fe20a-3fc5-4a48-bbf5-ced60cc84910",
+  "status": 200,
+  "loadMs": 1459,
+  "finalUrl": "/salao/9f0fe20a-3fc5-4a48-bbf5-ced60cc84910",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 1141,
+  "screens": 1.5,
+  "title": "PedeAqui",
+  "h1": "Mesa 1",
+  "overflowing": [],
+  "interactiveCount": 48,
+  "smallTargets": 18,
+  "tinyTargets": 1,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 398,
+  "shot": "shots/android-360__panel__salao-tableId.jpg",
+  "axe": [],
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
  },
  {
   "device": "android-360",
   "area": "state",
   "label": "menu-mais-aberto",
-  "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"http://127.0.0.1:3000/dashboard\", waiting until \"load\"\n"
+  "shot": "shots/android-360__state__menu-mais-aberto.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2843,
+  "screens": 3.8,
+  "title": "PedeAqui",
+  "h1": "Início",
+  "overflowing": [],
+  "interactiveCount": 48,
+  "smallTargets": 14,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel \"GESTÃO Conversas Salão Caixa Financeiro Produção E\"",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 1615
  },
  {
   "device": "android-360",
   "area": "state",
   "label": "menu-loja-aberto",
-  "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"http://127.0.0.1:3000/dashboard\", waiting until \"load\"\n"
+  "shot": "shots/android-360__state__menu-loja-aberto.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2843,
+  "screens": 3.8,
+  "title": "PedeAqui",
+  "h1": "Início",
+  "overflowing": [],
+  "interactiveCount": 48,
+  "smallTargets": 14,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary \"Recebendo pedidos\"",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Modo Movimento\"",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Abrir e fechar o dia\"",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ Salgados da Vila Unidade ativa \"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 1483
  },
  {
   "device": "android-360",
   "area": "state",
   "label": "menu-conta-aberto",
-  "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"http://127.0.0.1:3000/dashboard\", waiting until \"load\"\n"
+  "shot": "shots/android-360__state__menu-conta-aberto.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2843,
+  "screens": 3.8,
+  "title": "PedeAqui",
+  "h1": "Início",
+  "overflowing": [],
+  "interactiveCount": 48,
+  "smallTargets": 14,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ dono.teste@example.com Modo f\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 1436
  },
  {
   "device": "android-360",
   "area": "state",
   "label": "pedidos-menu-acoes",
-  "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"http://127.0.0.1:3000/pedidos\", waiting until \"load\"\n"
+  "shot": "shots/android-360__state__pedidos-menu-acoes.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 888,
+  "screens": 1.2,
+  "title": "PedeAqui",
+  "h1": "Pedidos",
+  "overflowing": [],
+  "interactiveCount": 64,
+  "smallTargets": 17,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.order-manager-module__7JwvSq__workflowHe",
+    "top": 228,
+    "h": 145,
+    "pos": "fixed"
+   },
+   {
+    "el": "dialog.mobile-order-list-module__myj9ea__sheet \"Pedido 1\"",
+    "top": 360,
+    "h": 380,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 1319,
+  "bodyTextLength": 640
  },
  {
   "device": "android-360",
   "area": "state",
-  "label": "pedidos-aba",
-  "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"http://127.0.0.1:3000/pedidos\", waiting until \"load\"\n"
+  "label": "pedidos-aba-em-preparo",
+  "shot": "shots/android-360__state__pedidos-aba-em-preparo.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 1496,
+  "screens": 2,
+  "title": "PedeAqui",
+  "h1": "Pedidos",
+  "overflowing": [],
+  "interactiveCount": 70,
+  "smallTargets": 16,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.order-manager-module__7JwvSq__workflowHe",
+    "top": 228,
+    "h": 145,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 939,
+  "bodyTextLength": 907
  },
  {
   "device": "android-360",
   "area": "state",
-  "label": "disponibilidade-busca",
-  "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"http://127.0.0.1:3000/cardapio/disponibilidade?q=calabresa\", waiting until \"load\"\n"
+  "label": "disponibilidade-busca-calabresa",
+  "shot": "shots/android-360__state__disponibilidade-busca-calabresa.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 823,
+  "screens": 1.1,
+  "title": "PedeAqui",
+  "h1": "Cardápio",
+  "overflowing": [],
+  "interactiveCount": 54,
+  "smallTargets": 18,
+  "tinyTargets": 3,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 601
  },
  {
   "device": "android-360",
   "area": "public-local",
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
-  "error": "page.goto: Timeout 45000ms exceeded.\nCall log:\n  - navigating to \"http://127.0.0.1:3000/m/salgados-da-vila\", waiting until \"load\"\n",
-  "consoleErrors": []
+  "status": 200,
+  "loadMs": 916,
+  "finalUrl": "/m/salgados-da-vila",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2588,
+  "screens": 3.5,
+  "title": "PedeAqui",
+  "h1": "Salgados da Vila",
+  "overflowing": [],
+  "interactiveCount": 38,
+  "smallTargets": 6,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 81,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 95,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 72,
+    "h": 38
+   },
+   {
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "div.menu-browser-module__iXn8xq__categories \"Categorias\"",
+    "top": 329,
+    "h": 55,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 1247,
+  "shot": "shots/android-360__public-local__menu.jpg",
+  "axe": [],
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
  },
  {
   "device": "android-360",
   "area": "state",
-  "label": "local-produto",
-  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('a[href*=\"/produto/\"]').filter({ hasText: 'Caixa com 30 salgados' }).first()\n    - waiting for\" http://127.0.0.1:3000/m/salga"
+  "label": "local-produto-sabores",
+  "shot": "shots/android-360__state__local-produto-sabores.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2409,
+  "screens": 3.3,
+  "title": "PedeAqui",
+  "h1": "Salgados da Vila",
+  "overflowing": [],
+  "interactiveCount": 56,
+  "smallTargets": 20,
+  "tinyTargets": 1,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 81,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 95,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 72,
+    "h": 38
+   },
+   {
+    "el": "button.product-sheet-module__Q3sqVW__close \"Fechar\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "input.modifier-group-selector-module__6gW5vG__",
+    "w": 1,
+    "h": 1
+   },
+   {
+    "el": "button \"Remover opção Coxinha\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "dialog.product-sheet-module__Q3sqVW__overlay \"Montar item\"",
+    "top": 0,
+    "h": 740,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.product-purchase-bar-module__T89RBG__bar \"Quantidade e adicionar\"",
+    "top": 663,
+    "h": 77,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 740,
+  "bodyTextLength": 1895
  },
  {
   "device": "android-360",
   "area": "state",
-  "label": "local-carrinho",
-  "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"http://127.0.0.1:3000/m/salgados-da-vila\", waiting until \"load\"\n"
+  "label": "local-produto-sabores-rolado",
+  "shot": "shots/android-360__state__local-produto-sabores-rolado.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2409,
+  "screens": 3.3,
+  "title": "PedeAqui",
+  "h1": "Salgados da Vila",
+  "overflowing": [],
+  "interactiveCount": 56,
+  "smallTargets": 20,
+  "tinyTargets": 1,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 81,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 95,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 72,
+    "h": 38
+   },
+   {
+    "el": "button.product-sheet-module__Q3sqVW__close \"Fechar\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "input.modifier-group-selector-module__6gW5vG__",
+    "w": 1,
+    "h": 1
+   },
+   {
+    "el": "button \"Remover opção Coxinha\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "dialog.product-sheet-module__Q3sqVW__overlay \"Montar item\"",
+    "top": 0,
+    "h": 740,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.product-purchase-bar-module__T89RBG__bar \"Quantidade e adicionar\"",
+    "top": 663,
+    "h": 77,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 740,
+  "bodyTextLength": 1895
+ },
+ {
+  "device": "android-360",
+  "area": "state",
+  "label": "local-depois-de-adicionar",
+  "shot": "shots/android-360__state__local-depois-de-adicionar.jpg",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 2495,
+  "screens": 3.4,
+  "title": "PedeAqui",
+  "h1": "Salgados da Vila",
+  "overflowing": [],
+  "interactiveCount": 40,
+  "smallTargets": 8,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Combos\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Pastéis\"",
+    "w": 81,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Salgados\"",
+    "w": 95,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Bebidas\"",
+    "w": 86,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__categoryBut \"Doces\"",
+    "w": 72,
+    "h": 38
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__stepButton \"Remover Coca-Cola 2L do carrinho\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "button.menu-browser-module__iXn8xq__stepButton \"Mais um Coca-Cola 2L\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "div.public-cart-bar-module__W1GDtG__viewport \"1 Finalizar pedido Entrega em 30–60 min R$ 15,00\"",
+    "top": 654,
+    "h": 87,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 87,
+  "bodyTextLength": 1497
+ },
+ {
+  "device": "android-360",
+  "area": "public-local",
+  "label": "carrinho",
+  "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
+  "status": 200,
+  "loadMs": 926,
+  "finalUrl": "/m/salgados-da-vila/carrinho",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 890,
+  "screens": 1.2,
+  "title": "PedeAqui",
+  "h1": "Seu carrinho",
+  "overflowing": [],
+  "interactiveCount": 7,
+  "smallTargets": 6,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "a.cart-module__BFFSzG__back \"← Continuar comprando\"",
+    "w": 214,
+    "h": 40
+   },
+   {
+    "el": "button \"Diminuir quantidade de Coca-Cola 2L\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "button \"Aumentar quantidade de Coca-Cola 2L\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "a.cart-module__BFFSzG__rebuild \"Editar item\"",
+    "w": 75,
+    "h": 40
+   },
+   {
+    "el": "button.cart-module__BFFSzG__removeButton \"Remover\"",
+    "w": 76,
+    "h": 40
+   },
+   {
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "div.cart-module__BFFSzG__checkoutDock \"Continuar pedido\"",
+    "top": 666,
+    "h": 66,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 66,
+  "bodyTextLength": 329,
+  "shot": "shots/android-360__public-local__carrinho.jpg",
+  "axe": [
+   {
+    "id": "color-contrast",
+    "impact": "serious",
+    "nodes": 2,
+    "example": ".cart-module__BFFSzG__rebuild"
+   }
+  ],
+  "consoleErrors": [],
+  "scriptPlacementWarning": true
+ },
+ {
+  "device": "android-360",
+  "area": "public-local",
+  "label": "checkout",
+  "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
+  "status": 200,
+  "loadMs": 1075,
+  "finalUrl": "/m/salgados-da-vila/checkout",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 1819,
+  "screens": 2.5,
+  "title": "PedeAqui",
+  "h1": "Seu pedido",
+  "overflowing": [],
+  "interactiveCount": 22,
+  "smallTargets": 8,
+  "tinyTargets": 3,
+  "smallTargetExamples": [
+   {
+    "el": "a.checkout-module__ZQ_bta__iconButton \"Voltar ao cardápio\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "button \"Remover Coca-Cola 2L\"",
+    "w": 38,
+    "h": 38
+   },
+   {
+    "el": "button \"Aumentar Coca-Cola 2L\"",
+    "w": 38,
+    "h": 38
+   },
+   {
+    "el": "a.checkout-module__ZQ_bta__textLink \"+ Adicionar mais itens\"",
+    "w": 178,
+    "h": 29
+   },
+   {
+    "el": "input \"paymentMethod\"",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "el": "input \"paymentMethod\"",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "el": "input \"paymentMethod\"",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "footer.checkout-module__ZQ_bta__expressFooter \"Calcular total e revisar R$ 15,00\"",
+    "top": 661,
+    "h": 79,
+    "pos": "sticky"
+   }
+  ],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 855,
+  "shot": "shots/android-360__public-local__checkout.jpg",
+  "axe": [
+   {
+    "id": "aria-valid-attr-value",
+    "impact": "critical",
+    "nodes": 1,
+    "example": "input[type=\"search\"]"
+   },
+   {
+    "id": "color-contrast",
+    "impact": "serious",
+    "nodes": 1,
+    "example": ".checkout-module__ZQ_bta__textLink"
+   }
+  ],
+  "consoleErrors": [
+   "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\n%s%s https://react.dev/link/hydration-mismatch \n\n  ...\n    <SegmentViewNode type=\"page\" pagePath=\"m/[slug]/c...\">\n      <SegmentTrieNode>\n      <CheckoutPage>\n        <main className=\"checkout-m...\">\n          <div className=\"checkout-m...\">\n            <header>\n         "
+  ],
+  "scriptPlacementWarning": true
  }
 ]
