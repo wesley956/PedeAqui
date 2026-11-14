@@ -159,7 +159,7 @@ for (const device of DEVICES) {
     for (const route of chosen) await audit(page, device, "panel", route, `${panelBase}${route}`);
 
     // Páginas com id: pega o primeiro link da lista.
-    for (const [list, pattern, name] of [["/pedidos/historico", /^\/pedidos\/[0-9a-f-]{36}$/, "/pedidos/[id]"], ["/cardapio/produtos", /^\/cardapio\/produtos\/[0-9a-f-]{36}$/, "/cardapio/produtos/[id]"], ["/clientes", /^\/clientes\/[0-9a-f-]{36}$/, "/clientes/[id]"], ["/salao", /^\/salao\/[0-9a-f-]{36}$/, "/salao/[tableId]"]]) {
+    for (const [list, pattern, name] of [["/pedidos", /^\/pedidos\/[0-9a-f-]{36}$/, "/pedidos/[id]"], ["/cardapio/produtos", /^\/cardapio\/produtos\/[0-9a-f-]{36}$/, "/cardapio/produtos/[id]"], ["/clientes", /^\/clientes\/[0-9a-f-]{36}$/, "/clientes/[id]"], ["/salao", /^\/salao\/[0-9a-f-]{36}$/, "/salao/[tableId]"]]) {
       try {
         await page.goto(`${panelBase}${list}`, { waitUntil: "load" });
         const href = await page.evaluate((src) => [...document.querySelectorAll("a[href]")].map((a) => new URL(a.href).pathname).find((p) => new RegExp(src).test(p)) || null, pattern.source);

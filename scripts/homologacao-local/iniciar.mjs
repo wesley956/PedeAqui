@@ -190,6 +190,8 @@ if (verify) {
   if (ok && process.env.HOMOLOG_APOS) {
     afterStatus = spawnSync(process.env.HOMOLOG_APOS, { shell: true, stdio: "inherit", env: { ...process.env, PANEL_BASE: `http://127.0.0.1:${appPort}`, AUDIT_EMAIL: login.email, AUDIT_PASSWORD: login.password } }).status ?? 1;
     console.log(`HOMOLOG_APOS status=${afterStatus}`);
+    // O registro do servidor vai junto com os prints: mostra o motivo de telas que falharam.
+    if (process.env.AUDIT_OUT) { try { fs.writeFileSync(path.join(process.env.AUDIT_OUT, "servidor.log"), appLog.slice(-400000)); } catch { /* pasta ausente */ } }
   }
   stop();
   process.exit(ok && afterStatus === 0 ? 0 : 1);
