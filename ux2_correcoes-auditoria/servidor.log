@@ -1,4 +1,22 @@
-▲ Next.js 16.2.12
-- Local:         http://127.0.0.1:3000
-- Network:       http://127.0.0.1:3000
-✓ Ready in 128ms
+▲ Next.js 16.2.12 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://0.0.0.0:3000
+✓ Ready in 260ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+
+  We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+  The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+  	- include was updated to add '.next/dev/types/**/*.ts'
+
+- Experiments (use with caution):
+  · serverActions
+
+ GET /login 200 in 2.2s (next.js: 1807ms, proxy.ts: 127ms, application-code: 267ms)
+ GET /login 200 in 58ms (next.js: 3ms, proxy.ts: 7ms, application-code: 47ms)
+ GET /m/salgados-da-vila 200 in 1393ms (next.js: 989ms, application-code: 405ms)
+ GET /api/health 200 in 229ms (next.js: 217ms, proxy.ts: 3ms, application-code: 9ms)
