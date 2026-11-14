@@ -16,7 +16,8 @@ concurrency:
 jobs:
   prints:
     if: contains(github.event.head_commit.message, '[prints')
-    runs-on: ubuntu-latest
+    # Versão fixa: o Playwright instala dependências do sistema conforme a versão do Ubuntu.
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -24,10 +25,18 @@ jobs:
         with:
           node-version: 22
       - name: Instalar dependências e navegadores
+        shell: bash
         run: |
-          npm install --legacy-peer-deps --no-audit --no-fund
-          npm install --no-save --legacy-peer-deps --no-audit --no-fund playwright@1.55.0 @axe-core/playwright@4.10.2
-          npx playwright install --with-deps chromium
+          set -o pipefail
+          {
+            npm install --legacy-peer-deps --no-audit --no-fund &&
+            npm install --no-save --legacy-peer-deps --no-audit --no-fund playwright@1.55.0 @axe-core/playwright@4.10.2 &&
+            npx playwright install --with-deps chromium
+          } 2>&1 | tee "$RUNNER_TEMP/install.log" || {
+            msg="$(tail -c 3000 "$RUNNER_TEMP/install.log" | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"
+            echo "::error title=ux2-auditoria-instalar::${msg}"
+            exit 1
+          }
       - name: Subir a homologação local e tirar os prints
         shell: bash
         env:
