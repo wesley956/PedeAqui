@@ -5,7 +5,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 788,
+  "loadMs": 816,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -169,7 +169,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 872,
+  "loadMs": 866,
   "finalUrl": "/pdv",
   "vw": 1366,
   "vh": 768,
@@ -265,284 +265,11 @@
  {
   "device": "pc-1366",
   "area": "panel",
-  "label": "/dashboard",
-  "url": "http://127.0.0.1:3000/dashboard",
-  "status": 200,
-  "loadMs": 772,
-  "finalUrl": "/dashboard",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1834,
-  "screens": 2.4,
-  "title": "PedeAqui",
-  "h1": "Início",
-  "overflowing": [],
-  "interactiveCount": 38,
-  "smallTargets": 22,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "button.sidebar-toggle \"Recolher menu\"",
-    "w": 40,
-    "h": 40
-   },
-   {
-    "el": "button.nav-group-toggle \"GESTÃO +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "button.nav-group-toggle \"CONTA E AJUSTES +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 300,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 300,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.app-sidebar \"PRINCIPAL Início Pedidos Cardápio PDV Conversas Co\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "button.new-user-guide-module__a1T_Va__trigger \"Abrir assistente do PedeAqui\"",
-    "top": 700,
-    "h": 48,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 48,
-  "bodyTextLength": 1838,
-  "shot": "shots/pc-1366__panel__dashboard.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/pedidos",
-  "url": "http://127.0.0.1:3000/pedidos",
-  "status": 200,
-  "loadMs": 903,
-  "finalUrl": "/pedidos",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 2553,
-  "screens": 3.3,
-  "title": "PedeAqui",
-  "h1": "Pedidos",
-  "overflowing": [],
-  "interactiveCount": 94,
-  "smallTargets": 81,
-  "tinyTargets": 13,
-  "smallTargetExamples": [
-   {
-    "el": "button.sidebar-toggle \"Recolher menu\"",
-    "w": 40,
-    "h": 40
-   },
-   {
-    "el": "button.nav-group-toggle \"GESTÃO +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "button.nav-group-toggle \"CONTA E AJUSTES +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 300,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 300,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.app-sidebar \"PRINCIPAL Início Pedidos Cardápio PDV Conversas Co\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "button.new-user-guide-module__a1T_Va__trigger \"Abrir assistente do PedeAqui\"",
-    "top": 700,
-    "h": 48,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 48,
-  "bodyTextLength": 1916,
-  "shot": "shots/pc-1366__panel__pedidos.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/cardapio/produtos",
-  "url": "http://127.0.0.1:3000/cardapio/produtos",
-  "status": 200,
-  "loadMs": 841,
-  "finalUrl": "/cardapio/produtos",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 2236,
-  "screens": 2.9,
-  "title": "PedeAqui",
-  "h1": "Cardápio",
-  "overflowing": [],
-  "interactiveCount": 136,
-  "smallTargets": 41,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "button.sidebar-toggle \"Recolher menu\"",
-    "w": 40,
-    "h": 40
-   },
-   {
-    "el": "button.nav-group-toggle \"GESTÃO +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "button.nav-group-toggle \"CONTA E AJUSTES +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 300,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 300,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.app-sidebar \"PRINCIPAL Início Pedidos Cardápio PDV Conversas Co\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "button.new-user-guide-module__a1T_Va__trigger \"Abrir assistente do PedeAqui\"",
-    "top": 700,
-    "h": 48,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 48,
-  "bodyTextLength": 2412,
-  "shot": "shots/pc-1366__panel__cardapio-produtos.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/edefe536-bfec-4777-9764-d673efeb23cb",
+  "url": "http://127.0.0.1:3000/pedidos/a9be852a-f183-4a69-bdad-0c929ca4df14",
   "status": 200,
-  "loadMs": 912,
-  "finalUrl": "/pedidos/edefe536-bfec-4777-9764-d673efeb23cb",
+  "loadMs": 987,
+  "finalUrl": "/pedidos/a9be852a-f183-4a69-bdad-0c929ca4df14",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -630,10 +357,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/0213d01d-30ec-440a-8e63-1cab59abf1de",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/45529182-4dad-4f29-8b07-0c56eb21e104",
   "status": 200,
-  "loadMs": 903,
-  "finalUrl": "/cardapio/produtos/0213d01d-30ec-440a-8e63-1cab59abf1de",
+  "loadMs": 1012,
+  "finalUrl": "/cardapio/produtos/45529182-4dad-4f29-8b07-0c56eb21e104",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -727,10 +454,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/cf9de351-691e-4718-b443-0ab277d88b77",
+  "url": "http://127.0.0.1:3000/clientes/b89b6838-29ff-4c97-aa80-8ebed5456ecd",
   "status": 200,
-  "loadMs": 990,
-  "finalUrl": "/clientes/cf9de351-691e-4718-b443-0ab277d88b77",
+  "loadMs": 1015,
+  "finalUrl": "/clientes/b89b6838-29ff-4c97-aa80-8ebed5456ecd",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -818,10 +545,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/807d6e58-2872-47be-a0a9-f4cbfd29393f",
+  "url": "http://127.0.0.1:3000/salao/ff6aba87-c4bc-45b9-8ba5-e3e28a7209cf",
   "status": 200,
-  "loadMs": 885,
-  "finalUrl": "/salao/807d6e58-2872-47be-a0a9-f4cbfd29393f",
+  "loadMs": 952,
+  "finalUrl": "/salao/ff6aba87-c4bc-45b9-8ba5-e3e28a7209cf",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1465,6 +1192,47 @@
  },
  {
   "device": "pc-1366",
+  "area": "diag",
+  "label": "pdv-layout",
+  "pdvLayout": {
+   "viewport": [
+    1366,
+    768
+   ],
+   "scrollY": 0,
+   "docHeight": 768,
+   "bar": {
+    "position": "static",
+    "top": "auto",
+    "bottom": "0px",
+    "display": "grid",
+    "rect": [
+     655,
+     756,
+     101
+    ],
+    "clipping": [
+     "div.app-main overflow=hidden/hidden h=768"
+    ]
+   },
+   "switcher": {
+    "position": "static",
+    "top": "auto",
+    "bottom": "auto",
+    "display": "none",
+    "rect": [
+     0,
+     0,
+     0
+    ],
+    "clipping": [
+     "div.app-main overflow=hidden/hidden h=768"
+    ]
+   }
+  }
+ },
+ {
+  "device": "pc-1366",
   "area": "state",
   "label": "disponibilidade-busca-calabresa",
   "shot": "shots/pc-1366__state__disponibilidade-busca-calabresa.jpg",
@@ -1555,7 +1323,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 671,
+  "loadMs": 665,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -1838,7 +1606,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 608,
+  "loadMs": 617,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -1895,7 +1663,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 626,
+  "loadMs": 641,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -1969,7 +1737,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 703,
+  "loadMs": 728,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -2134,7 +1902,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 736,
+  "loadMs": 759,
   "finalUrl": "/pdv",
   "vw": 360,
   "vh": 740,
@@ -2241,311 +2009,11 @@
  {
   "device": "android-360",
   "area": "panel",
-  "label": "/dashboard",
-  "url": "http://127.0.0.1:3000/dashboard",
-  "status": 200,
-  "loadMs": 710,
-  "finalUrl": "/dashboard",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
-  "title": "PedeAqui",
-  "h1": "Início",
-  "overflowing": [],
-  "interactiveCount": 48,
-  "smallTargets": 14,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 276,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 276,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 157,
-    "h": 36
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
-    "w": 302,
-    "h": 42
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "div.customer-messages-module__qEO9Fq__panel",
-    "top": 126,
-    "h": 177,
-    "pos": "fixed"
-   },
-   {
-    "el": "nav.mobile-nav \"Navegação principal mobile\"",
-    "top": 671,
-    "h": 69,
-    "pos": "fixed"
-   },
-   {
-    "el": "div.mobile-more-panel",
-    "top": 116,
-    "h": 548,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 794,
-  "bodyTextLength": 1372,
-  "shot": "shots/android-360__panel__dashboard.jpg",
-  "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/pedidos",
-  "url": "http://127.0.0.1:3000/pedidos",
-  "status": 200,
-  "loadMs": 829,
-  "finalUrl": "/pedidos",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 888,
-  "screens": 1.2,
-  "title": "PedeAqui",
-  "h1": "Pedidos",
-  "overflowing": [],
-  "interactiveCount": 58,
-  "smallTargets": 16,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 276,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 276,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 157,
-    "h": 36
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
-    "w": 302,
-    "h": 42
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "div.customer-messages-module__qEO9Fq__panel",
-    "top": 126,
-    "h": 177,
-    "pos": "fixed"
-   },
-   {
-    "el": "div.order-manager-module__7JwvSq__workflowHe",
-    "top": 228,
-    "h": 145,
-    "pos": "fixed"
-   },
-   {
-    "el": "nav.mobile-nav \"Navegação principal mobile\"",
-    "top": 671,
-    "h": 69,
-    "pos": "fixed"
-   },
-   {
-    "el": "div.mobile-more-panel",
-    "top": 116,
-    "h": 548,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 939,
-  "bodyTextLength": 490,
-  "shot": "shots/android-360__panel__pedidos.jpg",
-  "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/cardapio/produtos",
-  "url": "http://127.0.0.1:3000/cardapio/produtos",
-  "status": 200,
-  "loadMs": 760,
-  "finalUrl": "/cardapio/produtos",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 5386,
-  "screens": 7.3,
-  "title": "PedeAqui",
-  "h1": "Cardápio",
-  "overflowing": [],
-  "interactiveCount": 146,
-  "smallTargets": 32,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 276,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 276,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 157,
-    "h": 36
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
-    "w": 302,
-    "h": 42
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "div.customer-messages-module__qEO9Fq__panel",
-    "top": 126,
-    "h": 177,
-    "pos": "fixed"
-   },
-   {
-    "el": "nav.mobile-nav \"Navegação principal mobile\"",
-    "top": 671,
-    "h": 69,
-    "pos": "fixed"
-   },
-   {
-    "el": "div.mobile-more-panel",
-    "top": 116,
-    "h": 548,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 794,
-  "bodyTextLength": 2258,
-  "shot": "shots/android-360__panel__cardapio-produtos.jpg",
-  "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/edefe536-bfec-4777-9764-d673efeb23cb",
+  "url": "http://127.0.0.1:3000/pedidos/a9be852a-f183-4a69-bdad-0c929ca4df14",
   "status": 200,
-  "loadMs": 863,
-  "finalUrl": "/pedidos/edefe536-bfec-4777-9764-d673efeb23cb",
+  "loadMs": 887,
+  "finalUrl": "/pedidos/a9be852a-f183-4a69-bdad-0c929ca4df14",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2647,10 +2115,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/0213d01d-30ec-440a-8e63-1cab59abf1de",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/45529182-4dad-4f29-8b07-0c56eb21e104",
   "status": 200,
-  "loadMs": 797,
-  "finalUrl": "/cardapio/produtos/0213d01d-30ec-440a-8e63-1cab59abf1de",
+  "loadMs": 892,
+  "finalUrl": "/cardapio/produtos/45529182-4dad-4f29-8b07-0c56eb21e104",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2745,10 +2213,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/cf9de351-691e-4718-b443-0ab277d88b77",
+  "url": "http://127.0.0.1:3000/clientes/b89b6838-29ff-4c97-aa80-8ebed5456ecd",
   "status": 200,
-  "loadMs": 800,
-  "finalUrl": "/clientes/cf9de351-691e-4718-b443-0ab277d88b77",
+  "loadMs": 871,
+  "finalUrl": "/clientes/b89b6838-29ff-4c97-aa80-8ebed5456ecd",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2850,10 +2318,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/807d6e58-2872-47be-a0a9-f4cbfd29393f",
+  "url": "http://127.0.0.1:3000/salao/ff6aba87-c4bc-45b9-8ba5-e3e28a7209cf",
   "status": 200,
-  "loadMs": 794,
-  "finalUrl": "/salao/807d6e58-2872-47be-a0a9-f4cbfd29393f",
+  "loadMs": 827,
+  "finalUrl": "/salao/ff6aba87-c4bc-45b9-8ba5-e3e28a7209cf",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -3730,6 +3198,49 @@
  },
  {
   "device": "android-360",
+  "area": "diag",
+  "label": "pdv-layout",
+  "pdvLayout": {
+   "viewport": [
+    360,
+    740
+   ],
+   "scrollY": 0,
+   "docHeight": 755,
+   "bar": {
+    "position": "sticky",
+    "top": "auto",
+    "bottom": "68px",
+    "display": "grid",
+    "rect": [
+     472,
+     539,
+     67
+    ],
+    "clipping": [
+     "main.app-content overflow=hidden/auto h=635",
+     "div.app-main overflow=clip/visible h=691"
+    ]
+   },
+   "switcher": {
+    "position": "sticky",
+    "top": "56px",
+    "bottom": "auto",
+    "display": "grid",
+    "rect": [
+     128,
+     186,
+     58
+    ],
+    "clipping": [
+     "main.app-content overflow=hidden/auto h=635",
+     "div.app-main overflow=clip/visible h=691"
+    ]
+   }
+  }
+ },
+ {
+  "device": "android-360",
   "area": "state",
   "label": "disponibilidade-busca-calabresa",
   "shot": "shots/android-360__state__disponibilidade-busca-calabresa.jpg",
@@ -3826,7 +3337,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 601,
+  "loadMs": 645,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -4130,7 +3641,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 585,
+  "loadMs": 608,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -4200,7 +3711,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 608,
+  "loadMs": 644,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
@@ -4287,7 +3798,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 711,
+  "loadMs": 733,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -4445,7 +3956,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 751,
+  "loadMs": 773,
   "finalUrl": "/pdv",
   "vw": 1366,
   "vh": 768,
@@ -4541,284 +4052,11 @@
  {
   "device": "pc-1366-escuro",
   "area": "panel",
-  "label": "/dashboard",
-  "url": "http://127.0.0.1:3000/dashboard",
-  "status": 200,
-  "loadMs": 727,
-  "finalUrl": "/dashboard",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1834,
-  "screens": 2.4,
-  "title": "PedeAqui",
-  "h1": "Início",
-  "overflowing": [],
-  "interactiveCount": 38,
-  "smallTargets": 22,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "button.sidebar-toggle \"Recolher menu\"",
-    "w": 40,
-    "h": 40
-   },
-   {
-    "el": "button.nav-group-toggle \"GESTÃO +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "button.nav-group-toggle \"CONTA E AJUSTES +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 300,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 300,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.app-sidebar \"PRINCIPAL Início Pedidos Cardápio PDV Conversas Co\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "button.new-user-guide-module__a1T_Va__trigger \"Abrir assistente do PedeAqui\"",
-    "top": 700,
-    "h": 48,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 48,
-  "bodyTextLength": 1838,
-  "shot": "shots/pc-1366-escuro__panel__dashboard.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/pedidos",
-  "url": "http://127.0.0.1:3000/pedidos",
-  "status": 200,
-  "loadMs": 871,
-  "finalUrl": "/pedidos",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 2553,
-  "screens": 3.3,
-  "title": "PedeAqui",
-  "h1": "Pedidos",
-  "overflowing": [],
-  "interactiveCount": 94,
-  "smallTargets": 81,
-  "tinyTargets": 13,
-  "smallTargetExamples": [
-   {
-    "el": "button.sidebar-toggle \"Recolher menu\"",
-    "w": 40,
-    "h": 40
-   },
-   {
-    "el": "button.nav-group-toggle \"GESTÃO +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "button.nav-group-toggle \"CONTA E AJUSTES +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 300,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 300,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.app-sidebar \"PRINCIPAL Início Pedidos Cardápio PDV Conversas Co\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "button.new-user-guide-module__a1T_Va__trigger \"Abrir assistente do PedeAqui\"",
-    "top": 700,
-    "h": 48,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 48,
-  "bodyTextLength": 1916,
-  "shot": "shots/pc-1366-escuro__panel__pedidos.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/cardapio/produtos",
-  "url": "http://127.0.0.1:3000/cardapio/produtos",
-  "status": 200,
-  "loadMs": 825,
-  "finalUrl": "/cardapio/produtos",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 2236,
-  "screens": 2.9,
-  "title": "PedeAqui",
-  "h1": "Cardápio",
-  "overflowing": [],
-  "interactiveCount": 136,
-  "smallTargets": 41,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "button.sidebar-toggle \"Recolher menu\"",
-    "w": 40,
-    "h": 40
-   },
-   {
-    "el": "button.nav-group-toggle \"GESTÃO +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "button.nav-group-toggle \"CONTA E AJUSTES +\"",
-    "w": 175,
-    "h": 29
-   },
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 300,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 300,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.app-sidebar \"PRINCIPAL Início Pedidos Cardápio PDV Conversas Co\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "button.new-user-guide-module__a1T_Va__trigger \"Abrir assistente do PedeAqui\"",
-    "top": 700,
-    "h": 48,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 48,
-  "bodyTextLength": 2412,
-  "shot": "shots/pc-1366-escuro__panel__cardapio-produtos.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/edefe536-bfec-4777-9764-d673efeb23cb",
+  "url": "http://127.0.0.1:3000/pedidos/a9be852a-f183-4a69-bdad-0c929ca4df14",
   "status": 200,
-  "loadMs": 869,
-  "finalUrl": "/pedidos/edefe536-bfec-4777-9764-d673efeb23cb",
+  "loadMs": 968,
+  "finalUrl": "/pedidos/a9be852a-f183-4a69-bdad-0c929ca4df14",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -4906,10 +4144,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/0213d01d-30ec-440a-8e63-1cab59abf1de",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/45529182-4dad-4f29-8b07-0c56eb21e104",
   "status": 200,
-  "loadMs": 885,
-  "finalUrl": "/cardapio/produtos/0213d01d-30ec-440a-8e63-1cab59abf1de",
+  "loadMs": 863,
+  "finalUrl": "/cardapio/produtos/45529182-4dad-4f29-8b07-0c56eb21e104",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -5003,10 +4241,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/cf9de351-691e-4718-b443-0ab277d88b77",
+  "url": "http://127.0.0.1:3000/clientes/b89b6838-29ff-4c97-aa80-8ebed5456ecd",
   "status": 200,
-  "loadMs": 867,
-  "finalUrl": "/clientes/cf9de351-691e-4718-b443-0ab277d88b77",
+  "loadMs": 916,
+  "finalUrl": "/clientes/b89b6838-29ff-4c97-aa80-8ebed5456ecd",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -5094,10 +4332,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/807d6e58-2872-47be-a0a9-f4cbfd29393f",
+  "url": "http://127.0.0.1:3000/salao/ff6aba87-c4bc-45b9-8ba5-e3e28a7209cf",
   "status": 200,
-  "loadMs": 862,
-  "finalUrl": "/salao/807d6e58-2872-47be-a0a9-f4cbfd29393f",
+  "loadMs": 885,
+  "finalUrl": "/salao/ff6aba87-c4bc-45b9-8ba5-e3e28a7209cf",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -5741,6 +4979,47 @@
  },
  {
   "device": "pc-1366-escuro",
+  "area": "diag",
+  "label": "pdv-layout",
+  "pdvLayout": {
+   "viewport": [
+    1366,
+    768
+   ],
+   "scrollY": 0,
+   "docHeight": 768,
+   "bar": {
+    "position": "static",
+    "top": "auto",
+    "bottom": "0px",
+    "display": "grid",
+    "rect": [
+     655,
+     756,
+     101
+    ],
+    "clipping": [
+     "div.app-main overflow=hidden/hidden h=768"
+    ]
+   },
+   "switcher": {
+    "position": "static",
+    "top": "auto",
+    "bottom": "auto",
+    "display": "none",
+    "rect": [
+     0,
+     0,
+     0
+    ],
+    "clipping": [
+     "div.app-main overflow=hidden/hidden h=768"
+    ]
+   }
+  }
+ },
+ {
+  "device": "pc-1366-escuro",
   "area": "state",
   "label": "disponibilidade-busca-calabresa",
   "shot": "shots/pc-1366-escuro__state__disponibilidade-busca-calabresa.jpg",
@@ -5831,7 +5110,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 609,
+  "loadMs": 642,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -6114,7 +5393,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 593,
+  "loadMs": 614,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -6171,7 +5450,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 608,
+  "loadMs": 631,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -6245,7 +5524,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 677,
+  "loadMs": 734,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -6409,7 +5688,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 725,
+  "loadMs": 769,
   "finalUrl": "/pdv",
   "vw": 360,
   "vh": 740,
@@ -6515,308 +5794,11 @@
  {
   "device": "android-360-escuro",
   "area": "panel",
-  "label": "/dashboard",
-  "url": "http://127.0.0.1:3000/dashboard",
-  "status": 200,
-  "loadMs": 710,
-  "finalUrl": "/dashboard",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
-  "title": "PedeAqui",
-  "h1": "Início",
-  "overflowing": [],
-  "interactiveCount": 48,
-  "smallTargets": 14,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 276,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 276,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 157,
-    "h": 36
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
-    "w": 302,
-    "h": 42
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "div.customer-messages-module__qEO9Fq__panel",
-    "top": 126,
-    "h": 177,
-    "pos": "fixed"
-   },
-   {
-    "el": "nav.mobile-nav \"Navegação principal mobile\"",
-    "top": 671,
-    "h": 69,
-    "pos": "fixed"
-   },
-   {
-    "el": "div.mobile-more-panel",
-    "top": 116,
-    "h": 548,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 794,
-  "bodyTextLength": 1372,
-  "shot": "shots/android-360-escuro__panel__dashboard.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/pedidos",
-  "url": "http://127.0.0.1:3000/pedidos",
-  "status": 200,
-  "loadMs": 807,
-  "finalUrl": "/pedidos",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 888,
-  "screens": 1.2,
-  "title": "PedeAqui",
-  "h1": "Pedidos",
-  "overflowing": [],
-  "interactiveCount": 58,
-  "smallTargets": 16,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 276,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 276,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 157,
-    "h": 36
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
-    "w": 302,
-    "h": 42
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "div.customer-messages-module__qEO9Fq__panel",
-    "top": 126,
-    "h": 177,
-    "pos": "fixed"
-   },
-   {
-    "el": "div.order-manager-module__7JwvSq__workflowHe",
-    "top": 228,
-    "h": 145,
-    "pos": "fixed"
-   },
-   {
-    "el": "nav.mobile-nav \"Navegação principal mobile\"",
-    "top": 671,
-    "h": 69,
-    "pos": "fixed"
-   },
-   {
-    "el": "div.mobile-more-panel",
-    "top": 116,
-    "h": 548,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 939,
-  "bodyTextLength": 490,
-  "shot": "shots/android-360-escuro__panel__pedidos.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/cardapio/produtos",
-  "url": "http://127.0.0.1:3000/cardapio/produtos",
-  "status": 200,
-  "loadMs": 717,
-  "finalUrl": "/cardapio/produtos",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 5386,
-  "screens": 7.3,
-  "title": "PedeAqui",
-  "h1": "Cardápio",
-  "overflowing": [],
-  "interactiveCount": 146,
-  "smallTargets": 32,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "summary \"Operação da loja\"",
-    "w": 168,
-    "h": 40
-   },
-   {
-    "el": "summary",
-    "w": 158,
-    "h": 36
-   },
-   {
-    "el": "select \"reason\"",
-    "w": 276,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button",
-    "w": 276,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 142,
-    "h": 36
-   },
-   {
-    "el": "a.app-operation-link",
-    "w": 157,
-    "h": 36
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
-    "w": 302,
-    "h": 42
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
-    "top": 0,
-    "h": 56,
-    "pos": "sticky"
-   },
-   {
-    "el": "div.customer-messages-module__qEO9Fq__panel",
-    "top": 126,
-    "h": 177,
-    "pos": "fixed"
-   },
-   {
-    "el": "nav.mobile-nav \"Navegação principal mobile\"",
-    "top": 671,
-    "h": 69,
-    "pos": "fixed"
-   },
-   {
-    "el": "div.mobile-more-panel",
-    "top": 116,
-    "h": 548,
-    "pos": "fixed"
-   }
-  ],
-  "fixedCoverPx": 794,
-  "bodyTextLength": 2258,
-  "shot": "shots/android-360-escuro__panel__cardapio-produtos.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/edefe536-bfec-4777-9764-d673efeb23cb",
+  "url": "http://127.0.0.1:3000/pedidos/a9be852a-f183-4a69-bdad-0c929ca4df14",
   "status": 200,
-  "loadMs": 838,
-  "finalUrl": "/pedidos/edefe536-bfec-4777-9764-d673efeb23cb",
+  "loadMs": 916,
+  "finalUrl": "/pedidos/a9be852a-f183-4a69-bdad-0c929ca4df14",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -6904,32 +5886,69 @@
   "fixedCoverPx": 794,
   "bodyTextLength": 1150,
   "shot": "shots/android-360-escuro__panel__pedidos-id.jpg",
-  "consoleErrors": []
+  "consoleErrors": [
+   "pageerror: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+  ]
  },
  {
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/0213d01d-30ec-440a-8e63-1cab59abf1de",
-  "status": 500,
-  "loadMs": 648,
-  "finalUrl": "/cardapio/produtos/0213d01d-30ec-440a-8e63-1cab59abf1de",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/45529182-4dad-4f29-8b07-0c56eb21e104",
+  "status": 200,
+  "loadMs": 826,
+  "finalUrl": "/cardapio/produtos/45529182-4dad-4f29-8b07-0c56eb21e104",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
-  "title": "",
-  "h1": "This page couldn’t load",
+  "docHeight": 2203,
+  "screens": 3,
+  "title": "PedeAqui",
+  "h1": "Cardápio",
   "overflowing": [],
-  "interactiveCount": 1,
-  "smallTargets": 1,
-  "tinyTargets": 0,
+  "interactiveCount": 65,
+  "smallTargets": 26,
+  "tinyTargets": 1,
   "smallTargetExamples": [
    {
-    "el": "button \"Reload\"",
-    "w": 72,
-    "h": 32
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
    }
   ],
   "smallText": 0,
@@ -6937,23 +5956,45 @@
   "minFont": 12,
   "inputsZoom": [],
   "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 101,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 1082,
   "shot": "shots/android-360-escuro__panel__cardapio-produtos-id.jpg",
-  "consoleErrors": [
-   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
-   "pageerror: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error."
-  ]
+  "consoleErrors": []
  },
  {
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/cf9de351-691e-4718-b443-0ab277d88b77",
+  "url": "http://127.0.0.1:3000/clientes/b89b6838-29ff-4c97-aa80-8ebed5456ecd",
   "status": 200,
-  "loadMs": 793,
-  "finalUrl": "/clientes/cf9de351-691e-4718-b443-0ab277d88b77",
+  "loadMs": 829,
+  "finalUrl": "/clientes/b89b6838-29ff-4c97-aa80-8ebed5456ecd",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -7047,10 +6088,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/807d6e58-2872-47be-a0a9-f4cbfd29393f",
+  "url": "http://127.0.0.1:3000/salao/ff6aba87-c4bc-45b9-8ba5-e3e28a7209cf",
   "status": 200,
-  "loadMs": 828,
-  "finalUrl": "/salao/807d6e58-2872-47be-a0a9-f4cbfd29393f",
+  "loadMs": 833,
+  "finalUrl": "/salao/ff6aba87-c4bc-45b9-8ba5-e3e28a7209cf",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -7926,6 +6967,49 @@
  },
  {
   "device": "android-360-escuro",
+  "area": "diag",
+  "label": "pdv-layout",
+  "pdvLayout": {
+   "viewport": [
+    360,
+    740
+   ],
+   "scrollY": 0,
+   "docHeight": 755,
+   "bar": {
+    "position": "sticky",
+    "top": "auto",
+    "bottom": "68px",
+    "display": "grid",
+    "rect": [
+     472,
+     539,
+     67
+    ],
+    "clipping": [
+     "main.app-content overflow=hidden/auto h=635",
+     "div.app-main overflow=clip/visible h=691"
+    ]
+   },
+   "switcher": {
+    "position": "sticky",
+    "top": "56px",
+    "bottom": "auto",
+    "display": "grid",
+    "rect": [
+     128,
+     186,
+     58
+    ],
+    "clipping": [
+     "main.app-content overflow=hidden/auto h=635",
+     "div.app-main overflow=clip/visible h=691"
+    ]
+   }
+  }
+ },
+ {
+  "device": "android-360-escuro",
   "area": "state",
   "label": "disponibilidade-busca-calabresa",
   "shot": "shots/android-360-escuro__state__disponibilidade-busca-calabresa.jpg",
@@ -8325,7 +7409,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 590,
+  "loadMs": 597,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -8394,7 +7478,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 650,
+  "loadMs": 627,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
