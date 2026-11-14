@@ -24,6 +24,11 @@ const PANEL_ROUTES = [
   "/configuracoes/caixa", "/configuracoes/salao", "/configuracoes/conversas", "/configuracoes/integracoes", "/configuracoes/modulos", "/configuracoes/fluxo-pedidos",
 ];
 
+// Site institucional e acesso (sem login).
+const SITE_ROUTES = ["/", "/como-funciona", "/recursos", "/planos", "/pedidos-e-atendimento", "/entrega-e-fidelizacao", "/empresa", "/cadastro", "/recuperar-senha", "/acesso-entregador", "/termos-de-uso", "/politica-de-privacidade"];
+// Painel da plataforma (o usuário da loja fictícia é administrador da plataforma só na homologação local).
+const PLATFORM_ROUTES = ["/platform", "/platform/operacao", "/platform/pendencias", "/platform/alertas", "/platform/assinaturas", "/platform/comercial", "/platform/financeiro", "/platform/suporte", "/platform/comunicacao", "/platform/equipe", "/platform/integracoes", "/platform/integridade", "/platform/auditoria", "/platform/configuracoes", "/platform/produto", "/platform/onboarding", "/platform/novo-restaurante"];
+
 const DEVICES = [
   { key: "pc-1366", browser: chromium, options: { viewport: { width: 1366, height: 768 } } },
   // Android mais estreito comum (360px). O iPhone (WebKit) entra só na auditoria completa.
@@ -152,6 +157,9 @@ for (const device of DEVICES) {
   if (panelBase) {
     const context = await browser.newContext({ ...device.options, locale: "pt-BR", timezoneId: "America/Sao_Paulo" });
     const page = await context.newPage();
+    // Site institucional e telas de acesso, sem login. "site" em AUDIT_ROUTES pede só este bloco.
+    const wantsSite = !process.env.AUDIT_ROUTES || /(^|,)\s*site\s*(,|$)/.test(process.env.AUDIT_ROUTES);
+    if (wantsSite && !device.key.endsWith("-escuro")) for (const route of SITE_ROUTES) await audit(page, device, "site", route, `${panelBase}${route}`);
     await audit(page, device, "panel", "login", `${panelBase}/login`);
     try {
       await page.fill('input[name="email"]', email);
@@ -168,7 +176,7 @@ for (const device of DEVICES) {
     }
 
     // AUDIT_ROUTES="/pedidos,/pdv" limita às telas do módulo em trabalho; sem ela, percorre todas.
-    const chosen = process.env.AUDIT_ROUTES ? process.env.AUDIT_ROUTES.split(",").map((route) => route.trim()).filter(Boolean) : PANEL_ROUTES;
+    const chosen = process.env.AUDIT_ROUTES ? process.env.AUDIT_ROUTES.split(",").map((route) => route.trim()).filter((route) => route && route !== "site") : [...PANEL_ROUTES, ...PLATFORM_ROUTES];
     for (const route of chosen) await audit(page, device, "panel", route, `${panelBase}${route}`);
 
     // Páginas com id: pega o primeiro link da lista.
