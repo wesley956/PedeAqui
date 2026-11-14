@@ -188,7 +188,12 @@ if (verify) {
   // HOMOLOG_APOS: comando executado com o sistema no ar (ex.: auditoria com prints no CI), antes de encerrar.
   let afterStatus = 0;
   if (ok && process.env.HOMOLOG_APOS) {
-    afterStatus = spawnSync(process.env.HOMOLOG_APOS, { shell: true, stdio: "inherit", env: { ...process.env, PANEL_BASE: `http://127.0.0.1:${appPort}`, AUDIT_EMAIL: login.email, AUDIT_PASSWORD: login.password } }).status ?? 1;
+    // Assíncrono de propósito: um comando bloqueante impediria a leitura da saída do servidor, que travaria ao encher o buffer.
+    afterStatus = await new Promise((resolve) => {
+      const child = spawn(process.env.HOMOLOG_APOS, { shell: true, stdio: "inherit", env: { ...process.env, PANEL_BASE: `http://127.0.0.1:${appPort}`, AUDIT_EMAIL: login.email, AUDIT_PASSWORD: login.password } });
+      child.on("exit", (code) => resolve(code ?? 1));
+      child.on("error", () => resolve(1));
+    });
     console.log(`HOMOLOG_APOS status=${afterStatus}`);
     // O registro do servidor vai junto com os prints: mostra o motivo de telas que falharam.
     if (process.env.AUDIT_OUT) { try { fs.writeFileSync(path.join(process.env.AUDIT_OUT, "servidor.log"), appLog.slice(-400000)); } catch { /* pasta ausente */ } }
