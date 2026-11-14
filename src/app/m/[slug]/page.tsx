@@ -49,9 +49,10 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
     ? `Estamos fechados agora.${menu.operational.nextOpening ? ` Abrimos ${menu.operational.nextOpening.label}.` : ""}`
     : menu.operational.label === "paused" ? `Pedidos pausados no momento${menu.settings.pause_reason ? `: ${menu.settings.pause_reason}` : "."}` : null;
   return <main className={styles.root} style={restaurantBrandVars(menu.settings.primary_color)}>
+    <div className={styles.cover} aria-hidden />
     <div className={styles.container}>
       <header className={styles.expressHeader}>
-        <RestaurantBrand name={menu.store.name} logoUrl={menu.settings.logo_url} primaryColor={menu.settings.primary_color}>
+        <RestaurantBrand layout="cover" name={menu.store.name} logoUrl={menu.settings.logo_url} primaryColor={menu.settings.primary_color}>
           <p className={styles.statusLine} aria-label="Opções do pedido">
             <span className={`${styles.status} ${statusClass}`}>{menu.operational.label === "open" ? "Aberto agora" : status}</span>
             {headline ? <span className={styles.headline}>{headline}</span> : null}
