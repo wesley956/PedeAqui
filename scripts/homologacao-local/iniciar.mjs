@@ -167,9 +167,15 @@ if (verify) {
   const saved = JSON.parse(fs.readFileSync(stateFile, "utf8"));
   console.log(`HOMOLOG_VERIFY ${checks.join(" ")} login=${auth} ${saved.seedSummary} avisos=${saved.seedWarnings.length}`);
   for (const warning of saved.seedWarnings) console.log(`HOMOLOG_SEED_WARNING ${warning}`);
-  stop();
   const ok = checks[0].endsWith("=200") && checks[1].endsWith("=200") && auth === 200;
-  process.exit(ok ? 0 : 1);
+  // HOMOLOG_APOS: comando executado com o sistema no ar (ex.: auditoria com prints no CI), antes de encerrar.
+  let afterStatus = 0;
+  if (ok && process.env.HOMOLOG_APOS) {
+    afterStatus = spawnSync(process.env.HOMOLOG_APOS, { shell: true, stdio: "inherit", env: { ...process.env, PANEL_BASE: `http://127.0.0.1:${appPort}`, AUDIT_EMAIL: login.email, AUDIT_PASSWORD: login.password } }).status ?? 1;
+    console.log(`HOMOLOG_APOS status=${afterStatus}`);
+  }
+  stop();
+  process.exit(ok && afterStatus === 0 ? 0 : 1);
 }
 
 console.log(`

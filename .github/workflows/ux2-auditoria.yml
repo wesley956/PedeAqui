@@ -1,0 +1,73 @@
+name: UX2 Auditoria Visual
+
+# Tira prints das telas (computador e celular) na homologação local descartável e guarda na branch ux2/evidencias.
+# Só roda em branches ux2/* quando a mensagem do commit tem [prints]. Nunca acessa nem publica na produção.
+on:
+  push:
+    branches: ["ux2/**", "!ux2/evidencias"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ux2-auditoria-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prints:
+    if: contains(github.event.head_commit.message, '[prints')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar dependências e navegadores
+        run: |
+          npm install --legacy-peer-deps --no-audit --no-fund
+          npm install --no-save --legacy-peer-deps --no-audit --no-fund playwright@1.55.0 @axe-core/playwright@4.10.2
+          npx playwright install --with-deps chromium
+      - name: Subir a homologação local e tirar os prints
+        shell: bash
+        env:
+          HOMOLOG_APOS: node scripts/ux2-auditoria/auditoria.mjs
+          AUDIT_OUT: ${{ runner.temp }}/ux2-out
+          # "[prints: /pedidos,/pdv]" limita às telas citadas; "[prints]" percorre todas.
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          set -o pipefail
+          routes="$(printf '%s' "$COMMIT_MESSAGE" | sed -n 's/.*\[prints: *\([^]]*\)\].*/\1/p' | head -1)"
+          export AUDIT_ROUTES="$routes"
+          mkdir -p "$AUDIT_OUT"
+          node scripts/homologacao-local/iniciar.mjs --verificar 2>&1 | tee "$AUDIT_OUT/run.log" || {
+            msg="$(tail -c 3500 "$AUDIT_OUT/run.log" | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"
+            echo "::error title=ux2-auditoria::${msg}"
+            exit 1
+          }
+          echo "::notice title=ux2-auditoria::$(grep -E 'HOMOLOG_VERIFY|UX2_AUDIT_DONE' "$AUDIT_OUT/run.log" | tr '\n' ' ' | cut -c1-600)"
+      - name: Guardar os prints na branch ux2/evidencias
+        if: always()
+        shell: bash
+        env:
+          AUDIT_OUT: ${{ runner.temp }}/ux2-out
+        run: |
+          set -e
+          [ -f "$AUDIT_OUT/results.json" ] || exit 0
+          remote="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
+          dest="$(mktemp -d)"
+          # Sem push forçado: acrescenta um commit por execução, uma pasta por branch.
+          if git clone -q --depth 1 --branch ux2/evidencias "$remote" "$dest" 2>/dev/null; then :; else git -C "$dest" init -q -b ux2/evidencias; fi
+          folder="$(printf '%s' "${GITHUB_REF_NAME}" | tr '/' '_')"
+          mkdir -p "$dest/$folder" && find "$dest/$folder" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+          cp -r "$AUDIT_OUT/." "$dest/$folder/"
+          printf '%s\n' "$GITHUB_SHA" > "$dest/$folder/COMMIT"
+          cd "$dest"
+          git config user.name "ux2-auditoria"
+          git config user.email "ux2-auditoria@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Prints UX2 de ${GITHUB_REF_NAME} (${GITHUB_SHA})"
+          if ! out="$(git push "$remote" ux2/evidencias 2>&1)"; then
+            echo "::error title=ux2-auditoria-publicar::$(echo "$out" | tail -c 1500 | awk '{printf "%s%%0A", $0}')"
+            exit 1
+          fi
