@@ -16,3 +16,9 @@
 .sheetForm .finalSection{border:0;border-top:8px solid var(--surface-2);border-radius:0;box-shadow:none;padding:14px 16px}
 /* O aviso (ex.: loja fechada) começa abaixo do botão X da gaveta, que fica no canto de cima. */
 .sheetForm>[role=alert],.sheetForm>[role=status]{margin:64px 16px 0}
+
+/* UX2 — produto sem foto não ocupa meia tela com um desenho: fica só uma faixa baixa. Preço em preto. */
+.productPlaceholder,.sheetForm .productPlaceholder{height:72px;min-height:0}
+.productPlaceholder svg{width:24px;height:24px}
+.productPrice{color:var(--text-primary)}
+.assemblyEyebrow,.stepLabel{color:var(--text-secondary)}
