@@ -159,7 +159,7 @@ for (const device of DEVICES) {
     for (const route of chosen) await audit(page, device, "panel", route, `${panelBase}${route}`);
 
     // Páginas com id: pega o primeiro link da lista.
-    for (const [list, pattern, name] of [["/pedidos/historico", /^\/pedidos\/[0-9a-f-]{36}$/, "/pedidos/[id]"], ["/cardapio/produtos", /^\/cardapio\/produtos\/[0-9a-f-]{36}$/, "/cardapio/produtos/[id]"], ["/clientes", /^\/clientes\/[0-9a-f-]{36}$/, "/clientes/[id]"], ["/salao", /^\/salao\/[0-9a-f-]{36}$/, "/salao/[tableId]"]]) {
+    for (const [list, pattern, name] of [["/pedidos", /^\/pedidos\/[0-9a-f-]{36}$/, "/pedidos/[id]"], ["/cardapio/produtos", /^\/cardapio\/produtos\/[0-9a-f-]{36}$/, "/cardapio/produtos/[id]"], ["/clientes", /^\/clientes\/[0-9a-f-]{36}$/, "/clientes/[id]"], ["/salao", /^\/salao\/[0-9a-f-]{36}$/, "/salao/[tableId]"]]) {
       try {
         await page.goto(`${panelBase}${list}`, { waitUntil: "load" });
         const href = await page.evaluate((src) => [...document.querySelectorAll("a[href]")].map((a) => new URL(a.href).pathname).find((p) => new RegExp(src).test(p)) || null, pattern.source);
@@ -207,9 +207,8 @@ for (const device of DEVICES) {
     } catch (error) { results.push({ device: device.key, area: "state", label: "local-produto", error: String(error.message).slice(0, 200) }); }
     try {
       await page.goto(`${panelBase}/m/salgados-da-vila`, { waitUntil: "load" });
-      await page.locator('a[href*="/produto/"]', { hasText: "Coca-Cola 2L" }).first().click();
-      await page.waitForTimeout(1500);
-      await page.getByRole("button", { name: /adicionar/i }).first().click();
+      // Produto sem opções entra no carrinho pelo "+" da própria lista.
+      await page.locator('button[aria-label="Adicionar Coca-Cola 2L ao carrinho"]').first().click();
       await page.waitForTimeout(1500);
       await shotState(page, device, "local-depois-de-adicionar");
       await audit(page, device, "public-local", "carrinho", `${panelBase}/m/salgados-da-vila/carrinho`);
