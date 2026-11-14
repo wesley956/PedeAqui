@@ -71,7 +71,7 @@ export default async function DriverPage() {
   if (!driverView) {
     return <>
       <PageHeader title="Minhas entregas" description="Tela de quem faz as entregas." />
-      <EmptyState title="Você não está cadastrado como entregador nesta loja" description="Esta tela mostra as entregas de quem entra com o próprio usuário de entregador. Para acompanhar todas as entregas da loja, use Entregas. Para cadastrar um entregador, abra Configurações › Entregadores." action={<Link href="/entregas" style={{ fontWeight: 700, textDecoration: "underline" }}>Abrir Entregas</Link>} />
+      <EmptyState title="Você não está cadastrado como entregador nesta loja" description="Esta tela mostra as entregas de quem entra com o próprio usuário de entregador. Para acompanhar todas as entregas da loja, use Entregas. Para cadastrar um entregador, abra Configurações › Entregadores." action={<Link href="/entregas" style={{ fontWeight: "var(--font-weight-bold)", textDecoration: "underline" }}>Abrir Entregas</Link>} />
     </>;
   }
   const data = driverView;
