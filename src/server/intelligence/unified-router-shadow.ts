@@ -49,7 +49,7 @@ export class UnifiedIntelligenceRouterShadow {
         .eq("id", conversation.contact_id)
         .maybeSingle(),
       admin.from("messages")
-        .select("body")
+        .select("body, content_type")
         .eq("organization_id", conversation.organization_id)
         .eq("store_id", conversation.store_id)
         .eq("conversation_id", conversation.id)
@@ -115,6 +115,7 @@ export class UnifiedIntelligenceRouterShadow {
       decision = UnifiedIntelligenceRouter.route({
         context,
         message: messageResult.data?.body,
+        contentType: messageResult.data?.content_type,
         session: {
           active: kind !== null,
           kind,
