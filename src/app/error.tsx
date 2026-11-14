@@ -21,7 +21,7 @@ export default function RootError({ error, reset }: { error: Error & { digest?: 
           </p>
         </div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-          <button type="button" onClick={reset} style={{ minHeight: 44, padding: "0 18px", border: 0, borderRadius: "var(--radius-md)", background: "var(--brand-primary)", color: "var(--text-on-brand)", font: "inherit", fontWeight: 700, cursor: "pointer" }}>Tentar novamente</button>
+          <button type="button" onClick={reset} style={{ minHeight: 44, padding: "0 18px", border: 0, borderRadius: "var(--radius-md)", background: "var(--brand-primary)", color: "var(--text-on-brand)", font: "inherit", fontWeight: "var(--font-weight-bold)", cursor: "pointer" }}>Tentar novamente</button>
           {/* Navegação completa de propósito: recarrega o painel do zero depois da falha. */}
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a href="/dashboard" style={{ textDecoration: "underline" }}>Voltar ao início</a>
