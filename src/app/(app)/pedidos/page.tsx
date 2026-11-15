@@ -36,9 +36,14 @@ function rbacSnapshotForEffectiveConfiguration(moduleSnapshot: Awaited<ReturnTyp
   return snapshot;
 }
 
+/** Lido uma vez por requisição, fora do componente. */
+function serverNow() {
+  return Date.now();
+}
+
 export default async function OrdersPage() {
   // Um só "agora" para o servidor e para o primeiro desenho no navegador (tempo decorrido dos pedidos).
-  const renderedAt = Date.now();
+  const renderedAt = serverNow();
   const [{ context, orders, recentFinalized, recentFinalizedWindowMinutes, workflowMode: legacyWorkflowMode, deliveryOperationLevel, paymentCompletionPolicy }, { settings }, moduleSnapshot] = await Promise.all([
     OrderService.list(),
     OrderWorkflowSettingsService.get(),
