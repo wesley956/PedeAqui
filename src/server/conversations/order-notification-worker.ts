@@ -321,8 +321,11 @@ async function processOne(job: QueueRow, workerId: string) {
     .select("created_at")
     .eq("organization_id", job.organization_id)
     .eq("store_id", job.store_id)
-    .eq("conversation_id", conversation.conversation_id)
+    // An outbound notification can open a new conversation after an earlier one
+    // closed. The Meta support window belongs to this contact, not a thread.
+    .eq("contact_id", conversation.contact_id)
     .eq("direction", "inbound")
+    .eq("sender_type", "contact")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
