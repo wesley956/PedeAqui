@@ -74,7 +74,11 @@ jobs:
           git config user.email "ux2-auditoria@users.noreply.github.com"
           git add -A
           git commit -q -m "Prints UX2 de ${GITHUB_REF_NAME} (${GITHUB_SHA})"
-          if ! out="$(git push "$remote" ux2/evidencias 2>&1)"; then
-            echo "::error title=ux2-auditoria-publicar::$(echo "$out" | tail -c 1500 | awk '{printf "%s%%0A", $0}')"
-            exit 1
-          fi
+          # Duas auditorias podem terminar juntas: se a branch andou, traz o commit novo e tenta de novo (sem push forçado).
+          for attempt in 1 2 3 4; do
+            if out="$(git push "$remote" ux2/evidencias 2>&1)"; then exit 0; fi
+            git pull -q --rebase "$remote" ux2/evidencias || true
+            sleep $((attempt * 5))
+          done
+          echo "::error title=ux2-auditoria-publicar::$(echo "$out" | tail -c 1500 | awk '{printf "%s%%0A", $0}')"
+          exit 1

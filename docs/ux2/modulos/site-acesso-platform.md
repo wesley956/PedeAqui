@@ -17,3 +17,10 @@ Auditados em 1366 px e 360 px: início, como funciona, recursos, planos, pedidos
 
 ## Não coberto
 Telas da plataforma que dependem de registro específico (empresa, unidade, pedido, WhatsApp da unidade, modo suporte) e as telas `/convite`, `/nova-senha`, `/onboarding`, `/mesa/[code]`, que precisam de um link válido.
+
+## Atualização de 15/11/2026
+- **Criar conta:** os três planos viraram cartões com nome, preço e "Escolher →" (mesmos links e mesmo fluxo de antes).
+- **Plataforma:** auditadas as 15 telas que faltavam — 7 fixas (apresentação, demonstração, fundadores, incidentes, praticidade, privacidade, modo suporte) e 8 que dependem de empresa, unidade ou pedido. Total: 32 de 32.
+- **Pedido 360°:** estados em português, com o código interno em letra pequena.
+- "Apresentação" e "Abrir demonstração" falhavam na homologação por diferença de ambiente (P-05 em `PENDENCIAS-BANCO.md`).
+- Não coberto: `/platform/empresas/[id]` — a tela inicial da plataforma não tem link direto para a empresa; a de unidade (`/platform/empresas/[id]/unidades/[id]`) depende dela.

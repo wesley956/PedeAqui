@@ -1,0 +1,9 @@
+/* UX2 — escolha de plano no cadastro: cartões no lugar de links sublinhados. Mesmo destino de cada link. */
+.plans { display: grid; gap: var(--space-2); }
+.plansTitle { font-size: var(--font-size-md); }
+.plan { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--control-height-lg); padding: var(--space-3) var(--space-4); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-md); background: var(--surface-1); color: var(--text-primary); text-decoration: none; }
+.plan:hover { border-color: var(--border-strong); }
+.plan:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.planName { display: block; font-weight: var(--font-weight-bold); }
+.planPrice { display: block; color: var(--text-secondary); font-size: var(--font-size-sm); }
+.planChoose { flex: 0 0 auto; font-weight: var(--font-weight-bold); font-size: var(--font-size-sm); }

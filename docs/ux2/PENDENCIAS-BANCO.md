@@ -42,3 +42,10 @@ Não foram executadas na homologação (dependem de iFood, cobrança e rota de e
 
 ## P-03 — Esquema consolidado desatualizado · sem efeito na produção
 `supabase/sql` (usado para montar um banco do zero) não tem objetos e concessões que existem só em `supabase/migrations`: 18 migrações com tabelas/colunas/funções e 2 só de concessão (`manual_delivery_private_execution_grant`, `platform_super_admin_service_role_execute`). A homologação local aplica essas migrações por cima. Quem montar um ambiente novo a partir de `supabase/sql` terá telas quebradas.
+
+## P-05 — Leitura de `auth.users` pelo servidor · diferença de ambiente, a confirmar
+Na homologação local, "Abrir demonstração" e "Apresentação" da plataforma falhavam com `42501 permission denied for table users`: `platform_provision_restaurant_internal` (e outras funções `security invoker`) lê `auth.users` como `service_role`, e a imagem local do banco não concede essa leitura. Como criar restaurante pela plataforma é usado na produção, a leitura deve estar concedida lá; a homologação passou a conceder também (`grant select on auth.users to service_role`). Para confirmar na produção sem alterar nada:
+```sql
+select has_table_privilege('service_role', 'auth.users', 'select');
+```
+Se vier `false`, "Novo restaurante" e "Abrir demonstração" estão quebrados na produção.
