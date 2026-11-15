@@ -6,6 +6,7 @@ import { Alert } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { signUpAction } from "@/features/auth/actions";
 import { CommercialCatalogService, formatCommercialPrice } from "@/server/billing/commercial-catalog-service";
+import styles from "./cadastro.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -34,11 +35,15 @@ export default async function CadastroPage({ searchParams }: { searchParams: Pro
           Plano {selected.name} · {formatCommercialPrice(selected.monthlyPriceCents, selected.currency)}/mês após o teste. <Link href="/cadastro">Trocar plano</Link>
         </Alert>
       ) : (
-        <div className={authStyles.form}>
-          <strong>Escolha seu plano para iniciar o teste:</strong>
+        <div className={styles.plans}>
+          <strong className={styles.plansTitle}>Escolha seu plano para iniciar o teste:</strong>
           {plans.map((plan) => (
-            <Link key={plan.key} href={`/cadastro?plan=${plan.key}`} className={authStyles.link}>
-              {plan.name} — {formatCommercialPrice(plan.monthlyPriceCents, plan.currency)}/mês
+            <Link key={plan.key} href={`/cadastro?plan=${plan.key}`} className={styles.plan}>
+              <span>
+                <span className={styles.planName}>{plan.name}</span>
+                <span className={styles.planPrice}>{formatCommercialPrice(plan.monthlyPriceCents, plan.currency)}/mês depois do teste</span>
+              </span>
+              <span className={styles.planChoose} aria-hidden="true">Escolher →</span>
             </Link>
           ))}
         </div>

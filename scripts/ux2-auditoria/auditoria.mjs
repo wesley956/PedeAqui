@@ -27,7 +27,7 @@ const PANEL_ROUTES = [
 // Site institucional e acesso (sem login).
 const SITE_ROUTES = ["/", "/como-funciona", "/recursos", "/planos", "/pedidos-e-atendimento", "/entrega-e-fidelizacao", "/empresa", "/cadastro", "/recuperar-senha", "/acesso-entregador", "/termos-de-uso", "/politica-de-privacidade"];
 // Painel da plataforma (o usuário da loja fictícia é administrador da plataforma só na homologação local).
-const PLATFORM_ROUTES = ["/platform", "/platform/operacao", "/platform/pendencias", "/platform/alertas", "/platform/assinaturas", "/platform/comercial", "/platform/financeiro", "/platform/suporte", "/platform/comunicacao", "/platform/equipe", "/platform/integracoes", "/platform/integridade", "/platform/auditoria", "/platform/configuracoes", "/platform/produto", "/platform/onboarding", "/platform/novo-restaurante"];
+const PLATFORM_ROUTES = ["/platform", "/platform/operacao", "/platform/pendencias", "/platform/alertas", "/platform/assinaturas", "/platform/comercial", "/platform/financeiro", "/platform/suporte", "/platform/comunicacao", "/platform/equipe", "/platform/integracoes", "/platform/integridade", "/platform/auditoria", "/platform/configuracoes", "/platform/produto", "/platform/onboarding", "/platform/novo-restaurante", "/platform/apresentacao", "/platform/demo", "/platform/fundadores", "/platform/incidentes", "/platform/operacao/praticidade", "/platform/privacidade", "/platform/suporte/modo"];
 
 const DEVICES = [
   { key: "pc-1366", browser: chromium, options: { viewport: { width: 1366, height: 768 } } },
@@ -273,7 +273,7 @@ for (const device of DEVICES) {
     }
 
     // AUDIT_ROUTES="/pedidos,/pdv" limita às telas do módulo em trabalho; sem ela, percorre todas.
-    const chosen = process.env.AUDIT_ROUTES ? process.env.AUDIT_ROUTES.split(",").map((route) => route.trim()).filter((route) => route && route !== "site" && route !== "fluxos") : [...PANEL_ROUTES, ...PLATFORM_ROUTES];
+    const chosen = process.env.AUDIT_ROUTES ? process.env.AUDIT_ROUTES.split(",").map((route) => route.trim()).filter((route) => route && route !== "site" && route !== "fluxos" && route !== "plataforma-detalhes") : [...PANEL_ROUTES, ...PLATFORM_ROUTES];
     for (const route of chosen) await audit(page, device, "panel", route, `${panelBase}${route}`);
 
     // Páginas com id: pega o primeiro link da lista.
@@ -284,6 +284,30 @@ for (const device of DEVICES) {
         if (href) await audit(page, device, "panel", name, `${panelBase}${href}`);
         else results.push({ device: device.key, area: "panel", label: name, error: "nenhum link encontrado na lista" });
       } catch (error) { results.push({ device: device.key, area: "panel", label: name, error: String(error.message).slice(0, 200) }); }
+    }
+
+    // Telas da plataforma que dependem de empresa, unidade ou pedido: descobre os endereços pelos links das listas.
+    if (!process.env.AUDIT_ROUTES || /(^|,)\s*plataforma-detalhes\s*(,|$)/.test(process.env.AUDIT_ROUTES)) {
+      const uuid = "[0-9a-f-]{36}";
+      const firstLink = async (list, source) => {
+        await page.goto(`${panelBase}${list}`, { waitUntil: "load" }).catch(() => {});
+        return page.evaluate((src) => [...document.querySelectorAll("a[href]")].map((a) => new URL(a.href).pathname).find((p) => new RegExp(src).test(p)) || null, source).catch(() => null);
+      };
+      const visit = async (name, href) => { if (href) await audit(page, device, "panel", name, `${panelBase}${href}`); else results.push({ device: device.key, area: "panel", label: name, error: "nenhum link encontrado" }); };
+      const organization = await firstLink("/platform", `^/platform/empresas/${uuid}$`);
+      await visit("/platform/empresas/[id]", organization);
+      await visit("/platform/operacao/pedidos/[id]", await firstLink("/platform/operacao", `^/platform/operacao/pedidos/${uuid}$`));
+      const storeLink = (organization ? await firstLink(organization, `^/platform/(empresas/${uuid}/unidades|unidades|restaurantes)/${uuid}$`) : null) ?? await firstLink("/platform", `^/platform/(unidades|restaurantes)/${uuid}$`);
+      const storeId = storeLink?.match(new RegExp(`(${uuid})$`))?.[1] ?? null;
+      const organizationId = organization?.match(new RegExp(`(${uuid})$`))?.[1] ?? null;
+      if (storeId) {
+        await visit("/platform/unidades/[id]", `/platform/unidades/${storeId}`);
+        await visit("/platform/unidades/[id]/configuracao-operacional", `/platform/unidades/${storeId}/configuracao-operacional`);
+        await visit("/platform/unidades/[id]/whatsapp", `/platform/unidades/${storeId}/whatsapp`);
+        await visit("/platform/unidades/[id]/whatsapp/notificacoes", `/platform/unidades/${storeId}/whatsapp/notificacoes`);
+        await visit("/platform/restaurantes/[id]", `/platform/restaurantes/${storeId}`);
+        if (organizationId) await visit("/platform/empresas/[id]/unidades/[id]", `/platform/empresas/${organizationId}/unidades/${storeId}`);
+      } else results.push({ device: device.key, area: "panel", label: "/platform/unidades/[id]", error: "nenhuma unidade encontrada nos links" });
     }
 
     // Estados de navegação: "Mais", menu da loja, menu da conta.
