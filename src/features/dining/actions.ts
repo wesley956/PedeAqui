@@ -16,7 +16,9 @@ function optional(formData: FormData, key: string) {
   return value || null;
 }
 function friendly(error: unknown) {
-  const raw = error instanceof Error ? error.message.toLowerCase() : "";
+  // O banco devolve erros como objeto simples ({ message, code }), não como Error: sem ler esse formato,
+  // nenhuma das mensagens abaixo era reconhecida e tudo virava "Não foi possível concluir a operação do salão".
+  const raw = (error instanceof Error ? error.message : typeof error === "object" && error !== null && "message" in error ? String((error as { message: unknown }).message) : "").toLowerCase();
   const rules: Array<[string, string]> = [
     ["active tab already exists", "Esta mesa já possui uma comanda ativa."],
     ["target table unavailable", "A mesa de destino não está disponível."],
@@ -31,7 +33,8 @@ function friendly(error: unknown) {
   ];
   for (const [needle, message] of rules) if (raw.includes(needle)) return message;
   // Falha sem tradução conhecida: registra o motivo no servidor (sem dados de cliente) para poder ser investigada.
-  console.error("[pedeaqui-dining] unexpected error", { message: raw.slice(0, 300) || "unavailable" });
+  const code = typeof error === "object" && error !== null && "code" in error ? String((error as { code: unknown }).code) : "unavailable";
+  console.error("[pedeaqui-dining] unexpected error", { message: raw.slice(0, 300) || "unavailable", code });
   return "Não foi possível concluir a operação do salão.";
 }
 

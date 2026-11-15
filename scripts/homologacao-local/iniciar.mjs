@@ -220,6 +220,11 @@ if (verify) {
     console.log(`HOMOLOG_APOS status=${afterStatus}`);
     // O registro do servidor vai junto com os prints: mostra o motivo de telas que falharam.
     if (process.env.AUDIT_OUT) { try { fs.writeFileSync(path.join(process.env.AUDIT_OUT, "servidor.log"), appLog.slice(-400000)); } catch { /* pasta ausente */ } }
+    // Registros do banco local e da porta de entrada: mostram o motivo de respostas inválidas ("invalid response from upstream").
+    if (process.env.AUDIT_OUT) for (const service of ["db", "rest", "kong", "auth"]) {
+      const logs = spawnSync(`docker logs --tail 400 supabase_${service}_homolog-local`, { shell: true, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+      try { fs.writeFileSync(path.join(process.env.AUDIT_OUT, `banco-${service}.log`), `${logs.stdout ?? ""}\n${logs.stderr ?? ""}`.slice(-300000)); } catch { /* pasta ausente */ }
+    }
   }
   stop();
   process.exit(ok && afterStatus === 0 ? 0 : 1);
