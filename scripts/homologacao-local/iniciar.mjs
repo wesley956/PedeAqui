@@ -141,7 +141,7 @@ if (!state) {
   // Diferença de ambiente (não é correção): na produção o servidor (service_role) consegue ler auth.users; a imagem
   // local mais nova não concede isso, e funções como "criar restaurante/demonstração" falhavam só aqui.
   {
-    const grant = run(`docker exec -i ${dbContainer} psql -U supabase_admin -d postgres -X -q -At`, { input: "grant usage on schema auth to service_role; grant select on auth.users to service_role; select 'auth.users legível pelo servidor: ' || has_table_privilege('service_role', 'auth.users', 'select');", allowFail: true });
+    const grant = run(`docker exec -i -e PGPASSWORD=postgres ${dbContainer} psql -h 127.0.0.1 -U supabase_admin -d postgres -X -q -At`, { input: "grant usage on schema auth to service_role; grant select on auth.users to service_role; select 'auth.users legível pelo servidor: ' || has_table_privilege('service_role', 'auth.users', 'select');", allowFail: true });
     console.log(`  ${(grant.out || grant.err || "sem resposta").trim().split("\n").slice(-2).join(" | ")}`);
   }
   console.log(`  ${files.length} arquivos de schema aplicados; ${deltas.length - skipped.length} migrações extras aplicadas${skipped.length ? `, ${skipped.length} ignoradas` : ""}.`);
