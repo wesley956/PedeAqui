@@ -26,9 +26,9 @@ export function botPreopenOpeningTime(input: {
   if (weekday === undefined || !Number.isInteger(hour) || !Number.isInteger(minute)) return null;
   const localMinute = hour * 60 + minute;
   for (const row of input.hours) {
-    if (row.active === false || row.weekday !== weekday) return null;
+    if (row.active === false || row.weekday !== weekday) continue;
     const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(row.opens_at);
-    if (!match) return null;
+    if (!match) continue;
     const opening = Number(match[1]) * 60 + Number(match[2]);
     // Only the same local calendar day's opening; no yesterday or closed-day replies.
     if (opening > 0 && localMinute >= opening - input.minutes && localMinute < opening) {
