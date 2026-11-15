@@ -1,0 +1,53 @@
+[
+  {
+    "device": "pc-1366",
+    "label": "/pedidos/[id]",
+    "reasons": [
+      "nenhum link encontrado na lista"
+    ]
+  },
+  {
+    "device": "pc-1366",
+    "label": "pedido › 5-proxima-acao",
+    "reasons": [
+      "A operação abriu uma tela de erro; recarregar não confirma seu resultado.",
+      "fluxo não confirmado"
+    ]
+  },
+  {
+    "device": "pc-1366",
+    "label": "pedido › 10-confirmar-conclusao",
+    "reasons": [
+      "O pedido não chegou ao estado Concluído.",
+      "fluxo não confirmado"
+    ]
+  },
+  {
+    "device": "android-360",
+    "label": "/pedidos/[id]",
+    "reasons": [
+      "acessibilidade grave"
+    ]
+  },
+  {
+    "device": "android-360",
+    "label": "pdv-pagamento-detalhes",
+    "reasons": [
+      "locator.click: Timeout 6000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: /Detalhes/ }).first()\n"
+    ]
+  },
+  {
+    "device": "android-360",
+    "label": "checkout",
+    "reasons": [
+      "acessibilidade grave"
+    ]
+  },
+  {
+    "device": "android-360-escuro",
+    "label": "pdv-pagamento-detalhes",
+    "reasons": [
+      "locator.click: Timeout 6000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: /Detalhes/ }).first()\n"
+    ]
+  }
+]

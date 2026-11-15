@@ -1,0 +1,89 @@
+
+▶ Conferindo o que precisa estar instalado
+  Node 22.23.4 · Docker ok · Supabase CLI: via npx
+
+▶ Subindo o banco local (Supabase em Docker)
+
+▶ Criando as tabelas do sistema no banco local
+  auth.users legível pelo servidor: true
+  234 arquivos de schema aplicados; 21 migrações extras aplicadas.
+
+▶ Criando a loja fictícia (Salgados da Vila)
+  SEED_SUMMARY products=16 groups=9 orders=10 modules=21
+
+▶ Compilando o sistema (alguns minutos)
+
+▶ Iniciando o sistema
+HOMOLOG_VERIFY /login=200 /m/salgados-da-vila=200 /dashboard=307 /api/health=200 login=200 SEED_SUMMARY products=16 groups=9 orders=10 modules=21 avisos=0
+pc-1366 panel login → 200 /login overflow=no small=12 
+pc-1366 logged in → http://127.0.0.1:3000/dashboard
+pc-1366 panel /dashboard → 200 /dashboard overflow=no small=22 
+pc-1366 panel /pedidos → 200 /pedidos overflow=no small=81 
+pc-1366 panel /pdv → 200 /pdv overflow=no small=41 
+pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/98fb2b59-0063-4b3a-9023-897617b8d33f overflow=no small=34 
+pc-1366 panel /clientes/[id] → 200 /clientes/419dc9db-256a-4c2b-ab89-d0166ba30990 overflow=no small=34 
+pc-1366 panel /salao/[tableId] → 200 /salao/6faf8da4-b1e6-4d69-aad7-79fed9369d1d overflow=no small=28 
+pc-1366 public-local menu → 200 /m/salgados-da-vila overflow=no small=5 
+pc-1366 public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=5 
+pc-1366 public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=7 
+FLUXO caixa › 1-abrir-tela ok
+FLUXO caixa › 2-abrir-caixa ok
+FLUXO pdv › 1-abrir ok
+FLUXO pdv › 2-adicionar-item ok
+FLUXO pdv › 3-valor-recebido ok
+FLUXO pdv › 4-finalizar ok
+FLUXO pdv › 5-produto-com-opcoes ok
+FLUXO pedido › 1-abrir-lista ok
+FLUXO pedido › 2-abrir-detalhe ok
+FLUXO pedido › 3-proxima-acao ok
+FLUXO pedido › 4-proxima-acao ok
+FLUXO pedido › 5-proxima-acao FALHOU A operação abriu uma tela de erro; recarregar não confirma seu resultado.
+FLUXO pedido › 10-confirmar-conclusao FALHOU O pedido não chegou ao estado Concluído.
+FLUXO salao › 1-abrir-lista ok
+FLUXO salao › 2-abrir-mesa ok
+FLUXO salao › 3-abrir-atendimento ok
+FLUXO salao › 4-lancar-item ok
+FLUXO salao › 5-enviar-producao ok
+FLUXO salao › 6-registrar-pagamento ok
+FLUXO salao › 7-recusar-fechamento-com-pedido-em-preparo ok
+FLUXO caixa › 3-com-venda ok
+FLUXO caixa › 4-conferir-fechar ok
+android-360 panel login → 200 /login overflow=no small=9 
+android-360 logged in → http://127.0.0.1:3000/dashboard
+android-360 panel /dashboard → 200 /dashboard overflow=no small=14 
+android-360 panel /pedidos → 200 /pedidos overflow=no small=16 
+android-360 panel /pdv → 200 /pdv overflow=no small=12 
+android-360 panel /pedidos/[id] → 200 /pedidos/c088bb21-fcd8-4404-978a-6bf34c256078 overflow=no small=19 
+android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/98fb2b59-0063-4b3a-9023-897617b8d33f overflow=no small=26 
+android-360 panel /clientes/[id] → 200 /clientes/419dc9db-256a-4c2b-ab89-d0166ba30990 overflow=no small=26 
+android-360 panel /salao/[tableId] → 200 /salao/6faf8da4-b1e6-4d69-aad7-79fed9369d1d overflow=no small=19 
+android-360 public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
+android-360 public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=6 
+android-360 public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=8 
+pc-1366-escuro panel login → 200 /login overflow=no small=12 
+pc-1366-escuro logged in → http://127.0.0.1:3000/dashboard
+pc-1366-escuro panel /dashboard → 200 /dashboard overflow=no small=22 
+pc-1366-escuro panel /pedidos → 200 /pedidos overflow=no small=86 
+pc-1366-escuro panel /pdv → 200 /pdv overflow=no small=41 
+pc-1366-escuro panel /pedidos/[id] → 200 /pedidos/c088bb21-fcd8-4404-978a-6bf34c256078 overflow=no small=27 
+pc-1366-escuro panel /cardapio/produtos/[id] → 200 /cardapio/produtos/98fb2b59-0063-4b3a-9023-897617b8d33f overflow=no small=34 
+pc-1366-escuro panel /clientes/[id] → 200 /clientes/419dc9db-256a-4c2b-ab89-d0166ba30990 overflow=no small=34 
+pc-1366-escuro panel /salao/[tableId] → 200 /salao/6faf8da4-b1e6-4d69-aad7-79fed9369d1d overflow=no small=30 
+pc-1366-escuro public-local menu → 200 /m/salgados-da-vila overflow=no small=5 
+pc-1366-escuro public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=5 
+pc-1366-escuro public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=7 
+android-360-escuro panel login → 200 /login overflow=no small=9 
+android-360-escuro logged in → http://127.0.0.1:3000/dashboard
+android-360-escuro panel /dashboard → 200 /dashboard overflow=no small=14 
+android-360-escuro panel /pedidos → 200 /pedidos overflow=no small=16 
+android-360-escuro panel /pdv → 200 /pdv overflow=no small=12 
+android-360-escuro panel /pedidos/[id] → 200 /pedidos/c088bb21-fcd8-4404-978a-6bf34c256078 overflow=no small=19 
+android-360-escuro panel /cardapio/produtos/[id] → 200 /cardapio/produtos/98fb2b59-0063-4b3a-9023-897617b8d33f overflow=no small=26 
+android-360-escuro panel /clientes/[id] → 200 /clientes/419dc9db-256a-4c2b-ab89-d0166ba30990 overflow=no small=26 
+android-360-escuro panel /salao/[tableId] → 200 /salao/6faf8da4-b1e6-4d69-aad7-79fed9369d1d overflow=no small=19 
+android-360-escuro public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
+android-360-escuro public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=6 
+android-360-escuro public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=8 
+UX2_AUDIT_DONE entries=124
+UX2_AUDIT_FAILED [{"device":"pc-1366","label":"/pedidos/[id]","reasons":["nenhum link encontrado na lista"]},{"device":"pc-1366","label":"pedido › 5-proxima-acao","reasons":["A operação abriu uma tela de erro; recarregar não confirma seu resultado.","fluxo não confirmado"]},{"device":"pc-1366","label":"pedido › 10-confirmar-conclusao","reasons":["O pedido não chegou ao estado Concluído.","fluxo não confirmado"]},{"device":"android-360","label":"/pedidos/[id]","reasons":["acessibilidade grave"]},{"device":"android-360","label":"pdv-pagamento-detalhes","reasons":["locator.click: Timeout 6000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: /Detalhes/ }).first()\n"]},{"device":"android-360","label":"checkout","reasons":["acessibilidade grave"]},{"device":"android-360-escuro","label":"pdv-pagamento-detalhes","reasons":["locator.click: Timeout 6000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: /Detalhes/ }).first()\n"]}]
+HOMOLOG_APOS status=1
