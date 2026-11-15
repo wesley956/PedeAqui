@@ -1,852 +1,11 @@
 [
  {
   "device": "pc-1366",
-  "area": "site",
-  "label": "/",
-  "url": "http://127.0.0.1:3000/",
-  "status": 200,
-  "loadMs": 852,
-  "finalUrl": "/",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 4003,
-  "screens": 5.2,
-  "title": "Pedidos próprios, operação organizada",
-  "h1": "Seu cliente pede. O PedeAqui organiza.",
-  "overflowing": [],
-  "interactiveCount": 28,
-  "smallTargets": 15,
-  "tinyTargets": 10,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "summary \"Produto\"",
-    "w": 81,
-    "h": 21
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 72,
-    "h": 21
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 52,
-    "h": 21
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Produto Recursos Planos Entrar Começar agora\"",
-    "top": 0,
-    "h": 75,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 3207,
-  "shot": "shots/pc-1366__site__home.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "site",
-  "label": "/como-funciona",
-  "url": "http://127.0.0.1:3000/como-funciona",
-  "status": 200,
-  "loadMs": 671,
-  "finalUrl": "/como-funciona",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 3789,
-  "screens": 4.9,
-  "title": "Como funciona | PedeAqui",
-  "h1": "Um pedido simples para o cliente e claro para quem atende.",
-  "overflowing": [],
-  "interactiveCount": 22,
-  "smallTargets": 15,
-  "tinyTargets": 10,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "summary \"Produto\"",
-    "w": 81,
-    "h": 21
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 72,
-    "h": 21
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 52,
-    "h": 21
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Produto Recursos Planos Entrar Começar agora\"",
-    "top": 0,
-    "h": 75,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2749,
-  "shot": "shots/pc-1366__site__como-funciona.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "site",
-  "label": "/recursos",
-  "url": "http://127.0.0.1:3000/recursos",
-  "status": 200,
-  "loadMs": 631,
-  "finalUrl": "/recursos",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 4873,
-  "screens": 6.3,
-  "title": "Recursos | PedeAqui",
-  "h1": "Veja o PedeAqui pelo que ele resolve na rotina.",
-  "overflowing": [],
-  "interactiveCount": 22,
-  "smallTargets": 15,
-  "tinyTargets": 10,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "summary \"Produto\"",
-    "w": 81,
-    "h": 21
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 72,
-    "h": 21
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 52,
-    "h": 21
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Produto Recursos Planos Entrar Começar agora\"",
-    "top": 0,
-    "h": 75,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 4216,
-  "shot": "shots/pc-1366__site__recursos.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "site",
-  "label": "/planos",
-  "url": "http://127.0.0.1:3000/planos",
-  "status": 200,
-  "loadMs": 632,
-  "finalUrl": "/planos",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 4509,
-  "screens": 5.9,
-  "title": "Planos e preços | PedeAqui",
-  "h1": "Escolha seu plano. Teste por 15 dias grátis.",
-  "overflowing": [],
-  "interactiveCount": 25,
-  "smallTargets": 15,
-  "tinyTargets": 10,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "summary \"Produto\"",
-    "w": 81,
-    "h": 21
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 72,
-    "h": 21
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 52,
-    "h": 21
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Produto Recursos Planos Entrar Começar agora\"",
-    "top": 0,
-    "h": 75,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 3334,
-  "shot": "shots/pc-1366__site__planos.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "site",
-  "label": "/pedidos-e-atendimento",
-  "url": "http://127.0.0.1:3000/pedidos-e-atendimento",
-  "status": 200,
-  "loadMs": 636,
-  "finalUrl": "/pedidos-e-atendimento",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 3730,
-  "screens": 4.9,
-  "title": "Pedidos e atendimento | PedeAqui",
-  "h1": "O cliente termina o pedido. Sua equipe começa com tudo organizado.",
-  "overflowing": [],
-  "interactiveCount": 22,
-  "smallTargets": 15,
-  "tinyTargets": 10,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "summary \"Produto\"",
-    "w": 81,
-    "h": 21
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 72,
-    "h": 21
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 52,
-    "h": 21
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Produto Recursos Planos Entrar Começar agora\"",
-    "top": 0,
-    "h": 75,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2816,
-  "shot": "shots/pc-1366__site__pedidos-e-atendimento.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "site",
-  "label": "/entrega-e-fidelizacao",
-  "url": "http://127.0.0.1:3000/entrega-e-fidelizacao",
-  "status": 200,
-  "loadMs": 617,
-  "finalUrl": "/entrega-e-fidelizacao",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 4651,
-  "screens": 6.1,
-  "title": "Entrega e fidelização | PedeAqui",
-  "h1": "O pedido sai da loja. A relação com o cliente não precisa acabar ali.",
-  "overflowing": [],
-  "interactiveCount": 22,
-  "smallTargets": 15,
-  "tinyTargets": 10,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "summary \"Produto\"",
-    "w": 81,
-    "h": 21
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a",
-    "w": 228,
-    "h": 41
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 72,
-    "h": 21
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 52,
-    "h": 21
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Produto Recursos Planos Entrar Começar agora\"",
-    "top": 0,
-    "h": 75,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 3585,
-  "shot": "shots/pc-1366__site__entrega-e-fidelizacao.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "site",
-  "label": "/empresa",
-  "url": "http://127.0.0.1:3000/empresa",
-  "status": 200,
-  "loadMs": 618,
-  "finalUrl": "/empresa",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 892,
-  "screens": 1.2,
-  "title": "Informações legais | PedeAqui",
-  "h1": "Informações legais",
-  "overflowing": [],
-  "interactiveCount": 5,
-  "smallTargets": 5,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.legal-page-module__fsme8q__back \"+55 19 98144-7794\"",
-    "w": 176,
-    "h": 19
-   },
-   {
-    "el": "a \"Informações legais\"",
-    "w": 151,
-    "h": 24
-   },
-   {
-    "el": "a \"Política de Privacidade\"",
-    "w": 180,
-    "h": 24
-   },
-   {
-    "el": "a \"Termos de Uso\"",
-    "w": 117,
-    "h": 24
-   },
-   {
-    "el": "a \"Entrar no PedeAqui\"",
-    "w": 154,
-    "h": 24
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 766,
-  "shot": "shots/pc-1366__site__empresa.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "site",
-  "label": "/cadastro",
-  "url": "http://127.0.0.1:3000/cadastro",
-  "status": 200,
-  "loadMs": 745,
-  "finalUrl": "/cadastro",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 948,
-  "screens": 1.2,
-  "title": "PedeAqui",
-  "h1": "Criar conta",
-  "overflowing": [],
-  "interactiveCount": 10,
-  "smallTargets": 7,
-  "tinyTargets": 4,
-  "smallTargetExamples": [
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"email\"",
-    "w": 370,
-    "h": 42
-   },
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"password\"",
-    "w": 370,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Começar teste grátis\"",
-    "w": 370,
-    "h": 42
-   },
-   {
-    "el": "a.auth-flow-module__Y0Aw2a__link \"Entrar\"",
-    "w": 43,
-    "h": 16
-   },
-   {
-    "el": "a \"Informações legais\"",
-    "w": 113,
-    "h": 18
-   },
-   {
-    "el": "a \"Privacidade\"",
-    "w": 70,
-    "h": 18
-   },
-   {
-    "el": "a \"Termos de Uso\"",
-    "w": 88,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 572,
-  "shot": "shots/pc-1366__site__cadastro.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "site",
-  "label": "/recuperar-senha",
-  "url": "http://127.0.0.1:3000/recuperar-senha",
-  "status": 200,
-  "loadMs": 604,
-  "finalUrl": "/recuperar-senha",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Recuperar senha",
-  "overflowing": [],
-  "interactiveCount": 6,
-  "smallTargets": 6,
-  "tinyTargets": 3,
-  "smallTargetExamples": [
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"email\"",
-    "w": 370,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Enviar instruções\"",
-    "w": 370,
-    "h": 42
-   },
-   {
-    "el": "a.auth-flow-module__Y0Aw2a__linkMuted \"Voltar para entrar\"",
-    "w": 370,
-    "h": 24
-   },
-   {
-    "el": "a \"Informações legais\"",
-    "w": 113,
-    "h": 18
-   },
-   {
-    "el": "a \"Privacidade\"",
-    "w": 70,
-    "h": 18
-   },
-   {
-    "el": "a \"Termos de Uso\"",
-    "w": 88,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 254,
-  "shot": "shots/pc-1366__site__recuperar-senha.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "site",
-  "label": "/acesso-entregador",
-  "url": "http://127.0.0.1:3000/acesso-entregador",
-  "status": 200,
-  "loadMs": 618,
-  "finalUrl": "/acesso-entregador",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 899,
-  "screens": 1.2,
-  "title": "PedeAqui",
-  "h1": "Olá, entregador",
-  "overflowing": [],
-  "interactiveCount": 10,
-  "smallTargets": 10,
-  "tinyTargets": 4,
-  "smallTargetExamples": [
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"(19) 99999-9999\"",
-    "w": 410,
-    "h": 42
-   },
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"pin\"",
-    "w": 410,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Entrar nas minhas entregas\"",
-    "w": 410,
-    "h": 42
-   },
-   {
-    "el": "a.auth-flow-module__Y0Aw2a__link \"Sou da loja → Acessar painel\"",
-    "w": 200,
-    "h": 21
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 123,
-    "h": 38
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 123,
-    "h": 38
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 123,
-    "h": 38
-   },
-   {
-    "el": "a \"Informações legais\"",
-    "w": 113,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 590,
-  "shot": "shots/pc-1366__site__acesso-entregador.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "site",
-  "label": "/termos-de-uso",
-  "url": "http://127.0.0.1:3000/termos-de-uso",
-  "status": 200,
-  "loadMs": 520,
-  "finalUrl": "/termos-de-uso",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1500,
-  "screens": 2,
-  "title": "Termos de Uso | PedeAqui",
-  "h1": "Termos de Uso",
-  "overflowing": [],
-  "interactiveCount": 5,
-  "smallTargets": 4,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a \"Informações legais\"",
-    "w": 151,
-    "h": 24
-   },
-   {
-    "el": "a \"Política de Privacidade\"",
-    "w": 180,
-    "h": 24
-   },
-   {
-    "el": "a \"Termos de Uso\"",
-    "w": 117,
-    "h": 24
-   },
-   {
-    "el": "a \"Entrar no PedeAqui\"",
-    "w": 154,
-    "h": 24
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2276,
-  "shot": "shots/pc-1366__site__termos-de-uso.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "site",
-  "label": "/politica-de-privacidade",
-  "url": "http://127.0.0.1:3000/politica-de-privacidade",
-  "status": 200,
-  "loadMs": 517,
-  "finalUrl": "/politica-de-privacidade",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1523,
-  "screens": 2,
-  "title": "Política de Privacidade | PedeAqui",
-  "h1": "Política de Privacidade",
-  "overflowing": [],
-  "interactiveCount": 5,
-  "smallTargets": 5,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.legal-page-module__fsme8q__back \"+55 19 98144-7794\"",
-    "w": 162,
-    "h": 19
-   },
-   {
-    "el": "a \"Informações legais\"",
-    "w": 151,
-    "h": 24
-   },
-   {
-    "el": "a \"Política de Privacidade\"",
-    "w": 180,
-    "h": 24
-   },
-   {
-    "el": "a \"Termos de Uso\"",
-    "w": 117,
-    "h": 24
-   },
-   {
-    "el": "a \"Entrar no PedeAqui\"",
-    "w": 154,
-    "h": 24
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2569,
-  "shot": "shots/pc-1366__site__politica-de-privacidade.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
   "area": "panel",
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 642,
+  "loadMs": 911,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -1007,50 +166,10 @@
  {
   "device": "pc-1366",
   "area": "panel",
-  "label": "/platform/apresentacao",
-  "url": "http://127.0.0.1:3000/platform/apresentacao",
-  "status": 200,
-  "loadMs": 627,
-  "finalUrl": "/platform/apresentacao",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
-  "overflowing": [],
-  "interactiveCount": 2,
-  "smallTargets": 1,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 16,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 183,
-  "shot": "shots/pc-1366__panel__platform-apresentacao.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
-  "loadMs": 557,
+  "loadMs": 589,
   "finalUrl": "/platform/demo",
   "vw": 1366,
   "vh": 768,
@@ -1087,11 +206,51 @@
  {
   "device": "pc-1366",
   "area": "panel",
-  "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
+  "label": "/platform/apresentacao",
+  "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 1226,
-  "finalUrl": "/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
+  "loadMs": 565,
+  "finalUrl": "/platform/apresentacao",
+  "vw": 1366,
+  "vh": 768,
+  "docWidth": 1366,
+  "docHeight": 768,
+  "screens": 1,
+  "title": "PedeAqui",
+  "h1": "Não foi possível abrir esta página",
+  "overflowing": [],
+  "interactiveCount": 2,
+  "smallTargets": 1,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "a \"Voltar ao início\"",
+    "w": 118,
+    "h": 24
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 16,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 183,
+  "shot": "shots/pc-1366__panel__platform-apresentacao.jpg",
+  "consoleErrors": [
+   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
+   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
+  ]
+ },
+ {
+  "device": "pc-1366",
+  "area": "panel",
+  "label": "/pedidos/[id]",
+  "url": "http://127.0.0.1:3000/pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780",
+  "status": 200,
+  "loadMs": 1386,
+  "finalUrl": "/pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1179,10 +338,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4",
   "status": 200,
-  "loadMs": 1184,
-  "finalUrl": "/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
+  "loadMs": 1247,
+  "finalUrl": "/cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1276,10 +435,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
+  "url": "http://127.0.0.1:3000/clientes/a70e522b-1b04-47e7-96fc-63814f943a46",
   "status": 200,
-  "loadMs": 1147,
-  "finalUrl": "/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
+  "loadMs": 1205,
+  "finalUrl": "/clientes/a70e522b-1b04-47e7-96fc-63814f943a46",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1367,10 +526,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
+  "url": "http://127.0.0.1:3000/salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d",
   "status": 200,
-  "loadMs": 1132,
-  "finalUrl": "/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
+  "loadMs": 1154,
+  "finalUrl": "/salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1452,536 +611,6 @@
   "fixedCoverPx": 48,
   "bodyTextLength": 643,
   "shot": "shots/pc-1366__panel__salao-tableId.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/platform/empresas/[id]",
-  "error": "nenhum link encontrado"
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/platform/operacao/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
-  "status": 200,
-  "loadMs": 916,
-  "finalUrl": "/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1805,
-  "screens": 2.4,
-  "title": "PedeAqui",
-  "h1": "Pedido #1",
-  "overflowing": [],
-  "interactiveCount": 31,
-  "smallTargets": 31,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2827,
-  "shot": "shots/pc-1366__panel__platform-operacao-pedidos-id.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/platform/unidades/[id]",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "status": 200,
-  "loadMs": 980,
-  "finalUrl": "/platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 5375,
-  "screens": 7,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 95,
-  "smallTargets": 95,
-  "tinyTargets": 11,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Completo — aceite e etapas padrão Simplificado — 3\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesStationaryAlertMinutes\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesTrackingRetentionDays\" 12px",
-   "input.platform-module__d3cmqG__field \"campaignRatePerMinute\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: operação simplificada solicitada pelo cliente\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: CLIENTE-01-OPERACAO\" 12px"
-  ],
-  "inputsZoomCount": 37,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 7144,
-  "shot": "shots/pc-1366__panel__platform-unidades-id.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/configuracao-operacional",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
-  "status": 200,
-  "loadMs": 904,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1581,
-  "screens": 2.1,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 44,
-  "smallTargets": 44,
-  "tinyTargets": 7,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Completo — aceite e etapas padrão Simplificado — 3\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesStationaryAlertMinutes\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesTrackingRetentionDays\" 12px",
-   "input.platform-module__d3cmqG__field \"campaignRatePerMinute\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: operação simplificada solicitada pelo cliente\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: CLIENTE-01-OPERACAO\" 12px"
-  ],
-  "inputsZoomCount": 6,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2182,
-  "shot": "shots/pc-1366__panel__platform-unidades-id-configuracao-operacional.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/whatsapp",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "status": 200,
-  "loadMs": 885,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1296,
-  "screens": 1.7,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 36,
-  "smallTargets": 34,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1703,
-  "shot": "shots/pc-1366__panel__platform-unidades-id-whatsapp.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/whatsapp/notificacoes",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
-  "status": 200,
-  "loadMs": 832,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1185,
-  "screens": 1.5,
-  "title": "PedeAqui",
-  "h1": "Notificações automáticas do pedido",
-  "overflowing": [],
-  "interactiveCount": 34,
-  "smallTargets": 34,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1748,
-  "shot": "shots/pc-1366__panel__platform-unidades-id-whatsapp-notificacoes.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/platform/restaurantes/[id]",
-  "url": "http://127.0.0.1:3000/platform/restaurantes/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "status": 200,
-  "loadMs": 979,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1296,
-  "screens": 1.7,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 36,
-  "smallTargets": 34,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1703,
-  "shot": "shots/pc-1366__panel__platform-restaurantes-id.jpg",
   "consoleErrors": []
  },
  {
@@ -2720,7 +1349,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 690,
+  "loadMs": 703,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -3003,7 +1632,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 640,
+  "loadMs": 652,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -3060,7 +1689,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 670,
+  "loadMs": 691,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -3130,954 +1759,28 @@
  },
  {
   "device": "android-360",
-  "area": "site",
-  "label": "/",
-  "url": "http://127.0.0.1:3000/",
-  "status": 200,
-  "loadMs": 811,
-  "finalUrl": "/",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 6821,
-  "screens": 9.2,
-  "title": "Pedidos próprios, operação organizada",
-  "h1": "Seu cliente pede. O PedeAqui organiza.",
-  "overflowing": [],
-  "interactiveCount": 26,
-  "smallTargets": 15,
-  "tinyTargets": 7,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__primaryButton \"Começar agora\"",
-    "w": 122,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__mobileLoginLin \"Entrar\"",
-    "w": 66,
-    "h": 36
-   },
-   {
-    "el": "a \"Como funciona\"",
-    "w": 129,
-    "h": 36
-   },
-   {
-    "el": "a \"Pedidos\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Entrega\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 87,
-    "h": 36
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 69,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Começar agora Entrar Como funciona Pedidos Entrega\"",
-    "top": 0,
-    "h": 115,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 3229,
-  "shot": "shots/android-360__site__home.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 9,
-    "example": ".marketing-module__snxi8q__headerActions > .marketing-module__snxi8q__primaryButton[href$=\"cadastro\"]"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "site",
-  "label": "/como-funciona",
-  "url": "http://127.0.0.1:3000/como-funciona",
-  "status": 200,
-  "loadMs": 625,
-  "finalUrl": "/como-funciona",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 6228,
-  "screens": 8.4,
-  "title": "Como funciona | PedeAqui",
-  "h1": "Um pedido simples para o cliente e claro para quem atende.",
-  "overflowing": [],
-  "interactiveCount": 20,
-  "smallTargets": 15,
-  "tinyTargets": 7,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__primaryButton \"Começar agora\"",
-    "w": 122,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__mobileLoginLin \"Entrar\"",
-    "w": 66,
-    "h": 36
-   },
-   {
-    "el": "a \"Como funciona\"",
-    "w": 129,
-    "h": 36
-   },
-   {
-    "el": "a \"Pedidos\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Entrega\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 87,
-    "h": 36
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 69,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Começar agora Entrar Como funciona Pedidos Entrega\"",
-    "top": 0,
-    "h": 115,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2771,
-  "shot": "shots/android-360__site__como-funciona.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 9,
-    "example": ".marketing-module__snxi8q__headerActions > .marketing-module__snxi8q__primaryButton[href$=\"cadastro\"]"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "site",
-  "label": "/recursos",
-  "url": "http://127.0.0.1:3000/recursos",
-  "status": 200,
-  "loadMs": 641,
-  "finalUrl": "/recursos",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 8556,
-  "screens": 11.6,
-  "title": "Recursos | PedeAqui",
-  "h1": "Veja o PedeAqui pelo que ele resolve na rotina.",
-  "overflowing": [],
-  "interactiveCount": 20,
-  "smallTargets": 15,
-  "tinyTargets": 7,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__primaryButton \"Começar agora\"",
-    "w": 122,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__mobileLoginLin \"Entrar\"",
-    "w": 66,
-    "h": 36
-   },
-   {
-    "el": "a \"Como funciona\"",
-    "w": 129,
-    "h": 36
-   },
-   {
-    "el": "a \"Pedidos\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Entrega\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 87,
-    "h": 36
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 69,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Começar agora Entrar Como funciona Pedidos Entrega\"",
-    "top": 0,
-    "h": 115,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 4238,
-  "shot": "shots/android-360__site__recursos.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 23,
-    "example": ".marketing-module__snxi8q__primaryButton[href$=\"cadastro\"]"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "site",
-  "label": "/planos",
-  "url": "http://127.0.0.1:3000/planos",
-  "status": 200,
-  "loadMs": 650,
-  "finalUrl": "/planos",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 7683,
-  "screens": 10.4,
-  "title": "Planos e preços | PedeAqui",
-  "h1": "Escolha seu plano. Teste por 15 dias grátis.",
-  "overflowing": [],
-  "interactiveCount": 23,
-  "smallTargets": 15,
-  "tinyTargets": 7,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__primaryButton \"Começar agora\"",
-    "w": 122,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__mobileLoginLin \"Entrar\"",
-    "w": 66,
-    "h": 36
-   },
-   {
-    "el": "a \"Como funciona\"",
-    "w": 129,
-    "h": 36
-   },
-   {
-    "el": "a \"Pedidos\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Entrega\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 87,
-    "h": 36
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 69,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Começar agora Entrar Como funciona Pedidos Entrega\"",
-    "top": 0,
-    "h": 115,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 3356,
-  "shot": "shots/android-360__site__planos.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 18,
-    "example": ".marketing-module__snxi8q__headerActions > .marketing-module__snxi8q__primaryButton[href$=\"cadastro\"]"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "site",
-  "label": "/pedidos-e-atendimento",
-  "url": "http://127.0.0.1:3000/pedidos-e-atendimento",
-  "status": 200,
-  "loadMs": 622,
-  "finalUrl": "/pedidos-e-atendimento",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 6141,
-  "screens": 8.3,
-  "title": "Pedidos e atendimento | PedeAqui",
-  "h1": "O cliente termina o pedido. Sua equipe começa com tudo organizado.",
-  "overflowing": [],
-  "interactiveCount": 20,
-  "smallTargets": 15,
-  "tinyTargets": 7,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__primaryButton \"Começar agora\"",
-    "w": 122,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__mobileLoginLin \"Entrar\"",
-    "w": 66,
-    "h": 36
-   },
-   {
-    "el": "a \"Como funciona\"",
-    "w": 129,
-    "h": 36
-   },
-   {
-    "el": "a \"Pedidos\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Entrega\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 87,
-    "h": 36
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 69,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Começar agora Entrar Como funciona Pedidos Entrega\"",
-    "top": 0,
-    "h": 115,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2838,
-  "shot": "shots/android-360__site__pedidos-e-atendimento.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 9,
-    "example": ".marketing-module__snxi8q__primaryButton[href$=\"cadastro\"]"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "site",
-  "label": "/entrega-e-fidelizacao",
-  "url": "http://127.0.0.1:3000/entrega-e-fidelizacao",
-  "status": 200,
-  "loadMs": 665,
-  "finalUrl": "/entrega-e-fidelizacao",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 7363,
-  "screens": 10,
-  "title": "Entrega e fidelização | PedeAqui",
-  "h1": "O pedido sai da loja. A relação com o cliente não precisa acabar ali.",
-  "overflowing": [],
-  "interactiveCount": 20,
-  "smallTargets": 15,
-  "tinyTargets": 7,
-  "smallTargetExamples": [
-   {
-    "el": "a.marketing-module__snxi8q__brandLink \"PedeAqui — início\"",
-    "w": 116,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__primaryButton \"Começar agora\"",
-    "w": 122,
-    "h": 40
-   },
-   {
-    "el": "a.marketing-module__snxi8q__mobileLoginLin \"Entrar\"",
-    "w": 66,
-    "h": 36
-   },
-   {
-    "el": "a \"Como funciona\"",
-    "w": 129,
-    "h": 36
-   },
-   {
-    "el": "a \"Pedidos\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Entrega\"",
-    "w": 78,
-    "h": 36
-   },
-   {
-    "el": "a \"Recursos\"",
-    "w": 87,
-    "h": 36
-   },
-   {
-    "el": "a \"Planos\"",
-    "w": 69,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.marketing-module__snxi8q__header \"Começar agora Entrar Como funciona Pedidos Entrega\"",
-    "top": 0,
-    "h": 115,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 3607,
-  "shot": "shots/android-360__site__entrega-e-fidelizacao.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 12,
-    "example": ".marketing-module__snxi8q__primaryButton[href$=\"cadastro\"]"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "site",
-  "label": "/empresa",
-  "url": "http://127.0.0.1:3000/empresa",
-  "status": 200,
-  "loadMs": 525,
-  "finalUrl": "/empresa",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 1212,
-  "screens": 1.6,
-  "title": "Informações legais | PedeAqui",
-  "h1": "Informações legais",
-  "overflowing": [],
-  "interactiveCount": 5,
-  "smallTargets": 5,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.legal-page-module__fsme8q__back \"+55 19 98144-7794\"",
-    "w": 176,
-    "h": 19
-   },
-   {
-    "el": "a \"Informações legais\"",
-    "w": 151,
-    "h": 24
-   },
-   {
-    "el": "a \"Política de Privacidade\"",
-    "w": 180,
-    "h": 24
-   },
-   {
-    "el": "a \"Termos de Uso\"",
-    "w": 117,
-    "h": 24
-   },
-   {
-    "el": "a \"Entrar no PedeAqui\"",
-    "w": 154,
-    "h": 24
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 766,
-  "shot": "shots/android-360__site__empresa.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 1,
-    "example": ".legal-page-module__fsme8q__eyebrow"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "site",
-  "label": "/cadastro",
-  "url": "http://127.0.0.1:3000/cadastro",
-  "status": 200,
-  "loadMs": 630,
-  "finalUrl": "/cadastro",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 1063,
-  "screens": 1.4,
-  "title": "PedeAqui",
-  "h1": "Criar conta",
-  "overflowing": [],
-  "interactiveCount": 10,
-  "smallTargets": 7,
-  "tinyTargets": 4,
-  "smallTargetExamples": [
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"email\"",
-    "w": 294,
-    "h": 42
-   },
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"password\"",
-    "w": 294,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Começar teste grátis\"",
-    "w": 294,
-    "h": 42
-   },
-   {
-    "el": "a.auth-flow-module__Y0Aw2a__link \"Entrar\"",
-    "w": 43,
-    "h": 16
-   },
-   {
-    "el": "a \"Informações legais\"",
-    "w": 113,
-    "h": 18
-   },
-   {
-    "el": "a \"Privacidade\"",
-    "w": 70,
-    "h": 18
-   },
-   {
-    "el": "a \"Termos de Uso\"",
-    "w": 88,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 572,
-  "shot": "shots/android-360__site__cadastro.jpg",
-  "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "site",
-  "label": "/recuperar-senha",
-  "url": "http://127.0.0.1:3000/recuperar-senha",
-  "status": 200,
-  "loadMs": 622,
-  "finalUrl": "/recuperar-senha",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Recuperar senha",
-  "overflowing": [],
-  "interactiveCount": 6,
-  "smallTargets": 6,
-  "tinyTargets": 3,
-  "smallTargetExamples": [
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"email\"",
-    "w": 294,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Enviar instruções\"",
-    "w": 294,
-    "h": 42
-   },
-   {
-    "el": "a.auth-flow-module__Y0Aw2a__linkMuted \"Voltar para entrar\"",
-    "w": 294,
-    "h": 24
-   },
-   {
-    "el": "a \"Informações legais\"",
-    "w": 113,
-    "h": 18
-   },
-   {
-    "el": "a \"Privacidade\"",
-    "w": 70,
-    "h": 18
-   },
-   {
-    "el": "a \"Termos de Uso\"",
-    "w": 88,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 254,
-  "shot": "shots/android-360__site__recuperar-senha.jpg",
-  "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "site",
-  "label": "/acesso-entregador",
-  "url": "http://127.0.0.1:3000/acesso-entregador",
-  "status": 200,
-  "loadMs": 612,
-  "finalUrl": "/acesso-entregador",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 921,
-  "screens": 1.2,
-  "title": "PedeAqui",
-  "h1": "Olá, entregador",
-  "overflowing": [],
-  "interactiveCount": 10,
-  "smallTargets": 10,
-  "tinyTargets": 4,
-  "smallTargetExamples": [
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"(19) 99999-9999\"",
-    "w": 320,
-    "h": 42
-   },
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"pin\"",
-    "w": 320,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Entrar nas minhas entregas\"",
-    "w": 320,
-    "h": 42
-   },
-   {
-    "el": "a.auth-flow-module__Y0Aw2a__link \"Sou da loja → Acessar painel\"",
-    "w": 320,
-    "h": 21
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 101,
-    "h": 38
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 101,
-    "h": 38
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 101,
-    "h": 38
-   },
-   {
-    "el": "a \"Informações legais\"",
-    "w": 113,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 590,
-  "shot": "shots/android-360__site__acesso-entregador.jpg",
-  "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "site",
-  "label": "/termos-de-uso",
-  "url": "http://127.0.0.1:3000/termos-de-uso",
-  "status": 200,
-  "loadMs": 519,
-  "finalUrl": "/termos-de-uso",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2675,
-  "screens": 3.6,
-  "title": "Termos de Uso | PedeAqui",
-  "h1": "Termos de Uso",
-  "overflowing": [],
-  "interactiveCount": 5,
-  "smallTargets": 4,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a \"Informações legais\"",
-    "w": 151,
-    "h": 24
-   },
-   {
-    "el": "a \"Política de Privacidade\"",
-    "w": 180,
-    "h": 24
-   },
-   {
-    "el": "a \"Termos de Uso\"",
-    "w": 117,
-    "h": 24
-   },
-   {
-    "el": "a \"Entrar no PedeAqui\"",
-    "w": 154,
-    "h": 24
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2276,
-  "shot": "shots/android-360__site__termos-de-uso.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 1,
-    "example": ".legal-page-module__fsme8q__eyebrow"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "site",
-  "label": "/politica-de-privacidade",
-  "url": "http://127.0.0.1:3000/politica-de-privacidade",
-  "status": 200,
-  "loadMs": 518,
-  "finalUrl": "/politica-de-privacidade",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 3085,
-  "screens": 4.2,
-  "title": "Política de Privacidade | PedeAqui",
-  "h1": "Política de Privacidade",
-  "overflowing": [],
-  "interactiveCount": 5,
-  "smallTargets": 4,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a \"Informações legais\"",
-    "w": 151,
-    "h": 24
-   },
-   {
-    "el": "a \"Política de Privacidade\"",
-    "w": 180,
-    "h": 24
-   },
-   {
-    "el": "a \"Termos de Uso\"",
-    "w": 117,
-    "h": 24
-   },
-   {
-    "el": "a \"Entrar no PedeAqui\"",
-    "w": 154,
-    "h": 24
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2569,
-  "shot": "shots/android-360__site__politica-de-privacidade.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 1,
-    "example": ".legal-page-module__fsme8q__eyebrow"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
   "area": "panel",
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 609,
+  "loadMs": 802,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1010,
+  "docHeight": 1028,
   "screens": 1.4,
   "title": "Entrar | PedeAqui",
   "h1": "Entre para cuidar dos pedidos sem perder tempo procurando informação.",
   "overflowing": [],
   "interactiveCount": 14,
-  "smallTargets": 12,
+  "smallTargets": 9,
   "tinyTargets": 6,
   "smallTargetExamples": [
    {
     "el": "a.login-commercial-module__nM1Gza__backLin \"← Voltar para o site\"",
     "w": 154,
     "h": 21
-   },
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"email\"",
-    "w": 332,
-    "h": 42
-   },
-   {
-    "el": "input.form-controls-module__BsaV2W__control \"password\"",
-    "w": 332,
-    "h": 42
-   },
-   {
-    "el": "button.button-module__HjQxJG__button \"Entrar\"",
-    "w": 332,
-    "h": 42
    },
    {
     "el": "a \"Esqueci a senha\"",
@@ -4098,6 +1801,21 @@
     "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
     "w": 105,
     "h": 38
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
+    "w": 105,
+    "h": 38
+   },
+   {
+    "el": "a \"Informações legais\"",
+    "w": 113,
+    "h": 18
+   },
+   {
+    "el": "a \"Privacidade\"",
+    "w": 70,
+    "h": 18
    }
   ],
   "smallText": 0,
@@ -4207,51 +1925,10 @@
  {
   "device": "android-360",
   "area": "panel",
-  "label": "/platform/apresentacao",
-  "url": "http://127.0.0.1:3000/platform/apresentacao",
-  "status": 200,
-  "loadMs": 571,
-  "finalUrl": "/platform/apresentacao",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
-  "overflowing": [],
-  "interactiveCount": 2,
-  "smallTargets": 1,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 16,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 183,
-  "shot": "shots/android-360__panel__platform-apresentacao.jpg",
-  "axe": [],
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
- },
- {
-  "device": "android-360",
-  "area": "panel",
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
-  "loadMs": 544,
+  "loadMs": 569,
   "finalUrl": "/platform/demo",
   "vw": 360,
   "vh": 740,
@@ -4289,11 +1966,52 @@
  {
   "device": "android-360",
   "area": "panel",
-  "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
+  "label": "/platform/apresentacao",
+  "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 1131,
-  "finalUrl": "/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
+  "loadMs": 545,
+  "finalUrl": "/platform/apresentacao",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 740,
+  "screens": 1,
+  "title": "PedeAqui",
+  "h1": "Não foi possível abrir esta página",
+  "overflowing": [],
+  "interactiveCount": 2,
+  "smallTargets": 1,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "a \"Voltar ao início\"",
+    "w": 118,
+    "h": 24
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 16,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 183,
+  "shot": "shots/android-360__panel__platform-apresentacao.jpg",
+  "axe": [],
+  "consoleErrors": [
+   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
+   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
+  ]
+ },
+ {
+  "device": "android-360",
+  "area": "panel",
+  "label": "/pedidos/[id]",
+  "url": "http://127.0.0.1:3000/pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780",
+  "status": 200,
+  "loadMs": 1057,
+  "finalUrl": "/pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -4395,10 +2113,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4",
   "status": 200,
-  "loadMs": 961,
-  "finalUrl": "/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
+  "loadMs": 989,
+  "finalUrl": "/cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -4499,10 +2217,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
+  "url": "http://127.0.0.1:3000/clientes/a70e522b-1b04-47e7-96fc-63814f943a46",
   "status": 200,
-  "loadMs": 980,
-  "finalUrl": "/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
+  "loadMs": 965,
+  "finalUrl": "/clientes/a70e522b-1b04-47e7-96fc-63814f943a46",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -4597,10 +2315,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
+  "url": "http://127.0.0.1:3000/salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d",
   "status": 200,
-  "loadMs": 938,
-  "finalUrl": "/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
+  "loadMs": 942,
+  "finalUrl": "/salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -4689,531 +2407,6 @@
   "bodyTextLength": 398,
   "shot": "shots/android-360__panel__salao-tableId.jpg",
   "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/platform/empresas/[id]",
-  "error": "nenhum link encontrado"
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/platform/operacao/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
-  "status": 200,
-  "loadMs": 905,
-  "finalUrl": "/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2990,
-  "screens": 4,
-  "title": "PedeAqui",
-  "h1": "Pedido #1",
-  "overflowing": [],
-  "interactiveCount": 30,
-  "smallTargets": 6,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"← Operação\"",
-    "w": 79,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2724,
-  "shot": "shots/android-360__panel__platform-operacao-pedidos-id.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 2,
-    "example": ".platform-module__d3cmqG__roleBadge"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/platform/unidades/[id]",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "status": 200,
-  "loadMs": 721,
-  "finalUrl": "/platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 9093,
-  "screens": 12.3,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 94,
-  "smallTargets": 70,
-  "tinyTargets": 11,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"← Empresas e unidades\"",
-    "w": 158,
-    "h": 18
-   },
-   {
-    "el": "a.platform-module__d3cmqG__button \"Configurar WhatsApp\"",
-    "w": 167,
-    "h": 39
-   },
-   {
-    "el": "input \"ordersAutoAccept\"",
-    "w": 13,
-    "h": 13
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Completo — aceite e etapas padrão Simplificado — 3\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesStationaryAlertMinutes\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesTrackingRetentionDays\" 12px",
-   "input.platform-module__d3cmqG__field \"campaignRatePerMinute\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: operação simplificada solicitada pelo cliente\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: CLIENTE-01-OPERACAO\" 12px"
-  ],
-  "inputsZoomCount": 37,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 7041,
-  "shot": "shots/android-360__panel__platform-unidades-id.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 17,
-    "example": ".platform-module__d3cmqG__pill[data-tone=\"good\"]:nth-child(1)"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/configuracao-operacional",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
-  "status": 200,
-  "loadMs": 879,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2273,
-  "screens": 3.1,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 43,
-  "smallTargets": 19,
-  "tinyTargets": 7,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"← Empresas e unidades\"",
-    "w": 158,
-    "h": 18
-   },
-   {
-    "el": "a \"Visão 360°\"",
-    "w": 72,
-    "h": 18
-   },
-   {
-    "el": "input \"ordersAutoAccept\"",
-    "w": 13,
-    "h": 13
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Completo — aceite e etapas padrão Simplificado — 3\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesStationaryAlertMinutes\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesTrackingRetentionDays\" 12px",
-   "input.platform-module__d3cmqG__field \"campaignRatePerMinute\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: operação simplificada solicitada pelo cliente\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: CLIENTE-01-OPERACAO\" 12px"
-  ],
-  "inputsZoomCount": 6,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2079,
-  "shot": "shots/android-360__panel__platform-unidades-id-configuracao-operacional.jpg",
-  "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/whatsapp",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "status": 200,
-  "loadMs": 619,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2045,
-  "screens": 2.8,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 35,
-  "smallTargets": 9,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"Conexão manual\"",
-    "w": 149,
-    "h": 24
-   },
-   {
-    "el": "a \"Notificações automáticas\"",
-    "w": 227,
-    "h": 24
-   },
-   {
-    "el": "a \"← Visão 360°\"",
-    "w": 86,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1600,
-  "shot": "shots/android-360__panel__platform-unidades-id-whatsapp.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 3,
-    "example": ".platform-module__d3cmqG__pill[data-tone=\"warn\"]:nth-child(1)"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/whatsapp/notificacoes",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
-  "status": 200,
-  "loadMs": 615,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2105,
-  "screens": 2.8,
-  "title": "PedeAqui",
-  "h1": "Notificações automáticas do pedido",
-  "overflowing": [],
-  "interactiveCount": 33,
-  "smallTargets": 9,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"Conexão manual\"",
-    "w": 149,
-    "h": 24
-   },
-   {
-    "el": "a \"Notificações automáticas\"",
-    "w": 227,
-    "h": 24
-   },
-   {
-    "el": "a \"← WhatsApp da unidade\"",
-    "w": 163,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1645,
-  "shot": "shots/android-360__panel__platform-unidades-id-whatsapp-notificacoes.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 3,
-    "example": ".platform-module__d3cmqG__pill[data-tone=\"warn\"]:nth-child(1)"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/platform/restaurantes/[id]",
-  "url": "http://127.0.0.1:3000/platform/restaurantes/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "status": 200,
-  "loadMs": 740,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2045,
-  "screens": 2.8,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 35,
-  "smallTargets": 9,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"Conexão manual\"",
-    "w": 149,
-    "h": 24
-   },
-   {
-    "el": "a \"Notificações automáticas\"",
-    "w": 227,
-    "h": 24
-   },
-   {
-    "el": "a \"← Visão 360°\"",
-    "w": 86,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1600,
-  "shot": "shots/android-360__panel__platform-restaurantes-id.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 3,
-    "example": ".platform-module__d3cmqG__pill[data-tone=\"warn\"]:nth-child(1)"
-   }
-  ],
   "consoleErrors": []
  },
  {
@@ -6206,7 +3399,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 671,
+  "loadMs": 650,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -6510,7 +3703,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 622,
+  "loadMs": 628,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -6580,7 +3773,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 665,
+  "loadMs": 668,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
@@ -6667,7 +3860,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 809,
+  "loadMs": 871,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -6822,46 +4015,6 @@
  {
   "device": "pc-1366-escuro",
   "area": "panel",
-  "label": "/platform/apresentacao",
-  "url": "http://127.0.0.1:3000/platform/apresentacao",
-  "status": 200,
-  "loadMs": 570,
-  "finalUrl": "/platform/apresentacao",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
-  "overflowing": [],
-  "interactiveCount": 2,
-  "smallTargets": 1,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 16,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 183,
-  "shot": "shots/pc-1366-escuro__panel__platform-apresentacao.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
@@ -6902,11 +4055,51 @@
  {
   "device": "pc-1366-escuro",
   "area": "panel",
-  "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
+  "label": "/platform/apresentacao",
+  "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 1074,
-  "finalUrl": "/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
+  "loadMs": 546,
+  "finalUrl": "/platform/apresentacao",
+  "vw": 1366,
+  "vh": 768,
+  "docWidth": 1366,
+  "docHeight": 768,
+  "screens": 1,
+  "title": "PedeAqui",
+  "h1": "Não foi possível abrir esta página",
+  "overflowing": [],
+  "interactiveCount": 2,
+  "smallTargets": 1,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "a \"Voltar ao início\"",
+    "w": 118,
+    "h": 24
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 16,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 183,
+  "shot": "shots/pc-1366-escuro__panel__platform-apresentacao.jpg",
+  "consoleErrors": [
+   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
+   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
+  ]
+ },
+ {
+  "device": "pc-1366-escuro",
+  "area": "panel",
+  "label": "/pedidos/[id]",
+  "url": "http://127.0.0.1:3000/pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780",
+  "status": 200,
+  "loadMs": 1097,
+  "finalUrl": "/pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -6994,10 +4187,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4",
   "status": 200,
-  "loadMs": 1002,
-  "finalUrl": "/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
+  "loadMs": 1012,
+  "finalUrl": "/cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -7091,10 +4284,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
+  "url": "http://127.0.0.1:3000/clientes/a70e522b-1b04-47e7-96fc-63814f943a46",
   "status": 200,
-  "loadMs": 1138,
-  "finalUrl": "/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
+  "loadMs": 1119,
+  "finalUrl": "/clientes/a70e522b-1b04-47e7-96fc-63814f943a46",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -7182,10 +4375,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
+  "url": "http://127.0.0.1:3000/salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d",
   "status": 200,
-  "loadMs": 1051,
-  "finalUrl": "/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
+  "loadMs": 1046,
+  "finalUrl": "/salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -7267,536 +4460,6 @@
   "fixedCoverPx": 48,
   "bodyTextLength": 643,
   "shot": "shots/pc-1366-escuro__panel__salao-tableId.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/platform/empresas/[id]",
-  "error": "nenhum link encontrado"
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/platform/operacao/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
-  "status": 200,
-  "loadMs": 894,
-  "finalUrl": "/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1805,
-  "screens": 2.4,
-  "title": "PedeAqui",
-  "h1": "Pedido #1",
-  "overflowing": [],
-  "interactiveCount": 31,
-  "smallTargets": 31,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2827,
-  "shot": "shots/pc-1366-escuro__panel__platform-operacao-pedidos-id.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/platform/unidades/[id]",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "status": 200,
-  "loadMs": 904,
-  "finalUrl": "/platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 5375,
-  "screens": 7,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 95,
-  "smallTargets": 95,
-  "tinyTargets": 11,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Completo — aceite e etapas padrão Simplificado — 3\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesStationaryAlertMinutes\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesTrackingRetentionDays\" 12px",
-   "input.platform-module__d3cmqG__field \"campaignRatePerMinute\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: operação simplificada solicitada pelo cliente\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: CLIENTE-01-OPERACAO\" 12px"
-  ],
-  "inputsZoomCount": 37,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 7144,
-  "shot": "shots/pc-1366-escuro__panel__platform-unidades-id.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/configuracao-operacional",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
-  "status": 200,
-  "loadMs": 874,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1581,
-  "screens": 2.1,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 44,
-  "smallTargets": 44,
-  "tinyTargets": 7,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Completo — aceite e etapas padrão Simplificado — 3\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesStationaryAlertMinutes\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesTrackingRetentionDays\" 12px",
-   "input.platform-module__d3cmqG__field \"campaignRatePerMinute\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: operação simplificada solicitada pelo cliente\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: CLIENTE-01-OPERACAO\" 12px"
-  ],
-  "inputsZoomCount": 6,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2182,
-  "shot": "shots/pc-1366-escuro__panel__platform-unidades-id-configuracao-operacional.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/whatsapp",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "status": 200,
-  "loadMs": 801,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1296,
-  "screens": 1.7,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 36,
-  "smallTargets": 34,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1703,
-  "shot": "shots/pc-1366-escuro__panel__platform-unidades-id-whatsapp.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/whatsapp/notificacoes",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
-  "status": 200,
-  "loadMs": 784,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1185,
-  "screens": 1.5,
-  "title": "PedeAqui",
-  "h1": "Notificações automáticas do pedido",
-  "overflowing": [],
-  "interactiveCount": 34,
-  "smallTargets": 34,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1748,
-  "shot": "shots/pc-1366-escuro__panel__platform-unidades-id-whatsapp-notificacoes.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/platform/restaurantes/[id]",
-  "url": "http://127.0.0.1:3000/platform/restaurantes/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "status": 200,
-  "loadMs": 957,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1296,
-  "screens": 1.7,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 36,
-  "smallTargets": 34,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1703,
-  "shot": "shots/pc-1366-escuro__panel__platform-restaurantes-id.jpg",
   "consoleErrors": []
  },
  {
@@ -8535,7 +5198,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 656,
+  "loadMs": 669,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -8818,7 +5481,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 633,
+  "loadMs": 623,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -8875,7 +5538,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 651,
+  "loadMs": 652,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -8949,7 +5612,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 781,
+  "loadMs": 769,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -9110,50 +5773,10 @@
  {
   "device": "android-360-escuro",
   "area": "panel",
-  "label": "/platform/apresentacao",
-  "url": "http://127.0.0.1:3000/platform/apresentacao",
-  "status": 200,
-  "loadMs": 558,
-  "finalUrl": "/platform/apresentacao",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
-  "overflowing": [],
-  "interactiveCount": 2,
-  "smallTargets": 1,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 16,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 183,
-  "shot": "shots/android-360-escuro__panel__platform-apresentacao.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
-  "loadMs": 544,
+  "loadMs": 556,
   "finalUrl": "/platform/demo",
   "vw": 360,
   "vh": 740,
@@ -9190,11 +5813,51 @@
  {
   "device": "android-360-escuro",
   "area": "panel",
-  "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
+  "label": "/platform/apresentacao",
+  "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 997,
-  "finalUrl": "/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
+  "loadMs": 553,
+  "finalUrl": "/platform/apresentacao",
+  "vw": 360,
+  "vh": 740,
+  "docWidth": 360,
+  "docHeight": 740,
+  "screens": 1,
+  "title": "PedeAqui",
+  "h1": "Não foi possível abrir esta página",
+  "overflowing": [],
+  "interactiveCount": 2,
+  "smallTargets": 1,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "a \"Voltar ao início\"",
+    "w": 118,
+    "h": 24
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 16,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [],
+  "fixedCoverPx": 0,
+  "bodyTextLength": 183,
+  "shot": "shots/android-360-escuro__panel__platform-apresentacao.jpg",
+  "consoleErrors": [
+   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
+   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
+  ]
+ },
+ {
+  "device": "android-360-escuro",
+  "area": "panel",
+  "label": "/pedidos/[id]",
+  "url": "http://127.0.0.1:3000/pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780",
+  "status": 200,
+  "loadMs": 1019,
+  "finalUrl": "/pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -9288,10 +5951,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4",
   "status": 200,
-  "loadMs": 923,
-  "finalUrl": "/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
+  "loadMs": 877,
+  "finalUrl": "/cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -9391,10 +6054,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
+  "url": "http://127.0.0.1:3000/clientes/a70e522b-1b04-47e7-96fc-63814f943a46",
   "status": 200,
-  "loadMs": 892,
-  "finalUrl": "/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
+  "loadMs": 886,
+  "finalUrl": "/clientes/a70e522b-1b04-47e7-96fc-63814f943a46",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -9488,10 +6151,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
+  "url": "http://127.0.0.1:3000/salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d",
   "status": 200,
-  "loadMs": 902,
-  "finalUrl": "/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
+  "loadMs": 905,
+  "finalUrl": "/salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -9579,490 +6242,6 @@
   "fixedCoverPx": 794,
   "bodyTextLength": 398,
   "shot": "shots/android-360-escuro__panel__salao-tableId.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/platform/empresas/[id]",
-  "error": "nenhum link encontrado"
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/platform/operacao/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
-  "status": 200,
-  "loadMs": 892,
-  "finalUrl": "/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2990,
-  "screens": 4,
-  "title": "PedeAqui",
-  "h1": "Pedido #1",
-  "overflowing": [],
-  "interactiveCount": 30,
-  "smallTargets": 6,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"← Operação\"",
-    "w": 79,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2724,
-  "shot": "shots/android-360-escuro__panel__platform-operacao-pedidos-id.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/platform/unidades/[id]",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "status": 200,
-  "loadMs": 707,
-  "finalUrl": "/platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 9093,
-  "screens": 12.3,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 94,
-  "smallTargets": 70,
-  "tinyTargets": 11,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"← Empresas e unidades\"",
-    "w": 158,
-    "h": 18
-   },
-   {
-    "el": "a.platform-module__d3cmqG__button \"Configurar WhatsApp\"",
-    "w": 167,
-    "h": 39
-   },
-   {
-    "el": "input \"ordersAutoAccept\"",
-    "w": 13,
-    "h": 13
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Completo — aceite e etapas padrão Simplificado — 3\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesStationaryAlertMinutes\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesTrackingRetentionDays\" 12px",
-   "input.platform-module__d3cmqG__field \"campaignRatePerMinute\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: operação simplificada solicitada pelo cliente\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: CLIENTE-01-OPERACAO\" 12px"
-  ],
-  "inputsZoomCount": 37,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 7041,
-  "shot": "shots/android-360-escuro__panel__platform-unidades-id.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/configuracao-operacional",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
-  "status": 200,
-  "loadMs": 886,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2273,
-  "screens": 3.1,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 43,
-  "smallTargets": 19,
-  "tinyTargets": 7,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"← Empresas e unidades\"",
-    "w": 158,
-    "h": 18
-   },
-   {
-    "el": "a \"Visão 360°\"",
-    "w": 72,
-    "h": 18
-   },
-   {
-    "el": "input \"ordersAutoAccept\"",
-    "w": 13,
-    "h": 13
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Completo — aceite e etapas padrão Simplificado — 3\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesStationaryAlertMinutes\" 12px",
-   "input.platform-module__d3cmqG__field \"deliveriesTrackingRetentionDays\" 12px",
-   "input.platform-module__d3cmqG__field \"campaignRatePerMinute\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: operação simplificada solicitada pelo cliente\" 12px",
-   "input.platform-module__d3cmqG__field \"Ex.: CLIENTE-01-OPERACAO\" 12px"
-  ],
-  "inputsZoomCount": 6,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 2079,
-  "shot": "shots/android-360-escuro__panel__platform-unidades-id-configuracao-operacional.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/whatsapp",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "status": 200,
-  "loadMs": 613,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2045,
-  "screens": 2.8,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 35,
-  "smallTargets": 9,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"Conexão manual\"",
-    "w": 149,
-    "h": 24
-   },
-   {
-    "el": "a \"Notificações automáticas\"",
-    "w": 227,
-    "h": 24
-   },
-   {
-    "el": "a \"← Visão 360°\"",
-    "w": 86,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1600,
-  "shot": "shots/android-360-escuro__panel__platform-unidades-id-whatsapp.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/platform/unidades/[id]/whatsapp/notificacoes",
-  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
-  "status": 200,
-  "loadMs": 600,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2105,
-  "screens": 2.8,
-  "title": "PedeAqui",
-  "h1": "Notificações automáticas do pedido",
-  "overflowing": [],
-  "interactiveCount": 33,
-  "smallTargets": 9,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"Conexão manual\"",
-    "w": 149,
-    "h": 24
-   },
-   {
-    "el": "a \"Notificações automáticas\"",
-    "w": 227,
-    "h": 24
-   },
-   {
-    "el": "a \"← WhatsApp da unidade\"",
-    "w": 163,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1645,
-  "shot": "shots/android-360-escuro__panel__platform-unidades-id-whatsapp-notificacoes.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/platform/restaurantes/[id]",
-  "url": "http://127.0.0.1:3000/platform/restaurantes/08836f65-e4e3-409e-aadc-c5387b7e86dd",
-  "status": 200,
-  "loadMs": 691,
-  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 2045,
-  "screens": 2.8,
-  "title": "PedeAqui",
-  "h1": "Salgados da Vila",
-  "overflowing": [],
-  "interactiveCount": 35,
-  "smallTargets": 9,
-  "tinyTargets": 1,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a \"Conexão manual\"",
-    "w": 149,
-    "h": 24
-   },
-   {
-    "el": "a \"Notificações automáticas\"",
-    "w": 227,
-    "h": 24
-   },
-   {
-    "el": "a \"← Visão 360°\"",
-    "w": 86,
-    "h": 18
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1600,
-  "shot": "shots/android-360-escuro__panel__platform-restaurantes-id.jpg",
   "consoleErrors": []
  },
  {
@@ -11055,7 +7234,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 694,
+  "loadMs": 645,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -11358,7 +7537,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 611,
+  "loadMs": 613,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -11427,7 +7606,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 641,
+  "loadMs": 640,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,

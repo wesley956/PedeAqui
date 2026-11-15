@@ -5,6 +5,7 @@
 ▶ Subindo o banco local (Supabase em Docker)
 
 ▶ Criando as tabelas do sistema no banco local
+  sem resposta
   234 arquivos de schema aplicados; 21 migrações extras aplicadas.
 
 ▶ Criando a loja fictícia (Salgados da Vila)
@@ -14,97 +15,49 @@
 
 ▶ Iniciando o sistema
 HOMOLOG_VERIFY /login=200 /m/salgados-da-vila=200 /dashboard=307 /api/health=200 login=200 SEED_SUMMARY products=16 groups=9 orders=10 modules=21 avisos=0
-pc-1366 site / → 200 / overflow=no small=15 
-pc-1366 site /como-funciona → 200 /como-funciona overflow=no small=15 
-pc-1366 site /recursos → 200 /recursos overflow=no small=15 
-pc-1366 site /planos → 200 /planos overflow=no small=15 
-pc-1366 site /pedidos-e-atendimento → 200 /pedidos-e-atendimento overflow=no small=15 
-pc-1366 site /entrega-e-fidelizacao → 200 /entrega-e-fidelizacao overflow=no small=15 
-pc-1366 site /empresa → 200 /empresa overflow=no small=5 
-pc-1366 site /cadastro → 200 /cadastro overflow=no small=7 
-pc-1366 site /recuperar-senha → 200 /recuperar-senha overflow=no small=6 
-pc-1366 site /acesso-entregador → 200 /acesso-entregador overflow=no small=10 
-pc-1366 site /termos-de-uso → 200 /termos-de-uso overflow=no small=4 
-pc-1366 site /politica-de-privacidade → 200 /politica-de-privacidade overflow=no small=5 
 pc-1366 panel login → 200 /login overflow=no small=12 
 pc-1366 logged in → http://127.0.0.1:3000/dashboard
-pc-1366 panel /platform/apresentacao → 200 /platform/apresentacao overflow=no small=1 
 pc-1366 panel /platform/demo → 200 /platform/demo overflow=no small=1 
-pc-1366 panel /pedidos/[id] → 200 /pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb overflow=no small=27 
-pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce overflow=no small=34 
-pc-1366 panel /clientes/[id] → 200 /clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413 overflow=no small=34 
-pc-1366 panel /salao/[tableId] → 200 /salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c overflow=no small=28 
-pc-1366 panel /platform/operacao/pedidos/[id] → 200 /platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb overflow=no small=31 
-pc-1366 panel /platform/unidades/[id] → 200 /platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd overflow=no small=95 
-pc-1366 panel /platform/unidades/[id]/configuracao-operacional → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional overflow=no small=44 
-pc-1366 panel /platform/unidades/[id]/whatsapp → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp overflow=no small=34 
-pc-1366 panel /platform/unidades/[id]/whatsapp/notificacoes → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes overflow=no small=34 
-pc-1366 panel /platform/restaurantes/[id] → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp overflow=no small=34 
+pc-1366 panel /platform/apresentacao → 200 /platform/apresentacao overflow=no small=1 
+pc-1366 panel /pedidos/[id] → 200 /pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780 overflow=no small=27 
+pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4 overflow=no small=34 
+pc-1366 panel /clientes/[id] → 200 /clientes/a70e522b-1b04-47e7-96fc-63814f943a46 overflow=no small=34 
+pc-1366 panel /salao/[tableId] → 200 /salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d overflow=no small=28 
 pc-1366 public-local menu → 200 /m/salgados-da-vila overflow=no small=5 
 pc-1366 public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=5 
 pc-1366 public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=7 
-android-360 site / → 200 / overflow=no small=15 
-android-360 site /como-funciona → 200 /como-funciona overflow=no small=15 
-android-360 site /recursos → 200 /recursos overflow=no small=15 
-android-360 site /planos → 200 /planos overflow=no small=15 
-android-360 site /pedidos-e-atendimento → 200 /pedidos-e-atendimento overflow=no small=15 
-android-360 site /entrega-e-fidelizacao → 200 /entrega-e-fidelizacao overflow=no small=15 
-android-360 site /empresa → 200 /empresa overflow=no small=5 
-android-360 site /cadastro → 200 /cadastro overflow=no small=7 
-android-360 site /recuperar-senha → 200 /recuperar-senha overflow=no small=6 
-android-360 site /acesso-entregador → 200 /acesso-entregador overflow=no small=10 
-android-360 site /termos-de-uso → 200 /termos-de-uso overflow=no small=4 
-android-360 site /politica-de-privacidade → 200 /politica-de-privacidade overflow=no small=4 
-android-360 panel login → 200 /login overflow=no small=12 
+android-360 panel login → 200 /login overflow=no small=9 
 android-360 logged in → http://127.0.0.1:3000/dashboard
-android-360 panel /platform/apresentacao → 200 /platform/apresentacao overflow=no small=1 
 android-360 panel /platform/demo → 200 /platform/demo overflow=no small=1 
-android-360 panel /pedidos/[id] → 200 /pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb overflow=no small=19 
-android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce overflow=no small=26 
-android-360 panel /clientes/[id] → 200 /clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413 overflow=no small=26 
-android-360 panel /salao/[tableId] → 200 /salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c overflow=no small=18 
-android-360 panel /platform/operacao/pedidos/[id] → 200 /platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb overflow=no small=6 
-android-360 panel /platform/unidades/[id] → 200 /platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd overflow=no small=70 
-android-360 panel /platform/unidades/[id]/configuracao-operacional → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional overflow=no small=19 
-android-360 panel /platform/unidades/[id]/whatsapp → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp overflow=no small=9 
-android-360 panel /platform/unidades/[id]/whatsapp/notificacoes → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes overflow=no small=9 
-android-360 panel /platform/restaurantes/[id] → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp overflow=no small=9 
+android-360 panel /platform/apresentacao → 200 /platform/apresentacao overflow=no small=1 
+android-360 panel /pedidos/[id] → 200 /pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780 overflow=no small=19 
+android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4 overflow=no small=26 
+android-360 panel /clientes/[id] → 200 /clientes/a70e522b-1b04-47e7-96fc-63814f943a46 overflow=no small=26 
+android-360 panel /salao/[tableId] → 200 /salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d overflow=no small=18 
 android-360 public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
 android-360 public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=6 
 android-360 public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=8 
 pc-1366-escuro panel login → 200 /login overflow=no small=12 
 pc-1366-escuro logged in → http://127.0.0.1:3000/dashboard
-pc-1366-escuro panel /platform/apresentacao → 200 /platform/apresentacao overflow=no small=1 
 pc-1366-escuro panel /platform/demo → 200 /platform/demo overflow=no small=1 
-pc-1366-escuro panel /pedidos/[id] → 200 /pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb overflow=no small=27 
-pc-1366-escuro panel /cardapio/produtos/[id] → 200 /cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce overflow=no small=34 
-pc-1366-escuro panel /clientes/[id] → 200 /clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413 overflow=no small=34 
-pc-1366-escuro panel /salao/[tableId] → 200 /salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c overflow=no small=28 
-pc-1366-escuro panel /platform/operacao/pedidos/[id] → 200 /platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb overflow=no small=31 
-pc-1366-escuro panel /platform/unidades/[id] → 200 /platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd overflow=no small=95 
-pc-1366-escuro panel /platform/unidades/[id]/configuracao-operacional → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional overflow=no small=44 
-pc-1366-escuro panel /platform/unidades/[id]/whatsapp → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp overflow=no small=34 
-pc-1366-escuro panel /platform/unidades/[id]/whatsapp/notificacoes → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes overflow=no small=34 
-pc-1366-escuro panel /platform/restaurantes/[id] → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp overflow=no small=34 
+pc-1366-escuro panel /platform/apresentacao → 200 /platform/apresentacao overflow=no small=1 
+pc-1366-escuro panel /pedidos/[id] → 200 /pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780 overflow=no small=27 
+pc-1366-escuro panel /cardapio/produtos/[id] → 200 /cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4 overflow=no small=34 
+pc-1366-escuro panel /clientes/[id] → 200 /clientes/a70e522b-1b04-47e7-96fc-63814f943a46 overflow=no small=34 
+pc-1366-escuro panel /salao/[tableId] → 200 /salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d overflow=no small=28 
 pc-1366-escuro public-local menu → 200 /m/salgados-da-vila overflow=no small=5 
 pc-1366-escuro public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=5 
 pc-1366-escuro public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=7 
 android-360-escuro panel login → 200 /login overflow=no small=9 
 android-360-escuro logged in → http://127.0.0.1:3000/dashboard
-android-360-escuro panel /platform/apresentacao → 200 /platform/apresentacao overflow=no small=1 
 android-360-escuro panel /platform/demo → 200 /platform/demo overflow=no small=1 
-android-360-escuro panel /pedidos/[id] → 200 /pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb overflow=no small=19 
-android-360-escuro panel /cardapio/produtos/[id] → 200 /cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce overflow=no small=26 
-android-360-escuro panel /clientes/[id] → 200 /clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413 overflow=no small=26 
-android-360-escuro panel /salao/[tableId] → 200 /salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c overflow=no small=18 
-android-360-escuro panel /platform/operacao/pedidos/[id] → 200 /platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb overflow=no small=6 
-android-360-escuro panel /platform/unidades/[id] → 200 /platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd overflow=no small=70 
-android-360-escuro panel /platform/unidades/[id]/configuracao-operacional → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional overflow=no small=19 
-android-360-escuro panel /platform/unidades/[id]/whatsapp → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp overflow=no small=9 
-android-360-escuro panel /platform/unidades/[id]/whatsapp/notificacoes → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes overflow=no small=9 
-android-360-escuro panel /platform/restaurantes/[id] → 200 /platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp overflow=no small=9 
+android-360-escuro panel /platform/apresentacao → 200 /platform/apresentacao overflow=no small=1 
+android-360-escuro panel /pedidos/[id] → 200 /pedidos/2d5e3514-c49b-4ce5-acb2-64643f4f4780 overflow=no small=19 
+android-360-escuro panel /cardapio/produtos/[id] → 200 /cardapio/produtos/e31f9c8b-e598-4a3a-a631-26d77cf02ae4 overflow=no small=26 
+android-360-escuro panel /clientes/[id] → 200 /clientes/a70e522b-1b04-47e7-96fc-63814f943a46 overflow=no small=26 
+android-360-escuro panel /salao/[tableId] → 200 /salao/a675ddff-be33-408b-aad5-d9e1a5e21f7d overflow=no small=18 
 android-360-escuro public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
 android-360-escuro public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=6 
 android-360-escuro public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=8 
-UX2_AUDIT_DONE entries=150
+UX2_AUDIT_DONE entries=98
 HOMOLOG_APOS status=0
