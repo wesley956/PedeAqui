@@ -214,7 +214,7 @@ async function runFlows(page, device) {
     if (!href) throw new Error("nenhum link de detalhe de pedido na lista");
     await open(href);
   });
-  const nextAction = /^(Aceitar pedido|Iniciar preparo|Iniciar produção|Marcar pronto|Marcar como pronto|Liberar retirada|Confirmar retirada|Liberar entrega|Entregar ao cliente|Marcar retirado|Marcar como retirado|Marcar entregue|Marcar como entregue|Saiu para entrega|Registrar pagamento|Marcar como pago|Marcar pago|Confirmar pagamento|Finalizar pedido|Concluir pedido|Finalizar|Concluir)$/;
+  const nextAction = /^(Aceitar pedido|Iniciar preparo|Iniciar produção|Marcar pronto|Marcar como pronto|Liberar retirada|Confirmar retirada|Liberar entrega|Cliente retirou|Cliente recebeu|Entregar ao cliente|Marcar retirado|Marcar como retirado|Marcar entregue|Marcar como entregue|Saiu para entrega|Registrar pagamento|Marcar como pago|Marcar pago|Confirmar pagamento|Finalizar pedido|Concluir pedido|Finalizar|Concluir)$/;
   for (let index = 3; index <= 9; index += 1) {
     let clicked = "";
     const done = await log("pedido", `${index}-proxima-acao`, async () => {
@@ -232,12 +232,19 @@ async function runFlows(page, device) {
   await log("salao", "3-abrir-atendimento", () => clickButton(/^Abrir mesa$/));
   await log("salao", "4-lancar-item", () => page.locator("button", { hasText: "Coca-Cola 2L" }).first().click(quick));
   await log("salao", "5-enviar-producao", () => clickButton(/^Enviar para produção/));
-  await log("salao", "6-pedir-conta", () => clickButton(/^Pedir conta$/));
+  await log("salao", "6-registrar-pagamento", async () => {
+    await page.locator('input[name="amount"]').first().fill("15,00", quick);
+    await clickButton(/^Registrar pagamento$/);
+  });
+  await log("salao", "6b-pedir-conta", () => clickButton(/^Pedir conta$/));
   await log("salao", "7-concluir-liberar", () => clickButton(/^Concluir e liberar mesa$/));
 
   // 5) Caixa de novo: o que a tela oferece com o caixa aberto e uma venda registrada.
   await log("caixa", "3-com-venda", () => open("/caixa"));
-  await log("caixa", "4-conferir-fechar", () => clickButton(/^Conferir e fechar turno$/));
+  await log("caixa", "4-conferir-fechar", async () => {
+    await page.locator('input[name="countedCash"]').fill("130,00", quick);
+    await clickButton(/^Conferir e fechar turno$/);
+  });
 }
 
 for (const device of DEVICES) {
