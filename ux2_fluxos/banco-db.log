@@ -1,0 +1,401 @@
+
+	        entity,
+	        filters,
+	        claims,
+	        action_filter
+	      )
+	      select
+	        $4::text::uuid,
+	        sub_tables.entity,
+	        $6,
+	        $5,
+	        $7
+	      from
+	        sub_tables
+	        on conflict
+	        (subscription_id, entity, filters, action_filter)
+	        do update set
+	        claims = excluded.claims,
+	        created_at = now()
+	      returning
+	         id
+172.18.0.5 2026-11-15 04:00:20.299 UTC [2230] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-15 04:00:20.299 UTC [2230] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-15 04:00:20.299 UTC [2230] supabase_admin@postgres STATEMENT:  with sub_tables as (
+	        select
+	        rr.entity
+	        from
+	        pg_publication_tables pub,
+	        lateral (
+	        select
+	        format('%I.%I', pub.schemaname, pub.tablename)::regclass entity
+	        ) rr
+	        where
+	        pub.pubname = $1
+	        and pub.schemaname like (case $2 when '*' then '%' else $2 end)
+	        and pub.tablename like (case $3 when '*' then '%' else $3 end)
+	     )
+	     insert into realtime.subscription as x(
+	        subscription_id,
+	        entity,
+	        filters,
+	        claims,
+	        action_filter
+	      )
+	      select
+	        $4::text::uuid,
+	        sub_tables.entity,
+	        $6,
+	        $5,
+	        $7
+	      from
+	        sub_tables
+	        on conflict
+	        (subscription_id, entity, filters, action_filter)
+	        do update set
+	        claims = excluded.claims,
+	        created_at = now()
+	      returning
+	         id
+172.18.0.5 2026-11-15 04:00:21.904 UTC [2231] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-15 04:00:21.904 UTC [2231] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-15 04:00:21.904 UTC [2231] supabase_admin@postgres STATEMENT:  with sub_tables as (
+	        select
+	        rr.entity
+	        from
+	        pg_publication_tables pub,
+	        lateral (
+	        select
+	        format('%I.%I', pub.schemaname, pub.tablename)::regclass entity
+	        ) rr
+	        where
+	        pub.pubname = $1
+	        and pub.schemaname like (case $2 when '*' then '%' else $2 end)
+	        and pub.tablename like (case $3 when '*' then '%' else $3 end)
+	     )
+	     insert into realtime.subscription as x(
+	        subscription_id,
+	        entity,
+	        filters,
+	        claims,
+	        action_filter
+	      )
+	      select
+	        $4::text::uuid,
+	        sub_tables.entity,
+	        $6,
+	        $5,
+	        $7
+	      from
+	        sub_tables
+	        on conflict
+	        (subscription_id, entity, filters, action_filter)
+	        do update set
+	        claims = excluded.claims,
+	        created_at = now()
+	      returning
+	         id
+172.18.0.5 2026-11-15 04:00:21.904 UTC [2232] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-15 04:00:21.904 UTC [2232] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-15 04:00:21.904 UTC [2232] supabase_admin@postgres STATEMENT:  with sub_tables as (
+	        select
+	        rr.entity
+	        from
+	        pg_publication_tables pub,
+	        lateral (
+	        select
+	        format('%I.%I', pub.schemaname, pub.tablename)::regclass entity
+	        ) rr
+	        where
+	        pub.pubname = $1
+	        and pub.schemaname like (case $2 when '*' then '%' else $2 end)
+	        and pub.tablename like (case $3 when '*' then '%' else $3 end)
+	     )
+	     insert into realtime.subscription as x(
+	        subscription_id,
+	        entity,
+	        filters,
+	        claims,
+	        action_filter
+	      )
+	      select
+	        $4::text::uuid,
+	        sub_tables.entity,
+	        $6,
+	        $5,
+	        $7
+	      from
+	        sub_tables
+	        on conflict
+	        (subscription_id, entity, filters, action_filter)
+	        do update set
+	        claims = excluded.claims,
+	        created_at = now()
+	      returning
+	         id
+172.18.0.5 2026-11-15 04:00:21.907 UTC [2229] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-15 04:00:21.907 UTC [2229] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-15 04:00:21.907 UTC [2229] supabase_admin@postgres STATEMENT:  with sub_tables as (
+	        select
+	        rr.entity
+	        from
+	        pg_publication_tables pub,
+	        lateral (
+	        select
+	        format('%I.%I', pub.schemaname, pub.tablename)::regclass entity
+	        ) rr
+	        where
+	        pub.pubname = $1
+	        and pub.schemaname like (case $2 when '*' then '%' else $2 end)
+	        and pub.tablename like (case $3 when '*' then '%' else $3 end)
+	     )
+	     insert into realtime.subscription as x(
+	        subscription_id,
+	        entity,
+	        filters,
+	        claims,
+	        action_filter
+	      )
+	      select
+	        $4::text::uuid,
+	        sub_tables.entity,
+	        $6,
+	        $5,
+	        $7
+	      from
+	        sub_tables
+	        on conflict
+	        (subscription_id, entity, filters, action_filter)
+	        do update set
+	        claims = excluded.claims,
+	        created_at = now()
+	      returning
+	         id
+172.18.0.5 2026-11-15 04:00:22.716 UTC [2232] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-15 04:00:22.716 UTC [2232] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-15 04:00:22.716 UTC [2232] supabase_admin@postgres STATEMENT:  with sub_tables as (
+	        select
+	        rr.entity
+	        from
+	        pg_publication_tables pub,
+	        lateral (
+	        select
+	        format('%I.%I', pub.schemaname, pub.tablename)::regclass entity
+	        ) rr
+	        where
+	        pub.pubname = $1
+	        and pub.schemaname like (case $2 when '*' then '%' else $2 end)
+	        and pub.tablename like (case $3 when '*' then '%' else $3 end)
+	     )
+	     insert into realtime.subscription as x(
+	        subscription_id,
+	        entity,
+	        filters,
+	        claims,
+	        action_filter
+	      )
+	      select
+	        $4::text::uuid,
+	        sub_tables.entity,
+	        $6,
+	        $5,
+	        $7
+	      from
+	        sub_tables
+	        on conflict
+	        (subscription_id, entity, filters, action_filter)
+	        do update set
+	        claims = excluded.claims,
+	        created_at = now()
+	      returning
+	         id
+172.18.0.5 2026-11-15 04:00:22.718 UTC [2231] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-15 04:00:22.718 UTC [2231] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-15 04:00:22.718 UTC [2231] supabase_admin@postgres STATEMENT:  with sub_tables as (
+	        select
+	        rr.entity
+	        from
+	        pg_publication_tables pub,
+	        lateral (
+	        select
+	        format('%I.%I', pub.schemaname, pub.tablename)::regclass entity
+	        ) rr
+	        where
+	        pub.pubname = $1
+	        and pub.schemaname like (case $2 when '*' then '%' else $2 end)
+	        and pub.tablename like (case $3 when '*' then '%' else $3 end)
+	     )
+	     insert into realtime.subscription as x(
+	        subscription_id,
+	        entity,
+	        filters,
+	        claims,
+	        action_filter
+	      )
+	      select
+	        $4::text::uuid,
+	        sub_tables.entity,
+	        $6,
+	        $5,
+	        $7
+	      from
+	        sub_tables
+	        on conflict
+	        (subscription_id, entity, filters, action_filter)
+	        do update set
+	        claims = excluded.claims,
+	        created_at = now()
+	      returning
+	         id
+172.18.0.5 2026-11-15 04:00:22.721 UTC [2229] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-15 04:00:22.721 UTC [2229] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-15 04:00:22.721 UTC [2229] supabase_admin@postgres STATEMENT:  with sub_tables as (
+	        select
+	        rr.entity
+	        from
+	        pg_publication_tables pub,
+	        lateral (
+	        select
+	        format('%I.%I', pub.schemaname, pub.tablename)::regclass entity
+	        ) rr
+	        where
+	        pub.pubname = $1
+	        and pub.schemaname like (case $2 when '*' then '%' else $2 end)
+	        and pub.tablename like (case $3 when '*' then '%' else $3 end)
+	     )
+	     insert into realtime.subscription as x(
+	        subscription_id,
+	        entity,
+	        filters,
+	        claims,
+	        action_filter
+	      )
+	      select
+	        $4::text::uuid,
+	        sub_tables.entity,
+	        $6,
+	        $5,
+	        $7
+	      from
+	        sub_tables
+	        on conflict
+	        (subscription_id, entity, filters, action_filter)
+	        do update set
+	        claims = excluded.claims,
+	        created_at = now()
+	      returning
+	         id
+172.18.0.5 2026-11-15 04:00:32.365 UTC [2231] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-15 04:00:32.365 UTC [2231] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-15 04:00:32.365 UTC [2231] supabase_admin@postgres STATEMENT:  with sub_tables as (
+	        select
+	        rr.entity
+	        from
+	        pg_publication_tables pub,
+	        lateral (
+	        select
+	        format('%I.%I', pub.schemaname, pub.tablename)::regclass entity
+	        ) rr
+	        where
+	        pub.pubname = $1
+	        and pub.schemaname like (case $2 when '*' then '%' else $2 end)
+	        and pub.tablename like (case $3 when '*' then '%' else $3 end)
+	     )
+	     insert into realtime.subscription as x(
+	        subscription_id,
+	        entity,
+	        filters,
+	        claims,
+	        action_filter
+	      )
+	      select
+	        $4::text::uuid,
+	        sub_tables.entity,
+	        $6,
+	        $5,
+	        $7
+	      from
+	        sub_tables
+	        on conflict
+	        (subscription_id, entity, filters, action_filter)
+	        do update set
+	        claims = excluded.claims,
+	        created_at = now()
+	      returning
+	         id
+172.18.0.5 2026-11-15 04:00:32.366 UTC [2229] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-15 04:00:32.366 UTC [2229] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-15 04:00:32.366 UTC [2229] supabase_admin@postgres STATEMENT:  with sub_tables as (
+	        select
+	        rr.entity
+	        from
+	        pg_publication_tables pub,
+	        lateral (
+	        select
+	        format('%I.%I', pub.schemaname, pub.tablename)::regclass entity
+	        ) rr
+	        where
+	        pub.pubname = $1
+	        and pub.schemaname like (case $2 when '*' then '%' else $2 end)
+	        and pub.tablename like (case $3 when '*' then '%' else $3 end)
+	     )
+	     insert into realtime.subscription as x(
+	        subscription_id,
+	        entity,
+	        filters,
+	        claims,
+	        action_filter
+	      )
+	      select
+	        $4::text::uuid,
+	        sub_tables.entity,
+	        $6,
+	        $5,
+	        $7
+	      from
+	        sub_tables
+	        on conflict
+	        (subscription_id, entity, filters, action_filter)
+	        do update set
+	        claims = excluded.claims,
+	        created_at = now()
+	      returning
+	         id
+172.18.0.5 2026-11-15 04:00:32.367 UTC [2232] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-15 04:00:32.367 UTC [2232] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-15 04:00:32.367 UTC [2232] supabase_admin@postgres STATEMENT:  with sub_tables as (
+	        select
+	        rr.entity
+	        from
+	        pg_publication_tables pub,
+	        lateral (
+	        select
+	        format('%I.%I', pub.schemaname, pub.tablename)::regclass entity
+	        ) rr
+	        where
+	        pub.pubname = $1
+	        and pub.schemaname like (case $2 when '*' then '%' else $2 end)
+	        and pub.tablename like (case $3 when '*' then '%' else $3 end)
+	     )
+	     insert into realtime.subscription as x(
+	        subscription_id,
+	        entity,
+	        filters,
+	        claims,
+	        action_filter
+	      )
+	      select
+	        $4::text::uuid,
+	        sub_tables.entity,
+	        $6,
+	        $5,
+	        $7
+	      from
+	        sub_tables
+	        on conflict
+	        (subscription_id, entity, filters, action_filter)
+	        do update set
+	        claims = excluded.claims,
+	        created_at = now()
+	      returning
+	         id
