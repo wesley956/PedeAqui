@@ -220,10 +220,27 @@ if (verify) {
     console.log(`HOMOLOG_APOS status=${afterStatus}`);
     // O registro do servidor vai junto com os prints: mostra o motivo de telas que falharam.
     if (process.env.AUDIT_OUT) { try { fs.writeFileSync(path.join(process.env.AUDIT_OUT, "servidor.log"), appLog.slice(-400000)); } catch { /* pasta ausente */ } }
+    // Funções internas (schema private) chamadas por operações do servidor sem permissão de execução para ele:
+    // cada linha é uma operação que falha com "permission denied" (ex.: enviar rodada no salão).
+    if (process.env.AUDIT_OUT) {
+      const missing = spawnSync(`docker exec -i ${dbContainer} psql -U postgres -d postgres -X -q -At`, { shell: true, encoding: "utf8", input: `
+        select p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ') <- ' || string_agg(distinct c.proname, ', ')
+        from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+        join pg_proc c on not c.prosecdef and c.prosrc ilike '%private.' || p.proname || '(%'
+        join pg_namespace cn on cn.oid = c.pronamespace and cn.nspname in ('public', 'private')
+        where n.nspname = 'private' and not p.prosecdef is null
+          and not has_function_privilege('service_role', p.oid, 'execute')
+          and has_function_privilege('service_role', c.oid, 'execute')
+        group by p.oid, p.proname order by 1;` });
+      try { fs.writeFileSync(path.join(process.env.AUDIT_OUT, "permissoes-faltando.txt"), `${missing.stdout ?? ""}\n${missing.stderr ?? ""}`); } catch { /* pasta ausente */ }
+    }
     // Registros do banco local e da porta de entrada: mostram o motivo de respostas inválidas ("invalid response from upstream").
     if (process.env.AUDIT_OUT) for (const service of ["db", "rest", "kong", "auth"]) {
-      const logs = spawnSync(`docker logs --tail 400 supabase_${service}_homolog-local`, { shell: true, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
-      try { fs.writeFileSync(path.join(process.env.AUDIT_OUT, `banco-${service}.log`), `${logs.stdout ?? ""}\n${logs.stderr ?? ""}`.slice(-300000)); } catch { /* pasta ausente */ }
+      const logs = spawnSync(`docker logs --tail 6000 supabase_${service}_homolog-local`, { shell: true, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+      // Do log de entrada (kong) interessam só as respostas 5xx; dos demais, o final.
+      const text = `${logs.stdout ?? ""}\n${logs.stderr ?? ""}`;
+      const kept = service === "kong" ? text.split("\n").filter((line) => /" 5\d\d /.test(line) || /\[error\]/.test(line)).join("\n") : text.slice(-200000);
+      try { fs.writeFileSync(path.join(process.env.AUDIT_OUT, `banco-${service}.log`), kept); } catch { /* pasta ausente */ }
     }
   }
   stop();
