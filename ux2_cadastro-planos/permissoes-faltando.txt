@@ -1,0 +1,8 @@
+accept_invitation(raw_token text) <- accept_invitation
+bootstrap_organization(organization_name text, store_name text, store_slug text) <- bootstrap_organization
+bootstrap_organization_modular(organization_name text, store_name text, store_slug text, p_business_type text, p_module_preset text, p_enabled_modules text[]) <- bootstrap_organization_modular
+get_public_table(p_public_code text) <- get_public_table
+has_permission(target_organization_id uuid, target_store_id uuid, target_permission_key text) <- driver_route_end_internal, has_permission
+integration_normalize_payment_method(p_method text) <- integration_import_external_order
+subscription_can_transition(p_from text, p_to text) <- subscription_apply_internal
+

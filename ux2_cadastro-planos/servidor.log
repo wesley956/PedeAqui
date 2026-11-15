@@ -1,0 +1,40 @@
+▲ Next.js 16.2.12
+- Local:         http://127.0.0.1:3000
+- Network:       http://127.0.0.1:3000
+✓ Ready in 116ms
+⨯ Error: {"code":"42501","details":null,"hint":null,"message":"permission denied for table users"}
+    at ignore-listed frames {
+  digest: '967768027@E394'
+}
+⨯ Error: {"code":"42501","details":null,"hint":null,"message":"permission denied for table users"}
+    at ignore-listed frames {
+  digest: '967768027@E394'
+}
+⨯ Error: {"code":"42501","details":null,"hint":null,"message":"permission denied for table users"}
+    at ignore-listed frames {
+  digest: '967768027@E394'
+}
+⨯ Error: {"code":"42501","details":null,"hint":null,"message":"permission denied for table users"}
+    at ignore-listed frames {
+  digest: '967768027@E394'
+}
+⨯ Error: {"message":"An invalid response was received from the upstream server"}
+    at ignore-listed frames {
+  digest: '3017939355@E394'
+}
+⨯ Error: {"code":"42501","details":null,"hint":null,"message":"permission denied for table users"}
+    at ignore-listed frames {
+  digest: '967768027@E394'
+}
+⨯ Error: {"code":"42501","details":null,"hint":null,"message":"permission denied for table users"}
+    at ignore-listed frames {
+  digest: '967768027@E394'
+}
+⨯ Error: {"code":"42501","details":null,"hint":null,"message":"permission denied for table users"}
+    at ignore-listed frames {
+  digest: '967768027@E394'
+}
+⨯ Error: {"code":"42501","details":null,"hint":null,"message":"permission denied for table users"}
+    at ignore-listed frames {
+  digest: '967768027@E394'
+}
