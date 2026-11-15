@@ -22,3 +22,6 @@
   .summary { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: var(--space-2); scrollbar-width: none; }
   .summary > * { flex: 0 0 auto; }
 }
+
+/* UX2 — estação escolhida em escuro (antes o botão ficava laranja, como se fosse a ação principal). */
+.filters button[aria-pressed="true"] { border-color: var(--selected); background: var(--selected); color: var(--on-selected); }

@@ -24,6 +24,9 @@ const featureLabels: Record<string, string> = {
   "integrations.marketplace": "Integrações",
   "branding.white_label": "Marca própria",
   "custom_domains": "Domínios personalizados",
+  // Chaves reais usadas pelo servidor: sem estas linhas apareciam "Domains custom" e "Scale multiunit".
+  "domains.custom": "Domínios personalizados",
+  "scale.multiunit": "Várias unidades",
 };
 function featureLabel(key: string) {
   return featureLabels[key] ?? key.replace(/[._-]+/g, " ").replace(/^./, (value) => value.toUpperCase());
