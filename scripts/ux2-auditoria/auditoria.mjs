@@ -174,6 +174,13 @@ async function runFlows(page, device) {
     try { await action(); await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {}); await page.waitForTimeout(900); entry.ok = true; }
     catch (error) { entry.ok = false; entry.error = String(error.message).split("\n")[0].slice(0, 220); }
     entry.screen = await controls(page);
+    // O banco local às vezes derruba uma conexão (B-06) e a página cai na tela de erro: tenta de novo uma vez e anota.
+    if ((entry.screen.buttons ?? []).length === 1 && entry.screen.buttons[0] === "Tentar novamente") {
+      entry.retried = true;
+      await page.reload({ waitUntil: "load" }).catch(() => {});
+      await page.waitForTimeout(1200);
+      entry.screen = await controls(page);
+    }
     const base = `${device.key}__fluxo__${safe(`${flow}-${stepName}`)}`;
     await page.screenshot({ path: path.join(outDir, "shots", `${base}.jpg`), type: "jpeg", quality: 70 }).catch(() => {});
     entry.shot = `shots/${base}.jpg`;

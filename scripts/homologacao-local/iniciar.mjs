@@ -108,10 +108,12 @@ if (!state) {
   // Mudanças que existem só nas migrações versionadas (ainda não incorporadas ao schema canônico).
   // Cada uma é aplicada isolada; as que já existem falham e são ignoradas.
   const deltas = [
+    "20260903013000_manual_delivery_private_execution_grant.sql",
     "20260910162000_scheduled_product_promotions.sql",
     "20260911180613_promotion_campaigns_v2.sql",
     "20260912003740_whatsapp_direct_orders.sql",
     "20260912051915_whatsapp_bot_presentation_settings.sql",
+    "20260914065659_platform_super_admin_service_role_execute.sql",
     "20260914071619_customer_panel_message_receipts.sql",
     "20260915155500_int11_order_creation_channel.sql",
     "20260916070000_wpp08_coexistence_observability.sql",
@@ -132,6 +134,9 @@ if (!state) {
     const full = path.join("supabase/migrations", file);
     if (!fs.existsSync(full) || !psql(fs.readFileSync(full, "utf8"), { allowFail: true, singleTransaction: true }).ok) skipped.push(file);
   }
+  // Correções de banco ainda não aplicadas na produção (ver docs/ux2/PENDENCIAS-BANCO.md): valem só aqui,
+  // para os fluxos poderem ser testados até o fim.
+  psql(fs.readFileSync(path.join(root, "scripts/homologacao-local/correcoes-pendentes.sql"), "utf8"), { allowFail: true });
   console.log(`  ${files.length} arquivos de schema aplicados; ${deltas.length - skipped.length} migrações extras aplicadas${skipped.length ? `, ${skipped.length} ignoradas` : ""}.`);
 
   say("Criando a loja fictícia (Salgados da Vila)");
