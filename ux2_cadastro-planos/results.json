@@ -5,7 +5,7 @@
   "label": "/",
   "url": "http://127.0.0.1:3000/",
   "status": 200,
-  "loadMs": 839,
+  "loadMs": 852,
   "finalUrl": "/",
   "vw": 1366,
   "vh": 768,
@@ -84,7 +84,7 @@
   "label": "/como-funciona",
   "url": "http://127.0.0.1:3000/como-funciona",
   "status": 200,
-  "loadMs": 642,
+  "loadMs": 671,
   "finalUrl": "/como-funciona",
   "vw": 1366,
   "vh": 768,
@@ -163,7 +163,7 @@
   "label": "/recursos",
   "url": "http://127.0.0.1:3000/recursos",
   "status": 200,
-  "loadMs": 617,
+  "loadMs": 631,
   "finalUrl": "/recursos",
   "vw": 1366,
   "vh": 768,
@@ -242,7 +242,7 @@
   "label": "/planos",
   "url": "http://127.0.0.1:3000/planos",
   "status": 200,
-  "loadMs": 637,
+  "loadMs": 632,
   "finalUrl": "/planos",
   "vw": 1366,
   "vh": 768,
@@ -321,7 +321,7 @@
   "label": "/pedidos-e-atendimento",
   "url": "http://127.0.0.1:3000/pedidos-e-atendimento",
   "status": 200,
-  "loadMs": 627,
+  "loadMs": 636,
   "finalUrl": "/pedidos-e-atendimento",
   "vw": 1366,
   "vh": 768,
@@ -400,7 +400,7 @@
   "label": "/entrega-e-fidelizacao",
   "url": "http://127.0.0.1:3000/entrega-e-fidelizacao",
   "status": 200,
-  "loadMs": 601,
+  "loadMs": 617,
   "finalUrl": "/entrega-e-fidelizacao",
   "vw": 1366,
   "vh": 768,
@@ -479,7 +479,7 @@
   "label": "/empresa",
   "url": "http://127.0.0.1:3000/empresa",
   "status": 200,
-  "loadMs": 608,
+  "loadMs": 618,
   "finalUrl": "/empresa",
   "vw": 1366,
   "vh": 768,
@@ -536,7 +536,7 @@
   "label": "/cadastro",
   "url": "http://127.0.0.1:3000/cadastro",
   "status": 200,
-  "loadMs": 648,
+  "loadMs": 745,
   "finalUrl": "/cadastro",
   "vw": 1366,
   "vh": 768,
@@ -603,7 +603,7 @@
   "label": "/recuperar-senha",
   "url": "http://127.0.0.1:3000/recuperar-senha",
   "status": 200,
-  "loadMs": 638,
+  "loadMs": 604,
   "finalUrl": "/recuperar-senha",
   "vw": 1366,
   "vh": 768,
@@ -665,7 +665,7 @@
   "label": "/acesso-entregador",
   "url": "http://127.0.0.1:3000/acesso-entregador",
   "status": 200,
-  "loadMs": 611,
+  "loadMs": 618,
   "finalUrl": "/acesso-entregador",
   "vw": 1366,
   "vh": 768,
@@ -737,7 +737,7 @@
   "label": "/termos-de-uso",
   "url": "http://127.0.0.1:3000/termos-de-uso",
   "status": 200,
-  "loadMs": 519,
+  "loadMs": 520,
   "finalUrl": "/termos-de-uso",
   "vw": 1366,
   "vh": 768,
@@ -789,7 +789,7 @@
   "label": "/politica-de-privacidade",
   "url": "http://127.0.0.1:3000/politica-de-privacidade",
   "status": 200,
-  "loadMs": 518,
+  "loadMs": 517,
   "finalUrl": "/politica-de-privacidade",
   "vw": 1366,
   "vh": 768,
@@ -846,7 +846,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 639,
+  "loadMs": 642,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -1010,7 +1010,7 @@
   "label": "/platform/apresentacao",
   "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 583,
+  "loadMs": 627,
   "finalUrl": "/platform/apresentacao",
   "vw": 1366,
   "vh": 768,
@@ -1050,7 +1050,7 @@
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
-  "loadMs": 537,
+  "loadMs": 557,
   "finalUrl": "/platform/demo",
   "vw": 1366,
   "vh": 768,
@@ -1087,447 +1087,11 @@
  {
   "device": "pc-1366",
   "area": "panel",
-  "label": "/platform/fundadores",
-  "url": "http://127.0.0.1:3000/platform/fundadores",
-  "status": 200,
-  "loadMs": 830,
-  "finalUrl": "/platform/fundadores",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 964,
-  "screens": 1.3,
-  "title": "PedeAqui",
-  "h1": "Condição Fundador e clube de benefícios",
-  "overflowing": [],
-  "interactiveCount": 31,
-  "smallTargets": 31,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1719,
-  "shot": "shots/pc-1366__panel__platform-fundadores.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/platform/incidentes",
-  "url": "http://127.0.0.1:3000/platform/incidentes",
-  "status": 200,
-  "loadMs": 815,
-  "finalUrl": "/platform/incidentes",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 801,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Incidentes e auditoria",
-  "overflowing": [],
-  "interactiveCount": 30,
-  "smallTargets": 30,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1215,
-  "shot": "shots/pc-1366__panel__platform-incidentes.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/platform/operacao/praticidade",
-  "url": "http://127.0.0.1:3000/platform/operacao/praticidade",
-  "status": 200,
-  "loadMs": 783,
-  "finalUrl": "/platform/operacao/praticidade",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Praticidade dos clientes-piloto",
-  "overflowing": [],
-  "interactiveCount": 30,
-  "smallTargets": 30,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 968,
-  "shot": "shots/pc-1366__panel__platform-operacao-praticidade.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/platform/privacidade",
-  "url": "http://127.0.0.1:3000/platform/privacidade",
-  "status": 200,
-  "loadMs": 756,
-  "finalUrl": "/platform/privacidade",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1028,
-  "screens": 1.3,
-  "title": "PedeAqui",
-  "h1": "LGPD, retenção e solicitações",
-  "overflowing": [],
-  "interactiveCount": 35,
-  "smallTargets": 35,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Sem empresa vinculada Salgados da Vila LTDA\" 12px",
-   "input.platform-module__d3cmqG__field \"Referência do solicitante\" 12px",
-   "select.platform-module__d3cmqG__field \"Acesso Exportação Correção Anonimização Exclusão O\" 12px",
-   "input.platform-module__d3cmqG__field \"Descrição da solicitação\" 12px"
-  ],
-  "inputsZoomCount": 4,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1753,
-  "shot": "shots/pc-1366__panel__platform-privacidade.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
-  "label": "/platform/suporte/modo",
-  "url": "http://127.0.0.1:3000/platform/suporte/modo",
-  "status": 200,
-  "loadMs": 795,
-  "finalUrl": "/platform/suporte/modo",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Reproduzir contexto do cliente",
-  "overflowing": [],
-  "interactiveCount": 36,
-  "smallTargets": 36,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA\" 12px",
-   "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA · Salgados da Vila\" 12px",
-   "select.platform-module__d3cmqG__field \"Sem perfil Salgados da Vila LTDA · Atendente Salga\" 12px",
-   "input.platform-module__d3cmqG__field \"reason\" 12px",
-   "input.platform-module__d3cmqG__field \"protocol\" 12px"
-  ],
-  "inputsZoomCount": 5,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1104,
-  "shot": "shots/pc-1366__panel__platform-suporte-modo.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366",
-  "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "url": "http://127.0.0.1:3000/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "status": 200,
-  "loadMs": 1191,
-  "finalUrl": "/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "loadMs": 1226,
+  "finalUrl": "/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1615,10 +1179,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/a2dac4ee-afbf-4e76-95c1-ddca8f1d7c58",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
   "status": 200,
-  "loadMs": 1090,
-  "finalUrl": "/cardapio/produtos/a2dac4ee-afbf-4e76-95c1-ddca8f1d7c58",
+  "loadMs": 1184,
+  "finalUrl": "/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1712,10 +1276,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/372308dd-63a2-445f-98b6-bb91c6f52f71",
+  "url": "http://127.0.0.1:3000/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
   "status": 200,
-  "loadMs": 1335,
-  "finalUrl": "/clientes/372308dd-63a2-445f-98b6-bb91c6f52f71",
+  "loadMs": 1147,
+  "finalUrl": "/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1803,10 +1367,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/28bfc444-a93f-4c85-8cfd-4adb2e11e0d6",
+  "url": "http://127.0.0.1:3000/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
   "status": 200,
-  "loadMs": 1030,
-  "finalUrl": "/salao/28bfc444-a93f-4c85-8cfd-4adb2e11e0d6",
+  "loadMs": 1132,
+  "finalUrl": "/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1900,15 +1464,15 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/platform/operacao/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "status": 200,
-  "loadMs": 915,
-  "finalUrl": "/platform/operacao/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "loadMs": 916,
+  "finalUrl": "/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1771,
-  "screens": 2.3,
+  "docHeight": 1805,
+  "screens": 2.4,
   "title": "PedeAqui",
   "h1": "Pedido #1",
   "overflowing": [],
@@ -1977,7 +1541,7 @@
    }
   ],
   "fixedCoverPx": 0,
-  "bodyTextLength": 2804,
+  "bodyTextLength": 2827,
   "shot": "shots/pc-1366__panel__platform-operacao-pedidos-id.jpg",
   "consoleErrors": []
  },
@@ -1985,10 +1549,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/platform/unidades/[id]",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "status": 200,
-  "loadMs": 1044,
-  "finalUrl": "/platform/empresas/0f80e993-4a17-49b1-b218-f26f2e94bba9/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "loadMs": 980,
+  "finalUrl": "/platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -2077,10 +1641,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/platform/unidades/[id]/configuracao-operacional",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/configuracao-operacional",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
   "status": 200,
-  "loadMs": 889,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/configuracao-operacional",
+  "loadMs": 904,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -2169,10 +1733,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/platform/unidades/[id]/whatsapp",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "status": 200,
-  "loadMs": 893,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "loadMs": 885,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -2254,10 +1818,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/platform/unidades/[id]/whatsapp/notificacoes",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp/notificacoes",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
   "status": 200,
-  "loadMs": 867,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp/notificacoes",
+  "loadMs": 832,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -2339,10 +1903,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/platform/restaurantes/[id]",
-  "url": "http://127.0.0.1:3000/platform/restaurantes/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "url": "http://127.0.0.1:3000/platform/restaurantes/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "status": 200,
-  "loadMs": 960,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "loadMs": 979,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -3156,7 +2720,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 684,
+  "loadMs": 690,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -3439,7 +3003,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 649,
+  "loadMs": 640,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -3496,7 +3060,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 653,
+  "loadMs": 670,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -3570,7 +3134,7 @@
   "label": "/",
   "url": "http://127.0.0.1:3000/",
   "status": 200,
-  "loadMs": 822,
+  "loadMs": 811,
   "finalUrl": "/",
   "vw": 360,
   "vh": 740,
@@ -3657,7 +3221,7 @@
   "label": "/como-funciona",
   "url": "http://127.0.0.1:3000/como-funciona",
   "status": 200,
-  "loadMs": 621,
+  "loadMs": 625,
   "finalUrl": "/como-funciona",
   "vw": 360,
   "vh": 740,
@@ -3744,7 +3308,7 @@
   "label": "/recursos",
   "url": "http://127.0.0.1:3000/recursos",
   "status": 200,
-  "loadMs": 614,
+  "loadMs": 641,
   "finalUrl": "/recursos",
   "vw": 360,
   "vh": 740,
@@ -3831,7 +3395,7 @@
   "label": "/planos",
   "url": "http://127.0.0.1:3000/planos",
   "status": 200,
-  "loadMs": 681,
+  "loadMs": 650,
   "finalUrl": "/planos",
   "vw": 360,
   "vh": 740,
@@ -3918,7 +3482,7 @@
   "label": "/pedidos-e-atendimento",
   "url": "http://127.0.0.1:3000/pedidos-e-atendimento",
   "status": 200,
-  "loadMs": 620,
+  "loadMs": 622,
   "finalUrl": "/pedidos-e-atendimento",
   "vw": 360,
   "vh": 740,
@@ -4005,7 +3569,7 @@
   "label": "/entrega-e-fidelizacao",
   "url": "http://127.0.0.1:3000/entrega-e-fidelizacao",
   "status": 200,
-  "loadMs": 633,
+  "loadMs": 665,
   "finalUrl": "/entrega-e-fidelizacao",
   "vw": 360,
   "vh": 740,
@@ -4157,7 +3721,7 @@
   "label": "/cadastro",
   "url": "http://127.0.0.1:3000/cadastro",
   "status": 200,
-  "loadMs": 606,
+  "loadMs": 630,
   "finalUrl": "/cadastro",
   "vw": 360,
   "vh": 740,
@@ -4225,7 +3789,7 @@
   "label": "/recuperar-senha",
   "url": "http://127.0.0.1:3000/recuperar-senha",
   "status": 200,
-  "loadMs": 626,
+  "loadMs": 622,
   "finalUrl": "/recuperar-senha",
   "vw": 360,
   "vh": 740,
@@ -4288,7 +3852,7 @@
   "label": "/acesso-entregador",
   "url": "http://127.0.0.1:3000/acesso-entregador",
   "status": 200,
-  "loadMs": 613,
+  "loadMs": 612,
   "finalUrl": "/acesso-entregador",
   "vw": 360,
   "vh": 740,
@@ -4361,7 +3925,7 @@
   "label": "/termos-de-uso",
   "url": "http://127.0.0.1:3000/termos-de-uso",
   "status": 200,
-  "loadMs": 518,
+  "loadMs": 519,
   "finalUrl": "/termos-de-uso",
   "vw": 360,
   "vh": 740,
@@ -4421,7 +3985,7 @@
   "label": "/politica-de-privacidade",
   "url": "http://127.0.0.1:3000/politica-de-privacidade",
   "status": 200,
-  "loadMs": 517,
+  "loadMs": 518,
   "finalUrl": "/politica-de-privacidade",
   "vw": 360,
   "vh": 740,
@@ -4481,7 +4045,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 600,
+  "loadMs": 609,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -4646,7 +4210,7 @@
   "label": "/platform/apresentacao",
   "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 561,
+  "loadMs": 571,
   "finalUrl": "/platform/apresentacao",
   "vw": 360,
   "vh": 740,
@@ -4687,7 +4251,7 @@
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
-  "loadMs": 551,
+  "loadMs": 544,
   "finalUrl": "/platform/demo",
   "vw": 360,
   "vh": 740,
@@ -4725,413 +4289,22 @@
  {
   "device": "android-360",
   "area": "panel",
-  "label": "/platform/fundadores",
-  "url": "http://127.0.0.1:3000/platform/fundadores",
-  "status": 200,
-  "loadMs": 606,
-  "finalUrl": "/platform/fundadores",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 1758,
-  "screens": 2.4,
-  "title": "PedeAqui",
-  "h1": "Condição Fundador e clube de benefícios",
-  "overflowing": [],
-  "interactiveCount": 30,
-  "smallTargets": 6,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a.platform-module__d3cmqG__button \"Gerenciar assinaturas\"",
-    "w": 171,
-    "h": 39
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1616,
-  "shot": "shots/android-360__panel__platform-fundadores.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 1,
-    "example": ".platform-module__d3cmqG__pill"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/platform/incidentes",
-  "url": "http://127.0.0.1:3000/platform/incidentes",
-  "status": 200,
-  "loadMs": 595,
-  "finalUrl": "/platform/incidentes",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 1342,
-  "screens": 1.8,
-  "title": "PedeAqui",
-  "h1": "Incidentes e auditoria",
-  "overflowing": [],
-  "interactiveCount": 29,
-  "smallTargets": 5,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1112,
-  "shot": "shots/android-360__panel__platform-incidentes.jpg",
-  "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/platform/operacao/praticidade",
-  "url": "http://127.0.0.1:3000/platform/operacao/praticidade",
-  "status": 200,
-  "loadMs": 611,
-  "finalUrl": "/platform/operacao/praticidade",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Praticidade dos clientes-piloto",
-  "overflowing": [],
-  "interactiveCount": 29,
-  "smallTargets": 5,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 865,
-  "shot": "shots/android-360__panel__platform-operacao-praticidade.jpg",
-  "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/platform/privacidade",
-  "url": "http://127.0.0.1:3000/platform/privacidade",
-  "status": 200,
-  "loadMs": 588,
-  "finalUrl": "/platform/privacidade",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 1771,
-  "screens": 2.4,
-  "title": "PedeAqui",
-  "h1": "LGPD, retenção e solicitações",
-  "overflowing": [],
-  "interactiveCount": 34,
-  "smallTargets": 10,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "select.platform-module__d3cmqG__field \"Sem empresa vinculada Salgados da Vila LTDA\"",
-    "w": 318,
-    "h": 39
-   },
-   {
-    "el": "input.platform-module__d3cmqG__field \"Referência do solicitante\"",
-    "w": 318,
-    "h": 39
-   },
-   {
-    "el": "select.platform-module__d3cmqG__field \"Acesso Exportação Correção Anonimização Exclusão O\"",
-    "w": 318,
-    "h": 39
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Sem empresa vinculada Salgados da Vila LTDA\" 12px",
-   "input.platform-module__d3cmqG__field \"Referência do solicitante\" 12px",
-   "select.platform-module__d3cmqG__field \"Acesso Exportação Correção Anonimização Exclusão O\" 12px",
-   "input.platform-module__d3cmqG__field \"Descrição da solicitação\" 12px"
-  ],
-  "inputsZoomCount": 4,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1650,
-  "shot": "shots/android-360__panel__platform-privacidade.jpg",
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 5,
-    "example": ".platform-module__d3cmqG__roleBadge"
-   },
-   {
-    "id": "select-name",
-    "impact": "critical",
-    "nodes": 2,
-    "example": "select[name=\"organizationId\"]"
-   }
-  ],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
-  "label": "/platform/suporte/modo",
-  "url": "http://127.0.0.1:3000/platform/suporte/modo",
-  "status": 200,
-  "loadMs": 591,
-  "finalUrl": "/platform/suporte/modo",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 888,
-  "screens": 1.2,
-  "title": "PedeAqui",
-  "h1": "Reproduzir contexto do cliente",
-  "overflowing": [],
-  "interactiveCount": 35,
-  "smallTargets": 11,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA\"",
-    "w": 292,
-    "h": 39
-   },
-   {
-    "el": "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA · Salgados da Vila\"",
-    "w": 292,
-    "h": 39
-   },
-   {
-    "el": "select.platform-module__d3cmqG__field \"Sem perfil Salgados da Vila LTDA · Atendente Salga\"",
-    "w": 292,
-    "h": 39
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA\" 12px",
-   "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA · Salgados da Vila\" 12px",
-   "select.platform-module__d3cmqG__field \"Sem perfil Salgados da Vila LTDA · Atendente Salga\" 12px",
-   "input.platform-module__d3cmqG__field \"reason\" 12px",
-   "input.platform-module__d3cmqG__field \"protocol\" 12px"
-  ],
-  "inputsZoomCount": 5,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1001,
-  "shot": "shots/android-360__panel__platform-suporte-modo.jpg",
-  "axe": [],
-  "consoleErrors": []
- },
- {
-  "device": "android-360",
-  "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "url": "http://127.0.0.1:3000/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "status": 200,
-  "loadMs": 1005,
-  "finalUrl": "/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "loadMs": 1131,
+  "finalUrl": "/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 2570,
+  "screens": 3.5,
   "title": "PedeAqui",
-  "h1": "Não foi possível concluir esta operação",
+  "h1": "Pedido #1",
   "overflowing": [],
-  "interactiveCount": 41,
-  "smallTargets": 13,
-  "tinyTargets": 0,
+  "interactiveCount": 49,
+  "smallTargets": 19,
+  "tinyTargets": 1,
   "smallTargetExamples": [
    {
     "el": "summary \"Operação da loja\"",
@@ -5206,22 +4379,26 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 285,
+  "bodyTextLength": 1150,
   "shot": "shots/android-360__panel__pedidos-id.jpg",
-  "axe": [],
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 3017939355@E394}"
-  ]
+  "axe": [
+   {
+    "id": "color-contrast",
+    "impact": "serious",
+    "nodes": 1,
+    "example": ".order-detail-module__EK8WHa__cancelForm > form > button[type=\"submit\"]"
+   }
+  ],
+  "consoleErrors": []
  },
  {
   "device": "android-360",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/a2dac4ee-afbf-4e76-95c1-ddca8f1d7c58",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
   "status": 200,
-  "loadMs": 861,
-  "finalUrl": "/cardapio/produtos/a2dac4ee-afbf-4e76-95c1-ddca8f1d7c58",
+  "loadMs": 961,
+  "finalUrl": "/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -5322,10 +4499,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/372308dd-63a2-445f-98b6-bb91c6f52f71",
+  "url": "http://127.0.0.1:3000/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
   "status": 200,
-  "loadMs": 905,
-  "finalUrl": "/clientes/372308dd-63a2-445f-98b6-bb91c6f52f71",
+  "loadMs": 980,
+  "finalUrl": "/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -5420,10 +4597,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/28bfc444-a93f-4c85-8cfd-4adb2e11e0d6",
+  "url": "http://127.0.0.1:3000/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
   "status": 200,
-  "loadMs": 902,
-  "finalUrl": "/salao/28bfc444-a93f-4c85-8cfd-4adb2e11e0d6",
+  "loadMs": 938,
+  "finalUrl": "/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -5524,10 +4701,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/platform/operacao/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "status": 200,
-  "loadMs": 892,
-  "finalUrl": "/platform/operacao/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "loadMs": 905,
+  "finalUrl": "/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -5585,7 +4762,7 @@
    }
   ],
   "fixedCoverPx": 0,
-  "bodyTextLength": 2701,
+  "bodyTextLength": 2724,
   "shot": "shots/android-360__panel__platform-operacao-pedidos-id.jpg",
   "axe": [
    {
@@ -5601,10 +4778,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/platform/unidades/[id]",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "status": 200,
-  "loadMs": 766,
-  "finalUrl": "/platform/empresas/0f80e993-4a17-49b1-b218-f26f2e94bba9/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "loadMs": 721,
+  "finalUrl": "/platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -5695,10 +4872,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/platform/unidades/[id]/configuracao-operacional",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/configuracao-operacional",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
   "status": 200,
-  "loadMs": 884,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/configuracao-operacional",
+  "loadMs": 879,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -5782,10 +4959,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/platform/unidades/[id]/whatsapp",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "status": 200,
-  "loadMs": 616,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "loadMs": 619,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -5869,10 +5046,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/platform/unidades/[id]/whatsapp/notificacoes",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp/notificacoes",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
   "status": 200,
-  "loadMs": 601,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp/notificacoes",
+  "loadMs": 615,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -5956,10 +5133,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/platform/restaurantes/[id]",
-  "url": "http://127.0.0.1:3000/platform/restaurantes/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "url": "http://127.0.0.1:3000/platform/restaurantes/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "status": 200,
-  "loadMs": 958,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "loadMs": 740,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -7029,7 +6206,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 645,
+  "loadMs": 671,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -7333,7 +6510,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 610,
+  "loadMs": 622,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -7403,7 +6580,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 643,
+  "loadMs": 665,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
@@ -7490,7 +6667,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 819,
+  "loadMs": 809,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -7648,7 +6825,7 @@
   "label": "/platform/apresentacao",
   "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 569,
+  "loadMs": 570,
   "finalUrl": "/platform/apresentacao",
   "vw": 1366,
   "vh": 768,
@@ -7688,7 +6865,7 @@
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
-  "loadMs": 546,
+  "loadMs": 554,
   "finalUrl": "/platform/demo",
   "vw": 1366,
   "vh": 768,
@@ -7725,447 +6902,11 @@
  {
   "device": "pc-1366-escuro",
   "area": "panel",
-  "label": "/platform/fundadores",
-  "url": "http://127.0.0.1:3000/platform/fundadores",
-  "status": 200,
-  "loadMs": 745,
-  "finalUrl": "/platform/fundadores",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 964,
-  "screens": 1.3,
-  "title": "PedeAqui",
-  "h1": "Condição Fundador e clube de benefícios",
-  "overflowing": [],
-  "interactiveCount": 31,
-  "smallTargets": 31,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1719,
-  "shot": "shots/pc-1366-escuro__panel__platform-fundadores.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/platform/incidentes",
-  "url": "http://127.0.0.1:3000/platform/incidentes",
-  "status": 200,
-  "loadMs": 734,
-  "finalUrl": "/platform/incidentes",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 801,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Incidentes e auditoria",
-  "overflowing": [],
-  "interactiveCount": 30,
-  "smallTargets": 30,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1215,
-  "shot": "shots/pc-1366-escuro__panel__platform-incidentes.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/platform/operacao/praticidade",
-  "url": "http://127.0.0.1:3000/platform/operacao/praticidade",
-  "status": 200,
-  "loadMs": 788,
-  "finalUrl": "/platform/operacao/praticidade",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Praticidade dos clientes-piloto",
-  "overflowing": [],
-  "interactiveCount": 30,
-  "smallTargets": 30,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 968,
-  "shot": "shots/pc-1366-escuro__panel__platform-operacao-praticidade.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/platform/privacidade",
-  "url": "http://127.0.0.1:3000/platform/privacidade",
-  "status": 200,
-  "loadMs": 751,
-  "finalUrl": "/platform/privacidade",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 1028,
-  "screens": 1.3,
-  "title": "PedeAqui",
-  "h1": "LGPD, retenção e solicitações",
-  "overflowing": [],
-  "interactiveCount": 35,
-  "smallTargets": 35,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Sem empresa vinculada Salgados da Vila LTDA\" 12px",
-   "input.platform-module__d3cmqG__field \"Referência do solicitante\" 12px",
-   "select.platform-module__d3cmqG__field \"Acesso Exportação Correção Anonimização Exclusão O\" 12px",
-   "input.platform-module__d3cmqG__field \"Descrição da solicitação\" 12px"
-  ],
-  "inputsZoomCount": 4,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1753,
-  "shot": "shots/pc-1366-escuro__panel__platform-privacidade.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
-  "label": "/platform/suporte/modo",
-  "url": "http://127.0.0.1:3000/platform/suporte/modo",
-  "status": 200,
-  "loadMs": 748,
-  "finalUrl": "/platform/suporte/modo",
-  "vw": 1366,
-  "vh": 768,
-  "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Reproduzir contexto do cliente",
-  "overflowing": [],
-  "interactiveCount": 36,
-  "smallTargets": 36,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
-    "w": 223,
-    "h": 40
-   },
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
-    "w": 223,
-    "h": 40
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA\" 12px",
-   "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA · Salgados da Vila\" 12px",
-   "select.platform-module__d3cmqG__field \"Sem perfil Salgados da Vila LTDA · Atendente Salga\" 12px",
-   "input.platform-module__d3cmqG__field \"reason\" 12px",
-   "input.platform-module__d3cmqG__field \"protocol\" 12px"
-  ],
-  "inputsZoomCount": 5,
-  "fixed": [
-   {
-    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
-    "top": 0,
-    "h": 768,
-    "pos": "sticky"
-   },
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
-    "top": 0,
-    "h": 65,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1104,
-  "shot": "shots/pc-1366-escuro__panel__platform-suporte-modo.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "pc-1366-escuro",
-  "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "url": "http://127.0.0.1:3000/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "status": 200,
-  "loadMs": 1076,
-  "finalUrl": "/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "loadMs": 1074,
+  "finalUrl": "/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -8253,10 +6994,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/a2dac4ee-afbf-4e76-95c1-ddca8f1d7c58",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
   "status": 200,
-  "loadMs": 1000,
-  "finalUrl": "/cardapio/produtos/a2dac4ee-afbf-4e76-95c1-ddca8f1d7c58",
+  "loadMs": 1002,
+  "finalUrl": "/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -8350,10 +7091,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/372308dd-63a2-445f-98b6-bb91c6f52f71",
+  "url": "http://127.0.0.1:3000/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
   "status": 200,
-  "loadMs": 1031,
-  "finalUrl": "/clientes/372308dd-63a2-445f-98b6-bb91c6f52f71",
+  "loadMs": 1138,
+  "finalUrl": "/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -8441,10 +7182,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/28bfc444-a93f-4c85-8cfd-4adb2e11e0d6",
+  "url": "http://127.0.0.1:3000/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
   "status": 200,
-  "loadMs": 989,
-  "finalUrl": "/salao/28bfc444-a93f-4c85-8cfd-4adb2e11e0d6",
+  "loadMs": 1051,
+  "finalUrl": "/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -8538,15 +7279,15 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/platform/operacao/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "status": 200,
-  "loadMs": 910,
-  "finalUrl": "/platform/operacao/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "loadMs": 894,
+  "finalUrl": "/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1771,
-  "screens": 2.3,
+  "docHeight": 1805,
+  "screens": 2.4,
   "title": "PedeAqui",
   "h1": "Pedido #1",
   "overflowing": [],
@@ -8615,7 +7356,7 @@
    }
   ],
   "fixedCoverPx": 0,
-  "bodyTextLength": 2804,
+  "bodyTextLength": 2827,
   "shot": "shots/pc-1366-escuro__panel__platform-operacao-pedidos-id.jpg",
   "consoleErrors": []
  },
@@ -8623,10 +7364,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/platform/unidades/[id]",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "status": 200,
-  "loadMs": 899,
-  "finalUrl": "/platform/empresas/0f80e993-4a17-49b1-b218-f26f2e94bba9/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "loadMs": 904,
+  "finalUrl": "/platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -8715,10 +7456,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/platform/unidades/[id]/configuracao-operacional",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/configuracao-operacional",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
   "status": 200,
-  "loadMs": 881,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/configuracao-operacional",
+  "loadMs": 874,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -8807,10 +7548,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/platform/unidades/[id]/whatsapp",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "status": 200,
-  "loadMs": 756,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "loadMs": 801,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -8892,10 +7633,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/platform/unidades/[id]/whatsapp/notificacoes",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp/notificacoes",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
   "status": 200,
-  "loadMs": 753,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp/notificacoes",
+  "loadMs": 784,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -8977,10 +7718,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/platform/restaurantes/[id]",
-  "url": "http://127.0.0.1:3000/platform/restaurantes/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "url": "http://127.0.0.1:3000/platform/restaurantes/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "status": 200,
-  "loadMs": 943,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "loadMs": 957,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -9794,7 +8535,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 645,
+  "loadMs": 656,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -10077,7 +8818,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 618,
+  "loadMs": 633,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -10134,7 +8875,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 780,
+  "loadMs": 651,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -10208,7 +8949,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 734,
+  "loadMs": 781,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -10372,7 +9113,7 @@
   "label": "/platform/apresentacao",
   "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 555,
+  "loadMs": 558,
   "finalUrl": "/platform/apresentacao",
   "vw": 360,
   "vh": 740,
@@ -10412,7 +9153,7 @@
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
-  "loadMs": 541,
+  "loadMs": 544,
   "finalUrl": "/platform/demo",
   "vw": 360,
   "vh": 740,
@@ -10449,377 +9190,11 @@
  {
   "device": "android-360-escuro",
   "area": "panel",
-  "label": "/platform/fundadores",
-  "url": "http://127.0.0.1:3000/platform/fundadores",
-  "status": 200,
-  "loadMs": 601,
-  "finalUrl": "/platform/fundadores",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 1758,
-  "screens": 2.4,
-  "title": "PedeAqui",
-  "h1": "Condição Fundador e clube de benefícios",
-  "overflowing": [],
-  "interactiveCount": 30,
-  "smallTargets": 6,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "a.platform-module__d3cmqG__button \"Gerenciar assinaturas\"",
-    "w": 171,
-    "h": 39
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1616,
-  "shot": "shots/android-360-escuro__panel__platform-fundadores.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/platform/incidentes",
-  "url": "http://127.0.0.1:3000/platform/incidentes",
-  "status": 200,
-  "loadMs": 615,
-  "finalUrl": "/platform/incidentes",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 1342,
-  "screens": 1.8,
-  "title": "PedeAqui",
-  "h1": "Incidentes e auditoria",
-  "overflowing": [],
-  "interactiveCount": 29,
-  "smallTargets": 5,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1112,
-  "shot": "shots/android-360-escuro__panel__platform-incidentes.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/platform/operacao/praticidade",
-  "url": "http://127.0.0.1:3000/platform/operacao/praticidade",
-  "status": 200,
-  "loadMs": 629,
-  "finalUrl": "/platform/operacao/praticidade",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
-  "title": "PedeAqui",
-  "h1": "Praticidade dos clientes-piloto",
-  "overflowing": [],
-  "interactiveCount": 29,
-  "smallTargets": 5,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [],
-  "inputsZoomCount": 0,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 865,
-  "shot": "shots/android-360-escuro__panel__platform-operacao-praticidade.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/platform/privacidade",
-  "url": "http://127.0.0.1:3000/platform/privacidade",
-  "status": 200,
-  "loadMs": 590,
-  "finalUrl": "/platform/privacidade",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 1771,
-  "screens": 2.4,
-  "title": "PedeAqui",
-  "h1": "LGPD, retenção e solicitações",
-  "overflowing": [],
-  "interactiveCount": 34,
-  "smallTargets": 10,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "select.platform-module__d3cmqG__field \"Sem empresa vinculada Salgados da Vila LTDA\"",
-    "w": 318,
-    "h": 39
-   },
-   {
-    "el": "input.platform-module__d3cmqG__field \"Referência do solicitante\"",
-    "w": 318,
-    "h": 39
-   },
-   {
-    "el": "select.platform-module__d3cmqG__field \"Acesso Exportação Correção Anonimização Exclusão O\"",
-    "w": 318,
-    "h": 39
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Sem empresa vinculada Salgados da Vila LTDA\" 12px",
-   "input.platform-module__d3cmqG__field \"Referência do solicitante\" 12px",
-   "select.platform-module__d3cmqG__field \"Acesso Exportação Correção Anonimização Exclusão O\" 12px",
-   "input.platform-module__d3cmqG__field \"Descrição da solicitação\" 12px"
-  ],
-  "inputsZoomCount": 4,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1650,
-  "shot": "shots/android-360-escuro__panel__platform-privacidade.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
-  "label": "/platform/suporte/modo",
-  "url": "http://127.0.0.1:3000/platform/suporte/modo",
-  "status": 200,
-  "loadMs": 590,
-  "finalUrl": "/platform/suporte/modo",
-  "vw": 360,
-  "vh": 740,
-  "docWidth": 360,
-  "docHeight": 888,
-  "screens": 1.2,
-  "title": "PedeAqui",
-  "h1": "Reproduzir contexto do cliente",
-  "overflowing": [],
-  "interactiveCount": 35,
-  "smallTargets": 11,
-  "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
-    "w": 224,
-    "h": 40
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
-    "w": 34,
-    "h": 34
-   },
-   {
-    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
-    "w": 47,
-    "h": 36
-   },
-   {
-    "el": "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA\"",
-    "w": 292,
-    "h": 39
-   },
-   {
-    "el": "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA · Salgados da Vila\"",
-    "w": 292,
-    "h": 39
-   },
-   {
-    "el": "select.platform-module__d3cmqG__field \"Sem perfil Salgados da Vila LTDA · Atendente Salga\"",
-    "w": 292,
-    "h": 39
-   }
-  ],
-  "smallText": 0,
-  "smallTextExamples": [],
-  "minFont": 12,
-  "inputsZoom": [
-   "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA\" 12px",
-   "select.platform-module__d3cmqG__field \"Selecione Salgados da Vila LTDA · Salgados da Vila\" 12px",
-   "select.platform-module__d3cmqG__field \"Sem perfil Salgados da Vila LTDA · Atendente Salga\" 12px",
-   "input.platform-module__d3cmqG__field \"reason\" 12px",
-   "input.platform-module__d3cmqG__field \"protocol\" 12px"
-  ],
-  "inputsZoomCount": 5,
-  "fixed": [
-   {
-    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
-    "top": 128,
-    "h": 61,
-    "pos": "sticky"
-   }
-  ],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 1001,
-  "shot": "shots/android-360-escuro__panel__platform-suporte-modo.jpg",
-  "consoleErrors": []
- },
- {
-  "device": "android-360-escuro",
-  "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "url": "http://127.0.0.1:3000/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "status": 200,
-  "loadMs": 1054,
-  "finalUrl": "/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "loadMs": 997,
+  "finalUrl": "/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -10913,10 +9288,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/a2dac4ee-afbf-4e76-95c1-ddca8f1d7c58",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
   "status": 200,
   "loadMs": 923,
-  "finalUrl": "/cardapio/produtos/a2dac4ee-afbf-4e76-95c1-ddca8f1d7c58",
+  "finalUrl": "/cardapio/produtos/8ef75210-2707-45b0-8e0b-115a240623ce",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -11016,10 +9391,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/372308dd-63a2-445f-98b6-bb91c6f52f71",
+  "url": "http://127.0.0.1:3000/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
   "status": 200,
-  "loadMs": 879,
-  "finalUrl": "/clientes/372308dd-63a2-445f-98b6-bb91c6f52f71",
+  "loadMs": 892,
+  "finalUrl": "/clientes/4c886ee6-cdf4-47c4-8d01-a31a22dd1413",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -11113,10 +9488,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/28bfc444-a93f-4c85-8cfd-4adb2e11e0d6",
+  "url": "http://127.0.0.1:3000/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
   "status": 200,
-  "loadMs": 863,
-  "finalUrl": "/salao/28bfc444-a93f-4c85-8cfd-4adb2e11e0d6",
+  "loadMs": 902,
+  "finalUrl": "/salao/f28f8051-90e8-42ea-bb8f-dfbea9c4700c",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -11216,10 +9591,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/platform/operacao/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "url": "http://127.0.0.1:3000/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "status": 200,
-  "loadMs": 903,
-  "finalUrl": "/platform/operacao/pedidos/8b3bf975-5fa2-4f01-8187-72ef1904830e",
+  "loadMs": 892,
+  "finalUrl": "/platform/operacao/pedidos/4e794b0e-eb42-4c78-acb8-355142b76bbb",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -11277,7 +9652,7 @@
    }
   ],
   "fixedCoverPx": 0,
-  "bodyTextLength": 2701,
+  "bodyTextLength": 2724,
   "shot": "shots/android-360-escuro__panel__platform-operacao-pedidos-id.jpg",
   "consoleErrors": []
  },
@@ -11285,10 +9660,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/platform/unidades/[id]",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "status": 200,
-  "loadMs": 742,
-  "finalUrl": "/platform/empresas/0f80e993-4a17-49b1-b218-f26f2e94bba9/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "loadMs": 707,
+  "finalUrl": "/platform/empresas/e3cf29b4-8dfd-47dd-8012-096c19a98832/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -11371,10 +9746,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/platform/unidades/[id]/configuracao-operacional",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/configuracao-operacional",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
   "status": 200,
-  "loadMs": 892,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/configuracao-operacional",
+  "loadMs": 886,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/configuracao-operacional",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -11457,10 +9832,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/platform/unidades/[id]/whatsapp",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "status": 200,
-  "loadMs": 607,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "loadMs": 613,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -11536,10 +9911,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/platform/unidades/[id]/whatsapp/notificacoes",
-  "url": "http://127.0.0.1:3000/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp/notificacoes",
+  "url": "http://127.0.0.1:3000/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
   "status": 200,
-  "loadMs": 599,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp/notificacoes",
+  "loadMs": 600,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp/notificacoes",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -11615,10 +9990,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/platform/restaurantes/[id]",
-  "url": "http://127.0.0.1:3000/platform/restaurantes/7d406a1d-30c9-45c2-98f7-4e4ae0008083",
+  "url": "http://127.0.0.1:3000/platform/restaurantes/08836f65-e4e3-409e-aadc-c5387b7e86dd",
   "status": 200,
-  "loadMs": 948,
-  "finalUrl": "/platform/unidades/7d406a1d-30c9-45c2-98f7-4e4ae0008083/whatsapp",
+  "loadMs": 691,
+  "finalUrl": "/platform/unidades/08836f65-e4e3-409e-aadc-c5387b7e86dd/whatsapp",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -12680,7 +11055,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 640,
+  "loadMs": 694,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -12983,7 +11358,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 617,
+  "loadMs": 611,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -13052,7 +11427,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 636,
+  "loadMs": 641,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
