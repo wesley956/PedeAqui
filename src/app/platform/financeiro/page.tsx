@@ -5,6 +5,9 @@ import styles from "../platform.module.css";
 const money = (cents: number) => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const date = (value: string | null) => value ? new Date(value).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "Não definido";
 
+// Situação da cobrança em português: antes aparecia o código interno ("not_started").
+const paymentStatusLabel: Record<string, string> = { not_started: "Cobrança não iniciada", pending: "Pendente", paid: "Pago", overdue: "Em atraso", waived: "Isento neste vencimento" };
+
 export default async function PlatformFinanceiroPage() {
   const data = await PlatformBackofficeService.loadFinance();
   return (
@@ -39,7 +42,7 @@ export default async function PlatformFinanceiroPage() {
               </span>
               <span style={{ alignItems: "flex-end" }}>
                 <strong>{money(item.mrrCents)}/mês</strong>
-                <span className={styles.pill} data-tone={item.paymentStatus === "overdue" ? "danger" : item.paymentStatus === "pending" ? "warn" : "good"}>{item.paymentStatus}</span>
+                <span className={styles.pill} data-tone={item.paymentStatus === "overdue" ? "danger" : item.paymentStatus === "pending" ? "warn" : "good"}>{paymentStatusLabel[item.paymentStatus] ?? item.paymentStatus}</span>
               </span>
             </div>
           ))}
