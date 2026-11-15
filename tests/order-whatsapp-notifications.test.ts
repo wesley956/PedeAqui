@@ -167,6 +167,11 @@ describe("[329] persistence and safety contracts", () => {
 
   it("uses free-form text only inside the support window and an approved template outside it", () => {
     expect(worker).toContain('eq("direction", "inbound")');
+    // A notification can create a new outbound thread after the customer's
+    // inbound thread was closed. The window must follow the same contact.
+    expect(worker).toContain('.eq("contact_id", conversation.contact_id)');
+    expect(worker).toContain('.eq("sender_type", "contact")');
+    expect(worker).not.toContain('.eq("conversation_id", conversation.conversation_id)\n    .eq("direction", "inbound")');
     expect(worker).toContain("CUSTOMER_SUPPORT_WINDOW_MS");
     expect(worker).toContain("provider.sendText");
     expect(worker).toContain("provider.sendTemplate");
