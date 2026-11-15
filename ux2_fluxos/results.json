@@ -5,7 +5,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 801,
+  "loadMs": 812,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -166,22 +166,22 @@
  {
   "device": "pc-1366",
   "area": "panel",
-  "label": "/dashboard",
-  "url": "http://127.0.0.1:3000/dashboard",
+  "label": "/pedidos",
+  "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 859,
-  "finalUrl": "/dashboard",
+  "loadMs": 1047,
+  "finalUrl": "/pedidos",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1834,
-  "screens": 2.4,
+  "docHeight": 2553,
+  "screens": 3.3,
   "title": "PedeAqui",
-  "h1": "Início",
+  "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 38,
-  "smallTargets": 22,
-  "tinyTargets": 0,
+  "interactiveCount": 94,
+  "smallTargets": 81,
+  "tinyTargets": 13,
   "smallTargetExamples": [
    {
     "el": "button.sidebar-toggle \"Recolher menu\"",
@@ -250,18 +250,18 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1838,
-  "shot": "shots/pc-1366__panel__dashboard.jpg",
+  "bodyTextLength": 1916,
+  "shot": "shots/pc-1366__panel__pedidos.jpg",
   "consoleErrors": []
  },
  {
   "device": "pc-1366",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/610eed70-f053-4c2d-af48-1063bfe00c70",
+  "url": "http://127.0.0.1:3000/pedidos/9bc93940-ad2f-400f-b998-9087d91f7d0c",
   "status": 200,
-  "loadMs": 1004,
-  "finalUrl": "/pedidos/610eed70-f053-4c2d-af48-1063bfe00c70",
+  "loadMs": 978,
+  "finalUrl": "/pedidos/9bc93940-ad2f-400f-b998-9087d91f7d0c",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -349,10 +349,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/6c26b5c3-3be0-4db7-abe2-f4122fff0133",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/28829c6e-d162-4938-8e0c-c1bfef32080d",
   "status": 200,
-  "loadMs": 1005,
-  "finalUrl": "/cardapio/produtos/6c26b5c3-3be0-4db7-abe2-f4122fff0133",
+  "loadMs": 988,
+  "finalUrl": "/cardapio/produtos/28829c6e-d162-4938-8e0c-c1bfef32080d",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -446,10 +446,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/28638b77-0c4d-47b5-8829-075334f92903",
+  "url": "http://127.0.0.1:3000/clientes/771814fe-faf8-411d-9cf4-af7366f0e873",
   "status": 200,
-  "loadMs": 1067,
-  "finalUrl": "/clientes/28638b77-0c4d-47b5-8829-075334f92903",
+  "loadMs": 1013,
+  "finalUrl": "/clientes/771814fe-faf8-411d-9cf4-af7366f0e873",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -537,10 +537,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/016d90c1-6b94-4a53-b7f0-c9570cafd2ab",
+  "url": "http://127.0.0.1:3000/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
   "status": 200,
-  "loadMs": 964,
-  "finalUrl": "/salao/016d90c1-6b94-4a53-b7f0-c9570cafd2ab",
+  "loadMs": 958,
+  "finalUrl": "/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1360,7 +1360,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 644,
+  "loadMs": 648,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -1643,7 +1643,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 611,
+  "loadMs": 614,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -1700,7 +1700,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 636,
+  "loadMs": 642,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -1767,6 +1767,53 @@
   "bodyTextLength": 855,
   "shot": "shots/pc-1366__public-local__checkout.jpg",
   "consoleErrors": []
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "caixa › 1-abrir-tela",
+  "ok": true,
+  "screen": {
+   "url": "/caixa",
+   "heading": "Caixa",
+   "buttons": [
+    "Abrir caixa"
+   ],
+   "fields": [
+    "select[cashRegisterId] CAIXACAIXA1 · Caixa principal",
+    "input[openingBalance] SALDO INICIAL",
+    "input[note] Opcional"
+   ],
+   "notices": [],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__caixa-1-abrir-tela.jpg"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "caixa › 2-abrir-caixa",
+  "ok": true,
+  "screen": {
+   "url": "/caixa?ok=Caixa%20aberto%20para%20o%20turno.",
+   "heading": "Caixa",
+   "buttons": [
+    "Registrar entrada",
+    "Registrar retirada",
+    "Conferir e fechar turno"
+   ],
+   "fields": [
+    "input[amount] Valor, ex.: 100,00",
+    "input[reason] Motivo da entrada",
+    "input[amount] Valor, ex.: 200,00",
+    "input[reason] Motivo da retirada",
+    "input[countedCash] Dinheiro contado",
+    "input[note] Observação opcional"
+   ],
+   "notices": [],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__caixa-2-abrir-caixa.jpg"
  },
  {
   "device": "pc-1366",
@@ -1884,7 +1931,7 @@
  {
   "device": "pc-1366",
   "area": "fluxo",
-  "label": "pdv › 3-finalizar",
+  "label": "pdv › 3-valor-recebido",
   "ok": true,
   "screen": {
    "url": "/pdv",
@@ -1933,11 +1980,134 @@
     "input[] Valor recebido em dinheiro"
    ],
    "notices": [
+    "R$ 5,00"
+   ],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__pdv-3-valor-recebido.jpg"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "pdv › 4-finalizar",
+  "ok": true,
+  "screen": {
+   "url": "/pdv",
+   "heading": "PDV",
+   "buttons": [
+    "Todos",
+    "Combos",
+    "Pastéis",
+    "Salgados",
+    "Bebidas",
+    "Doces",
+    "Água sem gás 500 mlR$ 3,50+ Adicionar",
+    "Caixa com 100 pastéis100 mini pastéis. Escolha um ou mais sa",
+    "Caixa com 100 salgados100 unidades. Escolha os sabores — a q",
+    "Caixa com 25 pastéis25 mini pastéis. Escolha um ou mais sabo",
+    "Caixa com 30 mini churrosRecheados com doce de leite. Nome p",
+    "Caixa com 30 salgados30 unidades. Escolha os sabores — a qua",
+    "Caixa com 50 pastéis50 mini pastéis. Escolha um ou mais sabo",
+    "Caixa com 50 salgados50 unidades. Escolha os sabores — a qua",
+    "Coca-Cola 2LR$ 15,00+ Adicionar",
+    "Coca-Cola lata 350 mlR$ 6,00+ Adicionar",
+    "Combo Casal (2 latas)30 unidades. Escolha os sabores — a qua",
+    "Combo Família (Coca 2L)50 unidades. Escolha os sabores — a q",
+    "Copo com 12 mini churrosRecheados com doce de leite.R$ 16,99",
+    "Copo com 12 salgados12 unidades. Escolha os sabores — a quan",
+    "Consumidor",
+    "Detalhes / Dividir",
+    "Dinheiro",
+    "Cartão de crédito",
+    "Cartão de débito",
+    "Finalizar · R$ 0,00 [desativado]"
+   ],
+   "fields": [
+    "input[] Buscar produtos no PDV",
+    "select[] Tipo de venda",
+    "input[] Buscar cliente no cadastro completo",
+    "input[] Nome (opcional)",
+    "input[] Telefone",
+    "input[] E-mail (opcional)",
+    "input[] Código",
+    "input[] Identifique o cliente",
+    "input[] Identifique o cliente",
+    "input[] Valor recebido em dinheiro"
+   ],
+   "notices": [
     "—"
    ],
    "dialogs": []
   },
-  "shot": "shots/pc-1366__fluxo__pdv-3-finalizar.jpg"
+  "shot": "shots/pc-1366__fluxo__pdv-4-finalizar.jpg"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "pdv › 5-produto-com-opcoes",
+  "ok": true,
+  "screen": {
+   "url": "/pdv",
+   "heading": "PDV",
+   "buttons": [
+    "Todos",
+    "Combos",
+    "Pastéis",
+    "Salgados",
+    "Bebidas",
+    "Doces",
+    "Água sem gás 500 mlR$ 3,50+ Adicionar",
+    "Caixa com 100 pastéis100 mini pastéis. Escolha um ou mais sa",
+    "Caixa com 100 salgados100 unidades. Escolha os sabores — a q",
+    "Caixa com 25 pastéis25 mini pastéis. Escolha um ou mais sabo",
+    "Caixa com 30 mini churrosRecheados com doce de leite. Nome p",
+    "Caixa com 30 salgados30 unidades. Escolha os sabores — a qua",
+    "Caixa com 50 pastéis50 mini pastéis. Escolha um ou mais sabo",
+    "Caixa com 50 salgados50 unidades. Escolha os sabores — a qua",
+    "Coca-Cola 2LR$ 15,00+ Adicionar",
+    "Coca-Cola lata 350 mlR$ 6,00+ Adicionar",
+    "Combo Casal (2 latas)30 unidades. Escolha os sabores — a qua",
+    "Combo Família (Coca 2L)50 unidades. Escolha os sabores — a q",
+    "Copo com 12 mini churrosRecheados com doce de leite.R$ 16,99",
+    "Copo com 12 salgados12 unidades. Escolha os sabores — a quan",
+    "Consumidor",
+    "Detalhes / Dividir",
+    "Dinheiro",
+    "Cartão de crédito",
+    "Cartão de débito",
+    "Finalizar · R$ 0,00 [desativado]",
+    "−",
+    "+",
+    "Cancelar",
+    "Adicionar · R$ 14,99"
+   ],
+   "fields": [
+    "input[] Buscar produtos no PDV",
+    "select[] Tipo de venda",
+    "input[] Buscar cliente no cadastro completo",
+    "input[] Nome (opcional)",
+    "input[] Telefone",
+    "input[] E-mail (opcional)",
+    "input[] Código",
+    "input[] Identifique o cliente",
+    "input[] Identifique o cliente",
+    "input[] Valor recebido em dinheiro",
+    "input[] CoxinhaIncluso",
+    "input[] KibeIncluso",
+    "input[] Bolinha de queijoIncluso",
+    "input[] Presunto e queijoIncluso",
+    "input[] SalsichaIncluso",
+    "input[] Calabresa com queijoIncluso",
+    "textarea[] Ex.: sem cebola"
+   ],
+   "notices": [
+    "—"
+   ],
+   "dialogs": [
+    "Copo com 12 salgados"
+   ]
+  },
+  "shot": "shots/pc-1366__fluxo__pdv-5-produto-com-opcoes.jpg"
  },
  {
   "device": "pc-1366",
@@ -1953,9 +2123,9 @@
     "Fila",
     "Lista",
     "Quadro",
-    "Todos 10",
+    "Todos 11",
     "Novos 3",
-    "Em preparo 5",
+    "Em preparo 6",
     "Prontos 0",
     "A iniciar 2",
     "Aceitar pedido",
@@ -1970,6 +2140,8 @@
     "Iniciar produção",
     "Ver resumo",
     "Iniciar produção",
+    "Ver resumo",
+    "Marcar pronto",
     "Ver resumo",
     "Marcar pronto",
     "Ver resumo",
@@ -1998,57 +2170,26 @@
  {
   "device": "pc-1366",
   "area": "fluxo",
-  "label": "pedido › 2-proxima-acao",
+  "label": "pedido › 2-abrir-detalhe",
   "ok": true,
   "screen": {
-   "url": "/pedidos",
-   "heading": "Pedidos",
+   "url": "/pedidos/9bc93940-ad2f-400f-b998-9087d91f7d0c?from=%2Fpedidos",
+   "heading": "Pedido #1",
    "buttons": [
-    "Ativar som",
-    "Testar som",
-    "Fila",
-    "Lista",
-    "Quadro",
-    "Todos 10",
-    "Novos 2",
-    "Em preparo 5",
-    "Prontos 0",
-    "A iniciar 3",
     "Aceitar pedido",
-    "Ver resumo",
-    "Confirmar recusa",
-    "Aceitar pedido",
-    "Ver resumo",
-    "Confirmar recusa",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo"
+    "Confirmar pagamento",
+    "Marcar tentativa como falha",
+    "Recusar pedido"
    ],
    "fields": [
-    "input[] Número, cliente, canal, código externo ou sync",
-    "input[reason] Ex.: item indisponível",
+    "input[cashReceived] Ex.: 50,00",
+    "input[reason] Ex.: Pix não localizado",
     "input[reason] Ex.: item indisponível"
    ],
-   "notices": [
-    "Ao vivo",
-    "Pedido aceito."
-   ],
+   "notices": [],
    "dialogs": []
   },
-  "shot": "shots/pc-1366__fluxo__pedido-2-proxima-acao.jpg"
+  "shot": "shots/pc-1366__fluxo__pedido-2-abrir-detalhe.jpg"
  },
  {
   "device": "pc-1366",
@@ -2056,53 +2197,25 @@
   "label": "pedido › 3-proxima-acao",
   "ok": true,
   "screen": {
-   "url": "/pedidos",
-   "heading": "Pedidos",
+   "url": "/pedidos/9bc93940-ad2f-400f-b998-9087d91f7d0c?from=%2Fpedidos",
+   "heading": "Pedido #1",
    "buttons": [
-    "Ativar som",
-    "Testar som",
-    "Fila",
-    "Lista",
-    "Quadro",
-    "Todos 10",
-    "Novos 1",
-    "Em preparo 5",
-    "Prontos 0",
-    "A iniciar 4",
-    "Aceitar pedido",
-    "Ver resumo",
-    "Confirmar recusa",
     "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo"
+    "Confirmar pagamento",
+    "Marcar tentativa como falha",
+    "Imprimir pedido",
+    "Cancelar pedido"
    ],
    "fields": [
-    "input[] Número, cliente, canal, código externo ou sync",
-    "input[reason] Ex.: item indisponível"
+    "input[cashReceived] Ex.: 50,00",
+    "input[reason] Ex.: Pix não localizado",
+    "input[reason] Ex.: cliente solicitou cancelamento"
    ],
-   "notices": [
-    "Ao vivo",
-    "Pedido aceito.",
-    "Pedido aceito."
-   ],
+   "notices": [],
    "dialogs": []
   },
-  "shot": "shots/pc-1366__fluxo__pedido-3-proxima-acao.jpg"
+  "shot": "shots/pc-1366__fluxo__pedido-3-proxima-acao.jpg",
+  "clicked": "Aceitar pedido"
  },
  {
   "device": "pc-1366",
@@ -2110,232 +2223,36 @@
   "label": "pedido › 4-proxima-acao",
   "ok": true,
   "screen": {
-   "url": "/pedidos",
-   "heading": "Pedidos",
+   "url": "/pedidos/9bc93940-ad2f-400f-b998-9087d91f7d0c?from=%2Fpedidos",
+   "heading": "Não foi possível concluir esta operação",
    "buttons": [
-    "Ativar som",
-    "Testar som",
-    "Fila",
-    "Lista",
-    "Quadro",
-    "Todos 10",
-    "Novos 0",
-    "Em preparo 5",
-    "Prontos 0",
-    "A iniciar 5",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo"
+    "Tentar novamente"
    ],
-   "fields": [
-    "input[] Número, cliente, canal, código externo ou sync"
-   ],
-   "notices": [
-    "Ao vivo",
-    "Pedido aceito.",
-    "Pedido aceito.",
-    "Pedido aceito."
-   ],
+   "fields": [],
+   "notices": [],
    "dialogs": []
   },
-  "shot": "shots/pc-1366__fluxo__pedido-4-proxima-acao.jpg"
+  "shot": "shots/pc-1366__fluxo__pedido-4-proxima-acao.jpg",
+  "clicked": "Iniciar produção"
  },
  {
   "device": "pc-1366",
   "area": "fluxo",
   "label": "pedido › 5-proxima-acao",
-  "ok": true,
+  "ok": false,
+  "error": "locator.textContent: Timeout 8000ms exceeded.",
   "screen": {
-   "url": "/pedidos",
-   "heading": "Pedidos",
+   "url": "/pedidos/9bc93940-ad2f-400f-b998-9087d91f7d0c?from=%2Fpedidos",
+   "heading": "Não foi possível concluir esta operação",
    "buttons": [
-    "Ativar som",
-    "Testar som",
-    "Fila",
-    "Lista",
-    "Quadro",
-    "Todos 10",
-    "Novos 0",
-    "Em preparo 6",
-    "Prontos 0",
-    "A iniciar 4",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo"
+    "Tentar novamente"
    ],
-   "fields": [
-    "input[] Número, cliente, canal, código externo ou sync"
-   ],
-   "notices": [
-    "Ao vivo",
-    "Pedido aceito.",
-    "Pedido aceito.",
-    "Produção iniciada."
-   ],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__pedido-5-proxima-acao.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "pedido › 6-proxima-acao",
-  "ok": true,
-  "screen": {
-   "url": "/pedidos",
-   "heading": "Pedidos",
-   "buttons": [
-    "Ativar som",
-    "Testar som",
-    "Fila",
-    "Lista",
-    "Quadro",
-    "Todos 10",
-    "Novos 0",
-    "Em preparo 7",
-    "Prontos 0",
-    "A iniciar 3",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo"
-   ],
-   "fields": [
-    "input[] Número, cliente, canal, código externo ou sync"
-   ],
-   "notices": [
-    "Ao vivo",
-    "Pedido aceito.",
-    "Produção iniciada.",
-    "Produção iniciada."
-   ],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__pedido-6-proxima-acao.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "pedido › 7-proxima-acao",
-  "ok": true,
-  "screen": {
-   "url": "/pedidos",
-   "heading": "Pedidos",
-   "buttons": [
-    "Ativar som",
-    "Testar som",
-    "Fila",
-    "Lista",
-    "Quadro",
-    "Todos 10",
-    "Novos 0",
-    "Em preparo 8",
-    "Prontos 0",
-    "A iniciar 2",
-    "Iniciar produção",
-    "Ver resumo",
-    "Iniciar produção",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo",
-    "Marcar pronto",
-    "Ver resumo"
-   ],
-   "fields": [
-    "input[] Número, cliente, canal, código externo ou sync"
-   ],
-   "notices": [
-    "Ao vivo",
-    "Produção iniciada.",
-    "Produção iniciada.",
-    "Produção iniciada."
-   ],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__pedido-7-proxima-acao.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "caixa › 1-abrir-tela",
-  "ok": true,
-  "screen": {
-   "url": "/caixa",
-   "heading": "Caixa",
-   "buttons": [
-    "Abrir caixa"
-   ],
-   "fields": [
-    "select[cashRegisterId] CAIXACAIXA1 · Caixa principal",
-    "input[openingBalance] SALDO INICIAL",
-    "input[note] Opcional"
-   ],
+   "fields": [],
    "notices": [],
    "dialogs": []
   },
-  "shot": "shots/pc-1366__fluxo__caixa-1-abrir-tela.jpg"
+  "shot": "shots/pc-1366__fluxo__pedido-5-proxima-acao.jpg",
+  "clicked": ""
  },
  {
   "device": "pc-1366",
@@ -2355,10 +2272,10 @@
  {
   "device": "pc-1366",
   "area": "fluxo",
-  "label": "salao › 2-abrir-mesa-1",
+  "label": "salao › 2-abrir-mesa",
   "ok": true,
   "screen": {
-   "url": "/salao/016d90c1-6b94-4a53-b7f0-c9570cafd2ab",
+   "url": "/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
    "heading": "Mesa 1",
    "buttons": [
     "Abrir mesa",
@@ -2372,7 +2289,7 @@
    "notices": [],
    "dialogs": []
   },
-  "shot": "shots/pc-1366__fluxo__salao-2-abrir-mesa-1.jpg"
+  "shot": "shots/pc-1366__fluxo__salao-2-abrir-mesa.jpg"
  },
  {
   "device": "pc-1366",
@@ -2380,7 +2297,7 @@
   "label": "salao › 3-abrir-atendimento",
   "ok": true,
   "screen": {
-   "url": "/salao/016d90c1-6b94-4a53-b7f0-c9570cafd2ab",
+   "url": "/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
    "heading": "Mesa 1",
    "buttons": [
     "Pedir conta",
@@ -2422,12 +2339,163 @@
   "shot": "shots/pc-1366__fluxo__salao-3-abrir-atendimento.jpg"
  },
  {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "salao › 4-lancar-item",
+  "ok": true,
+  "screen": {
+   "url": "/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
+   "heading": "Mesa 1",
+   "buttons": [
+    "Pedir conta",
+    "Todos",
+    "Combos",
+    "Pastéis",
+    "Salgados",
+    "Bebidas",
+    "Doces",
+    "Água sem gás 500 mlR$ 3,50",
+    "Caixa com 100 pastéis100 mini pastéis. Escolha um ou mais sa",
+    "Caixa com 100 salgados100 unidades. Escolha os sabores — a q",
+    "Caixa com 25 pastéis25 mini pastéis. Escolha um ou mais sabo",
+    "Caixa com 30 mini churrosRecheados com doce de leite. Nome p",
+    "Caixa com 30 salgados30 unidades. Escolha os sabores — a qua",
+    "Caixa com 50 pastéis50 mini pastéis. Escolha um ou mais sabo",
+    "Caixa com 50 salgados50 unidades. Escolha os sabores — a qua",
+    "Coca-Cola 2LR$ 15,00",
+    "Coca-Cola lata 350 mlR$ 6,00",
+    "Combo Casal (2 latas)30 unidades. Escolha os sabores — a qua",
+    "Combo Família (Coca 2L)50 unidades. Escolha os sabores — a q",
+    "Copo com 12 mini churrosRecheados com doce de leite.R$ 16,99",
+    "Copo com 12 salgados12 unidades. Escolha os sabores — a quan",
+    "−",
+    "+",
+    "Remover",
+    "Enviar para produção · R$ 15,00",
+    "Adicionar pessoa",
+    "Transferir mesa",
+    "Cancelar comanda"
+   ],
+   "fields": [
+    "input[] Buscar produto...",
+    "input[name] Nome",
+    "input[seatNumber] Assento",
+    "select[targetTableId] ",
+    "input[reason] Motivo"
+   ],
+   "notices": [],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__salao-4-lancar-item.jpg"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "salao › 5-enviar-producao",
+  "ok": true,
+  "screen": {
+   "url": "/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
+   "heading": "Mesa 1",
+   "buttons": [
+    "Pedir conta",
+    "Todos",
+    "Combos",
+    "Pastéis",
+    "Salgados",
+    "Bebidas",
+    "Doces",
+    "Água sem gás 500 mlR$ 3,50",
+    "Caixa com 100 pastéis100 mini pastéis. Escolha um ou mais sa",
+    "Caixa com 100 salgados100 unidades. Escolha os sabores — a q",
+    "Caixa com 25 pastéis25 mini pastéis. Escolha um ou mais sabo",
+    "Caixa com 30 mini churrosRecheados com doce de leite. Nome p",
+    "Caixa com 30 salgados30 unidades. Escolha os sabores — a qua",
+    "Caixa com 50 pastéis50 mini pastéis. Escolha um ou mais sabo",
+    "Caixa com 50 salgados50 unidades. Escolha os sabores — a qua",
+    "Coca-Cola 2LR$ 15,00",
+    "Coca-Cola lata 350 mlR$ 6,00",
+    "Combo Casal (2 latas)30 unidades. Escolha os sabores — a qua",
+    "Combo Família (Coca 2L)50 unidades. Escolha os sabores — a q",
+    "Copo com 12 mini churrosRecheados com doce de leite.R$ 16,99",
+    "Copo com 12 salgados12 unidades. Escolha os sabores — a quan",
+    "−",
+    "+",
+    "Remover",
+    "Enviar para produção · R$ 15,00",
+    "Adicionar pessoa",
+    "Transferir mesa",
+    "Cancelar comanda"
+   ],
+   "fields": [
+    "input[] Buscar produto...",
+    "input[name] Nome",
+    "input[seatNumber] Assento",
+    "select[targetTableId] ",
+    "input[reason] Motivo"
+   ],
+   "notices": [],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__salao-5-enviar-producao.jpg"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "salao › 6-pedir-conta",
+  "ok": true,
+  "screen": {
+   "url": "/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
+   "heading": "Mesa 1",
+   "buttons": [
+    "Concluir e liberar mesa",
+    "Adicionar pessoa",
+    "Transferir mesa",
+    "Cancelar comanda"
+   ],
+   "fields": [
+    "input[name] Nome",
+    "input[seatNumber] Assento",
+    "select[targetTableId] ",
+    "input[reason] Motivo"
+   ],
+   "notices": [],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__salao-6-pedir-conta.jpg"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "caixa › 3-com-venda",
+  "ok": true,
+  "screen": {
+   "url": "/caixa",
+   "heading": "Caixa",
+   "buttons": [
+    "Registrar entrada",
+    "Registrar retirada",
+    "Conferir e fechar turno"
+   ],
+   "fields": [
+    "input[amount] Valor, ex.: 100,00",
+    "input[reason] Motivo da entrada",
+    "input[amount] Valor, ex.: 200,00",
+    "input[reason] Motivo da retirada",
+    "input[countedCash] Dinheiro contado",
+    "input[note] Observação opcional"
+   ],
+   "notices": [],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__caixa-3-com-venda.jpg"
+ },
+ {
   "device": "android-360",
   "area": "panel",
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 709,
+  "loadMs": 720,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -2589,21 +2657,21 @@
  {
   "device": "android-360",
   "area": "panel",
-  "label": "/dashboard",
-  "url": "http://127.0.0.1:3000/dashboard",
+  "label": "/pedidos",
+  "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 763,
-  "finalUrl": "/dashboard",
+  "loadMs": 866,
+  "finalUrl": "/pedidos",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
+  "docHeight": 740,
+  "screens": 1,
   "title": "PedeAqui",
-  "h1": "Início",
+  "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 48,
-  "smallTargets": 14,
+  "interactiveCount": 55,
+  "smallTargets": 16,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
@@ -2666,6 +2734,12 @@
     "pos": "fixed"
    },
    {
+    "el": "div.order-manager-module__7JwvSq__workflowHe",
+    "top": 228,
+    "h": 145,
+    "pos": "fixed"
+   },
+   {
     "el": "nav.mobile-nav \"Navegação principal mobile\"",
     "top": 671,
     "h": 69,
@@ -2678,9 +2752,9 @@
     "pos": "fixed"
    }
   ],
-  "fixedCoverPx": 794,
-  "bodyTextLength": 1372,
-  "shot": "shots/android-360__panel__dashboard.jpg",
+  "fixedCoverPx": 939,
+  "bodyTextLength": 382,
+  "shot": "shots/android-360__panel__pedidos.jpg",
   "axe": [],
   "consoleErrors": []
  },
@@ -2688,20 +2762,20 @@
   "device": "android-360",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/9f81b794-4ad8-4fac-8e2e-921f2f6d1aa2",
+  "url": "http://127.0.0.1:3000/pedidos/c493b30b-e133-48a2-be9d-36026403622d",
   "status": 200,
-  "loadMs": 1094,
-  "finalUrl": "/pedidos/9f81b794-4ad8-4fac-8e2e-921f2f6d1aa2",
+  "loadMs": 921,
+  "finalUrl": "/pedidos/c493b30b-e133-48a2-be9d-36026403622d",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2618,
-  "screens": 3.5,
+  "docHeight": 2546,
+  "screens": 3.4,
   "title": "PedeAqui",
-  "h1": "Pedido #4",
+  "h1": "Pedido #2",
   "overflowing": [],
-  "interactiveCount": 50,
-  "smallTargets": 20,
+  "interactiveCount": 49,
+  "smallTargets": 19,
   "tinyTargets": 1,
   "smallTargetExamples": [
    {
@@ -2777,7 +2851,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1212,
+  "bodyTextLength": 1134,
   "shot": "shots/android-360__panel__pedidos-id.jpg",
   "axe": [
    {
@@ -2793,10 +2867,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/6c26b5c3-3be0-4db7-abe2-f4122fff0133",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/28829c6e-d162-4938-8e0c-c1bfef32080d",
   "status": 200,
-  "loadMs": 916,
-  "finalUrl": "/cardapio/produtos/6c26b5c3-3be0-4db7-abe2-f4122fff0133",
+  "loadMs": 854,
+  "finalUrl": "/cardapio/produtos/28829c6e-d162-4938-8e0c-c1bfef32080d",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2897,10 +2971,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/28638b77-0c4d-47b5-8829-075334f92903",
+  "url": "http://127.0.0.1:3000/clientes/771814fe-faf8-411d-9cf4-af7366f0e873",
   "status": 200,
-  "loadMs": 867,
-  "finalUrl": "/clientes/28638b77-0c4d-47b5-8829-075334f92903",
+  "loadMs": 842,
+  "finalUrl": "/clientes/771814fe-faf8-411d-9cf4-af7366f0e873",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2995,19 +3069,19 @@
   "device": "android-360",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/016d90c1-6b94-4a53-b7f0-c9570cafd2ab",
+  "url": "http://127.0.0.1:3000/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
   "status": 200,
-  "loadMs": 838,
-  "finalUrl": "/salao/016d90c1-6b94-4a53-b7f0-c9570cafd2ab",
+  "loadMs": 846,
+  "finalUrl": "/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 3176,
-  "screens": 4.3,
+  "docHeight": 1355,
+  "screens": 1.8,
   "title": "PedeAqui",
   "h1": "Mesa 1",
   "overflowing": [],
-  "interactiveCount": 74,
+  "interactiveCount": 52,
   "smallTargets": 21,
   "tinyTargets": 1,
   "smallTargetExamples": [
@@ -3084,7 +3158,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1735,
+  "bodyTextLength": 451,
   "shot": "shots/android-360__panel__salao-tableId.jpg",
   "axe": [],
   "consoleErrors": []
@@ -3271,7 +3345,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1483
+  "bodyTextLength": 1488
  },
  {
   "device": "android-360",
@@ -3373,13 +3447,13 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1952,
-  "screens": 2.6,
+  "docHeight": 740,
+  "screens": 1,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 82,
-  "smallTargets": 16,
+  "interactiveCount": 61,
+  "smallTargets": 17,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
@@ -3448,9 +3522,9 @@
     "pos": "fixed"
    },
    {
-    "el": "dialog.mobile-order-list-module__myj9ea__sheet \"Pedido 4\"",
-    "top": 421,
-    "h": 319,
+    "el": "dialog.mobile-order-list-module__myj9ea__sheet \"Pedido 2\"",
+    "top": 360,
+    "h": 380,
     "pos": "fixed"
    },
    {
@@ -3466,8 +3540,8 @@
     "pos": "fixed"
    }
   ],
-  "fixedCoverPx": 1258,
-  "bodyTextLength": 1338
+  "fixedCoverPx": 1319,
+  "bodyTextLength": 515
  },
  {
   "device": "android-360",
@@ -3477,12 +3551,12 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1952,
-  "screens": 2.6,
+  "docHeight": 1800,
+  "screens": 2.4,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 79,
+  "interactiveCount": 76,
   "smallTargets": 16,
   "tinyTargets": 0,
   "smallTargetExamples": [
@@ -3565,7 +3639,7 @@
    }
   ],
   "fixedCoverPx": 939,
-  "bodyTextLength": 1211
+  "bodyTextLength": 1106
  },
  {
   "device": "android-360",
@@ -4383,7 +4457,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 596,
+  "loadMs": 606,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -4453,7 +4527,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 625,
+  "loadMs": 618,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
@@ -4540,7 +4614,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 819,
+  "loadMs": 738,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -4695,22 +4769,22 @@
  {
   "device": "pc-1366-escuro",
   "area": "panel",
-  "label": "/dashboard",
-  "url": "http://127.0.0.1:3000/dashboard",
+  "label": "/pedidos",
+  "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 777,
-  "finalUrl": "/dashboard",
+  "loadMs": 878,
+  "finalUrl": "/pedidos",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1834,
-  "screens": 2.4,
+  "docHeight": 2733,
+  "screens": 3.6,
   "title": "PedeAqui",
-  "h1": "Início",
+  "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 38,
-  "smallTargets": 22,
-  "tinyTargets": 0,
+  "interactiveCount": 95,
+  "smallTargets": 82,
+  "tinyTargets": 13,
   "smallTargetExamples": [
    {
     "el": "button.sidebar-toggle \"Recolher menu\"",
@@ -4779,28 +4853,28 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1838,
-  "shot": "shots/pc-1366-escuro__panel__dashboard.jpg",
+  "bodyTextLength": 2034,
+  "shot": "shots/pc-1366-escuro__panel__pedidos.jpg",
   "consoleErrors": []
  },
  {
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/9f81b794-4ad8-4fac-8e2e-921f2f6d1aa2",
+  "url": "http://127.0.0.1:3000/pedidos/c493b30b-e133-48a2-be9d-36026403622d",
   "status": 200,
-  "loadMs": 904,
-  "finalUrl": "/pedidos/9f81b794-4ad8-4fac-8e2e-921f2f6d1aa2",
+  "loadMs": 960,
+  "finalUrl": "/pedidos/c493b30b-e133-48a2-be9d-36026403622d",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1577,
-  "screens": 2.1,
+  "docHeight": 1547,
+  "screens": 2,
   "title": "PedeAqui",
-  "h1": "Pedido #4",
+  "h1": "Pedido #2",
   "overflowing": [],
-  "interactiveCount": 40,
-  "smallTargets": 28,
+  "interactiveCount": 39,
+  "smallTargets": 27,
   "tinyTargets": 1,
   "smallTargetExamples": [
    {
@@ -4870,20 +4944,18 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1366,
+  "bodyTextLength": 1288,
   "shot": "shots/pc-1366-escuro__panel__pedidos-id.jpg",
-  "consoleErrors": [
-   "pageerror: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
-  ]
+  "consoleErrors": []
  },
  {
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/6c26b5c3-3be0-4db7-abe2-f4122fff0133",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/28829c6e-d162-4938-8e0c-c1bfef32080d",
   "status": 200,
-  "loadMs": 907,
-  "finalUrl": "/cardapio/produtos/6c26b5c3-3be0-4db7-abe2-f4122fff0133",
+  "loadMs": 859,
+  "finalUrl": "/cardapio/produtos/28829c6e-d162-4938-8e0c-c1bfef32080d",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -4977,10 +5049,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/28638b77-0c4d-47b5-8829-075334f92903",
+  "url": "http://127.0.0.1:3000/clientes/771814fe-faf8-411d-9cf4-af7366f0e873",
   "status": 200,
-  "loadMs": 911,
-  "finalUrl": "/clientes/28638b77-0c4d-47b5-8829-075334f92903",
+  "loadMs": 902,
+  "finalUrl": "/clientes/771814fe-faf8-411d-9cf4-af7366f0e873",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -5068,20 +5140,20 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/016d90c1-6b94-4a53-b7f0-c9570cafd2ab",
+  "url": "http://127.0.0.1:3000/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
   "status": 200,
-  "loadMs": 949,
-  "finalUrl": "/salao/016d90c1-6b94-4a53-b7f0-c9570cafd2ab",
+  "loadMs": 877,
+  "finalUrl": "/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1907,
-  "screens": 2.5,
+  "docHeight": 925,
+  "screens": 1.2,
   "title": "PedeAqui",
   "h1": "Mesa 1",
   "overflowing": [],
-  "interactiveCount": 74,
-  "smallTargets": 39,
+  "interactiveCount": 52,
+  "smallTargets": 32,
   "tinyTargets": 1,
   "smallTargetExamples": [
    {
@@ -5144,12 +5216,6 @@
     "pos": "sticky"
    },
    {
-    "el": "div.pdv-module__JUt7FG__toolbar \"Todos Combos Pastéis Salgados Bebidas Doces\"",
-    "top": 505,
-    "h": 126,
-    "pos": "sticky"
-   },
-   {
     "el": "button.new-user-guide-module__a1T_Va__trigger \"Abrir assistente do PedeAqui\"",
     "top": 700,
     "h": 48,
@@ -5157,7 +5223,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1980,
+  "bodyTextLength": 696,
   "shot": "shots/pc-1366-escuro__panel__salao-tableId.jpg",
   "consoleErrors": []
  },
@@ -5245,7 +5311,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1949
+  "bodyTextLength": 1954
  },
  {
   "device": "pc-1366-escuro",
@@ -5341,14 +5407,14 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 2193,
-  "screens": 2.9,
+  "docHeight": 2013,
+  "screens": 2.6,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 77,
-  "smallTargets": 64,
-  "tinyTargets": 8,
+  "interactiveCount": 73,
+  "smallTargets": 60,
+  "tinyTargets": 7,
   "smallTargetExamples": [
    {
     "el": "button.sidebar-toggle \"Recolher menu\"",
@@ -5417,7 +5483,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1687
+  "bodyTextLength": 1562
  },
  {
   "device": "pc-1366-escuro",
@@ -5897,7 +5963,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 623,
+  "loadMs": 624,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -6180,7 +6246,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 627,
+  "loadMs": 600,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -6237,7 +6303,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 618,
+  "loadMs": 623,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -6311,7 +6377,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 704,
+  "loadMs": 693,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -6472,21 +6538,21 @@
  {
   "device": "android-360-escuro",
   "area": "panel",
-  "label": "/dashboard",
-  "url": "http://127.0.0.1:3000/dashboard",
+  "label": "/pedidos",
+  "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 732,
-  "finalUrl": "/dashboard",
+  "loadMs": 814,
+  "finalUrl": "/pedidos",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
+  "docHeight": 740,
+  "screens": 1,
   "title": "PedeAqui",
-  "h1": "Início",
+  "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 48,
-  "smallTargets": 14,
+  "interactiveCount": 55,
+  "smallTargets": 16,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
@@ -6549,6 +6615,12 @@
     "pos": "fixed"
    },
    {
+    "el": "div.order-manager-module__7JwvSq__workflowHe",
+    "top": 228,
+    "h": 145,
+    "pos": "fixed"
+   },
+   {
     "el": "nav.mobile-nav \"Navegação principal mobile\"",
     "top": 671,
     "h": 69,
@@ -6561,29 +6633,29 @@
     "pos": "fixed"
    }
   ],
-  "fixedCoverPx": 794,
-  "bodyTextLength": 1372,
-  "shot": "shots/android-360-escuro__panel__dashboard.jpg",
+  "fixedCoverPx": 939,
+  "bodyTextLength": 382,
+  "shot": "shots/android-360-escuro__panel__pedidos.jpg",
   "consoleErrors": []
  },
  {
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/9f81b794-4ad8-4fac-8e2e-921f2f6d1aa2",
+  "url": "http://127.0.0.1:3000/pedidos/c493b30b-e133-48a2-be9d-36026403622d",
   "status": 200,
-  "loadMs": 909,
-  "finalUrl": "/pedidos/9f81b794-4ad8-4fac-8e2e-921f2f6d1aa2",
+  "loadMs": 902,
+  "finalUrl": "/pedidos/c493b30b-e133-48a2-be9d-36026403622d",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2618,
-  "screens": 3.5,
+  "docHeight": 2546,
+  "screens": 3.4,
   "title": "PedeAqui",
-  "h1": "Pedido #4",
+  "h1": "Pedido #2",
   "overflowing": [],
-  "interactiveCount": 50,
-  "smallTargets": 20,
+  "interactiveCount": 49,
+  "smallTargets": 19,
   "tinyTargets": 1,
   "smallTargetExamples": [
    {
@@ -6659,7 +6731,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1212,
+  "bodyTextLength": 1134,
   "shot": "shots/android-360-escuro__panel__pedidos-id.jpg",
   "consoleErrors": []
  },
@@ -6667,10 +6739,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/6c26b5c3-3be0-4db7-abe2-f4122fff0133",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/28829c6e-d162-4938-8e0c-c1bfef32080d",
   "status": 200,
-  "loadMs": 806,
-  "finalUrl": "/cardapio/produtos/6c26b5c3-3be0-4db7-abe2-f4122fff0133",
+  "loadMs": 833,
+  "finalUrl": "/cardapio/produtos/28829c6e-d162-4938-8e0c-c1bfef32080d",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -6770,10 +6842,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/28638b77-0c4d-47b5-8829-075334f92903",
+  "url": "http://127.0.0.1:3000/clientes/771814fe-faf8-411d-9cf4-af7366f0e873",
   "status": 200,
-  "loadMs": 843,
-  "finalUrl": "/clientes/28638b77-0c4d-47b5-8829-075334f92903",
+  "loadMs": 872,
+  "finalUrl": "/clientes/771814fe-faf8-411d-9cf4-af7366f0e873",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -6867,19 +6939,19 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/016d90c1-6b94-4a53-b7f0-c9570cafd2ab",
+  "url": "http://127.0.0.1:3000/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
   "status": 200,
-  "loadMs": 825,
-  "finalUrl": "/salao/016d90c1-6b94-4a53-b7f0-c9570cafd2ab",
+  "loadMs": 822,
+  "finalUrl": "/salao/9ab42e1e-e736-4d36-9fc3-666ebbc22bdc",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 3176,
-  "screens": 4.3,
+  "docHeight": 1355,
+  "screens": 1.8,
   "title": "PedeAqui",
   "h1": "Mesa 1",
   "overflowing": [],
-  "interactiveCount": 74,
+  "interactiveCount": 52,
   "smallTargets": 21,
   "tinyTargets": 1,
   "smallTargetExamples": [
@@ -6956,7 +7028,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1735,
+  "bodyTextLength": 451,
   "shot": "shots/android-360-escuro__panel__salao-tableId.jpg",
   "consoleErrors": []
  },
@@ -7142,7 +7214,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1483
+  "bodyTextLength": 1488
  },
  {
   "device": "android-360-escuro",
@@ -7244,13 +7316,13 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1952,
-  "screens": 2.6,
+  "docHeight": 740,
+  "screens": 1,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 82,
-  "smallTargets": 16,
+  "interactiveCount": 61,
+  "smallTargets": 17,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
@@ -7319,9 +7391,9 @@
     "pos": "fixed"
    },
    {
-    "el": "dialog.mobile-order-list-module__myj9ea__sheet \"Pedido 4\"",
-    "top": 421,
-    "h": 319,
+    "el": "dialog.mobile-order-list-module__myj9ea__sheet \"Pedido 2\"",
+    "top": 360,
+    "h": 380,
     "pos": "fixed"
    },
    {
@@ -7337,8 +7409,8 @@
     "pos": "fixed"
    }
   ],
-  "fixedCoverPx": 1258,
-  "bodyTextLength": 1338
+  "fixedCoverPx": 1319,
+  "bodyTextLength": 515
  },
  {
   "device": "android-360-escuro",
@@ -7348,12 +7420,12 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1952,
-  "screens": 2.6,
+  "docHeight": 1800,
+  "screens": 2.4,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 79,
+  "interactiveCount": 76,
   "smallTargets": 16,
   "tinyTargets": 0,
   "smallTargetExamples": [
@@ -7436,7 +7508,7 @@
    }
   ],
   "fixedCoverPx": 939,
-  "bodyTextLength": 1211
+  "bodyTextLength": 1106
  },
  {
   "device": "android-360-escuro",
@@ -7950,7 +8022,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 604,
+  "loadMs": 613,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -8253,7 +8325,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 595,
+  "loadMs": 604,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -8322,7 +8394,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 615,
+  "loadMs": 626,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
