@@ -1,0 +1,1562 @@
+
+15/Nov/2026:04:44:11 +0000: Starting PostgREST 14.7...
+15/Nov/2026:04:44:11 +0000: Admin server listening on 0.0.0.0:3001
+15/Nov/2026:04:44:11 +0000: API server listening on 0.0.0.0:3000
+15/Nov/2026:04:44:11 +0000: Listening for database notifications on the "pgrst" channel
+15/Nov/2026:04:44:11 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:11 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:11 +0000: Config reloaded
+15/Nov/2026:04:44:11 +0000: Schema cache queried in 103.0 milliseconds
+15/Nov/2026:04:44:11 +0000: Schema cache loaded 0 Relations, 0 Relationships, 1 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:11 +0000: Schema cache loaded in 1.0 milliseconds
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:23 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:23 +0000: Config reloaded
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Schema cache queried in 73.1 milliseconds
+15/Nov/2026:04:44:23 +0000: Schema cache loaded 0 Relations, 0 Relationships, 1 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:23 +0000: Schema cache loaded in 0.8 milliseconds
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:23 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:23 +0000: Config reloaded
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Schema cache queried in 82.0 milliseconds
+15/Nov/2026:04:44:23 +0000: Schema cache loaded 12 Relations, 20 Relationships, 2 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:23 +0000: Schema cache loaded in 1.6 milliseconds
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:23 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:23 +0000: Config reloaded
+15/Nov/2026:04:44:23 +0000: Schema cache queried in 83.4 milliseconds
+15/Nov/2026:04:44:23 +0000: Schema cache loaded 17 Relations, 29 Relationships, 4 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:23 +0000: Schema cache loaded in 0.9 milliseconds
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:23 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Config reloaded
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Schema cache queried in 78.1 milliseconds
+15/Nov/2026:04:44:23 +0000: Schema cache loaded 21 Relations, 39 Relationships, 6 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:23 +0000: Schema cache loaded in 0.7 milliseconds
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:23 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:23 +0000: Config reloaded
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Schema cache queried in 80.1 milliseconds
+15/Nov/2026:04:44:23 +0000: Schema cache loaded 26 Relations, 42 Relationships, 10 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:23 +0000: Schema cache loaded in 1.1 milliseconds
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:23 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:23 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:23 +0000: Config reloaded
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Schema cache queried in 96.5 milliseconds
+15/Nov/2026:04:44:24 +0000: Schema cache loaded 33 Relations, 51 Relationships, 13 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:24 +0000: Schema cache loaded in 1.0 milliseconds
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:24 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:24 +0000: Config reloaded
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Schema cache queried in 91.1 milliseconds
+15/Nov/2026:04:44:24 +0000: Schema cache loaded 39 Relations, 61 Relationships, 19 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:24 +0000: Schema cache loaded in 2.4 milliseconds
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:24 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Config reloaded
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Schema cache queried in 93.1 milliseconds
+15/Nov/2026:04:44:24 +0000: Schema cache loaded 40 Relations, 63 Relationships, 23 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:24 +0000: Schema cache loaded in 0.9 milliseconds
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:24 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:24 +0000: Config reloaded
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Schema cache queried in 103.9 milliseconds
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Schema cache loaded 40 Relations, 66 Relationships, 25 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:24 +0000: Schema cache loaded in 0.8 milliseconds
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:24 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:24 +0000: Config reloaded
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Schema cache queried in 100.7 milliseconds
+15/Nov/2026:04:44:24 +0000: Schema cache loaded 45 Relations, 72 Relationships, 35 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:24 +0000: Schema cache loaded in 2.0 milliseconds
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:24 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:24 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:24 +0000: Config reloaded
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Schema cache queried in 90.4 milliseconds
+15/Nov/2026:04:44:25 +0000: Schema cache loaded 52 Relations, 83 Relationships, 38 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:25 +0000: Schema cache loaded in 0.8 milliseconds
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:25 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Config reloaded
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Schema cache queried in 104.1 milliseconds
+15/Nov/2026:04:44:25 +0000: Schema cache loaded 62 Relations, 101 Relationships, 49 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:25 +0000: Schema cache loaded in 1.0 milliseconds
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:25 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Config reloaded
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Schema cache queried in 105.9 milliseconds
+15/Nov/2026:04:44:25 +0000: Schema cache loaded 66 Relations, 107 Relationships, 56 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:25 +0000: Schema cache loaded in 4.4 milliseconds
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:25 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:25 +0000: Config reloaded
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Schema cache queried in 108.6 milliseconds
+15/Nov/2026:04:44:25 +0000: Schema cache loaded 69 Relations, 112 Relationships, 61 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:25 +0000: Schema cache loaded in 5.8 milliseconds
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:25 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:25 +0000: Config reloaded
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Schema cache queried in 113.8 milliseconds
+15/Nov/2026:04:44:25 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:25 +0000: Schema cache loaded 75 Relations, 122 Relationships, 67 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:25 +0000: Schema cache loaded in 3.5 milliseconds
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:26 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:26 +0000: Config reloaded
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Schema cache queried in 107.4 milliseconds
+15/Nov/2026:04:44:26 +0000: Schema cache loaded 75 Relations, 137 Relationships, 68 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:26 +0000: Schema cache loaded in 1.1 milliseconds
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:26 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:26 +0000: Config reloaded
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Schema cache queried in 108.5 milliseconds
+15/Nov/2026:04:44:26 +0000: Schema cache loaded 84 Relations, 146 Relationships, 76 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:26 +0000: Schema cache loaded in 2.2 milliseconds
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:26 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:26 +0000: Config reloaded
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Schema cache queried in 121.8 milliseconds
+15/Nov/2026:04:44:26 +0000: Schema cache loaded 89 Relations, 146 Relationships, 84 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:26 +0000: Schema cache loaded in 3.4 milliseconds
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:26 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Config reloaded
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Schema cache queried in 113.2 milliseconds
+15/Nov/2026:04:44:26 +0000: Schema cache loaded 94 Relations, 157 Relationships, 85 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:26 +0000: Schema cache loaded in 4.8 milliseconds
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:26 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:26 +0000: Config reloaded
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:26 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Schema cache queried in 119.5 milliseconds
+15/Nov/2026:04:44:27 +0000: Schema cache loaded 97 Relations, 163 Relationships, 98 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:27 +0000: Schema cache loaded in 1.6 milliseconds
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:27 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:27 +0000: Config reloaded
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Schema cache queried in 128.8 milliseconds
+15/Nov/2026:04:44:27 +0000: Schema cache loaded 107 Relations, 172 Relationships, 105 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:27 +0000: Schema cache loaded in 3.0 milliseconds
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:27 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:27 +0000: Config reloaded
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Schema cache queried in 133.3 milliseconds
+15/Nov/2026:04:44:27 +0000: Schema cache loaded 113 Relations, 179 Relationships, 118 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:27 +0000: Schema cache loaded in 2.9 milliseconds
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:27 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:27 +0000: Config reloaded
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Schema cache queried in 129.3 milliseconds
+15/Nov/2026:04:44:27 +0000: Schema cache loaded 114 Relations, 180 Relationships, 119 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:27 +0000: Schema cache loaded in 2.8 milliseconds
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:27 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:27 +0000: Config reloaded
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:27 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Schema cache queried in 134.9 milliseconds
+15/Nov/2026:04:44:28 +0000: Schema cache loaded 118 Relations, 187 Relationships, 126 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:28 +0000: Schema cache loaded in 5.3 milliseconds
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:28 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:28 +0000: Config reloaded
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Schema cache queried in 141.5 milliseconds
+15/Nov/2026:04:44:28 +0000: Schema cache loaded 122 Relations, 190 Relationships, 129 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:28 +0000: Schema cache loaded in 2.8 milliseconds
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:28 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:28 +0000: Config reloaded
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Schema cache queried in 144.9 milliseconds
+15/Nov/2026:04:44:28 +0000: Schema cache loaded 124 Relations, 203 Relationships, 134 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:28 +0000: Schema cache loaded in 3.9 milliseconds
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:28 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:28 +0000: Config reloaded
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Schema cache queried in 140.8 milliseconds
+15/Nov/2026:04:44:28 +0000: Schema cache loaded 130 Relations, 205 Relationships, 134 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:28 +0000: Schema cache loaded in 1.9 milliseconds
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:28 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:28 +0000: Config reloaded
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:28 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Schema cache queried in 131.4 milliseconds
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Schema cache loaded 132 Relations, 207 Relationships, 139 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:29 +0000: Schema cache loaded in 2.5 milliseconds
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:29 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:29 +0000: Config reloaded
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Schema cache queried in 140.9 milliseconds
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Schema cache loaded 139 Relations, 221 Relationships, 153 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:29 +0000: Schema cache loaded in 1.4 milliseconds
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:29 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:29 +0000: Config reloaded
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Schema cache queried in 144.5 milliseconds
+15/Nov/2026:04:44:29 +0000: Schema cache loaded 147 Relations, 232 Relationships, 164 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:29 +0000: Schema cache loaded in 2.6 milliseconds
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:29 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:29 +0000: Config reloaded
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Schema cache queried in 138.7 milliseconds
+15/Nov/2026:04:44:29 +0000: Schema cache loaded 147 Relations, 232 Relationships, 167 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:29 +0000: Schema cache loaded in 3.4 milliseconds
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:29 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:29 +0000: Config reloaded
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:29 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Schema cache queried in 146.0 milliseconds
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Schema cache loaded 148 Relations, 234 Relationships, 169 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:30 +0000: Schema cache loaded in 1.7 milliseconds
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:30 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:30 +0000: Config reloaded
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Schema cache queried in 141.9 milliseconds
+15/Nov/2026:04:44:30 +0000: Schema cache loaded 148 Relations, 234 Relationships, 170 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:30 +0000: Schema cache loaded in 5.1 milliseconds
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:30 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:30 +0000: Config reloaded
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Schema cache queried in 145.4 milliseconds
+15/Nov/2026:04:44:30 +0000: Schema cache loaded 150 Relations, 237 Relationships, 170 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:30 +0000: Schema cache loaded in 3.4 milliseconds
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:30 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:30 +0000: Config reloaded
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Schema cache queried in 161.7 milliseconds
+15/Nov/2026:04:44:30 +0000: Schema cache loaded 151 Relations, 238 Relationships, 176 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:30 +0000: Schema cache loaded in 1.8 milliseconds
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:30 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:30 +0000: Config reloaded
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:30 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Schema cache queried in 158.7 milliseconds
+15/Nov/2026:04:44:31 +0000: Schema cache loaded 152 Relations, 244 Relationships, 179 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:31 +0000: Schema cache loaded in 5.0 milliseconds
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:31 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:31 +0000: Config reloaded
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Schema cache queried in 159.5 milliseconds
+15/Nov/2026:04:44:31 +0000: Schema cache loaded 166 Relations, 263 Relationships, 186 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:31 +0000: Schema cache loaded in 2.8 milliseconds
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:31 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:31 +0000: Config reloaded
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Schema cache queried in 192.3 milliseconds
+15/Nov/2026:04:44:31 +0000: Schema cache loaded 167 Relations, 266 Relationships, 188 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:31 +0000: Schema cache loaded in 4.0 milliseconds
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:31 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:31 +0000: Config reloaded
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Schema cache queried in 155.6 milliseconds
+15/Nov/2026:04:44:31 +0000: Schema cache loaded 168 Relations, 266 Relationships, 192 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:31 +0000: Schema cache loaded in 3.1 milliseconds
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:31 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:33 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Config reloaded
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Schema cache queried in 154.3 milliseconds
+15/Nov/2026:04:44:33 +0000: Schema cache loaded 168 Relations, 266 Relationships, 196 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:33 +0000: Schema cache loaded in 3.0 milliseconds
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:33 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:33 +0000: Config reloaded
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Schema cache queried in 162.1 milliseconds
+15/Nov/2026:04:44:33 +0000: Schema cache loaded 168 Relations, 266 Relationships, 199 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:33 +0000: Schema cache loaded in 3.5 milliseconds
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:33 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:33 +0000: Config reloaded
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Schema cache queried in 164.1 milliseconds
+15/Nov/2026:04:44:33 +0000: Schema cache loaded 174 Relations, 273 Relationships, 205 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:33 +0000: Schema cache loaded in 2.1 milliseconds
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:33 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Config reloaded
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:33 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Schema cache queried in 173.3 milliseconds
+15/Nov/2026:04:44:34 +0000: Schema cache loaded 174 Relations, 273 Relationships, 205 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:34 +0000: Schema cache loaded in 2.6 milliseconds
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:34 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:34 +0000: Config reloaded
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Schema cache queried in 165.7 milliseconds
+15/Nov/2026:04:44:34 +0000: Schema cache loaded 175 Relations, 274 Relationships, 218 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:34 +0000: Schema cache loaded in 3.1 milliseconds
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:34 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:34 +0000: Config reloaded
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Schema cache queried in 158.0 milliseconds
+15/Nov/2026:04:44:34 +0000: Schema cache loaded 176 Relations, 275 Relationships, 223 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:34 +0000: Schema cache loaded in 1.7 milliseconds
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:34 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:34 +0000: Config reloaded
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Schema cache queried in 176.0 milliseconds
+15/Nov/2026:04:44:34 +0000: Schema cache loaded 177 Relations, 277 Relationships, 237 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:34 +0000: Schema cache loaded in 2.7 milliseconds
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:34 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:34 +0000: Config reloaded
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Schema cache queried in 161.0 milliseconds
+15/Nov/2026:04:44:35 +0000: Schema cache loaded 180 Relations, 280 Relationships, 243 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:35 +0000: Schema cache loaded in 1.7 milliseconds
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:35 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:35 +0000: Config reloaded
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Schema cache queried in 167.5 milliseconds
+15/Nov/2026:04:44:35 +0000: Schema cache loaded 182 Relations, 282 Relationships, 254 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:35 +0000: Schema cache loaded in 3.4 milliseconds
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:35 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:35 +0000: Config reloaded
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Schema cache queried in 162.8 milliseconds
+15/Nov/2026:04:44:35 +0000: Schema cache loaded 182 Relations, 282 Relationships, 257 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:35 +0000: Schema cache loaded in 3.1 milliseconds
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:35 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:35 +0000: Config reloaded
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:35 +0000: Schema cache queried in 177.2 milliseconds
+15/Nov/2026:04:44:35 +0000: Schema cache loaded 184 Relations, 285 Relationships, 261 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:35 +0000: Schema cache loaded in 5.5 milliseconds
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:36 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Config reloaded
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Schema cache queried in 166.1 milliseconds
+15/Nov/2026:04:44:36 +0000: Schema cache loaded 186 Relations, 288 Relationships, 263 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:36 +0000: Schema cache loaded in 4.9 milliseconds
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:36 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:36 +0000: Config reloaded
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Schema cache queried in 177.5 milliseconds
+15/Nov/2026:04:44:36 +0000: Schema cache loaded 187 Relations, 289 Relationships, 270 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:36 +0000: Schema cache loaded in 2.6 milliseconds
+15/Nov/2026:04:44:36 +0000: Received a schema cache reload message on the "pgrst" channel
+15/Nov/2026:04:44:36 +0000: Successfully connected to PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
+15/Nov/2026:04:44:36 +0000: Connection Pool initialized with a maximum size of 10 connections
+15/Nov/2026:04:44:36 +0000: Config reloaded
+15/Nov/2026:04:44:36 +0000: Schema cache queried in 170.8 milliseconds
+15/Nov/2026:04:44:36 +0000: Schema cache loaded 187 Relations, 289 Relationships, 272 Functions, 0 Domain Representations, 4 Media Type Handlers, 1196 Timezones
+15/Nov/2026:04:44:36 +0000: Schema cache loaded in 2.6 milliseconds
