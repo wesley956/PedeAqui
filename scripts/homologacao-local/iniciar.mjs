@@ -128,6 +128,7 @@ if (!state) {
     "20261111224213_public_item_notes_setting.sql",
     "20261112112911_waiting_queue_answered_auto_close.sql",
     "20261112231738_safe_unanswered_bot_recovery.sql",
+    "20261114224918_whatsapp_bot_preopen_window.sql",
   ];
   const skipped = [];
   for (const file of deltas) {
