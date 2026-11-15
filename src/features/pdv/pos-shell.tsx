@@ -186,7 +186,7 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
       <header className={styles.header}><h1>PDV</h1><details className={styles.pageHelp}><summary aria-label="Como usar o PDV">?</summary><p>Selecione itens, confira a venda e finalize. Preços, adicionais e benefícios são conferidos antes de concluir.</p></details></header>
       {lastSale ? <div className={styles.statusSuccess}>Venda <strong>#{lastSale.displayNumber}</strong> finalizada em {money(lastSale.totalCents)}.{lastSale.changeDueCents > 0 ? <> Troco: <strong>{money(lastSale.changeDueCents)}</strong>.</> : null}{" "}<Link href={`/pedidos/${lastSale.orderId}`}>Abrir pedido</Link></div> : null}
       {/* Em nova aba de propósito: abrir o caixa na mesma aba faria perder os itens já lançados na venda. */}
-      {error ? <div className={styles.statusError} role="alert">{error}{/^Abra o caixa/.test(error) ? <> <a href="/caixa" target="_blank" rel="noreferrer" style={{ fontWeight: 700, textDecoration: "underline", color: "inherit" }}>Abrir caixa (nova aba)</a></> : null}</div> : null}
+      {error ? <div className={styles.statusError} role="alert">{error}{/^Abra o caixa/.test(error) ? <> <a href="/caixa" target="_blank" rel="noreferrer" style={{ fontWeight: "var(--font-weight-bold)", textDecoration: "underline", color: "inherit" }}>Abrir caixa (nova aba)</a></> : null}</div> : null}
 
       <nav className={styles.mobileViewSwitcher} aria-label="Etapa atual da venda">
         <button

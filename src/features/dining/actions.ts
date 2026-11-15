@@ -30,6 +30,8 @@ function friendly(error: unknown) {
     ["qr", "O pedido por QR desta mesa não está disponível."],
   ];
   for (const [needle, message] of rules) if (raw.includes(needle)) return message;
+  // Falha sem tradução conhecida: registra o motivo no servidor (sem dados de cliente) para poder ser investigada.
+  console.error("[pedeaqui-dining] unexpected error", { message: raw.slice(0, 300) || "unavailable" });
   return "Não foi possível concluir a operação do salão.";
 }
 
