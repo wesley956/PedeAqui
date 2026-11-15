@@ -4,10 +4,12 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { chromium, webkit, devices } from "playwright";
 import AxeBuilder from "@axe-core/playwright";
+import { auditFailures, requireLocalTarget } from "./validation.mjs";
 
 const outDir = path.resolve(process.env.AUDIT_OUT || "ux2-auditoria-out");
 await fs.mkdir(path.join(outDir, "shots"), { recursive: true });
 const panelBase = process.env.PANEL_BASE?.replace(/\/$/, "");
+requireLocalTarget(panelBase);
 const email = process.env.AUDIT_EMAIL;
 const password = process.env.AUDIT_PASSWORD;
 const results = [];
@@ -142,7 +144,7 @@ async function audit(page, device, area, label, url, extra) {
   } catch (error) {
     entry.error = String(error.message).slice(0, 300);
   }
-  entry.consoleErrors = errors.filter((text) => !/Cannot render a sync or defer <script>|cannot be a child of|cannot contain a nested/.test(text)).slice(0, 6);
+  entry.consoleErrors = errors.slice(0, 6);
   entry.scriptPlacementWarning = errors.some((text) => /Cannot render a sync or defer <script>/.test(text)) || undefined;
   page.off("console", onConsole); page.off("pageerror", onPageError);
   results.push(entry);
@@ -176,13 +178,15 @@ async function controls(page) {
 
 async function runFlows(page, device) {
   const quick = { timeout: 8000 };
-  const log = async (flow, stepName, action) => {
+  const log = async (flow, stepName, action, verify) => {
     const entry = { device: device.key, area: "fluxo", label: `${flow} › ${stepName}` };
-    try { await action(); await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {}); await page.waitForTimeout(900); entry.ok = true; }
+    try { await action(); await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {}); await page.waitForTimeout(900); if (verify) { await verify(); entry.verified = true; } entry.ok = true; }
     catch (error) { entry.ok = false; entry.error = String(error.message).split("\n")[0].slice(0, 220); }
     entry.screen = await controls(page);
     // O banco local às vezes derruba uma conexão (B-06) e a página cai na tela de erro: tenta de novo uma vez e anota.
     if ((entry.screen.buttons ?? []).length === 1 && entry.screen.buttons[0] === "Tentar novamente") {
+      entry.ok = false;
+      entry.error = "A operação abriu uma tela de erro; recarregar não confirma seu resultado.";
       entry.retried = true;
       await page.reload({ waitUntil: "load" }).catch(() => {});
       await page.waitForTimeout(1200);
@@ -198,19 +202,21 @@ async function runFlows(page, device) {
   };
   const open = (route) => page.goto(`${panelBase}${route}`, { waitUntil: "load", timeout: 45000 });
   const clickButton = (pattern) => page.getByRole("button", { name: pattern }).first().click(quick);
+  const visibleText = (pattern) => page.getByText(pattern).first().waitFor({ state: "visible", timeout: 10000 });
 
   // 1) Caixa: abrir com saldo inicial.
   await log("caixa", "1-abrir-tela", () => open("/caixa"));
   await log("caixa", "2-abrir-caixa", async () => {
     await page.locator('input[name="openingBalance"]').fill("100,00", quick);
     await clickButton(/^Abrir caixa$/);
-  });
+  }, () => visibleText("Caixa aberto para o turno."));
 
   // 2) Venda no PDV: sem caixa aberto o sistema avisa; com caixa aberto, finaliza em dinheiro com troco.
   await log("pdv", "1-abrir", () => open("/pdv"));
   await log("pdv", "2-adicionar-item", () => page.locator("button", { hasText: "Coca-Cola 2L" }).first().click(quick));
   await log("pdv", "3-valor-recebido", () => page.getByPlaceholder("Ex.: 50,00").first().fill("20,00", quick));
-  await log("pdv", "4-finalizar", () => page.locator('button[type="submit"]', { hasText: /Finalizar/ }).first().click(quick));
+  await log("pdv", "4-finalizar", () => page.locator('button[type="submit"]', { hasText: /Finalizar/ }).first().click(quick),
+    () => visibleText(/Venda #\d+ finalizada em R\$\s*15,00\. Troco: R\$\s*5,00/));
   // Venda com produto que tem opções (sabores), no cartão.
   await log("pdv", "5-produto-com-opcoes", () => page.locator("button", { hasText: "Copo com 12 salgados" }).first().click(quick));
 
@@ -220,18 +226,29 @@ async function runFlows(page, device) {
     const href = await page.locator('a[href^="/pedidos/"]').evaluateAll((links) => links.map((link) => link.getAttribute("href")).find((value) => /^\/pedidos\/[0-9a-f-]{36}/.test(value ?? "")));
     if (!href) throw new Error("nenhum link de detalhe de pedido na lista");
     await open(href);
-  });
+  }, () => page.getByRole("button", { name: "Aceitar pedido", exact: true }).waitFor({ state: "visible", timeout: 10000 }));
   const nextAction = /^(Aceitar pedido|Iniciar preparo|Iniciar produção|Marcar pronto|Marcar como pronto|Liberar retirada|Confirmar retirada|Liberar entrega|Cliente retirou|Cliente recebeu|Entregar ao cliente|Marcar retirado|Marcar como retirado|Marcar entregue|Marcar como entregue|Saiu para entrega|Registrar pagamento|Marcar como pago|Marcar pago|Confirmar pagamento|Finalizar pedido|Concluir pedido|Finalizar|Concluir)$/;
+  const statusGrid = page.getByLabel("Situação atual do pedido");
+  let completed = false;
   for (let index = 3; index <= 9; index += 1) {
+    if (/Concluído/.test(await statusGrid.innerText(quick))) { completed = true; break; }
     let clicked = "";
+    const before = await statusGrid.innerText(quick);
     const done = await log("pedido", `${index}-proxima-acao`, async () => {
       const button = page.getByRole("button", { name: nextAction }).first();
       clicked = ((await button.textContent(quick)) ?? "").trim();
       await button.click(quick);
-    });
+    }, () => page.waitForFunction((previous) => {
+      const current = document.querySelector('[aria-label="Situação atual do pedido"]')?.innerText;
+      return current && current !== previous;
+    }, before, { timeout: 10000 }));
     results[results.length - 1].clicked = clicked;
     if (!done) break;
   }
+  await log("pedido", "10-confirmar-conclusao", async () => {
+    completed ||= /Concluído/.test(await statusGrid.innerText(quick));
+    if (!completed) throw new Error("O pedido não chegou ao estado Concluído.");
+  });
 
   // 4) Salão: abrir mesa, lançar item, enviar para produção e pedir a conta.
   await log("salao", "1-abrir-lista", () => open("/salao"));
@@ -244,14 +261,15 @@ async function runFlows(page, device) {
     await clickButton(/^Registrar pagamento$/);
   });
   // Com pedido ainda em preparo o sistema deve recusar e explicar, sem tela de erro.
-  await log("salao", "7-concluir-liberar", () => clickButton(/^Concluir e liberar mesa$/));
+  await log("salao", "7-recusar-fechamento-com-pedido-em-preparo", () => clickButton(/^Concluir e liberar mesa$/),
+    () => visibleText("Ainda existem pedidos em produção ou não servidos."));
 
   // 5) Caixa de novo: o que a tela oferece com o caixa aberto e uma venda registrada.
   await log("caixa", "3-com-venda", () => open("/caixa"));
   await log("caixa", "4-conferir-fechar", async () => {
     await page.locator('input[name="countedCash"]').fill("130,00", quick);
     await clickButton(/^Conferir e fechar turno$/);
-  });
+  }, () => visibleText("Turno fechado e conferido."));
 }
 
 for (const device of DEVICES) {
@@ -408,3 +426,9 @@ for (const device of DEVICES) {
 
 await fs.writeFile(path.join(outDir, "results.json"), JSON.stringify(results, null, 1));
 console.log(`UX2_AUDIT_DONE entries=${results.length}`);
+const failures = auditFailures(results);
+await fs.writeFile(path.join(outDir, "failures.json"), JSON.stringify(failures, null, 2));
+if (failures.length) {
+  console.error(`UX2_AUDIT_FAILED ${JSON.stringify(failures)}`);
+  process.exitCode = 1;
+}
