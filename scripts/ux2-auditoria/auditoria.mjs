@@ -236,7 +236,7 @@ async function runFlows(page, device) {
     await page.locator('input[name="amount"]').first().fill("15,00", quick);
     await clickButton(/^Registrar pagamento$/);
   });
-  await log("salao", "6b-pedir-conta", () => clickButton(/^Pedir conta$/));
+  // Com pedido ainda em preparo o sistema deve recusar e explicar, sem tela de erro.
   await log("salao", "7-concluir-liberar", () => clickButton(/^Concluir e liberar mesa$/));
 
   // 5) Caixa de novo: o que a tela oferece com o caixa aberto e uma venda registrada.

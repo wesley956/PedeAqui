@@ -26,6 +26,7 @@ function friendly(error: unknown) {
     ["tab has unfinished orders", "Ainda existem pedidos em produção ou não servidos."],
     ["payment exceeds tab member balance", "O valor ultrapassa o saldo desta pessoa."],
     ["payment exceeds tab balance", "O valor ultrapassa o saldo da comanda."],
+    ["open cash session required", "Abra o caixa antes de receber em dinheiro."],
     ["payment method disabled", "A forma de pagamento está desativada nesta unidade."],
     ["product unavailable", "Um item ficou indisponível. Atualize e revise a rodada."],
     ["modifier", "Revise os adicionais da rodada."],
@@ -36,6 +37,17 @@ function friendly(error: unknown) {
   const code = typeof error === "object" && error !== null && "code" in error ? String((error as { code: unknown }).code) : "unavailable";
   console.error("[pedeaqui-dining] unexpected error", { message: raw.slice(0, 300) || "unavailable", code });
   return "Não foi possível concluir a operação do salão.";
+}
+
+/**
+ * Ações de formulário da mesa: uma regra não atendida (conta com saldo, pedido ainda em preparo, valor maior que
+ * o saldo) volta para a mesa com a explicação, em vez de cair na tela genérica de erro.
+ */
+async function backToTableOnFailure(tableId: string, run: () => Promise<void>) {
+  let failure: string | null = null;
+  try { await run(); } catch (error) { failure = friendly(error); }
+  // Fora do try: o redirect do Next funciona lançando uma exceção própria.
+  if (failure) redirect(`/salao/${tableId}?error=${encodeURIComponent(failure)}`);
 }
 
 export async function createDiningTableAction(formData: FormData) {
@@ -77,22 +89,22 @@ export async function allocateDiningItemAction(tabId: string, tableId: string, f
 }
 
 export async function setDiningTabStatusAction(tabId: string, tableId: string, status: "settling" | "closed" | "canceled", formData?: FormData) {
-  await DiningService.setTabStatus(tabId, status, formData ? optional(formData, "reason") : null);
+  await backToTableOnFailure(tableId, () => DiningService.setTabStatus(tabId, status, formData ? optional(formData, "reason") : null).then(() => undefined));
   revalidatePath("/salao"); revalidatePath(`/salao/${tableId}`); redirect(`/salao/${tableId}`);
 }
 
 export async function payDiningTabAction(tabId: string, tableId: string, formData: FormData) {
   const amount = parsePosMoneyToCents(text(formData, "amount"));
-  if (!amount || amount <= 0) throw new Error("Valor inválido");
+  if (!amount || amount <= 0) redirect(`/salao/${tableId}?error=${encodeURIComponent("Informe o valor recebido, por exemplo 25,00.")}`);
   const cashText = text(formData, "cashTendered");
   const cash = cashText ? parsePosMoneyToCents(cashText) : null;
-  await DiningService.payTab(tabId, {
+  await backToTableOnFailure(tableId, () => DiningService.payTab(tabId, {
     amountCents: amount,
     method: text(formData, "method") as "cash" | "pix" | "credit_card" | "debit_card",
     cashTenderedCents: cash,
     reference: optional(formData, "reference"),
     tabMemberId: optional(formData, "tabMemberId"),
-  }, crypto.randomUUID());
+  }, crypto.randomUUID()).then(() => undefined));
   revalidatePath("/salao"); revalidatePath(`/salao/${tableId}`); revalidatePath("/pedidos"); redirect(`/salao/${tableId}`);
 }
 

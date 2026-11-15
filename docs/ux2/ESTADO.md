@@ -78,3 +78,9 @@ Integrado em `ux2/integration`: #1331 (PDV, base do celular, varredura de cor, f
 **Achados não visuais desta parte**
 - Erro de hidratação do React em `/pedidos` (#418, texto diferente entre servidor e navegador — provavelmente o tempo decorrido do pedido). Não quebra a tela; a investigar.
 - Em Plano e expansão apareciam "Domains custom" e "Scale multiunit" — corrigido.
+
+
+## Registro de execução — 15/11/2026
+Branch `ux2/fluxos`: fluxos de ponta a ponta executados na homologação (`modulos/fluxos-ponta-a-ponta.md`). Caixa, PDV e pedido do cardápio funcionam do começo ao fim. **Salão não envia rodada** por dois defeitos de banco, provavelmente presentes na produção e não confirmados com dados: ver `PENDENCIAS-BANCO.md` (P-01, P-04). Nada foi aplicado na produção.
+
+B-06 esclarecido: as respostas "invalid response from upstream" vêm da porta de entrada do banco local (conexão ociosa encerrada pelo PostgREST e reaproveitada pelo Kong). Não é defeito do sistema nem acontece na produção, que usa outra infraestrutura.
