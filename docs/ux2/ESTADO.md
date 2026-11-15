@@ -25,20 +25,20 @@ Legenda: Validado · Parcialmente validado · Bloqueado · Não iniciado
 
 | Módulo | Estado no UX2 | Observação |
 | --- | --- | --- |
-| Pedidos | Parcialmente validado | cor e destaque revisados no computador e no celular (PR #1326); detalhe do pedido auditado; falta percorrer aceitar → finalizar com uma pessoa; `modulos/painel-demais-modulos.md` |
-| PDV | Parcialmente validado | PRs #1331, #1332; `modulos/pdv.md`; falta finalizar venda de ponta a ponta |
+| Pedidos | Parcialmente validado | ciclo completo executado na homologação (aceitar → concluir) e funcionando; erro de hidratação corrigido (PR #1335); falta entrega com entregador, recusa, cancelamento |
+| PDV | Parcialmente validado | venda em dinheiro com troco executada de ponta a ponta (PR #1335); falta cartão/Pix, divisão, cliente e benefícios; `modulos/pdv.md` |
 | Cardápio público e checkout | Parcialmente validado | PRs #1324, #1327, #1331; conferido com fotos, logo e cor de loja fictícios e nos dois temas; falta acompanhar pedido e loja real; `modulos/cardapio-publico.md` |
 | Produtos, categorias, sabores | Parcialmente validado | auditado; cor revisada; filtros como botão secundário; `modulos/painel-demais-modulos.md` |
-| Caixa, Salão, Produção, Entregas | Parcialmente validado | auditado; estação e etapa escolhidas em escuro; tela do entregador corrigida; `modulos/painel-demais-modulos.md` |
+| Caixa, Salão, Produção, Entregas | Parcialmente validado | Caixa executado de ponta a ponta (funciona). **Salão não envia rodada**: P-01 e P-04 em `PENDENCIAS-BANCO.md`. Produção auditada. Entregas não executada. |
 | Configurações | Parcialmente validado | auditado (19 telas); cor revisada; `modulos/painel-demais-modulos.md` |
 | Dashboard e relatórios | Parcialmente validado | Início revisado (PR #1326) |
-| Financeiro | Parcialmente validado | auditado; cor revisada; sem mudança de estrutura |
+| Financeiro | Parcialmente validado | formulários de lançamento e transferência cabem no celular (branch `ux2/gestao-celular`); nenhum lançamento executado |
 | WhatsApp e atendimento | Bloqueado para validação real | sem sandbox Meta; só tela e testes |
 | Pagamentos online | Bloqueado para validação real | sem sandbox dos gateways |
 | Impressão | Bloqueado para validação real | sem impressora/agente de teste |
 | Fiscal | Bloqueado para validação real | PR #1248 aberto, sem sandbox |
-| Administração SaaS (`/platform`) | Parcialmente validado | 17 de 32 telas auditadas; códigos internos traduzidos (PR #1333); `modulos/site-acesso-platform.md` |
-| Site institucional e acesso | Parcialmente validado | 12 telas auditadas, sem alteração; proposta em aberto para a escolha de plano no cadastro; `modulos/site-acesso-platform.md` |
+| Administração SaaS (`/platform`) | Parcialmente validado | 31 de 32 telas auditadas (falta a página da empresa); estados em português (PRs #1333, #1337); `modulos/site-acesso-platform.md` |
+| Site institucional e acesso | Parcialmente validado | 12 telas auditadas; planos do cadastro em cartões (PR #1337) |
 
 ## Bloqueios
 
@@ -84,3 +84,11 @@ Integrado em `ux2/integration`: #1331 (PDV, base do celular, varredura de cor, f
 Branch `ux2/fluxos`: fluxos de ponta a ponta executados na homologação (`modulos/fluxos-ponta-a-ponta.md`). Caixa, PDV e pedido do cardápio funcionam do começo ao fim. **Salão não envia rodada** por dois defeitos de banco, provavelmente presentes na produção e não confirmados com dados: ver `PENDENCIAS-BANCO.md` (P-01, P-04). Nada foi aplicado na produção.
 
 B-06 esclarecido: as respostas "invalid response from upstream" vêm da porta de entrada do banco local (conexão ociosa encerrada pelo PostgREST e reaproveitada pelo Kong). Não é defeito do sistema nem acontece na produção, que usa outra infraestrutura.
+
+
+## Registro de execução — 15/11/2026 (segunda parte)
+- `main` trazida para `ux2/integration` (PR #1336, sem conflito).
+- PR #1337: planos do cadastro em cartões; plataforma auditada quase inteira; Pedido 360° em português.
+- Branch `ux2/gestao-celular`: no celular, campos dos formulários de Financeiro, Compras e Fiscal passavam da borda da tela e ficavam inalcançáveis (a página não rola de lado). Corrigido; a auditoria passou a medir campos e botões cortados em todas as telas.
+
+**Nenhum módulo está "Validado"** — o critério continua sendo o uso por uma pessoa na homologação do responsável.
