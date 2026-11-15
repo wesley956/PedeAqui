@@ -185,31 +185,50 @@ async function runFlows(page, device) {
   const open = (route) => page.goto(`${panelBase}${route}`, { waitUntil: "load", timeout: 45000 });
   const clickButton = (pattern) => page.getByRole("button", { name: pattern }).first().click(quick);
 
-  // 1) Venda no PDV, em dinheiro, até finalizar.
+  // 1) Caixa: abrir com saldo inicial.
+  await log("caixa", "1-abrir-tela", () => open("/caixa"));
+  await log("caixa", "2-abrir-caixa", async () => {
+    await page.locator('input[name="openingBalance"]').fill("100,00", quick);
+    await clickButton(/^Abrir caixa$/);
+  });
+
+  // 2) Venda no PDV: sem caixa aberto o sistema avisa; com caixa aberto, finaliza em dinheiro com troco.
   await log("pdv", "1-abrir", () => open("/pdv"));
   await log("pdv", "2-adicionar-item", () => page.locator("button", { hasText: "Coca-Cola 2L" }).first().click(quick));
-  await log("pdv", "3-finalizar", () => page.locator('button[type="submit"]', { hasText: /Finalizar/ }).first().click(quick));
+  await log("pdv", "3-valor-recebido", () => page.getByPlaceholder("Ex.: 50,00").first().fill("20,00", quick));
+  await log("pdv", "4-finalizar", () => page.locator('button[type="submit"]', { hasText: /Finalizar/ }).first().click(quick));
+  // Venda com produto que tem opções (sabores), no cartão.
+  await log("pdv", "5-produto-com-opcoes", () => page.locator("button", { hasText: "Copo com 12 salgados" }).first().click(quick));
 
-  // 2) Pedido do cardápio: aceitar e avançar as etapas até sair da lista de ativos.
+  // 3) Pedido do cardápio: abrir o detalhe do primeiro pedido e avançar até não haver próxima ação.
   await log("pedido", "1-abrir-lista", () => open("/pedidos"));
-  const nextAction = /^(Aceitar pedido|Iniciar preparo|Iniciar produção|Marcar pronto|Marcar como pronto|Pronto|Entregar ao cliente|Marcar retirado|Marcar entregue|Saiu para entrega|Finalizar pedido|Finalizar|Concluir pedido|Concluir)$/;
-  for (let index = 2; index <= 7; index += 1) {
+  await log("pedido", "2-abrir-detalhe", async () => {
+    const href = await page.locator('a[href^="/pedidos/"]').evaluateAll((links) => links.map((link) => link.getAttribute("href")).find((value) => /^\/pedidos\/[0-9a-f-]{36}/.test(value ?? "")));
+    if (!href) throw new Error("nenhum link de detalhe de pedido na lista");
+    await open(href);
+  });
+  const nextAction = /^(Aceitar pedido|Iniciar preparo|Iniciar produção|Marcar pronto|Marcar como pronto|Entregar ao cliente|Marcar retirado|Marcar como retirado|Marcar entregue|Marcar como entregue|Saiu para entrega|Registrar pagamento|Marcar como pago|Marcar pago|Confirmar pagamento|Finalizar pedido|Concluir pedido|Finalizar|Concluir)$/;
+  for (let index = 3; index <= 9; index += 1) {
+    let clicked = "";
     const done = await log("pedido", `${index}-proxima-acao`, async () => {
       const button = page.getByRole("button", { name: nextAction }).first();
-      const label = (await button.textContent(quick))?.trim();
+      clicked = ((await button.textContent(quick)) ?? "").trim();
       await button.click(quick);
-      console.log(`FLUXO pedido clicou em "${label}"`);
     });
+    results[results.length - 1].clicked = clicked;
     if (!done) break;
   }
 
-  // 3) Caixa: abrir a tela e listar o que ela pede.
-  await log("caixa", "1-abrir-tela", () => open("/caixa"));
-
-  // 4) Salão: abrir a primeira mesa livre.
+  // 4) Salão: abrir mesa, lançar item, enviar para produção e pedir a conta.
   await log("salao", "1-abrir-lista", () => open("/salao"));
-  await log("salao", "2-abrir-mesa-1", () => page.locator('a[href^="/salao/"]').first().click(quick));
+  await log("salao", "2-abrir-mesa", () => page.locator('a[href^="/salao/"]').first().click(quick));
   await log("salao", "3-abrir-atendimento", () => clickButton(/^Abrir mesa$/));
+  await log("salao", "4-lancar-item", () => page.locator("button", { hasText: "Coca-Cola 2L" }).first().click(quick));
+  await log("salao", "5-enviar-producao", () => clickButton(/^Enviar para produção/));
+  await log("salao", "6-pedir-conta", () => clickButton(/^Pedir conta$/));
+
+  // 5) Caixa de novo: o que a tela oferece com o caixa aberto e uma venda registrada.
+  await log("caixa", "3-com-venda", () => open("/caixa"));
 }
 
 for (const device of DEVICES) {

@@ -37,6 +37,8 @@ function rbacSnapshotForEffectiveConfiguration(moduleSnapshot: Awaited<ReturnTyp
 }
 
 export default async function OrdersPage() {
+  // Um só "agora" para o servidor e para o primeiro desenho no navegador (tempo decorrido dos pedidos).
+  const renderedAt = Date.now();
   const [{ context, orders, recentFinalized, recentFinalizedWindowMinutes, workflowMode: legacyWorkflowMode, deliveryOperationLevel, paymentCompletionPolicy }, { settings }, moduleSnapshot] = await Promise.all([
     OrderService.list(),
     OrderWorkflowSettingsService.get(),
@@ -110,8 +112,8 @@ export default async function OrdersPage() {
       </Alert> : null}
 
       {workflowMode === "custom"
-        ? <CustomOrderWorkflowBoard storeId={context.storeId} viewPreferenceKey={`orders:view:v1:${context.userId}:${context.storeId}`} orders={rows} config={settings.custom} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />
-        : <OrderManagerBoard storeId={context.storeId} viewPreferenceKey={`orders:view:v1:${context.userId}:${context.storeId}`} orders={rows} workflowMode={effectiveBoardWorkflowMode} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />}
+        ? <CustomOrderWorkflowBoard renderedAt={renderedAt} storeId={context.storeId} viewPreferenceKey={`orders:view:v1:${context.userId}:${context.storeId}`} orders={rows} config={settings.custom} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />
+        : <OrderManagerBoard renderedAt={renderedAt} storeId={context.storeId} viewPreferenceKey={`orders:view:v1:${context.userId}:${context.storeId}`} orders={rows} workflowMode={effectiveBoardWorkflowMode} manualDeliveryMode={manualDeliveryMode} paymentPolicy={paymentPolicy} timeZone={timeZone} />}
 
       <section className={styles.recentFinalized} aria-labelledby="recent-finalized-title">
         <div className={styles.recentFinalizedHeader}>
