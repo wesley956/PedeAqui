@@ -5,7 +5,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 766,
+  "loadMs": 812,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -167,21 +167,21 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/c83156bc-2413-4dce-b5c4-8cb733ca85c7",
+  "url": "http://127.0.0.1:3000/pedidos/90da8cf7-584f-4523-8bab-9e9b58168c3f",
   "status": 200,
-  "loadMs": 989,
-  "finalUrl": "/pedidos/c83156bc-2413-4dce-b5c4-8cb733ca85c7",
+  "loadMs": 1044,
+  "finalUrl": "/pedidos/90da8cf7-584f-4523-8bab-9e9b58168c3f",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
+  "docHeight": 1547,
+  "screens": 2,
   "title": "PedeAqui",
-  "h1": "Não foi possível concluir esta operação",
+  "h1": "Pedido #1",
   "overflowing": [],
-  "interactiveCount": 31,
-  "smallTargets": 21,
-  "tinyTargets": 0,
+  "interactiveCount": 39,
+  "smallTargets": 27,
+  "tinyTargets": 1,
   "smallTargetExamples": [
    {
     "el": "button.sidebar-toggle \"Recolher menu\"",
@@ -250,21 +250,18 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 439,
+  "bodyTextLength": 1304,
   "shot": "shots/pc-1366__panel__pedidos-id.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 3017939355@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "pc-1366",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/b7098d89-fadd-49bf-b0b5-a45dde6f9736",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/03e1ae94-3e81-4d0e-81f1-69aeff7402f1",
   "status": 200,
-  "loadMs": 880,
-  "finalUrl": "/cardapio/produtos/b7098d89-fadd-49bf-b0b5-a45dde6f9736",
+  "loadMs": 993,
+  "finalUrl": "/cardapio/produtos/03e1ae94-3e81-4d0e-81f1-69aeff7402f1",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -358,10 +355,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/2192eaf4-c706-42a8-bd6b-34b6240ae90e",
+  "url": "http://127.0.0.1:3000/clientes/d330fe1e-0feb-4965-9fbe-e7136323e367",
   "status": 200,
-  "loadMs": 1060,
-  "finalUrl": "/clientes/2192eaf4-c706-42a8-bd6b-34b6240ae90e",
+  "loadMs": 1033,
+  "finalUrl": "/clientes/d330fe1e-0feb-4965-9fbe-e7136323e367",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -449,10 +446,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+  "url": "http://127.0.0.1:3000/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
   "status": 200,
-  "loadMs": 1004,
-  "finalUrl": "/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+  "loadMs": 982,
+  "finalUrl": "/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1272,7 +1269,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 630,
+  "loadMs": 644,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -1555,7 +1552,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 604,
+  "loadMs": 614,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -1612,7 +1609,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 613,
+  "loadMs": 639,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -2085,7 +2082,7 @@
   "label": "pedido › 2-abrir-detalhe",
   "ok": true,
   "screen": {
-   "url": "/pedidos/c83156bc-2413-4dce-b5c4-8cb733ca85c7?from=%2Fpedidos",
+   "url": "/pedidos/90da8cf7-584f-4523-8bab-9e9b58168c3f?from=%2Fpedidos",
    "heading": "Pedido #1",
    "buttons": [
     "Aceitar pedido",
@@ -2109,7 +2106,7 @@
   "label": "pedido › 3-proxima-acao",
   "ok": true,
   "screen": {
-   "url": "/pedidos/c83156bc-2413-4dce-b5c4-8cb733ca85c7?from=%2Fpedidos",
+   "url": "/pedidos/90da8cf7-584f-4523-8bab-9e9b58168c3f?from=%2Fpedidos",
    "heading": "Pedido #1",
    "buttons": [
     "Iniciar produção",
@@ -2126,6 +2123,7 @@
    "notices": [],
    "dialogs": []
   },
+  "retried": true,
   "shot": "shots/pc-1366__fluxo__pedido-3-proxima-acao.jpg",
   "clicked": "Aceitar pedido"
  },
@@ -2135,7 +2133,7 @@
   "label": "pedido › 4-proxima-acao",
   "ok": true,
   "screen": {
-   "url": "/pedidos/c83156bc-2413-4dce-b5c4-8cb733ca85c7?from=%2Fpedidos",
+   "url": "/pedidos/90da8cf7-584f-4523-8bab-9e9b58168c3f?from=%2Fpedidos",
    "heading": "Pedido #1",
    "buttons": [
     "Marcar pronto",
@@ -2161,7 +2159,7 @@
   "label": "pedido › 5-proxima-acao",
   "ok": true,
   "screen": {
-   "url": "/pedidos/c83156bc-2413-4dce-b5c4-8cb733ca85c7?from=%2Fpedidos",
+   "url": "/pedidos/90da8cf7-584f-4523-8bab-9e9b58168c3f?from=%2Fpedidos",
    "heading": "Pedido #1",
    "buttons": [
     "Liberar retirada",
@@ -2187,7 +2185,7 @@
   "label": "pedido › 6-proxima-acao",
   "ok": true,
   "screen": {
-   "url": "/pedidos/c83156bc-2413-4dce-b5c4-8cb733ca85c7?from=%2Fpedidos",
+   "url": "/pedidos/90da8cf7-584f-4523-8bab-9e9b58168c3f?from=%2Fpedidos",
    "heading": "Pedido #1",
    "buttons": [
     "Cliente retirou",
@@ -2213,48 +2211,64 @@
   "label": "pedido › 7-proxima-acao",
   "ok": true,
   "screen": {
-   "url": "/pedidos/c83156bc-2413-4dce-b5c4-8cb733ca85c7?from=%2Fpedidos",
+   "url": "/pedidos/90da8cf7-584f-4523-8bab-9e9b58168c3f?from=%2Fpedidos",
    "heading": "Pedido #1",
    "buttons": [
-    "Cliente retirou",
-    "Estornar pagamento",
-    "Imprimir pedido",
-    "Cancelar pedido"
+    "Confirmar pagamento",
+    "Marcar tentativa como falha",
+    "Imprimir pedido"
    ],
    "fields": [
-    "input[reason] Ex.: venda cancelada após recebimento",
-    "input[reason] Ex.: cliente solicitou cancelamento"
+    "input[cashReceived] Ex.: 50,00",
+    "input[reason] Ex.: Pix não localizado"
    ],
    "notices": [],
    "dialogs": []
   },
   "shot": "shots/pc-1366__fluxo__pedido-7-proxima-acao.jpg",
-  "clicked": "Confirmar pagamento"
+  "clicked": "Cliente retirou"
  },
  {
   "device": "pc-1366",
   "area": "fluxo",
   "label": "pedido › 8-proxima-acao",
-  "ok": false,
-  "error": "locator.textContent: Timeout 8000ms exceeded.",
+  "ok": true,
   "screen": {
-   "url": "/pedidos/c83156bc-2413-4dce-b5c4-8cb733ca85c7?from=%2Fpedidos",
+   "url": "/pedidos/90da8cf7-584f-4523-8bab-9e9b58168c3f?from=%2Fpedidos",
    "heading": "Pedido #1",
    "buttons": [
-    "Cliente retirou",
+    "Concluir pedido",
     "Estornar pagamento",
-    "Imprimir pedido",
-    "Cancelar pedido"
+    "Imprimir pedido"
    ],
    "fields": [
-    "input[reason] Ex.: venda cancelada após recebimento",
-    "input[reason] Ex.: cliente solicitou cancelamento"
+    "input[reason] Ex.: venda cancelada após recebimento"
    ],
    "notices": [],
    "dialogs": []
   },
   "shot": "shots/pc-1366__fluxo__pedido-8-proxima-acao.jpg",
-  "clicked": ""
+  "clicked": "Confirmar pagamento"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "pedido › 9-proxima-acao",
+  "ok": true,
+  "screen": {
+   "url": "/pedidos/90da8cf7-584f-4523-8bab-9e9b58168c3f?from=%2Fpedidos",
+   "heading": "Pedido #1",
+   "buttons": [
+    "Estornar pagamento"
+   ],
+   "fields": [
+    "input[reason] Ex.: venda cancelada após recebimento"
+   ],
+   "notices": [],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__pedido-9-proxima-acao.jpg",
+  "clicked": "Concluir pedido"
  },
  {
   "device": "pc-1366",
@@ -2277,7 +2291,7 @@
   "label": "salao › 2-abrir-mesa",
   "ok": true,
   "screen": {
-   "url": "/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+   "url": "/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
    "heading": "Mesa 1",
    "buttons": [
     "Abrir mesa",
@@ -2299,7 +2313,7 @@
   "label": "salao › 3-abrir-atendimento",
   "ok": true,
   "screen": {
-   "url": "/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+   "url": "/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
    "heading": "Mesa 1",
    "buttons": [
     "Pedir conta",
@@ -2346,7 +2360,7 @@
   "label": "salao › 4-lancar-item",
   "ok": true,
   "screen": {
-   "url": "/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+   "url": "/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
    "heading": "Mesa 1",
    "buttons": [
     "Pedir conta",
@@ -2396,7 +2410,7 @@
   "label": "salao › 5-enviar-producao",
   "ok": true,
   "screen": {
-   "url": "/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+   "url": "/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
    "heading": "Mesa 1",
    "buttons": [
     "Pedir conta",
@@ -2439,28 +2453,22 @@
    "notices": [],
    "dialogs": []
   },
-  "retried": true,
   "shot": "shots/pc-1366__fluxo__salao-5-enviar-producao.jpg"
  },
  {
   "device": "pc-1366",
   "area": "fluxo",
-  "label": "salao › 6-pedir-conta",
+  "label": "salao › 6-registrar-pagamento",
   "ok": true,
   "screen": {
-   "url": "/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+   "url": "/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
    "heading": "Mesa 1",
    "buttons": [
-    "Registrar pagamento",
+    "Concluir e liberar mesa",
     "Adicionar pessoa",
     "Transferir mesa"
    ],
    "fields": [
-    "input[amount] 0,00",
-    "select[method] FormaDinheiroPixCréditoDébito",
-    "select[tabMemberId] PessoaConta geral",
-    "input[cashTendered] Opcional",
-    "input[reference] Referência",
     "input[name] Nome",
     "input[seatNumber] Assento",
     "select[targetTableId] "
@@ -2468,28 +2476,46 @@
    "notices": [],
    "dialogs": []
   },
-  "shot": "shots/pc-1366__fluxo__salao-6-pedir-conta.jpg"
+  "shot": "shots/pc-1366__fluxo__salao-6-registrar-pagamento.jpg"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "salao › 6b-pedir-conta",
+  "ok": false,
+  "error": "locator.click: Timeout 8000ms exceeded.",
+  "screen": {
+   "url": "/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
+   "heading": "Mesa 1",
+   "buttons": [
+    "Concluir e liberar mesa",
+    "Adicionar pessoa",
+    "Transferir mesa"
+   ],
+   "fields": [
+    "input[name] Nome",
+    "input[seatNumber] Assento",
+    "select[targetTableId] "
+   ],
+   "notices": [],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__salao-6b-pedir-conta.jpg"
  },
  {
   "device": "pc-1366",
   "area": "fluxo",
   "label": "salao › 7-concluir-liberar",
-  "ok": false,
-  "error": "locator.click: Timeout 8000ms exceeded.",
+  "ok": true,
   "screen": {
-   "url": "/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+   "url": "/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
    "heading": "Mesa 1",
    "buttons": [
-    "Registrar pagamento",
+    "Concluir e liberar mesa",
     "Adicionar pessoa",
     "Transferir mesa"
    ],
    "fields": [
-    "input[amount] 0,00",
-    "select[method] FormaDinheiroPixCréditoDébito",
-    "select[tabMemberId] PessoaConta geral",
-    "input[cashTendered] Opcional",
-    "input[reference] Referência",
     "input[name] Nome",
     "input[seatNumber] Assento",
     "select[targetTableId] "
@@ -2497,6 +2523,7 @@
    "notices": [],
    "dialogs": []
   },
+  "retried": true,
   "shot": "shots/pc-1366__fluxo__salao-7-concluir-liberar.jpg"
  },
  {
@@ -2531,20 +2558,15 @@
   "label": "caixa › 4-conferir-fechar",
   "ok": true,
   "screen": {
-   "url": "/caixa",
+   "url": "/caixa?ok=Turno%20fechado%20e%20conferido.",
    "heading": "Caixa",
    "buttons": [
-    "Registrar entrada",
-    "Registrar retirada",
-    "Conferir e fechar turno"
+    "Abrir caixa"
    ],
    "fields": [
-    "input[amount] Valor, ex.: 100,00",
-    "input[reason] Motivo da entrada",
-    "input[amount] Valor, ex.: 200,00",
-    "input[reason] Motivo da retirada",
-    "input[countedCash] Dinheiro contado",
-    "input[note] Observação opcional"
+    "select[cashRegisterId] CAIXACAIXA1 · Caixa principal",
+    "input[openingBalance] SALDO INICIAL",
+    "input[note] Opcional"
    ],
    "notices": [],
    "dialogs": []
@@ -2557,7 +2579,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 682,
+  "loadMs": 727,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -2632,8 +2654,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
+  "docHeight": 2889,
+  "screens": 3.9,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -2714,16 +2736,16 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1372
+  "bodyTextLength": 1387
  },
  {
   "device": "android-360",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/b0872957-a6ec-44b9-9eff-7b86927536c7",
+  "url": "http://127.0.0.1:3000/pedidos/0cfd9efe-243a-4624-b26d-00736eaa8c5a",
   "status": 200,
-  "loadMs": 856,
-  "finalUrl": "/pedidos/b0872957-a6ec-44b9-9eff-7b86927536c7",
+  "loadMs": 920,
+  "finalUrl": "/pedidos/0cfd9efe-243a-4624-b26d-00736eaa8c5a",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2825,10 +2847,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/b7098d89-fadd-49bf-b0b5-a45dde6f9736",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/03e1ae94-3e81-4d0e-81f1-69aeff7402f1",
   "status": 200,
-  "loadMs": 806,
-  "finalUrl": "/cardapio/produtos/b7098d89-fadd-49bf-b0b5-a45dde6f9736",
+  "loadMs": 838,
+  "finalUrl": "/cardapio/produtos/03e1ae94-3e81-4d0e-81f1-69aeff7402f1",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2929,10 +2951,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/2192eaf4-c706-42a8-bd6b-34b6240ae90e",
+  "url": "http://127.0.0.1:3000/clientes/d330fe1e-0feb-4965-9fbe-e7136323e367",
   "status": 200,
-  "loadMs": 864,
-  "finalUrl": "/clientes/2192eaf4-c706-42a8-bd6b-34b6240ae90e",
+  "loadMs": 843,
+  "finalUrl": "/clientes/d330fe1e-0feb-4965-9fbe-e7136323e367",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -3018,7 +3040,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 724,
+  "bodyTextLength": 734,
   "shot": "shots/android-360__panel__clientes-id.jpg",
   "axe": [],
   "consoleErrors": []
@@ -3027,20 +3049,20 @@
   "device": "android-360",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+  "url": "http://127.0.0.1:3000/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
   "status": 200,
-  "loadMs": 796,
-  "finalUrl": "/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+  "loadMs": 843,
+  "finalUrl": "/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1767,
-  "screens": 2.4,
+  "docHeight": 1365,
+  "screens": 1.8,
   "title": "PedeAqui",
   "h1": "Mesa 1",
   "overflowing": [],
-  "interactiveCount": 55,
-  "smallTargets": 24,
+  "interactiveCount": 50,
+  "smallTargets": 19,
   "tinyTargets": 1,
   "smallTargetExamples": [
    {
@@ -3116,7 +3138,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 596,
+  "bodyTextLength": 478,
   "shot": "shots/android-360__panel__salao-tableId.jpg",
   "axe": [],
   "consoleErrors": []
@@ -3129,8 +3151,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
+  "docHeight": 2889,
+  "screens": 3.9,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -3211,7 +3233,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1615
+  "bodyTextLength": 1630
  },
  {
   "device": "android-360",
@@ -3221,8 +3243,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
+  "docHeight": 2889,
+  "screens": 3.9,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -3303,7 +3325,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1488
+  "bodyTextLength": 1498
  },
  {
   "device": "android-360",
@@ -3313,8 +3335,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
+  "docHeight": 2889,
+  "screens": 3.9,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -3395,7 +3417,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1436
+  "bodyTextLength": 1451
  },
  {
   "device": "android-360",
@@ -3597,7 +3619,7 @@
    }
   ],
   "fixedCoverPx": 939,
-  "bodyTextLength": 1086
+  "bodyTextLength": 1072
  },
  {
   "device": "android-360",
@@ -4111,7 +4133,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 605,
+  "loadMs": 619,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -4415,7 +4437,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 579,
+  "loadMs": 595,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -4485,7 +4507,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 607,
+  "loadMs": 629,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
@@ -4572,7 +4594,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 708,
+  "loadMs": 759,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -4646,8 +4668,8 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1834,
-  "screens": 2.4,
+  "docHeight": 1934,
+  "screens": 2.5,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -4722,16 +4744,16 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1838
+  "bodyTextLength": 1853
  },
  {
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/b0872957-a6ec-44b9-9eff-7b86927536c7",
+  "url": "http://127.0.0.1:3000/pedidos/0cfd9efe-243a-4624-b26d-00736eaa8c5a",
   "status": 200,
-  "loadMs": 899,
-  "finalUrl": "/pedidos/b0872957-a6ec-44b9-9eff-7b86927536c7",
+  "loadMs": 943,
+  "finalUrl": "/pedidos/0cfd9efe-243a-4624-b26d-00736eaa8c5a",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -4819,10 +4841,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/b7098d89-fadd-49bf-b0b5-a45dde6f9736",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/03e1ae94-3e81-4d0e-81f1-69aeff7402f1",
   "status": 200,
-  "loadMs": 833,
-  "finalUrl": "/cardapio/produtos/b7098d89-fadd-49bf-b0b5-a45dde6f9736",
+  "loadMs": 914,
+  "finalUrl": "/cardapio/produtos/03e1ae94-3e81-4d0e-81f1-69aeff7402f1",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -4916,10 +4938,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/2192eaf4-c706-42a8-bd6b-34b6240ae90e",
+  "url": "http://127.0.0.1:3000/clientes/d330fe1e-0feb-4965-9fbe-e7136323e367",
   "status": 200,
-  "loadMs": 876,
-  "finalUrl": "/clientes/2192eaf4-c706-42a8-bd6b-34b6240ae90e",
+  "loadMs": 1046,
+  "finalUrl": "/clientes/d330fe1e-0feb-4965-9fbe-e7136323e367",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -4999,7 +5021,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 969,
+  "bodyTextLength": 979,
   "shot": "shots/pc-1366-escuro__panel__clientes-id.jpg",
   "consoleErrors": []
  },
@@ -5007,31 +5029,20 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+  "url": "http://127.0.0.1:3000/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
   "status": 200,
-  "loadMs": 854,
-  "finalUrl": "/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+  "loadMs": 912,
+  "finalUrl": "/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
   "vw": 1366,
   "vh": 768,
-  "docWidth": 1368,
-  "docHeight": 1085,
-  "screens": 1.4,
+  "docWidth": 1366,
+  "docHeight": 925,
+  "screens": 1.2,
   "title": "PedeAqui",
   "h1": "Mesa 1",
-  "overflowing": [
-   {
-    "el": "span \"Recebido em dinheiro\"",
-    "right": 1368,
-    "width": 226
-   },
-   {
-    "el": "input \"Opcional\"",
-    "right": 1368,
-    "width": 226
-   }
-  ],
-  "interactiveCount": 55,
-  "smallTargets": 34,
+  "overflowing": [],
+  "interactiveCount": 50,
+  "smallTargets": 30,
   "tinyTargets": 1,
   "smallTargetExamples": [
    {
@@ -5101,7 +5112,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 841,
+  "bodyTextLength": 723,
   "shot": "shots/pc-1366-escuro__panel__salao-tableId.jpg",
   "consoleErrors": []
  },
@@ -5113,8 +5124,8 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1834,
-  "screens": 2.4,
+  "docHeight": 1934,
+  "screens": 2.5,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -5189,7 +5200,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1954
+  "bodyTextLength": 1964
  },
  {
   "device": "pc-1366-escuro",
@@ -5199,8 +5210,8 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1834,
-  "screens": 2.4,
+  "docHeight": 1934,
+  "screens": 2.5,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -5275,7 +5286,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1902
+  "bodyTextLength": 1917
  },
  {
   "device": "pc-1366-escuro",
@@ -5285,12 +5296,12 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 2013,
+  "docHeight": 1998,
   "screens": 2.6,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 73,
+  "interactiveCount": 74,
   "smallTargets": 60,
   "tinyTargets": 7,
   "smallTargetExamples": [
@@ -5361,7 +5372,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1557
+  "bodyTextLength": 1532
  },
  {
   "device": "pc-1366-escuro",
@@ -5841,7 +5852,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 601,
+  "loadMs": 630,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -6124,7 +6135,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 585,
+  "loadMs": 594,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -6181,7 +6192,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 593,
+  "loadMs": 618,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -6255,7 +6266,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 690,
+  "loadMs": 755,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -6329,8 +6340,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
+  "docHeight": 2889,
+  "screens": 3.9,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -6411,16 +6422,16 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1372
+  "bodyTextLength": 1387
  },
  {
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/b0872957-a6ec-44b9-9eff-7b86927536c7",
+  "url": "http://127.0.0.1:3000/pedidos/0cfd9efe-243a-4624-b26d-00736eaa8c5a",
   "status": 200,
-  "loadMs": 876,
-  "finalUrl": "/pedidos/b0872957-a6ec-44b9-9eff-7b86927536c7",
+  "loadMs": 835,
+  "finalUrl": "/pedidos/0cfd9efe-243a-4624-b26d-00736eaa8c5a",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -6514,10 +6525,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/b7098d89-fadd-49bf-b0b5-a45dde6f9736",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/03e1ae94-3e81-4d0e-81f1-69aeff7402f1",
   "status": 200,
-  "loadMs": 772,
-  "finalUrl": "/cardapio/produtos/b7098d89-fadd-49bf-b0b5-a45dde6f9736",
+  "loadMs": 831,
+  "finalUrl": "/cardapio/produtos/03e1ae94-3e81-4d0e-81f1-69aeff7402f1",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -6617,10 +6628,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/2192eaf4-c706-42a8-bd6b-34b6240ae90e",
+  "url": "http://127.0.0.1:3000/clientes/d330fe1e-0feb-4965-9fbe-e7136323e367",
   "status": 200,
-  "loadMs": 782,
-  "finalUrl": "/clientes/2192eaf4-c706-42a8-bd6b-34b6240ae90e",
+  "loadMs": 823,
+  "finalUrl": "/clientes/d330fe1e-0feb-4965-9fbe-e7136323e367",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -6706,7 +6717,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 724,
+  "bodyTextLength": 734,
   "shot": "shots/android-360-escuro__panel__clientes-id.jpg",
   "consoleErrors": []
  },
@@ -6714,42 +6725,98 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
-  "status": 500,
-  "loadMs": 659,
-  "finalUrl": "/salao/3ef2c753-5bef-4a94-8959-75df3ffdab9f",
+  "url": "http://127.0.0.1:3000/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
+  "status": 200,
+  "loadMs": 827,
+  "finalUrl": "/salao/51e11b9a-885c-493b-98a1-cd64d0d30040",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 1365,
+  "screens": 1.8,
   "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
+  "h1": "Mesa 1",
   "overflowing": [],
-  "interactiveCount": 2,
-  "smallTargets": 1,
-  "tinyTargets": 0,
+  "interactiveCount": 50,
+  "smallTargets": 19,
+  "tinyTargets": 1,
   "smallTargetExamples": [
    {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 276,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 276,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "button.button-module__HjQxJG__button \"Ativar modo fácil\"",
+    "w": 302,
+    "h": 42
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
    }
   ],
   "smallText": 0,
   "smallTextExamples": [],
-  "minFont": 16,
+  "minFont": 12,
   "inputsZoom": [],
   "inputsZoomCount": 0,
-  "fixed": [],
-  "fixedCoverPx": 0,
-  "bodyTextLength": 183,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕\"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "div.customer-messages-module__qEO9Fq__panel",
+    "top": 126,
+    "h": 177,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 671,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 116,
+    "h": 548,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 794,
+  "bodyTextLength": 478,
   "shot": "shots/android-360-escuro__panel__salao-tableId.jpg",
-  "consoleErrors": [
-   "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 3017939355@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "android-360-escuro",
@@ -6759,8 +6826,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
+  "docHeight": 2889,
+  "screens": 3.9,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -6841,7 +6908,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1615
+  "bodyTextLength": 1630
  },
  {
   "device": "android-360-escuro",
@@ -6851,8 +6918,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
+  "docHeight": 2889,
+  "screens": 3.9,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -6933,7 +7000,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1488
+  "bodyTextLength": 1498
  },
  {
   "device": "android-360-escuro",
@@ -6943,8 +7010,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2843,
-  "screens": 3.8,
+  "docHeight": 2889,
+  "screens": 3.9,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -7025,7 +7092,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1436
+  "bodyTextLength": 1451
  },
  {
   "device": "android-360-escuro",
@@ -7227,7 +7294,7 @@
    }
   ],
   "fixedCoverPx": 939,
-  "bodyTextLength": 1086
+  "bodyTextLength": 1072
  },
  {
   "device": "android-360-escuro",
@@ -7741,7 +7808,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 589,
+  "loadMs": 616,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -8044,7 +8111,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 581,
+  "loadMs": 598,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -8113,7 +8180,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 594,
+  "loadMs": 618,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
