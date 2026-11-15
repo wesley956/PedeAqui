@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
-import { isWithinBotPreopenWindow } from "@/server/conversations/bot-preopen-window";
+import { isWithinBotPreopenWindow, botPreopenOpeningTime } from "@/server/conversations/bot-preopen-window";
 
 const hours = [
   { weekday: 0, opens_at: "19:00:00", active: true },
@@ -35,6 +35,23 @@ describe("early bot start independent of restaurant opening", () => {
       now: time("18:15:00"), timezone: "America/Sao_Paulo",
       hours: [{ weekday: 6, opens_at: "19:00:00", active: false }], minutes: 60,
     })).toBe(false);
+  });
+  it("resolves the exact store opening time for the preopen reply", () => {
+    const input = { now: time("18:20:00"), timezone: "America/Sao_Paulo", hours, minutes: 60 };
+    expect(botPreopenOpeningTime(input)).toBe("19:00");
+    expect(botPreopenOpeningTime({ ...input, now: time("17:59:00") })).toBeNull();
+    expect(botPreopenOpeningTime({ ...input, now: time("19:00:00") })).toBeNull();
+  });
+  it("sends a preopen cardapio notice even when general greeting is disabled", () => {
+    const greeting = fs.readFileSync("src/server/conversations/greeting-service.ts", "utf8");
+    expect(greeting).toContain('bot_preopen_minutes');
+    expect(greeting).toContain('auto:preopen:');
+    expect(greeting).toContain('Abrimos às ${opening}!');
+    expect(greeting).toContain('Confira nosso cardápio: ${menuUrl}');
+    const preopen = greeting.indexOf("const opening = botPreopenOpeningTime");
+    const normalGreeting = greeting.indexOf("if (settings.greeting_enabled)");
+    expect(preopen).toBeGreaterThan(0);
+    expect(preopen).toBeLessThan(normalGreeting);
   });
   it("keeps notifications under the original canSend policy, not the early reply policy", () => {
     const code = fs.readFileSync("src/server/conversations/automation-hours-service.ts", "utf8");
