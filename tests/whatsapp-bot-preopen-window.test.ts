@@ -48,6 +48,7 @@ describe("early bot start independent of restaurant opening", () => {
     expect(greeting).toContain('auto:preopen:');
     expect(greeting).toContain('Abrimos às ${opening}!');
     expect(greeting).toContain('Confira nosso cardápio: ${menuUrl}');
+    expect(greeting).toContain('Faça seu pedido a partir das 19h!');
     const preopen = greeting.indexOf("const opening = botPreopenOpeningTime");
     const normalGreeting = greeting.indexOf("if (settings.greeting_enabled)");
     expect(preopen).toBeGreaterThan(0);
