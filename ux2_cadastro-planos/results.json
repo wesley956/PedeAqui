@@ -5,7 +5,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 819,
+  "loadMs": 862,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -169,39 +169,30 @@
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
-  "loadMs": 568,
-  "finalUrl": "/platform/demo",
+  "loadMs": 810,
+  "finalUrl": "/m/pedeaqui-demo-8030ca",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
+  "docHeight": 912,
+  "screens": 1.2,
   "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
+  "h1": "Bistrô PedeAqui Demo",
   "overflowing": [],
-  "interactiveCount": 2,
-  "smallTargets": 1,
+  "interactiveCount": 7,
+  "smallTargets": 0,
   "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
-   }
-  ],
+  "smallTargetExamples": [],
   "smallText": 0,
   "smallTextExamples": [],
-  "minFont": 16,
+  "minFont": 12,
   "inputsZoom": [],
   "inputsZoomCount": 0,
   "fixed": [],
   "fixedCoverPx": 0,
-  "bodyTextLength": 183,
+  "bodyTextLength": 526,
   "shot": "shots/pc-1366__panel__platform-demo.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "pc-1366",
@@ -209,48 +200,93 @@
   "label": "/platform/apresentacao",
   "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 547,
+  "loadMs": 1187,
   "finalUrl": "/platform/apresentacao",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
+  "docHeight": 2224,
+  "screens": 2.9,
   "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
+  "h1": "Roteiro seguro da demonstração",
   "overflowing": [],
-  "interactiveCount": 2,
-  "smallTargets": 1,
+  "interactiveCount": 34,
+  "smallTargets": 33,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
+    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
+    "w": 224,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
+    "w": 223,
+    "h": 40
    }
   ],
   "smallText": 0,
   "smallTextExamples": [],
-  "minFont": 16,
+  "minFont": 12,
   "inputsZoom": [],
   "inputsZoomCount": 0,
-  "fixed": [],
+  "fixed": [
+   {
+    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
+    "top": 0,
+    "h": 768,
+    "pos": "sticky"
+   },
+   {
+    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
+    "top": 0,
+    "h": 65,
+    "pos": "sticky"
+   }
+  ],
   "fixedCoverPx": 0,
-  "bodyTextLength": 183,
+  "bodyTextLength": 3395,
   "shot": "shots/pc-1366__panel__platform-apresentacao.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "pc-1366",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/966c739f-33e3-4483-adf9-6b41bbc3cf03",
+  "url": "http://127.0.0.1:3000/pedidos/49b377fe-7646-43fd-8b65-10b96c1fcdd4",
   "status": 200,
-  "loadMs": 1031,
-  "finalUrl": "/pedidos/966c739f-33e3-4483-adf9-6b41bbc3cf03",
+  "loadMs": 1098,
+  "finalUrl": "/pedidos/49b377fe-7646-43fd-8b65-10b96c1fcdd4",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -338,10 +374,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/63faa043-6a5e-4034-8317-daa61ab986cf",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/c6d55e51-68bb-4a66-b6f4-3e1a0905ec23",
   "status": 200,
-  "loadMs": 1025,
-  "finalUrl": "/cardapio/produtos/63faa043-6a5e-4034-8317-daa61ab986cf",
+  "loadMs": 1017,
+  "finalUrl": "/cardapio/produtos/c6d55e51-68bb-4a66-b6f4-3e1a0905ec23",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -435,10 +471,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/cc97dbdf-870f-4410-9a33-f683a47e13af",
+  "url": "http://127.0.0.1:3000/clientes/747e3059-17b7-4309-937d-e527b777ccfd",
   "status": 200,
-  "loadMs": 1026,
-  "finalUrl": "/clientes/cc97dbdf-870f-4410-9a33-f683a47e13af",
+  "loadMs": 1122,
+  "finalUrl": "/clientes/747e3059-17b7-4309-937d-e527b777ccfd",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -526,10 +562,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/6c697fd9-3ad8-49ac-bde3-77f81f441e3e",
+  "url": "http://127.0.0.1:3000/salao/24bfc9d7-66b1-4aa7-9d00-c86a2403a66d",
   "status": 200,
-  "loadMs": 1148,
-  "finalUrl": "/salao/6c697fd9-3ad8-49ac-bde3-77f81f441e3e",
+  "loadMs": 996,
+  "finalUrl": "/salao/24bfc9d7-66b1-4aa7-9d00-c86a2403a66d",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1349,7 +1385,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 630,
+  "loadMs": 660,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -1632,7 +1668,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 612,
+  "loadMs": 614,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -1689,7 +1725,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 639,
+  "loadMs": 638,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -1763,7 +1799,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 729,
+  "loadMs": 723,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -1928,40 +1964,37 @@
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
-  "loadMs": 538,
-  "finalUrl": "/platform/demo",
+  "loadMs": 686,
+  "finalUrl": "/m/pedeaqui-demo-8030ca",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 1112,
+  "screens": 1.5,
   "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
+  "h1": "Bistrô PedeAqui Demo",
   "overflowing": [],
-  "interactiveCount": 2,
+  "interactiveCount": 7,
   "smallTargets": 1,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
    }
   ],
   "smallText": 0,
   "smallTextExamples": [],
-  "minFont": 16,
+  "minFont": 12,
   "inputsZoom": [],
   "inputsZoomCount": 0,
   "fixed": [],
   "fixedCoverPx": 0,
-  "bodyTextLength": 183,
+  "bodyTextLength": 526,
   "shot": "shots/android-360__panel__platform-demo.jpg",
   "axe": [],
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "android-360",
@@ -1969,49 +2002,95 @@
   "label": "/platform/apresentacao",
   "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 537,
+  "loadMs": 953,
   "finalUrl": "/platform/apresentacao",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 3661,
+  "screens": 4.9,
   "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
+  "h1": "Roteiro seguro da demonstração",
   "overflowing": [],
-  "interactiveCount": 2,
-  "smallTargets": 1,
+  "interactiveCount": 33,
+  "smallTargets": 9,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
+    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
+    "w": 224,
+    "h": 40
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
+    "w": 34,
+    "h": 34
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
+    "w": 34,
+    "h": 34
+   },
+   {
+    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
+    "w": 47,
+    "h": 36
+   },
+   {
+    "el": "a.platform-module__d3cmqG__button \"Abrir cardápio demo\"",
+    "w": 290,
+    "h": 39
+   },
+   {
+    "el": "a.platform-module__d3cmqG__button \"Abrir restaurante atual\"",
+    "w": 290,
+    "h": 39
+   },
+   {
+    "el": "a.platform-module__d3cmqG__button \"Abrir financeiro SaaS\"",
+    "w": 290,
+    "h": 39
    }
   ],
   "smallText": 0,
   "smallTextExamples": [],
-  "minFont": 16,
+  "minFont": 12,
   "inputsZoom": [],
   "inputsZoomCount": 0,
-  "fixed": [],
+  "fixed": [
+   {
+    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
+    "top": 128,
+    "h": 61,
+    "pos": "sticky"
+   }
+  ],
   "fixedCoverPx": 0,
-  "bodyTextLength": 183,
+  "bodyTextLength": 3292,
   "shot": "shots/android-360__panel__platform-apresentacao.jpg",
-  "axe": [],
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
+  "axe": [
+   {
+    "id": "color-contrast",
+    "impact": "serious",
+    "nodes": 1,
+    "example": "span[data-tone=\"good\"]"
+   }
+  ],
+  "consoleErrors": []
  },
  {
   "device": "android-360",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/966c739f-33e3-4483-adf9-6b41bbc3cf03",
+  "url": "http://127.0.0.1:3000/pedidos/49b377fe-7646-43fd-8b65-10b96c1fcdd4",
   "status": 200,
-  "loadMs": 927,
-  "finalUrl": "/pedidos/966c739f-33e3-4483-adf9-6b41bbc3cf03",
+  "loadMs": 986,
+  "finalUrl": "/pedidos/49b377fe-7646-43fd-8b65-10b96c1fcdd4",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2113,10 +2192,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/63faa043-6a5e-4034-8317-daa61ab986cf",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/c6d55e51-68bb-4a66-b6f4-3e1a0905ec23",
   "status": 200,
-  "loadMs": 856,
-  "finalUrl": "/cardapio/produtos/63faa043-6a5e-4034-8317-daa61ab986cf",
+  "loadMs": 864,
+  "finalUrl": "/cardapio/produtos/c6d55e51-68bb-4a66-b6f4-3e1a0905ec23",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2217,10 +2296,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/cc97dbdf-870f-4410-9a33-f683a47e13af",
+  "url": "http://127.0.0.1:3000/clientes/747e3059-17b7-4309-937d-e527b777ccfd",
   "status": 200,
-  "loadMs": 912,
-  "finalUrl": "/clientes/cc97dbdf-870f-4410-9a33-f683a47e13af",
+  "loadMs": 848,
+  "finalUrl": "/clientes/747e3059-17b7-4309-937d-e527b777ccfd",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -2315,10 +2394,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/6c697fd9-3ad8-49ac-bde3-77f81f441e3e",
+  "url": "http://127.0.0.1:3000/salao/24bfc9d7-66b1-4aa7-9d00-c86a2403a66d",
   "status": 200,
-  "loadMs": 849,
-  "finalUrl": "/salao/6c697fd9-3ad8-49ac-bde3-77f81f441e3e",
+  "loadMs": 860,
+  "finalUrl": "/salao/24bfc9d7-66b1-4aa7-9d00-c86a2403a66d",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -3399,7 +3478,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 620,
+  "loadMs": 614,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -3703,7 +3782,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 597,
+  "loadMs": 594,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -3773,7 +3852,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 615,
+  "loadMs": 626,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
@@ -3860,7 +3939,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 738,
+  "loadMs": 743,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -4018,39 +4097,30 @@
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
-  "loadMs": 576,
-  "finalUrl": "/platform/demo",
+  "loadMs": 703,
+  "finalUrl": "/m/pedeaqui-demo-8030ca",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
+  "docHeight": 912,
+  "screens": 1.2,
   "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
+  "h1": "Bistrô PedeAqui Demo",
   "overflowing": [],
-  "interactiveCount": 2,
-  "smallTargets": 1,
+  "interactiveCount": 7,
+  "smallTargets": 0,
   "tinyTargets": 0,
-  "smallTargetExamples": [
-   {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
-   }
-  ],
+  "smallTargetExamples": [],
   "smallText": 0,
   "smallTextExamples": [],
-  "minFont": 16,
+  "minFont": 12,
   "inputsZoom": [],
   "inputsZoomCount": 0,
   "fixed": [],
   "fixedCoverPx": 0,
-  "bodyTextLength": 183,
+  "bodyTextLength": 526,
   "shot": "shots/pc-1366-escuro__panel__platform-demo.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "pc-1366-escuro",
@@ -4058,48 +4128,93 @@
   "label": "/platform/apresentacao",
   "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 543,
+  "loadMs": 915,
   "finalUrl": "/platform/apresentacao",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 768,
-  "screens": 1,
+  "docHeight": 2224,
+  "screens": 2.9,
   "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
+  "h1": "Roteiro seguro da demonstração",
   "overflowing": [],
-  "interactiveCount": 2,
-  "smallTargets": 1,
+  "interactiveCount": 34,
+  "smallTargets": 33,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
+    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
+    "w": 224,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Visão geral\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Pendências\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Apresentação\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Empresas e unidades\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Novo cliente\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Onboarding\"",
+    "w": 223,
+    "h": 40
+   },
+   {
+    "el": "a.platform-shell-v3-module__xK2Z1a__navLin \"Comunicação\"",
+    "w": 223,
+    "h": 40
    }
   ],
   "smallText": 0,
   "smallTextExamples": [],
-  "minFont": 16,
+  "minFont": 12,
   "inputsZoom": [],
   "inputsZoomCount": 0,
-  "fixed": [],
+  "fixed": [
+   {
+    "el": "aside.platform-shell-v3-module__xK2Z1a__sideba \"PedeAqui Painel do Proprietário INÍCIO Visão geral\"",
+    "top": 0,
+    "h": 768,
+    "pos": "sticky"
+   },
+   {
+    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário dono.teste@example.com Sair\"",
+    "top": 0,
+    "h": 65,
+    "pos": "sticky"
+   }
+  ],
   "fixedCoverPx": 0,
-  "bodyTextLength": 183,
+  "bodyTextLength": 3395,
   "shot": "shots/pc-1366-escuro__panel__platform-apresentacao.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/966c739f-33e3-4483-adf9-6b41bbc3cf03",
+  "url": "http://127.0.0.1:3000/pedidos/49b377fe-7646-43fd-8b65-10b96c1fcdd4",
   "status": 200,
-  "loadMs": 958,
-  "finalUrl": "/pedidos/966c739f-33e3-4483-adf9-6b41bbc3cf03",
+  "loadMs": 932,
+  "finalUrl": "/pedidos/49b377fe-7646-43fd-8b65-10b96c1fcdd4",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -4187,10 +4302,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/63faa043-6a5e-4034-8317-daa61ab986cf",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/c6d55e51-68bb-4a66-b6f4-3e1a0905ec23",
   "status": 200,
-  "loadMs": 843,
-  "finalUrl": "/cardapio/produtos/63faa043-6a5e-4034-8317-daa61ab986cf",
+  "loadMs": 920,
+  "finalUrl": "/cardapio/produtos/c6d55e51-68bb-4a66-b6f4-3e1a0905ec23",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -4284,10 +4399,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/cc97dbdf-870f-4410-9a33-f683a47e13af",
+  "url": "http://127.0.0.1:3000/clientes/747e3059-17b7-4309-937d-e527b777ccfd",
   "status": 200,
-  "loadMs": 889,
-  "finalUrl": "/clientes/cc97dbdf-870f-4410-9a33-f683a47e13af",
+  "loadMs": 926,
+  "finalUrl": "/clientes/747e3059-17b7-4309-937d-e527b777ccfd",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -4375,10 +4490,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/6c697fd9-3ad8-49ac-bde3-77f81f441e3e",
+  "url": "http://127.0.0.1:3000/salao/24bfc9d7-66b1-4aa7-9d00-c86a2403a66d",
   "status": 200,
-  "loadMs": 900,
-  "finalUrl": "/salao/6c697fd9-3ad8-49ac-bde3-77f81f441e3e",
+  "loadMs": 913,
+  "finalUrl": "/salao/24bfc9d7-66b1-4aa7-9d00-c86a2403a66d",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -5198,7 +5313,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 628,
+  "loadMs": 627,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -5481,7 +5596,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 638,
+  "loadMs": 601,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -5538,7 +5653,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 619,
+  "loadMs": 620,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -5612,7 +5727,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 719,
+  "loadMs": 716,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -5776,39 +5891,36 @@
   "label": "/platform/demo",
   "url": "http://127.0.0.1:3000/platform/demo",
   "status": 200,
-  "loadMs": 548,
-  "finalUrl": "/platform/demo",
+  "loadMs": 683,
+  "finalUrl": "/m/pedeaqui-demo-8030ca",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 1112,
+  "screens": 1.5,
   "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
+  "h1": "Bistrô PedeAqui Demo",
   "overflowing": [],
-  "interactiveCount": 2,
+  "interactiveCount": 7,
   "smallTargets": 1,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
+    "el": "button.public-theme-cycle-button-module__K36C6W \"Tema: Automático. Toque para mudar para Claro.\"",
+    "w": 42,
+    "h": 42
    }
   ],
   "smallText": 0,
   "smallTextExamples": [],
-  "minFont": 16,
+  "minFont": 12,
   "inputsZoom": [],
   "inputsZoomCount": 0,
   "fixed": [],
   "fixedCoverPx": 0,
-  "bodyTextLength": 183,
+  "bodyTextLength": 526,
   "shot": "shots/android-360-escuro__panel__platform-demo.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "android-360-escuro",
@@ -5816,59 +5928,98 @@
   "label": "/platform/apresentacao",
   "url": "http://127.0.0.1:3000/platform/apresentacao",
   "status": 200,
-  "loadMs": 536,
+  "loadMs": 969,
   "finalUrl": "/platform/apresentacao",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 3661,
+  "screens": 4.9,
   "title": "PedeAqui",
-  "h1": "Não foi possível abrir esta página",
+  "h1": "Roteiro seguro da demonstração",
   "overflowing": [],
-  "interactiveCount": 2,
-  "smallTargets": 1,
+  "interactiveCount": 33,
+  "smallTargets": 9,
   "tinyTargets": 0,
   "smallTargetExamples": [
    {
-    "el": "a \"Voltar ao início\"",
-    "w": 118,
-    "h": 24
+    "el": "a.platform-shell-v3-module__xK2Z1a__skip \"Pular para o conteúdo\"",
+    "w": 224,
+    "h": 40
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Claro\"",
+    "w": 34,
+    "h": 34
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Automático\"",
+    "w": 34,
+    "h": 34
+   },
+   {
+    "el": "button.theme-selector-module__OjzeuG__option \"Escuro\"",
+    "w": 34,
+    "h": 34
+   },
+   {
+    "el": "button.platform-shell-v3-module__xK2Z1a__exit \"Sair\"",
+    "w": 47,
+    "h": 36
+   },
+   {
+    "el": "a.platform-module__d3cmqG__button \"Abrir cardápio demo\"",
+    "w": 290,
+    "h": 39
+   },
+   {
+    "el": "a.platform-module__d3cmqG__button \"Abrir restaurante atual\"",
+    "w": 290,
+    "h": 39
+   },
+   {
+    "el": "a.platform-module__d3cmqG__button \"Abrir financeiro SaaS\"",
+    "w": 290,
+    "h": 39
    }
   ],
   "smallText": 0,
   "smallTextExamples": [],
-  "minFont": 16,
+  "minFont": 12,
   "inputsZoom": [],
   "inputsZoomCount": 0,
-  "fixed": [],
+  "fixed": [
+   {
+    "el": "header.platform-shell-v3-module__xK2Z1a__topbar \"Proprietário Sair\"",
+    "top": 128,
+    "h": 61,
+    "pos": "sticky"
+   }
+  ],
   "fixedCoverPx": 0,
-  "bodyTextLength": 183,
+  "bodyTextLength": 3292,
   "shot": "shots/android-360-escuro__panel__platform-apresentacao.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected root error {digest: 967768027@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/966c739f-33e3-4483-adf9-6b41bbc3cf03",
+  "url": "http://127.0.0.1:3000/pedidos/49b377fe-7646-43fd-8b65-10b96c1fcdd4",
   "status": 200,
-  "loadMs": 827,
-  "finalUrl": "/pedidos/966c739f-33e3-4483-adf9-6b41bbc3cf03",
+  "loadMs": 923,
+  "finalUrl": "/pedidos/49b377fe-7646-43fd-8b65-10b96c1fcdd4",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 2570,
+  "screens": 3.5,
   "title": "PedeAqui",
-  "h1": "Não foi possível concluir esta operação",
+  "h1": "Pedido #1",
   "overflowing": [],
-  "interactiveCount": 41,
-  "smallTargets": 13,
-  "tinyTargets": 0,
+  "interactiveCount": 49,
+  "smallTargets": 19,
+  "tinyTargets": 1,
   "smallTargetExamples": [
    {
     "el": "summary \"Operação da loja\"",
@@ -5943,21 +6094,18 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 285,
+  "bodyTextLength": 1150,
   "shot": "shots/android-360-escuro__panel__pedidos-id.jpg",
-  "consoleErrors": [
-   "Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.",
-   "[pedeaqui-ui-boundary] unexpected authenticated-area error {digest: 3017939355@E394}"
-  ]
+  "consoleErrors": []
  },
  {
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/63faa043-6a5e-4034-8317-daa61ab986cf",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/c6d55e51-68bb-4a66-b6f4-3e1a0905ec23",
   "status": 200,
-  "loadMs": 823,
-  "finalUrl": "/cardapio/produtos/63faa043-6a5e-4034-8317-daa61ab986cf",
+  "loadMs": 884,
+  "finalUrl": "/cardapio/produtos/c6d55e51-68bb-4a66-b6f4-3e1a0905ec23",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -6057,10 +6205,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/cc97dbdf-870f-4410-9a33-f683a47e13af",
+  "url": "http://127.0.0.1:3000/clientes/747e3059-17b7-4309-937d-e527b777ccfd",
   "status": 200,
-  "loadMs": 847,
-  "finalUrl": "/clientes/cc97dbdf-870f-4410-9a33-f683a47e13af",
+  "loadMs": 856,
+  "finalUrl": "/clientes/747e3059-17b7-4309-937d-e527b777ccfd",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -6154,10 +6302,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/6c697fd9-3ad8-49ac-bde3-77f81f441e3e",
+  "url": "http://127.0.0.1:3000/salao/24bfc9d7-66b1-4aa7-9d00-c86a2403a66d",
   "status": 200,
-  "loadMs": 911,
-  "finalUrl": "/salao/6c697fd9-3ad8-49ac-bde3-77f81f441e3e",
+  "loadMs": 828,
+  "finalUrl": "/salao/24bfc9d7-66b1-4aa7-9d00-c86a2403a66d",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -7237,7 +7385,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 648,
+  "loadMs": 604,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -7540,7 +7688,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 594,
+  "loadMs": 589,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -7609,7 +7757,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 616,
+  "loadMs": 763,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
