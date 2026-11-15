@@ -150,6 +150,68 @@ async function shotState(page, device, name) {
   results.push({ device: device.key, area: "state", label: name, shot: `shots/${base}.jpg`, ...(await measure(page).catch(() => ({}))) });
 }
 
+// Lista o que está na tela (botões, campos, avisos): mostra o resultado de cada passo e ajuda a escrever o próximo.
+async function controls(page) {
+  return page.evaluate(() => {
+    const visible = (element) => { const rect = element.getBoundingClientRect(); return rect.width > 0 && rect.height > 0 && getComputedStyle(element).visibility !== "hidden"; };
+    const text = (element) => (element.getAttribute("aria-label") || element.textContent || "").replace(/\s+/g, " ").trim().slice(0, 60);
+    const main = document.querySelector("main") ?? document.body;
+    return {
+      url: location.pathname + location.search,
+      heading: text(document.querySelector("main h1, h1") ?? document.body).slice(0, 80),
+      buttons: [...main.querySelectorAll("button, a[role=button]")].filter(visible).map((element) => text(element) + (element.disabled ? " [desativado]" : "")).filter(Boolean).slice(0, 40),
+      fields: [...main.querySelectorAll("input:not([type=hidden]), select, textarea")].filter(visible).map((element) => `${element.tagName.toLowerCase()}[${element.getAttribute("name") ?? ""}] ${element.getAttribute("aria-label") ?? element.getAttribute("placeholder") ?? element.closest("label")?.textContent?.trim().slice(0, 40) ?? ""}`).slice(0, 30),
+      notices: [...document.querySelectorAll('[role=alert], [role=status], [aria-live]')].filter(visible).map(text).filter(Boolean).slice(0, 8),
+      dialogs: [...document.querySelectorAll("dialog[open], [role=dialog]")].filter(visible).map((element) => text(element.querySelector("h1,h2,h3") ?? element)).slice(0, 4),
+    };
+  }).catch((error) => ({ error: String(error.message).slice(0, 200) }));
+}
+
+async function runFlows(page, device) {
+  const quick = { timeout: 8000 };
+  const log = async (flow, stepName, action) => {
+    const entry = { device: device.key, area: "fluxo", label: `${flow} › ${stepName}` };
+    try { await action(); await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {}); await page.waitForTimeout(900); entry.ok = true; }
+    catch (error) { entry.ok = false; entry.error = String(error.message).split("\n")[0].slice(0, 220); }
+    entry.screen = await controls(page);
+    const base = `${device.key}__fluxo__${safe(`${flow}-${stepName}`)}`;
+    await page.screenshot({ path: path.join(outDir, "shots", `${base}.jpg`), type: "jpeg", quality: 70 }).catch(() => {});
+    entry.shot = `shots/${base}.jpg`;
+    results.push(entry);
+    await fs.writeFile(path.join(outDir, "results.json"), JSON.stringify(results, null, 1));
+    console.log(`FLUXO ${entry.label} ${entry.ok ? "ok" : `FALHOU ${entry.error}`}`);
+    return entry.ok;
+  };
+  const open = (route) => page.goto(`${panelBase}${route}`, { waitUntil: "load", timeout: 45000 });
+  const clickButton = (pattern) => page.getByRole("button", { name: pattern }).first().click(quick);
+
+  // 1) Venda no PDV, em dinheiro, até finalizar.
+  await log("pdv", "1-abrir", () => open("/pdv"));
+  await log("pdv", "2-adicionar-item", () => page.locator("button", { hasText: "Coca-Cola 2L" }).first().click(quick));
+  await log("pdv", "3-finalizar", () => page.locator('button[type="submit"]', { hasText: /Finalizar/ }).first().click(quick));
+
+  // 2) Pedido do cardápio: aceitar e avançar as etapas até sair da lista de ativos.
+  await log("pedido", "1-abrir-lista", () => open("/pedidos"));
+  const nextAction = /^(Aceitar pedido|Iniciar preparo|Iniciar produção|Marcar pronto|Marcar como pronto|Pronto|Entregar ao cliente|Marcar retirado|Marcar entregue|Saiu para entrega|Finalizar pedido|Finalizar|Concluir pedido|Concluir)$/;
+  for (let index = 2; index <= 7; index += 1) {
+    const done = await log("pedido", `${index}-proxima-acao`, async () => {
+      const button = page.getByRole("button", { name: nextAction }).first();
+      const label = (await button.textContent(quick))?.trim();
+      await button.click(quick);
+      console.log(`FLUXO pedido clicou em "${label}"`);
+    });
+    if (!done) break;
+  }
+
+  // 3) Caixa: abrir a tela e listar o que ela pede.
+  await log("caixa", "1-abrir-tela", () => open("/caixa"));
+
+  // 4) Salão: abrir a primeira mesa livre.
+  await log("salao", "1-abrir-lista", () => open("/salao"));
+  await log("salao", "2-abrir-mesa-1", () => page.locator('a[href^="/salao/"]').first().click(quick));
+  await log("salao", "3-abrir-atendimento", () => clickButton(/^Abrir mesa$/));
+}
+
 for (const device of DEVICES) {
   const browser = await device.browser.launch();
 
@@ -176,7 +238,7 @@ for (const device of DEVICES) {
     }
 
     // AUDIT_ROUTES="/pedidos,/pdv" limita às telas do módulo em trabalho; sem ela, percorre todas.
-    const chosen = process.env.AUDIT_ROUTES ? process.env.AUDIT_ROUTES.split(",").map((route) => route.trim()).filter((route) => route && route !== "site") : [...PANEL_ROUTES, ...PLATFORM_ROUTES];
+    const chosen = process.env.AUDIT_ROUTES ? process.env.AUDIT_ROUTES.split(",").map((route) => route.trim()).filter((route) => route && route !== "site" && route !== "fluxos") : [...PANEL_ROUTES, ...PLATFORM_ROUTES];
     for (const route of chosen) await audit(page, device, "panel", route, `${panelBase}${route}`);
 
     // Páginas com id: pega o primeiro link da lista.
@@ -270,6 +332,8 @@ for (const device of DEVICES) {
       await audit(page, device, "public-local", "carrinho", `${panelBase}/m/salgados-da-vila/carrinho`);
       await audit(page, device, "public-local", "checkout", `${panelBase}/m/salgados-da-vila/checkout`);
     } catch (error) { results.push({ device: device.key, area: "state", label: "local-carrinho", error: String(error.message).slice(0, 200) }); }
+    // ---------- Fluxos de ponta a ponta (só computador, tema claro). Alteram dados da loja fictícia: ficam por último.
+    if (device.key === "pc-1366" && /(^|,)\s*fluxos\s*(,|$)/.test(process.env.AUDIT_ROUTES ?? "")) await runFlows(page, device);
     await context.close();
   }
 
