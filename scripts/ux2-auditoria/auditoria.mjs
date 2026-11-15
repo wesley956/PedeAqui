@@ -121,6 +121,13 @@ async function audit(page, device, area, label, url, extra) {
     await page.screenshot({ path: path.join(outDir, "shots", `${base}.jpg`), type: "jpeg", quality: 70 });
     await page.screenshot({ path: path.join(outDir, "shots", `${base}__full.jpg`), type: "jpeg", quality: 55, fullPage: true }).catch(() => {});
     entry.shot = `shots/${base}.jpg`;
+    // Com "overflow-x: clip" a página não rola de lado: o que passa da borda some sem aviso. Conta campos e botões cortados.
+    entry.clipped = await page.evaluate(() => {
+      const main = document.querySelector("main"); if (!main) return [];
+      const limit = main.getBoundingClientRect().right + 1;
+      return [...main.querySelectorAll("input:not([type=hidden]), select, textarea, button, a")].filter((element) => { const rect = element.getBoundingClientRect(); return rect.width > 0 && rect.height > 0 && rect.right > limit && !element.closest('[class*="tabs"], [class*="Tabs"], nav, [class*="scroll"], [class*="chips"], [class*="filters"], [class*="categories"]'); })
+        .map((element) => `${element.tagName.toLowerCase()} ${(element.getAttribute("name") || element.getAttribute("aria-label") || element.textContent || "").trim().slice(0, 30)} (+${Math.round(element.getBoundingClientRect().right - limit)}px)`).slice(0, 6);
+    }).catch(() => []);
     // Celular: um print com a página rolada mostra o que fica preso ao topo e ao rodapé (barras, abas) sobre o conteúdo.
     if (device.key === "android-360" && entry.docHeight > entry.vh + 300) {
       await page.evaluate(() => window.scrollTo(0, 520));

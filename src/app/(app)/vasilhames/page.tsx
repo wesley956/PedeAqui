@@ -15,7 +15,7 @@ export default async function GasContainersPage() {
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: 12 }}>
       {balances.length === 0 ? <div style={cardStyle}><strong>Nenhum tipo cadastrado</strong><p className="muted">Cadastre P13, P20, P45 ou outro vasilhame usado nesta unidade.</p></div> : balances.map((balance) => <article key={balance.container_type_id} style={cardStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><strong>{balance.code} · {balance.name}</strong>{balance.nominal_weight_kg ? <span className="muted">{Number(balance.nominal_weight_kg)} kg</span> : null}</div>
-        <dl style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 0 }}>
+        <dl style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 8, marginBottom: 0 }}>
           <div><dt className="muted">Cheios</dt><dd style={{ margin: 0, fontSize: "var(--font-size-2xl)", fontWeight: "var(--font-weight-bold)" }}>{Number(balance.full_quantity)}</dd></div>
           <div><dt className="muted">Vazios</dt><dd style={{ margin: 0, fontSize: "var(--font-size-2xl)", fontWeight: "var(--font-weight-bold)" }}>{Number(balance.empty_quantity)}</dd></div>
           <div><dt className="muted">Em rota</dt><dd style={{ margin: 0, fontSize: "var(--font-size-2xl)", fontWeight: "var(--font-weight-bold)" }}>{Number(balance.in_route_quantity)}</dd></div>
@@ -35,7 +35,7 @@ export default async function GasContainersPage() {
       <form action={adjustGasContainerAction} style={{ ...cardStyle, display: "grid", gap: 12 }}>
         <div><h2 style={{ margin: 0 }}>Ajustar saldo</h2><p className="muted" style={{ marginBottom: 0 }}>Use somente para inventário inicial, correção ou recebimento manual. Informe o motivo.</p></div>
         <label style={{ display: "grid", gap: 6 }}><strong>Tipo</strong><select name="containerTypeId" required style={fieldStyle}><option value="">Selecione</option>{balances.filter((item) => item.active).map((item) => <option key={item.container_type_id} value={item.container_type_id}>{item.code} · {item.name}</option>)}</select></label>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 8 }}>
           <label style={{ display: "grid", gap: 6 }}><strong>Cheios ±</strong><input name="fullDelta" type="number" defaultValue={0} style={fieldStyle} /></label>
           <label style={{ display: "grid", gap: 6 }}><strong>Vazios ±</strong><input name="emptyDelta" type="number" defaultValue={0} style={fieldStyle} /></label>
           <label style={{ display: "grid", gap: 6 }}><strong>Em rota ±</strong><input name="inRouteDelta" type="number" defaultValue={0} style={fieldStyle} /></label>
