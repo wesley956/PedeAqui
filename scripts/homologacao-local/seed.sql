@@ -151,6 +151,13 @@ select current_setting('seed.org')::uuid, current_setting('seed.store')::uuid, '
   '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240"><rect width="240" height="240" fill="#7A2E1A"/><circle cx="120" cy="120" r="78" fill="#F6E7C8"/><text x="120" y="150" font-family="Arial, sans-serif" font-size="84" font-weight="700" text-anchor="middle" fill="#7A2E1A">SV</text></svg>', 'UTF8'), 'base64'), E'\n', '')
 on conflict (store_id) do update set primary_color = excluded.primary_color, logo_url = excluded.logo_url;
 
+-- Só na homologação local: o dono fictício também é administrador da plataforma, para as telas /platform poderem ser vistas.
+do $$ begin
+  insert into public.platform_admins(user_id, role, active) values (current_setting('seed.user')::uuid, 'super_admin', true)
+  on conflict (user_id) do update set role = 'super_admin', active = true;
+exception when others then raise warning 'SEED platform admin failed: %', sqlerrm;
+end $$;
+
 select 'SEED_SUMMARY products=' || (select count(*) from public.products where store_id = current_setting('seed.store')::uuid)
   || ' groups=' || (select count(*) from public.modifier_groups where store_id = current_setting('seed.store')::uuid)
   || ' orders=' || (select count(*) from public.orders where store_id = current_setting('seed.store')::uuid)
