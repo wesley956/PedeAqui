@@ -106,7 +106,7 @@ jobs:
               find /opt/pedeaqui/incoming -maxdepth 1 -type f -name "*.tar.gz" -mtime +3 -delete
               echo "Disk usage after maintenance:"
               df -h /var/lib/containerd /opt/pedeaqui
-              free_kb=$(df -Pk /var/lib/containerd | awk "NR==2 {print \\$4}")
+              free_kb=$(df -Pk /var/lib/containerd | awk "NR==2 {print \$4}")
               if [ "$free_kb" -lt 1572864 ]; then
                 echo "BLOCKED: less than 1.5 GiB free; preserving running production and backups."
                 exit 1
