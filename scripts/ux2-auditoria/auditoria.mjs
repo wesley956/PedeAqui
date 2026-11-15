@@ -150,6 +150,103 @@ async function shotState(page, device, name) {
   results.push({ device: device.key, area: "state", label: name, shot: `shots/${base}.jpg`, ...(await measure(page).catch(() => ({}))) });
 }
 
+// Lista o que está na tela (botões, campos, avisos): mostra o resultado de cada passo e ajuda a escrever o próximo.
+async function controls(page) {
+  return page.evaluate(() => {
+    const visible = (element) => { const rect = element.getBoundingClientRect(); return rect.width > 0 && rect.height > 0 && getComputedStyle(element).visibility !== "hidden"; };
+    const text = (element) => (element.getAttribute("aria-label") || element.textContent || "").replace(/\s+/g, " ").trim().slice(0, 60);
+    const main = document.querySelector("main") ?? document.body;
+    return {
+      url: location.pathname + location.search,
+      heading: text(document.querySelector("main h1, h1") ?? document.body).slice(0, 80),
+      buttons: [...main.querySelectorAll("button, a[role=button]")].filter(visible).map((element) => text(element) + (element.disabled ? " [desativado]" : "")).filter(Boolean).slice(0, 40),
+      fields: [...main.querySelectorAll("input:not([type=hidden]), select, textarea")].filter(visible).map((element) => `${element.tagName.toLowerCase()}[${element.getAttribute("name") ?? ""}] ${element.getAttribute("aria-label") ?? element.getAttribute("placeholder") ?? element.closest("label")?.textContent?.trim().slice(0, 40) ?? ""}`).slice(0, 30),
+      notices: [...document.querySelectorAll('[role=alert], [role=status], [aria-live]')].filter(visible).map(text).filter(Boolean).slice(0, 8),
+      dialogs: [...document.querySelectorAll("dialog[open], [role=dialog]")].filter(visible).map((element) => text(element.querySelector("h1,h2,h3") ?? element)).slice(0, 4),
+    };
+  }).catch((error) => ({ error: String(error.message).slice(0, 200) }));
+}
+
+async function runFlows(page, device) {
+  const quick = { timeout: 8000 };
+  const log = async (flow, stepName, action) => {
+    const entry = { device: device.key, area: "fluxo", label: `${flow} › ${stepName}` };
+    try { await action(); await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {}); await page.waitForTimeout(900); entry.ok = true; }
+    catch (error) { entry.ok = false; entry.error = String(error.message).split("\n")[0].slice(0, 220); }
+    entry.screen = await controls(page);
+    // O banco local às vezes derruba uma conexão (B-06) e a página cai na tela de erro: tenta de novo uma vez e anota.
+    if ((entry.screen.buttons ?? []).length === 1 && entry.screen.buttons[0] === "Tentar novamente") {
+      entry.retried = true;
+      await page.reload({ waitUntil: "load" }).catch(() => {});
+      await page.waitForTimeout(1200);
+      entry.screen = await controls(page);
+    }
+    const base = `${device.key}__fluxo__${safe(`${flow}-${stepName}`)}`;
+    await page.screenshot({ path: path.join(outDir, "shots", `${base}.jpg`), type: "jpeg", quality: 70 }).catch(() => {});
+    entry.shot = `shots/${base}.jpg`;
+    results.push(entry);
+    await fs.writeFile(path.join(outDir, "results.json"), JSON.stringify(results, null, 1));
+    console.log(`FLUXO ${entry.label} ${entry.ok ? "ok" : `FALHOU ${entry.error}`}`);
+    return entry.ok;
+  };
+  const open = (route) => page.goto(`${panelBase}${route}`, { waitUntil: "load", timeout: 45000 });
+  const clickButton = (pattern) => page.getByRole("button", { name: pattern }).first().click(quick);
+
+  // 1) Caixa: abrir com saldo inicial.
+  await log("caixa", "1-abrir-tela", () => open("/caixa"));
+  await log("caixa", "2-abrir-caixa", async () => {
+    await page.locator('input[name="openingBalance"]').fill("100,00", quick);
+    await clickButton(/^Abrir caixa$/);
+  });
+
+  // 2) Venda no PDV: sem caixa aberto o sistema avisa; com caixa aberto, finaliza em dinheiro com troco.
+  await log("pdv", "1-abrir", () => open("/pdv"));
+  await log("pdv", "2-adicionar-item", () => page.locator("button", { hasText: "Coca-Cola 2L" }).first().click(quick));
+  await log("pdv", "3-valor-recebido", () => page.getByPlaceholder("Ex.: 50,00").first().fill("20,00", quick));
+  await log("pdv", "4-finalizar", () => page.locator('button[type="submit"]', { hasText: /Finalizar/ }).first().click(quick));
+  // Venda com produto que tem opções (sabores), no cartão.
+  await log("pdv", "5-produto-com-opcoes", () => page.locator("button", { hasText: "Copo com 12 salgados" }).first().click(quick));
+
+  // 3) Pedido do cardápio: abrir o detalhe do primeiro pedido e avançar até não haver próxima ação.
+  await log("pedido", "1-abrir-lista", () => open("/pedidos"));
+  await log("pedido", "2-abrir-detalhe", async () => {
+    const href = await page.locator('a[href^="/pedidos/"]').evaluateAll((links) => links.map((link) => link.getAttribute("href")).find((value) => /^\/pedidos\/[0-9a-f-]{36}/.test(value ?? "")));
+    if (!href) throw new Error("nenhum link de detalhe de pedido na lista");
+    await open(href);
+  });
+  const nextAction = /^(Aceitar pedido|Iniciar preparo|Iniciar produção|Marcar pronto|Marcar como pronto|Liberar retirada|Confirmar retirada|Liberar entrega|Cliente retirou|Cliente recebeu|Entregar ao cliente|Marcar retirado|Marcar como retirado|Marcar entregue|Marcar como entregue|Saiu para entrega|Registrar pagamento|Marcar como pago|Marcar pago|Confirmar pagamento|Finalizar pedido|Concluir pedido|Finalizar|Concluir)$/;
+  for (let index = 3; index <= 9; index += 1) {
+    let clicked = "";
+    const done = await log("pedido", `${index}-proxima-acao`, async () => {
+      const button = page.getByRole("button", { name: nextAction }).first();
+      clicked = ((await button.textContent(quick)) ?? "").trim();
+      await button.click(quick);
+    });
+    results[results.length - 1].clicked = clicked;
+    if (!done) break;
+  }
+
+  // 4) Salão: abrir mesa, lançar item, enviar para produção e pedir a conta.
+  await log("salao", "1-abrir-lista", () => open("/salao"));
+  await log("salao", "2-abrir-mesa", () => page.locator('a[href^="/salao/"]').first().click(quick));
+  await log("salao", "3-abrir-atendimento", () => clickButton(/^Abrir mesa$/));
+  await log("salao", "4-lancar-item", () => page.locator("button", { hasText: "Coca-Cola 2L" }).first().click(quick));
+  await log("salao", "5-enviar-producao", () => clickButton(/^Enviar para produção/));
+  await log("salao", "6-registrar-pagamento", async () => {
+    await page.locator('input[name="amount"]').first().fill("15,00", quick);
+    await clickButton(/^Registrar pagamento$/);
+  });
+  // Com pedido ainda em preparo o sistema deve recusar e explicar, sem tela de erro.
+  await log("salao", "7-concluir-liberar", () => clickButton(/^Concluir e liberar mesa$/));
+
+  // 5) Caixa de novo: o que a tela oferece com o caixa aberto e uma venda registrada.
+  await log("caixa", "3-com-venda", () => open("/caixa"));
+  await log("caixa", "4-conferir-fechar", async () => {
+    await page.locator('input[name="countedCash"]').fill("130,00", quick);
+    await clickButton(/^Conferir e fechar turno$/);
+  });
+}
+
 for (const device of DEVICES) {
   const browser = await device.browser.launch();
 
@@ -176,7 +273,7 @@ for (const device of DEVICES) {
     }
 
     // AUDIT_ROUTES="/pedidos,/pdv" limita às telas do módulo em trabalho; sem ela, percorre todas.
-    const chosen = process.env.AUDIT_ROUTES ? process.env.AUDIT_ROUTES.split(",").map((route) => route.trim()).filter((route) => route && route !== "site") : [...PANEL_ROUTES, ...PLATFORM_ROUTES];
+    const chosen = process.env.AUDIT_ROUTES ? process.env.AUDIT_ROUTES.split(",").map((route) => route.trim()).filter((route) => route && route !== "site" && route !== "fluxos") : [...PANEL_ROUTES, ...PLATFORM_ROUTES];
     for (const route of chosen) await audit(page, device, "panel", route, `${panelBase}${route}`);
 
     // Páginas com id: pega o primeiro link da lista.
@@ -270,6 +367,8 @@ for (const device of DEVICES) {
       await audit(page, device, "public-local", "carrinho", `${panelBase}/m/salgados-da-vila/carrinho`);
       await audit(page, device, "public-local", "checkout", `${panelBase}/m/salgados-da-vila/checkout`);
     } catch (error) { results.push({ device: device.key, area: "state", label: "local-carrinho", error: String(error.message).slice(0, 200) }); }
+    // ---------- Fluxos de ponta a ponta (só computador, tema claro). Alteram dados da loja fictícia: ficam por último.
+    if (device.key === "pc-1366" && /(^|,)\s*fluxos\s*(,|$)/.test(process.env.AUDIT_ROUTES ?? "")) await runFlows(page, device);
     await context.close();
   }
 

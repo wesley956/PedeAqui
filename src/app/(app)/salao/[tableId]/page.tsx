@@ -16,13 +16,15 @@ import { PageHeader } from "@/components/ui/page-header";
 
 const money = (cents: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 
-export default async function DiningTablePage({ params }: { params: Promise<{ tableId: string }> }) {
+export default async function DiningTablePage({ params, searchParams }: { params: Promise<{ tableId: string }>; searchParams: Promise<{ error?: string }> }) {
   const { tableId } = await params;
+  const { error: actionError } = await searchParams;
   const data = await DiningService.detail(tableId);
   const { table, tab } = data;
 
   return <div className={styles.page}>
     <PageHeader back={{ href: "/salao", label: "Mesas" }} title={table.name} description={`${table.capacity} lugares${table.area ? ` · ${table.area}` : ""}`} actions={<Link href="/configuracoes/salao" className={styles.secondary}>Configurar</Link>} />
+    {actionError ? <p role="alert" className={styles.actionError}>{actionError}</p> : null}
 
     {!tab ? <>
       <div className={styles.flowSteps} aria-label="Fluxo de atendimento"><strong>1. Abrir mesa</strong><span>2. Adicionar itens</span><span>3. Enviar rodada</span><span>4. Pedir conta</span><span>5. Concluir</span></div>

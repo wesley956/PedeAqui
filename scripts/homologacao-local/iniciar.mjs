@@ -108,10 +108,12 @@ if (!state) {
   // Mudanças que existem só nas migrações versionadas (ainda não incorporadas ao schema canônico).
   // Cada uma é aplicada isolada; as que já existem falham e são ignoradas.
   const deltas = [
+    "20260903013000_manual_delivery_private_execution_grant.sql",
     "20260910162000_scheduled_product_promotions.sql",
     "20260911180613_promotion_campaigns_v2.sql",
     "20260912003740_whatsapp_direct_orders.sql",
     "20260912051915_whatsapp_bot_presentation_settings.sql",
+    "20260914065659_platform_super_admin_service_role_execute.sql",
     "20260914071619_customer_panel_message_receipts.sql",
     "20260915155500_int11_order_creation_channel.sql",
     "20260916070000_wpp08_coexistence_observability.sql",
@@ -132,6 +134,9 @@ if (!state) {
     const full = path.join("supabase/migrations", file);
     if (!fs.existsSync(full) || !psql(fs.readFileSync(full, "utf8"), { allowFail: true, singleTransaction: true }).ok) skipped.push(file);
   }
+  // Correções de banco ainda não aplicadas na produção (ver docs/ux2/PENDENCIAS-BANCO.md): valem só aqui,
+  // para os fluxos poderem ser testados até o fim.
+  psql(fs.readFileSync(path.join(root, "scripts/homologacao-local/correcoes-pendentes.sql"), "utf8"), { allowFail: true });
   console.log(`  ${files.length} arquivos de schema aplicados; ${deltas.length - skipped.length} migrações extras aplicadas${skipped.length ? `, ${skipped.length} ignoradas` : ""}.`);
 
   say("Criando a loja fictícia (Salgados da Vila)");
@@ -220,6 +225,28 @@ if (verify) {
     console.log(`HOMOLOG_APOS status=${afterStatus}`);
     // O registro do servidor vai junto com os prints: mostra o motivo de telas que falharam.
     if (process.env.AUDIT_OUT) { try { fs.writeFileSync(path.join(process.env.AUDIT_OUT, "servidor.log"), appLog.slice(-400000)); } catch { /* pasta ausente */ } }
+    // Funções internas (schema private) chamadas por operações do servidor sem permissão de execução para ele:
+    // cada linha é uma operação que falha com "permission denied" (ex.: enviar rodada no salão).
+    if (process.env.AUDIT_OUT) {
+      const missing = spawnSync(`docker exec -i ${dbContainer} psql -U postgres -d postgres -X -q -At`, { shell: true, encoding: "utf8", input: `
+        select p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ') <- ' || string_agg(distinct c.proname, ', ')
+        from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+        join pg_proc c on not c.prosecdef and c.prosrc ilike '%private.' || p.proname || '(%'
+        join pg_namespace cn on cn.oid = c.pronamespace and cn.nspname in ('public', 'private')
+        where n.nspname = 'private' and not p.prosecdef is null
+          and not has_function_privilege('service_role', p.oid, 'execute')
+          and has_function_privilege('service_role', c.oid, 'execute')
+        group by p.oid, p.proname order by 1;` });
+      try { fs.writeFileSync(path.join(process.env.AUDIT_OUT, "permissoes-faltando.txt"), `${missing.stdout ?? ""}\n${missing.stderr ?? ""}`); } catch { /* pasta ausente */ }
+    }
+    // Registros do banco local e da porta de entrada: mostram o motivo de respostas inválidas ("invalid response from upstream").
+    if (process.env.AUDIT_OUT) for (const service of ["db", "rest", "kong", "auth"]) {
+      const logs = spawnSync(`docker logs --tail 6000 supabase_${service}_homolog-local`, { shell: true, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+      // Do log de entrada (kong) interessam só as respostas 5xx; dos demais, o final.
+      const text = `${logs.stdout ?? ""}\n${logs.stderr ?? ""}`;
+      const kept = service === "kong" ? text.split("\n").filter((line) => /" 5\d\d /.test(line) || /\[error\]/.test(line)).join("\n") : text.slice(-200000);
+      try { fs.writeFileSync(path.join(process.env.AUDIT_OUT, `banco-${service}.log`), kept); } catch { /* pasta ausente */ }
+    }
   }
   stop();
   process.exit(ok && afterStatus === 0 ? 0 : 1);

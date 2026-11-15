@@ -229,9 +229,11 @@ function FlowSection({ title, stages, orders, config, now, manualDeliveryMode, p
   </section>;
 }
 
-export function CustomOrderWorkflowBoard({ storeId, viewPreferenceKey, orders: initialOrders, config, manualDeliveryMode = false, paymentPolicy = null, timeZone }: {
+export function CustomOrderWorkflowBoard({ storeId, viewPreferenceKey, renderedAt, orders: initialOrders, config, manualDeliveryMode = false, paymentPolicy = null, timeZone }: {
   storeId: string;
   viewPreferenceKey?: string;
+  /** Horário em que o servidor montou a página. O primeiro desenho no navegador usa o mesmo valor, senão o tempo decorrido ("59:05") sai diferente do HTML recebido e o React acusa erro de hidratação. */
+  renderedAt?: number;
   orders: OrderManagerRow[];
   config: CustomWorkflowConfig;
   manualDeliveryMode?: boolean;
@@ -243,7 +245,7 @@ export function CustomOrderWorkflowBoard({ storeId, viewPreferenceKey, orders: i
   const [stageFilter, setStageFilter] = useState<WorkflowStage | "all">("all");
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(() => renderedAt ?? Date.now());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [bulkState, bulkAction, bulkPending] = useActionState(bulkQuickFinishAction, initialBulkQuickFinishState);
   const seen = useRef(new Set(initialOrders.map((order) => order.id)));
