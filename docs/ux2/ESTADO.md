@@ -16,8 +16,8 @@ Atualizado em 14/11/2026. Este arquivo é a fonte para retomar o trabalho entre 
 | Inventário de funcionalidades com identificador | Não iniciado | feito por módulo, na auditoria de cada um |
 | Homologação local (script + CI) | Concluído em Linux; **não executado no Windows** | PR #1322; `HOMOLOGACAO-LOCAL.md` |
 | Passo a passo de integração | Concluído | `PASSO-A-PASSO-INTEGRACAO.md` |
-| Auditoria com prints (celular e computador) em `ux2/*` | Concluído | `scripts/ux2-auditoria`; prints na branch `ux2/evidencias`; 140 telas/estados percorridos, nenhuma com rolagem lateral |
-| Fundação visual e navegação | Parcialmente validado | lotes 1–3 integrados (PRs #1323, #1326); `modulos/fundacao-visual.md` |
+| Auditoria com prints (celular e computador) em `ux2/*` | Concluído | `scripts/ux2-auditoria`; prints em `ux2/evidencias`; 306 telas/estados por execução: painel, plataforma, site e acesso; temas claro e escuro; 1366 px e 360 px; print rolado no celular; loja fictícia com fotos, logo e cor própria |
+| Fundação visual e navegação | Parcialmente validado | lotes 1–4 integrados (PRs #1323, #1326, #1331); `modulos/fundacao-visual.md` |
 
 ## Módulos
 
@@ -25,19 +25,20 @@ Legenda: Validado · Parcialmente validado · Bloqueado · Não iniciado
 
 | Módulo | Estado no UX2 | Observação |
 | --- | --- | --- |
-| Pedidos | Não iniciado | celular redesenhado em out/2026 (#1274), sem verificação no fluxo personalizado |
-| PDV | Não iniciado | |
-| Cardápio público e checkout | Parcialmente validado | cardápio, produto, carrinho e finalização integrados (PRs #1324, #1327); falta ver com fotos reais e acompanhar pedido; `modulos/cardapio-publico.md` |
-| Produtos, categorias, sabores | Não iniciado | |
-| Caixa, Salão, Produção, Entregas | Não iniciado | |
-| Configurações | Não iniciado | |
-| Dashboard e relatórios | Não iniciado | |
-| Financeiro | Não iniciado | |
+| Pedidos | Parcialmente validado | cor e destaque revisados no computador e no celular (PR #1326); detalhe do pedido auditado; falta percorrer aceitar → finalizar com uma pessoa; `modulos/painel-demais-modulos.md` |
+| PDV | Parcialmente validado | PRs #1331, #1332; `modulos/pdv.md`; falta finalizar venda de ponta a ponta |
+| Cardápio público e checkout | Parcialmente validado | PRs #1324, #1327, #1331; conferido com fotos, logo e cor de loja fictícios e nos dois temas; falta acompanhar pedido e loja real; `modulos/cardapio-publico.md` |
+| Produtos, categorias, sabores | Parcialmente validado | auditado; cor revisada; filtros como botão secundário; `modulos/painel-demais-modulos.md` |
+| Caixa, Salão, Produção, Entregas | Parcialmente validado | auditado; estação e etapa escolhidas em escuro; tela do entregador corrigida; `modulos/painel-demais-modulos.md` |
+| Configurações | Parcialmente validado | auditado (19 telas); cor revisada; `modulos/painel-demais-modulos.md` |
+| Dashboard e relatórios | Parcialmente validado | Início revisado (PR #1326) |
+| Financeiro | Parcialmente validado | auditado; cor revisada; sem mudança de estrutura |
 | WhatsApp e atendimento | Bloqueado para validação real | sem sandbox Meta; só tela e testes |
 | Pagamentos online | Bloqueado para validação real | sem sandbox dos gateways |
 | Impressão | Bloqueado para validação real | sem impressora/agente de teste |
 | Fiscal | Bloqueado para validação real | PR #1248 aberto, sem sandbox |
-| Administração SaaS (`/platform`) | Não iniciado | 32 telas, nunca auditadas |
+| Administração SaaS (`/platform`) | Parcialmente validado | 17 de 32 telas auditadas; códigos internos traduzidos (PR #1333); `modulos/site-acesso-platform.md` |
+| Site institucional e acesso | Parcialmente validado | 12 telas auditadas, sem alteração; proposta em aberto para a escolha de plano no cadastro; `modulos/site-acesso-platform.md` |
 
 ## Bloqueios
 
@@ -48,6 +49,7 @@ Legenda: Validado · Parcialmente validado · Bloqueado · Não iniciado
 | B-03 | npm bloqueado no ambiente de trabalho | cada verificação leva ~10 min no CI | nenhuma; aceitar o ciclo |
 | B-04 | Sem sandbox de WhatsApp, gateways, iFood, fiscal e impressão | esses módulos não chegam a "Validado" | mocks e testes de contrato; validação real fica pendente |
 | B-05 | Na `main`, o check `public-browser-homologation` falha ao instalar o Playwright no `ubuntu-latest` (Ubuntu novo) | PRs para a `main` que tocam telas ficam com esse check vermelho | fixar `runs-on: ubuntu-24.04` (já feito em `ux2/*`) ou atualizar o Playwright; decisão de quem integra |
+| B-06 | O banco local da homologação devolve "invalid response from upstream" em cerca de 1 a cada 100 telas quando a auditoria percorre tudo em sequência | uma tela diferente falha a cada execução; não é defeito do sistema | repetir a tela; a tela de erro agora é em português |
 
 
 ## Registro de execução — 14/11/2026
@@ -62,3 +64,17 @@ Integrado em `ux2/integration` (nada na `main`): #1321 documentos, #1322 homolog
 - Uma falha passageira do banco local ("invalid response from upstream") apareceu 1 vez em 144 telas; não reproduziu.
 
 **Próximos, em ordem:** PDV (fluxo de venda completo), detalhe do pedido, Conversas, Cardápio (gestão), Configurações, Entregas/Salão/Produção, Gestão (financeiro, estoque, clientes), Platform, site institucional e acesso. Em todos: tema escuro e loja com fotos.
+
+
+## Registro de execução — 14/11/2026 (segunda parte)
+Integrado em `ux2/integration`: #1331 (PDV, base do celular, varredura de cor, fotos e tema escuro na auditoria), #1332 (telas de erro em português, PDV no celular), #1333 (site, acesso e plataforma) e o PR da branch `ux2/operacao-ajustes` (Produção, Salão, nomes de recursos do plano).
+
+**Descoberta mais importante:** no celular, nada que deveria ficar preso à tela ficava (barra de pagamento do PDV, etapas, barras "Salvar"). Causa única em `shell.css`; corrigida e conferida com print rolado de 45 telas.
+
+**Nenhum módulo está "Validado".** O critério do UX2 exige uso de ponta a ponta por uma pessoa, e isso depende da primeira execução da homologação no computador do responsável. O que existe é: CI completo verde em todos os PRs e prints de todas as telas alcançáveis, nos dois temas e nos dois tamanhos.
+
+**O que continua sem cobertura:** finalizar venda/pedido de ponta a ponta; telas que dependem de link ou registro específico; integrações reais (B-04); 15 telas de `/platform` com parâmetro.
+
+**Achados não visuais desta parte**
+- Erro de hidratação do React em `/pedidos` (#418, texto diferente entre servidor e navegador — provavelmente o tempo decorrido do pedido). Não quebra a tela; a investigar.
+- Em Plano e expansão apareciam "Domains custom" e "Scale multiunit" — corrigido.

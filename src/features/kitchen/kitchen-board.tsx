@@ -71,8 +71,8 @@ export function KitchenBoard({ storeId, stations, orders: initialOrders, initial
     <div className={styles.board}>
       <div className={styles.toolbar}>
         <div className={styles.filters} aria-label={vocabulary.productionFilterLabel}>
-          <Button tone={stationId === null ? "primary" : "secondary"} size="lg" aria-pressed={stationId === null} onClick={() => setStationId(null)}>Todas</Button>
-          {stations.map((station) => <Button key={station.id} tone={stationId === station.id ? "primary" : "secondary"} size="lg" aria-pressed={stationId === station.id} onClick={() => setStationId(station.id)}>{station.name}</Button>)}
+          <Button tone="secondary" size="lg" aria-pressed={stationId === null} onClick={() => setStationId(null)}>Todas</Button>
+          {stations.map((station) => <Button key={station.id} tone="secondary" size="lg" aria-pressed={stationId === station.id} onClick={() => setStationId(station.id)}>{station.name}</Button>)}
         </div>
         <Button type="button" tone="ghost" size="lg" onClick={() => router.refresh()}>Atualizar</Button>
         <OperationalRealtimeBadge status={realtimeStatus} />
