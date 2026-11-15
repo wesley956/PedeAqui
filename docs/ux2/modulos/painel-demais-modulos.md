@@ -28,3 +28,13 @@ Estes módulos não receberam redesenho de estrutura. Receberam a fundação vis
 - **Detalhe do pedido**: visto só no estado "aguardando confirmação".
 - Nenhum fluxo foi executado até o fim (aceitar pedido, abrir e fechar mesa, abrir e fechar caixa, lançar no financeiro).
 - Redesenho de estrutura dessas telas (menos campos por tela, passos guiados) não foi feito: exige decisão sobre o que esconder, e a regra do UX2 é não remover função.
+
+## Atualização de 15/11/2026 — formulários cortados no celular
+A página do painel não rola de lado no celular; campos que passam da borda ficam inalcançáveis. A auditoria passou a contar campos, botões e links cortados em cada tela (campo `clipped` em `results.json`).
+
+- **Financeiro › Lançamentos**: "Novo lançamento" e "Transferir entre contas" tinham duas colunas que não encolhiam; "Valor", "Vencimento" e "Destino" ficavam fora da tela. Corrigido.
+- **Compras › Novo pedido de compra** e **Fiscal**: mesmo problema, mesma correção.
+- **Estoque › Fichas técnicas**: a linha de insumo exigia 340 px e alargava a página inteira. Corrigido.
+- Resta: em **Modo Movimento**, o filtro "Tudo / Atendimento / Cozinha / Expedição" passa da borda (rola de lado dentro da própria faixa).
+
+Conferido em 360 px depois da correção: nenhum campo de formulário cortado nas 59 telas do painel.
