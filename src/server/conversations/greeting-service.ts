@@ -433,7 +433,7 @@ export class ConversationGreetingService {
         && received.getTime() <= clock.getTime()
         && clock.getTime() - received.getTime() <= 5 * 60 * 1000
         && botPreopenOpeningTime({ ...preopen, now: received }) === opening) {
-        const reply = `Olá! 👋 Bem-vindo à ${store.name}! 🍕\n\nConfira nosso cardápio: ${menuUrl}\n\n🕖 Abrimos às ${opening}! Você já pode conferir nossas opções. Faça seu pedido a partir das 19h! 😊`;
+        const reply = `Olá! 👋 Bem-vindo à ${store.name}! 🍕\n\nConfira nosso cardápio: ${menuUrl}\n\n🕖 Abrimos às ${opening}! Você já pode conferir nossas opções. Faça seu pedido após as 19 hrs 😊`;
         const sent = await sendBotText(botContext, reply, `auto:preopen:${ingest.message_id}`);
         if (sent === "sent") await updateBotSession(conversation.id, "menu", ingest.message_id);
         return;
