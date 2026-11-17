@@ -1,0 +1,63 @@
+name: Install VPS Deploy Script
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type INSTALAR_SCRIPT to update only the VPS deploy script"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pedeaqui-production-vps
+  cancel-in-progress: false
+
+jobs:
+  install-script:
+    if: ${{ inputs.confirmation == 'INSTALAR_SCRIPT' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: production-vps
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate script syntax
+        run: |
+          set -euo pipefail
+          bash -n scripts/infra/deploy-vps.sh
+          bash tests/vps-deploy-retention.sh
+          bash tests/vps-deploy-rollback.sh
+      - name: Install tested script only (no application deploy)
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SSH_KEY" && test -n "$KNOWN_HOSTS" && test -n "$VPS_HOST"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/pedeaqui
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/pedeaqui ~/.ssh/known_hosts
+          scp -i ~/.ssh/pedeaqui -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            scripts/infra/deploy-vps.sh "root@$VPS_HOST:/opt/pedeaqui/incoming/deploy-vps.sh.manual"
+          ssh -i ~/.ssh/pedeaqui -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "root@$VPS_HOST" 'set -eu
+              exec 9>/run/lock/pedeaqui-deploy.lock
+              flock -n 9 || { echo "A deploy is running. Not installing."; exit 1; }
+              bash -n /opt/pedeaqui/incoming/deploy-vps.sh.manual
+              cp -p /opt/pedeaqui/bin/deploy-vps.sh /opt/pedeaqui/bin/deploy-vps.sh.previous
+              install -m 700 /opt/pedeaqui/incoming/deploy-vps.sh.manual /opt/pedeaqui/bin/.deploy-vps.sh.next
+              mv -f /opt/pedeaqui/bin/.deploy-vps.sh.next /opt/pedeaqui/bin/deploy-vps.sh
+              rm -f /opt/pedeaqui/incoming/deploy-vps.sh.manual
+              bash -n /opt/pedeaqui/bin/deploy-vps.sh
+              echo "INSTALL_OK: deploy script updated without restarting application."
+            '
+      - name: Remove SSH credentials
+        if: always()
+        run: rm -f ~/.ssh/pedeaqui ~/.ssh/known_hosts
