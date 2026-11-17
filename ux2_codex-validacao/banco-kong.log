@@ -1,2 +1,0 @@
-172.18.0.1 - - [15/Nov/2026:06:40:00 +0000] "POST /rest/v1/rpc/organization_entitlement_internal HTTP/1.1" 502 75 "-" "node"
-2026/11/15 06:40:00 [error] 1114#0: *571 recv() failed (104: Connection reset by peer) while reading response header from upstream, client: 172.18.0.1, server: kong, request: "POST /rest/v1/rpc/organization_entitlement_internal HTTP/1.1", upstream: "http://172.18.0.6:3000/rpc/organization_entitlement_internal", host: "127.0.0.1:54321"
