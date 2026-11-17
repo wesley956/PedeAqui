@@ -232,7 +232,7 @@ async function runFlows(page, device) {
   await customerLog("2-carrinho-e-checkout", async () => {
     await customer.goto(`${panelBase}/m/salgados-da-vila/carrinho`, { waitUntil: "load" });
     await customer.getByText("Coca-Cola 2L", { exact: true }).first().waitFor({ state: "visible", timeout: 10000 });
-    await customer.getByRole("link", { name: /Continuar/ }).click(quick);
+    await customer.locator('a[href="/m/salgados-da-vila/checkout"]').click(quick);
     await customer.locator('input[name="phone"]').waitFor({ state: "visible", timeout: 10000 });
   });
   await customerLog("3-dados-retirada-dinheiro", async () => {
@@ -255,12 +255,16 @@ async function runFlows(page, device) {
 
   // Abrir no painel exatamente o pedido criado pelo cliente, sem usar pedidos do seed como substituto.
   await log("pedido", "1-abrir-lista", () => open("/pedidos"));
-  await log("pedido", "2-abrir-detalhe", async () => {
+  const detailReady = await log("pedido", "2-abrir-detalhe", async () => {
     if (!createdOrderId) throw new Error("O checkout não criou um pedido; o roteiro não usará outro pedido da loja.");
     const link = page.locator(`a[href^="/pedidos/${createdOrderId}"]`).first();
     await link.waitFor({ state: "visible", timeout: 15000 });
     await link.click(quick);
   }, () => page.getByRole("button", { name: "Aceitar pedido", exact: true }).waitFor({ state: "visible", timeout: 10000 }));
+  if (!detailReady) {
+    await customerContext.close();
+    return;
+  }
   const nextAction = /^(Aceitar pedido|Iniciar preparo|Iniciar produção|Marcar pronto|Marcar como pronto|Liberar retirada|Confirmar retirada|Liberar entrega|Cliente retirou|Cliente recebeu|Entregar ao cliente|Marcar retirado|Marcar como retirado|Marcar entregue|Marcar como entregue|Saiu para entrega|Registrar pagamento|Marcar como pago|Marcar pago|Confirmar pagamento|Finalizar pedido|Concluir pedido|Finalizar|Concluir)$/;
   const statusGrid = page.getByLabel("Situação atual do pedido");
   let completed = false;
@@ -465,7 +469,10 @@ for (const device of DEVICES) {
       await audit(page, device, "public-local", "checkout", `${panelBase}/m/salgados-da-vila/checkout`);
     } catch (error) { results.push({ device: device.key, area: "state", label: "local-carrinho", error: String(error.message).slice(0, 200) }); }
     // ---------- Fluxos de ponta a ponta (só computador, tema claro). Alteram dados da loja fictícia: ficam por último.
-    if (device.key === "pc-1366" && /(^|,)\s*fluxos\s*(,|$)/.test(process.env.AUDIT_ROUTES ?? "")) await runFlows(page, device);
+    if (device.key === "pc-1366" && /(^|,)\s*fluxos\s*(,|$)/.test(process.env.AUDIT_ROUTES ?? "")) {
+      try { await runFlows(page, device); }
+      catch (error) { results.push({ device: device.key, area: "fluxo", label: "fluxos-interrompidos", ok: false, error: String(error.message).slice(0, 300) }); }
+    }
     await context.close();
   }
 
