@@ -50,8 +50,7 @@ jobs:
           fi
           for file in "${files[@]}"; do
             case "$file" in
-              .github/workflows/deploy-vps.yml) echo "Deployment safety changed: $file"; exit 0 ;;
-              tests/*|docs/*|.github/*|README.md|CONTRIBUTING.md) ;;
+              scripts/infra/deploy-vps.sh|tests/*|docs/*|.github/*|README.md|CONTRIBUTING.md) ;;
               *) echo "Runtime-affecting or unknown change: $file"; exit 0 ;;
             esac
           done
@@ -111,6 +110,26 @@ jobs:
                 echo "BLOCKED: less than 5 GiB free; preserving running production and backups."
                 exit 1
               fi
+            '
+
+      # The VPS executes /opt/pedeaqui/bin/deploy-vps.sh, not the repository copy.
+      # Install the tested script atomically before any runtime deployment.
+      - name: Synchronize tested deployment script
+        if: steps.change_gate.outputs.should_deploy == 'true' && steps.freshness.outputs.current == 'true'
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/infra/deploy-vps.sh
+          scp -i ~/.ssh/pedeaqui -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            scripts/infra/deploy-vps.sh "root@$VPS_HOST:/opt/pedeaqui/incoming/deploy-vps.sh.pending"
+          ssh -i ~/.ssh/pedeaqui -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "root@$VPS_HOST" 'set -e
+              bash -n /opt/pedeaqui/incoming/deploy-vps.sh.pending
+              cp -p /opt/pedeaqui/bin/deploy-vps.sh /opt/pedeaqui/bin/deploy-vps.sh.previous
+              install -m 700 /opt/pedeaqui/incoming/deploy-vps.sh.pending /opt/pedeaqui/bin/deploy-vps.sh
+              rm -f /opt/pedeaqui/incoming/deploy-vps.sh.pending
             '
 
       - name: Transfer and deploy image
