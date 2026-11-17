@@ -57,7 +57,8 @@ for attempt in $(seq 1 30); do
   sleep 2
 done
 test "$ready" = 1
-for path in /api/health /m/dona-maria-salgados-e-porcoes; do
+# Check application health independently of any restaurant tenant.
+for path in /api/health /login; do
   curl -fsS --max-time 30 -o /dev/null "http://127.0.0.1:$target$path"
 done
 systemctl stop pedeaqui-notifications.timer
@@ -95,3 +96,25 @@ printf '%s\n' "$sha" > /opt/pedeaqui/deployed-commit
 rm -f "$archive"
 trap - ERR
 echo "DEPLOY_OK commit=$sha rollback_container=$previous nginx_backup=$backup"
+
+# Post-success maintenance: keep newest previous container for immediate rollback.
+# Never touch running containers, volumes, other projects or the legacy production container.
+# Maintenance errors are logged but cannot turn a successful deployment into a rollback.
+cleanup_old_releases() {
+  local old_container old_image
+  while IFS= read -r old_container; do
+    [[ -n "$old_container" ]] || continue
+    old_image=$(docker inspect --format '{{.Image}}' "$old_container") || return 1
+    docker rm "$old_container" || return 1
+    # Image removal is optional: Docker refuses images still used by other containers.
+    docker image rm "$old_image" >/dev/null 2>&1 || true
+    echo "DEPLOY_CLEANUP_REMOVED container=$old_container"
+  done < <(
+    docker ps -a --filter status=exited --format '{{.Names}}' |
+      grep '^pedeaqui-previous-[0-9][0-9]*
+ |
+      sort -r |
+      tail -n +2 || true
+  )
+}
+cleanup_old_releases || echo "DEPLOY_CLEANUP_WARNING: manual inspection required" >&2
