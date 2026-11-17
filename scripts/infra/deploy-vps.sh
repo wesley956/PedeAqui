@@ -25,9 +25,11 @@ rollback() {
     cp -p "$backup" "$config"
     nginx -t && systemctl reload nginx
   fi
-  if (( renamed )); then
+  if (( renamed == 2 )); then
     docker stop "$active"
     docker rename "$active" "$candidate"
+  fi
+  if (( renamed >= 1 )); then
     docker rename "$previous" "$active"
     docker start "$active"
   fi
@@ -73,6 +75,7 @@ state=$(systemctl show -p ActiveState --value pedeaqui-notifications.service)
 docker rename "$active" "$previous"
 renamed=1
 docker rename "$candidate" "$active"
+renamed=2
 changed=1
 python3 - "$config" "$port" "$target" <<'PY'
 from pathlib import Path
