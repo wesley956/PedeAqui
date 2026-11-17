@@ -73,6 +73,7 @@ state=$(systemctl show -p ActiveState --value pedeaqui-notifications.service)
 docker rename "$active" "$previous"
 renamed=1
 docker rename "$candidate" "$active"
+changed=1
 python3 - "$config" "$port" "$target" <<'PY'
 from pathlib import Path
 import sys
@@ -83,7 +84,6 @@ if source.count(old) != 1:
     raise SystemExit("Unexpected nginx configuration")
 path.write_text(source.replace(old, f"proxy_pass http://127.0.0.1:{sys.argv[3]};"))
 PY
-changed=1
 nginx -t
 systemctl reload nginx
 for domain in pedeaqui.pp.ua www.pedeaqui.pp.ua; do
@@ -109,6 +109,6 @@ cleanup_old_releases() {
     docker rm "$old_container" || return 1
     docker image rm "$old_image" >/dev/null 2>&1 || true
     echo "DEPLOY_CLEANUP_REMOVED container=$old_container"
-  done < <(printf '%s\n' "$old_list" | grep -E '^pedeaqui-previous-[0-9]+' | sort -r | tail -n +2 || true)
+  done < <(printf '%s\n' "$old_list" | awk 'match($0, /^pedeaqui-previous-[0-9]+$/) {print}' | sort -r | tail -n +2 || true)
 }
 cleanup_old_releases || echo "DEPLOY_CLEANUP_WARNING: manual inspection required" >&2
