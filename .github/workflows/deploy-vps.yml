@@ -128,7 +128,8 @@ jobs:
             "root@$VPS_HOST" 'set -e
               bash -n /opt/pedeaqui/incoming/deploy-vps.sh.pending
               cp -p /opt/pedeaqui/bin/deploy-vps.sh /opt/pedeaqui/bin/deploy-vps.sh.previous
-              install -m 700 /opt/pedeaqui/incoming/deploy-vps.sh.pending /opt/pedeaqui/bin/deploy-vps.sh
+              install -m 700 /opt/pedeaqui/incoming/deploy-vps.sh.pending /opt/pedeaqui/bin/.deploy-vps.sh.next
+              mv -f /opt/pedeaqui/bin/.deploy-vps.sh.next /opt/pedeaqui/bin/deploy-vps.sh
               rm -f /opt/pedeaqui/incoming/deploy-vps.sh.pending
             '
 
