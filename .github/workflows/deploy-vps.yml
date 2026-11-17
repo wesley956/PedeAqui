@@ -107,8 +107,8 @@ jobs:
               echo "Disk usage after maintenance:"
               df -h /var/lib/containerd /opt/pedeaqui
               free_kb=$(df -Pk /var/lib/containerd | awk "NR==2 {print \$4}")
-              if [ "$free_kb" -lt 1572864 ]; then
-                echo "BLOCKED: less than 1.5 GiB free; preserving running production and backups."
+              if [ "$free_kb" -lt 5242880 ]; then
+                echo "BLOCKED: less than 5 GiB free; preserving running production and backups."
                 exit 1
               fi
             '
