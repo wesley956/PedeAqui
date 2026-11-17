@@ -305,6 +305,7 @@ for (const device of DEVICES) {
     for (const [list, pattern, name] of [["/pedidos", /^\/pedidos\/[0-9a-f-]{36}$/, "/pedidos/[id]"], ["/cardapio/produtos", /^\/cardapio\/produtos\/[0-9a-f-]{36}$/, "/cardapio/produtos/[id]"], ["/clientes", /^\/clientes\/[0-9a-f-]{36}$/, "/clientes/[id]"], ["/salao", /^\/salao\/[0-9a-f-]{36}$/, "/salao/[tableId]"]]) {
       try {
         await page.goto(`${panelBase}${list}`, { waitUntil: "load" });
+        await page.waitForFunction((src) => [...document.querySelectorAll("a[href]")].some((a) => new RegExp(src).test(new URL(a.href).pathname)), pattern.source, { timeout: 10000 });
         const href = await page.evaluate((src) => [...document.querySelectorAll("a[href]")].map((a) => new URL(a.href).pathname).find((p) => new RegExp(src).test(p)) || null, pattern.source);
         if (href) await audit(page, device, "panel", name, `${panelBase}${href}`);
         else results.push({ device: device.key, area: "panel", label: name, error: "nenhum link encontrado na lista" });
@@ -387,7 +388,14 @@ for (const device of DEVICES) {
       await page.keyboard.press("Escape").catch(() => {});
       await page.waitForTimeout(400);
       if (!device.key.startsWith("pc-")) await step("pdv-venda-no-celular", () => page.locator('nav[aria-label="Etapa atual da venda"] button').nth(1).click(quick));
-      await step("pdv-pagamento-detalhes", () => page.getByRole("button", { name: /Detalhes/ }).first().click(quick));
+      await step("pdv-pagamento-detalhes", async () => {
+        if (!device.key.startsWith("pc-")) {
+          const toggle = page.locator('footer[aria-label="Pagamento e finalização da venda"] button[aria-controls="pdv-checkout-details"]');
+          if (await toggle.getAttribute("aria-expanded") === "false") await toggle.click(quick);
+        }
+        await page.getByRole("button", { name: /Detalhes/ }).first().click(quick);
+        await page.getByRole("dialog", { name: "Pagamento", exact: true }).waitFor({ state: "visible", timeout: 10000 });
+      });
       // Medidas da barra de pagamento e do seletor de etapa: no celular os dois precisam ficar presos à tela.
       results.push({ device: device.key, area: "diag", label: "pdv-layout-venda", pdvLayout: await measurePdv() });
     }

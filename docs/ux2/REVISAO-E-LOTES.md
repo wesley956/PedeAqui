@@ -45,3 +45,13 @@ Não fazer cherry-pick cego por PR: alguns commits misturam fundação, telas p�
 - Preparação do banco ainda aceita migrações extras com erro. Resolver e executar a preparação em banco descartável antes de considerar o lote 0 concluído.
 
 Nenhum lote de produto publicado por esta revisão.
+
+## Resultados da primeira rodada
+
+- Build, tipos, lint e integridade de rotas passaram localmente. Lint: nove avisos existentes.
+- Testes focados na validação e fundação: 20 passaram.
+- Suíte completa no Windows: 3.151 passaram, 13 falharam e sete foram ignorados. Há contratos de texto sensíveis a CRLF, scripts que montam caminho Windows como `C:\\C:\\...` e testes específicos do agente Windows; não tratar esse resultado como suíte verde.
+- No GitHub, CI e Browser Homologation do PR #1339 passaram.
+- A auditoria estrita reprovou e revelou contraste no botão de cancelamento, `aria-controls` sem destino no checkout, tentativa de abrir detalhes ocultos do PDV no celular e uma falha transitória do banco local no avanço do pedido.
+- Correções preparadas: cores semânticas com texto sobre marca no formulário de ação de pedido; associação ARIA apenas quando a lista de bairros existe; roteiro expande pagamento antes de abrir detalhes no celular; descoberta de links aguarda o conteúdo dinâmico.
+- Não repetir automaticamente escritas após erro transitório do banco: a operação pode já ter sido aplicada. A auditoria permanece reprovada até uma nova execução confirmar o fluxo.
