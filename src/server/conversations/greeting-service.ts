@@ -1,4 +1,5 @@
 import { classifyNonCommercialContact } from "@/server/conversations/whatsapp-non-commercial";
+import { botPreopenOpeningTime } from "@/server/conversations/bot-preopen-window";
 import { isPreventiveHandoffEnabled, requestPreventiveHandoff } from "@/server/conversations/whatsapp-preventive-handoff";
 import "server-only";
 
@@ -253,7 +254,7 @@ export class ConversationGreetingService {
 
     const [{ data: settings, error: settingsError }, { data: contact, error: contactError }, { data: store, error: storeError }, { data: menuSettings, error: menuError }, { data: inbound, error: inboundError }, { data: session, error: sessionError }] = await Promise.all([
       admin.from("store_conversation_settings")
-        .select("whatsapp_enabled, whatsapp_phone_number_id, access_token_secret_ref, default_bot_enabled, whatsapp_orders_enabled, greeting_enabled, greeting_template, greeting_fallback_message, bot_menu_mode, bot_display_name, handoff_message, unknown_intent_message")
+        .select("whatsapp_enabled, whatsapp_phone_number_id, access_token_secret_ref, default_bot_enabled, whatsapp_orders_enabled, greeting_enabled, greeting_template, greeting_fallback_message, bot_menu_mode, bot_display_name, handoff_message, unknown_intent_message, bot_preopen_minutes")
         .eq("organization_id", conversation.organization_id)
         .eq("store_id", conversation.store_id)
         .maybeSingle(),
@@ -274,7 +275,7 @@ export class ConversationGreetingService {
         .eq("store_id", conversation.store_id)
         .maybeSingle(),
       admin.from("messages")
-        .select("body, content_type")
+        .select("body, content_type, created_at")
         .eq("organization_id", conversation.organization_id)
         .eq("store_id", conversation.store_id)
         .eq("conversation_id", conversation.id)
@@ -407,6 +408,37 @@ export class ConversationGreetingService {
     }
 
     const menuUrl = buildPublicMenuUrl(appUrl, store.slug);
+    // Pre-opening is a reply-only WhatsApp period. A customer can see the menu
+    // before checkout opens, without changing regular greeting/order settings.
+    if (Number(settings.bot_preopen_minutes ?? 0) > 0
+      && store.status === "active"
+      && store.timezone
+      && (intent === "menu" || intent === "menu_link" || intent === "unknown")) {
+      const { data: earlyHours, error: earlyHoursError } = await admin.from("store_hours")
+        .select("weekday, opens_at, active")
+        .eq("organization_id", conversation.organization_id)
+        .eq("store_id", conversation.store_id)
+        .eq("active", true);
+      if (earlyHoursError) throw earlyHoursError;
+      const clock = new Date();
+      const preopen = {
+        timezone: store.timezone,
+        hours: earlyHours ?? [],
+        minutes: Number(settings.bot_preopen_minutes),
+      };
+      const opening = botPreopenOpeningTime({ ...preopen, now: clock });
+      const received = new Date(inbound.created_at);
+      if (opening
+        && Number.isFinite(received.getTime())
+        && received.getTime() <= clock.getTime()
+        && clock.getTime() - received.getTime() <= 5 * 60 * 1000
+        && botPreopenOpeningTime({ ...preopen, now: received }) === opening) {
+        const reply = `Olá! 👋 Bem-vindo à ${store.name}! 🍕\n\nConfira nosso cardápio: ${menuUrl}\n\n🕖 Abrimos às ${opening}! Você já pode conferir nossas opções. Faça seu pedido após as 19 hrs 😊`;
+        const sent = await sendBotText(botContext, reply, `auto:preopen:${ingest.message_id}`);
+        if (sent === "sent") await updateBotSession(conversation.id, "menu", ingest.message_id);
+        return;
+      }
+    }
     const menuMode = (settings.bot_menu_mode ?? "menu_first") as WhatsAppBotMenuMode;
     if (settings.greeting_enabled) {
       if (intent === "menu" || intent === "unknown") {

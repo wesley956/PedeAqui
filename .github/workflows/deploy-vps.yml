@@ -50,7 +50,7 @@ jobs:
           fi
           for file in "${files[@]}"; do
             case "$file" in
-              tests/*|docs/*|.github/*|README.md|CONTRIBUTING.md) ;;
+              scripts/infra/deploy-vps.sh|tests/*|docs/*|.github/*|README.md|CONTRIBUTING.md) ;;
               *) echo "Runtime-affecting or unknown change: $file"; exit 0 ;;
             esac
           done
@@ -87,6 +87,51 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/pedeaqui
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/pedeaqui ~/.ssh/known_hosts
+
+      # Recover only cache and unused artifacts before importing a new image.
+      # Never prune volumes, running containers or recently tagged rollback images.
+      - name: Safe VPS disk preflight
+        if: steps.change_gate.outputs.should_deploy == 'true' && steps.freshness.outputs.current == 'true'
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/pedeaqui -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "root@$VPS_HOST" 'set -eu
+              echo "Disk usage before maintenance:"
+              df -h /var/lib/containerd /opt/pedeaqui
+              docker image prune -f
+              docker builder prune -f
+              find /opt/pedeaqui/incoming -maxdepth 1 -type f -name "*.tar.gz" -mtime +3 -delete
+              echo "Disk usage after maintenance:"
+              df -h /var/lib/containerd /opt/pedeaqui
+              free_kb=$(df -Pk /var/lib/containerd | awk "NR==2 {print \$4}")
+              if [ "$free_kb" -lt 5242880 ]; then
+                echo "BLOCKED: less than 5 GiB free; preserving running production and backups."
+                exit 1
+              fi
+            '
+
+      # The VPS executes /opt/pedeaqui/bin/deploy-vps.sh, not the repository copy.
+      # Install the tested script atomically before any runtime deployment.
+      - name: Synchronize tested deployment script
+        if: steps.change_gate.outputs.should_deploy == 'true' && steps.freshness.outputs.current == 'true'
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/infra/deploy-vps.sh
+          scp -i ~/.ssh/pedeaqui -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            scripts/infra/deploy-vps.sh "root@$VPS_HOST:/opt/pedeaqui/incoming/deploy-vps.sh.pending"
+          ssh -i ~/.ssh/pedeaqui -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "root@$VPS_HOST" 'set -e
+              bash -n /opt/pedeaqui/incoming/deploy-vps.sh.pending
+              cp -p /opt/pedeaqui/bin/deploy-vps.sh /opt/pedeaqui/bin/deploy-vps.sh.previous
+              install -m 700 /opt/pedeaqui/incoming/deploy-vps.sh.pending /opt/pedeaqui/bin/.deploy-vps.sh.next
+              mv -f /opt/pedeaqui/bin/.deploy-vps.sh.next /opt/pedeaqui/bin/deploy-vps.sh
+              rm -f /opt/pedeaqui/incoming/deploy-vps.sh.pending
+            '
 
       - name: Transfer and deploy image
         if: steps.change_gate.outputs.should_deploy == 'true' && steps.freshness.outputs.current == 'true'

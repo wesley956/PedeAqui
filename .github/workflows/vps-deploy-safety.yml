@@ -1,0 +1,24 @@
+name: VPS Deploy Safety
+
+on:
+  pull_request:
+    paths:
+      - "scripts/infra/deploy-vps.sh"
+      - "tests/vps-deploy-retention.sh"
+      - "tests/vps-deploy-rollback.sh"
+      - ".github/workflows/vps-deploy-safety.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-script-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell syntax and mocked Docker cleanup regression
+        run: |
+          bash tests/vps-deploy-retention.sh
+          bash tests/vps-deploy-rollback.sh
