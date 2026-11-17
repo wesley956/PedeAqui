@@ -5,6 +5,7 @@ on:
     paths:
       - "scripts/infra/deploy-vps.sh"
       - "tests/vps-deploy-retention.sh"
+      - "tests/vps-deploy-rollback.sh"
       - ".github/workflows/vps-deploy-safety.yml"
   workflow_dispatch:
 
@@ -18,4 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Shell syntax and mocked Docker cleanup regression
-        run: bash tests/vps-deploy-retention.sh
+        run: |
+          bash tests/vps-deploy-retention.sh
+          bash tests/vps-deploy-rollback.sh
