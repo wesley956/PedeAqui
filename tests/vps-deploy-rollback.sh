@@ -28,7 +28,7 @@ active=pedeaqui-production-ready
 candidate=pedeaqui-candidate-test
 previous=pedeaqui-previous-300
 changed=1
-renamed=1
+renamed=2
 timer_was_active=1
 eval "$function_body"
 
@@ -50,3 +50,22 @@ for expected in \
   grep -Fxq "$expected" "$calls" || { echo "Missing rollback call: $expected" >&2; exit 1; }
 done
 echo "PASS: rollback restores Nginx, stable container name and notification timer"
+
+# Failure immediately after old container was renamed, before candidate took the stable name.
+: > "$calls"
+printf 'broken nginx configuration\n' > "$config"
+renamed=1
+set +e
+( false; rollback ) > "$workdir/rollback-mid-output" 2>&1
+result=$?
+set -e
+[[ "$result" -eq 1 ]] || { echo "Expected failure status at intermediate rename" >&2; exit 1; }
+cmp -s "$config" "$backup" || { echo "Nginx backup not restored during intermediate rename" >&2; exit 1; }
+for expected in "docker rename pedeaqui-previous-300 pedeaqui-production-ready" "docker start pedeaqui-production-ready" "docker rm -f pedeaqui-candidate-test"; do
+  grep -Fxq "$expected" "$calls" || { echo "Missing intermediate rollback call: $expected" >&2; exit 1; }
+done
+if grep -Fxq "docker stop pedeaqui-production-ready" "$calls"; then
+  echo "Rollback tried stopping nonexistent stable container during intermediate rename" >&2
+  exit 1
+fi
+echo "PASS: intermediate-rename rollback does not act on nonexistent stable container"
