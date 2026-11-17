@@ -178,22 +178,22 @@ async function controls(page) {
 
 async function runFlows(page, device) {
   const quick = { timeout: 8000 };
-  const log = async (flow, stepName, action, verify) => {
+  const log = async (flow, stepName, action, verify, target = page) => {
     const entry = { device: device.key, area: "fluxo", label: `${flow} › ${stepName}` };
-    try { await action(); await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {}); await page.waitForTimeout(900); if (verify) { await verify(); entry.verified = true; } entry.ok = true; }
+    try { await action(); await target.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {}); await target.waitForTimeout(900); if (verify) { await verify(); entry.verified = true; } entry.ok = true; }
     catch (error) { entry.ok = false; entry.error = String(error.message).split("\n")[0].slice(0, 220); }
-    entry.screen = await controls(page);
+    entry.screen = await controls(target);
     // O banco local às vezes derruba uma conexão (B-06) e a página cai na tela de erro: tenta de novo uma vez e anota.
     if ((entry.screen.buttons ?? []).length === 1 && entry.screen.buttons[0] === "Tentar novamente") {
       entry.ok = false;
       entry.error = "A operação abriu uma tela de erro; recarregar não confirma seu resultado.";
       entry.retried = true;
-      await page.reload({ waitUntil: "load" }).catch(() => {});
-      await page.waitForTimeout(1200);
-      entry.screen = await controls(page);
+      await target.reload({ waitUntil: "load" }).catch(() => {});
+      await target.waitForTimeout(1200);
+      entry.screen = await controls(target);
     }
     const base = `${device.key}__fluxo__${safe(`${flow}-${stepName}`)}`;
-    await page.screenshot({ path: path.join(outDir, "shots", `${base}.jpg`), type: "jpeg", quality: 70 }).catch(() => {});
+    await target.screenshot({ path: path.join(outDir, "shots", `${base}.jpg`), type: "jpeg", quality: 70 }).catch(() => {});
     entry.shot = `shots/${base}.jpg`;
     results.push(entry);
     await fs.writeFile(path.join(outDir, "results.json"), JSON.stringify(results, null, 1));
@@ -220,12 +220,46 @@ async function runFlows(page, device) {
   // Venda com produto que tem opções (sabores), no cartão.
   await log("pdv", "5-produto-com-opcoes", () => page.locator("button", { hasText: "Copo com 12 salgados" }).first().click(quick));
 
-  // 3) Pedido do cardápio: abrir o detalhe do primeiro pedido e avançar até não haver próxima ação.
+  // 3) Cliente sem sessão do painel: criar um pedido real no checkout e guardar sua identidade.
+  const customerContext = await page.context().browser().newContext({ viewport: device.options.viewport, locale: "pt-BR", timezoneId: "America/Sao_Paulo" });
+  const customer = await customerContext.newPage();
+  const customerLog = (step, action, verify) => log("cliente", step, action, verify, customer);
+  let createdOrderId = null;
+  await customerLog("1-produto-no-cardapio", async () => {
+    await customer.goto(`${panelBase}/m/salgados-da-vila`, { waitUntil: "load" });
+    await customer.getByRole("button", { name: "Adicionar Coca-Cola 2L ao carrinho", exact: true }).click(quick);
+  });
+  await customerLog("2-carrinho-e-checkout", async () => {
+    await customer.goto(`${panelBase}/m/salgados-da-vila/carrinho`, { waitUntil: "load" });
+    await customer.getByText("Coca-Cola 2L", { exact: true }).first().waitFor({ state: "visible", timeout: 10000 });
+    await customer.getByRole("link", { name: /Continuar/ }).click(quick);
+    await customer.locator('input[name="phone"]').waitFor({ state: "visible", timeout: 10000 });
+  });
+  await customerLog("3-dados-retirada-dinheiro", async () => {
+    await customer.getByRole("button", { name: /^Retirada/ }).click(quick);
+    await customer.locator('input[name="phone"]').fill("19988887777", quick);
+    await customer.locator('input[name="name"]').fill("Cliente da auditoria UX2", quick);
+    await customer.locator('input[name="paymentMethod"][value="cash"]').check(quick);
+    const review = customer.getByRole("button", { name: /^Calcular total/ });
+    if (await review.isVisible()) {
+      await review.click(quick);
+      await customer.getByRole("button", { name: /^Confirmar pedido/ }).waitFor({ state: "visible", timeout: 15000 });
+    }
+  });
+  await customerLog("4-confirmar-pedido-novo", async () => {
+    await customer.getByRole("button", { name: /^Confirmar pedido · R\$\s*15,00$/ }).click(quick);
+    await customer.waitForURL((url) => /^\/m\/salgados-da-vila\/pedido\/[0-9a-f-]{36}$/.test(url.pathname), { timeout: 20000 });
+    createdOrderId = new URL(customer.url()).pathname.split("/").pop();
+  }, () => customer.getByRole("heading", { name: "Pedido confirmado", exact: true }).waitFor({ state: "visible", timeout: 10000 }));
+  results[results.length - 1].orderId = createdOrderId;
+
+  // Abrir no painel exatamente o pedido criado pelo cliente, sem usar pedidos do seed como substituto.
   await log("pedido", "1-abrir-lista", () => open("/pedidos"));
   await log("pedido", "2-abrir-detalhe", async () => {
-    const href = await page.locator('a[href^="/pedidos/"]').evaluateAll((links) => links.map((link) => link.getAttribute("href")).find((value) => /^\/pedidos\/[0-9a-f-]{36}/.test(value ?? "")));
-    if (!href) throw new Error("nenhum link de detalhe de pedido na lista");
-    await open(href);
+    if (!createdOrderId) throw new Error("O checkout não criou um pedido; o roteiro não usará outro pedido da loja.");
+    const link = page.locator(`a[href^="/pedidos/${createdOrderId}"]`).first();
+    await link.waitFor({ state: "visible", timeout: 15000 });
+    await link.click(quick);
   }, () => page.getByRole("button", { name: "Aceitar pedido", exact: true }).waitFor({ state: "visible", timeout: 10000 }));
   const nextAction = /^(Aceitar pedido|Iniciar preparo|Iniciar produção|Marcar pronto|Marcar como pronto|Liberar retirada|Confirmar retirada|Liberar entrega|Cliente retirou|Cliente recebeu|Entregar ao cliente|Marcar retirado|Marcar como retirado|Marcar entregue|Marcar como entregue|Saiu para entrega|Registrar pagamento|Marcar como pago|Marcar pago|Confirmar pagamento|Finalizar pedido|Concluir pedido|Finalizar|Concluir)$/;
   const statusGrid = page.getByLabel("Situação atual do pedido");
@@ -249,6 +283,11 @@ async function runFlows(page, device) {
     completed ||= /Concluído/.test(await statusGrid.innerText(quick));
     if (!completed) throw new Error("O pedido não chegou ao estado Concluído.");
   });
+  await customerLog("5-acompanhamento-concluido", async () => {
+    if (!createdOrderId) throw new Error("Pedido novo ausente.");
+    await customer.reload({ waitUntil: "load" });
+  }, () => customer.getByRole("heading", { name: "Pedido concluído!", exact: true }).waitFor({ state: "visible", timeout: 10000 }));
+  await customerContext.close();
 
   // 4) Salão: abrir mesa, lançar item, enviar para produção e pedir a conta.
   await log("salao", "1-abrir-lista", () => open("/salao"));
@@ -267,7 +306,8 @@ async function runFlows(page, device) {
   // 5) Caixa de novo: o que a tela oferece com o caixa aberto e uma venda registrada.
   await log("caixa", "3-com-venda", () => open("/caixa"));
   await log("caixa", "4-conferir-fechar", async () => {
-    await page.locator('input[name="countedCash"]').fill("130,00", quick);
+    const expected = await page.getByText("Saldo esperado", { exact: true }).locator("..").locator("strong").innerText(quick);
+    await page.locator('input[name="countedCash"]').fill(expected.replace(/[^\d,]/g, ""), quick);
     await clickButton(/^Conferir e fechar turno$/);
   }, () => visibleText("Turno fechado e conferido."));
 }

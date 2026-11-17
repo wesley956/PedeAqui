@@ -55,3 +55,11 @@ Nenhum lote de produto publicado por esta revisão.
 - A auditoria estrita reprovou e revelou contraste no botão de cancelamento, `aria-controls` sem destino no checkout, tentativa de abrir detalhes ocultos do PDV no celular e uma falha transitória do banco local no avanço do pedido.
 - Correções preparadas: cores semânticas com texto sobre marca no formulário de ação de pedido; associação ARIA apenas quando a lista de bairros existe; roteiro expande pagamento antes de abrir detalhes no celular; descoberta de links aguarda o conteúdo dinâmico.
 - Não repetir automaticamente escritas após erro transitório do banco: a operação pode já ter sido aplicada. A auditoria permanece reprovada até uma nova execução confirmar o fluxo.
+
+## Retomada — 17/11/2026
+
+- Correções locais de acessibilidade e do roteiro do PDV enviadas ao PR #1339, commit `3d9d2e14`; nova auditoria solicitada.
+- A main avançou até `095aa8dd`. Suas correções de WhatsApp e de publicação precisam ser preservadas na sincronização. O único conflito antecipado é um comentário na versão Ubuntu do workflow de navegador; ambos usam `ubuntu-24.04`, manter a versão da main.
+- O roteiro de ponta a ponta passa a criar um pedido de retirada em dinheiro pelo cardápio, em sessão de cliente isolada, confirmar o total de R$ 15,00, procurar exatamente esse pedido no painel e conferir seu acompanhamento público após a conclusão. Não usar pedidos do seed para substituir uma falha no checkout.
+- A preparação do banco passa a interromper em migração ausente ou com erro, falha nas correções locais e falha nas concessões administrativas locais. Consultas confirmam a permissão de precificação do Salão, o tratamento de mesa no pagamento inicial e a leitura administrativa local antes de criar a loja fictícia.
+- Essas novas verificações ainda dependem da próxima execução no banco descartável do CI. Nenhuma alteração ou consulta ao banco de produção foi realizada.
