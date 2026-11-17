@@ -1,0 +1,16 @@
+[
+  {
+    "device": "android-360",
+    "label": "/dashboard",
+    "reasons": [
+      "acessibilidade grave"
+    ]
+  },
+  {
+    "device": "pc-1366-escuro",
+    "label": "pedidos-aba",
+    "reasons": [
+      "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: /^Em preparo/ }).first()\n"
+    ]
+  }
+]
