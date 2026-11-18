@@ -15,3 +15,4 @@
 @media(pointer:coarse){.actionCard,.attentionRow a,.retry{min-height:var(--control-height-lg)}}
 /* Celular: os números do dia em 2 colunas e a configuração pendente numa faixa fina, sem o texto longo. */
 @media(max-width:460px){.metrics,.detailMetrics{grid-template-columns:1fr 1fr}.metric{min-height:84px}.readiness{padding:var(--space-3);gap:var(--space-2)}.readiness>div:first-child p,.readiness .eyebrow{display:none}.readiness h2{font-size:var(--font-size-md);margin:0}.sectionTitle p{display:none}}
+.chart:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}

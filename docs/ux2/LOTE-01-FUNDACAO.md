@@ -12,8 +12,9 @@ Branch: `release/ux2-fundacao`. Estado: preparado para revisão; não publicado.
 - Telas de erro em português, com orientação para conferir o pedido antes de repetir. Não prometer que uma gravação foi salva quando a causa do erro é desconhecida.
 - Na área pública, a recuperação retorna ao cardápio da mesma loja; não encaminha o cliente ao painel administrativo.
 - Contraste das ações de pedido e associação ARIA da busca de bairros corrigidos.
+- Totais de pedido e links no histórico do cliente com contraste legível; gráfico de vendas rolável acessível pelo teclado.
 
-São 19 arquivos de produto, este relatório, a configuração de quebra de linha das fontes e dois verificadores visuais com caminhos compatíveis com Windows. Não inclui arquivo de banco, workflow, script de publicação, dependência, segredo ou integração. As correções atuais de WhatsApp e VPS da main permanecem intactas.
+São 23 arquivos de produto, este relatório, a configuração de quebra de linha das fontes e dois verificadores visuais com caminhos compatíveis com Windows. Não inclui arquivo de banco, workflow, script de publicação, dependência, segredo ou integração. As correções atuais de WhatsApp e VPS da main permanecem intactas.
 
 As mudanças específicas de layout de cardápio, checkout, PDV, Salão e gestão ficam nos lotes posteriores. Algumas telas ainda usarão o estilo anterior até o respectivo lote; não declarar padronização de todo o produto a partir deste lote.
 

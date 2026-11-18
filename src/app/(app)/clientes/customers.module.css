@@ -134,7 +134,7 @@
 }
 .badgeAccent { color: var(--accent); }
 .orderValue { font-weight: var(--font-weight-bold); white-space: nowrap; }
-.orderLink { color: var(--accent); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); }
+.orderLink { color: var(--link-color); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); }
 
 .formGrid { display: grid; gap: 10px; }
 .twoColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
