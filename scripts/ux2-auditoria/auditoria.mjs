@@ -257,9 +257,13 @@ async function runFlows(page, device) {
   await log("pedido", "1-abrir-lista", () => open("/pedidos"));
   const detailReady = await log("pedido", "2-abrir-detalhe", async () => {
     if (!createdOrderId) throw new Error("O checkout não criou um pedido; o roteiro não usará outro pedido da loja.");
-    const link = page.locator(`a[href^="/pedidos/${createdOrderId}"]`).first();
-    await link.waitFor({ state: "visible", timeout: 15000 });
-    await link.click(quick);
+    const selector = `a[href^="/pedidos/${createdOrderId}"]`;
+    await page.locator(selector).first().waitFor({ state: "attached", timeout: 15000 });
+    // No computador, o link completo fica dentro do menu nativo "Mais"; a versão móvel está oculta.
+    if (!await page.locator(`${selector}:visible`).count()) {
+      await page.locator("details").filter({ has: page.locator(selector) }).first().locator("summary").first().click(quick);
+    }
+    await page.locator(`${selector}:visible`).first().click(quick);
   }, () => page.getByRole("button", { name: "Aceitar pedido", exact: true }).waitFor({ state: "visible", timeout: 10000 }));
   if (!detailReady) {
     await customerContext.close();
