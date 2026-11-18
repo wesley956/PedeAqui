@@ -5,7 +5,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 853,
+  "loadMs": 786,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -170,7 +170,7 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 879,
+  "loadMs": 814,
   "finalUrl": "/dashboard",
   "vw": 1366,
   "vh": 768,
@@ -262,7 +262,7 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 1037,
+  "loadMs": 956,
   "finalUrl": "/pedidos",
   "vw": 1366,
   "vh": 768,
@@ -354,7 +354,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 862,
+  "loadMs": 790,
   "finalUrl": "/pdv",
   "vw": 1366,
   "vh": 768,
@@ -452,10 +452,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "url": "http://127.0.0.1:3000/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "status": 200,
-  "loadMs": 1021,
-  "finalUrl": "/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "loadMs": 983,
+  "finalUrl": "/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -544,10 +544,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "status": 200,
-  "loadMs": 995,
-  "finalUrl": "/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "loadMs": 911,
+  "finalUrl": "/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -642,10 +642,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/6abfc949-6c82-41e7-9538-3bb12cd8de45",
+  "url": "http://127.0.0.1:3000/clientes/b88ded78-5049-4259-95c6-b86e89abad69",
   "status": 200,
-  "loadMs": 1062,
-  "finalUrl": "/clientes/6abfc949-6c82-41e7-9538-3bb12cd8de45",
+  "loadMs": 920,
+  "finalUrl": "/clientes/b88ded78-5049-4259-95c6-b86e89abad69",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -734,10 +734,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "url": "http://127.0.0.1:3000/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "status": 200,
-  "loadMs": 988,
-  "finalUrl": "/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "loadMs": 892,
+  "finalUrl": "/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1558,7 +1558,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 707,
+  "loadMs": 641,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -1842,7 +1842,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 650,
+  "loadMs": 622,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -1900,7 +1900,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 639,
+  "loadMs": 617,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -2424,7 +2424,7 @@
   "verified": true,
   "ok": true,
   "screen": {
-   "url": "/m/salgados-da-vila/pedido/89270180-c9c8-4e6b-afa7-95d0feb06954",
+   "url": "/m/salgados-da-vila/pedido/91b10dc5-facc-4300-9c81-bb3a16e19413",
    "heading": "Pedido confirmado",
    "buttons": [],
    "fields": [],
@@ -2432,7 +2432,7 @@
    "dialogs": []
   },
   "shot": "shots/pc-1366__fluxo__cliente-4-confirmar-pedido-novo.jpg",
-  "orderId": "89270180-c9c8-4e6b-afa7-95d0feb06954"
+  "orderId": "91b10dc5-facc-4300-9c81-bb3a16e19413"
  },
  {
   "device": "pc-1366",
@@ -2503,7 +2503,7 @@
   "verified": true,
   "ok": true,
   "screen": {
-   "url": "/pedidos/89270180-c9c8-4e6b-afa7-95d0feb06954?from=%2Fpedidos",
+   "url": "/pedidos/91b10dc5-facc-4300-9c81-bb3a16e19413?from=%2Fpedidos",
    "heading": "Pedido #12",
    "buttons": [
     "Aceitar pedido",
@@ -2528,7 +2528,7 @@
   "verified": true,
   "ok": true,
   "screen": {
-   "url": "/pedidos/89270180-c9c8-4e6b-afa7-95d0feb06954?from=%2Fpedidos",
+   "url": "/pedidos/91b10dc5-facc-4300-9c81-bb3a16e19413?from=%2Fpedidos",
    "heading": "Pedido #12",
    "buttons": [
     "Iniciar produção",
@@ -2555,7 +2555,7 @@
   "verified": true,
   "ok": true,
   "screen": {
-   "url": "/pedidos/89270180-c9c8-4e6b-afa7-95d0feb06954?from=%2Fpedidos",
+   "url": "/pedidos/91b10dc5-facc-4300-9c81-bb3a16e19413?from=%2Fpedidos",
    "heading": "Pedido #12",
    "buttons": [
     "Marcar pronto",
@@ -2582,7 +2582,7 @@
   "verified": true,
   "ok": true,
   "screen": {
-   "url": "/pedidos/89270180-c9c8-4e6b-afa7-95d0feb06954?from=%2Fpedidos",
+   "url": "/pedidos/91b10dc5-facc-4300-9c81-bb3a16e19413?from=%2Fpedidos",
    "heading": "Pedido #12",
    "buttons": [
     "Liberar retirada",
@@ -2609,7 +2609,7 @@
   "verified": true,
   "ok": true,
   "screen": {
-   "url": "/pedidos/89270180-c9c8-4e6b-afa7-95d0feb06954?from=%2Fpedidos",
+   "url": "/pedidos/91b10dc5-facc-4300-9c81-bb3a16e19413?from=%2Fpedidos",
    "heading": "Pedido #12",
    "buttons": [
     "Cliente retirou",
@@ -2636,7 +2636,7 @@
   "verified": true,
   "ok": true,
   "screen": {
-   "url": "/pedidos/89270180-c9c8-4e6b-afa7-95d0feb06954?from=%2Fpedidos",
+   "url": "/pedidos/91b10dc5-facc-4300-9c81-bb3a16e19413?from=%2Fpedidos",
    "heading": "Pedido #12",
    "buttons": [
     "Confirmar pagamento",
@@ -2660,7 +2660,7 @@
   "verified": true,
   "ok": true,
   "screen": {
-   "url": "/pedidos/89270180-c9c8-4e6b-afa7-95d0feb06954?from=%2Fpedidos",
+   "url": "/pedidos/91b10dc5-facc-4300-9c81-bb3a16e19413?from=%2Fpedidos",
    "heading": "Pedido #12",
    "buttons": [
     "Concluir pedido",
@@ -2683,7 +2683,7 @@
   "verified": true,
   "ok": true,
   "screen": {
-   "url": "/pedidos/89270180-c9c8-4e6b-afa7-95d0feb06954?from=%2Fpedidos",
+   "url": "/pedidos/91b10dc5-facc-4300-9c81-bb3a16e19413?from=%2Fpedidos",
    "heading": "Pedido #12",
    "buttons": [
     "Estornar pagamento"
@@ -2703,7 +2703,7 @@
   "label": "pedido › 10-confirmar-conclusao",
   "ok": true,
   "screen": {
-   "url": "/pedidos/89270180-c9c8-4e6b-afa7-95d0feb06954?from=%2Fpedidos",
+   "url": "/pedidos/91b10dc5-facc-4300-9c81-bb3a16e19413?from=%2Fpedidos",
    "heading": "Pedido #12",
    "buttons": [
     "Estornar pagamento"
@@ -2723,7 +2723,7 @@
   "verified": true,
   "ok": true,
   "screen": {
-   "url": "/m/salgados-da-vila/pedido/89270180-c9c8-4e6b-afa7-95d0feb06954",
+   "url": "/m/salgados-da-vila/pedido/91b10dc5-facc-4300-9c81-bb3a16e19413",
    "heading": "Pedido concluído!",
    "buttons": [],
    "fields": [],
@@ -2791,7 +2791,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 740,
+  "loadMs": 702,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -2966,7 +2966,7 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 776,
+  "loadMs": 758,
   "finalUrl": "/dashboard",
   "vw": 360,
   "vh": 740,
@@ -3065,14 +3065,7 @@
   "bodyTextLength": 1398,
   "shot": "shots/android-360__panel__dashboard.jpg",
   "clipped": [],
-  "axe": [
-   {
-    "id": "scrollable-region-focusable",
-    "impact": "serious",
-    "nodes": 1,
-    "example": ".dashboard-module__BUJBAa__chart"
-   }
-  ],
+  "axe": [],
   "consoleErrors": []
  },
  {
@@ -3081,7 +3074,7 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 898,
+  "loadMs": 846,
   "finalUrl": "/pedidos",
   "vw": 360,
   "vh": 740,
@@ -3195,7 +3188,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 759,
+  "loadMs": 746,
   "finalUrl": "/pdv",
   "vw": 360,
   "vh": 740,
@@ -3304,10 +3297,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "url": "http://127.0.0.1:3000/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "status": 200,
-  "loadMs": 1151,
-  "finalUrl": "/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "loadMs": 880,
+  "finalUrl": "/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -3396,24 +3389,17 @@
   "bodyTextLength": 1150,
   "shot": "shots/android-360__panel__pedidos-id.jpg",
   "clipped": [],
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 2,
-    "example": ".order-detail-module__EK8WHa__total"
-   }
-  ],
+  "axe": [],
   "consoleErrors": []
  },
  {
   "device": "android-360",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "status": 200,
-  "loadMs": 845,
-  "finalUrl": "/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "loadMs": 775,
+  "finalUrl": "/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -3515,10 +3501,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "url": "http://127.0.0.1:3000/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "status": 200,
-  "loadMs": 843,
-  "finalUrl": "/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "loadMs": 782,
+  "finalUrl": "/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -3607,24 +3593,17 @@
   "bodyTextLength": 757,
   "shot": "shots/android-360__panel__clientes-id.jpg",
   "clipped": [],
-  "axe": [
-   {
-    "id": "color-contrast",
-    "impact": "serious",
-    "nodes": 1,
-    "example": ".customers-module__XLXBTq__orderLink"
-   }
-  ],
+  "axe": [],
   "consoleErrors": []
  },
  {
   "device": "android-360",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "url": "http://127.0.0.1:3000/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "status": 200,
-  "loadMs": 816,
-  "finalUrl": "/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "loadMs": 836,
+  "finalUrl": "/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -4798,7 +4777,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 678,
+  "loadMs": 669,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -5103,7 +5082,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 597,
+  "loadMs": 585,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -5174,7 +5153,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 634,
+  "loadMs": 606,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
@@ -5255,7 +5234,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 776,
+  "loadMs": 720,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -5414,7 +5393,7 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 769,
+  "loadMs": 733,
   "finalUrl": "/dashboard",
   "vw": 1366,
   "vh": 768,
@@ -5506,7 +5485,7 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 880,
+  "loadMs": 814,
   "finalUrl": "/pedidos",
   "vw": 1366,
   "vh": 768,
@@ -5598,7 +5577,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 829,
+  "loadMs": 738,
   "finalUrl": "/pdv",
   "vw": 1366,
   "vh": 768,
@@ -5696,10 +5675,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "url": "http://127.0.0.1:3000/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "status": 200,
-  "loadMs": 951,
-  "finalUrl": "/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "loadMs": 873,
+  "finalUrl": "/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -5788,10 +5767,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "status": 200,
-  "loadMs": 898,
-  "finalUrl": "/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "loadMs": 846,
+  "finalUrl": "/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -5886,10 +5865,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "url": "http://127.0.0.1:3000/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "status": 200,
-  "loadMs": 995,
-  "finalUrl": "/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "loadMs": 910,
+  "finalUrl": "/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -5978,10 +5957,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "url": "http://127.0.0.1:3000/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "status": 200,
-  "loadMs": 905,
-  "finalUrl": "/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "loadMs": 914,
+  "finalUrl": "/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -6802,7 +6781,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 679,
+  "loadMs": 632,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -7086,7 +7065,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 598,
+  "loadMs": 589,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -7144,7 +7123,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 652,
+  "loadMs": 606,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -7219,7 +7198,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 706,
+  "loadMs": 689,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -7384,7 +7363,7 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 758,
+  "loadMs": 727,
   "finalUrl": "/dashboard",
   "vw": 360,
   "vh": 740,
@@ -7482,7 +7461,7 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 917,
+  "loadMs": 903,
   "finalUrl": "/pedidos",
   "vw": 360,
   "vh": 740,
@@ -7586,7 +7565,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 781,
+  "loadMs": 749,
   "finalUrl": "/pdv",
   "vw": 360,
   "vh": 740,
@@ -7694,10 +7673,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "url": "http://127.0.0.1:3000/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "status": 200,
-  "loadMs": 909,
-  "finalUrl": "/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "loadMs": 840,
+  "finalUrl": "/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -7792,10 +7771,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "status": 200,
-  "loadMs": 846,
-  "finalUrl": "/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "loadMs": 814,
+  "finalUrl": "/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -7896,10 +7875,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "url": "http://127.0.0.1:3000/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "status": 200,
-  "loadMs": 824,
-  "finalUrl": "/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "loadMs": 793,
+  "finalUrl": "/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -7994,10 +7973,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "url": "http://127.0.0.1:3000/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "status": 200,
-  "loadMs": 856,
-  "finalUrl": "/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "loadMs": 780,
+  "finalUrl": "/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -9170,7 +9149,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 685,
+  "loadMs": 710,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -9474,7 +9453,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 598,
+  "loadMs": 585,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -9544,7 +9523,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 625,
+  "loadMs": 599,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
@@ -9624,7 +9603,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 733,
+  "loadMs": 757,
   "finalUrl": "/login",
   "vw": 390,
   "vh": 844,
@@ -9789,7 +9768,7 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 771,
+  "loadMs": 787,
   "finalUrl": "/dashboard",
   "vw": 390,
   "vh": 844,
@@ -9887,7 +9866,7 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 1002,
+  "loadMs": 825,
   "finalUrl": "/pedidos",
   "vw": 390,
   "vh": 844,
@@ -9991,7 +9970,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 776,
+  "loadMs": 752,
   "finalUrl": "/pdv",
   "vw": 390,
   "vh": 844,
@@ -10099,10 +10078,10 @@
   "device": "phone-390",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "url": "http://127.0.0.1:3000/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "status": 200,
-  "loadMs": 967,
-  "finalUrl": "/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "loadMs": 907,
+  "finalUrl": "/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "vw": 390,
   "vh": 844,
   "docWidth": 390,
@@ -10197,10 +10176,10 @@
   "device": "phone-390",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "status": 200,
-  "loadMs": 902,
-  "finalUrl": "/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "loadMs": 789,
+  "finalUrl": "/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "vw": 390,
   "vh": 844,
   "docWidth": 390,
@@ -10301,10 +10280,10 @@
   "device": "phone-390",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "url": "http://127.0.0.1:3000/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "status": 200,
-  "loadMs": 864,
-  "finalUrl": "/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "loadMs": 863,
+  "finalUrl": "/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "vw": 390,
   "vh": 844,
   "docWidth": 390,
@@ -10399,10 +10378,10 @@
   "device": "phone-390",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "url": "http://127.0.0.1:3000/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "status": 200,
-  "loadMs": 842,
-  "finalUrl": "/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "loadMs": 815,
+  "finalUrl": "/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "vw": 390,
   "vh": 844,
   "docWidth": 390,
@@ -11575,7 +11554,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 638,
+  "loadMs": 622,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 390,
   "vh": 844,
@@ -11879,7 +11858,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 614,
+  "loadMs": 597,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 390,
   "vh": 844,
@@ -11949,7 +11928,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 636,
+  "loadMs": 615,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 390,
   "vh": 844,
@@ -12029,7 +12008,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 766,
+  "loadMs": 727,
   "finalUrl": "/login",
   "vw": 390,
   "vh": 844,
@@ -12194,7 +12173,7 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 773,
+  "loadMs": 734,
   "finalUrl": "/dashboard",
   "vw": 390,
   "vh": 844,
@@ -12292,7 +12271,7 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 869,
+  "loadMs": 839,
   "finalUrl": "/pedidos",
   "vw": 390,
   "vh": 844,
@@ -12396,7 +12375,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 754,
+  "loadMs": 758,
   "finalUrl": "/pdv",
   "vw": 390,
   "vh": 844,
@@ -12504,10 +12483,10 @@
   "device": "phone-390-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "url": "http://127.0.0.1:3000/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "status": 200,
-  "loadMs": 963,
-  "finalUrl": "/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "loadMs": 899,
+  "finalUrl": "/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "vw": 390,
   "vh": 844,
   "docWidth": 390,
@@ -12602,10 +12581,10 @@
   "device": "phone-390-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "status": 200,
-  "loadMs": 831,
-  "finalUrl": "/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "loadMs": 975,
+  "finalUrl": "/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "vw": 390,
   "vh": 844,
   "docWidth": 390,
@@ -12706,10 +12685,10 @@
   "device": "phone-390-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "url": "http://127.0.0.1:3000/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "status": 200,
-  "loadMs": 844,
-  "finalUrl": "/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "loadMs": 864,
+  "finalUrl": "/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "vw": 390,
   "vh": 844,
   "docWidth": 390,
@@ -12804,10 +12783,10 @@
   "device": "phone-390-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "url": "http://127.0.0.1:3000/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "status": 200,
-  "loadMs": 812,
-  "finalUrl": "/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "loadMs": 766,
+  "finalUrl": "/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "vw": 390,
   "vh": 844,
   "docWidth": 390,
@@ -13980,7 +13959,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 640,
+  "loadMs": 621,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 390,
   "vh": 844,
@@ -14284,7 +14263,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 596,
+  "loadMs": 579,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 390,
   "vh": 844,
@@ -14354,7 +14333,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 632,
+  "loadMs": 601,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 390,
   "vh": 844,
@@ -14434,7 +14413,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 878,
+  "loadMs": 686,
   "finalUrl": "/login",
   "vw": 768,
   "vh": 1024,
@@ -14593,7 +14572,7 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 786,
+  "loadMs": 710,
   "finalUrl": "/dashboard",
   "vw": 768,
   "vh": 1024,
@@ -14685,7 +14664,7 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 1100,
+  "loadMs": 819,
   "finalUrl": "/pedidos",
   "vw": 768,
   "vh": 1024,
@@ -14777,7 +14756,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 771,
+  "loadMs": 750,
   "finalUrl": "/pdv",
   "vw": 768,
   "vh": 1024,
@@ -14879,10 +14858,10 @@
   "device": "pc-768",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "url": "http://127.0.0.1:3000/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "status": 200,
-  "loadMs": 892,
-  "finalUrl": "/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "loadMs": 841,
+  "finalUrl": "/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "vw": 768,
   "vh": 1024,
   "docWidth": 768,
@@ -14971,10 +14950,10 @@
   "device": "pc-768",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "status": 200,
-  "loadMs": 927,
-  "finalUrl": "/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "loadMs": 777,
+  "finalUrl": "/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "vw": 768,
   "vh": 1024,
   "docWidth": 768,
@@ -15069,10 +15048,10 @@
   "device": "pc-768",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "url": "http://127.0.0.1:3000/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "status": 200,
-  "loadMs": 861,
-  "finalUrl": "/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "loadMs": 789,
+  "finalUrl": "/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "vw": 768,
   "vh": 1024,
   "docWidth": 768,
@@ -15161,10 +15140,10 @@
   "device": "pc-768",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "url": "http://127.0.0.1:3000/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "status": 200,
-  "loadMs": 852,
-  "finalUrl": "/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "loadMs": 869,
+  "finalUrl": "/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "vw": 768,
   "vh": 1024,
   "docWidth": 768,
@@ -15755,8 +15734,204 @@
  {
   "device": "pc-768",
   "area": "state",
+  "label": "pdv-venda-no-celular",
+  "shot": "shots/pc-768__state__pdv-venda-no-celular.jpg",
+  "vw": 768,
+  "vh": 1024,
+  "docWidth": 768,
+  "docHeight": 1024,
+  "screens": 1,
+  "title": "PedeAqui",
+  "h1": "PDV",
+  "overflowing": [],
+  "interactiveCount": 59,
+  "smallTargets": 30,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 300,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 300,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Buscar item para pausar ou reativar\"",
+    "w": 114,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Modo Movimento\"",
+    "w": 159,
+    "h": 36
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "nav.pdv-module__JUt7FG__mobileViewSwitcher \"Etapa atual da venda\"",
+    "top": 120,
+    "h": 58,
+    "pos": "sticky"
+   },
+   {
+    "el": "footer.pdv-module__JUt7FG__checkoutBar \"Pagamento e finalização da venda\"",
+    "top": 528,
+    "h": 67,
+    "pos": "sticky"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 955,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 328,
+    "h": 620,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 689,
+  "bodyTextLength": 357
+ },
+ {
+  "device": "pc-768",
+  "area": "state",
   "label": "pdv-pagamento-detalhes",
-  "error": "locator.click: Timeout 6000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: /Detalhes/ }).first()\n"
+  "shot": "shots/pc-768__state__pdv-pagamento-detalhes.jpg",
+  "vw": 768,
+  "vh": 1024,
+  "docWidth": 768,
+  "docHeight": 1068,
+  "screens": 1,
+  "title": "PedeAqui",
+  "h1": "PDV",
+  "overflowing": [],
+  "interactiveCount": 71,
+  "smallTargets": 41,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 300,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 300,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Buscar item para pausar ou reativar\"",
+    "w": 114,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Modo Movimento\"",
+    "w": 159,
+    "h": 36
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "nav.pdv-module__JUt7FG__mobileViewSwitcher \"Etapa atual da venda\"",
+    "top": 120,
+    "h": 58,
+    "pos": "sticky"
+   },
+   {
+    "el": "footer.pdv-module__JUt7FG__checkoutBar \"Pagamento e finalização da venda\"",
+    "top": 528,
+    "h": 392,
+    "pos": "sticky"
+   },
+   {
+    "el": "dialog.feedback-module__Uz7Dwa__dialog \"Pagamento × Confirme o recebimento. As parcelas de\"",
+    "top": 265,
+    "h": 494,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 955,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 328,
+    "h": 620,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 1183,
+  "bodyTextLength": 754
  },
  {
   "device": "pc-768",
@@ -15770,19 +15945,19 @@
    "scrollY": 0,
    "contentScrollTop": 0,
    "contentPaddingBottom": "84px",
-   "docHeight": 1454,
+   "docHeight": 1068,
    "bar": {
     "position": "sticky",
     "top": "auto",
     "bottom": "68px",
     "display": "grid",
     "rect": [
-     889,
-     956,
-     67
+     528,
+     920,
+     392
     ],
     "clipping": [
-     "div.app-main overflow=clip/visible h=1390"
+     "div.app-main overflow=clip/visible h=1004"
     ]
    },
    "switcher": {
@@ -15796,7 +15971,7 @@
      58
     ],
     "clipping": [
-     "div.app-main overflow=clip/visible h=1390"
+     "div.app-main overflow=clip/visible h=1004"
     ]
    }
   }
@@ -15893,7 +16068,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 700,
+  "loadMs": 645,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 768,
   "vh": 1024,
@@ -16183,7 +16358,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 611,
+  "loadMs": 591,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 768,
   "vh": 1024,
@@ -16241,7 +16416,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 624,
+  "loadMs": 608,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 768,
   "vh": 1024,
@@ -16316,7 +16491,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 736,
+  "loadMs": 691,
   "finalUrl": "/login",
   "vw": 768,
   "vh": 1024,
@@ -16475,7 +16650,7 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 777,
+  "loadMs": 721,
   "finalUrl": "/dashboard",
   "vw": 768,
   "vh": 1024,
@@ -16567,7 +16742,7 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 973,
+  "loadMs": 787,
   "finalUrl": "/pedidos",
   "vw": 768,
   "vh": 1024,
@@ -16659,7 +16834,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 756,
+  "loadMs": 727,
   "finalUrl": "/pdv",
   "vw": 768,
   "vh": 1024,
@@ -16761,10 +16936,10 @@
   "device": "pc-768-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "url": "http://127.0.0.1:3000/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "status": 200,
-  "loadMs": 858,
-  "finalUrl": "/pedidos/fefb02f5-24a5-4bb7-93be-8d5a88191404",
+  "loadMs": 799,
+  "finalUrl": "/pedidos/d5359660-0aeb-4291-b99c-723d3804bdd9",
   "vw": 768,
   "vh": 1024,
   "docWidth": 768,
@@ -16853,10 +17028,10 @@
   "device": "pc-768-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "status": 200,
-  "loadMs": 852,
-  "finalUrl": "/cardapio/produtos/8b7081d3-6846-48cd-8941-272877f07b04",
+  "loadMs": 790,
+  "finalUrl": "/cardapio/produtos/bb4f3283-4763-4321-97f2-cfcbd025ec79",
   "vw": 768,
   "vh": 1024,
   "docWidth": 768,
@@ -16951,10 +17126,10 @@
   "device": "pc-768-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "url": "http://127.0.0.1:3000/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "status": 200,
-  "loadMs": 825,
-  "finalUrl": "/clientes/ddeabf31-485f-4397-af34-8c706bcc6abe",
+  "loadMs": 798,
+  "finalUrl": "/clientes/de8e7cb7-dee0-40cb-99c4-dd540bb65999",
   "vw": 768,
   "vh": 1024,
   "docWidth": 768,
@@ -17043,10 +17218,10 @@
   "device": "pc-768-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "url": "http://127.0.0.1:3000/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "status": 200,
-  "loadMs": 862,
-  "finalUrl": "/salao/30f558fa-e586-469b-9dc2-6d06217646f7",
+  "loadMs": 788,
+  "finalUrl": "/salao/d2ad5ec7-f273-4d50-833b-0b0eb3f64e65",
   "vw": 768,
   "vh": 1024,
   "docWidth": 768,
@@ -17637,8 +17812,204 @@
  {
   "device": "pc-768-escuro",
   "area": "state",
+  "label": "pdv-venda-no-celular",
+  "shot": "shots/pc-768-escuro__state__pdv-venda-no-celular.jpg",
+  "vw": 768,
+  "vh": 1024,
+  "docWidth": 768,
+  "docHeight": 1024,
+  "screens": 1,
+  "title": "PedeAqui",
+  "h1": "PDV",
+  "overflowing": [],
+  "interactiveCount": 59,
+  "smallTargets": 30,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 300,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 300,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Buscar item para pausar ou reativar\"",
+    "w": 114,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Modo Movimento\"",
+    "w": 159,
+    "h": 36
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "nav.pdv-module__JUt7FG__mobileViewSwitcher \"Etapa atual da venda\"",
+    "top": 120,
+    "h": 58,
+    "pos": "sticky"
+   },
+   {
+    "el": "footer.pdv-module__JUt7FG__checkoutBar \"Pagamento e finalização da venda\"",
+    "top": 528,
+    "h": 67,
+    "pos": "sticky"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 955,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 328,
+    "h": 620,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 689,
+  "bodyTextLength": 357
+ },
+ {
+  "device": "pc-768-escuro",
+  "area": "state",
   "label": "pdv-pagamento-detalhes",
-  "error": "locator.click: Timeout 6000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: /Detalhes/ }).first()\n"
+  "shot": "shots/pc-768-escuro__state__pdv-pagamento-detalhes.jpg",
+  "vw": 768,
+  "vh": 1024,
+  "docWidth": 768,
+  "docHeight": 1068,
+  "screens": 1,
+  "title": "PedeAqui",
+  "h1": "PDV",
+  "overflowing": [],
+  "interactiveCount": 71,
+  "smallTargets": 41,
+  "tinyTargets": 0,
+  "smallTargetExamples": [
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 300,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 300,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 157,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Buscar item para pausar ou reativar\"",
+    "w": 114,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link \"Modo Movimento\"",
+    "w": 159,
+    "h": 36
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "nav.pdv-module__JUt7FG__mobileViewSwitcher \"Etapa atual da venda\"",
+    "top": 120,
+    "h": 58,
+    "pos": "sticky"
+   },
+   {
+    "el": "footer.pdv-module__JUt7FG__checkoutBar \"Pagamento e finalização da venda\"",
+    "top": 528,
+    "h": 392,
+    "pos": "sticky"
+   },
+   {
+    "el": "dialog.feedback-module__Uz7Dwa__dialog \"Pagamento × Confirme o recebimento. As parcelas de\"",
+    "top": 265,
+    "h": 494,
+    "pos": "fixed"
+   },
+   {
+    "el": "nav.mobile-nav \"Navegação principal mobile\"",
+    "top": 955,
+    "h": 69,
+    "pos": "fixed"
+   },
+   {
+    "el": "div.mobile-more-panel",
+    "top": 328,
+    "h": 620,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 1183,
+  "bodyTextLength": 754
  },
  {
   "device": "pc-768-escuro",
@@ -17652,19 +18023,19 @@
    "scrollY": 0,
    "contentScrollTop": 0,
    "contentPaddingBottom": "84px",
-   "docHeight": 1454,
+   "docHeight": 1068,
    "bar": {
     "position": "sticky",
     "top": "auto",
     "bottom": "68px",
     "display": "grid",
     "rect": [
-     889,
-     956,
-     67
+     528,
+     920,
+     392
     ],
     "clipping": [
-     "div.app-main overflow=clip/visible h=1390"
+     "div.app-main overflow=clip/visible h=1004"
     ]
    },
    "switcher": {
@@ -17678,7 +18049,7 @@
      58
     ],
     "clipping": [
-     "div.app-main overflow=clip/visible h=1390"
+     "div.app-main overflow=clip/visible h=1004"
     ]
    }
   }
@@ -17775,7 +18146,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 748,
+  "loadMs": 645,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 768,
   "vh": 1024,
@@ -18065,7 +18436,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 596,
+  "loadMs": 585,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 768,
   "vh": 1024,
@@ -18123,7 +18494,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 640,
+  "loadMs": 607,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 768,
   "vh": 1024,
