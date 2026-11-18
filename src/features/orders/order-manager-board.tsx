@@ -129,9 +129,11 @@ export function primaryActionForOrder(order: OrderManagerRow, workflowMode: Boar
   return null;
 }
 
-export function OrderManagerBoard({ storeId, viewPreferenceKey, orders: initialOrders, workflowMode = "standard", manualDeliveryMode = false, paymentPolicy = null, timeZone }: {
+export function OrderManagerBoard({ storeId, viewPreferenceKey, renderedAt, orders: initialOrders, workflowMode = "standard", manualDeliveryMode = false, paymentPolicy = null, timeZone }: {
   storeId: string;
   viewPreferenceKey?: string;
+  /** Horário em que o servidor montou a página. O primeiro desenho no navegador usa o mesmo valor, senão o tempo decorrido ("59:05") sai diferente do HTML recebido e o React acusa erro de hidratação. */
+  renderedAt?: number;
   orders: OrderManagerRow[];
   workflowMode?: BoardWorkflowMode;
   manualDeliveryMode?: boolean;
@@ -143,7 +145,7 @@ export function OrderManagerBoard({ storeId, viewPreferenceKey, orders: initialO
   const [stage, setStage] = useState<OperationalOrderBucket | "all">("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(() => renderedAt ?? Date.now());
   const seen = useRef(new Set(initialOrders.map((order) => order.id)));
   const { soundEnabled, primaryLabel, toggle, test, notifyNewOrder } = useOrderAlert(setNotice);
   useRememberedOrderSearch("orders:active:query", query, setQuery);

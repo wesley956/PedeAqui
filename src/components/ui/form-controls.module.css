@@ -132,8 +132,8 @@
 }
 
 .switchInput:checked + .switch {
-  background: var(--brand-primary);
-  border-color: var(--brand-primary);
+  background: var(--selected);
+  border-color: var(--selected);
 }
 
 .switchInput:checked + .switch::after { transform: translateX(20px); }

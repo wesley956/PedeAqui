@@ -4,8 +4,9 @@
 // Uso: node scripts/design-color-codemod.mjs [--check]
 import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = new URL("..", import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const SRC = join(ROOT, "src");
 const CHECK = process.argv.includes("--check");
 // O site comercial tem paleta própria de vitrine; globals.css define o tema.

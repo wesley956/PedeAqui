@@ -156,6 +156,6 @@ function PrinterIcon({ pending }: { pending: boolean }) {
 }
 
 const inputStyle: React.CSSProperties = { minHeight: 38, borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)", padding: "7px 9px" };
-function buttonStyle(tone: "primary" | "secondary" | "danger"): React.CSSProperties { return { minHeight: 38, borderRadius: "var(--radius-sm)", border: tone === "secondary" ? "1px solid var(--border)" : 0, background: tone === "danger" ? "#b42318" : tone === "secondary" ? "var(--surface-3)" : "var(--accent)", color: "var(--text)", padding: "7px 11px", fontWeight: "var(--font-weight-semibold)", cursor: "pointer" }; }
+function buttonStyle(tone: "primary" | "secondary" | "danger"): React.CSSProperties { return { minHeight: 38, borderRadius: "var(--radius-sm)", border: tone === "secondary" ? "1px solid var(--border)" : 0, background: tone === "danger" ? "var(--state-danger)" : tone === "secondary" ? "var(--surface-3)" : "var(--accent)", color: tone === "secondary" ? "var(--text)" : "var(--text-on-brand)", padding: "7px 11px", fontWeight: "var(--font-weight-semibold)", cursor: "pointer" }; }
 const compactStyle: React.CSSProperties = { minHeight: 32, padding: "5px 8px", fontSize: "var(--font-size-xs)" };
 const iconOnlyPrintStyle: React.CSSProperties = { width: 30, height: 30, minHeight: 30, padding: 0, borderRadius: "var(--radius-sm)", background: "transparent", color: "var(--text-secondary)", justifySelf: "start", display: "inline-grid", placeItems: "center" };

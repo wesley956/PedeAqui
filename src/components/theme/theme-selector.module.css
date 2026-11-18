@@ -67,8 +67,8 @@
 }
 
 .option[data-selected="true"] {
-  background: var(--accent);
-  color: var(--text-on-brand);
+  background: var(--selected);
+  color: var(--on-selected);
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.16);
 }
 

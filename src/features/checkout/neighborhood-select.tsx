@@ -113,7 +113,7 @@ export function NeighborhoodSelect({
             placeholder="Digite seu bairro"
             autoComplete="off"
             aria-label="Buscar bairro atendido"
-            aria-controls="delivery-neighborhood-results"
+            aria-controls={filtered.length > 0 ? "delivery-neighborhood-results" : undefined}
           />
 
           {filtered.length > 0 ? (
