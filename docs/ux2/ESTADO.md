@@ -1,6 +1,6 @@
 # UX2 — Estado da execução
 
-Atualizado em 14/11/2026. Este arquivo é a fonte para retomar o trabalho entre sessões.
+Atualizado em 17/11/2026. Este arquivo é a fonte para retomar o trabalho entre sessões.
 
 ## Referências
 - Baseline: `534c3091` (main) · Integração: `ux2/integration`
@@ -29,7 +29,7 @@ Legenda: Validado · Parcialmente validado · Bloqueado · Não iniciado
 | PDV | Parcialmente validado | venda em dinheiro com troco executada de ponta a ponta (PR #1335); falta cartão/Pix, divisão, cliente e benefícios; `modulos/pdv.md` |
 | Cardápio público e checkout | Parcialmente validado | PRs #1324, #1327, #1331; conferido com fotos, logo e cor de loja fictícios e nos dois temas; falta acompanhar pedido e loja real; `modulos/cardapio-publico.md` |
 | Produtos, categorias, sabores | Parcialmente validado | auditado; cor revisada; filtros como botão secundário; `modulos/painel-demais-modulos.md` |
-| Caixa, Salão, Produção, Entregas | Parcialmente validado | Caixa executado de ponta a ponta (funciona). **Salão não envia rodada**: P-01 e P-04 em `PENDENCIAS-BANCO.md`. Produção auditada. Entregas não executada. |
+| Caixa, Salão, Produção, Entregas | Parcialmente validado | Caixa confirmado no fluxo crítico. Salão tem correções apenas no banco local (P-01/P-04); produção não confirmada. Salão fora do lote 1. Entregas não executada. |
 | Configurações | Parcialmente validado | auditado (19 telas); cor revisada; `modulos/painel-demais-modulos.md` |
 | Dashboard e relatórios | Parcialmente validado | Início revisado (PR #1326) |
 | Financeiro | Parcialmente validado | formulários de lançamento e transferência cabem no celular (branch `ux2/gestao-celular`); nenhum lançamento executado |
@@ -48,8 +48,8 @@ Legenda: Validado · Parcialmente validado · Bloqueado · Não iniciado
 | B-02 | Sem acesso ao banco de produção (decisão D-03) | hipóteses que dependem de dados reais não podem ser confirmadas | investigar por código e testes |
 | B-03 | npm bloqueado no ambiente de trabalho | cada verificação leva ~10 min no CI | nenhuma; aceitar o ciclo |
 | B-04 | Sem sandbox de WhatsApp, gateways, iFood, fiscal e impressão | esses módulos não chegam a "Validado" | mocks e testes de contrato; validação real fica pendente |
-| B-05 | Na `main`, o check `public-browser-homologation` falha ao instalar o Playwright no `ubuntu-latest` (Ubuntu novo) | PRs para a `main` que tocam telas ficam com esse check vermelho | fixar `runs-on: ubuntu-24.04` (já feito em `ux2/*`) ou atualizar o Playwright; decisão de quem integra |
-| B-06 | O banco local da homologação devolve "invalid response from upstream" em cerca de 1 a cada 100 telas quando a auditoria percorre tudo em sequência | uma tela diferente falha a cada execução; não é defeito do sistema | repetir a tela; a tela de erro agora é em português |
+| B-05 | Resolvido: a main atual já usa Ubuntu 24.04 no check de navegador | não há mais bloqueio por essa versão de Ubuntu | preservar a versão da main na sincronização |
+| B-06 | Resolvido na homologação: gateway local sem pool de conexões ociosas | auditoria do lote 1 em 05ea0820: 231 estados/verificações, oito combinações de largura/tema e zero falhas | usar a preparação atual; não repetir escritas automaticamente |
 
 
 ## Registro de execução — 14/11/2026
@@ -92,3 +92,17 @@ B-06 esclarecido: as respostas "invalid response from upstream" vêm da porta de
 - Branch `ux2/gestao-celular`: no celular, campos dos formulários de Financeiro, Compras e Fiscal passavam da borda da tela e ficavam inalcançáveis (a página não rola de lado). Corrigido; a auditoria passou a medir campos e botões cortados em todas as telas.
 
 **Nenhum módulo está "Validado"** — o critério continua sendo o uso por uma pessoa na homologação do responsável.
+
+
+## Retomada — 17/11/2026 (Codex)
+
+- PR #1348 integrado somente em `ux2/integration`: main atual `095aa8dd` preservada, incluindo WhatsApp e segurança de publicação. Nada publicado pelo UX2.
+- PR #1339 integrado somente em `ux2/integration`: auditoria reprova falhas; preparo do banco interrompe em erro; gateway local corrigido; roteiro cria pedido novo e acompanha a mesma identidade no painel.
+- Lote 1 preparado no PR #1349 (`release/ux2-fundacao`), aplicação `05ea0820`. São 23 arquivos de produto, configuração de fontes, dois verificadores e relatório; nenhum arquivo de banco, workflow de produção ou regra de pagamento/pedido foi alterado nesse lote.
+- Homologação exata do lote 1: 231 estados/verificações, 24 passos de fluxo crítico, larguras 360/390/768/1366 nos temas claro e escuro e `failures.json` vazio. Cliente cria pedido → loja aceita e produz → retirada e pagamento → conclusão → acompanhamento público; PDV em dinheiro com troco e caixa também aprovados. O fluxo automático roda no computador; as outras larguras recebem auditoria de tela/estados.
+- Evidências: `ux2/evidencias/release_ux2-fundacao`; `COMMIT` identifica a aplicação, `HARNESS_COMMIT` identifica o roteiro e `target.json` registra a CSP adaptada exclusivamente ao banco local. `src/` permanece no commit da aplicação.
+- CI do lote 1 aprovado. O check adicional Browser Homologation ainda está em execução nesta atualização, instalando os navegadores. O estado atual deve ser conferido no PR antes de qualquer publicação.
+- Status externo Vercel: falha por conta bloqueada, também presente na main de referência. Não foi removido ou desativado; a produção usa o workflow Deploy VPS.
+- No Windows, 53 testes afetados por CRLF/caminhos passaram após correção. Dois arquivos de testes nativos tiveram 20 casos aprovados e uma falha de limpeza de pasta temporária protegida por ACL; o instalador não foi alterado.
+
+**Nenhum módulo passa a Validado por esta atualização.** Uso manual pelo responsável, integrações reais e aprovação específica do lote 1 continuam pendentes. Merge na main publica automaticamente; não fazer merge do PR #1349 sem a autorização do responsável prevista no passo a passo.
