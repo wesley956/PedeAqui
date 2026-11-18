@@ -25,9 +25,11 @@ rollback() {
     cp -p "$backup" "$config"
     nginx -t && systemctl reload nginx
   fi
-  if (( renamed )); then
+  if (( renamed == 2 )); then
     docker stop "$active"
     docker rename "$active" "$candidate"
+  fi
+  if (( renamed >= 1 )); then
     docker rename "$previous" "$active"
     docker start "$active"
   fi
@@ -57,7 +59,8 @@ for attempt in $(seq 1 30); do
   sleep 2
 done
 test "$ready" = 1
-for path in /api/health /m/dona-maria-salgados-e-porcoes; do
+# Check application health independently of any restaurant tenant.
+for path in /api/health /login; do
   curl -fsS --max-time 30 -o /dev/null "http://127.0.0.1:$target$path"
 done
 systemctl stop pedeaqui-notifications.timer
@@ -72,6 +75,8 @@ state=$(systemctl show -p ActiveState --value pedeaqui-notifications.service)
 docker rename "$active" "$previous"
 renamed=1
 docker rename "$candidate" "$active"
+renamed=2
+changed=1
 python3 - "$config" "$port" "$target" <<'PY'
 from pathlib import Path
 import sys
@@ -82,7 +87,6 @@ if source.count(old) != 1:
     raise SystemExit("Unexpected nginx configuration")
 path.write_text(source.replace(old, f"proxy_pass http://127.0.0.1:{sys.argv[3]};"))
 PY
-changed=1
 nginx -t
 systemctl reload nginx
 for domain in pedeaqui.pp.ua www.pedeaqui.pp.ua; do
@@ -95,3 +99,19 @@ printf '%s\n' "$sha" > /opt/pedeaqui/deployed-commit
 rm -f "$archive"
 trap - ERR
 echo "DEPLOY_OK commit=$sha rollback_container=$previous nginx_backup=$backup"
+
+# Post-success maintenance: preserve current production, legacy service and latest rollback.
+# Cleanup is best-effort and never touches volumes or running containers.
+cleanup_old_releases() {
+  local old_container old_image old_list
+  old_list=$(docker ps -a --filter status=exited --format '{{.Names}}') || return 1
+  while IFS= read -r old_container; do
+    [[ -n "$old_container" ]] || continue
+    [[ "$old_container" != "$previous" ]] || continue
+    old_image=$(docker inspect --format '{{.Image}}' "$old_container") || return 1
+    docker rm "$old_container" || return 1
+    docker image rm "$old_image" >/dev/null 2>&1 || true
+    echo "DEPLOY_CLEANUP_REMOVED container=$old_container"
+  done < <(printf '%s\n' "$old_list" | awk 'match($0, /^pedeaqui-previous-[0-9]+$/) {print}' | sort -r | tail -n +2 || true)
+}
+cleanup_old_releases || echo "DEPLOY_CLEANUP_WARNING: manual inspection required" >&2
