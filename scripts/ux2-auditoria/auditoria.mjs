@@ -445,12 +445,10 @@ for (const device of DEVICES) {
       await step("pdv-produto-opcoes", () => page.locator("button", { hasText: "Caixa com 30 salgados" }).first().click(quick));
       await page.keyboard.press("Escape").catch(() => {});
       await page.waitForTimeout(400);
-      if (!device.key.startsWith("pc-")) await step("pdv-venda-no-celular", () => page.locator('nav[aria-label="Etapa atual da venda"] button').nth(1).click(quick));
+      if (await page.locator('nav[aria-label="Etapa atual da venda"]').isVisible()) await step("pdv-venda-no-celular", () => page.locator('nav[aria-label="Etapa atual da venda"] button').nth(1).click(quick));
       await step("pdv-pagamento-detalhes", async () => {
-        if (!device.key.startsWith("pc-")) {
-          const toggle = page.locator('footer[aria-label="Pagamento e finalização da venda"] button[aria-controls="pdv-checkout-details"]');
-          if (await toggle.getAttribute("aria-expanded") === "false") await toggle.click(quick);
-        }
+        const toggle = page.locator('footer[aria-label="Pagamento e finalização da venda"] button[aria-controls="pdv-checkout-details"]');
+        if (await toggle.isVisible() && await toggle.getAttribute("aria-expanded") === "false") await toggle.click(quick);
         await page.getByRole("button", { name: /Detalhes/ }).first().click(quick);
         await page.getByRole("dialog", { name: "Pagamento", exact: true }).waitFor({ state: "visible", timeout: 10000 });
       });
