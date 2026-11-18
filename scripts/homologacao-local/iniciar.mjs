@@ -85,6 +85,13 @@ if (!fs.existsSync(path.join(workdir, "supabase", "config.toml"))) run(`${supaba
     spawnSync(process.execPath, ["-e", `setTimeout(() => {}, ${attempt * 45000})`]);
   }
 }
+// Só o gateway descartável deste projeto. O PostgREST encerra conexões ociosas que o Kong 2.8
+// pode tentar reutilizar (B-06). Desligar o pool evita respostas 502 sem repetir escritas.
+// https://github.com/Kong/kong/blob/2.8.1/kong.conf.default#L710-L718
+run(`docker exec -e KONG_UPSTREAM_KEEPALIVE_POOL_SIZE=0 supabase_kong_${workdir} kong reload`);
+const gatewayConfig = run(`docker exec supabase_kong_${workdir} cat /usr/local/kong/.kong_env`).out;
+if (!/^upstream_keepalive_pool_size\s*=\s*0\s*$/m.test(gatewayConfig)) fail("O gateway local não confirmou a configuração sem reutilização de conexões.");
+console.log("  Gateway local: reutilização de conexões desativada e conferida.");
 const statusEnv = Object.fromEntries(run(`${supabase} status -o env --workdir ${workdir}`).out.split("\n").map((line) => line.match(/^([A-Z_]+)="?(.*?)"?$/)).filter(Boolean).map((match) => [match[1], match[2]]));
 const anonKey = statusEnv.ANON_KEY ?? statusEnv.PUBLISHABLE_KEY;
 const serviceKey = statusEnv.SERVICE_ROLE_KEY ?? statusEnv.SECRET_KEY;

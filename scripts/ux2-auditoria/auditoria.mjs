@@ -41,6 +41,12 @@ const DEVICES = [
     { key: "android-360-escuro", browser: chromium, options: { ...devices["Galaxy S8"], viewport: { width: 360, height: 740 }, colorScheme: "dark" } },
   ]),
   ...(process.env.AUDIT_IPHONE ? [{ key: "iphone-390", browser: webkit, options: devices["iPhone 13"] }] : []),
+  ...(process.env.AUDIT_EXTRA_SIZES ? [
+    { key: "phone-390", browser: chromium, options: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } },
+    { key: "phone-390-escuro", browser: chromium, options: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, colorScheme: "dark" } },
+    { key: "pc-768", browser: chromium, options: { viewport: { width: 768, height: 1024 } } },
+    { key: "pc-768-escuro", browser: chromium, options: { viewport: { width: 768, height: 1024 }, colorScheme: "dark" } },
+  ] : []),
 ];
 
 async function measure(page) {
@@ -298,6 +304,7 @@ async function runFlows(page, device) {
   await customerContext.close();
 
   // 4) Salão: abrir mesa, lançar item, enviar para produção e pedir a conta.
+  if (process.env.AUDIT_CORE_ONLY !== "1") {
   await log("salao", "1-abrir-lista", () => open("/salao"));
   await log("salao", "2-abrir-mesa", () => page.locator('a[href^="/salao/"]').first().click(quick));
   await log("salao", "3-abrir-atendimento", () => clickButton(/^Abrir mesa$/));
@@ -310,6 +317,9 @@ async function runFlows(page, device) {
   // Com pedido ainda em preparo o sistema deve recusar e explicar, sem tela de erro.
   await log("salao", "7-recusar-fechamento-com-pedido-em-preparo", () => clickButton(/^Concluir e liberar mesa$/),
     () => visibleText("Ainda existem pedidos em produção ou não servidos."));
+  } else {
+    results.push({ device: device.key, area: "scope", label: "Salão fora do lote: não validado por esta execução" });
+  }
 
   // 5) Caixa de novo: o que a tela oferece com o caixa aberto e uma venda registrada.
   await log("caixa", "3-com-venda", () => open("/caixa"));
