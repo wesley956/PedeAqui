@@ -1,10 +1,25 @@
 [
   {
     "device": "pc-1366",
-    "label": "pedido › 2-abrir-detalhe",
+    "label": "pedido › 7-proxima-acao",
     "reasons": [
-      "locator.waitFor: Timeout 15000ms exceeded.",
+      "A operação abriu uma tela de erro; recarregar não confirma seu resultado.",
       "fluxo não confirmado"
+    ]
+  },
+  {
+    "device": "pc-1366",
+    "label": "pedido › 10-confirmar-conclusao",
+    "reasons": [
+      "O pedido não chegou ao estado Concluído.",
+      "fluxo não confirmado"
+    ]
+  },
+  {
+    "device": "pc-1366-escuro",
+    "label": "/pedidos/[id]",
+    "reasons": [
+      "erro no navegador"
     ]
   }
 ]

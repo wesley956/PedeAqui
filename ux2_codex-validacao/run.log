@@ -20,10 +20,10 @@ pc-1366 logged in → http://127.0.0.1:3000/dashboard
 pc-1366 panel /dashboard → 200 /dashboard overflow=no small=22 
 pc-1366 panel /pedidos → 200 /pedidos overflow=no small=81 
 pc-1366 panel /pdv → 200 /pdv overflow=no small=41 
-pc-1366 panel /pedidos/[id] → 200 /pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3 overflow=no small=27 
-pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06 overflow=no small=34 
-pc-1366 panel /clientes/[id] → 200 /clientes/9c937667-b7c3-4cd0-935f-dc16b292322f overflow=no small=34 
-pc-1366 panel /salao/[tableId] → 200 /salao/fb4c5721-777a-480b-8218-27709d36f6fe overflow=no small=28 
+pc-1366 panel /pedidos/[id] → 200 /pedidos/5d1bcb9f-702e-49d0-ba5e-896dee211ec4 overflow=no small=27 
+pc-1366 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/790f0a31-a805-4a2c-8ab9-29a450f141e8 overflow=no small=34 
+pc-1366 panel /clientes/[id] → 200 /clientes/11883e69-e01f-4461-b15f-7069a6bd9ca3 overflow=no small=34 
+pc-1366 panel /salao/[tableId] → 200 /salao/572ba047-5762-430a-83b8-3aa6856da902 overflow=no small=28 
 pc-1366 public-local menu → 200 /m/salgados-da-vila overflow=no small=5 
 pc-1366 public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=5 
 pc-1366 public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=7 
@@ -39,28 +39,44 @@ FLUXO cliente › 2-carrinho-e-checkout ok
 FLUXO cliente › 3-dados-retirada-dinheiro ok
 FLUXO cliente › 4-confirmar-pedido-novo ok
 FLUXO pedido › 1-abrir-lista ok
-FLUXO pedido › 2-abrir-detalhe FALHOU locator.waitFor: Timeout 15000ms exceeded.
+FLUXO pedido › 2-abrir-detalhe ok
+FLUXO pedido › 3-proxima-acao ok
+FLUXO pedido › 4-proxima-acao ok
+FLUXO pedido › 5-proxima-acao ok
+FLUXO pedido › 6-proxima-acao ok
+FLUXO pedido › 7-proxima-acao FALHOU A operação abriu uma tela de erro; recarregar não confirma seu resultado.
+FLUXO pedido › 10-confirmar-conclusao FALHOU O pedido não chegou ao estado Concluído.
+FLUXO cliente › 5-acompanhamento-concluido ok
+FLUXO salao › 1-abrir-lista ok
+FLUXO salao › 2-abrir-mesa ok
+FLUXO salao › 3-abrir-atendimento ok
+FLUXO salao › 4-lancar-item ok
+FLUXO salao › 5-enviar-producao ok
+FLUXO salao › 6-registrar-pagamento ok
+FLUXO salao › 7-recusar-fechamento-com-pedido-em-preparo ok
+FLUXO caixa › 3-com-venda ok
+FLUXO caixa › 4-conferir-fechar ok
 android-360 panel login → 200 /login overflow=no small=9 
 android-360 logged in → http://127.0.0.1:3000/dashboard
-android-360 panel /dashboard → 200 /dashboard overflow=no small=14 
-android-360 panel /pedidos → 200 /pedidos overflow=no small=16 
+android-360 panel /dashboard → 200 /dashboard overflow=no small=15 
+android-360 panel /pedidos → 200 /pedidos overflow=no small=17 
 android-360 panel /pdv → 200 /pdv overflow=no small=12 
-android-360 panel /pedidos/[id] → 200 /pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3 overflow=no small=19 
-android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06 overflow=no small=26 
-android-360 panel /clientes/[id] → 200 /clientes/b8ac035d-a5bd-45fc-8fbd-d53a2658b75a overflow=no small=26 
-android-360 panel /salao/[tableId] → 200 /salao/fb4c5721-777a-480b-8218-27709d36f6fe overflow=no small=18 
+android-360 panel /pedidos/[id] → 200 /pedidos/5d1bcb9f-702e-49d0-ba5e-896dee211ec4 overflow=no small=19 
+android-360 panel /cardapio/produtos/[id] → 200 /cardapio/produtos/790f0a31-a805-4a2c-8ab9-29a450f141e8 overflow=no small=26 
+android-360 panel /clientes/[id] → 200 /clientes/738abf39-cf54-4fa2-b01b-a4670c6019a5 overflow=no small=26 
+android-360 panel /salao/[tableId] → 200 /salao/572ba047-5762-430a-83b8-3aa6856da902 overflow=no small=19 
 android-360 public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
 android-360 public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=6 
 android-360 public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=8 
 pc-1366-escuro panel login → 200 /login overflow=no small=12 
 pc-1366-escuro logged in → http://127.0.0.1:3000/dashboard
 pc-1366-escuro panel /dashboard → 200 /dashboard overflow=no small=22 
-pc-1366-escuro panel /pedidos → 200 /pedidos overflow=no small=92 
+pc-1366-escuro panel /pedidos → 200 /pedidos overflow=no small=93 
 pc-1366-escuro panel /pdv → 200 /pdv overflow=no small=41 
-pc-1366-escuro panel /pedidos/[id] → 200 /pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3 overflow=no small=27 
-pc-1366-escuro panel /cardapio/produtos/[id] → 200 /cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06 overflow=no small=34 
-pc-1366-escuro panel /clientes/[id] → 200 /clientes/b8ac035d-a5bd-45fc-8fbd-d53a2658b75a overflow=no small=34 
-pc-1366-escuro panel /salao/[tableId] → 200 /salao/fb4c5721-777a-480b-8218-27709d36f6fe overflow=no small=28 
+pc-1366-escuro panel /pedidos/[id] → 200 /pedidos/5d1bcb9f-702e-49d0-ba5e-896dee211ec4 overflow=no small=21 
+pc-1366-escuro panel /cardapio/produtos/[id] → 200 /cardapio/produtos/790f0a31-a805-4a2c-8ab9-29a450f141e8 overflow=no small=34 
+pc-1366-escuro panel /clientes/[id] → 200 /clientes/738abf39-cf54-4fa2-b01b-a4670c6019a5 overflow=no small=34 
+pc-1366-escuro panel /salao/[tableId] → 200 /salao/572ba047-5762-430a-83b8-3aa6856da902 overflow=no small=30 
 pc-1366-escuro public-local menu → 200 /m/salgados-da-vila overflow=no small=5 
 pc-1366-escuro public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=5 
 pc-1366-escuro public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=7 
@@ -69,13 +85,13 @@ android-360-escuro logged in → http://127.0.0.1:3000/dashboard
 android-360-escuro panel /dashboard → 200 /dashboard overflow=no small=14 
 android-360-escuro panel /pedidos → 200 /pedidos overflow=no small=16 
 android-360-escuro panel /pdv → 200 /pdv overflow=no small=12 
-android-360-escuro panel /pedidos/[id] → 200 /pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3 overflow=no small=19 
-android-360-escuro panel /cardapio/produtos/[id] → 200 /cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06 overflow=no small=26 
-android-360-escuro panel /clientes/[id] → 200 /clientes/b8ac035d-a5bd-45fc-8fbd-d53a2658b75a overflow=no small=26 
-android-360-escuro panel /salao/[tableId] → 200 /salao/fb4c5721-777a-480b-8218-27709d36f6fe overflow=no small=18 
+android-360-escuro panel /pedidos/[id] → 200 /pedidos/5d1bcb9f-702e-49d0-ba5e-896dee211ec4 overflow=no small=19 
+android-360-escuro panel /cardapio/produtos/[id] → 200 /cardapio/produtos/790f0a31-a805-4a2c-8ab9-29a450f141e8 overflow=no small=26 
+android-360-escuro panel /clientes/[id] → 200 /clientes/738abf39-cf54-4fa2-b01b-a4670c6019a5 overflow=no small=26 
+android-360-escuro panel /salao/[tableId] → 200 /salao/572ba047-5762-430a-83b8-3aa6856da902 overflow=no small=19 
 android-360-escuro public-local menu → 200 /m/salgados-da-vila overflow=no small=6 
 android-360-escuro public-local carrinho → 200 /m/salgados-da-vila/carrinho overflow=no small=6 
 android-360-escuro public-local checkout → 200 /m/salgados-da-vila/checkout overflow=no small=8 
-UX2_AUDIT_DONE entries=115
-UX2_AUDIT_FAILED [{"device":"pc-1366","label":"pedido › 2-abrir-detalhe","reasons":["locator.waitFor: Timeout 15000ms exceeded.","fluxo não confirmado"]}]
+UX2_AUDIT_DONE entries=131
+UX2_AUDIT_FAILED [{"device":"pc-1366","label":"pedido › 7-proxima-acao","reasons":["A operação abriu uma tela de erro; recarregar não confirma seu resultado.","fluxo não confirmado"]},{"device":"pc-1366","label":"pedido › 10-confirmar-conclusao","reasons":["O pedido não chegou ao estado Concluído.","fluxo não confirmado"]},{"device":"pc-1366-escuro","label":"/pedidos/[id]","reasons":["erro no navegador"]}]
 HOMOLOG_APOS status=1
