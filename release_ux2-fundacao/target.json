@@ -1,0 +1,7 @@
+{
+  "ref": "release/ux2-fundacao",
+  "applicationCommit": "531889d5de6c1b2cccffa6cbd87da7703948b8e9",
+  "harnessCommit": "232203fe68b224df96ec45ad8b64e958b6fc61e4",
+  "configuration": "CSP adaptada somente ao banco local; src/ intacto",
+  "scope": "fluxo crítico; Salão separado"
+}
