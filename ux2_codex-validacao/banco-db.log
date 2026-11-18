@@ -1,8 +1,4 @@
 
-	        select
-	        format('%I.%I', pub.schemaname, pub.tablename)::regclass entity
-	        ) rr
-	        where
 	        pub.pubname = $1
 	        and pub.schemaname like (case $2 when '*' then '%' else $2 end)
 	        and pub.tablename like (case $3 when '*' then '%' else $3 end)
@@ -29,9 +25,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:52.813 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:52.813 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:52.813 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:48.565 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:48.565 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:48.565 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -67,9 +63,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:55.182 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:55.182 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:55.182 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:50.782 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:50.782 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:50.782 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -105,9 +101,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:55.184 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:55.184 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:55.184 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:50.782 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:50.782 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:50.782 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -143,9 +139,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:55.185 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:55.185 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:55.185 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:50.782 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:50.782 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:50.782 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -181,9 +177,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:57.092 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:57.092 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:57.092 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:53.355 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:53.355 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:53.355 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -219,9 +215,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:57.094 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:57.094 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:57.094 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:53.355 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:53.355 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:53.355 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -257,9 +253,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:57.097 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:57.097 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:57.097 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:53.361 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:53.361 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:53.361 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -295,9 +291,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:59.504 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:59.504 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:59.504 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:53.836 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:53.836 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:53.836 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -333,9 +329,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:59.507 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:59.507 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:59.507 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:53.839 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:53.839 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:53.839 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -371,9 +367,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:59.508 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:59.508 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:59.508 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:53.842 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:53.842 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:53.842 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -409,9 +405,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:59.763 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:59.763 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:59.763 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:56.316 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:56.316 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:56.316 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -447,9 +443,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:59.768 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:59.768 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:59.768 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:56.320 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:56.320 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:56.320 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -485,9 +481,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:51:59.770 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:51:59.770 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:51:59.770 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:56.320 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:56.320 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:56.320 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -523,11 +519,9 @@
 	        created_at = now()
 	      returning
 	         id
- 2026-11-17 23:52:00.000 UTC [200] LOG:  cron job 3 starting: select private.invoke_internal_job('payment_reconciliation');
- 2026-11-17 23:52:00.005 UTC [200] LOG:  cron job 3 completed: 1 row
-172.18.0.5 2026-11-17 23:52:02.322 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:02.322 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:02.322 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:56.577 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:56.577 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:56.577 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -563,9 +557,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:02.323 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:02.323 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:02.323 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:56.578 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:56.578 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:56.578 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -601,9 +595,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:02.324 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:02.324 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:02.324 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:56.580 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:56.580 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:56.580 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -639,9 +633,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:02.536 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:02.536 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:02.536 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:59.011 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:59.011 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:59.011 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -677,9 +671,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:02.541 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:02.541 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:02.541 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:59.013 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:59.013 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:59.013 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -715,9 +709,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:02.542 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:02.542 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:02.542 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:59.014 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:59.014 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:59.014 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -753,9 +747,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:04.851 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:04.851 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:04.851 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:59.265 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:59.265 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:59.265 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -791,9 +785,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:04.852 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:04.852 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:04.852 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:59.268 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:59.268 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:59.268 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -829,9 +823,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:04.855 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:04.855 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:04.855 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-17 23:59:59.270 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-17 23:59:59.270 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-17 23:59:59.270 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -867,9 +861,17 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:05.060 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:05.060 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:05.060 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+ 2026-11-18 00:00:00.000 UTC [200] LOG:  cron job 6 starting: select private.invoke_internal_job('conversation_auto_close');
+ 2026-11-18 00:00:00.001 UTC [200] LOG:  cron job 1 starting: select private.invoke_internal_job('campaign_messages');
+ 2026-11-18 00:00:00.002 UTC [200] LOG:  cron job 3 starting: select private.invoke_internal_job('payment_reconciliation');
+ 2026-11-18 00:00:00.110 UTC [200] LOG:  cron job 7 starting: select private.reactivate_scheduled_catalog_items();
+ 2026-11-18 00:00:00.117 UTC [200] LOG:  cron job 6 completed: 1 row
+ 2026-11-18 00:00:00.118 UTC [200] LOG:  cron job 7 completed: 1 row
+ 2026-11-18 00:00:00.119 UTC [200] LOG:  cron job 3 completed: 1 row
+ 2026-11-18 00:00:00.119 UTC [200] LOG:  cron job 1 completed: 1 row
+172.18.0.5 2026-11-18 00:00:01.627 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:01.627 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:01.627 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -905,9 +907,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:05.060 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:05.060 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:05.060 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:01.628 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:01.628 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:01.628 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -943,9 +945,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:05.063 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:05.063 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:05.063 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:01.631 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:01.631 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:01.631 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -981,9 +983,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:07.236 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:07.236 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:07.236 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:01.869 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:01.869 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:01.869 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1019,9 +1021,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:07.239 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:07.239 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:07.239 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:01.869 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:01.869 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:01.869 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1057,9 +1059,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:07.242 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:07.242 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:07.242 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:01.872 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:01.872 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:01.872 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1095,9 +1097,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:07.455 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:07.455 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:07.455 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:04.154 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:04.154 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:04.154 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1133,9 +1135,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:07.456 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:07.456 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:07.456 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:04.155 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:04.155 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:04.155 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1171,9 +1173,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:07.459 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:07.459 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:07.459 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:04.160 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:04.160 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:04.160 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1209,9 +1211,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:09.671 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:09.671 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:09.671 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:05.746 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:05.746 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:05.746 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1247,9 +1249,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:09.674 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:09.674 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:09.674 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:05.749 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:05.749 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:05.749 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1285,9 +1287,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:09.674 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:09.674 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:09.674 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:05.749 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:05.749 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:05.749 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1323,9 +1325,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:11.245 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:11.245 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:11.245 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:07.420 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:07.420 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:07.420 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1361,9 +1363,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:11.245 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:11.245 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:11.245 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:07.427 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:07.427 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:07.427 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1399,9 +1401,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:11.248 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:11.248 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:11.248 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:07.427 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:07.427 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:07.427 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1437,9 +1439,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:12.787 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:12.787 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:12.787 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:09.051 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:09.051 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:09.051 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1475,9 +1477,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:12.789 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:12.789 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:12.789 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:09.062 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:09.062 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:09.062 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1513,9 +1515,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:12.790 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:12.790 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:12.790 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:09.062 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:09.062 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:09.062 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1551,9 +1553,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:14.375 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:14.375 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:14.375 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:10.676 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:10.676 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:10.676 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1589,9 +1591,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:14.376 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:14.376 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:14.376 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:10.677 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:10.677 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:10.677 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1627,9 +1629,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:14.379 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:14.379 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:14.379 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:10.680 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:10.680 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:10.680 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1665,9 +1667,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:15.955 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:15.955 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:15.955 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:11.510 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:11.510 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:11.510 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1703,9 +1705,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:15.956 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:15.956 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:15.956 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:11.513 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:11.513 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:11.513 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1741,9 +1743,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:15.958 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:15.958 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:15.958 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:11.515 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:11.515 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:11.515 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1779,9 +1781,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:16.724 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:16.724 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:16.724 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:15.972 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:15.972 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:15.972 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1817,9 +1819,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:16.724 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:16.724 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:16.724 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:15.975 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:15.975 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:15.975 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1855,9 +1857,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:16.724 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:16.724 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:16.724 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:15.975 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:15.975 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:15.975 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1893,9 +1895,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:21.155 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:21.155 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:21.155 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:28.716 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:28.716 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:28.716 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1931,9 +1933,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:21.158 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:21.158 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:21.158 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:28.716 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:28.716 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:28.716 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -1969,9 +1971,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:21.159 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:21.159 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:21.159 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:28.717 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:28.717 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:28.717 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2007,9 +2009,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:33.317 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:33.317 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:33.317 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:30.078 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:30.078 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:30.078 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2045,9 +2047,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:33.318 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:33.318 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:33.318 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:30.080 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:30.080 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:30.080 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2083,9 +2085,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:33.320 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:33.320 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:33.320 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:30.082 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:30.082 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:30.082 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2121,9 +2123,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:34.673 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:34.673 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:34.673 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:31.597 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:31.597 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:31.597 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2159,9 +2161,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:34.675 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:34.675 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:34.675 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:31.600 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:31.600 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:31.600 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2197,9 +2199,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:34.675 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:34.675 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:34.675 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:31.601 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:31.601 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:31.601 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2235,9 +2237,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:36.066 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:36.066 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:36.066 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:33.145 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:33.145 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:33.145 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2273,9 +2275,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:36.066 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:36.066 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:36.066 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:33.147 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:33.147 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:33.147 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2311,9 +2313,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:36.066 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:36.066 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:36.066 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:33.152 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:33.152 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:33.152 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2349,9 +2351,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:37.511 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:37.511 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:37.511 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:34.654 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:34.654 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:34.654 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2387,9 +2389,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:37.511 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:37.511 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:37.511 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:34.657 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:34.657 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:34.657 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2425,9 +2427,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:37.514 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:37.514 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:37.514 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:34.657 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:34.657 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:34.657 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2463,9 +2465,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:38.905 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:38.905 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:38.905 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:34.978 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:34.978 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:34.978 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2501,9 +2503,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:38.906 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:38.906 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:38.906 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:34.979 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:34.979 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:34.979 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2539,9 +2541,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:38.908 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:38.908 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:38.908 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:34.981 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:34.981 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:34.981 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2577,9 +2579,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:39.176 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:39.176 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:39.176 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:36.418 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:36.418 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:36.418 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2615,9 +2617,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:39.177 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:39.177 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:39.177 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:36.419 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:36.419 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:36.419 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2653,9 +2655,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:39.179 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:39.179 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:39.179 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:36.421 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:36.421 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:36.421 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2691,9 +2693,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:40.534 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:40.534 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:40.534 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:36.682 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:36.682 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:36.682 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2729,9 +2731,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:40.537 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:40.537 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:40.537 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:36.689 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:36.689 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:36.689 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2767,9 +2769,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:40.537 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:40.537 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:40.537 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:36.691 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:36.691 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:36.691 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2805,9 +2807,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:40.774 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:40.774 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:40.774 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:38.197 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:38.197 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:38.197 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2843,9 +2845,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:40.774 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:40.774 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:40.774 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:38.199 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:38.199 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:38.199 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2881,9 +2883,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:40.780 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:40.780 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:40.780 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:38.199 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:38.199 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:38.199 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2919,9 +2921,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:42.148 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:42.148 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:42.148 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:38.467 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:38.467 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:38.467 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2957,9 +2959,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:42.151 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:42.151 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:42.151 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:38.469 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:38.469 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:38.469 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -2995,9 +2997,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:42.153 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:42.153 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:42.153 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:38.471 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:38.471 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:38.471 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3033,9 +3035,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:42.367 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:42.367 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:42.367 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:40.299 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:40.299 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:40.299 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3071,9 +3073,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:42.368 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:42.368 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:42.368 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:40.301 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:40.301 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:40.301 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3109,9 +3111,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:42.371 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:42.371 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:42.371 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:40.302 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:40.302 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:40.302 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3147,9 +3149,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:43.744 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:43.744 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:43.744 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:40.574 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:40.574 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:40.574 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3185,9 +3187,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:43.746 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:43.746 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:43.746 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:40.574 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:40.574 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:40.574 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3223,9 +3225,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:43.749 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:43.749 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:43.749 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:40.576 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:40.576 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:40.576 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3261,9 +3263,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:43.965 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:43.965 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:43.965 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:42.065 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:42.065 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:42.065 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3299,9 +3301,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:43.971 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:43.971 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:43.971 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:42.065 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:42.065 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:42.065 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3337,9 +3339,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:43.973 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:43.973 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:43.973 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:42.065 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:42.065 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:42.065 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3375,9 +3377,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:45.321 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:45.321 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:45.321 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:43.616 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:43.616 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:43.616 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3413,9 +3415,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:45.321 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:45.321 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:45.321 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:43.618 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:43.618 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:43.618 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3451,9 +3453,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:45.323 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:45.323 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:45.323 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:43.619 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:43.619 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:43.619 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3489,9 +3491,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:46.792 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:46.792 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:46.792 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:45.198 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:45.198 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:45.198 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3527,9 +3529,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:46.794 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:46.794 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:46.794 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:45.198 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:45.198 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:45.198 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3565,9 +3567,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:52:46.795 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:52:46.795 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:52:46.795 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:45.201 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:45.201 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:45.201 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3603,9 +3605,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:18.568 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:18.568 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:18.568 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:45.983 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:45.983 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:45.983 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3641,9 +3643,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:18.568 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:18.568 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:18.568 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:45.986 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:45.986 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:45.986 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3679,9 +3681,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:18.570 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:18.570 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:18.570 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:45.988 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:45.988 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:45.988 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3717,9 +3719,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:22.114 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:22.114 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:22.114 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:49.553 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:49.553 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:49.553 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3755,9 +3757,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:22.116 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:22.116 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:22.116 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:49.555 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:49.555 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:49.555 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3793,9 +3795,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:22.117 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:22.117 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:22.117 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:49.555 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:49.555 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:49.555 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3831,9 +3833,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:32.174 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:32.174 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:32.174 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:59.784 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:59.784 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:59.784 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3869,9 +3871,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:32.175 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:32.175 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:32.175 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:59.785 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:59.785 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:59.785 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3907,9 +3909,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:32.176 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:32.176 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:32.176 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:00:59.787 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:00:59.787 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:00:59.787 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3945,9 +3947,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:33.618 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:33.618 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:33.618 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:01.259 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:01.259 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:01.259 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -3983,9 +3985,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:33.618 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:33.618 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:33.618 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:01.259 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:01.259 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:01.259 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4021,9 +4023,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:33.623 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:33.623 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:33.623 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:01.260 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:01.260 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:01.260 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4059,9 +4061,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:35.186 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:35.186 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:35.186 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:02.875 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:02.875 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:02.875 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4097,9 +4099,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:35.187 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:35.187 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:35.187 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:02.876 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:02.876 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:02.876 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4135,9 +4137,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:35.188 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:35.188 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:35.188 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:02.881 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:02.881 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:02.881 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4173,9 +4175,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:36.669 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:36.669 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:36.669 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:04.494 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:04.494 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:04.494 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4211,9 +4213,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:36.670 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:36.670 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:36.670 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:04.496 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:04.496 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:04.496 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4249,9 +4251,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:36.671 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:36.671 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:36.671 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:04.497 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:04.497 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:04.497 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4287,9 +4289,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:38.174 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:38.174 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:38.174 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:06.036 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:06.036 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:06.036 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4325,9 +4327,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:38.176 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:38.176 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:38.176 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:06.037 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:06.037 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:06.037 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4363,9 +4365,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:38.176 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:38.176 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:38.176 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:06.040 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:06.040 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:06.040 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4401,9 +4403,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:38.517 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:38.517 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:38.517 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:06.372 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:06.372 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:06.372 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4439,9 +4441,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:38.518 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:38.518 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:38.518 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:06.378 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:06.378 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:06.378 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4477,9 +4479,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:38.519 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:38.519 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:38.519 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:06.380 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:06.380 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:06.380 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4515,9 +4517,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:40.023 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:40.023 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:40.023 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:07.891 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:07.891 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:07.891 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4553,9 +4555,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:40.023 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:40.023 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:40.023 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:07.892 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:07.892 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:07.892 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4591,9 +4593,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:40.025 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:40.025 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:40.025 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:07.894 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:07.894 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:07.894 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4629,9 +4631,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:40.233 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:40.233 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:40.233 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:08.098 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:08.098 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:08.098 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4667,9 +4669,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:40.234 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:40.234 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:40.234 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:08.101 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:08.101 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:08.101 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4705,9 +4707,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:40.236 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:40.236 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:40.236 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:08.103 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:08.103 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:08.103 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4743,9 +4745,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:41.703 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:41.703 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:41.703 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:09.603 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:09.603 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:09.603 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4781,9 +4783,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:41.703 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:41.703 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:41.703 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:09.607 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:09.607 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:09.607 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4819,9 +4821,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:41.703 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:41.703 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:41.703 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:09.607 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:09.607 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:09.607 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4857,9 +4859,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:41.921 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:41.921 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:41.921 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:09.832 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:09.832 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:09.832 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4895,9 +4897,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:41.922 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:41.922 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:41.922 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:09.832 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:09.832 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:09.832 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4933,9 +4935,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:41.924 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:41.924 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:41.924 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:09.832 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:09.832 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:09.832 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -4971,9 +4973,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:43.348 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:43.348 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:43.348 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:11.310 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:11.310 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:11.310 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5009,9 +5011,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:43.348 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:43.348 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:43.348 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:11.311 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:11.311 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:11.311 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5047,9 +5049,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:43.351 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:43.351 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:43.351 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:11.312 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:11.312 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:11.312 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5085,9 +5087,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:43.547 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:43.547 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:43.547 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:11.529 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:11.529 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:11.529 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5123,9 +5125,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:43.549 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:43.549 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:43.549 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:11.532 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:11.532 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:11.532 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5161,9 +5163,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:43.549 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:43.549 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:43.549 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:11.533 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:11.533 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:11.533 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5199,9 +5201,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:44.975 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:44.975 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:44.975 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:13.069 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:13.069 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:13.069 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5237,9 +5239,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:44.978 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:44.978 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:44.978 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:13.071 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:13.071 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:13.071 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5275,9 +5277,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:44.978 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:44.978 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:44.978 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:13.074 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:13.074 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:13.074 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5313,9 +5315,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:46.549 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:46.549 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:46.549 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:14.681 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:14.681 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:14.681 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5351,9 +5353,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:46.550 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:46.550 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:46.550 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:14.681 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:14.681 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:14.681 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5389,9 +5391,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:46.554 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:46.554 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:46.554 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:14.682 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:14.682 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:14.682 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5427,9 +5429,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:48.059 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:48.059 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:48.059 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:16.347 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:16.347 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:16.347 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5465,9 +5467,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:48.060 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:48.060 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:48.060 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:16.352 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:16.352 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:16.352 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5503,9 +5505,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:48.064 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:48.064 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:48.064 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:16.352 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:16.352 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:16.352 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5541,9 +5543,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:49.670 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:49.670 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:49.670 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:17.955 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:17.955 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:17.955 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5579,9 +5581,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:49.670 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:49.670 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:49.670 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:17.959 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:17.959 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:17.959 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5617,9 +5619,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:49.677 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:49.677 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:49.677 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:17.960 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:17.960 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:17.960 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5655,9 +5657,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:51.232 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:51.232 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:51.232 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:19.572 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:19.572 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:19.572 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5693,9 +5695,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:51.232 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:51.232 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:51.232 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:19.572 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:19.572 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:19.572 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5731,9 +5733,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:51.235 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:51.235 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:51.235 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:19.574 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:19.574 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:19.574 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5769,9 +5771,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:52.019 UTC [2224] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:52.019 UTC [2224] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:52.019 UTC [2224] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:20.394 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:20.394 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:20.394 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5807,9 +5809,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:52.022 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:52.022 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:52.022 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:20.394 UTC [2268] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:20.394 UTC [2268] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:20.394 UTC [2268] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5845,9 +5847,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:52.022 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:52.022 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:52.022 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:20.395 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:20.395 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:20.395 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5883,9 +5885,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:56.367 UTC [2225] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:56.367 UTC [2225] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:56.367 UTC [2225] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:24.820 UTC [2267] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:24.820 UTC [2267] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:24.820 UTC [2267] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5921,9 +5923,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:56.369 UTC [2223] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:56.369 UTC [2223] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:56.369 UTC [2223] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:24.821 UTC [2266] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:24.821 UTC [2266] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:24.821 UTC [2266] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5959,9 +5961,9 @@
 	        created_at = now()
 	      returning
 	         id
-172.18.0.5 2026-11-17 23:53:56.369 UTC [2222] supabase_admin@postgres ERROR:  invalid column for filter store_id
-172.18.0.5 2026-11-17 23:53:56.369 UTC [2222] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
-172.18.0.5 2026-11-17 23:53:56.369 UTC [2222] supabase_admin@postgres STATEMENT:  with sub_tables as (
+172.18.0.5 2026-11-18 00:01:24.821 UTC [2265] supabase_admin@postgres ERROR:  invalid column for filter store_id
+172.18.0.5 2026-11-18 00:01:24.821 UTC [2265] supabase_admin@postgres CONTEXT:  PL/pgSQL function realtime.subscription_check_filters() line 30 at RAISE
+172.18.0.5 2026-11-18 00:01:24.821 UTC [2265] supabase_admin@postgres STATEMENT:  with sub_tables as (
 	        select
 	        rr.entity
 	        from
@@ -5997,5 +5999,3 @@
 	        created_at = now()
 	      returning
 	         id
- 2026-11-17 23:54:00.000 UTC [200] LOG:  cron job 3 starting: select private.invoke_internal_job('payment_reconciliation');
- 2026-11-17 23:54:00.007 UTC [200] LOG:  cron job 3 completed: 1 row

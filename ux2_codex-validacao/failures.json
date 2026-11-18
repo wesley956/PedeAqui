@@ -1,16 +1,10 @@
 [
   {
-    "device": "android-360",
-    "label": "/dashboard",
+    "device": "pc-1366",
+    "label": "pedido › 2-abrir-detalhe",
     "reasons": [
-      "acessibilidade grave"
-    ]
-  },
-  {
-    "device": "pc-1366-escuro",
-    "label": "pedidos-aba",
-    "reasons": [
-      "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: /^Em preparo/ }).first()\n"
+      "locator.waitFor: Timeout 15000ms exceeded.",
+      "fluxo não confirmado"
     ]
   }
 ]

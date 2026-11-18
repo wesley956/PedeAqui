@@ -5,7 +5,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 778,
+  "loadMs": 840,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -170,7 +170,7 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 823,
+  "loadMs": 847,
   "finalUrl": "/dashboard",
   "vw": 1366,
   "vh": 768,
@@ -262,7 +262,7 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 1000,
+  "loadMs": 1040,
   "finalUrl": "/pedidos",
   "vw": 1366,
   "vh": 768,
@@ -354,7 +354,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 794,
+  "loadMs": 858,
   "finalUrl": "/pdv",
   "vw": 1366,
   "vh": 768,
@@ -452,10 +452,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/bc76a75b-4018-4578-92d8-b79f128da5ad",
+  "url": "http://127.0.0.1:3000/pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3",
   "status": 200,
-  "loadMs": 918,
-  "finalUrl": "/pedidos/bc76a75b-4018-4578-92d8-b79f128da5ad",
+  "loadMs": 1124,
+  "finalUrl": "/pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -544,10 +544,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8a189866-05f5-4cf7-b4f0-ab7f9a1ed769",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06",
   "status": 200,
-  "loadMs": 906,
-  "finalUrl": "/cardapio/produtos/8a189866-05f5-4cf7-b4f0-ab7f9a1ed769",
+  "loadMs": 1017,
+  "finalUrl": "/cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -642,10 +642,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/edb95b71-fd09-4ed0-8d79-50f9fdc3102f",
+  "url": "http://127.0.0.1:3000/clientes/9c937667-b7c3-4cd0-935f-dc16b292322f",
   "status": 200,
-  "loadMs": 983,
-  "finalUrl": "/clientes/edb95b71-fd09-4ed0-8d79-50f9fdc3102f",
+  "loadMs": 1050,
+  "finalUrl": "/clientes/9c937667-b7c3-4cd0-935f-dc16b292322f",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -734,10 +734,10 @@
   "device": "pc-1366",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
+  "url": "http://127.0.0.1:3000/salao/fb4c5721-777a-480b-8218-27709d36f6fe",
   "status": 200,
-  "loadMs": 887,
-  "finalUrl": "/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
+  "loadMs": 969,
+  "finalUrl": "/salao/fb4c5721-777a-480b-8218-27709d36f6fe",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -1558,7 +1558,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 635,
+  "loadMs": 679,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -1842,7 +1842,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 602,
+  "loadMs": 676,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -1900,7 +1900,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 625,
+  "loadMs": 636,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -2315,6 +2315,128 @@
  {
   "device": "pc-1366",
   "area": "fluxo",
+  "label": "cliente › 1-produto-no-cardapio",
+  "ok": true,
+  "screen": {
+   "url": "/m/salgados-da-vila",
+   "heading": "Salgados da Vila",
+   "buttons": [
+    "Informações da loja",
+    "Combos",
+    "Pastéis",
+    "Salgados",
+    "Bebidas",
+    "Doces",
+    "Remover Coca-Cola 2L do carrinho",
+    "Mais um Coca-Cola 2L",
+    "Adicionar Coca-Cola lata 350 ml ao carrinho",
+    "Adicionar Água sem gás 500 ml ao carrinho",
+    "Adicionar Copo com 12 mini churros ao carrinho",
+    "Adicionar Caixa com 30 mini churros ao carrinho"
+   ],
+   "fields": [
+    "input[] Buscar pizza, lanche, bebida…"
+   ],
+   "notices": [
+    "1"
+   ],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__cliente-1-produto-no-cardapio.jpg"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "cliente › 2-carrinho-e-checkout",
+  "ok": true,
+  "screen": {
+   "url": "/m/salgados-da-vila/checkout",
+   "heading": "Seu pedido",
+   "buttons": [
+    "Remover Coca-Cola 2L",
+    "Aumentar Coca-Cola 2L",
+    "Entrega30–60 min",
+    "RetiradaSem taxa de entrega",
+    "Agora30–60 min",
+    "AgendarEscolha dia e hora",
+    "Aplicar",
+    "Calcular total e revisar antes de enviar"
+   ],
+   "fields": [
+    "input[phone] (19) 99999-9999",
+    "input[name] Como podemos te chamar?",
+    "input[] Buscar bairro atendido",
+    "input[postalCode] 00000-000",
+    "input[number] 123",
+    "input[street] Rua",
+    "input[complement] Apto, bloco, portão azul…",
+    "input[paymentMethod] DinheiroEm dinheiro, na hora de receber.",
+    "input[paymentMethod] Cartão de créditoNa maquininha, na hora ",
+    "input[paymentMethod] Cartão de débitoNa maquininha, na hora d",
+    "input[couponCode] Tem cupom? Ex.: VOLTA20"
+   ],
+   "notices": [
+    "Digite o CEP e preenchemos rua e bairro."
+   ],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__cliente-2-carrinho-e-checkout.jpg"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "cliente › 3-dados-retirada-dinheiro",
+  "ok": true,
+  "screen": {
+   "url": "/m/salgados-da-vila/checkout?erro=total_updated",
+   "heading": "Seu pedido",
+   "buttons": [
+    "Remover Coca-Cola 2L",
+    "Aumentar Coca-Cola 2L",
+    "Entrega30–60 min",
+    "RetiradaSem taxa de entrega",
+    "AgoraAssim que ficar pronto",
+    "AgendarEscolha dia e hora",
+    "Aplicar",
+    "Confirmar pedido · R$ 15,00"
+   ],
+   "fields": [
+    "input[phone] (19) 99999-9999",
+    "input[name] Como podemos te chamar?",
+    "input[paymentMethod] DinheiroEm dinheiro, na hora de receber.",
+    "input[needsChange] Não preciso de troco",
+    "input[needsChange] Preciso de troco",
+    "input[paymentMethod] Cartão de créditoNa maquininha, na hora ",
+    "input[paymentMethod] Cartão de débitoNa maquininha, na hora d",
+    "input[couponCode] Tem cupom? Ex.: VOLTA20"
+   ],
+   "notices": [
+    "O total foi atualizado. Seu pedido ainda não foi enviado. Co"
+   ],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__cliente-3-dados-retirada-dinheiro.jpg"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
+  "label": "cliente › 4-confirmar-pedido-novo",
+  "verified": true,
+  "ok": true,
+  "screen": {
+   "url": "/m/salgados-da-vila/pedido/5806ac09-7141-40fe-b344-42adeab28059",
+   "heading": "Pedido confirmado",
+   "buttons": [],
+   "fields": [],
+   "notices": [],
+   "dialogs": []
+  },
+  "shot": "shots/pc-1366__fluxo__cliente-4-confirmar-pedido-novo.jpg",
+  "orderId": "5806ac09-7141-40fe-b344-42adeab28059"
+ },
+ {
+  "device": "pc-1366",
+  "area": "fluxo",
   "label": "pedido › 1-abrir-lista",
   "ok": true,
   "screen": {
@@ -2326,11 +2448,14 @@
     "Fila",
     "Lista",
     "Quadro",
-    "Todos 11",
-    "Novos 3",
+    "Todos 12",
+    "Novos 4",
     "Em preparo 6",
     "Prontos 0",
     "A iniciar 2",
+    "Aceitar pedido",
+    "Ver resumo",
+    "Confirmar recusa",
     "Aceitar pedido",
     "Ver resumo",
     "Confirmar recusa",
@@ -2361,6 +2486,7 @@
     "input[] Número, cliente, canal, código externo ou sync",
     "input[reason] Ex.: item indisponível",
     "input[reason] Ex.: item indisponível",
+    "input[reason] Ex.: item indisponível",
     "input[reason] Ex.: item indisponível"
    ],
    "notices": [
@@ -2374,503 +2500,64 @@
   "device": "pc-1366",
   "area": "fluxo",
   "label": "pedido › 2-abrir-detalhe",
-  "verified": true,
-  "ok": true,
+  "ok": false,
+  "error": "locator.waitFor: Timeout 15000ms exceeded.",
   "screen": {
-   "url": "/pedidos/bc76a75b-4018-4578-92d8-b79f128da5ad?from=%2Fpedidos",
-   "heading": "Pedido #1",
+   "url": "/pedidos",
+   "heading": "Pedidos",
    "buttons": [
+    "Ativar som",
+    "Testar som",
+    "Fila",
+    "Lista",
+    "Quadro",
+    "Todos 12",
+    "Novos 4",
+    "Em preparo 6",
+    "Prontos 0",
+    "A iniciar 2",
     "Aceitar pedido",
-    "Confirmar pagamento",
-    "Marcar tentativa como falha",
-    "Recusar pedido"
+    "Ver resumo",
+    "Confirmar recusa",
+    "Aceitar pedido",
+    "Ver resumo",
+    "Confirmar recusa",
+    "Aceitar pedido",
+    "Ver resumo",
+    "Confirmar recusa",
+    "Aceitar pedido",
+    "Ver resumo",
+    "Confirmar recusa",
+    "Iniciar produção",
+    "Ver resumo",
+    "Iniciar produção",
+    "Ver resumo",
+    "Marcar pronto",
+    "Ver resumo",
+    "Marcar pronto",
+    "Ver resumo",
+    "Marcar pronto",
+    "Ver resumo",
+    "Marcar pronto",
+    "Ver resumo",
+    "Marcar pronto",
+    "Ver resumo",
+    "Marcar pronto",
+    "Ver resumo"
    ],
    "fields": [
-    "input[cashReceived] Ex.: 50,00",
-    "input[reason] Ex.: Pix não localizado",
+    "input[] Número, cliente, canal, código externo ou sync",
+    "input[reason] Ex.: item indisponível",
+    "input[reason] Ex.: item indisponível",
+    "input[reason] Ex.: item indisponível",
     "input[reason] Ex.: item indisponível"
    ],
-   "notices": [],
+   "notices": [
+    "Ao vivo"
+   ],
    "dialogs": []
   },
   "shot": "shots/pc-1366__fluxo__pedido-2-abrir-detalhe.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "pedido › 3-proxima-acao",
-  "verified": true,
-  "ok": true,
-  "screen": {
-   "url": "/pedidos/bc76a75b-4018-4578-92d8-b79f128da5ad?from=%2Fpedidos",
-   "heading": "Pedido #1",
-   "buttons": [
-    "Iniciar produção",
-    "Confirmar pagamento",
-    "Marcar tentativa como falha",
-    "Imprimir pedido",
-    "Cancelar pedido"
-   ],
-   "fields": [
-    "input[cashReceived] Ex.: 50,00",
-    "input[reason] Ex.: Pix não localizado",
-    "input[reason] Ex.: cliente solicitou cancelamento"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__pedido-3-proxima-acao.jpg",
-  "clicked": "Aceitar pedido"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "pedido › 4-proxima-acao",
-  "verified": true,
-  "ok": true,
-  "screen": {
-   "url": "/pedidos/bc76a75b-4018-4578-92d8-b79f128da5ad?from=%2Fpedidos",
-   "heading": "Pedido #1",
-   "buttons": [
-    "Marcar pronto",
-    "Confirmar pagamento",
-    "Marcar tentativa como falha",
-    "Imprimir pedido",
-    "Cancelar pedido"
-   ],
-   "fields": [
-    "input[cashReceived] Ex.: 50,00",
-    "input[reason] Ex.: Pix não localizado",
-    "input[reason] Ex.: cliente solicitou cancelamento"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__pedido-4-proxima-acao.jpg",
-  "clicked": "Iniciar produção"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "pedido › 5-proxima-acao",
-  "verified": true,
-  "ok": true,
-  "screen": {
-   "url": "/pedidos/bc76a75b-4018-4578-92d8-b79f128da5ad?from=%2Fpedidos",
-   "heading": "Pedido #1",
-   "buttons": [
-    "Liberar retirada",
-    "Confirmar pagamento",
-    "Marcar tentativa como falha",
-    "Imprimir pedido",
-    "Cancelar pedido"
-   ],
-   "fields": [
-    "input[cashReceived] Ex.: 50,00",
-    "input[reason] Ex.: Pix não localizado",
-    "input[reason] Ex.: cliente solicitou cancelamento"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__pedido-5-proxima-acao.jpg",
-  "clicked": "Marcar pronto"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "pedido › 6-proxima-acao",
-  "verified": true,
-  "ok": true,
-  "screen": {
-   "url": "/pedidos/bc76a75b-4018-4578-92d8-b79f128da5ad?from=%2Fpedidos",
-   "heading": "Pedido #1",
-   "buttons": [
-    "Cliente retirou",
-    "Confirmar pagamento",
-    "Marcar tentativa como falha",
-    "Imprimir pedido",
-    "Cancelar pedido"
-   ],
-   "fields": [
-    "input[cashReceived] Ex.: 50,00",
-    "input[reason] Ex.: Pix não localizado",
-    "input[reason] Ex.: cliente solicitou cancelamento"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__pedido-6-proxima-acao.jpg",
-  "clicked": "Liberar retirada"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "pedido › 7-proxima-acao",
-  "verified": true,
-  "ok": true,
-  "screen": {
-   "url": "/pedidos/bc76a75b-4018-4578-92d8-b79f128da5ad?from=%2Fpedidos",
-   "heading": "Pedido #1",
-   "buttons": [
-    "Confirmar pagamento",
-    "Marcar tentativa como falha",
-    "Imprimir pedido"
-   ],
-   "fields": [
-    "input[cashReceived] Ex.: 50,00",
-    "input[reason] Ex.: Pix não localizado"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__pedido-7-proxima-acao.jpg",
-  "clicked": "Cliente retirou"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "pedido › 8-proxima-acao",
-  "verified": true,
-  "ok": true,
-  "screen": {
-   "url": "/pedidos/bc76a75b-4018-4578-92d8-b79f128da5ad?from=%2Fpedidos",
-   "heading": "Pedido #1",
-   "buttons": [
-    "Concluir pedido",
-    "Estornar pagamento",
-    "Imprimir pedido"
-   ],
-   "fields": [
-    "input[reason] Ex.: venda cancelada após recebimento"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__pedido-8-proxima-acao.jpg",
-  "clicked": "Confirmar pagamento"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "pedido › 9-proxima-acao",
-  "verified": true,
-  "ok": true,
-  "screen": {
-   "url": "/pedidos/bc76a75b-4018-4578-92d8-b79f128da5ad?from=%2Fpedidos",
-   "heading": "Pedido #1",
-   "buttons": [
-    "Estornar pagamento"
-   ],
-   "fields": [
-    "input[reason] Ex.: venda cancelada após recebimento"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__pedido-9-proxima-acao.jpg",
-  "clicked": "Concluir pedido"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "pedido › 10-confirmar-conclusao",
-  "ok": true,
-  "screen": {
-   "url": "/pedidos/bc76a75b-4018-4578-92d8-b79f128da5ad?from=%2Fpedidos",
-   "heading": "Pedido #1",
-   "buttons": [
-    "Estornar pagamento"
-   ],
-   "fields": [
-    "input[reason] Ex.: venda cancelada após recebimento"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__pedido-10-confirmar-conclusao.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "salao › 1-abrir-lista",
-  "ok": true,
-  "screen": {
-   "url": "/salao",
-   "heading": "Salão e mesas",
-   "buttons": [],
-   "fields": [],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__salao-1-abrir-lista.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "salao › 2-abrir-mesa",
-  "ok": true,
-  "screen": {
-   "url": "/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
-   "heading": "Mesa 1",
-   "buttons": [
-    "Abrir mesa",
-    "Atualizar"
-   ],
-   "fields": [
-    "input[guestCount] Pessoas",
-    "input[label] Família Silva",
-    "select[status] "
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__salao-2-abrir-mesa.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "salao › 3-abrir-atendimento",
-  "ok": true,
-  "screen": {
-   "url": "/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
-   "heading": "Mesa 1",
-   "buttons": [
-    "Pedir conta",
-    "Todos",
-    "Combos",
-    "Pastéis",
-    "Salgados",
-    "Bebidas",
-    "Doces",
-    "Água sem gás 500 mlR$ 3,50",
-    "Caixa com 100 pastéis100 mini pastéis. Escolha um ou mais sa",
-    "Caixa com 100 salgados100 unidades. Escolha os sabores — a q",
-    "Caixa com 25 pastéis25 mini pastéis. Escolha um ou mais sabo",
-    "Caixa com 30 mini churrosRecheados com doce de leite. Nome p",
-    "Caixa com 30 salgados30 unidades. Escolha os sabores — a qua",
-    "Caixa com 50 pastéis50 mini pastéis. Escolha um ou mais sabo",
-    "Caixa com 50 salgados50 unidades. Escolha os sabores — a qua",
-    "Coca-Cola 2LR$ 15,00",
-    "Coca-Cola lata 350 mlR$ 6,00",
-    "Combo Casal (2 latas)30 unidades. Escolha os sabores — a qua",
-    "Combo Família (Coca 2L)50 unidades. Escolha os sabores — a q",
-    "Copo com 12 mini churrosRecheados com doce de leite.R$ 16,99",
-    "Copo com 12 salgados12 unidades. Escolha os sabores — a quan",
-    "Enviar para produção · R$ 0,00 [desativado]",
-    "Adicionar pessoa",
-    "Transferir mesa",
-    "Cancelar comanda"
-   ],
-   "fields": [
-    "input[] Buscar produto...",
-    "input[name] Nome",
-    "input[seatNumber] Assento",
-    "select[targetTableId] ",
-    "input[reason] Motivo"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__salao-3-abrir-atendimento.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "salao › 4-lancar-item",
-  "ok": true,
-  "screen": {
-   "url": "/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
-   "heading": "Mesa 1",
-   "buttons": [
-    "Pedir conta",
-    "Todos",
-    "Combos",
-    "Pastéis",
-    "Salgados",
-    "Bebidas",
-    "Doces",
-    "Água sem gás 500 mlR$ 3,50",
-    "Caixa com 100 pastéis100 mini pastéis. Escolha um ou mais sa",
-    "Caixa com 100 salgados100 unidades. Escolha os sabores — a q",
-    "Caixa com 25 pastéis25 mini pastéis. Escolha um ou mais sabo",
-    "Caixa com 30 mini churrosRecheados com doce de leite. Nome p",
-    "Caixa com 30 salgados30 unidades. Escolha os sabores — a qua",
-    "Caixa com 50 pastéis50 mini pastéis. Escolha um ou mais sabo",
-    "Caixa com 50 salgados50 unidades. Escolha os sabores — a qua",
-    "Coca-Cola 2LR$ 15,00",
-    "Coca-Cola lata 350 mlR$ 6,00",
-    "Combo Casal (2 latas)30 unidades. Escolha os sabores — a qua",
-    "Combo Família (Coca 2L)50 unidades. Escolha os sabores — a q",
-    "Copo com 12 mini churrosRecheados com doce de leite.R$ 16,99",
-    "Copo com 12 salgados12 unidades. Escolha os sabores — a quan",
-    "−",
-    "+",
-    "Remover",
-    "Enviar para produção · R$ 15,00",
-    "Adicionar pessoa",
-    "Transferir mesa",
-    "Cancelar comanda"
-   ],
-   "fields": [
-    "input[] Buscar produto...",
-    "input[name] Nome",
-    "input[seatNumber] Assento",
-    "select[targetTableId] ",
-    "input[reason] Motivo"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__salao-4-lancar-item.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "salao › 5-enviar-producao",
-  "ok": true,
-  "screen": {
-   "url": "/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
-   "heading": "Mesa 1",
-   "buttons": [
-    "Pedir conta",
-    "Todos",
-    "Combos",
-    "Pastéis",
-    "Salgados",
-    "Bebidas",
-    "Doces",
-    "Água sem gás 500 mlR$ 3,50",
-    "Caixa com 100 pastéis100 mini pastéis. Escolha um ou mais sa",
-    "Caixa com 100 salgados100 unidades. Escolha os sabores — a q",
-    "Caixa com 25 pastéis25 mini pastéis. Escolha um ou mais sabo",
-    "Caixa com 30 mini churrosRecheados com doce de leite. Nome p",
-    "Caixa com 30 salgados30 unidades. Escolha os sabores — a qua",
-    "Caixa com 50 pastéis50 mini pastéis. Escolha um ou mais sabo",
-    "Caixa com 50 salgados50 unidades. Escolha os sabores — a qua",
-    "Coca-Cola 2LR$ 15,00",
-    "Coca-Cola lata 350 mlR$ 6,00",
-    "Combo Casal (2 latas)30 unidades. Escolha os sabores — a qua",
-    "Combo Família (Coca 2L)50 unidades. Escolha os sabores — a q",
-    "Copo com 12 mini churrosRecheados com doce de leite.R$ 16,99",
-    "Copo com 12 salgados12 unidades. Escolha os sabores — a quan",
-    "Enviar para produção · R$ 0,00 [desativado]",
-    "Registrar pagamento",
-    "Adicionar pessoa",
-    "Transferir mesa"
-   ],
-   "fields": [
-    "input[] Buscar produto...",
-    "input[amount] 0,00",
-    "select[method] FormaDinheiroPixCréditoDébito",
-    "select[tabMemberId] PessoaConta geral",
-    "input[cashTendered] Opcional",
-    "input[reference] Referência",
-    "input[name] Nome",
-    "input[seatNumber] Assento",
-    "select[targetTableId] "
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__salao-5-enviar-producao.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "salao › 6-registrar-pagamento",
-  "ok": true,
-  "screen": {
-   "url": "/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
-   "heading": "Mesa 1",
-   "buttons": [
-    "Concluir e liberar mesa",
-    "Adicionar pessoa",
-    "Transferir mesa"
-   ],
-   "fields": [
-    "input[name] Nome",
-    "input[seatNumber] Assento",
-    "select[targetTableId] "
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__salao-6-registrar-pagamento.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "salao › 7-recusar-fechamento-com-pedido-em-preparo",
-  "verified": true,
-  "ok": true,
-  "screen": {
-   "url": "/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8?error=Ainda%20existem%20pedidos%20em%20produ%C3%A7%C3%A3o%20ou%20n%C3%A3o%20servidos.",
-   "heading": "Mesa 1",
-   "buttons": [
-    "Concluir e liberar mesa",
-    "Adicionar pessoa",
-    "Transferir mesa"
-   ],
-   "fields": [
-    "input[name] Nome",
-    "input[seatNumber] Assento",
-    "select[targetTableId] "
-   ],
-   "notices": [
-    "Ainda existem pedidos em produção ou não servidos."
-   ],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__salao-7-recusar-fechamento-com-pedido-em-preparo.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "caixa › 3-com-venda",
-  "ok": true,
-  "screen": {
-   "url": "/caixa",
-   "heading": "Caixa",
-   "buttons": [
-    "Registrar entrada",
-    "Registrar retirada",
-    "Conferir e fechar turno"
-   ],
-   "fields": [
-    "input[amount] Valor, ex.: 100,00",
-    "input[reason] Motivo da entrada",
-    "input[amount] Valor, ex.: 200,00",
-    "input[reason] Motivo da retirada",
-    "input[countedCash] Dinheiro contado",
-    "input[note] Observação opcional"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__caixa-3-com-venda.jpg"
- },
- {
-  "device": "pc-1366",
-  "area": "fluxo",
-  "label": "caixa › 4-conferir-fechar",
-  "verified": true,
-  "ok": true,
-  "screen": {
-   "url": "/caixa?ok=Turno%20fechado%20e%20conferido.",
-   "heading": "Caixa",
-   "buttons": [
-    "Abrir caixa"
-   ],
-   "fields": [
-    "select[cashRegisterId] CAIXACAIXA1 · Caixa principal",
-    "input[openingBalance] SALDO INICIAL",
-    "input[note] Opcional"
-   ],
-   "notices": [],
-   "dialogs": []
-  },
-  "shot": "shots/pc-1366__fluxo__caixa-4-conferir-fechar.jpg"
  },
  {
   "device": "android-360",
@@ -2878,7 +2565,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 694,
+  "loadMs": 727,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -2954,8 +2641,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2889,
-  "screens": 3.9,
+  "docHeight": 2843,
+  "screens": 3.8,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -3036,7 +2723,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1387
+  "bodyTextLength": 1372
  },
  {
   "device": "android-360",
@@ -3044,13 +2731,13 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 734,
+  "loadMs": 782,
   "finalUrl": "/dashboard",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2889,
-  "screens": 3.9,
+  "docHeight": 2843,
+  "screens": 3.8,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -3131,17 +2818,10 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1387,
+  "bodyTextLength": 1372,
   "shot": "shots/android-360__panel__dashboard.jpg",
   "clipped": [],
-  "axe": [
-   {
-    "id": "scrollable-region-focusable",
-    "impact": "serious",
-    "nodes": 1,
-    "example": ".dashboard-module__BUJBAa__chart"
-   }
-  ],
+  "axe": [],
   "consoleErrors": []
  },
  {
@@ -3150,17 +2830,17 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 791,
+  "loadMs": 915,
   "finalUrl": "/pedidos",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 1040,
+  "screens": 1.4,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 55,
+  "interactiveCount": 61,
   "smallTargets": 16,
   "tinyTargets": 0,
   "smallTargetExamples": [
@@ -3243,7 +2923,7 @@
    }
   ],
   "fixedCoverPx": 939,
-  "bodyTextLength": 382,
+  "bodyTextLength": 601,
   "shot": "shots/android-360__panel__pedidos.jpg",
   "clipped": [],
   "axe": [],
@@ -3255,7 +2935,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 722,
+  "loadMs": 828,
   "finalUrl": "/pdv",
   "vw": 360,
   "vh": 740,
@@ -3366,17 +3046,17 @@
   "device": "android-360",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/71b1a1f3-3e30-4527-a29b-8ff124ac3840",
+  "url": "http://127.0.0.1:3000/pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3",
   "status": 200,
-  "loadMs": 1046,
-  "finalUrl": "/pedidos/71b1a1f3-3e30-4527-a29b-8ff124ac3840",
+  "loadMs": 1057,
+  "finalUrl": "/pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2546,
-  "screens": 3.4,
+  "docHeight": 2570,
+  "screens": 3.5,
   "title": "PedeAqui",
-  "h1": "Pedido #2",
+  "h1": "Pedido #1",
   "overflowing": [],
   "interactiveCount": 49,
   "smallTargets": 19,
@@ -3455,7 +3135,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1134,
+  "bodyTextLength": 1150,
   "shot": "shots/android-360__panel__pedidos-id.jpg",
   "clipped": [],
   "axe": [],
@@ -3465,10 +3145,10 @@
   "device": "android-360",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8a189866-05f5-4cf7-b4f0-ab7f9a1ed769",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06",
   "status": 200,
-  "loadMs": 769,
-  "finalUrl": "/cardapio/produtos/8a189866-05f5-4cf7-b4f0-ab7f9a1ed769",
+  "loadMs": 835,
+  "finalUrl": "/cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -3570,17 +3250,17 @@
   "device": "android-360",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/edb95b71-fd09-4ed0-8d79-50f9fdc3102f",
+  "url": "http://127.0.0.1:3000/clientes/b8ac035d-a5bd-45fc-8fbd-d53a2658b75a",
   "status": 200,
-  "loadMs": 796,
-  "finalUrl": "/clientes/edb95b71-fd09-4ed0-8d79-50f9fdc3102f",
+  "loadMs": 837,
+  "finalUrl": "/clientes/b8ac035d-a5bd-45fc-8fbd-d53a2658b75a",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1666,
-  "screens": 2.3,
+  "docHeight": 1754,
+  "screens": 2.4,
   "title": "PedeAqui",
-  "h1": "Ana Souza",
+  "h1": "Cliente da auditoria UX2",
   "overflowing": [],
   "interactiveCount": 55,
   "smallTargets": 26,
@@ -3659,7 +3339,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 734,
+  "bodyTextLength": 762,
   "shot": "shots/android-360__panel__clientes-id.jpg",
   "clipped": [],
   "axe": [],
@@ -3669,20 +3349,20 @@
   "device": "android-360",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
+  "url": "http://127.0.0.1:3000/salao/fb4c5721-777a-480b-8218-27709d36f6fe",
   "status": 200,
-  "loadMs": 799,
-  "finalUrl": "/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
+  "loadMs": 808,
+  "finalUrl": "/salao/fb4c5721-777a-480b-8218-27709d36f6fe",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1365,
-  "screens": 1.8,
+  "docHeight": 1141,
+  "screens": 1.5,
   "title": "PedeAqui",
   "h1": "Mesa 1",
   "overflowing": [],
-  "interactiveCount": 50,
-  "smallTargets": 19,
+  "interactiveCount": 48,
+  "smallTargets": 18,
   "tinyTargets": 1,
   "smallTargetExamples": [
    {
@@ -3758,7 +3438,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 478,
+  "bodyTextLength": 398,
   "shot": "shots/android-360__panel__salao-tableId.jpg",
   "clipped": [],
   "axe": [],
@@ -3772,8 +3452,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2889,
-  "screens": 3.9,
+  "docHeight": 2843,
+  "screens": 3.8,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -3854,7 +3534,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1630
+  "bodyTextLength": 1615
  },
  {
   "device": "android-360",
@@ -3864,8 +3544,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2889,
-  "screens": 3.9,
+  "docHeight": 2843,
+  "screens": 3.8,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -3946,7 +3626,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1498
+  "bodyTextLength": 1488
  },
  {
   "device": "android-360",
@@ -3956,8 +3636,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2889,
-  "screens": 3.9,
+  "docHeight": 2843,
+  "screens": 3.8,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -4038,7 +3718,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1451
+  "bodyTextLength": 1436
  },
  {
   "device": "android-360",
@@ -4048,12 +3728,12 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 1040,
+  "screens": 1.4,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 61,
+  "interactiveCount": 67,
   "smallTargets": 17,
   "tinyTargets": 0,
   "smallTargetExamples": [
@@ -4123,7 +3803,7 @@
     "pos": "fixed"
    },
    {
-    "el": "dialog.mobile-order-list-module__myj9ea__sheet \"Pedido 2\"",
+    "el": "dialog.mobile-order-list-module__myj9ea__sheet \"Pedido 1\"",
     "top": 360,
     "h": 380,
     "pos": "fixed"
@@ -4142,7 +3822,7 @@
    }
   ],
   "fixedCoverPx": 1319,
-  "bodyTextLength": 515
+  "bodyTextLength": 751
  },
  {
   "device": "android-360",
@@ -4152,12 +3832,12 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1800,
-  "screens": 2.4,
+  "docHeight": 1648,
+  "screens": 2.2,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 76,
+  "interactiveCount": 73,
   "smallTargets": 16,
   "tinyTargets": 0,
   "smallTargetExamples": [
@@ -4240,7 +3920,7 @@
    }
   ],
   "fixedCoverPx": 939,
-  "bodyTextLength": 1072
+  "bodyTextLength": 999
  },
  {
   "device": "android-360",
@@ -4852,7 +4532,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 601,
+  "loadMs": 625,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -5157,7 +4837,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 588,
+  "loadMs": 598,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -5228,7 +4908,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 617,
+  "loadMs": 658,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
@@ -5309,7 +4989,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 713,
+  "loadMs": 765,
   "finalUrl": "/login",
   "vw": 1366,
   "vh": 768,
@@ -5384,8 +5064,8 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1934,
-  "screens": 2.5,
+  "docHeight": 1834,
+  "screens": 2.4,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -5460,7 +5140,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1853
+  "bodyTextLength": 1838
  },
  {
   "device": "pc-1366-escuro",
@@ -5468,13 +5148,13 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 734,
+  "loadMs": 777,
   "finalUrl": "/dashboard",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1934,
-  "screens": 2.5,
+  "docHeight": 1834,
+  "screens": 2.4,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -5549,7 +5229,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1853,
+  "bodyTextLength": 1838,
   "shot": "shots/pc-1366-escuro__panel__dashboard.jpg",
   "clipped": [],
   "consoleErrors": []
@@ -5560,19 +5240,19 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 816,
+  "loadMs": 942,
   "finalUrl": "/pedidos",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 2718,
-  "screens": 3.5,
+  "docHeight": 2913,
+  "screens": 3.8,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 96,
-  "smallTargets": 82,
-  "tinyTargets": 13,
+  "interactiveCount": 105,
+  "smallTargets": 92,
+  "tinyTargets": 16,
   "smallTargetExamples": [
    {
     "el": "button.sidebar-toggle \"Recolher menu\"",
@@ -5641,7 +5321,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 2004,
+  "bodyTextLength": 2157,
   "shot": "shots/pc-1366-escuro__panel__pedidos.jpg",
   "clipped": [],
   "consoleErrors": []
@@ -5652,7 +5332,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 726,
+  "loadMs": 832,
   "finalUrl": "/pdv",
   "vw": 1366,
   "vh": 768,
@@ -5750,17 +5430,17 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/71b1a1f3-3e30-4527-a29b-8ff124ac3840",
+  "url": "http://127.0.0.1:3000/pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3",
   "status": 200,
-  "loadMs": 835,
-  "finalUrl": "/pedidos/71b1a1f3-3e30-4527-a29b-8ff124ac3840",
+  "loadMs": 931,
+  "finalUrl": "/pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
   "docHeight": 1547,
   "screens": 2,
   "title": "PedeAqui",
-  "h1": "Pedido #2",
+  "h1": "Pedido #1",
   "overflowing": [],
   "interactiveCount": 39,
   "smallTargets": 27,
@@ -5833,7 +5513,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1288,
+  "bodyTextLength": 1304,
   "shot": "shots/pc-1366-escuro__panel__pedidos-id.jpg",
   "clipped": [],
   "consoleErrors": []
@@ -5842,10 +5522,10 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8a189866-05f5-4cf7-b4f0-ab7f9a1ed769",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06",
   "status": 200,
-  "loadMs": 839,
-  "finalUrl": "/cardapio/produtos/8a189866-05f5-4cf7-b4f0-ab7f9a1ed769",
+  "loadMs": 870,
+  "finalUrl": "/cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
@@ -5940,17 +5620,17 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/edb95b71-fd09-4ed0-8d79-50f9fdc3102f",
+  "url": "http://127.0.0.1:3000/clientes/b8ac035d-a5bd-45fc-8fbd-d53a2658b75a",
   "status": 200,
-  "loadMs": 839,
-  "finalUrl": "/clientes/edb95b71-fd09-4ed0-8d79-50f9fdc3102f",
+  "loadMs": 935,
+  "finalUrl": "/clientes/b8ac035d-a5bd-45fc-8fbd-d53a2658b75a",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
   "docHeight": 814,
   "screens": 1.1,
   "title": "PedeAqui",
-  "h1": "Ana Souza",
+  "h1": "Cliente da auditoria UX2",
   "overflowing": [],
   "interactiveCount": 55,
   "smallTargets": 34,
@@ -6023,7 +5703,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 979,
+  "bodyTextLength": 1007,
   "shot": "shots/pc-1366-escuro__panel__clientes-id.jpg",
   "clipped": [],
   "consoleErrors": []
@@ -6032,20 +5712,20 @@
   "device": "pc-1366-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
+  "url": "http://127.0.0.1:3000/salao/fb4c5721-777a-480b-8218-27709d36f6fe",
   "status": 200,
-  "loadMs": 840,
-  "finalUrl": "/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
+  "loadMs": 992,
+  "finalUrl": "/salao/fb4c5721-777a-480b-8218-27709d36f6fe",
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 925,
-  "screens": 1.2,
+  "docHeight": 768,
+  "screens": 1,
   "title": "PedeAqui",
   "h1": "Mesa 1",
   "overflowing": [],
-  "interactiveCount": 50,
-  "smallTargets": 30,
+  "interactiveCount": 48,
+  "smallTargets": 28,
   "tinyTargets": 1,
   "smallTargetExamples": [
    {
@@ -6115,7 +5795,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 723,
+  "bodyTextLength": 643,
   "shot": "shots/pc-1366-escuro__panel__salao-tableId.jpg",
   "clipped": [],
   "consoleErrors": []
@@ -6128,8 +5808,8 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1934,
-  "screens": 2.5,
+  "docHeight": 1834,
+  "screens": 2.4,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -6204,7 +5884,7 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1964
+  "bodyTextLength": 1954
  },
  {
   "device": "pc-1366-escuro",
@@ -6214,8 +5894,8 @@
   "vw": 1366,
   "vh": 768,
   "docWidth": 1366,
-  "docHeight": 1934,
-  "screens": 2.5,
+  "docHeight": 1834,
+  "screens": 2.4,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -6290,13 +5970,93 @@
    }
   ],
   "fixedCoverPx": 48,
-  "bodyTextLength": 1917
+  "bodyTextLength": 1902
  },
  {
   "device": "pc-1366-escuro",
   "area": "state",
-  "label": "pedidos-aba",
-  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for getByRole('button', { name: /^Em preparo/ }).first()\n"
+  "label": "pedidos-aba-em-preparo",
+  "shot": "shots/pc-1366-escuro__state__pedidos-aba-em-preparo.jpg",
+  "vw": 1366,
+  "vh": 768,
+  "docWidth": 1366,
+  "docHeight": 1833,
+  "screens": 2.4,
+  "title": "PedeAqui",
+  "h1": "Pedidos",
+  "overflowing": [],
+  "interactiveCount": 69,
+  "smallTargets": 56,
+  "tinyTargets": 6,
+  "smallTargetExamples": [
+   {
+    "el": "button.sidebar-toggle \"Recolher menu\"",
+    "w": 40,
+    "h": 40
+   },
+   {
+    "el": "button.nav-group-toggle \"GESTÃO +\"",
+    "w": 175,
+    "h": 29
+   },
+   {
+    "el": "button.nav-group-toggle \"CONTA E AJUSTES +\"",
+    "w": 175,
+    "h": 29
+   },
+   {
+    "el": "summary \"Operação da loja\"",
+    "w": 168,
+    "h": 40
+   },
+   {
+    "el": "summary",
+    "w": 158,
+    "h": 36
+   },
+   {
+    "el": "select \"reason\"",
+    "w": 300,
+    "h": 42
+   },
+   {
+    "el": "button.button-module__HjQxJG__button",
+    "w": 300,
+    "h": 36
+   },
+   {
+    "el": "a.app-operation-link",
+    "w": 142,
+    "h": 36
+   }
+  ],
+  "smallText": 0,
+  "smallTextExamples": [],
+  "minFont": 12,
+  "inputsZoom": [],
+  "inputsZoomCount": 0,
+  "fixed": [
+   {
+    "el": "aside.app-sidebar \"PRINCIPAL Início Pedidos Cardápio PDV Conversas Co\"",
+    "top": 0,
+    "h": 768,
+    "pos": "sticky"
+   },
+   {
+    "el": "header.app-topbar \"Salgados da Vila ⌄ ⌕ Buscar item ↗ Modo Movimento \"",
+    "top": 0,
+    "h": 56,
+    "pos": "sticky"
+   },
+   {
+    "el": "button.new-user-guide-module__a1T_Va__trigger \"Abrir assistente do PedeAqui\"",
+    "top": 700,
+    "h": 48,
+    "pos": "fixed"
+   }
+  ],
+  "fixedCoverPx": 48,
+  "bodyTextLength": 1445
  },
  {
   "device": "pc-1366-escuro",
@@ -6776,7 +6536,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 632,
+  "loadMs": 628,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 1366,
   "vh": 768,
@@ -7060,7 +6820,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 598,
+  "loadMs": 596,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 1366,
   "vh": 768,
@@ -7118,7 +6878,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 625,
+  "loadMs": 622,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 1366,
   "vh": 768,
@@ -7193,7 +6953,7 @@
   "label": "login",
   "url": "http://127.0.0.1:3000/login",
   "status": 200,
-  "loadMs": 705,
+  "loadMs": 722,
   "finalUrl": "/login",
   "vw": 360,
   "vh": 740,
@@ -7268,8 +7028,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2889,
-  "screens": 3.9,
+  "docHeight": 2843,
+  "screens": 3.8,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -7350,7 +7110,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1387
+  "bodyTextLength": 1372
  },
  {
   "device": "android-360-escuro",
@@ -7358,13 +7118,13 @@
   "label": "/dashboard",
   "url": "http://127.0.0.1:3000/dashboard",
   "status": 200,
-  "loadMs": 782,
+  "loadMs": 799,
   "finalUrl": "/dashboard",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2889,
-  "screens": 3.9,
+  "docHeight": 2843,
+  "screens": 3.8,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -7445,7 +7205,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1387,
+  "bodyTextLength": 1372,
   "shot": "shots/android-360-escuro__panel__dashboard.jpg",
   "clipped": [],
   "consoleErrors": []
@@ -7456,17 +7216,17 @@
   "label": "/pedidos",
   "url": "http://127.0.0.1:3000/pedidos",
   "status": 200,
-  "loadMs": 856,
+  "loadMs": 899,
   "finalUrl": "/pedidos",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 1040,
+  "screens": 1.4,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 55,
+  "interactiveCount": 61,
   "smallTargets": 16,
   "tinyTargets": 0,
   "smallTargetExamples": [
@@ -7549,7 +7309,7 @@
    }
   ],
   "fixedCoverPx": 939,
-  "bodyTextLength": 382,
+  "bodyTextLength": 601,
   "shot": "shots/android-360-escuro__panel__pedidos.jpg",
   "clipped": [],
   "consoleErrors": []
@@ -7560,7 +7320,7 @@
   "label": "/pdv",
   "url": "http://127.0.0.1:3000/pdv",
   "status": 200,
-  "loadMs": 763,
+  "loadMs": 786,
   "finalUrl": "/pdv",
   "vw": 360,
   "vh": 740,
@@ -7670,17 +7430,17 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/pedidos/[id]",
-  "url": "http://127.0.0.1:3000/pedidos/71b1a1f3-3e30-4527-a29b-8ff124ac3840",
+  "url": "http://127.0.0.1:3000/pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3",
   "status": 200,
-  "loadMs": 925,
-  "finalUrl": "/pedidos/71b1a1f3-3e30-4527-a29b-8ff124ac3840",
+  "loadMs": 900,
+  "finalUrl": "/pedidos/0c573331-7750-4d49-9d2f-bc1b5ded1ef3",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2546,
-  "screens": 3.4,
+  "docHeight": 2570,
+  "screens": 3.5,
   "title": "PedeAqui",
-  "h1": "Pedido #2",
+  "h1": "Pedido #1",
   "overflowing": [],
   "interactiveCount": 49,
   "smallTargets": 19,
@@ -7759,7 +7519,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1134,
+  "bodyTextLength": 1150,
   "shot": "shots/android-360-escuro__panel__pedidos-id.jpg",
   "clipped": [],
   "consoleErrors": []
@@ -7768,10 +7528,10 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/cardapio/produtos/[id]",
-  "url": "http://127.0.0.1:3000/cardapio/produtos/8a189866-05f5-4cf7-b4f0-ab7f9a1ed769",
+  "url": "http://127.0.0.1:3000/cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06",
   "status": 200,
-  "loadMs": 765,
-  "finalUrl": "/cardapio/produtos/8a189866-05f5-4cf7-b4f0-ab7f9a1ed769",
+  "loadMs": 768,
+  "finalUrl": "/cardapio/produtos/e8616ca7-bb3d-4508-b2e2-ed63772bcd06",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
@@ -7872,17 +7632,17 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/clientes/[id]",
-  "url": "http://127.0.0.1:3000/clientes/edb95b71-fd09-4ed0-8d79-50f9fdc3102f",
+  "url": "http://127.0.0.1:3000/clientes/b8ac035d-a5bd-45fc-8fbd-d53a2658b75a",
   "status": 200,
-  "loadMs": 794,
-  "finalUrl": "/clientes/edb95b71-fd09-4ed0-8d79-50f9fdc3102f",
+  "loadMs": 798,
+  "finalUrl": "/clientes/b8ac035d-a5bd-45fc-8fbd-d53a2658b75a",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1666,
-  "screens": 2.3,
+  "docHeight": 1754,
+  "screens": 2.4,
   "title": "PedeAqui",
-  "h1": "Ana Souza",
+  "h1": "Cliente da auditoria UX2",
   "overflowing": [],
   "interactiveCount": 55,
   "smallTargets": 26,
@@ -7961,7 +7721,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 734,
+  "bodyTextLength": 762,
   "shot": "shots/android-360-escuro__panel__clientes-id.jpg",
   "clipped": [],
   "consoleErrors": []
@@ -7970,20 +7730,20 @@
   "device": "android-360-escuro",
   "area": "panel",
   "label": "/salao/[tableId]",
-  "url": "http://127.0.0.1:3000/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
+  "url": "http://127.0.0.1:3000/salao/fb4c5721-777a-480b-8218-27709d36f6fe",
   "status": 200,
-  "loadMs": 780,
-  "finalUrl": "/salao/5ab10b4d-0d28-409e-93e3-5da490bee6e8",
+  "loadMs": 849,
+  "finalUrl": "/salao/fb4c5721-777a-480b-8218-27709d36f6fe",
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1365,
-  "screens": 1.8,
+  "docHeight": 1141,
+  "screens": 1.5,
   "title": "PedeAqui",
   "h1": "Mesa 1",
   "overflowing": [],
-  "interactiveCount": 50,
-  "smallTargets": 19,
+  "interactiveCount": 48,
+  "smallTargets": 18,
   "tinyTargets": 1,
   "smallTargetExamples": [
    {
@@ -8059,7 +7819,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 478,
+  "bodyTextLength": 398,
   "shot": "shots/android-360-escuro__panel__salao-tableId.jpg",
   "clipped": [],
   "consoleErrors": []
@@ -8072,8 +7832,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2889,
-  "screens": 3.9,
+  "docHeight": 2843,
+  "screens": 3.8,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -8154,7 +7914,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1630
+  "bodyTextLength": 1615
  },
  {
   "device": "android-360-escuro",
@@ -8164,8 +7924,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2889,
-  "screens": 3.9,
+  "docHeight": 2843,
+  "screens": 3.8,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -8246,7 +8006,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1498
+  "bodyTextLength": 1488
  },
  {
   "device": "android-360-escuro",
@@ -8256,8 +8016,8 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 2889,
-  "screens": 3.9,
+  "docHeight": 2843,
+  "screens": 3.8,
   "title": "PedeAqui",
   "h1": "Início",
   "overflowing": [],
@@ -8338,7 +8098,7 @@
    }
   ],
   "fixedCoverPx": 794,
-  "bodyTextLength": 1451
+  "bodyTextLength": 1436
  },
  {
   "device": "android-360-escuro",
@@ -8348,12 +8108,12 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 740,
-  "screens": 1,
+  "docHeight": 1040,
+  "screens": 1.4,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 61,
+  "interactiveCount": 67,
   "smallTargets": 17,
   "tinyTargets": 0,
   "smallTargetExamples": [
@@ -8423,7 +8183,7 @@
     "pos": "fixed"
    },
    {
-    "el": "dialog.mobile-order-list-module__myj9ea__sheet \"Pedido 2\"",
+    "el": "dialog.mobile-order-list-module__myj9ea__sheet \"Pedido 1\"",
     "top": 360,
     "h": 380,
     "pos": "fixed"
@@ -8442,7 +8202,7 @@
    }
   ],
   "fixedCoverPx": 1319,
-  "bodyTextLength": 515
+  "bodyTextLength": 751
  },
  {
   "device": "android-360-escuro",
@@ -8452,12 +8212,12 @@
   "vw": 360,
   "vh": 740,
   "docWidth": 360,
-  "docHeight": 1800,
-  "screens": 2.4,
+  "docHeight": 1648,
+  "screens": 2.2,
   "title": "PedeAqui",
   "h1": "Pedidos",
   "overflowing": [],
-  "interactiveCount": 76,
+  "interactiveCount": 73,
   "smallTargets": 16,
   "tinyTargets": 0,
   "smallTargetExamples": [
@@ -8540,7 +8300,7 @@
    }
   ],
   "fixedCoverPx": 939,
-  "bodyTextLength": 1072
+  "bodyTextLength": 999
  },
  {
   "device": "android-360-escuro",
@@ -9152,7 +8912,7 @@
   "label": "menu",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila",
   "status": 200,
-  "loadMs": 606,
+  "loadMs": 620,
   "finalUrl": "/m/salgados-da-vila",
   "vw": 360,
   "vh": 740,
@@ -9456,7 +9216,7 @@
   "label": "carrinho",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/carrinho",
   "status": 200,
-  "loadMs": 589,
+  "loadMs": 597,
   "finalUrl": "/m/salgados-da-vila/carrinho",
   "vw": 360,
   "vh": 740,
@@ -9526,7 +9286,7 @@
   "label": "checkout",
   "url": "http://127.0.0.1:3000/m/salgados-da-vila/checkout",
   "status": 200,
-  "loadMs": 618,
+  "loadMs": 697,
   "finalUrl": "/m/salgados-da-vila/checkout",
   "vw": 360,
   "vh": 740,
