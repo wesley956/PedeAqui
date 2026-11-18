@@ -10,6 +10,7 @@ Branch: `release/ux2-fundacao`. Estado: preparado para revisão; não publicado.
 - Conteúdo do celular usa overflow-x: clip para permitir barras sticky; ajuste da barra inferior e do guia de primeiros passos.
 - Mesmo horário no primeiro HTML e na hidratação do quadro de pedidos, nos fluxos padrão e personalizado; o relógio continua atualizando no navegador.
 - Telas de erro em português, com orientação para conferir o pedido antes de repetir. Não prometer que uma gravação foi salva quando a causa do erro é desconhecida.
+- Na área pública, a recuperação retorna ao cardápio da mesma loja; não encaminha o cliente ao painel administrativo.
 - Contraste das ações de pedido e associação ARIA da busca de bairros corrigidos.
 
 São 19 arquivos de produto, este relatório, a configuração de quebra de linha das fontes e dois verificadores visuais com caminhos compatíveis com Windows. Não inclui arquivo de banco, workflow, script de publicação, dependência, segredo ou integração. As correções atuais de WhatsApp e VPS da main permanecem intactas.
