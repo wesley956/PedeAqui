@@ -20,12 +20,23 @@ As mudanças específicas de layout de cardápio, checkout, PDV, Salão e gestã
 
 ## Conferência antes de publicar
 
-- [ ] CI e Browser Homologation do commit exato aprovados.
-- [ ] Homologação com banco fictício do commit exato, com roteiro crítico cliente → checkout → painel → conclusão e venda PDV até recebimento.
-- [ ] Conferência em 360, 390, 768 e 1366 px, temas claro e escuro.
+- [x] CI do código `05ea0820` aprovado.
+- [ ] Browser Homologation adicional: ainda instalando navegadores nesta atualização; conferir o resultado atual no PR.
+- [x] Homologação com banco fictício do código `05ea0820`, com roteiro crítico cliente → checkout → painel → conclusão e venda PDV até recebimento.
+- [x] Auditoria automática em 360, 390, 768 e 1366 px, temas claro e escuro.
 - [ ] Uso pelo responsável no computador e celular, conforme o critério já definido em `docs/ux2/ESTADO.md` na integração.
 - [ ] Aprovação do responsável para publicar este lote; merge na main publica automaticamente.
 
 ## Volta
 
 Reverter apenas o commit deste lote por PR. Não há alteração de banco a desfazer.
+
+## Evidências automáticas
+
+Aplicação `05ea0820b0822b435c6b689a06b081980e9c624c`, roteiro `01f34ae59f9b6f85178b1598d85b83e8be1b48fc`: 231 estados/verificações, 24 passos do fluxo crítico e zero falhas. Confirmados criação de pedido novo pelo cliente, identificação do mesmo pedido no painel, produção, retirada, pagamento, conclusão, acompanhamento público, venda com troco e fechamento do caixa.
+
+[Evidências do lote](https://github.com/wesley956/PedeAqui/tree/ux2/evidencias/release_ux2-fundacao): `target.json`, `COMMIT`, `HARNESS_COMMIT`, `results.json`, `failures.json` e capturas. O roteiro adapta apenas a CSP para o banco local; `src/` permanece no commit registrado. Salão e integrações reais estão fora desta validação.
+
+O status externo Vercel falha por conta bloqueada também na main de referência. Não foi removido ou desativado. O destino de produção do projeto é a VPS.
+
+Atualização posterior ao código `05ea0820`: apenas este relatório; nenhum arquivo da aplicação foi alterado.
