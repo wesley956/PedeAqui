@@ -7,6 +7,7 @@ export function needsWhatsAppServiceRecovery(normalized: string): boolean {
     || /\b(?:reclamacao|reclamar|estragado|estragada|azedo|azeda|queimado|queimada|veio errado|veio errada|faltou item|pedido incompleto|pedido atrasado|pedido esta atrasado|nao chegou meu pedido|meu pedido nao chegou|pedido nao chegou)\b/.test(normalized)
     || /\b(?:site|cardapio|aplicativo|app|link)\b.*\b(?:nao abre|nao carrega|nao funciona|travou|travando|deu erro|com erro)\b/.test(normalized)
     || /\b(?:nao sei|nao tenho certeza|como saber)\b.*\b(?:pedido|compra)\b.*\b(?:finaliz|conclu|confirm)/.test(normalized)
+    || /\bnao (?:consigo|consegui|to conseguindo|estou conseguindo) (?:finalizar|concluir|confirmar) (?:o |meu |a |minha )?(?:pedido|compra)\b/.test(normalized)
     || /\b(?:agendar|encomenda|encomendar)\b/.test(normalized)
     || /\b(?:pedido|entrega)\b.*\b(?:demorando|atrasou|atrasado|atrasada|nao chegou)\b/.test(normalized);
 }
@@ -24,5 +25,6 @@ export function asksStoreLocation(normalized: string): boolean {
   if (/\b(?:meu|minha|salvo|salva|cadastrado|cadastrada|guardado|registrado)\b/.test(normalized)) return false;
   return /\b(?:onde voces ficam|onde fica a loja|onde fica o restaurante|qual o endereco|qual endereco|qual a localizacao|qual cidade|em que cidade|em qual cidade|manda a localizacao|localizacao da loja)\b/.test(normalized)
     || /\b(?:onde|aonde)\b.*\b(?:local|loja|restaurante|retirada|retirar|voces ficam|voce esta trabalhando)\b/.test(normalized)
+    || /\b(?:onde|aonde) (?:que )?(?:voces?|vcs?) (?:se localiza(?:m)?|fica(?:m)?|esta(?:o)? localizad[oa]s?)\b/.test(normalized)
     || /^(?:endereco|localizacao)$/.test(normalized);
 }
