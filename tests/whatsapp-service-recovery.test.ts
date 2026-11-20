@@ -10,6 +10,7 @@ describe("WhatsApp recovery from real conversation patterns", () => {
     "Meu pedido está atrasado", "Meu pedido não chegou", "Veio errado, quero pedir de novo",
     "O site não funciona, posso pedir por aqui?", "O link travou",
     "Não sei se meu pedido foi finalizado", "Quero encomendar 50 salgados para domingo",
+    "Não consigo finalizar o pedido", "Não tô conseguindo concluir minha compra",
     "Quero fazer uma reclamação, estava azedo",
   ])("escalates without starting another order: %s", (body) => {
     expect(resolveWhatsAppBotIntent(body, "menu")).toBe("handoff");
@@ -27,6 +28,8 @@ describe("WhatsApp recovery from real conversation patterns", () => {
     ["Quero comprar, manda o cardápio por favor", "menu_link"],
     ["Jackson aonde é o local que você está trabalhando , para retirada ?", "location"],
     ["Onde posso retirar?", "location"],
+    ["Onde vocês se localiza", "location"],
+    ["Aonde que vcs estão localizados?", "location"],
     ["Sou a Gisele do sorteio Gostaria de saber se posso retirar hj", "handoff"],
     ["Por favor me avisa quando estiver pronto, estou aqui no fundo", "handoff"],
     ["Assim já vou pro portão receber o pedido", "handoff"],
