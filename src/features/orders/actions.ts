@@ -58,7 +58,11 @@ export async function createOrderFromCheckoutAction(formData: FormData) {
   const token = cookieStore.get(cartCookie)?.value;
   if (!token) redirect(`/m/${storeSlug}/carrinho`);
 
-  const result = await OrderService.createFromCheckout(storeSlug, token);
+  const expectedTotal = formData.get("expectedTotalCents");
+  const expectedTotalCents = typeof expectedTotal === "string" && /^\d+$/.test(expectedTotal)
+    ? Number(expectedTotal)
+    : undefined;
+  const result = await OrderService.createFromCheckout(storeSlug, token, "digital_menu", expectedTotalCents);
   await finishCheckoutOrder(storeSlug, result);
 }
 

@@ -9,7 +9,7 @@ describe("online Pix initial dispatch", () => {
   it("starts the first Pix charge after the authoritative order is created", () => {
     const actions = read("src/features/orders/actions.ts");
     expect(actions).toContain('import { scheduleOrderPixCharge } from "@/server/payments/order-pix-dispatch"');
-    expect(actions).toContain("const result = await OrderService.createFromCheckout(storeSlug, token)");
+    expect(actions).toContain("const result = await OrderService.createFromCheckout(storeSlug, token,");
     expect(actions).toContain("scheduleOrderPixCharge(result.order_id)");
   });
 

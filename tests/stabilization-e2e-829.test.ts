@@ -97,7 +97,7 @@ describe("stabilization #829 commercial journey", () => {
 
   it("creates the core order before optional customer/WhatsApp/PIX side effects", () => {
     const actions = read("src/features/orders/actions.ts");
-    const create = actions.indexOf("OrderService.createFromCheckout(storeSlug, token)");
+    const create = actions.indexOf("OrderService.createFromCheckout(storeSlug, token,");
     const notificationContext = actions.indexOf("OrderNotificationContextService.capture", create);
     const whatsapp = actions.indexOf('scheduleOrderWhatsAppNotifications("checkout.order_created", result.order_id)', create);
     const pix = actions.indexOf("scheduleOrderPixCharge", create);

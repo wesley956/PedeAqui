@@ -36,6 +36,8 @@ const errorMessages: Record<string, string> = {
   delivery_not_selected: "Escolha entrega antes de informar o endereço.", delivery_minimum: "O pedido ainda não atingiu o mínimo exigido para este bairro.",
   neighborhood_not_served: "Selecione um bairro atendido pela loja.", payment_unavailable: "A forma de pagamento selecionada não está disponível.",
   invalid_change: "O valor informado para troco precisa ser igual ou maior que o total.", pix_email_required: "Informe seu e-mail em Pagamento para gerar o Pix online.", invalid_payment_email: "Informe um e-mail válido para o Pix.",
+  delivery_route_unavailable: "Não foi possível calcular a entrega. Confira rua, número, cidade e UF e tente novamente.",
+  delivery_fee_changed: "A taxa de entrega mudou. Confira o novo total e confirme novamente.",
   checkout_not_ready: "Não foi possível confirmar o pedido. Confira o motivo abaixo e faça o ajuste necessário.", benefit_invalid: "Não foi possível aplicar esses benefícios. Confira o cupom e tente novamente.",
   benefit_unavailable: "Benefícios não estão disponíveis nesta loja.", saved_address_invalid: "Este endereço salvo não está mais disponível.",
   recognition_required: "Por segurança, informe o endereço novamente neste dispositivo.", identity_required: "Confirme seu nome e WhatsApp antes de reutilizar um endereço.",
@@ -122,7 +124,7 @@ export default async function CheckoutPage({ params, searchParams }: { params: P
     invalid_address: "endereco", delivery_not_selected: "endereco", delivery_minimum: "endereco", neighborhood_not_served: "endereco",
     saved_address_invalid: "endereco", recognition_required: "endereco", identity_required: "endereco",
     invalid_payment: "pagamento", payment_unavailable: "pagamento", invalid_change: "pagamento", pix_email_required: "pagamento", invalid_payment_email: "pagamento",
-    invalid_schedule: "quando", benefit_invalid: "cupom", benefit_unavailable: "cupom", total_updated: "resumo",
+    invalid_schedule: "quando", benefit_invalid: "cupom", benefit_unavailable: "cupom", total_updated: "resumo", delivery_fee_changed: "resumo", delivery_route_unavailable: "receber",
   };
   const blockForError = query.erro ? errorBlock[query.erro] ?? null : null;
   const formError = blockForError && displayErrorMessage ? { block: blockForError, message: displayErrorMessage } : null;
