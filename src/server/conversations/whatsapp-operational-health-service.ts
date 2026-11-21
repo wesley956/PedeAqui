@@ -172,6 +172,7 @@ export class WhatsAppOperationalHealthService {
         .eq("store_id", storeId)
         .eq("direction", "outbound")
         .eq("delivery_status", "failed")
+        .or("error_code.is.null,error_code.neq.outside_open_hours")
         .gte("created_at", recentSince),
       admin.from("message_media")
         .select("id", { count: "exact", head: true })
