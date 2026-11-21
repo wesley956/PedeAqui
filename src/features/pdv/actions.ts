@@ -9,11 +9,14 @@ import type { PosSaleInput } from "@/server/pdv/schemas";
 export async function createPdvSaleAction(input: PosSaleInput, idempotencyKey: string) {
   try {
     const sale = await PdvService.createSale(input, idempotencyKey);
-    revalidatePath("/pedidos");
-    revalidatePath(`/pedidos/${sale.orderId}`);
-    revalidatePath("/producao");
-    revalidatePath("/crescimento");
-    revalidatePath("/caixa");
+    // A venda já foi gravada. Falha ao invalidar cache não deve transformar sucesso em erro.
+    for (const path of ["/pedidos", `/pedidos/${sale.orderId}`, "/producao", "/crescimento", "/caixa"]) {
+      try {
+        revalidatePath(path);
+      } catch {
+        // Próxima navegação/reconciliação recupera o conteúdo; preservar confirmação da venda.
+      }
+    }
     return { ok: true as const, sale, error: null };
   } catch (error) {
     return { ok: false as const, sale: null, error: friendlyPdvError(error) };

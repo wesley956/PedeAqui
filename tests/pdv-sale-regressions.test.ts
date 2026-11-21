@@ -24,6 +24,25 @@ describe("PDV payment and fulfillment regressions", () => {
       });
     }
   }
+  it("reuses the same idempotency key on a response-uncertain retry", async () => {
+    const key = "same-sale-retry";
+    const request = posSaleSchema.parse({ fulfillmentType: "counter", items: [item], payments: [{ method: "pix", amountCents: 1590 }] });
+    rpc.mockImplementationOnce(async () => {
+      throw new Error("Connection dropped before response");
+    });
+    await expect(PdvService.createSale(request, key)).rejects.toThrow("Connection dropped");
+    rpc.mockResolvedValueOnce({ data: { order_id: "00000000-0000-4000-8000-000000000003", display_number: 1, total_cents: 1590, change_due_cents: 0, created: false }, error: null });
+    const recovered = await PdvService.createSale(request, key);
+    expect(recovered.created).toBe(false);
+    const count = rpc.mock.calls.length;
+    expect(rpc).toHaveBeenNthCalledWith(count - 1, "pdv_create_order_growth_internal", expect.objectContaining({ p_idempotency_key: key }));
+    expect(rpc).toHaveBeenNthCalledWith(count, "pdv_create_order_growth_internal", expect.objectContaining({ p_idempotency_key: key }));
+  });
+  it("preserves a safe server rejection without claiming a finalized sale", async () => {
+    const request = posSaleSchema.parse({ fulfillmentType: "counter", items: [item], payments: [{ method: "pix", amountCents: 1590 }] });
+    rpc.mockImplementationOnce(async () => { throw new Error("payment method disabled"); });
+    await expect(PdvService.createSale(request, "rejected-sale")).rejects.toMatchObject({ message: "payment method disabled" });
+  });
   it("keeps legacy clients on local service and rejects delivery/table in POS", () => {
     const input = { items: [item], payments: [{ method: "pix", amountCents: 1590 }] };
     expect(posSaleSchema.parse(input).fulfillmentType).toBe("counter");
