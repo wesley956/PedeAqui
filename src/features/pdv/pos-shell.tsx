@@ -5,6 +5,7 @@ import { ProductThumbnail } from "@/components/catalog/product-thumbnail";
 import { Dialog } from "@/components/ui/feedback";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from "react";
 import { createPdvSaleAction, searchPdvCustomersAction } from "@/features/pdv/actions";
+import { trackProductExperience } from "@/lib/product-experience/client";
 import {
   cartTotalCents,
   filterPosProducts,
@@ -162,22 +163,30 @@ export function PosShell({ categories, products, customerSearchEnabled, paymentM
   function addPayment() { setPayments((current) => [...current, { id: crypto.randomUUID(), method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]); touchSale(); }
   function removePayment(id: string) { setPayments((current) => { const remaining = current.filter((payment) => payment.id !== id); const [onlyPayment] = remaining; if (remaining.length === 1 && onlyPayment) return [{ ...onlyPayment, amountText: "" }]; return remaining; }); touchSale(); }
 
+  function reportFinalization(outcome: "success" | "failure" | "unknown", result: string, startedAt: number) {
+    trackProductExperience({ eventName: "px.order.action", outcome, durationMs: Math.max(0, Math.round(performance.now() - startedAt)), metadata: { action: "finalize_sale", surface: "pdv", result } });
+  }
+
   async function finalizeSale(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (submissionLock.current) return; setError(null); setLastSale(null);
-    if (cart.length === 0) { setError("Adicione pelo menos um item ao carrinho."); return; }
-    if (paymentMethods.length === 0) { setError("Nenhuma forma de pagamento está habilitada para esta unidade."); return; }
-    if (!selectedCustomer && customerPhone.trim() && customerName.trim().length < 2) { setError("Informe o nome do cliente para cadastrar o telefone."); return; }
-    if (!growthProjection.valid) { setError(growthProjection.message); return; }
-    const resolvedPayments = paymentValidation; if (!resolvedPayments.ok) { setError(resolvedPayments.error); return; }
+    event.preventDefault();
+    const startedAt = performance.now();
+    if (submissionLock.current) { reportFinalization("unknown", "already_processing", startedAt); return; }
+    setError(null); setLastSale(null);
+    if (cart.length === 0) { setError("Adicione pelo menos um item ao carrinho."); reportFinalization("failure", "empty_cart", startedAt); return; }
+    if (paymentMethods.length === 0) { setError("Nenhuma forma de pagamento está habilitada para esta unidade."); reportFinalization("failure", "no_payment_methods", startedAt); return; }
+    if (!selectedCustomer && customerPhone.trim() && customerName.trim().length < 2) { setError("Informe o nome do cliente para cadastrar o telefone."); reportFinalization("failure", "customer_validation", startedAt); return; }
+    if (!growthProjection.valid) { setError(growthProjection.message); reportFinalization("failure", "benefit_validation", startedAt); return; }
+    const resolvedPayments = paymentValidation; if (!resolvedPayments.ok) { setError(resolvedPayments.error); reportFinalization("failure", "payment_validation", startedAt); return; }
     const customer: PosSaleInput["customer"] = selectedCustomer ? { id: selectedCustomer.id } : (customerName.trim() || customerPhone.trim() || customerEmail.trim()) ? { name: customerName.trim() || null, phone: customerPhone.trim() || null, email: customerEmail.trim() || null } : null;
     const input: PosSaleInput = { fulfillmentType, items: cart.map((line) => ({ productId: line.productId, quantity: line.quantity, note: line.note, modifierIds: line.modifierIds })), payments: resolvedPayments.value, customer, growth: { couponCode: couponCode.trim() || null, cashbackRedeemCents: cashbackParsed ?? 0, loyaltyRedeemPoints: loyaltyNumber } };
     submissionLock.current = true; setPending(true);
     try {
       const result = await createPdvSaleAction(input, `${sessionNonce}:${revision}`);
-      if (!result.ok || !result.sale) { setError(result.error ?? "Não foi possível finalizar a venda."); return; }
+      if (!result.ok || !result.sale) { setError(result.error ?? "Não foi possível finalizar a venda."); reportFinalization("failure", "server_rejected", startedAt); return; }
+      reportFinalization("success", "created_or_replayed", startedAt);
       setLastSale(result.sale); setCart([]); setSelectedCustomer(null); setCustomerQuery(""); setCustomerName(""); setCustomerPhone(""); setCustomerEmail(""); setCouponCode(""); setCashbackText(""); setLoyaltyPointsText("");
       setPayments([{ id: crypto.randomUUID(), method: defaultMethod, amountText: "", cashReceivedText: "", reference: "" }]); setRevision((value) => value + 1);
-    } catch { setError("Não foi possível confirmar a venda. Tente novamente sem alterar os dados para evitar duplicidade.");
+    } catch { setError("Não foi possível confirmar a venda. Confira o histórico antes de tentar novamente, para evitar duplicidade."); reportFinalization("unknown", "response_uncertain", startedAt);
     } finally { submissionLock.current = false; setPending(false); }
   }
 
