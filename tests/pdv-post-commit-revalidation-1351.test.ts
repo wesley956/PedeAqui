@@ -32,6 +32,12 @@ describe("PDV committed sale confirmation", () => {
     expect(mocks.createSale).toHaveBeenCalledTimes(1);
     expect(mocks.revalidatePath).toHaveBeenCalledTimes(5);
   });
+  it("confirms an idempotent replay instead of presenting it as a failed sale", async () => {
+    mocks.createSale.mockResolvedValue({ ...sale, created: false });
+    const result = await createPdvSaleAction(input, "stable-idempotency");
+    expect(result).toMatchObject({ ok: true, sale: { orderId: sale.orderId, created: false } });
+    expect(mocks.createSale).toHaveBeenCalledTimes(1);
+  });
   it("returns failure when the sale itself was not committed", async () => {
     mocks.createSale.mockRejectedValue(new Error("payment method disabled"));
     const result = await createPdvSaleAction(input, "stable-idempotency");
