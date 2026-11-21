@@ -1,7 +1,8 @@
 import Image from "next/image";
 
 export type PedeAquiBrandSize = "xs" | "sm" | "md" | "lg";
-export type PedeAquiLogoSurface = "light" | "dark";
+/** "auto" acompanha o tema do painel (claro/escuro). */
+export type PedeAquiLogoSurface = "light" | "dark" | "auto";
 
 type BrandAccessibilityProps = {
   /** Use only when nearby text already names the brand. */
@@ -49,6 +50,16 @@ export function PedeAquiLogo({
 }: PedeAquiLogoProps) {
   const dimensions = LOGO_DIMENSIONS[size];
   const src = surface === "dark" ? "/brand/pedeaqui-logo-on-dark.svg" : "/brand/pedeaqui-logo.svg";
+
+  if (surface === "auto") {
+    // As duas versões vão na página; o CSS (globals.css) mostra a que combina com o tema ativo.
+    return (
+      <span data-brand="pedeaqui-logo-auto" className={className} role={decorative ? undefined : "img"} aria-label={decorative ? undefined : (alt ?? "PedeAqui")} aria-hidden={decorative || undefined}>
+        <Image data-brand-surface="light" src="/brand/pedeaqui-logo.svg" alt="" width={dimensions.width} height={dimensions.height} priority={priority} unoptimized />
+        <Image data-brand-surface="dark" src="/brand/pedeaqui-logo-on-dark.svg" alt="" width={dimensions.width} height={dimensions.height} priority={priority} unoptimized />
+      </span>
+    );
+  }
 
   return (
     <Image
