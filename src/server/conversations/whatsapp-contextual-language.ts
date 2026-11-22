@@ -6,6 +6,10 @@ function normalized(text: string | null | undefined) {
     .replace(/\s+por favor$/, "").trim();
 }
 
+export function isExplicitNewOrderRequest(text: string | null | undefined) {
+  return /^(?:eu )?(?:quero|queria|gostaria de|posso|poderia|vou) (?:fazer|montar|iniciar) (?:(?:um|outro|novo) )?(?:novo )?pedido\b/.test(normalized(text));
+}
+
 export function isNaturalTrackingQuestion(text: string | null | undefined) {
   const value = normalized(text);
   return /\b(?:o meu|meu pedido)\s+(?:ja\s+)?(?:esta|ta|ficou|saiu|chegou|foi entregue)\b/.test(value)

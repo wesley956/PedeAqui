@@ -1,7 +1,28 @@
 import { describe, expect, it } from "vitest";
 import { resolveWhatsAppBotIntent, trackingCodeFromInput } from "@/server/conversations/bot-menu";
+import { classifyWhatsAppIntelligenceIntent } from "@/server/conversations/whatsapp-intelligence-classifier";
 
 describe("WhatsApp order tracking input", () => {
+  it.each([
+    "Gostaria de fazer um pedido para retirar",
+    "Gostaria de montar um pedido",
+    "Gostaria de fazer um pedido de 10 salgados para retirar",
+  ])("routes a new order out of tracking: %s", (text) => {
+    for (const step of ["menu", "awaiting_tracking_code"] as const) {
+      expect(resolveWhatsAppBotIntent(text, step)).toBe("order_start");
+      expect(resolveWhatsAppBotIntent(text, step, { allowWhatsAppOrders: false })).toBe("menu_link");
+      expect(classifyWhatsAppIntelligenceIntent(text, step).intent).toBe("order_start");
+    }
+  });
+
+  it.each([
+    "Gostaria de acompanhar meu pedido",
+    "Meu pedido já está pronto para retirar?",
+  ])("keeps explicit tracking requests in tracking: %s", (text) => {
+    expect(resolveWhatsAppBotIntent(text, "menu")).toBe("track_start");
+    expect(classifyWhatsAppIntelligenceIntent(text, "menu").intent).toBe("track_start");
+  });
+
   it.each([
     ["42", 42],
     ["#42", 42],

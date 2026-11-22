@@ -1,5 +1,5 @@
 import { normalizeBotInput } from "@/server/conversations/bot-menu";
-import { isNaturalTrackingQuestion, resolveNaturalPixSpeech, resolveNaturalFulfillment } from "@/server/conversations/whatsapp-contextual-language";
+import { isExplicitNewOrderRequest, isNaturalTrackingQuestion, resolveNaturalPixSpeech, resolveNaturalFulfillment } from "@/server/conversations/whatsapp-contextual-language";
 import type {
   WhatsAppIntelligenceIntent,
   WhatsAppIntelligencePhase,
@@ -29,7 +29,6 @@ const orderEditPatterns = [
 ];
 
 const orderStartPatterns = [
-  /\b(?:quero|queria|gostaria de|posso|poderia|vou)\b.*\b(?:fazer|montar|iniciar)?\s*(?:um\s+)?pedido\b/,
   /\b(?:quero|queria|posso|poderia)\b.*\bpedir\b/,
   /\bpedido\s+pelo\s+whatsapp\b/,
   /\bpedir\s+por\s+aqui\b/,
@@ -102,7 +101,7 @@ export function classifyWhatsAppIntelligenceIntent(
     return result("price_question", 0.91, "price-question");
   }
 
-  if (hasAny(normalized, orderStartPatterns)) return result("order_start", 0.97, "new-order-language");
+  if (isExplicitNewOrderRequest(text) || hasAny(normalized, orderStartPatterns)) return result("order_start", 0.97, "new-order-language");
 
   const trackingNumbers = numericTokens(normalized);
   const explicitTrackingCode = normalized.match(/\b(?:pedido|codigo)\s*#?\s*(\d{1,12})\b/);
