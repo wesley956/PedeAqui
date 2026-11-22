@@ -4,7 +4,7 @@ import { normalizeGenericInformalPortuguese } from "@/server/conversations/gener
 import { normalizeComparablePhone } from "@/server/conversations/order-recipient-policy";
 import { projectOrderNotification, projectOrderTrackingState } from "@/server/conversations/order-tracking-projection";
 import { isExplicitMenuNavigation } from "@/server/conversations/whatsapp-navigation";
-import { isNaturalTrackingQuestion, resolveNaturalPixSpeech } from "@/server/conversations/whatsapp-contextual-language";
+import { isExplicitNewOrderRequest, isNaturalTrackingQuestion, resolveNaturalPixSpeech } from "@/server/conversations/whatsapp-contextual-language";
 import { asksStoreLocation, catalogAvailabilityQuery, needsWhatsAppServiceRecovery } from "@/server/conversations/whatsapp-service-recovery";
 
 export type WhatsAppBotStep = "menu" | "awaiting_tracking_code";
@@ -42,7 +42,6 @@ const trackingWords = new Set([
   "acompanhar",
   "acompanhar pedido",
   "meu pedido",
-  "pedido",
   "onde esta meu pedido",
   "como esta meu pedido",
   "status do pedido",
@@ -184,6 +183,9 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
   const trackingCode = trackingCodeFromInput(normalized);
   if (needsWhatsAppServiceRecovery(normalized)) return "handoff";
   if (isExplicitMenuNavigation(normalized)) return "menu";
+  if (isExplicitNewOrderRequest(normalized) && !containsAny(normalized, handoffWords) && !containsAny(normalized, menuLinkWords)) {
+    return options.allowWhatsAppOrders === false ? "menu_link" : "order_start";
+  }
   if (step === "awaiting_tracking_code" && trackingCode !== null) return "track_code";
   if (step === "menu" && trackingCode !== null && hasExplicitTrackingContext(normalized)) return "track_code";
   if (step === "awaiting_tracking_code" && ["menu", "inicio", "iniciar", "ver opcoes", "bot_menu_open"].includes(normalized)) return "menu";
@@ -202,7 +204,7 @@ export function resolveWhatsAppBotIntent(value: string | null | undefined, step:
   if (containsAny(normalized, promotionWords)) return "promotions";
   if (containsAny(normalized, benefitWords)) return "benefits";
   if (containsAny(normalized, menuLinkWords)) return "menu_link";
-  if (containsAny(normalized, trackingWords) || isNaturalTrackingQuestion(normalized)) return "track_start";
+  if (normalized === "pedido" || containsAny(normalized, trackingWords) || isNaturalTrackingQuestion(normalized)) return "track_start";
   if (containsAny(normalized, handoffWords)) return "handoff";
   if (containsAny(normalized, hoursWords)) return "hours";
   if (containsAny(normalized, paymentWords) || resolveNaturalPixSpeech(normalized)) return "payment";
