@@ -136,6 +136,11 @@ describe("WPP-13 operational WhatsApp health", () => {
     expect(service).toContain('row.failure_kind !== "legacy_media_unavailable"');
   });
 
+  it("does not count expected outside-open-hours blocks as outbound health failures", () => {
+    expect(service).toContain('.or("error_code.is.null,error_code.neq.outside_open_hours")');
+    expect(service).toContain('.eq("delivery_status", "failed")');
+  });
+
   it("renders a compact health card and documents no-PII support rules", () => {
     expect(page).toContain("Saúde do WhatsApp");
     expect(page).toContain("Filas e atendimento");
