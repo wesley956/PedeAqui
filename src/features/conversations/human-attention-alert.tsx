@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { realtimeStoreScope } from "@/lib/supabase/realtime";
 import type { HumanAttentionAlertData } from "@/server/conversations/human-attention-alert-service";
 import styles from "./human-attention-alert.module.css";
 
 export function HumanAttentionAlert({ storeId, alert }: { storeId: string; alert: HumanAttentionAlertData }) {
-  const router = useRouter();
+  const [live, setLive] = useState<{ storeId: string; alert: HumanAttentionAlertData } | null>(null);
+  const current = live?.storeId === storeId ? live.alert : alert;
 
   useEffect(() => {
     const scope = realtimeStoreScope(storeId);
@@ -17,13 +17,45 @@ export function HumanAttentionAlert({ storeId, alert }: { storeId: string; alert
     const supabase = createClient();
     let timer: number | null = null;
     let reconnecting = false;
+    let active = true;
+    let inFlight = false;
+    let dirty = false;
+    let controller: AbortController | null = null;
+    const read = async () => {
+      if (!active || document.visibilityState !== "visible" || !navigator.onLine) return;
+      if (inFlight) { dirty = true; return; }
+      inFlight = true;
+      dirty = false;
+      const request = new AbortController();
+      controller = request;
+      const timeout = window.setTimeout(() => request.abort(), 10_000);
+      try {
+        const response = await fetch(`/api/conversations/human-attention?storeId=${encodeURIComponent(storeId)}`, { cache: "no-store", signal: request.signal });
+        if (!response.ok) return;
+        const result = await response.json();
+        if (active && result.storeId === storeId && Number.isInteger(result.alert?.count) && result.alert.count >= 0
+          && (result.alert.firstConversationId === null || typeof result.alert.firstConversationId === "string")) {
+          setLive({ storeId, alert: result.alert });
+        }
+      } catch {
+        // Keep the last known queue on timeout/offline; the next event or safety poll reconciles it.
+      } finally {
+        window.clearTimeout(timeout);
+        controller = null;
+        inFlight = false;
+        if (active && dirty) refresh();
+      }
+    };
     const refresh = () => {
-      if (timer !== null) window.clearTimeout(timer);
+      if (!active || timer !== null) return;
       timer = window.setTimeout(() => {
         timer = null;
-        router.refresh();
-      }, 180);
+        void read();
+      }, 250);
     };
+
+    const safetyPoll = window.setInterval(refresh, 60_000);
+    refresh();
 
     const channel = supabase
       .channel(`human-attention:${scope.storeId}`)
@@ -45,20 +77,23 @@ export function HumanAttentionAlert({ storeId, alert }: { storeId: string; alert
     window.addEventListener("online", onOnline);
 
     return () => {
+      active = false;
+      controller?.abort();
+      window.clearInterval(safetyPoll);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("online", onOnline);
       if (timer !== null) window.clearTimeout(timer);
       void supabase.removeChannel(channel);
     };
-  }, [router, storeId]);
+  }, [storeId]);
 
-  if (alert.count <= 0) return null;
+  if (current.count <= 0) return null;
 
   const params = new URLSearchParams({ status: "waiting_agent" });
-  if (alert.firstConversationId) params.set("conversation", alert.firstConversationId);
-  const label = alert.count === 1
+  if (current.firstConversationId) params.set("conversation", current.firstConversationId);
+  const label = current.count === 1
     ? "1 cliente está aguardando atendimento humano"
-    : `${alert.count} clientes estão aguardando atendimento humano`;
+    : `${current.count} clientes estão aguardando atendimento humano`;
 
   return (
     <div className={styles.banner} role="alert" aria-live="assertive">
