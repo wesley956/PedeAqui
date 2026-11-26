@@ -5,7 +5,7 @@ describe("event inventory projection", () => {
   const stock = [{ productId: "a", available: 3 }, { productId: "b", available: 2 }];
   it("aggregates repeated product lines without mutating stock", () => {
     expect(projectEventStock(stock, [{ productId: "a", quantity: 1 }, { productId: "a", quantity: 2 }])).toEqual([{ productId: "a", available: 0 }, stock[1]]);
-    expect(stock[0].available).toBe(3);
+    expect(stock[0]?.available).toBe(3);
   });
   it("rejects overselling across repeated lines", () => {
     expect(() => projectEventStock(stock, [{ productId: "a", quantity: 2 }, { productId: "a", quantity: 2 }])).toThrow();

@@ -1,6 +1,10 @@
 export function friendlyPdvError(error: unknown) {
   const raw = error && typeof error === "object" && "message" in error && typeof error.message === "string" ? error.message : "Não foi possível finalizar a venda.";
   const messages: Array<[string, string]> = [
+    ["event stock insufficient", "A quantidade disponível no evento mudou. Atualize os eventos e revise os itens."],
+    ["event not open", "O evento não está aberto para vendas. Confira o período e a ativação."],
+    ["event unavailable", "Este evento não está disponível nesta unidade."],
+    ["event sale key", "Esta tentativa já está vinculada a outra venda. Confira os pedidos antes de continuar."],
     ["pdv fulfillment", "Revise se a venda é para consumir no local ou levar embora."],
     ["invalid customer email", "Informe um e-mail válido para o cliente."],
     ["invalid customer phone", "Informe um telefone válido para o cliente."],

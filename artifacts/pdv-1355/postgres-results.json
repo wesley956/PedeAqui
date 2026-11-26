@@ -1,0 +1,20 @@
+{
+  "postgres": "PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit",
+  "isolated": true,
+  "results": [
+    "last unit contention: one success; replay: no extra stock/payment/order",
+    "cancellation restores once",
+    "restock idempotency",
+    "two tenants and two stores isolated; foreign product rejected",
+    "payment failure rolls stock back",
+    "event sales preserve credit, debit and cash with an open cash session",
+    "online order insert blocked; event sale and other organization available",
+    "automatic closure expiration allows insert without changing store settings",
+    "close blocks new event sales; transport retry still returns original sale",
+    "event completion does not consume regular recipe inventory",
+    "canceling one event preserves another closure; canceling the last removes only the overlay",
+    "regular POS completion still runs historical recipe consumption",
+    "financial report references one existing order/payment; canceled sales excluded",
+    "RLS/tables and internal RPC deny browser roles"
+  ]
+}

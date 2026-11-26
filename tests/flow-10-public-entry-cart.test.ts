@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/server/pdv/events/event-closure", () => ({ loadEventClosureForPublicStore: async () => null }));
 vi.mock("server-only", () => ({}));
 
 const ids = {

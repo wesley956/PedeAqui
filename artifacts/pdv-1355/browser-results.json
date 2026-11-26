@@ -1,0 +1,30 @@
+[
+  {
+    "width": 390,
+    "domOnly": true,
+    "createTransportRetry": true,
+    "activationClosureConfirmation": true,
+    "overstockBlocked": true,
+    "saleDoubleSubmitGuard": true,
+    "restock": true,
+    "report": true,
+    "close": true,
+    "normalCartPreserved": true,
+    "horizontalOverflow": false,
+    "pageErrors": []
+  },
+  {
+    "width": 1366,
+    "domOnly": true,
+    "createTransportRetry": true,
+    "activationClosureConfirmation": true,
+    "overstockBlocked": true,
+    "saleDoubleSubmitGuard": true,
+    "restock": true,
+    "report": true,
+    "close": true,
+    "normalCartPreserved": true,
+    "horizontalOverflow": false,
+    "pageErrors": []
+  }
+]

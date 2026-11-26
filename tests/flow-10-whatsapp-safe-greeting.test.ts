@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/server/pdv/events/event-closure", () => ({ loadEventClosure: (...args: unknown[]) => mocks.loadEventClosure(...args) }));
 vi.mock("server-only", () => ({}));
 
 const mocks = vi.hoisted(() => ({
   createAdminClient: vi.fn(),
   sendText: vi.fn(),
+  loadEventClosure: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/admin", () => ({
@@ -47,6 +49,7 @@ describe("FLOW-10 B01 safe WhatsApp greeting", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.loadEventClosure.mockResolvedValue(null);
     process.env.APP_URL = "https://pedeaqui.example";
 
     const rows: Record<string, unknown> = {
@@ -101,6 +104,21 @@ describe("FLOW-10 B01 safe WhatsApp greeting", () => {
       rpc,
     });
     mocks.sendText.mockResolvedValue({ externalMessageId: "provider-message-1" });
+  });
+
+  it("answers a greeting with event dates/reason while preserving human takeover", async () => {
+    mocks.loadEventClosure.mockResolvedValue({reason:"Participação em feira",startsAt:"2026-11-26T21:00:00Z",endsAt:"2026-11-27T01:00:00Z"});
+    await ConversationGreetingService.afterInbound({conversation_id:"conversation-1",message_id:"inbound-event",message_created:true},"event-request");
+    expect(mocks.loadEventClosure).toHaveBeenCalledWith("organization-1","store-1");
+    expect(mocks.sendText).toHaveBeenCalledWith(expect.objectContaining({body:expect.stringContaining("Participação em feira")}));
+    const body=mocks.sendText.mock.calls[0]?.[0]?.body as string;
+    expect(body).toContain("18:00");expect(body).toContain("22:00");expect(body).toContain("pedido existente");
+    mocks.sendText.mockClear();mocks.loadEventClosure.mockClear();
+    const original=mocks.createAdminClient.mock.results[0]?.value;
+    if (!original) throw new Error("Expected fixture admin client");
+    mocks.createAdminClient.mockReturnValue({...original,from:(table:string)=>table === "conversations"?singleRow({channel:"whatsapp",status:"agent"}):original.from(table)});
+    await ConversationGreetingService.afterInbound({conversation_id:"conversation-1",message_id:"inbound-human",message_created:true},"human-request");
+    expect(mocks.sendText).not.toHaveBeenCalled();expect(mocks.loadEventClosure).not.toHaveBeenCalled();
   });
 
   afterEach(() => {

@@ -1,4 +1,5 @@
 import "server-only";
+import { loadEventClosure } from "@/server/pdv/events/event-closure";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { PublicHour } from "@/server/menu/schedule";
@@ -18,7 +19,7 @@ export type {
 export class StoreOperationalStatusService {
   static async load(input: { organizationId: string; storeId: string; now?: Date }) {
     const admin = createAdminClient();
-    const [storeResult, settingsResult, hoursResult] = await Promise.all([
+    const [storeResult, settingsResult, hoursResult, eventClosure] = await Promise.all([
       admin.from("stores")
         .select("status, timezone")
         .eq("organization_id", input.organizationId)
@@ -37,6 +38,7 @@ export class StoreOperationalStatusService {
         .order("weekday")
         .order("sort_order")
         .order("opens_at"),
+      loadEventClosure(input.organizationId, input.storeId, input.now),
     ]);
     if (storeResult.error) throw storeResult.error;
     if (settingsResult.error) throw settingsResult.error;
@@ -45,6 +47,7 @@ export class StoreOperationalStatusService {
 
     const settings = settingsResult.data;
     return resolveStoreOperationalStatus({
+      eventClosure,
       storeStatus: storeResult.data.status,
       acceptingOrders: settings?.accepting_orders ?? true,
       pauseReason: settings?.pause_reason ?? null,

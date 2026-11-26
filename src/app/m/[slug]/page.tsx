@@ -47,7 +47,7 @@ export default async function PublicMenuPage({ params }: { params: Promise<{ slu
   ].filter((fact): fact is string => Boolean(fact));
   const closedNotice = menu.operational.label === "closed"
     ? `Estamos fechados agora.${menu.operational.nextOpening ? ` Abrimos ${menu.operational.nextOpening.label}.` : ""}`
-    : menu.operational.label === "paused" ? `Pedidos pausados no momento${menu.settings.pause_reason ? `: ${menu.settings.pause_reason}` : "."}` : null;
+    : menu.operational.label === "paused" ? `Pedidos pausados no momento${menu.operational.pauseReason ? `: ${menu.operational.pauseReason}` : "."}` : null;
   return <main className={styles.root} style={restaurantBrandVars(menu.settings.primary_color)}>
     <div className={styles.container}>
       <header className={styles.expressHeader}>

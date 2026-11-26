@@ -1,10 +1,13 @@
 import { isOpenAt, nextOpening } from "@/server/menu/schedule";
 import type { PublicHour } from "@/server/menu/schedule";
 
+import type { EventClosure } from "@/server/pdv/events/event-closure";
+
 export type StoreOperationalLabel = "open" | "closed" | "paused";
-export type StoreOperationalReason = "open" | "closed_hours" | "store_unavailable" | "orders_paused";
+export type StoreOperationalReason = "open" | "closed_hours" | "store_unavailable" | "orders_paused" | "event_closed";
 
 export type StoreOperationalStatus = {
+  eventClosure?: EventClosure | null;
   scheduleOpen: boolean;
   acceptingOrders: boolean;
   canOrder: boolean;
@@ -25,37 +28,47 @@ export function resolveStoreOperationalStatus(input: {
   allowPickup?: boolean;
   hours: PublicHour[];
   timeZone: string;
+  eventClosure?: EventClosure | null;
   now?: Date;
 }): StoreOperationalStatus {
   const now = input.now ?? new Date();
   const storeAvailable = input.storeStatus === "active";
   const scheduleOpen = storeAvailable && isOpenAt(input.hours, input.timeZone, now);
   const acceptingOrders = input.acceptingOrders;
-  const canOrder = scheduleOpen && acceptingOrders;
+  const closure = input.eventClosure && Date.parse(input.eventClosure.startsAt) <= now.getTime() && Date.parse(input.eventClosure.endsAt) > now.getTime() ? input.eventClosure : null;
+  const canOrder = scheduleOpen && acceptingOrders && !closure;
   const reason: StoreOperationalReason = !storeAvailable
     ? "store_unavailable"
+    : closure ? "event_closed"
     : !acceptingOrders
       ? "orders_paused"
       : !scheduleOpen
         ? "closed_hours"
         : "open";
-  const label: StoreOperationalLabel = reason === "open" ? "open" : reason === "orders_paused" ? "paused" : "closed";
+  const label: StoreOperationalLabel = reason === "open" ? "open" : ["orders_paused", "event_closed"].includes(reason) ? "paused" : "closed";
 
   return {
+    ...(closure ? { eventClosure: closure } : {}),
     scheduleOpen,
     acceptingOrders,
     canOrder,
     label,
     reason,
     timeZone: input.timeZone,
-    pauseReason: input.pauseReason?.trim() || null,
+    pauseReason: closure ? eventClosureMessage(closure, input.timeZone) : input.pauseReason?.trim() || null,
     allowDelivery: input.allowDelivery ?? true,
     allowPickup: input.allowPickup ?? true,
     nextOpening: reason === "closed_hours" ? nextOpening(input.hours, input.timeZone, now) : null,
   };
 }
 
+export function eventClosureMessage(closure: EventClosure, timeZone: string) {
+  const format = new Intl.DateTimeFormat("pt-BR", { timeZone, dateStyle: "short", timeStyle: "short" });
+  return `A loja estará fechada de ${format.format(new Date(closure.startsAt))} até ${format.format(new Date(closure.endsAt))}. Motivo: ${closure.reason}.`;
+}
+
 export function storeClosedOrderMessage(status: StoreOperationalStatus) {
+  if (status.reason === "event_closed" && status.eventClosure) return `${eventClosureMessage(status.eventClosure, status.timeZone)} Você pode consultar um pedido existente ou falar com a equipe.`;
   if (status.reason === "orders_paused") {
     const detail = status.pauseReason ? ` Motivo informado pela loja: ${status.pauseReason}.` : "";
     return `A loja está com os pedidos pausados no momento.${detail} Você ainda pode consultar um pedido existente ou falar com a equipe.`;
@@ -71,6 +84,7 @@ export function storeClosedOrderMessage(status: StoreOperationalStatus) {
 }
 
 export function storeOperationalHoursMessage(status: StoreOperationalStatus) {
+  if (status.reason === "event_closed" && status.eventClosure) return eventClosureMessage(status.eventClosure, status.timeZone);
   if (status.reason === "open") return "A loja está aberta agora e aceitando pedidos.";
   if (status.reason === "orders_paused") {
     const detail = status.pauseReason ? ` Motivo informado pela loja: ${status.pauseReason}.` : "";
