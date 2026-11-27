@@ -30,6 +30,8 @@ O harness `scripts/browser-pdv-events.mjs` usa os componentes reais e transporte
 
 A prova de PostgreSQL é focada no núcleo de pedidos/PDV, não reproduz todos os schedulers/extensões de um projeto Supabase hospedado. A homologação de publicação deve ainda executar a migration contra um ambiente Supabase descartável com o histórico completo e revisar os advisors. Não foram alterados dados ou configurações de produção.
 
+O Browser Homologation usa um Supabase descartável no próprio runner, com o esquema canônico completo (incluindo `235_pdv_events.sql`) e duas lojas fictícias. Não usa mais o projeto hospedado com uma chave administrativa fictícia, combinação que impedia a consulta de fechamento. As páginas reais do build verificam loja independente aberta, motivo do evento, compra bloqueada, reabertura ao encerrar/expirar e preservação de pausa manual. O stack é destruído ao final; o teste recusa endereços de banco fora do loopback.
+
 ## Publicação e retorno
 
 Branches independentes para #1355 e #1356. Não fazer merge/deploy automático. Aplicar a migration `20261126140000_pdv_events.sql` em homologação **antes** de publicar o código que consulta seu fechamento. Validar os cenários no ambiente completo e aprovar a publicação. O equivalente canônico é `235_pdv_events.sql`; não aplicar os dois no mesmo banco.

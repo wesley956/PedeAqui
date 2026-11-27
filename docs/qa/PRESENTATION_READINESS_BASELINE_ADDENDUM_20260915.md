@@ -37,3 +37,9 @@ Este adendo preserva os baselines históricos e registra superfícies adicionada
 
 - `/m/[slug]/meus-pedidos`: lista os últimos cinco pedidos autorizados neste navegador, com número, status e acesso ao acompanhamento.
 - `/m/[slug]/pedido-atual`: valida o histórico HttpOnly e o token individual do pedido antes de restaurar o cookie de acompanhamento e redirecionar para a URL limpa. Sem credencial válida, retorna à lista; não consulta pedidos por telefone.
+
+## Consulta de atendimento humano — 26/11/2026
+
+| Rota | Acesso | Finalidade |
+|---|---|---|
+| `/api/conversations/human-attention` | `conversations.view`, organização e unidade da sessão | Atualiza somente o aviso da fila humana, sem recarregar o PDV. Resposta privada sem cache; rejeita unidade divergente. |
