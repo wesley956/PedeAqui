@@ -45,6 +45,16 @@ export class WhatsAppAutomationHoursService {
     const scope = { organizationId: conversation.organization_id, storeId: conversation.store_id };
     if (await this.canSend({ ...scope, receivedAt })) return true;
 
+    // A temporary event closure must still answer new messages with dates/reason.
+    // This is reply-only; notification sends and human-takeover guards remain unchanged.
+    const nowForClosure = new Date();
+    const statusForClosure = await StoreOperationalStatusService.load({ ...scope, now: nowForClosure });
+    if (statusForClosure.reason === "event_closed") {
+      if (!receivedAt) return true;
+      const inbound = new Date(receivedAt).getTime();
+      return Number.isFinite(inbound) && inbound <= nowForClosure.getTime() && nowForClosure.getTime() - inbound <= 5 * 60_000;
+    }
+
     // The optional early bot shift is intentionally reply-only: order status
     // notifications and checkout are still governed by the actual store hours.
     const { data: settings, error: settingsError } = await admin.from("store_conversation_settings")

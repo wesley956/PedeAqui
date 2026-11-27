@@ -2,6 +2,8 @@ import { classifyNonCommercialContact } from "@/server/conversations/whatsapp-no
 import { botPreopenOpeningTime } from "@/server/conversations/bot-preopen-window";
 import { isPreventiveHandoffEnabled, requestPreventiveHandoff } from "@/server/conversations/whatsapp-preventive-handoff";
 import "server-only";
+import { loadEventClosure } from "@/server/pdv/events/event-closure";
+import { eventClosureMessage } from "@/server/menu/store-operational-status-core";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -408,6 +410,13 @@ export class ConversationGreetingService {
     }
 
     const menuUrl = buildPublicMenuUrl(appUrl, store.slug);
+    if (["menu", "menu_link", "hours", "order_start", "unknown"].includes(intent)) {
+      const eventClosure = await loadEventClosure(conversation.organization_id, conversation.store_id);
+      if (eventClosure) {
+        await sendBotText(botContext, `${eventClosureMessage(eventClosure, store.timezone || "America/Sao_Paulo")} Você pode consultar um pedido existente ou falar com a equipe.`, `auto:event-closed:${ingest.message_id}`);
+        return;
+      }
+    }
     // Pre-opening is a reply-only WhatsApp period. A customer can see the menu
     // before checkout opens, without changing regular greeting/order settings.
     if (Number(settings.bot_preopen_minutes ?? 0) > 0

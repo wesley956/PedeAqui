@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-29",
+  "capturedAt": "2026-11-27",
   "migrations": [
     [
       "20260823090844",
@@ -544,6 +544,26 @@
     [
       "20261029161546",
       "print_agent_on_demand_diagnostics"
+    ],
+    [
+      "20261111224213",
+      "public_item_notes_setting"
+    ],
+    [
+      "20261112112911",
+      "waiting_queue_answered_auto_close"
+    ],
+    [
+      "20261112231738",
+      "safe_unanswered_bot_recovery"
+    ],
+    [
+      "20261114224918",
+      "whatsapp_bot_preopen_window"
+    ],
+    [
+      "20261127051641",
+      "pdv_events"
     ]
   ]
 }

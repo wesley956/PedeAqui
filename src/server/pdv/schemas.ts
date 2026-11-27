@@ -43,6 +43,7 @@ export const posGrowthSchema = z.object({
 }).default({ cashbackRedeemCents: 0, loyaltyRedeemPoints: 0 });
 
 export const posSaleSchema = z.object({
+  eventId: z.string().uuid().nullable().optional(),
   fulfillmentType: z.enum(["counter", "pickup"]).default("counter"),
   items: z.array(posSaleItemSchema).min(1).max(100),
   payments: z.array(posPaymentLineSchema).min(1).max(10),

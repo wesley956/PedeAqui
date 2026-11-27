@@ -168,7 +168,8 @@ export class PdvService {
     const storeId = requireStoreId(context.storeId);
     const admin = createAdminClient();
 
-    const { data, error } = await admin.rpc("pdv_create_order_growth_internal", {
+    const { data, error } = await admin.rpc(values.eventId ? "pdv_event_sale_internal" : "pdv_create_order_growth_internal", {
+      ...(values.eventId ? { p_organization_id: context.organizationId, p_event_id: values.eventId } : {}),
       p_store_id: storeId,
       p_items: values.items.map((item) => ({ product_id: item.productId, quantity: item.quantity, note: item.note, modifier_ids: item.modifierIds })),
       p_payments: values.payments.map((payment) => ({ method: payment.method, amount_cents: payment.amountCents, cash_received_cents: payment.cashReceivedCents ?? null, reference: payment.reference ?? null })),

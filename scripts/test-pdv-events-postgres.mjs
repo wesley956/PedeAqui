@@ -1,0 +1,104 @@
+// Disposable localhost PostgreSQL only; no hosted credentials or production URL accepted.
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import {execFileSync,spawn} from 'node:child_process';
+import {pathToFileURL} from 'node:url';
+const pgModule=await import(process.env.PDV_TEST_PG_MODULE ? pathToFileURL(process.env.PDV_TEST_PG_MODULE).href : 'pg');
+const Client=pgModule.Client ?? pgModule.default.Client;
+const bin=process.env.PDV_TEST_POSTGRES_BIN;
+assert.ok(bin,'Set PDV_TEST_POSTGRES_BIN to a disposable local PostgreSQL bin directory');
+const root=await fs.mkdtemp(path.join(os.tmpdir(),'pdv-events-pg-'));
+const port=55433;
+const results=[];
+let postgres;
+const config={host:'127.0.0.1',port,user:'postgres',database:'postgres'};
+const connect=async()=>{const c=new Client(config);await c.connect();return c;};
+let admin;
+try{
+ execFileSync(path.join(bin,'initdb'),['-D',root,'-U','postgres','-A','trust','--locale=C','--encoding=UTF8'],{stdio:'pipe'});
+ postgres=spawn(path.join(bin,'postgres'),['-D',root,'-h','127.0.0.1','-p',String(port),'-c',"unix_socket_directories="],{stdio:['ignore','ignore','pipe']});
+ let pgError='';postgres.stderr.on('data',d=>pgError+=d);
+ for(let i=0;i<100;i++){try{admin=await connect();break}catch(error){if(i===99)console.error("CONNECT_ERROR",error);await new Promise(r=>setTimeout(r,30));}}
+ assert.ok(admin,pgError);
+ await admin.query(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create schema extensions;create publication supabase_realtime;create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb,raw_app_meta_data jsonb,created_at timestamptz default now());create function auth.uid() returns uuid language sql as $$select null::uuid$$;create function auth.jwt() returns jsonb language sql as $$select '{}'::jsonb$$;`);
+ for(const name of (await fs.readdir('supabase/sql')).filter(n=>/^\d+_/.test(n)&&parseInt(n)<=61).sort((a,b)=>parseInt(a)-parseInt(b)||a.localeCompare(b))){
+   try{await admin.query(await fs.readFile('supabase/sql/'+name,'utf8'));}catch(e){throw new Error(`Baseline ${name}: ${e.message}`)}
+ }
+ for(const name of ['supabase/migrations/20261010071418_pdv_fulfillment_consistency.sql','supabase/migrations/20261127051641_pdv_events.sql'])await admin.query(await fs.readFile(name,'utf8'));
+ const uuid=n=>`86000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+ const actor=uuid(1), org=uuid(2), store=uuid(3), product=uuid(4),orgB=uuid(5),storeB=uuid(6),productB=uuid(7),storeC=uuid(8);
+ await admin.query('insert into auth.users(id) values($1)',[actor]);
+ for(const [id,name]of[[org,'QA A'],[orgB,'QA B']])await admin.query('insert into public.organizations(id,name,created_by) values($1,$2,$3)',[id,name,actor]);
+ for(const [id,o,name]of[[store,org,'qa-a'],[storeB,orgB,'qa-b'],[storeC,org,'qa-c']])await admin.query('insert into public.stores(id,organization_id,name,slug) values($1,$2,$3,$3)',[id,o,name]);
+ for(const [id,o,s]of[[product,org,store],[productB,orgB,storeB]])await admin.query('insert into public.products(id,organization_id,store_id,name,price_cents) values($1,$2,$3,$4,1500)',[id,o,s,'Produto QA']);
+ const manage=async(id,action,data,key,scope={org,store})=>(await admin.query('select public.pdv_event_manage_internal($1,$2,$3,$4,$5,$6,$7) result',[scope.org,scope.store,id,action,data,key,actor])).rows[0].result;
+ const payload=(p=product,qty=1,close=false)=>({name:'Evento QA',starts_at:new Date(Date.now()-60_000).toISOString(),ends_at:new Date(Date.now()+3600_000).toISOString(),close_store:close,closure_reason:close?'Participação em feira':null,closure_starts_at:close?new Date(Date.now()-30_000).toISOString():null,closure_ends_at:close?new Date(Date.now()+1800_000).toISOString():null,items:[{product_id:p,quantity:qty}]});
+ const sale=async(client,event,key,{p=product,qty=1,method='pix',scope={org,store},items=null}={})=>(await client.query('select public.pdv_event_sale_internal($1,$2,$3,$4,$5,null,$6,$7,$8) result',[scope.org,scope.store,event,JSON.stringify(items??[{product_id:p,quantity:qty,modifier_ids:[]}]),JSON.stringify([{method,amount_cents:qty*1500,cash_received_cents:method==='cash'?qty*1500:null}]),{fulfillment_type:'pickup'},key,actor])).rows[0].result;
+ const event=uuid(10),data=payload();await manage(event,'create',data,'create-event-1');await manage(event,'create',data,'create-event-1');await manage(event,'activate',{},'activate-event-1');
+ const a=await connect(),b=await connect();
+ const raced=await Promise.allSettled([sale(a,event,'last-unit-a'),sale(b,event,'last-unit-b')]);await a.end();await b.end();
+ assert.equal(raced.filter(r=>r.status==='fulfilled').length,1);assert.equal(raced.filter(r=>r.status==='rejected'&&r.reason.message.includes('event stock insufficient')).length,1);
+ const winning=raced.find(r=>r.status==='fulfilled').value;const winningKey=raced[0].status==='fulfilled'?'last-unit-a':'last-unit-b';
+ assert.equal((await sale(admin,event,winningKey)).created,false);assert.equal((await admin.query('select sold from public.pdv_event_items where event_id=$1',[event])).rows[0].sold,1);
+ results.push('last unit contention: one success; replay: no extra stock/payment/order');
+ await admin.query('select public.order_transition_internal($1,\'order\',\'canceled\',\'QA cancellation\',$2,\'panel\')',[winning.order_id,actor]);
+ assert.equal((await admin.query('select sold from public.pdv_event_items where event_id=$1',[event])).rows[0].sold,0);
+ await admin.query('update public.orders set order_status=order_status where id=$1',[winning.order_id]);
+ assert.equal((await admin.query('select sold from public.pdv_event_items where event_id=$1',[event])).rows[0].sold,0);
+ results.push('cancellation restores once');
+ await manage(event,'restock',{items:[{product_id:product,quantity:2}]},'restock-once');await manage(event,'restock',{items:[{product_id:product,quantity:2}]},'restock-once');
+ assert.equal((await admin.query('select allocated from public.pdv_event_items where event_id=$1',[event])).rows[0].allocated,3);
+ results.push('restock idempotency');
+ await assert.rejects(()=>sale(admin,event,'invalid-tenant-key',{scope:{org:orgB,store:storeB}}),/event unavailable/);
+ await assert.rejects(()=>sale(admin,event,'invalid-store-key',{scope:{org,store:storeC}}),/event unavailable/);
+ await assert.rejects(()=>manage(uuid(11),'create',payload(productB),'foreign-product'),/event product unavailable/);
+ results.push('two tenants and two stores isolated; foreign product rejected');
+ // Payment failure rolls back inventory, order and event association together.
+ const before=(await admin.query('select sold from public.pdv_event_items where event_id=$1',[event])).rows[0].sold;
+ await assert.rejects(()=>sale(admin,event,'cash-without-open-session',{method:'cash'}),/open cash session/);
+ assert.equal((await admin.query('select sold from public.pdv_event_items where event_id=$1',[event])).rows[0].sold,before);
+ results.push('payment failure rolls stock back');
+ const register=uuid(20);
+ await admin.query("insert into public.cash_registers(id,organization_id,store_id,code,name) values($1,$2,$3,'QA-EVENT','Caixa QA')",[register,org,store]);
+ await admin.query("select public.cash_open_session_internal($1,0,'cash-open-qa',null,$2)",[register,actor]);
+ for(const method of ['credit_card','debit_card','cash'])assert.ok((await sale(admin,event,'event-payment-'+method,{method})).order_id);
+ results.push('event sales preserve credit, debit and cash with an open cash session');
+ const closed=uuid(12);await manage(closed,'create',payload(product,10,true),'closure-create');await manage(closed,'activate',{},'closure-activate');
+ let onlineNumber=1000;
+ const insertOnline=async(channel,s=store,o=org)=>admin.query(`insert into public.orders(organization_id,store_id,display_number,channel,fulfillment_type,customer_name_snapshot,customer_phone_snapshot,subtotal_cents,total_cents,payment_method_snapshot) values($1,$2,$4,$3,'pickup','Cliente QA','',1500,1500,'pix') returning id`,[o,s,channel,onlineNumber++]);
+ await assert.rejects(()=>insertOnline('digital_menu'),/store temporarily closed for event/);
+ await assert.rejects(()=>insertOnline('whatsapp'),/store temporarily closed for event/);
+ const eventSale=await sale(admin,closed,'closure-event-sale');assert.ok(eventSale.order_id);
+ await insertOnline('whatsapp',storeB,orgB);
+ results.push('online order insert blocked; event sale and other organization available');
+ await admin.query("update public.pdv_events set closure_ends_at=now()-interval '1 second',closure_starts_at=now()-interval '10 seconds' where id=$1",[closed]);
+ await insertOnline('whatsapp');
+ results.push('automatic closure expiration allows insert without changing store settings');
+ await manage(closed,'close',{},'closure-finish');await assert.rejects(()=>sale(admin,closed,'after-close-sale'),/event not open/);
+ assert.equal((await sale(admin,closed,'closure-event-sale')).created,false);
+ results.push('close blocks new event sales; transport retry still returns original sale');
+ const report=await admin.query('select public.pdv_event_report_internal($1,$2,$3) result',[org,store,closed]);
+ assert.deepEqual(report.rows[0].result,{sales:1,totalCents:1500,discountCents:0});
+ assert.equal((await admin.query('select count(*)::int n from public.payments where order_id=$1',[eventSale.order_id])).rows[0].n,1);
+ await assert.rejects(()=>sale(admin,closed,'closure-event-sale',{qty:2}),/event sale key payload mismatch/);
+ await admin.query("update public.orders set order_status='completed' where id=$1",[eventSale.order_id]);
+ assert.equal((await admin.query("select count(*)::int n from public.domain_events where entity_id=$1 and event_type='inventory.order_consumed'",[eventSale.order_id])).rows[0].n,0);
+ results.push('event completion does not consume regular recipe inventory');
+ const doubleClosure=[uuid(30),uuid(31)];
+ for(const id of doubleClosure){await manage(id,'create',payload(product,2,true),'multi-create-'+id);await manage(id,'activate',{},'multi-activate-'+id);}
+ await manage(doubleClosure[0],'cancel',{},'multi-cancel-one');await assert.rejects(()=>insertOnline('whatsapp'),/store temporarily closed for event/);
+ await manage(doubleClosure[1],'cancel',{},'multi-cancel-two');await insertOnline('whatsapp');
+ results.push('canceling one event preserves another closure; canceling the last removes only the overlay');
+ const normal=await admin.query("select public.pdv_create_order_growth_internal($1,$2,$3,null,'{}','normal-sale-regression',$4) result",[store,JSON.stringify([{product_id:product,quantity:1,modifier_ids:[]}]),JSON.stringify([{method:'pix',amount_cents:1500}]),actor]);
+ const normalId=normal.rows[0].result.order_id;
+ await admin.query("update public.orders set order_status='completed' where id=$1",[normalId]);
+ assert.equal((await admin.query("select count(*)::int n from public.domain_events where entity_id=$1 and event_type='inventory.order_consumed'",[normalId])).rows[0].n,1);
+ results.push('regular POS completion still runs historical recipe consumption');
+ results.push('financial report references one existing order/payment; canceled sales excluded');
+ await admin.query('set role authenticated');await assert.rejects(()=>admin.query('select * from public.pdv_events'),/permission denied/);await admin.query('reset role');
+ await admin.query('set role anon');await assert.rejects(()=>admin.query('select public.pdv_event_manage_internal($1,$2,$3,\'close\',\'{}\',\'forbidden-op\',$4)',[org,store,event,actor]),/permission denied/);await admin.query('reset role');
+ results.push('RLS/tables and internal RPC deny browser roles');
+ await fs.mkdir('artifacts/pdv-1355',{recursive:true});await fs.writeFile('artifacts/pdv-1355/postgres-results.json',JSON.stringify({postgres:(await admin.query('select version() version')).rows[0].version,isolated:true,results},null,2));console.log(JSON.stringify(results,null,2));
+}catch(error){console.error(error);throw error;}finally{await admin?.end();if(postgres && postgres.exitCode === null){const stopped=new Promise(r=>postgres.once('exit',r));postgres.kill('SIGTERM');await stopped;}await fs.rm(root,{recursive:true,force:true});}

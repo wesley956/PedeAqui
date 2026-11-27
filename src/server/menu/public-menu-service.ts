@@ -1,4 +1,5 @@
 import "server-only";
+import { loadEventClosureForPublicStore, type EventClosure } from "@/server/pdv/events/event-closure";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -57,6 +58,7 @@ function operationalState({
   hours,
   timeZone,
   now,
+  eventClosure,
 }: {
   status: "active" | "temporarily_closed";
   acceptingOrders: boolean;
@@ -66,8 +68,10 @@ function operationalState({
   hours: PublicMenu["hours"];
   timeZone: string;
   now: Date;
+  eventClosure?: EventClosure | null;
 }) {
   const resolved = resolveStoreOperationalStatus({
+    eventClosure,
     storeStatus: status,
     acceptingOrders,
     pauseReason,
@@ -246,6 +250,7 @@ export class PublicMenuService {
     const menu = await applyScheduledPromotions(parsed, now);
     const businessType = menu.store.business_type;
     const operational = operationalState({
+      eventClosure: await loadEventClosureForPublicStore(menu.store.id, now),
       status: menu.store.status,
       acceptingOrders: menu.settings.accepting_orders,
       pauseReason: menu.settings.pause_reason,
@@ -273,6 +278,7 @@ export class PublicMenuService {
     const parsed = await applyScheduledPromotionToProduct(publicProductSchema.parse(data), now);
     const businessType = parsed.store.business_type;
     const operational = operationalState({
+      eventClosure: await loadEventClosureForPublicStore(parsed.store.id, now),
       status: parsed.store.status,
       acceptingOrders: parsed.settings.accepting_orders,
       pauseReason: parsed.settings.pause_reason,
