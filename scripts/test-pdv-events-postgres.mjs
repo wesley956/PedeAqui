@@ -26,7 +26,7 @@ try{
  for(const name of (await fs.readdir('supabase/sql')).filter(n=>/^\d+_/.test(n)&&parseInt(n)<=61).sort((a,b)=>parseInt(a)-parseInt(b)||a.localeCompare(b))){
    try{await admin.query(await fs.readFile('supabase/sql/'+name,'utf8'));}catch(e){throw new Error(`Baseline ${name}: ${e.message}`)}
  }
- for(const name of ['supabase/migrations/20261010071418_pdv_fulfillment_consistency.sql','supabase/migrations/20261126140000_pdv_events.sql'])await admin.query(await fs.readFile(name,'utf8'));
+ for(const name of ['supabase/migrations/20261010071418_pdv_fulfillment_consistency.sql','supabase/migrations/20261127051641_pdv_events.sql'])await admin.query(await fs.readFile(name,'utf8'));
  const uuid=n=>`86000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
  const actor=uuid(1), org=uuid(2), store=uuid(3), product=uuid(4),orgB=uuid(5),storeB=uuid(6),productB=uuid(7),storeC=uuid(8);
  await admin.query('insert into auth.users(id) values($1)',[actor]);

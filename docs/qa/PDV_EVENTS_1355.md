@@ -34,6 +34,8 @@ O Browser Homologation usa um Supabase descartável no próprio runner, com o es
 
 ## Publicação e retorno
 
-Branches independentes para #1355 e #1356. Não fazer merge/deploy automático. Aplicar a migration `20261126140000_pdv_events.sql` em homologação **antes** de publicar o código que consulta seu fechamento. Validar os cenários no ambiente completo e aprovar a publicação. O equivalente canônico é `235_pdv_events.sql`; não aplicar os dois no mesmo banco.
+Branches independentes para #1355 e #1356. A publicação de Eventos foi autorizada em 27/11/2026. A migration `20261127051641_pdv_events.sql` corresponde à versão registrada pelo serviço de migrations na aplicação em produção; seu SQL é o mesmo validado anteriormente no arquivo datado de 26/11. O equivalente canônico é `235_pdv_events.sql`; não aplicar os dois no mesmo banco.
+
+A estrutura foi aplicada antes do código, com limite de espera por lock de três segundos e tempo de execução de trinta segundos. A função de consumo de estoque existente foi comparada à definição canônica antes da substituição. Após a aplicação: zero eventos cadastrados, zero locks pendentes, RLS ativo nas quatro tabelas, SELECT negado a anon/authenticated e RPCs de gerenciamento/venda/relatório executáveis somente por service_role. A revisão de segurança não acrescentou avisos em relação à situação anterior; os quatro registros informativos de RLS sem políticas correspondem às tabelas intencionalmente inacessíveis pelo navegador. O histórico versionado também incorpora quatro migrations anteriores já presentes em produção.
 
 Em retorno de aplicação, o código anterior ignora as tabelas novas, mas o trigger de fechamento permanece ativo. Antes de voltar, encerrar/cancelar qualquer evento que esteja suspendendo a loja e conferir pedidos; não apagar tabelas nem seus registros financeiros. A migration não remove nem reescreve dados existentes.
