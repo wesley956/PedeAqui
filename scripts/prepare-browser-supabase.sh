@@ -19,6 +19,9 @@ while IFS= read -r schema_name; do
   echo "BROWSER_SCHEMA_APPLY=$schema_name"
   psql "$fixture_db" -X -v ON_ERROR_STOP=1 -f "$project_root/supabase/sql/$schema_name" >/dev/null
 done < <(find "$project_root/supabase/sql" -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC_ALL=C sort -t_ -k1,1n -k2,2)
+# This existing public-product delta is in production but not folded into the
+# canonical files. Replay its exact definition; do not invent a fixture column.
+psql "$fixture_db" -X -v ON_ERROR_STOP=1 -f "$project_root/supabase/migrations/20261111224213_public_item_notes_setting.sql" >/dev/null
 psql "$fixture_db" -X -v ON_ERROR_STOP=1 -f "$project_root/supabase/tests/browser_public_fixture.sql" >/dev/null
 # Notify PostgREST after replaying the schema through SQL rather than the CLI.
 psql "$fixture_db" -X -v ON_ERROR_STOP=1 -c "notify pgrst, 'reload schema'" >/dev/null

@@ -11,6 +11,7 @@ on:
       - "scripts/browser-event-store-closure.mjs"
       - "scripts/prepare-browser-supabase.sh"
       - "supabase/sql/**"
+      - "supabase/migrations/20261111224213_public_item_notes_setting.sql"
       - "supabase/tests/browser_public_fixture.sql"
       - ".github/workflows/browser-homologation.yml"
 
