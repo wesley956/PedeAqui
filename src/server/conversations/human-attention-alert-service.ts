@@ -16,8 +16,13 @@ export type HumanAttentionAlertData = {
 
 export class HumanAttentionAlertService {
   static async load(): Promise<HumanAttentionAlertData> {
+    return (await this.snapshot()).alert;
+  }
+
+  static async snapshot(expectedStoreId?: string | null) {
     const context = await authorize(PERMISSIONS.CONVERSATIONS_VIEW);
     const storeId = requireStoreId(context.storeId);
+    if (expectedStoreId && expectedStoreId !== storeId) throw new Error("Store context changed");
     const admin = createAdminClient();
 
     const { data, error, count } = await admin.from("conversations")
@@ -31,9 +36,9 @@ export class HumanAttentionAlertService {
 
     if (error) throw error;
 
-    return {
+    return { storeId, alert: {
       count: count ?? 0,
       firstConversationId: data?.[0]?.id ?? null,
-    };
+    } };
   }
 }

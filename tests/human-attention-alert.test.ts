@@ -28,7 +28,8 @@ describe("global human attention alert", () => {
 
   it("updates from realtime conversation changes and only loads for authorized users", () => {
     expect(alert).toContain('table: "conversations"');
-    expect(alert).toContain("router.refresh()");
+    expect(alert).not.toContain("router.refresh()");
+    expect(alert).toContain("/api/conversations/human-attention?storeId=");
     expect(alert).toContain('status === "SUBSCRIBED" && reconnecting');
     expect(alert).toContain('document.addEventListener("visibilitychange", onVisible)');
     expect(alert).toContain('window.addEventListener("online", onOnline)');
